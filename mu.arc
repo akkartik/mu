@@ -12,11 +12,13 @@
   (each instr instrs
     (unless returned
 ;?       (prn instr)
+;?       (prn memory*)
       (let delim (or (pos '<- instr) -1)
-        (with (oarg (cut instr 0 delim)
+        (with (oarg (if (>= delim 0)
+                      (cut instr 0 delim))
                op (instr (+ delim 1))
                arg  (cut instr (+ delim 2)))
-;?           (prn op)
+;?           (prn op " " oarg)
           (case op
             loadi
               (= (memory* oarg.0) arg.0)
@@ -28,12 +30,16 @@
                  ; hardcoded channel for now
                  (memory* pop.fn-args))
             return
-              (set returned)
+              (= returned (annotate 'result arg))
             ; else user-defined function
-              (run function*.op arg)
+              (let results (run function*.op arg)
+;?                 (prn "== " memory*)
+                (each o oarg
+;?                   (prn o)
+                  (= memory*.o (memory* pop.results))))
             )))))
 ;?   (prn "return")
-  )
+    rep.returned)
 
 (awhen cdr.argv
   (each file it
