@@ -8,7 +8,7 @@
   (each (name . body) fns
     (= function*.name body)))
 
-(def run (instrs (o returned))
+(def run (instrs (o fn-args) (o returned))
   (each instr instrs
     (unless returned
 ;?       (prn instr)
@@ -23,10 +23,14 @@
             add
               (= (memory* oarg.0)
                  (+ (memory* arg.0) (memory* arg.1)))
+            read
+              (= (memory* oarg.0)
+                 ; hardcoded channel for now
+                 (memory* pop.fn-args))
             return
               (set returned)
             ; else user-defined function
-              (run function*.op)
+              (run function*.op arg)
             )))))
 ;?   (prn "return")
   )
