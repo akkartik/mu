@@ -12,19 +12,22 @@
   (each instr instrs
     (unless returned
 ;?       (prn instr)
-      (let (oarg1 <- op arg1 arg2) instr
-;?         (prn op)
-        (case op
-          loadi
-            (= memory*.oarg1 arg1)
-          add
-            (= memory*.oarg1
-               (+ memory*.arg1 memory*.arg2))
-          return
-            (set returned)
-          ; else user-defined function
-            (run function*.op)
-          ))))
+      (let delim (or (pos '<- instr) -1)
+        (with (oarg (cut instr 0 delim)
+               op (instr (+ delim 1))
+               arg  (cut instr (+ delim 2)))
+;?           (prn op)
+          (case op
+            loadi
+              (= (memory* oarg.0) arg.0)
+            add
+              (= (memory* oarg.0)
+                 (+ (memory* arg.0) (memory* arg.1)))
+            return
+              (set returned)
+            ; else user-defined function
+              (run function*.op)
+            )))))
 ;?   (prn "return")
   )
 
