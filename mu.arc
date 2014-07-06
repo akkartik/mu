@@ -1,5 +1,12 @@
-(= types* (table))
-(= memory* (table))
+(def clear ()
+  (= types* (table))
+  (= memory* (table))
+  (= function* (table)))
+(clear)
+
+(def add-fns (fns)
+  (each (name . body) fns
+    (= function*.name body)))
 
 (def run (instrs)
   (each instr instrs
@@ -12,9 +19,14 @@
         add
           (= memory*.oarg1
              (+ memory*.arg1 memory*.arg2))
+        ; else
+          (prn "aaa")  ; user-defined functions go here
         ))))
 
-(each file (cut argv 1)
-;?   (prn file)
-  (run readfile.file)
+(awhen cdr.argv
+  (each file it
+  ;?   (prn file)
+    (add-fns readfile.file))
+  ;? (prn function*)
+  (run function*!main)
   (prn memory*))
