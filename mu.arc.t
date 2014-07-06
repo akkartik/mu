@@ -21,3 +21,18 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - compound functions work"))
+
+(clear)
+(add-fns
+  '((add-fn
+      (3 <- add 1 2)
+      (_ <- return)
+      (4 <- loadi 34))
+    (main
+      (1 <- loadi 1)
+      (2 <- loadi 3)
+      (_ <- add-fn))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 1  2 3  3 4))
+  (prn "F - early return works"))
