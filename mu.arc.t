@@ -76,3 +76,22 @@
                        ; add-fn's temporaries
                        4 1  5 3  6 4))
   (prn "F - parameterized compound fn with return value"))
+
+(clear)
+(add-fns
+  '((add-fn
+      (4 <- read)
+      (5 <- read)
+      (6 <- add 4 5)
+      (return 6 5)
+      (4 <- loadi 34))
+    (main
+      (1 <- loadi 1)
+      (2 <- loadi 3)
+      (3 7 <- add-fn 1 2))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 1  2 3  3 4    7 3
+                         ; add-fn's temporaries
+                         4 1  5 3  6 4))
+  (prn "F - parameterized compound fn with multiple return values"))
