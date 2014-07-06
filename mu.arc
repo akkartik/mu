@@ -19,9 +19,11 @@
         add
           (= memory*.oarg1
              (+ memory*.arg1 memory*.arg2))
-        ; else
-          (prn "aaa")  ; user-defined functions go here
-        ))))
+        ; else user-defined function
+          (run function*.op)
+        )))
+;?   (prn "return")
+  )
 
 (awhen cdr.argv
   (each file it
