@@ -31,7 +31,7 @@
               (= (memory* oarg.0)
                  ; hardcoded channel for now
                  (memory* pop.fn-args))
-            return
+            reply
               (= returned (annotate 'result arg))
             ; else user-defined function
               (let results (run function*.op arg)

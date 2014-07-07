@@ -26,7 +26,7 @@
 (add-fns
   '((add-fn
       (3 <- add 1 2)
-      (return)
+      (reply)
       (4 <- loadi 34))
     (main
       (1 <- loadi 1)
@@ -44,7 +44,7 @@
       (4 <- read)
       (5 <- read)
       (3 <- add 4 5)
-      (return)
+      (reply)
       (4 <- loadi 34))
     (main
       (1 <- loadi 1)
@@ -64,7 +64,7 @@
       (4 <- read)
       (5 <- read)
       (6 <- add 4 5)
-      (return 6)
+      (reply 6)
       (4 <- loadi 34))
     (main
       (1 <- loadi 1)
@@ -83,7 +83,7 @@
       (4 <- read)
       (5 <- read)
       (6 <- add 4 5)
-      (return 6 5)
+      (reply 6 5)
       (4 <- loadi 34))
     (main
       (1 <- loadi 1)
