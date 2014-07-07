@@ -1,3 +1,5 @@
+; things that a future assembler will need separate memory for:
+;   code; types; args channel
 (def clear ()
   (= types* (table))
   (= memory* (table))
@@ -43,8 +45,8 @@
 
 (awhen cdr.argv
   (each file it
-  ;?   (prn file)
+;?     (prn file)
     (add-fns readfile.file))
-  ;? (prn function*)
+;?   (prn function*)
   (run function*!main)
   (prn memory*))
