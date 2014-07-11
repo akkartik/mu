@@ -1,7 +1,9 @@
 ; things that a future assembler will need separate memory for:
 ;   code; types; args channel
 (def clear ()
-  (= types* (table))
+  (= types* (obj
+              integer (obj size 1)
+              address (obj size 1)))
   (= memory* (table))
   (= function* (table)))
 (clear)
@@ -23,14 +25,14 @@
 ;?           (prn op " " oarg)
           (case op
             loadi
-              (= (memory* oarg.0) arg.0)
+              (= (memory* oarg.0.1) arg.0)
             add
-              (= (memory* oarg.0)
-                 (+ (memory* arg.0) (memory* arg.1)))
+              (= (memory* oarg.0.1)
+                 (+ (memory* arg.0.1) (memory* arg.1.1)))
             read
-              (= (memory* oarg.0)
+              (= (memory* oarg.0.1)
                  ; hardcoded channel for now
-                 (memory* pop.fn-args))
+                 (memory* pop.fn-args.1))
             reply
               (= returned (annotate 'result arg))
             ; else user-defined function
@@ -38,7 +40,7 @@
 ;?                 (prn "== " memory*)
                 (each o oarg
 ;?                   (prn o)
-                  (= memory*.o (memory* pop.results))))
+                  (= (memory* o.1) (memory* pop.results.1))))
             )))))
 ;?   (prn "return")
     rep.returned)

@@ -2,9 +2,9 @@
 
 (clear)
 (add-fns '((test1
-  (1 <- loadi 1)
-  (2 <- loadi 3)
-  (3 <- add 1 2))))
+  ((integer 1) <- loadi 1)
+  ((integer 2) <- loadi 3)
+  ((integer 3) <- add (integer 1) (integer 2)))))
 (run function*!test1)
 (if (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - load and add instructions work"))
@@ -12,10 +12,10 @@
 (clear)
 (add-fns
   '((add-fn
-      (3 <- add 1 2))
+      ((integer 3) <- add (integer 1) (integer 2)))
     (main
-      (1 <- loadi 1)
-      (2 <- loadi 3)
+      ((integer 1) <- loadi 1)
+      ((integer 2) <- loadi 3)
       (add-fn))))
 (run function*!main)
 ;? (prn memory*)
@@ -25,12 +25,12 @@
 (clear)
 (add-fns
   '((add-fn
-      (3 <- add 1 2)
+      ((integer 3) <- add (integer 1) (integer 2))
       (reply)
-      (4 <- loadi 34))
+      ((integer 4) <- loadi 34))
     (main
-      (1 <- loadi 1)
-      (2 <- loadi 3)
+      ((integer 1) <- loadi 1)
+      ((integer 2) <- loadi 3)
       (add-fn))))
 (run function*!main)
 ;? (prn memory*)
@@ -41,15 +41,15 @@
 (clear)
 (add-fns
   '((add-fn
-      (4 <- read)
-      (5 <- read)
-      (3 <- add 4 5)
+      ((integer 4) <- read)
+      ((integer 5) <- read)
+      ((integer 3) <- add (integer 4) (integer 5))
       (reply)
-      (4 <- loadi 34))
+      ((integer 4) <- loadi 34))
     (main
-      (1 <- loadi 1)
-      (2 <- loadi 3)
-      (add-fn 1 2)
+      ((integer 1) <- loadi 1)
+      ((integer 2) <- loadi 3)
+      (add-fn (integer 1) (integer 2))
     )))
 (run function*!main)
 ;? (prn memory*)
@@ -61,15 +61,15 @@
 (clear)
 (add-fns
   '((add-fn
-      (4 <- read)
-      (5 <- read)
-      (6 <- add 4 5)
-      (reply 6)
-      (4 <- loadi 34))
+      ((integer 4) <- read)
+      ((integer 5) <- read)
+      ((integer 6) <- add (integer 4) (integer 5))
+      (reply (integer 6))
+      ((integer 4) <- loadi 34))
     (main
-      (1 <- loadi 1)
-      (2 <- loadi 3)
-      (3 <- add-fn 1 2))))
+      ((integer 1) <- loadi 1)
+      ((integer 2) <- loadi 3)
+      ((integer 3) <- add-fn (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4
@@ -80,15 +80,15 @@
 (clear)
 (add-fns
   '((add-fn
-      (4 <- read)
-      (5 <- read)
-      (6 <- add 4 5)
-      (reply 6 5)
-      (4 <- loadi 34))
+      ((integer 4) <- read)
+      ((integer 5) <- read)
+      ((integer 6) <- add (integer 4) (integer 5))
+      (reply (integer 6) (integer 5))
+      ((integer 4) <- loadi 34))
     (main
-      (1 <- loadi 1)
-      (2 <- loadi 3)
-      (3 7 <- add-fn 1 2))))
+      ((integer 1) <- loadi 1)
+      ((integer 2) <- loadi 3)
+      ((integer 3) (integer 7) <- add-fn (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4    7 3
