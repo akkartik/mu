@@ -29,6 +29,20 @@
             add
               (= (memory* oarg.0.1)
                  (+ (memory* arg.0.1) (memory* arg.1.1)))
+            sub
+              (= (memory* oarg.0.1)
+                 (- (memory* arg.0.1) (memory* arg.1.1)))
+            mul
+              (= (memory* oarg.0.1)
+                 (* (memory* arg.0.1) (memory* arg.1.1)))
+            div
+              (= (memory* oarg.0.1)
+                 (/ (real (memory* arg.0.1)) (memory* arg.1.1)))
+            idiv
+              (= (memory* oarg.0.1)
+                 (trunc:/ (memory* arg.0.1) (memory* arg.1.1))
+                 (memory* oarg.1.1)
+                 (mod (memory* arg.0.1) (memory* arg.1.1)))
             read
               (= (memory* oarg.0.1)
                  ; hardcoded channel for now

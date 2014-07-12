@@ -95,3 +95,47 @@
                          ; add-fn's temporaries
                          4 1  5 3  6 4))
   (prn "F - parameterized compound fn with multiple return values"))
+
+(clear)
+(add-fns
+  '((main
+      ((integer 1) <- loadi 1)
+      ((integer 2) <- loadi 3)
+      ((integer 3) <- sub (integer 1) (integer 2)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 1  2 3  3 -2))
+  (prn "F - sub works"))
+
+(clear)
+(add-fns
+  '((main
+      ((integer 1) <- loadi 2)
+      ((integer 2) <- loadi 3)
+      ((integer 3) <- mul (integer 1) (integer 2)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 3  3 6))
+  (prn "F - mul works"))
+
+(clear)
+(add-fns
+  '((main
+      ((integer 1) <- loadi 8)
+      ((integer 2) <- loadi 3)
+      ((integer 3) <- div (integer 1) (integer 2)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 8  2 3  3 (/ real.8 3)))
+  (prn "F - div works"))
+
+(clear)
+(add-fns
+  '((main
+      ((integer 1) <- loadi 8)
+      ((integer 2) <- loadi 3)
+      ((integer 3) (integer 4) <- idiv (integer 1) (integer 2)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 8  2 3  3 2  4 2))
+  (prn "F - idiv works"))
