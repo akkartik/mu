@@ -180,7 +180,8 @@
       ((integer 1) <- loadi 8)
       (jmp (location 3))
       ((integer 2) <- loadi 3)
-      (reply))))
+      (reply)
+      ((integer 3) <- loadi 34))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
@@ -192,7 +193,8 @@
       ((integer 1) <- loadi 0)
       (jifz (integer 1) (location 3))
       ((integer 2) <- loadi 3)
-      (reply))))
+      (reply)
+      ((integer 3) <- loadi 34))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 0))
@@ -204,8 +206,32 @@
       ((integer 1) <- loadi 1)
       (jifz (integer 1) (location 3))
       ((integer 2) <- loadi 3)
-      (reply))))
+      (reply)
+      ((integer 3) <- loadi 34))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3))
   (prn "F - jifz works - 2"))
+
+(clear)
+(add-fns
+  '((add-fn
+      ((integer 4) <- otype 0)
+      ((integer 5) <- loadi 0)  ; type index corresponding to 'integer'
+      ((integer 6) <- sub (integer 4) (integer 5))
+      (jifz (integer 6) (location 5))
+      (reply)
+      ((integer 7) <- arg)
+      ((integer 8) <- arg)
+      ((integer 9) <- add (integer 7) (integer 8))
+      (reply (integer 9)))
+    (main
+      ((integer 1) <- loadi 1)
+      ((integer 2) <- loadi 3)
+      ((integer 3) <- add-fn (integer 1) (integer 2)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 1  2 3                     3 4
+                         ; add-fn's temporaries
+                         4 0  5 0  6 0  7 1  8 3  9 4))
+  (prn "F - user-defined function with clauses"))

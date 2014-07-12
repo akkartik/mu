@@ -9,6 +9,9 @@
   (= function* (table)))
 (clear)
 
+; just a convenience until we get an assembler
+(= type* (obj integer 0 location 1 address 2))
+
 (mac aelse (test else . body)
   `(aif ,test
       (do ,@body)
@@ -37,8 +40,10 @@
               loadi
                 (= (memory* oarg.0.1) arg.0)
               add
+;?               (do (prn "add " arg.0.1 arg.1.1)
                 (= (memory* oarg.0.1)
                    (+ (memory* arg.0.1) (memory* arg.1.1)))
+;?                 (prn "add2"))
               sub
                 (= (memory* oarg.0.1)
                    (- (memory* arg.0.1) (memory* arg.1.1)))
@@ -60,13 +65,17 @@
                               ++.fn-arg-idx))
                   (= (memory* oarg.0.1)
                      (memory* fn-args.idx.1)))
+              otype
+                (= (memory* oarg.0.1)
+                   (type* (otypes arg.0)))
               jmp
-                (do (= pc arg.0.1)
+                (do (= pc (- arg.0.1 1))  ; because continue still increments (bug)
 ;?                     (prn "jumping to " pc)
                     (continue))
               jifz
                 (when (is 0 (memory* arg.0.1))
-                  (= pc arg.1.1)
+;?                   (prn "jumping to " arg.1.1)
+                  (= pc (- arg.1.1 1))  ; because continue still increments (bug)
                   (continue))
               reply
                 (do (= result arg)
@@ -74,7 +83,7 @@
               ; else user-defined function
                 (aelse function*.op (prn "no definition for " op)
 ;?                   (prn "== " memory*)
-                  (let results (run it arg)
+                  (let results (run it arg (map car oarg))
                     (each o oarg
 ;?                       (prn o)
                       (= (memory* o.1) (memory* pop.results.1)))))
