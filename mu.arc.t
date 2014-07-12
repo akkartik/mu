@@ -151,3 +151,39 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
   (prn "F - jmp works"))
+
+(clear)
+(add-fns
+  '((main
+      ((integer 1) <- loadi 8)
+      (jmp (location 3))
+      ((integer 2) <- loadi 3)
+      (reply))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 8))
+  (prn "F - jmp works"))
+
+(clear)
+(add-fns
+  '((main
+      ((integer 1) <- loadi 0)
+      (jifz (integer 1) (location 3))
+      ((integer 2) <- loadi 3)
+      (reply))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 0))
+  (prn "F - jifz works"))
+
+(clear)
+(add-fns
+  '((main
+      ((integer 1) <- loadi 1)
+      (jifz (integer 1) (location 3))
+      ((integer 2) <- loadi 3)
+      (reply))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 1  2 3))
+  (prn "F - jifz works - 2"))

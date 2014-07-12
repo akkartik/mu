@@ -3,6 +3,7 @@
 (def clear ()
   (= types* (obj
               integer (obj size 1)
+              location (obj size 1)
               address (obj size 1)))
   (= memory* (table))
   (= function* (table)))
@@ -19,7 +20,9 @@
 
 (def run (instrs (o fn-args))
   (ret result nil
+;?     (prn instrs)
     (for pc 0 (< pc len.instrs) (++ pc)
+;?       (prn pc)
       (let instr instrs.pc
 ;?         (prn instr)
 ;?         (prn memory*)
@@ -53,6 +56,14 @@
                 (= (memory* oarg.0.1)
                    ; hardcoded channel for now
                    (memory* pop.fn-args.1))
+              jmp
+                (do (= pc arg.0.1)
+;?                     (prn "jumping to " pc)
+                    (continue))
+              jifz
+                (when (is 0 (memory* arg.0.1))
+                  (= pc arg.1.1)
+                  (continue))
               reply
                 (do (= result arg)
                     (break))
