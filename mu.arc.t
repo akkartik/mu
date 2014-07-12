@@ -231,11 +231,10 @@
 (clear)
 (add-fns
   '((add-fn
-      ((integer 4) <- otype 0)
-      ((integer 5) <- loadi 0)  ; type index corresponding to 'integer'
-      ((boolean 6) <- eq (integer 4) (integer 5))
-      (jif (boolean 6) (offset 1))
-      (reply)
+      ((type 4) <- otype 0)
+      ((type 5) <- loadi 0)  ; type index corresponding to 'integer'
+      ((boolean 6) <- neq (type 4) (type 5))
+      (jif (boolean 6) (offset 3))
       ((integer 7) <- arg)
       ((integer 8) <- arg)
       ((integer 9) <- add (integer 7) (integer 8))
@@ -248,5 +247,5 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3                     3 4
                          ; add-fn's temporaries
-                         4 0  5 0  6 t  7 1  8 3  9 4))
+                         4 0  5 0  6 nil  7 1  8 3  9 4))
   (prn "F - user-defined function with clauses"))

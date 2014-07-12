@@ -3,6 +3,7 @@
 (def clear ()
   (= types* (obj
               integer (obj size 1)
+              type (obj size 1)
               location (obj size 1)
               address (obj size 1)
               boolean (obj size 1)))
@@ -71,6 +72,9 @@
               eq
                 (= (memory* oarg.0.1)
                    (iso (memory* arg.0.1) (memory* arg.1.1)))
+              neq
+                (= (memory* oarg.0.1)
+                   (~iso (memory* arg.0.1) (memory* arg.1.1)))
               arg
                 (let idx (if arg
                            arg.0
