@@ -54,18 +54,12 @@
                    (memory* oarg.1.1)
                    (mod (memory* arg.0.1) (memory* arg.1.1)))
               arg
-;?                 (do (prn "arg " arg " fn-arg " fn-arg-idx)
-                    (if arg
-;?                       (do (prn "arg " arg)
-                      (= (memory* oarg.0.1)
-                         (memory* ((fn-args arg.0) 1)))
-;?                       )
-;?                       (do (prn "no arg; using " fn-arg-idx " " fn-args.fn-arg-idx)
-                          (= (memory* oarg.0.1)
-                             (memory* fn-args.fn-arg-idx.1))
-                          (++ fn-arg-idx))
-;?                       )
-;?                 )
+                (let idx (if arg
+                           arg.0
+                           (do1 fn-arg-idx
+                              ++.fn-arg-idx))
+                  (= (memory* oarg.0.1)
+                     (memory* fn-args.idx.1)))
               jmp
                 (do (= pc arg.0.1)
 ;?                     (prn "jumping to " pc)
