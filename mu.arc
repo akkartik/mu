@@ -69,13 +69,13 @@
                 (= (memory* oarg.0.1)
                    (type* (otypes arg.0)))
               jmp
-                (do (= pc (- arg.0.1 1))  ; because continue still increments (bug)
+                (do (= pc (+ pc arg.0.1))  ; relies on continue still incrementing (bug)
 ;?                     (prn "jumping to " pc)
                     (continue))
               jifz
                 (when (is 0 (memory* arg.0.1))
 ;?                   (prn "jumping to " arg.1.1)
-                  (= pc (- arg.1.1 1))  ; because continue still increments (bug)
+                  (= pc (+ pc arg.1.1))  ; relies on continue still incrementing (bug)
                   (continue))
               reply
                 (do (= result arg)

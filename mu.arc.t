@@ -166,7 +166,7 @@
 (add-fns
   '((main
       ((integer 1) <- loadi 8)
-      (jmp (location 3))
+      (jmp (offset 1))
       ((integer 2) <- loadi 3)
       (reply))))
 (run function*!main)
@@ -178,7 +178,7 @@
 (add-fns
   '((main
       ((integer 1) <- loadi 8)
-      (jmp (location 3))
+      (jmp (offset 1))
       ((integer 2) <- loadi 3)
       (reply)
       ((integer 3) <- loadi 34))))
@@ -191,7 +191,7 @@
 (add-fns
   '((main
       ((integer 1) <- loadi 0)
-      (jifz (integer 1) (location 3))
+      (jifz (integer 1) (offset 1))
       ((integer 2) <- loadi 3)
       (reply)
       ((integer 3) <- loadi 34))))
@@ -204,7 +204,7 @@
 (add-fns
   '((main
       ((integer 1) <- loadi 1)
-      (jifz (integer 1) (location 3))
+      (jifz (integer 1) (offset 1))
       ((integer 2) <- loadi 3)
       (reply)
       ((integer 3) <- loadi 34))))
@@ -219,7 +219,7 @@
       ((integer 4) <- otype 0)
       ((integer 5) <- loadi 0)  ; type index corresponding to 'integer'
       ((integer 6) <- sub (integer 4) (integer 5))
-      (jifz (integer 6) (location 5))
+      (jifz (integer 6) (offset 1))
       (reply)
       ((integer 7) <- arg)
       ((integer 8) <- arg)
