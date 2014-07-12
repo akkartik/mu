@@ -139,3 +139,15 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8  2 3  3 2  4 2))
   (prn "F - idiv works"))
+
+(clear)
+(add-fns
+  '((main
+      ((integer 1) <- loadi 8)
+      (jmp (location 3))
+      ((integer 2) <- loadi 3)
+      (reply))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 8))
+  (prn "F - jmp works"))

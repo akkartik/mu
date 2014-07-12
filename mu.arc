@@ -8,6 +8,11 @@
   (= function* (table)))
 (clear)
 
+(mac aelse (test else . body)
+  `(aif ,test
+      (do ,@body)
+      ,else))
+
 (def add-fns (fns)
   (each (name . body) fns
     (= function*.name body)))
@@ -52,11 +57,12 @@
                 (do (= result arg)
                     (break))
               ; else user-defined function
-                (let results (run function*.op arg)
+                (aelse function*.op (prn "no definition for " op)
 ;?                   (prn "== " memory*)
-                  (each o oarg
-;?                     (prn o)
-                    (= (memory* o.1) (memory* pop.results.1))))
+                  (let results (run it arg)
+                    (each o oarg
+;?                       (prn o)
+                      (= (memory* o.1) (memory* pop.results.1)))))
               )))))
 ;?     (prn "return " result)
     ))
