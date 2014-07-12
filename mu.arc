@@ -18,9 +18,9 @@
 ;?       (prn instr)
 ;?       (prn memory*)
       (let delim (or (pos '<- instr) -1)
-        (with (oarg (if (>= delim 0)
-                      (cut instr 0 delim))
-               op (instr (+ delim 1))
+        (with (oarg  (if (>= delim 0)
+                       (cut instr 0 delim))
+               op  (instr (+ delim 1))
                arg  (cut instr (+ delim 2)))
 ;?           (prn op " " oarg)
           (case op
