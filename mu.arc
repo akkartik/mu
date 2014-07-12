@@ -18,8 +18,9 @@
   (each (name . body) fns
     (= function*.name body)))
 
-(def run (instrs (o fn-args))
+(def run (instrs (o fn-args) (o otypes))
   (ret result nil
+    (let fn-arg-idx 0
 ;?     (prn instrs)
     (for pc 0 (< pc len.instrs) (++ pc)
 ;?       (prn pc)
@@ -52,10 +53,19 @@
                    (trunc:/ (memory* arg.0.1) (memory* arg.1.1))
                    (memory* oarg.1.1)
                    (mod (memory* arg.0.1) (memory* arg.1.1)))
-              read
-                (= (memory* oarg.0.1)
-                   ; hardcoded channel for now
-                   (memory* pop.fn-args.1))
+              arg
+;?                 (do (prn "arg " arg " fn-arg " fn-arg-idx)
+                    (if arg
+;?                       (do (prn "arg " arg)
+                      (= (memory* oarg.0.1)
+                         (memory* ((fn-args arg.0) 1)))
+;?                       )
+;?                       (do (prn "no arg; using " fn-arg-idx " " fn-args.fn-arg-idx)
+                          (= (memory* oarg.0.1)
+                             (memory* fn-args.fn-arg-idx.1))
+                          (++ fn-arg-idx))
+;?                       )
+;?                 )
               jmp
                 (do (= pc arg.0.1)
 ;?                     (prn "jumping to " pc)
@@ -76,7 +86,7 @@
                       (= (memory* o.1) (memory* pop.results.1)))))
               )))))
 ;?     (prn "return " result)
-    ))
+    )))
 
 (awhen cdr.argv
   (each file it

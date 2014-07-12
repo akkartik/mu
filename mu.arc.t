@@ -41,8 +41,8 @@
 (clear)
 (add-fns
   '((add-fn
-      ((integer 4) <- read)
-      ((integer 5) <- read)
+      ((integer 4) <- arg)
+      ((integer 5) <- arg)
       ((integer 3) <- add (integer 4) (integer 5))
       (reply)
       ((integer 4) <- loadi 34))
@@ -57,12 +57,34 @@
                        ; add-fn's temporaries
                        4 1  5 3))
   (prn "F - parameterized compound fn"))
+;? (quit)
 
 (clear)
 (add-fns
   '((add-fn
-      ((integer 4) <- read)
-      ((integer 5) <- read)
+      ((integer 5) <- arg 1)
+      ((integer 4) <- arg 0)
+      ((integer 3) <- add (integer 4) (integer 5))
+      (reply)
+      ((integer 4) <- loadi 34))
+    (main
+      ((integer 1) <- loadi 1)
+      ((integer 2) <- loadi 3)
+      (add-fn (integer 1) (integer 2))
+    )))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 1  2 3  3 4
+                       ; add-fn's temporaries
+                       4 1  5 3))
+  (prn "F - arg with index"))
+;? (quit)
+
+(clear)
+(add-fns
+  '((add-fn
+      ((integer 4) <- arg)
+      ((integer 5) <- arg)
       ((integer 6) <- add (integer 4) (integer 5))
       (reply (integer 6))
       ((integer 4) <- loadi 34))
@@ -80,8 +102,8 @@
 (clear)
 (add-fns
   '((add-fn
-      ((integer 4) <- read)
-      ((integer 5) <- read)
+      ((integer 4) <- arg)
+      ((integer 5) <- arg)
       ((integer 6) <- add (integer 4) (integer 5))
       (reply (integer 6) (integer 5))
       ((integer 4) <- loadi 34))
