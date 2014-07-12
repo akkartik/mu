@@ -165,6 +165,17 @@
 (clear)
 (add-fns
   '((main
+      ((boolean 1) <- loadi t)
+      ((boolean 2) <- loadi nil)
+      ((boolean 3) <- and (boolean 1) (boolean 2)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 t  2 nil  3 nil))
+  (prn "F - and works"))
+
+(clear)
+(add-fns
+  '((main
       ((integer 1) <- loadi 8)
       (jmp (offset 1))
       ((integer 2) <- loadi 3)
@@ -190,36 +201,40 @@
 (clear)
 (add-fns
   '((main
-      ((integer 1) <- loadi 0)
-      (jifz (integer 1) (offset 1))
+      ((integer 1) <- loadi 1)
+      ((integer 2) <- loadi 1)
+      ((boolean 3) <- eq (integer 1) (integer 2))
+      (jif (boolean 3) (offset 1))
       ((integer 2) <- loadi 3)
       (reply)
       ((integer 3) <- loadi 34))))
 (run function*!main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 0))
-  (prn "F - jifz works"))
+(if (~iso memory* (obj 1 1  2 1  3 t))
+  (prn "F - jif works"))
 
 (clear)
 (add-fns
   '((main
       ((integer 1) <- loadi 1)
-      (jifz (integer 1) (offset 1))
-      ((integer 2) <- loadi 3)
+      ((integer 2) <- loadi 2)
+      ((boolean 3) <- eq (integer 1) (integer 2))
+      (jif (boolean 3) (offset 1))
+      ((integer 4) <- loadi 3)
       (reply)
       ((integer 3) <- loadi 34))))
 (run function*!main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3))
-  (prn "F - jifz works - 2"))
+(if (~iso memory* (obj 1 1  2 2  3 nil  4 3))
+  (prn "F - jif works - 2"))
 
 (clear)
 (add-fns
   '((add-fn
       ((integer 4) <- otype 0)
       ((integer 5) <- loadi 0)  ; type index corresponding to 'integer'
-      ((integer 6) <- sub (integer 4) (integer 5))
-      (jifz (integer 6) (offset 1))
+      ((boolean 6) <- eq (integer 4) (integer 5))
+      (jif (boolean 6) (offset 1))
       (reply)
       ((integer 7) <- arg)
       ((integer 8) <- arg)
@@ -233,5 +248,5 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3                     3 4
                          ; add-fn's temporaries
-                         4 0  5 0  6 0  7 1  8 3  9 4))
+                         4 0  5 0  6 t  7 1  8 3  9 4))
   (prn "F - user-defined function with clauses"))

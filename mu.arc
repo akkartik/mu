@@ -4,7 +4,8 @@
   (= types* (obj
               integer (obj size 1)
               location (obj size 1)
-              address (obj size 1)))
+              address (obj size 1)
+              boolean (obj size 1)))
   (= memory* (table))
   (= function* (table)))
 (clear)
@@ -58,6 +59,18 @@
                    (trunc:/ (memory* arg.0.1) (memory* arg.1.1))
                    (memory* oarg.1.1)
                    (mod (memory* arg.0.1) (memory* arg.1.1)))
+              and
+                (= (memory* oarg.0.1)
+                   (and (memory* arg.0.1) (memory* arg.1.1)))
+              or
+                (= (memory* oarg.0.1)
+                   (and (memory* arg.0.1) (memory* arg.1.1)))
+              not
+                (= (memory* oarg.0.1)
+                   (not (memory* arg.0.1)))
+              eq
+                (= (memory* oarg.0.1)
+                   (iso (memory* arg.0.1) (memory* arg.1.1)))
               arg
                 (let idx (if arg
                            arg.0
@@ -72,8 +85,8 @@
                 (do (= pc (+ pc arg.0.1))  ; relies on continue still incrementing (bug)
 ;?                     (prn "jumping to " pc)
                     (continue))
-              jifz
-                (when (is 0 (memory* arg.0.1))
+              jif
+                (when (is t (memory* arg.0.1))
 ;?                   (prn "jumping to " arg.1.1)
                   (= pc (+ pc arg.1.1))  ; relies on continue still incrementing (bug)
                   (continue))
