@@ -176,6 +176,39 @@
 (clear)
 (add-fns
   '((main
+      ((boolean 1) <- loadi 4)
+      ((boolean 2) <- loadi 4)
+      ((boolean 3) <- le (boolean 1) (boolean 2)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 4  2 4  3 t))
+  (prn "F - le works"))
+
+(clear)
+(add-fns
+  '((main
+      ((boolean 1) <- loadi 4)
+      ((boolean 2) <- loadi 3)
+      ((boolean 3) <- le (boolean 1) (boolean 2)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 4  2 3  3 nil))
+  (prn "F - le works - 2"))
+
+(clear)
+(add-fns
+  '((main
+      ((boolean 1) <- loadi 4)
+      ((boolean 2) <- loadi 5)
+      ((boolean 3) <- le (boolean 1) (boolean 2)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 4  2 5  3 t))
+  (prn "F - le works - 3"))
+
+(clear)
+(add-fns
+  '((main
       ((integer 1) <- loadi 8)
       (jmp (offset 1))
       ((integer 2) <- loadi 3)

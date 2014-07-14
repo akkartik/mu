@@ -75,6 +75,18 @@
               neq
                 (= (memory* oarg.0.1)
                    (~iso (memory* arg.0.1) (memory* arg.1.1)))
+              lt
+                (= (memory* oarg.0.1)
+                   (< (memory* arg.0.1) (memory* arg.1.1)))
+              gt
+                (= (memory* oarg.0.1)
+                   (> (memory* arg.0.1) (memory* arg.1.1)))
+              le
+                (= (memory* oarg.0.1)
+                   (<= (memory* arg.0.1) (memory* arg.1.1)))
+              ge
+                (= (memory* oarg.0.1)
+                   (>= (memory* arg.0.1) (memory* arg.1.1)))
               arg
                 (let idx (if arg
                            arg.0
