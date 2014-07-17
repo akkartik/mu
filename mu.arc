@@ -127,6 +127,10 @@
             (do
 ;?               (prn pc " " instr)
               (++ pc))
+            ; hack: racket replaces curlies with parens, so we need the
+            ; keyword begin to delimit blocks.
+            ; ultimately there'll be no nesting and curlies will just be in a
+            ; line by themselves.
             (do
 ;?               (prn `(open ,pc))
               (push `(open ,pc) locs)
@@ -153,10 +157,26 @@
                       (assert:is oarg nil)
                       (recur arg)
                       (pop stack))
+                  break
+                    (do
+                      (assert:is oarg nil)
+                      (assert:is arg nil)
+                      (yield `(jmp (offset ,(close-offset pc locs)))))
                   breakif
                     (do
 ;?                       (prn "breakif: " instr)
+                      (assert:is oarg nil)
                       (yield `(jif ,arg.0 (offset ,(close-offset pc locs)))))
+                  continue
+                    (do
+                      (assert:is oarg nil)
+                      (assert:is arg nil)
+                      (yield `(jmp (offset ,(- stack.0 pc)))))
+                  continueif
+                    (do
+;?                       (prn "continueif: " instr)
+                      (assert:is oarg nil)
+                      (yield `(jif ,arg.0 (offset ,(- stack.0 pc)))))
                   ;else
                     (yield instr))))
             (++ pc)))))))

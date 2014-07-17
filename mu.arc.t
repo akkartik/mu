@@ -281,6 +281,22 @@
 
 (clear)
 (add-fns
+  '((main
+      ((integer 1) <- loadi 2)
+      ((integer 2) <- loadi 1)
+      ((integer 2) <- add (integer 2) (integer 2))
+      ((boolean 3) <- eq (integer 1) (integer 2))
+      (jif (boolean 3) (offset -3))
+      ((integer 4) <- loadi 3)
+      (reply)
+      ((integer 3) <- loadi 34))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
+  (prn "F - 'jif' can take a negative offset to make backward jumps"))
+
+(clear)
+(add-fns
   '((test1
       ((type 4) <- otype 0)
       ((type 5) <- loadi 0)  ; type index corresponding to 'integer'
@@ -382,4 +398,58 @@
             (jif (boolean 4) (offset 1))
             ((integer 5) <- loadi 34)
             (reply)))
-  (prn "F - convert braces"))
+  (prn "F - convert-braces replaces breakif with a jif to after the next close curly"))
+
+(if (~iso (convert-braces '(((integer 1) <- loadi 4)
+                            ((integer 2) <- loadi 2)
+                            ((integer 3) <- add (integer 2) (integer 2))
+                            { begin
+                            (break)
+                            }
+                            (reply)))
+          '(((integer 1) <- loadi 4)
+            ((integer 2) <- loadi 2)
+            ((integer 3) <- add (integer 2) (integer 2))
+            (jmp (offset 0))
+            (reply)))
+  (prn "F - convert-braces works for degenerate blocks"))
+
+(if (~iso (convert-braces '(((integer 1) <- loadi 4)
+                            ((integer 2) <- loadi 2)
+                            ((integer 3) <- add (integer 2) (integer 2))
+                            { begin
+                            ((boolean 4) <- neq (integer 1) (integer 3))
+                            (breakif (boolean 4))
+                            { begin
+                            ((integer 5) <- loadi 34)
+                            }
+                            }
+                            (reply)))
+          '(((integer 1) <- loadi 4)
+            ((integer 2) <- loadi 2)
+            ((integer 3) <- add (integer 2) (integer 2))
+            ((boolean 4) <- neq (integer 1) (integer 3))
+            (jif (boolean 4) (offset 1))
+            ((integer 5) <- loadi 34)
+            (reply)))
+  (prn "F - convert-braces balances curlies"))
+
+(if (~iso (convert-braces '(((integer 1) <- loadi 4)
+                            ((integer 2) <- loadi 2)
+                            ((integer 3) <- add (integer 2) (integer 2))
+                            { begin
+                            { begin
+                            ((boolean 4) <- neq (integer 1) (integer 3))
+                            }
+                            (continueif (boolean 4))
+                            ((integer 5) <- loadi 34)
+                            }
+                            (reply)))
+          '(((integer 1) <- loadi 4)
+            ((integer 2) <- loadi 2)
+            ((integer 3) <- add (integer 2) (integer 2))
+            ((boolean 4) <- neq (integer 1) (integer 3))
+            (jif (boolean 4) (offset -2))
+            ((integer 5) <- loadi 34)
+            (reply)))
+  (prn "F - convert-braces balances curlies"))
