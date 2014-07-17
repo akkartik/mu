@@ -14,11 +14,6 @@
 ; just a convenience until we get an assembler
 (= type* (obj integer 0 location 1 address 2))
 
-(mac aelse (test else . body)
-  `(aif ,test
-      (do ,@body)
-      ,else))
-
 (def add-fns (fns)
   (each (name . body) fns
     (= function*.name body)))
@@ -110,9 +105,9 @@
                 (do (= result arg)
                     (break))
               ; else user-defined function
-                (aelse function*.op (prn "no definition for " op)
+                (let-or new-body function*.op (prn "no definition for " op)
 ;?                   (prn "== " memory*)
-                  (let results (run it arg (map car oarg))
+                  (let results (run new-body arg (map car oarg))
                     (each o oarg
 ;?                       (prn o)
                       (= (memory* o.1) (memory* pop.results.1)))))
