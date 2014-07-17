@@ -11,12 +11,12 @@
 
 (clear)
 (add-fns
-  '((add-fn
+  '((test1
       ((integer 3) <- add (integer 1) (integer 2)))
     (main
       ((integer 1) <- loadi 1)
       ((integer 2) <- loadi 3)
-      (add-fn))))
+      (test1))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4))
@@ -24,14 +24,14 @@
 
 (clear)
 (add-fns
-  '((add-fn
+  '((test1
       ((integer 3) <- add (integer 1) (integer 2))
       (reply)
       ((integer 4) <- loadi 34))
     (main
       ((integer 1) <- loadi 1)
       ((integer 2) <- loadi 3)
-      (add-fn))))
+      (test1))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4))
@@ -40,7 +40,7 @@
 
 (clear)
 (add-fns
-  '((add-fn
+  '((test1
       ((integer 4) <- arg)
       ((integer 5) <- arg)
       ((integer 3) <- add (integer 4) (integer 5))
@@ -49,7 +49,7 @@
     (main
       ((integer 1) <- loadi 1)
       ((integer 2) <- loadi 3)
-      (add-fn (integer 1) (integer 2))
+      (test1 (integer 1) (integer 2))
     )))
 (run function*!main)
 ;? (prn memory*)
@@ -61,7 +61,7 @@
 
 (clear)
 (add-fns
-  '((add-fn
+  '((test1
       ((integer 5) <- arg 1)
       ((integer 4) <- arg 0)
       ((integer 3) <- add (integer 4) (integer 5))
@@ -70,7 +70,7 @@
     (main
       ((integer 1) <- loadi 1)
       ((integer 2) <- loadi 3)
-      (add-fn (integer 1) (integer 2))
+      (test1 (integer 1) (integer 2))
     )))
 (run function*!main)
 ;? (prn memory*)
@@ -82,7 +82,7 @@
 
 (clear)
 (add-fns
-  '((add-fn
+  '((test1
       ((integer 4) <- arg)
       ((integer 5) <- arg)
       ((integer 6) <- add (integer 4) (integer 5))
@@ -91,7 +91,7 @@
     (main
       ((integer 1) <- loadi 1)
       ((integer 2) <- loadi 3)
-      ((integer 3) <- add-fn (integer 1) (integer 2)))))
+      ((integer 3) <- test1 (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4
@@ -101,7 +101,7 @@
 
 (clear)
 (add-fns
-  '((add-fn
+  '((test1
       ((integer 4) <- arg)
       ((integer 5) <- arg)
       ((integer 6) <- add (integer 4) (integer 5))
@@ -110,7 +110,7 @@
     (main
       ((integer 1) <- loadi 1)
       ((integer 2) <- loadi 3)
-      ((integer 3) (integer 7) <- add-fn (integer 1) (integer 2)))))
+      ((integer 3) (integer 7) <- test1 (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4    7 3
@@ -263,7 +263,7 @@
 
 (clear)
 (add-fns
-  '((add-fn
+  '((test1
       ((type 4) <- otype 0)
       ((type 5) <- loadi 0)  ; type index corresponding to 'integer'
       ((boolean 6) <- neq (type 4) (type 5))
@@ -275,7 +275,7 @@
     (main
       ((integer 1) <- loadi 1)
       ((integer 2) <- loadi 3)
-      ((integer 3) <- add-fn (integer 1) (integer 2)))))
+      ((integer 3) <- test1 (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3                     3 4
