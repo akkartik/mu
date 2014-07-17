@@ -114,6 +114,73 @@
 ;?     (prn "return " result)
     )))
 
+;? (mac assert (expr)
+;?   `(if (no ,expr)
+;?      (err "assertion failed: " ',expr)))
+
+(def convert-braces (instrs)
+  (let locs ()  ; list of information on each brace: (open/close pc)
+    (let pc 0
+      (loop (instrs instrs)
+        (each instr instrs
+          (if (~is 'begin instr.0)
+            (do
+;?               (prn pc " " instr)
+              (++ pc))
+            (do
+;?               (prn `(open ,pc))
+              (push `(open ,pc) locs)
+              (recur cdr.instr)
+;?               (prn `(close ,pc))
+              (push `(close ,pc) locs))))))
+    (zap rev locs)
+;?     (prn locs)
+    (with (pc  0
+           stack  ())  ; elems are pcs
+      (accum yield
+        (loop (instrs instrs)
+          (each instr instrs
+            (let delim (or (pos '<- instr) -1)
+              (with (oarg  (if (>= delim 0)
+                             (cut instr 0 delim))
+                     op  (instr (+ delim 1))
+                     arg  (cut instr (+ delim 2)))
+;?                 (prn op " " oarg)
+                (case op
+                  begin
+                    (do
+                      (push pc stack)
+                      (assert:is oarg nil)
+                      (recur arg)
+                      (pop stack))
+                  breakif
+                    (do
+;?                       (prn "breakif: " instr)
+                      (yield `(jif ,arg.0 (offset ,(close-offset pc locs)))))
+                  ;else
+                    (yield instr))))
+            (++ pc)))))))
+
+(def close-offset (pc locs)
+  (let close 0
+    (with (stacksize 0
+           done nil)
+      (each (state loc) locs
+;?         (prn "  :" close " " state " - " loc)
+        (if (< loc pc)
+              nil  ; do nothing
+            (no done)
+              (do
+                ; first time
+                (when (and (is 0 stacksize) (~is loc pc))
+                  (++ stacksize))
+                (if (is 'open state) (++ stacksize) (-- stacksize))
+                ; last time
+                (when (is 0 stacksize)
+                  (= close loc)
+                  (set done))))))
+    (- close pc 1)))
+
 (awhen cdr.argv
   (each file it
 ;?     (prn file)

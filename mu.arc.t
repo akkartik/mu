@@ -365,3 +365,21 @@
                          ; temporaries for most recent call to add-fn
                          4 0  5 0  6 nil  7 3  8 4  9 7))
   (prn "F - different calls can exercise different clauses of the same function"))
+
+(if (~iso (convert-braces '(((integer 1) <- loadi 4)
+                            ((integer 2) <- loadi 2)
+                            ((integer 3) <- add (integer 2) (integer 2))
+                            { begin  ; 'begin' is just a hack because racket turns curlies into parens
+                            ((boolean 4) <- neq (integer 1) (integer 3))
+                            (breakif (boolean 4))
+                            ((integer 5) <- loadi 34)
+                            }
+                            (reply)))
+          '(((integer 1) <- loadi 4)
+            ((integer 2) <- loadi 2)
+            ((integer 3) <- add (integer 2) (integer 2))
+            ((boolean 4) <- neq (integer 1) (integer 3))
+            (jif (boolean 4) (offset 1))
+            ((integer 5) <- loadi 34)
+            (reply)))
+  (prn "F - convert braces"))
