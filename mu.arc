@@ -12,7 +12,7 @@
 (clear)
 
 ; just a convenience until we get an assembler
-(= type* (obj integer 0 location 1 address 2))
+(= type* (obj integer 0 type 1 location 2 address 3 boolean 4))
 
 (def add-fns (fns)
   (each (name . body) fns
@@ -23,10 +23,9 @@
     (let fn-arg-idx 0
 ;?     (prn instrs)
     (for pc 0 (< pc len.instrs) (++ pc)
-;?       (prn pc)
       (let instr instrs.pc
-;?         (prn instr)
 ;?         (prn memory*)
+;?         (prn pc ": " instr)
         (let delim (or (pos '<- instr) -1)
           (with (oarg  (if (>= delim 0)
                          (cut instr 0 delim))
