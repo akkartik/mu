@@ -432,12 +432,12 @@
             (jif (boolean 4) (offset 1))
             ((integer 5) <- loadi 34)
             (reply)))
-  (prn "F - convert-braces balances curlies"))
+  (prn "F - convert-braces balances curlies when converting break"))
 
 (if (~iso (convert-braces '(((integer 1) <- loadi 4)
                             ((integer 2) <- loadi 2)
-                            ((integer 3) <- add (integer 2) (integer 2))
                             { begin
+                            ((integer 3) <- add (integer 2) (integer 2))
                             { begin
                             ((boolean 4) <- neq (integer 1) (integer 3))
                             }
@@ -449,7 +449,7 @@
             ((integer 2) <- loadi 2)
             ((integer 3) <- add (integer 2) (integer 2))
             ((boolean 4) <- neq (integer 1) (integer 3))
-            (jif (boolean 4) (offset -2))
+            (jif (boolean 4) (offset -3))
             ((integer 5) <- loadi 34)
             (reply)))
-  (prn "F - convert-braces balances curlies"))
+  (prn "F - convert-braces balances curlies when converting continue"))
