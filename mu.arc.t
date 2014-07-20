@@ -453,3 +453,37 @@
             ((integer 5) <- loadi 34)
             (reply)))
   (prn "F - convert-braces balances curlies when converting continue"))
+
+(clear)
+(add-fns `((main ,@(convert-braces '(((integer 1) <- loadi 4)
+                                     ((integer 2) <- loadi 1)
+                                     { begin
+                                     ((integer 2) <- add (integer 2) (integer 2))
+                                     { begin
+                                     ((boolean 3) <- neq (integer 1) (integer 2))
+                                     }
+                                     (continueif (boolean 3))
+                                     ((integer 4) <- loadi 34)
+                                     }
+                                     (reply))))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
+  (prn "F - continue correctly loops"))
+
+(clear)
+(add-fns `((main ,@(convert-braces '(((integer 1) <- loadi 4)
+                                     ((integer 2) <- loadi 2)
+                                     { begin
+                                     ((integer 2) <- add (integer 2) (integer 2))
+                                     { begin
+                                     ((boolean 3) <- neq (integer 1) (integer 2))
+                                     }
+                                     (continueif (boolean 3))
+                                     ((integer 4) <- loadi 34)
+                                     }
+                                     (reply))))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
+  (prn "F - continue might never trigger"))
