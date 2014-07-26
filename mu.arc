@@ -64,10 +64,10 @@
                    (not (memory* arg.0.1)))
               eq
                 (= (memory* oarg.0.1)
-                   (iso (memory* arg.0.1) (memory* arg.1.1)))
+                   (is (memory* arg.0.1) (memory* arg.1.1)))
               neq
                 (= (memory* oarg.0.1)
-                   (~iso (memory* arg.0.1) (memory* arg.1.1)))
+                   (~is (memory* arg.0.1) (memory* arg.1.1)))
               lt
                 (= (memory* oarg.0.1)
                    (< (memory* arg.0.1) (memory* arg.1.1)))
