@@ -99,6 +99,11 @@
 ;?                   (prn "jumping to " arg.1.1)
                   (= pc (+ pc arg.1.1))  ; relies on continue still incrementing (bug)
                   (continue))
+              copy
+                (= (memory* oarg.0.1) (memory* arg.0.1))
+              deref
+                (= (memory* oarg.0.1)
+                   (memory* (memory* arg.0.1)))
               reply
                 (do (= result arg)
                     (break))
