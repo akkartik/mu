@@ -2,17 +2,16 @@
 ;   code; types; args channel
 (def clear ()
   (= types* (obj
-              integer (obj size 1)
-              type (obj size 1)
-              location (obj size 1)
-              address (obj size 1)
-              boolean (obj size 1)))
+              type (obj size 1  record nil array nil address nil)
+              location (obj size 1  record nil array nil address nil)
+              integer (obj size 1  record nil array nil address nil)
+              boolean (obj size 1  record nil array nil address nil)
+              integer-array (obj array t  elem 'integer)  ; array of ints, size in front
+              integer-address (obj size 1 address t  elem 'integer)  ; pointer to int
+              ))
   (= memory* (table))
   (= function* (table)))
 (clear)
-
-; just a convenience until we get an assembler
-(= type* (obj integer 0 type 1 location 2 address 3 boolean 4))
 
 (def add-fns (fns)
   (each (name . body) fns
@@ -90,7 +89,7 @@
                      (memory* fn-args.idx.1)))
               otype
                 (= (memory* oarg.0.1)
-                   (type* (otypes arg.0)))
+                   (otypes arg.0))
               jmp
                 (do (= pc (+ pc arg.0.1))  ; relies on continue still incrementing (bug)
 ;?                     (prn "jumping to " pc)

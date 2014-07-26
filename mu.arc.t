@@ -299,7 +299,7 @@
 (add-fns
   '((test1
       ((type 4) <- otype 0)
-      ((type 5) <- loadi 0)  ; type index corresponding to 'integer'
+      ((type 5) <- loadi integer)
       ((boolean 6) <- neq (type 4) (type 5))
       (jif (boolean 6) (offset 3))
       ((integer 7) <- arg)
@@ -314,21 +314,21 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3                     3 4
                          ; add-fn's temporaries
-                         4 0  5 0  6 nil  7 1  8 3  9 4))
+                         4 'integer  5 'integer  6 nil  7 1  8 3  9 4))
   (prn "F - an example function that checks that its args are integers"))
 
 (clear)
 (add-fns
   '((add-fn
       ((type 4) <- otype 0)
-      ((type 5) <- loadi 0)  ; type index corresponding to 'integer'
+      ((type 5) <- loadi integer)
       ((boolean 6) <- neq (type 4) (type 5))
       (jif (boolean 6) (offset 4))
       ((integer 7) <- arg)
       ((integer 8) <- arg)
       ((integer 9) <- add (integer 7) (integer 8))
       (reply (integer 9))
-      ((type 5) <- loadi 4)  ; second clause: is otype 0 a boolean?
+      ((type 5) <- loadi boolean)
       ((boolean 6) <- neq (type 4) (type 5))
       (jif (boolean 6) (offset 6))
       ((boolean 7) <- arg)
@@ -344,21 +344,21 @@
 (if (~iso memory* (obj ; first call to add-fn
                        1 t  2 t                     3 t
                          ; add-fn's temporaries
-                         4 4  5 4  6 nil  7 t  8 t  9 t))
+                         4 'boolean  5 'boolean  6 nil  7 t  8 t  9 t))
   (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs"))
 
 (clear)
 (add-fns
   '((add-fn
       ((type 4) <- otype 0)
-      ((type 5) <- loadi 0)  ; type index corresponding to 'integer'
+      ((type 5) <- loadi integer)
       ((boolean 6) <- neq (type 4) (type 5))
       (jif (boolean 6) (offset 4))
       ((integer 7) <- arg)
       ((integer 8) <- arg)
       ((integer 9) <- add (integer 7) (integer 8))
       (reply (integer 9))
-      ((type 5) <- loadi 4)  ; second clause: is otype 0 a boolean?
+      ((type 5) <- loadi boolean)
       ((boolean 6) <- neq (type 4) (type 5))
       (jif (boolean 6) (offset 6))
       ((boolean 7) <- arg)
@@ -379,7 +379,7 @@
                        ; second call to add-fn
                        10 3  11 4                   12 7
                          ; temporaries for most recent call to add-fn
-                         4 0  5 0  6 nil  7 3  8 4  9 7))
+                         4 'integer  5 'integer  6 nil  7 3  8 4  9 7))
   (prn "F - different calls can exercise different clauses of the same function"))
 
 (if (~iso (convert-braces '(((integer 1) <- loadi 4)
