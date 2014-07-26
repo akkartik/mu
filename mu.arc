@@ -32,7 +32,7 @@
                  arg  (cut instr (+ delim 2)))
 ;?             (prn op " " oarg)
             (case op
-              loadi
+              literal
                 (= (memory* oarg.0.1) arg.0)
               add
 ;?               (do (prn "add " arg.0.1 arg.1.1)

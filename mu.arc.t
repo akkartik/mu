@@ -2,15 +2,15 @@
 
 (clear)
 (add-fns '((test1
-  ((integer 1) <- loadi 1))))
+  ((integer 1) <- literal 1))))
 (run function*!test1)
 (if (~iso memory* (obj 1 1))
-  (prn "F - 'loadi' writes a literal integer (its lone 'arg' after the instruction name) to a location in memory (an address) specified by its lone 'oarg' or output arg before the arrow"))
+  (prn "F - 'literal' writes a literal value (its lone 'arg' after the instruction name) to a location in memory (an address) specified by its lone 'oarg' or output arg before the arrow"))
 
 (clear)
 (add-fns '((test1
-  ((integer 1) <- loadi 1)
-  ((integer 2) <- loadi 3)
+  ((integer 1) <- literal 1)
+  ((integer 2) <- literal 3)
   ((integer 3) <- add (integer 1) (integer 2)))))
 (run function*!test1)
 (if (~iso memory* (obj 1 1  2 3  3 4))
@@ -21,8 +21,8 @@
   '((test1
       ((integer 3) <- add (integer 1) (integer 2)))
     (main
-      ((integer 1) <- loadi 1)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 1)
+      ((integer 2) <- literal 3)
       (test1))))
 (run function*!main)
 ;? (prn memory*)
@@ -34,10 +34,10 @@
   '((test1
       ((integer 3) <- add (integer 1) (integer 2))
       (reply)
-      ((integer 4) <- loadi 34))
+      ((integer 4) <- literal 34))
     (main
-      ((integer 1) <- loadi 1)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 1)
+      ((integer 2) <- literal 3)
       (test1))))
 (run function*!main)
 ;? (prn memory*)
@@ -52,10 +52,10 @@
       ((integer 5) <- arg)
       ((integer 3) <- add (integer 4) (integer 5))
       (reply)
-      ((integer 4) <- loadi 34))
+      ((integer 4) <- literal 34))
     (main
-      ((integer 1) <- loadi 1)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 1)
+      ((integer 2) <- literal 3)
       (test1 (integer 1) (integer 2))
     )))
 (run function*!main)
@@ -73,10 +73,10 @@
       ((integer 4) <- arg 0)
       ((integer 3) <- add (integer 4) (integer 5))
       (reply)
-      ((integer 4) <- loadi 34))
+      ((integer 4) <- literal 34))
     (main
-      ((integer 1) <- loadi 1)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 1)
+      ((integer 2) <- literal 3)
       (test1 (integer 1) (integer 2))
     )))
 (run function*!main)
@@ -94,10 +94,10 @@
       ((integer 5) <- arg)
       ((integer 6) <- add (integer 4) (integer 5))
       (reply (integer 6))
-      ((integer 4) <- loadi 34))
+      ((integer 4) <- literal 34))
     (main
-      ((integer 1) <- loadi 1)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 1)
+      ((integer 2) <- literal 3)
       ((integer 3) <- test1 (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -113,10 +113,10 @@
       ((integer 5) <- arg)
       ((integer 6) <- add (integer 4) (integer 5))
       (reply (integer 6) (integer 5))
-      ((integer 4) <- loadi 34))
+      ((integer 4) <- literal 34))
     (main
-      ((integer 1) <- loadi 1)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 1)
+      ((integer 2) <- literal 3)
       ((integer 3) (integer 7) <- test1 (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -128,8 +128,8 @@
 (clear)
 (add-fns
   '((main
-      ((integer 1) <- loadi 1)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 1)
+      ((integer 2) <- literal 3)
       ((integer 3) <- sub (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -139,8 +139,8 @@
 (clear)
 (add-fns
   '((main
-      ((integer 1) <- loadi 2)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 2)
+      ((integer 2) <- literal 3)
       ((integer 3) <- mul (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -150,8 +150,8 @@
 (clear)
 (add-fns
   '((main
-      ((integer 1) <- loadi 8)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 8)
+      ((integer 2) <- literal 3)
       ((integer 3) <- div (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -161,8 +161,8 @@
 (clear)
 (add-fns
   '((main
-      ((integer 1) <- loadi 8)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 8)
+      ((integer 2) <- literal 3)
       ((integer 3) (integer 4) <- idiv (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -172,8 +172,8 @@
 (clear)
 (add-fns
   '((main
-      ((boolean 1) <- loadi t)
-      ((boolean 2) <- loadi nil)
+      ((boolean 1) <- literal t)
+      ((boolean 2) <- literal nil)
       ((boolean 3) <- and (boolean 1) (boolean 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -183,8 +183,8 @@
 (clear)
 (add-fns
   '((main
-      ((boolean 1) <- loadi 4)
-      ((boolean 2) <- loadi 3)
+      ((boolean 1) <- literal 4)
+      ((boolean 2) <- literal 3)
       ((boolean 3) <- lt (boolean 1) (boolean 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -194,8 +194,8 @@
 (clear)
 (add-fns
   '((main
-      ((boolean 1) <- loadi 4)
-      ((boolean 2) <- loadi 3)
+      ((boolean 1) <- literal 4)
+      ((boolean 2) <- literal 3)
       ((boolean 3) <- le (boolean 1) (boolean 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -205,8 +205,8 @@
 (clear)
 (add-fns
   '((main
-      ((boolean 1) <- loadi 4)
-      ((boolean 2) <- loadi 4)
+      ((boolean 1) <- literal 4)
+      ((boolean 2) <- literal 4)
       ((boolean 3) <- le (boolean 1) (boolean 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -216,8 +216,8 @@
 (clear)
 (add-fns
   '((main
-      ((boolean 1) <- loadi 4)
-      ((boolean 2) <- loadi 5)
+      ((boolean 1) <- literal 4)
+      ((boolean 2) <- literal 5)
       ((boolean 3) <- le (boolean 1) (boolean 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -227,9 +227,9 @@
 (clear)
 (add-fns
   '((main
-      ((integer 1) <- loadi 8)
+      ((integer 1) <- literal 8)
       (jmp (offset 1))
-      ((integer 2) <- loadi 3)
+      ((integer 2) <- literal 3)
       (reply))))
 (run function*!main)
 ;? (prn memory*)
@@ -239,11 +239,11 @@
 (clear)
 (add-fns
   '((main
-      ((integer 1) <- loadi 8)
+      ((integer 1) <- literal 8)
       (jmp (offset 1))
-      ((integer 2) <- loadi 3)
+      ((integer 2) <- literal 3)
       (reply)
-      ((integer 3) <- loadi 34))))
+      ((integer 3) <- literal 34))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
@@ -252,13 +252,13 @@
 (clear)
 (add-fns
   '((main
-      ((integer 1) <- loadi 1)
-      ((integer 2) <- loadi 1)
+      ((integer 1) <- literal 1)
+      ((integer 2) <- literal 1)
       ((boolean 3) <- eq (integer 1) (integer 2))
       (jif (boolean 3) (offset 1))
-      ((integer 2) <- loadi 3)
+      ((integer 2) <- literal 3)
       (reply)
-      ((integer 3) <- loadi 34))))
+      ((integer 3) <- literal 34))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 1  3 t))
@@ -267,13 +267,13 @@
 (clear)
 (add-fns
   '((main
-      ((integer 1) <- loadi 1)
-      ((integer 2) <- loadi 2)
+      ((integer 1) <- literal 1)
+      ((integer 2) <- literal 2)
       ((boolean 3) <- eq (integer 1) (integer 2))
       (jif (boolean 3) (offset 1))
-      ((integer 4) <- loadi 3)
+      ((integer 4) <- literal 3)
       (reply)
-      ((integer 3) <- loadi 34))))
+      ((integer 3) <- literal 34))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 2  3 nil  4 3))
@@ -282,14 +282,14 @@
 (clear)
 (add-fns
   '((main
-      ((integer 1) <- loadi 2)
-      ((integer 2) <- loadi 1)
+      ((integer 1) <- literal 2)
+      ((integer 2) <- literal 1)
       ((integer 2) <- add (integer 2) (integer 2))
       ((boolean 3) <- eq (integer 1) (integer 2))
       (jif (boolean 3) (offset -3))
-      ((integer 4) <- loadi 3)
+      ((integer 4) <- literal 3)
       (reply)
-      ((integer 3) <- loadi 34))))
+      ((integer 3) <- literal 34))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
@@ -299,7 +299,7 @@
 (add-fns
   '((test1
       ((type 4) <- otype 0)
-      ((type 5) <- loadi integer)
+      ((type 5) <- literal integer)
       ((boolean 6) <- neq (type 4) (type 5))
       (jif (boolean 6) (offset 3))
       ((integer 7) <- arg)
@@ -307,8 +307,8 @@
       ((integer 9) <- add (integer 7) (integer 8))
       (reply (integer 9)))
     (main
-      ((integer 1) <- loadi 1)
-      ((integer 2) <- loadi 3)
+      ((integer 1) <- literal 1)
+      ((integer 2) <- literal 3)
       ((integer 3) <- test1 (integer 1) (integer 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -321,14 +321,14 @@
 (add-fns
   '((add-fn
       ((type 4) <- otype 0)
-      ((type 5) <- loadi integer)
+      ((type 5) <- literal integer)
       ((boolean 6) <- neq (type 4) (type 5))
       (jif (boolean 6) (offset 4))
       ((integer 7) <- arg)
       ((integer 8) <- arg)
       ((integer 9) <- add (integer 7) (integer 8))
       (reply (integer 9))
-      ((type 5) <- loadi boolean)
+      ((type 5) <- literal boolean)
       ((boolean 6) <- neq (type 4) (type 5))
       (jif (boolean 6) (offset 6))
       ((boolean 7) <- arg)
@@ -336,8 +336,8 @@
       ((boolean 9) <- or (boolean 7) (boolean 8))
       (reply (boolean 9)))
     (main
-      ((boolean 1) <- loadi t)
-      ((boolean 2) <- loadi t)
+      ((boolean 1) <- literal t)
+      ((boolean 2) <- literal t)
       ((boolean 3) <- add-fn (boolean 1) (boolean 2)))))
 (run function*!main)
 ;? (prn memory*)
@@ -351,14 +351,14 @@
 (add-fns
   '((add-fn
       ((type 4) <- otype 0)
-      ((type 5) <- loadi integer)
+      ((type 5) <- literal integer)
       ((boolean 6) <- neq (type 4) (type 5))
       (jif (boolean 6) (offset 4))
       ((integer 7) <- arg)
       ((integer 8) <- arg)
       ((integer 9) <- add (integer 7) (integer 8))
       (reply (integer 9))
-      ((type 5) <- loadi boolean)
+      ((type 5) <- literal boolean)
       ((boolean 6) <- neq (type 4) (type 5))
       (jif (boolean 6) (offset 6))
       ((boolean 7) <- arg)
@@ -366,11 +366,11 @@
       ((boolean 9) <- or (boolean 7) (boolean 8))
       (reply (boolean 9)))
     (main
-      ((boolean 1) <- loadi t)
-      ((boolean 2) <- loadi t)
+      ((boolean 1) <- literal t)
+      ((boolean 2) <- literal t)
       ((boolean 3) <- add-fn (boolean 1) (boolean 2))
-      ((integer 10) <- loadi 3)
-      ((integer 11) <- loadi 4)
+      ((integer 10) <- literal 3)
+      ((integer 11) <- literal 4)
       ((integer 12) <- add-fn (integer 10) (integer 11)))))
 (run function*!main)
 ;? (prn memory*)
@@ -382,88 +382,88 @@
                          4 'integer  5 'integer  6 nil  7 3  8 4  9 7))
   (prn "F - different calls can exercise different clauses of the same function"))
 
-(if (~iso (convert-braces '(((integer 1) <- loadi 4)
-                            ((integer 2) <- loadi 2)
+(if (~iso (convert-braces '(((integer 1) <- literal 4)
+                            ((integer 2) <- literal 2)
                             ((integer 3) <- add (integer 2) (integer 2))
                             { begin  ; 'begin' is just a hack because racket turns curlies into parens
                             ((boolean 4) <- neq (integer 1) (integer 3))
                             (breakif (boolean 4))
-                            ((integer 5) <- loadi 34)
+                            ((integer 5) <- literal 34)
                             }
                             (reply)))
-          '(((integer 1) <- loadi 4)
-            ((integer 2) <- loadi 2)
+          '(((integer 1) <- literal 4)
+            ((integer 2) <- literal 2)
             ((integer 3) <- add (integer 2) (integer 2))
             ((boolean 4) <- neq (integer 1) (integer 3))
             (jif (boolean 4) (offset 1))
-            ((integer 5) <- loadi 34)
+            ((integer 5) <- literal 34)
             (reply)))
   (prn "F - convert-braces replaces breakif with a jif to after the next close curly"))
 
-(if (~iso (convert-braces '(((integer 1) <- loadi 4)
-                            ((integer 2) <- loadi 2)
+(if (~iso (convert-braces '(((integer 1) <- literal 4)
+                            ((integer 2) <- literal 2)
                             ((integer 3) <- add (integer 2) (integer 2))
                             { begin
                             (break)
                             }
                             (reply)))
-          '(((integer 1) <- loadi 4)
-            ((integer 2) <- loadi 2)
+          '(((integer 1) <- literal 4)
+            ((integer 2) <- literal 2)
             ((integer 3) <- add (integer 2) (integer 2))
             (jmp (offset 0))
             (reply)))
   (prn "F - convert-braces works for degenerate blocks"))
 
-(if (~iso (convert-braces '(((integer 1) <- loadi 4)
-                            ((integer 2) <- loadi 2)
+(if (~iso (convert-braces '(((integer 1) <- literal 4)
+                            ((integer 2) <- literal 2)
                             ((integer 3) <- add (integer 2) (integer 2))
                             { begin
                             ((boolean 4) <- neq (integer 1) (integer 3))
                             (breakif (boolean 4))
                             { begin
-                            ((integer 5) <- loadi 34)
+                            ((integer 5) <- literal 34)
                             }
                             }
                             (reply)))
-          '(((integer 1) <- loadi 4)
-            ((integer 2) <- loadi 2)
+          '(((integer 1) <- literal 4)
+            ((integer 2) <- literal 2)
             ((integer 3) <- add (integer 2) (integer 2))
             ((boolean 4) <- neq (integer 1) (integer 3))
             (jif (boolean 4) (offset 1))
-            ((integer 5) <- loadi 34)
+            ((integer 5) <- literal 34)
             (reply)))
   (prn "F - convert-braces balances curlies when converting break"))
 
-(if (~iso (convert-braces '(((integer 1) <- loadi 4)
-                            ((integer 2) <- loadi 2)
+(if (~iso (convert-braces '(((integer 1) <- literal 4)
+                            ((integer 2) <- literal 2)
                             { begin
                             ((integer 3) <- add (integer 2) (integer 2))
                             { begin
                             ((boolean 4) <- neq (integer 1) (integer 3))
                             }
                             (continueif (boolean 4))
-                            ((integer 5) <- loadi 34)
+                            ((integer 5) <- literal 34)
                             }
                             (reply)))
-          '(((integer 1) <- loadi 4)
-            ((integer 2) <- loadi 2)
+          '(((integer 1) <- literal 4)
+            ((integer 2) <- literal 2)
             ((integer 3) <- add (integer 2) (integer 2))
             ((boolean 4) <- neq (integer 1) (integer 3))
             (jif (boolean 4) (offset -3))
-            ((integer 5) <- loadi 34)
+            ((integer 5) <- literal 34)
             (reply)))
   (prn "F - convert-braces balances curlies when converting continue"))
 
 (clear)
-(add-fns `((main ,@(convert-braces '(((integer 1) <- loadi 4)
-                                     ((integer 2) <- loadi 1)
+(add-fns `((main ,@(convert-braces '(((integer 1) <- literal 4)
+                                     ((integer 2) <- literal 1)
                                      { begin
                                      ((integer 2) <- add (integer 2) (integer 2))
                                      { begin
                                      ((boolean 3) <- neq (integer 1) (integer 2))
                                      }
                                      (continueif (boolean 3))
-                                     ((integer 4) <- loadi 34)
+                                     ((integer 4) <- literal 34)
                                      }
                                      (reply))))))
 (run function*!main)
@@ -472,15 +472,15 @@
   (prn "F - continue correctly loops"))
 
 (clear)
-(add-fns `((main ,@(convert-braces '(((integer 1) <- loadi 4)
-                                     ((integer 2) <- loadi 2)
+(add-fns `((main ,@(convert-braces '(((integer 1) <- literal 4)
+                                     ((integer 2) <- literal 2)
                                      { begin
                                      ((integer 2) <- add (integer 2) (integer 2))
                                      { begin
                                      ((boolean 3) <- neq (integer 1) (integer 2))
                                      }
                                      (continueif (boolean 3))
-                                     ((integer 4) <- loadi 34)
+                                     ((integer 4) <- literal 34)
                                      }
                                      (reply))))))
 (run function*!main)
