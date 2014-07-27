@@ -206,9 +206,6 @@
     (- close pc 1)))
 
 (awhen cdr.argv
-  (each file it
-;?     (prn file)
-    (add-fns readfile.file))
-;?   (prn function*)
+  (map add-fns:readfile it)
   (run function*!main)
   (prn memory*))
