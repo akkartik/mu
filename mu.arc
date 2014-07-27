@@ -17,6 +17,9 @@
   (each (name . body) fns
     (= function*.name body)))
 
+(mac m (loc)
+  `(memory* (,loc 1)))
+
 (def run (instrs (o fn-args) (o otypes))
   (ret result nil
     (let fn-arg-idx 0
@@ -33,77 +36,77 @@
 ;?             (prn op " " oarg)
             (case op
               literal
-                (= (memory* oarg.0.1) arg.0)
+                (= (m oarg.0) arg.0)
               add
 ;?               (do (prn "add " arg.0.1 arg.1.1)
-                (= (memory* oarg.0.1)
-                   (+ (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (+ (m arg.0) (m arg.1)))
 ;?                 (prn "add2"))
               sub
-                (= (memory* oarg.0.1)
-                   (- (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (- (m arg.0) (m arg.1)))
               mul
-                (= (memory* oarg.0.1)
-                   (* (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (* (m arg.0) (m arg.1)))
               div
-                (= (memory* oarg.0.1)
-                   (/ (real (memory* arg.0.1)) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (/ (real (m arg.0)) (m arg.1)))
               idiv
-                (= (memory* oarg.0.1)
-                   (trunc:/ (memory* arg.0.1) (memory* arg.1.1))
-                   (memory* oarg.1.1)
-                   (mod (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (trunc:/ (m arg.0) (m arg.1))
+                   (m oarg.1)
+                   (mod (m arg.0) (m arg.1)))
               and
-                (= (memory* oarg.0.1)
-                   (and (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (and (m arg.0) (m arg.1)))
               or
-                (= (memory* oarg.0.1)
-                   (and (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (and (m arg.0) (m arg.1)))
               not
-                (= (memory* oarg.0.1)
-                   (not (memory* arg.0.1)))
+                (= (m oarg.0)
+                   (not (m arg.0)))
               eq
-                (= (memory* oarg.0.1)
-                   (is (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (is (m arg.0) (m arg.1)))
               neq
-                (= (memory* oarg.0.1)
-                   (~is (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (~is (m arg.0) (m arg.1)))
               lt
-                (= (memory* oarg.0.1)
-                   (< (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (< (m arg.0) (m arg.1)))
               gt
-                (= (memory* oarg.0.1)
-                   (> (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (> (m arg.0) (m arg.1)))
               le
-                (= (memory* oarg.0.1)
-                   (<= (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (<= (m arg.0) (m arg.1)))
               ge
-                (= (memory* oarg.0.1)
-                   (>= (memory* arg.0.1) (memory* arg.1.1)))
+                (= (m oarg.0)
+                   (>= (m arg.0) (m arg.1)))
               arg
                 (let idx (if arg
                            arg.0
                            (do1 fn-arg-idx
                               ++.fn-arg-idx))
-                  (= (memory* oarg.0.1)
-                     (memory* fn-args.idx.1)))
+                  (= (m oarg.0)
+                     (m fn-args.idx)))
               otype
-                (= (memory* oarg.0.1)
+                (= (m oarg.0)
                    (otypes arg.0))
               jmp
                 (do (= pc (+ pc arg.0.1))  ; relies on continue still incrementing (bug)
 ;?                     (prn "jumping to " pc)
                     (continue))
               jif
-                (when (is t (memory* arg.0.1))
+                (when (is t (m arg.0))
 ;?                   (prn "jumping to " arg.1.1)
                   (= pc (+ pc arg.1.1))  ; relies on continue still incrementing (bug)
                   (continue))
               copy
-                (= (memory* oarg.0.1) (memory* arg.0.1))
+                (= (m oarg.0) (m arg.0))
               deref
-                (= (memory* oarg.0.1)
-                   (memory* (memory* arg.0.1)))
+                (= (m oarg.0)
+                   (m (memory* arg.0)))
               reply
                 (do (= result arg)
                     (break))
@@ -113,7 +116,7 @@
                   (let results (run new-body arg (map car oarg))
                     (each o oarg
 ;?                       (prn o)
-                      (= (memory* o.1) (memory* pop.results.1)))))
+                      (= (m o) (m pop.results)))))
               )))))
 ;?     (prn "return " result)
     )))
