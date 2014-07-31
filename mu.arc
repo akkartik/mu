@@ -18,7 +18,7 @@
     (= function*.name body)))
 
 (mac m (loc)
-  `(memory* (,loc 1)))
+  `(memory* (,loc 0)))
 
 (def run (instrs (o fn-args) (o fn-oargs))
   (ret result nil
@@ -38,7 +38,7 @@
               literal
                 (= (m oarg.0) arg.0)
               add
-;?               (do (prn "add " arg.0.1 arg.1.1)
+;?               (do (prn "add " (m arg.0) (m arg.1))
                 (= (m oarg.0)
                    (+ (m arg.0) (m arg.1)))
 ;?                 (prn "add2"))
@@ -92,15 +92,15 @@
                      (m fn-args.idx)))
               otype
                 (= (m oarg.0)
-                   ((fn-oargs arg.0) 0))
+                   ((fn-oargs arg.0) 1))
               jmp
-                (do (= pc (+ pc arg.0.1))  ; relies on continue still incrementing (bug)
+                (do (= pc (+ pc arg.0.0))  ; relies on continue still incrementing (bug)
 ;?                     (prn "jumping to " pc)
                     (continue))
               jif
                 (when (is t (m arg.0))
-;?                   (prn "jumping to " arg.1.1)
-                  (= pc (+ pc arg.1.1))  ; relies on continue still incrementing (bug)
+                  (= pc (+ pc arg.1.0))  ; relies on continue still incrementing (bug)
+;?                   (prn "jumping to " pc)
                   (continue))
               copy
                 (= (m oarg.0) (m arg.0))
@@ -168,22 +168,22 @@
                     (do
                       (assert:is oarg nil)
                       (assert:is arg nil)
-                      (yield `(jmp (offset ,(close-offset pc locs)))))
+                      (yield `(jmp (,(close-offset pc locs) offset))))
                   breakif
                     (do
 ;?                       (prn "breakif: " instr)
                       (assert:is oarg nil)
-                      (yield `(jif ,arg.0 (offset ,(close-offset pc locs)))))
+                      (yield `(jif ,arg.0 (,(close-offset pc locs) offset))))
                   continue
                     (do
                       (assert:is oarg nil)
                       (assert:is arg nil)
-                      (yield `(jmp (offset ,(- stack.0 pc)))))
+                      (yield `(jmp (,(- stack.0 pc) offset))))
                   continueif
                     (do
 ;?                       (prn "continueif: " instr)
                       (assert:is oarg nil)
-                      (yield `(jif ,arg.0 (offset ,(- stack.0 pc)))))
+                      (yield `(jif ,arg.0 (,(- stack.0 pc) offset))))
                   ;else
                     (yield instr))))
             (++ pc)))))))
