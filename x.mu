@@ -1,5 +1,5 @@
 (main
-  (1 <- loadi 1)
-  (2 <- loadi 3)
-  (3 <- add 1 2)
+  ((1 integer) <- literal 1)
+  ((2 integer) <- literal 3)
+  ((3 integer) <- add (1 integer) (2 integer))
 )
