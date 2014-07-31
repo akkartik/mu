@@ -2,7 +2,7 @@
 (main
   ((1 integer) <- literal 1000)  ; location 1 contains the high-water mark for the memory allocator
   ((4 integer-address) <- new)
-  ((5 integer) <- deref (4 integer-address))
+  ((5 integer) <- copy (4 integer-address deref))
 )
 
 (new

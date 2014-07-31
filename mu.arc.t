@@ -310,11 +310,11 @@
   '((main
       ((1 integer-address) <- literal 2)
       ((2 integer) <- literal 34)
-      ((3 integer) <- deref (1 integer-address)))))
+      ((3 integer) <- copy (1 integer-address deref)))))
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 34  3 34))
-  (prn "F - 'deref' performs indirect addressing"))
+  (prn "F - 'copy' performs indirect addressing"))
 
 (clear)
 (add-fns

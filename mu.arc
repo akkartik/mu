@@ -20,11 +20,19 @@
 (mac v (operand)  ; for value
   `(,operand 0))
 
+(mac metadata (operand)
+  `(cdr ,operand))
+
 (mac ty (operand)
   `(,operand 1))  ; assume type is always first bit of metadata, and it's always present
 
 (mac m (loc)  ; for memory
   `(memory* (v ,loc)))
+
+(mac m2 (loc)  ; for memory
+  `(if (pos 'deref (metadata ,loc))
+     (memory* (memory* (v ,loc)))
+     (memory* (v ,loc))))
 
 (def run (instrs (o fn-args) (o fn-oargs))
   (ret result nil
@@ -109,10 +117,7 @@
 ;?                   (prn "jumping to " pc)
                   (continue))
               copy
-                (= (m oarg.0) (m arg.0))
-              deref
-                (= (m oarg.0)
-                   (memory* (m arg.0)))
+                (= (m oarg.0) (m2 arg.0))
               reply
                 (do (= result arg)
                     (break))
