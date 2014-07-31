@@ -112,7 +112,7 @@
                 (= (m oarg.0) (m arg.0))
               deref
                 (= (m oarg.0)
-                   (m (memory* arg.0)))  ; TODO
+                   (memory* (m arg.0)))
               reply
                 (do (= result arg)
                     (break))
