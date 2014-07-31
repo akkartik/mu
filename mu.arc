@@ -20,7 +20,7 @@
 (mac m (loc)
   `(memory* (,loc 1)))
 
-(def run (instrs (o fn-args) (o otypes))
+(def run (instrs (o fn-args) (o fn-oargs))
   (ret result nil
     (let fn-arg-idx 0
 ;?     (prn instrs)
@@ -92,7 +92,7 @@
                      (m fn-args.idx)))
               otype
                 (= (m oarg.0)
-                   (otypes arg.0))
+                   ((fn-oargs arg.0) 0))
               jmp
                 (do (= pc (+ pc arg.0.1))  ; relies on continue still incrementing (bug)
 ;?                     (prn "jumping to " pc)
@@ -113,7 +113,7 @@
               ; else user-defined function
                 (let-or new-body function*.op (prn "no definition for " op)
 ;?                   (prn "== " memory*)
-                  (let results (run new-body arg (map car oarg))
+                  (let results (run new-body arg oarg)
                     (each o oarg
 ;?                       (prn o)
                       (= (m o) (m pop.results)))))
