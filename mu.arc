@@ -17,8 +17,14 @@
   (each (name . body) fns
     (= function*.name body)))
 
-(mac m (loc)
-  `(memory* (,loc 0)))
+(mac v (operand)  ; for value
+  `(,operand 0))
+
+(mac ty (operand)
+  `(,operand 1))  ; assume type is always first bit of metadata, and it's always present
+
+(mac m (loc)  ; for memory
+  `(memory* (v ,loc)))
 
 (def run (instrs (o fn-args) (o fn-oargs))
   (ret result nil
@@ -92,21 +98,21 @@
                      (m fn-args.idx)))
               otype
                 (= (m oarg.0)
-                   ((fn-oargs arg.0) 1))
+                   (ty (fn-oargs arg.0)))
               jmp
-                (do (= pc (+ pc arg.0.0))  ; relies on continue still incrementing (bug)
+                (do (= pc (+ pc (v arg.0)))  ; relies on continue still incrementing (bug)
 ;?                     (prn "jumping to " pc)
                     (continue))
               jif
                 (when (is t (m arg.0))
-                  (= pc (+ pc arg.1.0))  ; relies on continue still incrementing (bug)
+                  (= pc (+ pc (v arg.1)))  ; relies on continue still incrementing (bug)
 ;?                   (prn "jumping to " pc)
                   (continue))
               copy
                 (= (m oarg.0) (m arg.0))
               deref
                 (= (m oarg.0)
-                   (m (memory* arg.0)))
+                   (m (memory* arg.0)))  ; TODO
               reply
                 (do (= result arg)
                     (break))
