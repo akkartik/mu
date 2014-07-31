@@ -297,6 +297,27 @@
 
 (clear)
 (add-fns
+  '((main
+      ((1 integer) <- literal 34)
+      ((2 integer) <- copy (1 integer)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 34  2 34))
+  (prn "F - 'copy' performs direct addressing"))
+
+(clear)
+(add-fns
+  '((main
+      ((1 integer-address) <- literal 2)
+      ((2 integer) <- literal 34)
+      ((3 integer) <- deref (1 integer-address)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 34  3 34))
+  (prn "F - 'deref' performs indirect addressing"))
+
+(clear)
+(add-fns
   '((test1
       ((4 type) <- otype 0)
       ((5 type) <- literal integer)
