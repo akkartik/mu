@@ -27,18 +27,29 @@
   `(,operand 1))  ; assume type is always first bit of metadata, and it's always present
 
 (mac m (loc)  ; for memory
-  `(memory* (v ,loc)))
+  (w/uniq gloc
+    `(let ,gloc ,loc
+       (if (pos 'deref (metadata ,gloc))
+         (memory* (memory* (v ,gloc)))
+         (memory* (v ,gloc))))))
 
-(mac m2 (loc)  ; for memory
-  `(if (pos 'deref (metadata ,loc))
-     (memory* (memory* (v ,loc)))
-     (memory* (v ,loc))))
+(mac setm (loc val)  ; set memory, respecting addressing-mode tags
+  (w/uniq gloc
+    `(let ,gloc ,loc
+       (if (pos 'deref (metadata ,gloc))
+         (= (memory* (memory* (v ,gloc))) ,val)
+;?          (do (prn "AAA " ,gloc " " (v ,gloc) (memory* (v ,gloc)))
+;?            (prn "BBB " ',val)
+;?            (prn "CCC " ,val)
+         (=          (memory* (v ,gloc))  ,val)))))
+;?   )
 
 (def run (instrs (o fn-args) (o fn-oargs))
   (ret result nil
-    (let fn-arg-idx 0
+    (with (ninstrs 0  fn-arg-idx 0)
 ;?     (prn instrs)
-    (for pc 0 (< pc len.instrs) (++ pc)
+    (for pc 0 (< pc len.instrs) (do ++.ninstrs ++.pc)
+;?       (if (> ninstrs 10) (break))
       (let instr instrs.pc
 ;?         (prn memory*)
 ;?         (prn pc ": " instr)
@@ -48,86 +59,90 @@
                  op  (instr (+ delim 1))
                  arg  (cut instr (+ delim 2)))
 ;?             (prn op " " oarg)
-            (case op
-              literal
-                (= (m oarg.0) arg.0)
-              add
-;?               (do (prn "add " (m arg.0) (m arg.1))
-                (= (m oarg.0)
-                   (+ (m arg.0) (m arg.1)))
-;?                 (prn "add2"))
-              sub
-                (= (m oarg.0)
-                   (- (m arg.0) (m arg.1)))
-              mul
-                (= (m oarg.0)
-                   (* (m arg.0) (m arg.1)))
-              div
-                (= (m oarg.0)
-                   (/ (real (m arg.0)) (m arg.1)))
-              idiv
-                (= (m oarg.0)
-                   (trunc:/ (m arg.0) (m arg.1))
-                   (m oarg.1)
-                   (mod (m arg.0) (m arg.1)))
-              and
-                (= (m oarg.0)
-                   (and (m arg.0) (m arg.1)))
-              or
-                (= (m oarg.0)
-                   (and (m arg.0) (m arg.1)))
-              not
-                (= (m oarg.0)
-                   (not (m arg.0)))
-              eq
-                (= (m oarg.0)
-                   (is (m arg.0) (m arg.1)))
-              neq
-                (= (m oarg.0)
-                   (~is (m arg.0) (m arg.1)))
-              lt
-                (= (m oarg.0)
-                   (< (m arg.0) (m arg.1)))
-              gt
-                (= (m oarg.0)
-                   (> (m arg.0) (m arg.1)))
-              le
-                (= (m oarg.0)
-                   (<= (m arg.0) (m arg.1)))
-              ge
-                (= (m oarg.0)
-                   (>= (m arg.0) (m arg.1)))
-              arg
-                (let idx (if arg
-                           arg.0
-                           (do1 fn-arg-idx
-                              ++.fn-arg-idx))
-                  (= (m oarg.0)
-                     (m fn-args.idx)))
-              otype
-                (= (m oarg.0)
-                   (ty (fn-oargs arg.0)))
-              jmp
-                (do (= pc (+ pc (v arg.0)))  ; relies on continue still incrementing (bug)
+            (let tmp
+              (case op
+                literal
+                  arg.0
+                add
+;?                 (do (prn "add " (m arg.0) (m arg.1))
+                  (+ (m arg.0) (m arg.1))
+;?                   (prn "add2"))
+                sub
+                  (- (m arg.0) (m arg.1))
+                mul
+                  (* (m arg.0) (m arg.1))
+                div
+                  (/ (real (m arg.0)) (m arg.1))
+                idiv
+                  (list
+                     (trunc:/ (m arg.0) (m arg.1))
+                     (mod (m arg.0) (m arg.1)))
+                and
+                  (and (m arg.0) (m arg.1))
+                or
+                  (or (m arg.0) (m arg.1))
+                not
+                  (not (m arg.0))
+                eq
+                  (is (m arg.0) (m arg.1))
+                neq
+                  (~is (m arg.0) (m arg.1))
+                lt
+                  (< (m arg.0) (m arg.1))
+                gt
+                  (> (m arg.0) (m arg.1))
+                le
+                  (<= (m arg.0) (m arg.1))
+                ge
+                  (>= (m arg.0) (m arg.1))
+                arg
+                  (let idx (if arg
+                             arg.0
+                             (do1 fn-arg-idx
+                                ++.fn-arg-idx))
+                    (m fn-args.idx))
+                otype
+                  (ty (fn-oargs arg.0))
+                jmp
+                  (do (= pc (+ pc (v arg.0)))  ; relies on continue still incrementing (bug)
+;?                       (prn "jumping to " pc)
+                      (continue))
+                jif
+                  (when (is t (m arg.0))
+                    (= pc (+ pc (v arg.1)))  ; relies on continue still incrementing (bug)
 ;?                     (prn "jumping to " pc)
                     (continue))
-              jif
-                (when (is t (m arg.0))
-                  (= pc (+ pc (v arg.1)))  ; relies on continue still incrementing (bug)
-;?                   (prn "jumping to " pc)
-                  (continue))
-              copy
-                (= (m oarg.0) (m2 arg.0))
-              reply
-                (do (= result arg)
-                    (break))
-              ; else user-defined function
-                (let-or new-body function*.op (prn "no definition for " op)
-;?                   (prn "== " memory*)
-                  (let results (run new-body arg oarg)
-                    (each o oarg
-;?                       (prn o)
-                      (= (m o) (m pop.results)))))
+                copy
+                  (m arg.0)
+                reply
+                  (do (= result arg)
+                      (break))
+                ; else user-defined function
+                  (let-or new-body function*.op (prn "no definition for " op)
+;?                     (prn "== " memory*)
+                    (let results (run new-body arg oarg)
+;?                       (prn "=> " oarg)
+                      (each o oarg
+;?                         (prn o)
+;?                         (prn memory*)
+;?                         (prn "000 " results)
+;?                         (prn "111 " pop.results)
+;?                         (prn "222 " (macex '(m pop.results)))
+;?                         (quit)
+                        (setm o (m pop.results))))
+                    (continue))
+                )
+;?               (prn "AAA " tmp " " oarg)
+              ; opcode that generated at least some result
+              (if (acons tmp)
+                (for i 0 (< i (min len.tmp len.oarg)) ++.i
+                  (setm oarg.i tmp.i))
+;?                 (do (prn "bbb")
+;?                 (prn:macex1:quote (setm oarg.0 tmp))
+                (when oarg  ; must be a list
+;?                   (prn oarg.0)
+                  (setm oarg.0 tmp)))
+;?               (prn "ccc"))
               )))))
 ;?     (prn "return " result)
     )))

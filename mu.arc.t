@@ -318,6 +318,18 @@
 
 (clear)
 (add-fns
+  '((main
+      ((1 integer-address) <- literal 2)
+      ((2 integer) <- literal 34)
+      ((3 integer) <- literal 2)
+      ((1 integer-address deref) <- add (2 integer) (3 integer)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 36  3 2))
+  (prn "F - instructions can performs indirect addressing on output arg"))
+
+(clear)
+(add-fns
   '((test1
       ((4 type) <- otype 0)
       ((5 type) <- literal integer)
