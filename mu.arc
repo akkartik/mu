@@ -135,10 +135,6 @@
 ;?     (prn "return " result)
     )))
 
-;? (mac assert (expr)
-;?   `(if (no ,expr)
-;?      (err "assertion failed: " ',expr)))
-
 (def convert-braces (instrs)
   (let locs ()  ; list of information on each brace: (open/close pc)
     (let pc 0
