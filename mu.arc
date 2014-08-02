@@ -104,12 +104,12 @@
                 otype
                   (ty (fn-oargs arg.0))
                 jmp
-                  (do (= pc (+ pc (v arg.0)))  ; relies on continue still incrementing (bug)
+                  (do (= pc (+ pc (v arg.0)))
 ;?                       (prn "jumping to " pc)
                       (continue))
                 jif
                   (when (is t (m arg.0))
-                    (= pc (+ pc (v arg.1)))  ; relies on continue still incrementing (bug)
+                    (= pc (+ pc (v arg.1)))
 ;?                     (prn "jumping to " pc)
                     (continue))
                 copy

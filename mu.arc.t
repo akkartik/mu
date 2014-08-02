@@ -363,7 +363,7 @@
       (reply (9 integer))
       ((5 type) <- literal boolean)
       ((6 boolean) <- neq (4 type) (5 type))
-      (jif (6 boolean) (6 offset))
+      (jif (6 boolean) (4 offset))
       ((7 boolean) <- arg)
       ((8 boolean) <- arg)
       ((9 boolean) <- or (7 boolean) (8 boolean))
