@@ -38,11 +38,7 @@
     `(let ,gloc ,loc
        (if (pos 'deref (metadata ,gloc))
          (= (memory* (memory* (v ,gloc))) ,val)
-;?          (do (prn "AAA " ,gloc " " (v ,gloc) (memory* (v ,gloc)))
-;?            (prn "BBB " ',val)
-;?            (prn "CCC " ,val)
          (=          (memory* (v ,gloc))  ,val)))))
-;?   )
 
 (def run (instrs (o fn-args) (o fn-oargs))
   (ret result nil
@@ -124,25 +120,17 @@
 ;?                       (prn "=> " oarg)
                       (each o oarg
 ;?                         (prn o)
-;?                         (prn memory*)
-;?                         (prn "000 " results)
-;?                         (prn "111 " pop.results)
-;?                         (prn "222 " (macex '(m pop.results)))
-;?                         (quit)
                         (setm o (m pop.results))))
                     (continue))
                 )
-;?               (prn "AAA " tmp " " oarg)
+;?               (prn tmp " " oarg)
               ; opcode that generated at least some result
               (if (acons tmp)
                 (for i 0 (< i (min len.tmp len.oarg)) ++.i
                   (setm oarg.i tmp.i))
-;?                 (do (prn "bbb")
-;?                 (prn:macex1:quote (setm oarg.0 tmp))
                 (when oarg  ; must be a list
 ;?                   (prn oarg.0)
                   (setm oarg.0 tmp)))
-;?               (prn "ccc"))
               )))))
 ;?     (prn "return " result)
     )))
