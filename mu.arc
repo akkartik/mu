@@ -27,18 +27,16 @@
   `(,operand 1))  ; assume type is always first bit of metadata, and it's always present
 
 (mac m (loc)  ; for memory
-  (w/uniq gloc
-    `(let ,gloc ,loc
-       (if (pos 'deref (metadata ,gloc))
-         (memory* (memory* (v ,gloc)))
-         (memory* (v ,gloc))))))
+  `(let loc@ ,loc
+     (if (pos 'deref (metadata loc@))
+       (memory* (memory* (v loc@)))
+       (memory* (v loc@)))))
 
 (mac setm (loc val)  ; set memory, respecting addressing-mode tags
-  (w/uniq gloc
-    `(let ,gloc ,loc
-       (if (pos 'deref (metadata ,gloc))
-         (= (memory* (memory* (v ,gloc))) ,val)
-         (=          (memory* (v ,gloc))  ,val)))))
+  `(let loc@ ,loc
+     (if (pos 'deref (metadata loc@))
+       (= (memory* (memory* (v loc@))) ,val)
+       (=          (memory* (v loc@))  ,val))))
 
 (def run (instrs (o fn-args) (o fn-oargs))
   (ret result nil
