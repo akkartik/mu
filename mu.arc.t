@@ -1,17 +1,20 @@
 (load "mu.arc")
 
 (reset)
-(add-fns '((test1
-  ((1 integer) <- literal 1))))
+(add-fns
+  '((test1
+      ((1 integer) <- literal 1))))
 (run function*!test1)
+;? (prn memory*)
 (if (~iso memory* (obj 1 1))
   (prn "F - 'literal' writes a literal value (its lone 'arg' after the instruction name) to a location in memory (an address) specified by its lone 'oarg' or output arg before the arrow"))
 
 (reset)
-(add-fns '((test1
-  ((1 integer) <- literal 1)
-  ((2 integer) <- literal 3)
-  ((3 integer) <- add (1 integer) (2 integer)))))
+(add-fns
+  '((test1
+      ((1 integer) <- literal 1)
+      ((2 integer) <- literal 3)
+      ((3 integer) <- add (1 integer) (2 integer)))))
 (run function*!test1)
 (if (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - 'add' operates on two addresses"))
