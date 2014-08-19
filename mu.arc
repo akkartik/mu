@@ -18,6 +18,14 @@
   (= function* (table)))
 (enq clear initialization-fns*)
 
+(mac init-fn (name . body)
+  `(enq (fn () (= (function* ',name) ',body))
+        initialization-fns*))
+
+(mac on-init body
+  `(enq (fn () (run ',body))
+        initialization-fns*))
+
 (def add-fns (fns)
   (each (name . body) fns
     (= function*.name body)))
