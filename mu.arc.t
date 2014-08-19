@@ -1,13 +1,13 @@
 (load "mu.arc")
 
-(clear)
+(reset)
 (add-fns '((test1
   ((1 integer) <- literal 1))))
 (run function*!test1)
 (if (~iso memory* (obj 1 1))
   (prn "F - 'literal' writes a literal value (its lone 'arg' after the instruction name) to a location in memory (an address) specified by its lone 'oarg' or output arg before the arrow"))
 
-(clear)
+(reset)
 (add-fns '((test1
   ((1 integer) <- literal 1)
   ((2 integer) <- literal 3)
@@ -16,7 +16,7 @@
 (if (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - 'add' operates on two addresses"))
 
-(clear)
+(reset)
 (add-fns
   '((test1
       ((3 integer) <- add (1 integer) (2 integer)))
@@ -29,7 +29,7 @@
 (if (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - calling a user-defined function runs its instructions"))
 
-(clear)
+(reset)
 (add-fns
   '((test1
       ((3 integer) <- add (1 integer) (2 integer))
@@ -45,7 +45,7 @@
   (prn "F - 'reply' stops executing the current function"))
 ;? (quit)
 
-(clear)
+(reset)
 (add-fns
   '((test1
       ((4 integer) <- arg)
@@ -66,7 +66,7 @@
   (prn "F - 'arg' accesses in order the operands of the most recent function call (the caller)"))
 ;? (quit)
 
-(clear)
+(reset)
 (add-fns
   '((test1
       ((5 integer) <- arg 1)
@@ -87,7 +87,7 @@
   (prn "F - 'arg' with index can access function call arguments out of order"))
 ;? (quit)
 
-(clear)
+(reset)
 (add-fns
   '((test1
       ((4 integer) <- arg)
@@ -106,7 +106,7 @@
                        4 1  5 3  6 4))
   (prn "F - 'reply' can take aguments that are returned, or written back into output args of caller"))
 
-(clear)
+(reset)
 (add-fns
   '((test1
       ((4 integer) <- arg)
@@ -125,7 +125,7 @@
                          4 1  5 3  6 4))
   (prn "F - 'reply' permits a function to return multiple values at once"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer) <- literal 1)
@@ -136,7 +136,7 @@
 (if (~iso memory* (obj 1 1  2 3  3 -2))
   (prn "F - 'sub' subtracts the value at one address from the value at another"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer) <- literal 2)
@@ -147,7 +147,7 @@
 (if (~iso memory* (obj 1 2  2 3  3 6))
   (prn "F - 'mul' multiplies like 'add' adds"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer) <- literal 8)
@@ -158,7 +158,7 @@
 (if (~iso memory* (obj 1 8  2 3  3 (/ real.8 3)))
   (prn "F - 'div' divides like 'add' adds"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer) <- literal 8)
@@ -169,7 +169,7 @@
 (if (~iso memory* (obj 1 8  2 3  3 2  4 2))
   (prn "F - 'idiv' performs integer division, returning quotient and remainder"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 boolean) <- literal t)
@@ -180,7 +180,7 @@
 (if (~iso memory* (obj 1 t  2 nil  3 nil))
   (prn "F - logical 'and' for booleans"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 boolean) <- literal 4)
@@ -191,7 +191,7 @@
 (if (~iso memory* (obj 1 4  2 3  3 nil))
   (prn "F - 'lt' is the less-than inequality operator"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 boolean) <- literal 4)
@@ -202,7 +202,7 @@
 (if (~iso memory* (obj 1 4  2 3  3 nil))
   (prn "F - 'le' is the <= inequality operator"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 boolean) <- literal 4)
@@ -213,7 +213,7 @@
 (if (~iso memory* (obj 1 4  2 4  3 t))
   (prn "F - 'le' returns true for equal operands"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 boolean) <- literal 4)
@@ -224,7 +224,7 @@
 (if (~iso memory* (obj 1 4  2 5  3 t))
   (prn "F - le is the <= inequality operator - 2"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer) <- literal 8)
@@ -236,7 +236,7 @@
 (if (~iso memory* (obj 1 8))
   (prn "F - 'jmp' skips some instructions"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer) <- literal 8)
@@ -249,7 +249,7 @@
 (if (~iso memory* (obj 1 8))
   (prn "F - 'jmp' doesn't skip too many instructions"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer) <- literal 1)
@@ -264,7 +264,7 @@
 (if (~iso memory* (obj 1 1  2 1  3 t))
   (prn "F - 'jif' is a conditional 'jmp'"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer) <- literal 1)
@@ -279,7 +279,7 @@
 (if (~iso memory* (obj 1 1  2 2  3 nil  4 3))
   (prn "F - if 'jif's first arg is false, it doesn't skip any instructions"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer) <- literal 2)
@@ -295,7 +295,7 @@
 (if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
   (prn "F - 'jif' can take a negative offset to make backward jumps"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer) <- literal 34)
@@ -305,7 +305,7 @@
 (if (~iso memory* (obj 1 34  2 34))
   (prn "F - 'copy' performs direct addressing"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer-address) <- literal 2)
@@ -316,7 +316,7 @@
 (if (~iso memory* (obj 1 2  2 34  3 34))
   (prn "F - 'copy' performs indirect addressing"))
 
-(clear)
+(reset)
 (add-fns
   '((main
       ((1 integer-address) <- literal 2)
@@ -328,7 +328,7 @@
 (if (~iso memory* (obj 1 2  2 36  3 2))
   (prn "F - instructions can performs indirect addressing on output arg"))
 
-(clear)
+(reset)
 (add-fns
   '((test1
       ((4 type) <- otype 0)
@@ -350,7 +350,7 @@
                          4 'integer  5 'integer  6 nil  7 1  8 3  9 4))
   (prn "F - an example function that checks that its args are integers"))
 
-(clear)
+(reset)
 (add-fns
   '((add-fn
       ((4 type) <- otype 0)
@@ -380,7 +380,7 @@
                          4 'boolean  5 'boolean  6 nil  7 t  8 t  9 t))
   (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs"))
 
-(clear)
+(reset)
 (add-fns
   '((add-fn
       ((4 type) <- otype 0)
@@ -487,7 +487,7 @@
             (reply)))
   (prn "F - convert-braces balances curlies when converting continue"))
 
-(clear)
+(reset)
 (add-fns `((main ,@(convert-braces '(((1 integer) <- literal 4)
                                      ((2 integer) <- literal 1)
                                      { begin
@@ -504,7 +504,7 @@
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
   (prn "F - continue correctly loops"))
 
-(clear)
+(reset)
 (add-fns `((main ,@(convert-braces '(((1 integer) <- literal 4)
                                      ((2 integer) <- literal 2)
                                      { begin

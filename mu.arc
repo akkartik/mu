@@ -1,5 +1,10 @@
 ; things that a future assembler will need separate memory for:
 ;   code; types; args channel
+(= initialization-fns* (queue))
+(def reset ()
+  (each f (as cons initialization-fns*)
+    (f)))
+
 (def clear ()
   (= types* (obj
               type (obj size 1  record nil array nil address nil)
@@ -11,7 +16,7 @@
               ))
   (= memory* (table))
   (= function* (table)))
-(clear)
+(enq clear initialization-fns*)
 
 (def add-fns (fns)
   (each (name . body) fns
