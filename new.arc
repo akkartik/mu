@@ -12,8 +12,3 @@
   ((3 integer) <- literal 1)
   ((Root_allocator_pointer integer) <- add (Root_allocator_pointer integer) (3 integer))
   (reply (2 integer-address)))
-; tests to express:
-; every call increments the pointer
-; no other function can increment the pointer
-; no later clause can increment the pointer after this base clause
-; multiple threads/routines can't call the allocator at once

@@ -19,3 +19,8 @@
   (prn "F - 'new' increments allocator pointer"))
 (if (~iso memory*.Allocator_start 34)
   (prn "F - 'new' returns old location"))
+
+; other tests to express:
+;  no other function can increment the pointer
+;  no later clause can increment the pointer after this base clause
+;  multiple threads/routines can't call the allocator at once
