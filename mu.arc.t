@@ -345,6 +345,18 @@
 
 (reset)
 (add-fns
+  '((main
+      ((1 integer) <- literal 34)
+      ((2 boolean) <- literal nil)
+      ((4 boolean) <- literal t)
+      ((3 integer-boolean-pair) <- copy (1 integer-boolean-pair)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 34  2 nil  3 34  4 nil))
+  (prn "F - ops can operate on multi-field records"))
+
+(reset)
+(add-fns
   '((test1
       ((4 type) <- otype 0)
       ((5 type) <- literal integer)

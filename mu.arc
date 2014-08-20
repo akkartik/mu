@@ -44,17 +44,35 @@
 (mac ty (operand)
   `(,operand 1))  ; assume type is always first bit of metadata, and it's always present
 
-(mac m (loc)  ; for memory
+(mac addr (loc)
   `(let loc@ ,loc
      (if (pos 'deref (metadata loc@))
-       (memory* (memory* (v loc@)))
-       (memory* (v loc@)))))
+       (memory* (v loc@))
+       (v loc@))))
+
+(def addrs (n sz)
+  (accum yield
+    (repeat sz
+      (yield n)
+      (++ n))))
+
+(mac m (loc)  ; for memory
+  `(withs (loc@ ,loc
+           sz@  ((types* (ty loc@)) 'size))
+;?      (prn "m " loc@ sz@)
+     (if (is 1 sz@)
+       (memory* (addr loc@))
+       (annotate 'record
+                 (map memory* (addrs (addr loc@) sz@))))))
 
 (mac setm (loc val)  ; set memory, respecting addressing-mode tags
-  `(let loc@ ,loc
-     (if (pos 'deref (metadata loc@))
-       (= (memory* (memory* (v loc@))) ,val)
-       (=          (memory* (v loc@))  ,val))))
+  `(withs (loc@ ,loc
+           sz@ ((types* (ty loc@)) 'size))
+     (if (is 1 sz@)
+       (= (memory* (addr loc@)) ,val)
+       (each (dest@ src@) (zip (addrs (addr loc@) sz@)
+                               (rep ,val))
+         (= (memory* dest@) src@)))))
 
 (def run (instrs (o fn-args) (o fn-oargs))
   (ret result nil
