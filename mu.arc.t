@@ -333,6 +333,18 @@
 
 (reset)
 (add-fns
+  '((main
+      ((1 integer) <- literal 34)
+      ((2 boolean) <- literal nil)
+      ((3 boolean) <- get (1 integer-boolean-pair) (1 offset))
+      ((4 integer) <- get (1 integer-boolean-pair) (0 offset)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 34  2 nil  3 nil  4 34))
+  (prn "F - 'get' accesses fields of records"))
+
+(reset)
+(add-fns
   '((test1
       ((4 type) <- otype 0)
       ((5 type) <- literal integer)

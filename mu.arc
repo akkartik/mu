@@ -7,12 +7,17 @@
 
 (def clear ()
   (= types* (obj
-              type (obj size 1  record nil array nil address nil)
-              location (obj size 1  record nil array nil address nil)
-              integer (obj size 1  record nil array nil address nil)
-              boolean (obj size 1  record nil array nil address nil)
-              integer-array (obj array t  elem 'integer)  ; array of ints, size in front
-              integer-address (obj size 1 address t  elem 'integer)  ; pointer to int
+              ; must be scalar or vector, sum or product or primitive
+              type (obj size 1)
+              location (obj size 1)
+              integer (obj size 1)
+              boolean (obj size 1)
+              integer-array (obj vector t  elem 'integer)  ; vectors provide size at front
+              integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
+              block (obj size 1024  vector t  elem 'location)  ; last elem points to next block when this one fills up
+              block-address (obj size 1  address t  elem 'block)
+              integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
+              integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
               ))
   (= memory* (table))
   (= function* (table)))
@@ -121,6 +126,12 @@
                     (continue))
                 copy
                   (m arg.0)
+                get
+                  (withs (idx  (v arg.1)
+                          fields  ((types* (ty arg.0)) 'elems)
+                          offset  (apply + (map [types*._ 'size]
+                                       (firstn idx fields))))
+                    (memory* (+ (v arg.0) offset)))
                 reply
                   (do (= result arg)
                       (break))
