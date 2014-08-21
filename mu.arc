@@ -45,8 +45,11 @@
   operand.1)  ; assume type is always first bit of metadata, and it's always present
 
 (def sz (operand)
+;?   (prn "sz " operand)
   ; todo: override this for vectors
   ((types* ty.operand) 'size))
+(defextend sz (typename) (isa typename 'sym)
+  types*.typename!size)
 
 (mac addr (loc)
   `(let loc@ ,loc
@@ -69,11 +72,13 @@
                  (map memory* (addrs (addr loc@) sz.loc@))))))
 
 (mac setm (loc val)  ; set memory, respecting addressing-mode tags
-  `(let loc@ ,loc
+  `(with (loc@ ,loc
+          val@ ,val)
+;?      (prn "setm " loc@ " " val@)
      (if (is 1 sz.loc@)
-       (= (memory* (addr loc@)) ,val)
+       (= (memory* (addr loc@)) val@)
        (each (dest@ src@) (zip (addrs (addr loc@) sz.loc@)
-                               (rep ,val))
+                               (rep val@))
          (= (memory* dest@) src@)))))
 
 (def run (instrs (o fn-args) (o fn-oargs))
@@ -149,8 +154,8 @@
                 get
                   (withs (idx  (v arg.1)
                           fields  ((types* (ty arg.0)) 'elems)
-                          offset  (apply + (map [types*._ 'size]
-                                       (firstn idx fields))))
+                          offset  (apply +
+                                         (map sz (firstn idx fields))))
                     (memory* (+ (v arg.0) offset)))
                 reply
                   (do (= result arg)
@@ -159,7 +164,7 @@
                   (let-or new-body function*.op (prn "no definition for " op)
 ;?                     (prn "== " memory*)
                     (let results (run new-body arg oarg)
-;?                       (prn "=> " oarg)
+;?                       (prn "=> " oarg " " results)
                       (each o oarg
 ;?                         (prn o)
                         (setm o (m pop.results))))
