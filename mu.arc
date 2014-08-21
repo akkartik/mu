@@ -18,6 +18,7 @@
               block-address (obj size 1  address t  elem 'block)
               integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
               integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
+              integer-boolean-pair-array (obj vector t  elem 'integer-boolean-pair)
               ))
   (= memory* (table))
   (= function* (table)))
@@ -152,11 +153,19 @@
                 copy
                   (m arg.0)
                 get
-                  (withs (idx  (v arg.1)
-                          fields  ((types* (ty arg.0)) 'elems)
-                          offset  (apply +
-                                         (map sz (firstn idx fields))))
-                    (memory* (+ (v arg.0) offset)))
+                  (if ((types* (ty arg.0)) 'vector)
+                    (if (is 0 (v arg.1))
+                      (m `(,(v arg.0) integer))
+                      (withs (elem  ((types* (ty arg.0)) 'elem)
+                              offset  (+ (* (- (v arg.1) 1)
+                                            sz.elem)
+                                         1))
+                        (m `(,(+ (v arg.0) offset) ,elem))))
+                    (withs (idx  (v arg.1)
+                            fields  ((types* (ty arg.0)) 'elems)
+                            offset  (apply +
+                                           (map sz (firstn idx fields))))
+                      (memory* (+ (v arg.0) offset))))
                 reply
                   (do (= result arg)
                       (break))

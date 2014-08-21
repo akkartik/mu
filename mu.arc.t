@@ -90,6 +90,9 @@
   (prn "F - 'arg' with index can access function call arguments out of order"))
 ;? (quit)
 
+; todo: test that too few args throws an error
+; how should errors be handled? will be unclear until we support concurrency and routine trees.
+
 (reset)
 (add-fns
   '((test1
@@ -342,6 +345,23 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 nil  4 34))
   (prn "F - 'get' accesses fields of records"))
+
+(reset)
+(add-fns
+  '((main
+      ((1 integer) <- literal 2)
+      ((2 integer) <- literal 23)
+      ((3 boolean) <- literal nil)
+      ((4 integer) <- literal 24)
+      ((5 boolean) <- literal t)
+      ((6 integer) <- get (1 integer-boolean-pair-array) (0 offset))
+      ((7 integer-boolean-pair) <- get (1 integer-boolean-pair-array) (1 offset)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 2  7 23 8 nil))
+  (prn "F - 'get' accesses fields of arrays"))
+
+; todo: test that out-of-bounds access throws an error
 
 (reset)
 (add-fns
