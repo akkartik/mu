@@ -44,6 +44,10 @@
 (mac ty (operand)
   `(,operand 1))  ; assume type is always first bit of metadata, and it's always present
 
+(mac sz (operand)
+  ; todo: override this for vectors
+  `((types* (ty ,operand)) 'size))
+
 (mac addr (loc)
   `(let loc@ ,loc
      (if (pos 'deref (metadata loc@))
@@ -57,20 +61,18 @@
       (++ n))))
 
 (mac m (loc)  ; for memory
-  `(withs (loc@ ,loc
-           sz@  ((types* (ty loc@)) 'size))
-;?      (prn "m " loc@ sz@)
-     (if (is 1 sz@)
+  `(let loc@ ,loc
+;?      (prn "m " loc@ sz.loc@)
+     (if (is 1 sz.loc@)
        (memory* (addr loc@))
        (annotate 'record
-                 (map memory* (addrs (addr loc@) sz@))))))
+                 (map memory* (addrs (addr loc@) sz.loc@))))))
 
 (mac setm (loc val)  ; set memory, respecting addressing-mode tags
-  `(withs (loc@ ,loc
-           sz@ ((types* (ty loc@)) 'size))
-     (if (is 1 sz@)
+  `(let loc@ ,loc
+     (if (is 1 sz.loc@)
        (= (memory* (addr loc@)) ,val)
-       (each (dest@ src@) (zip (addrs (addr loc@) sz@)
+       (each (dest@ src@) (zip (addrs (addr loc@) sz.loc@)
                                (rep ,val))
          (= (memory* dest@) src@)))))
 
