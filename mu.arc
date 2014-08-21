@@ -35,18 +35,18 @@
   (each (name . body) fns
     (= function*.name body)))
 
-(mac v (operand)  ; for value
-  `(,operand 0))
+(def v (operand)  ; for value
+  operand.0)
 
-(mac metadata (operand)
-  `(cdr ,operand))
+(def metadata (operand)
+  cdr.operand)
 
-(mac ty (operand)
-  `(,operand 1))  ; assume type is always first bit of metadata, and it's always present
+(def ty (operand)
+  operand.1)  ; assume type is always first bit of metadata, and it's always present
 
-(mac sz (operand)
+(def sz (operand)
   ; todo: override this for vectors
-  `((types* (ty ,operand)) 'size))
+  ((types* ty.operand) 'size))
 
 (mac addr (loc)
   `(let loc@ ,loc
