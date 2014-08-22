@@ -29,6 +29,7 @@
               integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
               integer-integer-pair (obj size 2  record t  elems '(integer integer))
               integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
+              custodian  (obj size 1  record t  elems '(integer))
               ))
   (= memory* (table))
   (= function* (table)))
