@@ -45,10 +45,13 @@
 (def ty (operand)
   operand.1)  ; assume type is always first bit of metadata, and it's always present
 
+(def typeinfo (operand)
+  (types* ty.operand))
+
 (def sz (operand)
 ;?   (prn "sz " operand)
   ; todo: override this for vectors
-  ((types* ty.operand) 'size))
+  typeinfo.operand!size)
 (defextend sz (typename) (isa typename 'sym)
   types*.typename!size)
 
@@ -81,6 +84,11 @@
        (each (dest@ src@) (zip (addrs (addr loc@) sz.loc@)
                                (rep val@))
          (= (memory* dest@) src@)))))
+
+(def array-ref (operand idx)
+  (withs (elem  typeinfo.operand!elem
+          offset  (+ 1 (* idx sz.elem)))
+    (m `(,(+ v.operand offset) ,elem))))
 
 (def run (instrs (o fn-args) (o fn-oargs))
   (ret result nil
@@ -153,19 +161,17 @@
                 copy
                   (m arg.0)
                 get
-                  (if ((types* (ty arg.0)) 'vector)
-                    (if (is 0 (v arg.1))
-                      (m `(,(v arg.0) integer))
-                      (withs (elem  ((types* (ty arg.0)) 'elem)
-                              offset  (+ (* (- (v arg.1) 1)
-                                            sz.elem)
-                                         1))
-                        (m `(,(+ (v arg.0) offset) ,elem))))
-                    (withs (idx  (v arg.1)
-                            fields  ((types* (ty arg.0)) 'elems)
-                            offset  (apply +
-                                           (map sz (firstn idx fields))))
-                      (memory* (+ (v arg.0) offset))))
+                  (with (base arg.0  ; integer (non-symbol) memory location including metadata
+                         idx (v arg.1))  ; literal integer
+                    (if typeinfo.base!vector
+                      ; vector is an integer 'sz' followed by sz elems
+                      (if (is 0 idx)
+                        (m `(,v.base integer))
+                        (array-ref base (- idx 1)))
+                      ; field index
+                      (memory* (+ v.base
+                                  (apply + (map sz
+                                                (firstn idx typeinfo.base!elems)))))))
                 reply
                   (do (= result arg)
                       (break))
