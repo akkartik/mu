@@ -294,6 +294,7 @@
                   (set done))))))
     (- close pc 1)))
 
+(reset)
 (awhen cdr.argv
   (map add-fns:readfile it)
   (run function*!main)
