@@ -5,6 +5,14 @@
   (each f (as cons initialization-fns*)
     (f)))
 
+(mac init-fn (name . body)
+  `(enq (fn () (= (function* ',name) ',body))
+        initialization-fns*))
+
+(mac on-init body
+  `(enq (fn () (run ',body))
+        initialization-fns*))
+
 (def clear ()
   (= types* (obj
               ; must be scalar or array, sum or product or primitive
@@ -25,14 +33,6 @@
   (= memory* (table))
   (= function* (table)))
 (enq clear initialization-fns*)
-
-(mac init-fn (name . body)
-  `(enq (fn () (= (function* ',name) ',body))
-        initialization-fns*))
-
-(mac on-init body
-  `(enq (fn () (run ',body))
-        initialization-fns*))
 
 (def add-fns (fns)
   (each (name . body) fns
