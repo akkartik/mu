@@ -19,6 +19,8 @@
               integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
               integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
               integer-boolean-pair-array (obj vector t  elem 'integer-boolean-pair)
+              integer-integer-pair (obj size 2  record t  elems '(integer integer))
+              integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
               ))
   (= memory* (table))
   (= function* (table)))
@@ -169,9 +171,10 @@
                         (m `(,v.base integer))
                         (array-ref base (- idx 1)))
                       ; field index
-                      (memory* (+ v.base
-                                  (apply + (map sz
-                                                (firstn idx typeinfo.base!elems)))))))
+                      (m `(,(+ v.base
+                               (apply + (map sz
+                                             (firstn idx typeinfo.base!elems))))
+                           ,typeinfo.base!elems.idx))))
                 reply
                   (do (= result arg)
                       (break))

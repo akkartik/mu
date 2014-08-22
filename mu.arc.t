@@ -332,7 +332,7 @@
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 36  3 2))
-  (prn "F - instructions can performs indirect addressing on output arg"))
+  (prn "F - instructions can perform indirect addressing on output arg"))
 
 (reset)
 (add-fns
@@ -349,6 +349,18 @@
 (reset)
 (add-fns
   '((main
+      ((1 integer) <- literal 34)
+      ((2 integer) <- literal 35)
+      ((3 integer) <- literal 36)
+      ((4 integer-integer-pair) <- get (1 integer-point-pair) (1 offset)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 34  2 35  3 36  4 35  5 36))
+  (prn "F - 'get' accesses fields spanning multiple locations"))
+
+(reset)
+(add-fns
+  '((main
       ((1 integer) <- literal 2)
       ((2 integer) <- literal 23)
       ((3 boolean) <- literal nil)
@@ -359,7 +371,7 @@
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 2  7 23 8 nil))
-  (prn "F - 'get' accesses fields of arrays"))
+  (prn "F - 'get' accesses fields of arrays, with length at index 0"))
 
 ; todo: test that out-of-bounds access throws an error
 
@@ -373,7 +385,7 @@
 (run function*!main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 34  4 nil))
-  (prn "F - ops can operate on multi-field records"))
+  (prn "F - ops can operate on records spanning multiple locations"))
 
 (reset)
 (add-fns
