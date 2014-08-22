@@ -1,4 +1,3 @@
-(load "mu.arc")
 (load "new.arc")
 
 (reset)

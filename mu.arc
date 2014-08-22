@@ -16,7 +16,7 @@
 (def clear ()
   (= types* (obj
               ; must be scalar or array, sum or product or primitive
-              type (obj size 1)
+              type (obj size 5  record t  elems '(integer boolean boolean boolean type-array))
               location (obj size 1)
               integer (obj size 1)
               boolean (obj size 1)
@@ -155,6 +155,8 @@
                              (do1 fn-arg-idx
                                 ++.fn-arg-idx))
                     (m fn-args.idx))
+                type
+                  (ty (fn-args arg.0))
                 otype
                   (ty (fn-oargs arg.0))
                 jmp
