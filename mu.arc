@@ -12,10 +12,10 @@
               location (obj size 1)
               integer (obj size 1)
               boolean (obj size 1)
-              integer-array (obj array t  elem 'integer)  ; arrays provide size at front
+              ; arrays consist of an integer length followed by the right number of elems
+              integer-array (obj array t  elem 'integer)
               integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
-              block (obj size 1024  array t  elem 'location)  ; last elem points to next block when this one fills up
-              block-address (obj size 1  address t  elem 'block)
+              ; records consist of a series of elems, corresponding to a list of types
               integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
               integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
               integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
@@ -170,17 +170,19 @@
                 get
                   (with (base arg.0  ; integer (non-symbol) memory location including metadata
                          idx (v arg.1))  ; literal integer
-                    (if typeinfo.base!array
-                      ; array is an integer 'sz' followed by sz elems
-                      ; 'get' can only lookup its index
-                      (do (assert (is 0 idx))
-                          (array-len base))
-                      ; field index
-                      (do (assert (< -1 idx (len typeinfo.base!elems)))
-                          (m `(,(+ v.base
-                                   (apply + (map sz
-                                                 (firstn idx typeinfo.base!elems))))
-                               ,typeinfo.base!elems.idx)))))
+                    (if
+                      typeinfo.base!array
+                        (do (assert (is 0 idx))  ; 'get' can only lookup array length
+                            (array-len base))
+                      typeinfo.base!record
+                        ; field index
+                        (do (assert (< -1 idx (len typeinfo.base!elems)))
+                            (m `(,(+ v.base
+                                     (apply + (map sz
+                                                   (firstn idx typeinfo.base!elems))))
+                                 ,typeinfo.base!elems.idx)))
+                      'else
+                        (assert nil "get on invalid type @base")))
                 aref
                   (array-ref arg.0 (v arg.1))
                 reply
