@@ -69,7 +69,7 @@
       (yield n)
       (++ n))))
 
-(mac m (loc)  ; for memory
+(mac m (loc)  ; read memory, respecting metadata
   `(let loc@ ,loc
 ;?      (prn "m " loc@ sz.loc@)
      (if (is 1 sz.loc@)
@@ -77,7 +77,7 @@
        (annotate 'record
                  (map memory* (addrs (addr loc@) sz.loc@))))))
 
-(mac setm (loc val)  ; set memory, respecting addressing-mode tags
+(mac setm (loc val)  ; set memory, respecting metadata
   `(with (loc@ ,loc
           val@ ,val)
 ;?      (prn "setm " loc@ " " val@)
