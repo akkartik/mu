@@ -87,7 +87,12 @@
                                (rep val@))
          (= (memory* dest@) src@)))))
 
+(def array-len (operand)
+  (m `(,v.operand integer)))
+
 (def array-ref (operand idx)
+  (assert typeinfo.operand!array)
+  (assert (< -1 idx (array-len operand)))
   (withs (elem  typeinfo.operand!elem
           offset  (+ 1 (* idx sz.elem)))
     (m `(,(+ v.operand offset) ,elem))))
@@ -168,12 +173,14 @@
                     (if typeinfo.base!array
                       ; array is an integer 'sz' followed by sz elems
                       ; 'get' can only lookup its index
-                      (m `(,v.base integer))
+                      (do (assert (is 0 idx))
+                          (array-len base))
                       ; field index
-                      (m `(,(+ v.base
-                               (apply + (map sz
-                                             (firstn idx typeinfo.base!elems))))
-                           ,typeinfo.base!elems.idx))))
+                      (do (assert (< -1 idx (len typeinfo.base!elems)))
+                          (m `(,(+ v.base
+                                   (apply + (map sz
+                                                 (firstn idx typeinfo.base!elems))))
+                               ,typeinfo.base!elems.idx)))))
                 aref
                   (array-ref arg.0 (v arg.1))
                 reply
