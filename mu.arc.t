@@ -366,12 +366,25 @@
       ((3 boolean) <- literal nil)
       ((4 integer) <- literal 24)
       ((5 boolean) <- literal t)
-      ((6 integer) <- get (1 integer-boolean-pair-array) (0 offset))
-      ((7 integer-boolean-pair) <- get (1 integer-boolean-pair-array) (1 offset)))))
+      ((6 integer) <- get (1 integer-boolean-pair-array) (0 offset)))))
 (run function*!main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 2  7 23 8 nil))
-  (prn "F - 'get' accesses fields of arrays, with length at index 0"))
+(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 2))
+  (prn "F - 'get' accesses length of array"))
+
+(reset)
+(add-fns
+  '((main
+      ((1 integer) <- literal 2)
+      ((2 integer) <- literal 23)
+      ((3 boolean) <- literal nil)
+      ((4 integer) <- literal 24)
+      ((5 boolean) <- literal t)
+      ((6 integer-boolean-pair) <- aref (1 integer-boolean-pair-array) (1 offset)))))
+(run function*!main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 24 7 t))
+  (prn "F - 'aref' accesses indices of arrays"))
 
 ; todo: test that out-of-bounds access throws an error
 

@@ -167,14 +167,15 @@
                          idx (v arg.1))  ; literal integer
                     (if typeinfo.base!array
                       ; array is an integer 'sz' followed by sz elems
-                      (if (is 0 idx)
-                        (m `(,v.base integer))
-                        (array-ref base (- idx 1)))
+                      ; 'get' can only lookup its index
+                      (m `(,v.base integer))
                       ; field index
                       (m `(,(+ v.base
                                (apply + (map sz
                                              (firstn idx typeinfo.base!elems))))
                            ,typeinfo.base!elems.idx))))
+                aref
+                  (array-ref arg.0 (v arg.1))
                 reply
                   (do (= result arg)
                       (break))
