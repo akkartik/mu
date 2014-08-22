@@ -7,18 +7,18 @@
 
 (def clear ()
   (= types* (obj
-              ; must be scalar or vector, sum or product or primitive
+              ; must be scalar or array, sum or product or primitive
               type (obj size 1)
               location (obj size 1)
               integer (obj size 1)
               boolean (obj size 1)
-              integer-array (obj vector t  elem 'integer)  ; vectors provide size at front
+              integer-array (obj array t  elem 'integer)  ; arrays provide size at front
               integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
-              block (obj size 1024  vector t  elem 'location)  ; last elem points to next block when this one fills up
+              block (obj size 1024  array t  elem 'location)  ; last elem points to next block when this one fills up
               block-address (obj size 1  address t  elem 'block)
               integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
               integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
-              integer-boolean-pair-array (obj vector t  elem 'integer-boolean-pair)
+              integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
               integer-integer-pair (obj size 2  record t  elems '(integer integer))
               integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
               ))
@@ -52,7 +52,7 @@
 
 (def sz (operand)
 ;?   (prn "sz " operand)
-  ; todo: override this for vectors
+  ; todo: override this for arrays
   typeinfo.operand!size)
 (defextend sz (typename) (isa typename 'sym)
   types*.typename!size)
@@ -165,8 +165,8 @@
                 get
                   (with (base arg.0  ; integer (non-symbol) memory location including metadata
                          idx (v arg.1))  ; literal integer
-                    (if typeinfo.base!vector
-                      ; vector is an integer 'sz' followed by sz elems
+                    (if typeinfo.base!array
+                      ; array is an integer 'sz' followed by sz elems
                       (if (is 0 idx)
                         (m `(,v.base integer))
                         (array-ref base (- idx 1)))
