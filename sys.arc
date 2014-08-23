@@ -1,33 +1,14 @@
 (load "mu.arc")
 
-; memory map: 0-2 for convenience numbers
-; for these, address == value always; never modify them
-(= Zero 0)
-(= One 1)
-(= Two 2)
-
+; memory map: 0-2 for convenience constants
 (enq (fn ()
-       (run `(((,Zero integer) <- literal 0)
-              ((,One integer) <- literal 1)
-              ((,Two integer) <- literal 2))))
+       (run `(((0 integer) <- literal 0)
+              ((1 integer) <- literal 1)
+              ((2 integer) <- literal 2))))
      initialization-fns*)
 
-; high-water mark for global memory used so far
-; just on host, not in simulated memory
-(= Memory-used-until 3)
-(def static-new (n)
-  (inc Memory-used-until n))
-
-; copy types* info into simulated machine
-(= Type-table Memory-used-until)
-(enq (fn ()
-       (each (type typeinfo)  types*
-         (prn type " " typeinfo)))
-     initialization-fns*)
-
-(reset)
-
-(init-fn sizeof)  ; todo
+; todo: copy types* info into simulated machine
+; todo: sizeof
 
 ;; 'new' - simple slab allocator. Intended only to carve out isolated memory
 ;; for different threads/routines as they request.
