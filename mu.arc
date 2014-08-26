@@ -201,8 +201,8 @@
                         (setm o (m pop.results))))
                     (continue))
                 )
+              ; opcode generated some value, stored in 'tmp'
 ;?               (prn tmp " " oarg)
-              ; opcode that generated at least some result
               (if (acons tmp)
                 (for i 0 (< i (min len.tmp len.oarg)) ++.i
                   (setm oarg.i tmp.i))
