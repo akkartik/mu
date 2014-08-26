@@ -592,3 +592,27 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
   (prn "F - continue might never trigger"))
+
+(reset)
+(let before Memory-in-use-until
+  (add-fns
+    '((main
+        ((1 integer-address) <- new (integer type)))))
+  (run function*!main)
+  ;? (prn memory*)
+  (if (~iso memory*.1 before)
+    (prn "F - 'new' returns current high-water mark"))
+  (if (~iso Memory-in-use-until (+ before 1))
+    (prn "F - 'new' on primitive types increments high-water mark by their size")))
+
+(reset)
+(let before Memory-in-use-until
+  (add-fns
+    '((main
+        ((1 type-array-address) <- new (type-array type) (5 literal)))))
+  (run function*!main)
+  ;? (prn memory*)
+  (if (~iso memory*.1 before)
+    (prn "F - 'new' returns current high-water mark"))
+  (if (~iso Memory-in-use-until (+ before 5))
+    (prn "F - 'new' on primitive arrays increments high-water mark by their size")))

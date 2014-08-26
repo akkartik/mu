@@ -18,6 +18,7 @@
               ; must be scalar or array, sum or product or primitive
               type (obj size 1)
               type-array (obj array t  elem 'type)
+              type-array-address (obj size 1  address t  elem 'type-array)
               typeinfo (obj size 5  record t  elems '(integer boolean boolean boolean type-array))
               typeinfo-address (obj size 1  address t  elem 'typeinfo)
               typeinfo-address-array (obj array t  elem 'typeinfo-address)
@@ -86,6 +87,7 @@
   `(with (loc@ ,loc
           val@ ,val)
 ;?      (prn "setm " loc@ " " val@)
+     (assert sz.loc@)
      (if (is 1 sz.loc@)
        (= (memory* (addr loc@)) val@)
        (each (dest@ src@) (zip (addrs (addr loc@) sz.loc@)
@@ -195,6 +197,11 @@
                 reply
                   (do (= result arg)
                       (break))
+                new
+                  (let type (v arg.0)
+                    (if types*.type!array
+                      (new-array type (v arg.1))
+                      (new-scalar type)))
                 ; else user-defined function
                   (let-or new-body function*.op (prn "no definition for " op)
 ;?                     (prn "== " memory*)
@@ -216,6 +223,25 @@
               )))))
 ;?     (prn "return " result)
     )))
+
+(enq (fn () (= Memory-in-use-until 1000))
+     initialization-fns*)
+(def new-scalar (type)
+  (ret result Memory-in-use-until
+    (++ Memory-in-use-until sizeof.type)))
+
+(def new-array (type size)
+  (ret result Memory-in-use-until
+    (++ Memory-in-use-until (* (sizeof types*.type!elem) size))))
+
+(def sizeof (type)
+  (if (~or types*.type!record types*.type!array)
+        types*.type!size
+      types*.type!record
+        (sum idfn
+          (accum yield
+            (each elem types*.type!elems
+              (yield sizeof.elem))))))
 
 (def convert-braces (instrs)
   (let locs ()  ; list of information on each brace: (open/close pc)
