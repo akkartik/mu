@@ -16,7 +16,11 @@
 (def clear ()
   (= types* (obj
               ; must be scalar or array, sum or product or primitive
-              type (obj size 5  record t  elems '(integer boolean boolean boolean type-array))
+              type (obj size 1)
+              type-array (obj array t  elem 'type)
+              typeinfo (obj size 5  record t  elems '(integer boolean boolean boolean type-array))
+              typeinfo-address (obj size 1  address t  elem 'typeinfo)
+              typeinfo-address-array (obj array t  elem 'typeinfo-address)
               location (obj size 1)
               integer (obj size 1)
               boolean (obj size 1)
