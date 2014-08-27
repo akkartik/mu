@@ -63,11 +63,10 @@
 (defextend sz (typename) (isa typename 'sym)
   types*.typename!size)
 
-(mac addr (loc)
-  `(let loc@ ,loc
-     (if (pos 'deref (metadata loc@))
-       (memory* (v loc@))
-       (v loc@))))
+(def addr (loc)
+  (if (pos 'deref (metadata loc))
+    (memory* (v loc))
+    (v loc)))
 
 (def addrs (n sz)
   (accum yield
@@ -75,24 +74,21 @@
       (yield n)
       (++ n))))
 
-(mac m (loc)  ; read memory, respecting metadata
-  `(let loc@ ,loc
-;?      (prn "m " loc@ sz.loc@)
-     (if (is 1 sz.loc@)
-       (memory* (addr loc@))
-       (annotate 'record
-                 (map memory* (addrs (addr loc@) sz.loc@))))))
+(def m (loc)  ; read memory, respecting metadata
+;?   (prn "m " loc sz.loc)
+  (if (is 1 sz.loc)
+    (memory* (addr loc))
+    (annotate 'record
+              (map memory* (addrs (addr loc) sz.loc)))))
 
-(mac setm (loc val)  ; set memory, respecting metadata
-  `(with (loc@ ,loc
-          val@ ,val)
-;?      (prn "setm " loc@ " " val@)
-     (assert sz.loc@)
-     (if (is 1 sz.loc@)
-       (= (memory* (addr loc@)) val@)
-       (each (dest@ src@) (zip (addrs (addr loc@) sz.loc@)
-                               (rep val@))
-         (= (memory* dest@) src@)))))
+(def setm (loc val)  ; set memory, respecting metadata
+;?   (prn "setm " loc " " val)
+  (assert sz.loc)
+  (if (is 1 sz.loc)
+    (= (memory* addr.loc) val)
+    (each (dest src) (zip (addrs addr.loc sz.loc)
+                          (rep val))
+      (= (memory* dest) src))))
 
 (def array-len (operand)
   (m `(,v.operand integer)))
