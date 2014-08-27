@@ -120,9 +120,7 @@
                 literal
                   arg.0
                 add
-;?                 (do (prn "add " (m arg.0) (m arg.1))
                   (+ (m arg.0) (m arg.1))
-;?                   (prn "add2"))
                 sub
                   (- (m arg.0) (m arg.1))
                 mul
