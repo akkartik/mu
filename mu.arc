@@ -134,9 +134,8 @@
                 div
                   (/ (real (m arg.0)) (m arg.1))
                 idiv
-                  (list
-                     (trunc:/ (m arg.0) (m arg.1))
-                     (mod (m arg.0) (m arg.1)))
+                  (list (trunc:/ (m arg.0) (m arg.1))
+                        (mod (m arg.0) (m arg.1)))
                 and
                   (and (m arg.0) (m arg.1))
                 or
