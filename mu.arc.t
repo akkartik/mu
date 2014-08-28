@@ -31,6 +31,17 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - calling a user-defined function runs its instructions"))
+;? (quit)
+
+(reset)
+(add-fns
+  '((test1
+      ((1 integer) <- literal 1))
+    (main
+      (test1))))
+(if (~iso 2 (run 'main))
+  (prn "F - calling a user-defined function runs its instructions exactly once"))
+;? (quit)
 
 (reset)
 (add-fns
@@ -46,6 +57,35 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - 'reply' stops executing the current function"))
+;? (quit)
+
+(reset)
+(add-fns
+  `((test1
+      ((3 integer) <- test2))
+    (test2
+      (reply (2 integer)))
+    (main
+      ((2 integer) <- literal 34)
+      (test1))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 2 34  3 34))
+  (prn "F - 'reply' stops executing any callers as necessary"))
+;? (quit)
+
+(reset)
+(add-fns
+  '((test1
+      ((3 integer) <- add (1 integer) (2 integer))
+      (reply)
+      ((4 integer) <- literal 34))
+    (main
+      ((1 integer) <- literal 1)
+      ((2 integer) <- literal 3)
+      (test1))))
+(if (~iso 4 (run 'main))  ; last reply sometimes not counted. worth fixing?
+  (prn "F - 'reply' executes instructions exactly once"))
 ;? (quit)
 
 (reset)
@@ -254,6 +294,7 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
   (prn "F - 'jmp' doesn't skip too many instructions"))
+;? (quit)
 
 (reset)
 (add-fns
