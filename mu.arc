@@ -9,10 +9,6 @@
   `(enq (fn () (= (function* ',name) ',body))
         initialization-fns*))
 
-(mac on-init body
-  `(enq (fn () (run ',body))
-        initialization-fns*))
-
 (def clear ()
   (= types* (obj
               ; must be scalar or array, sum or product or primitive
@@ -75,7 +71,7 @@
       (++ n))))
 
 (def m (loc)  ; read memory, respecting metadata
-;?   (prn "m " loc sz.loc)
+;?   (prn "m " loc " " sz.loc)
   (if (is 1 sz.loc)
     (memory* (addr loc))
     (annotate 'record
@@ -100,22 +96,50 @@
           offset  (+ 1 (* idx sz.elem)))
     (m `(,(+ v.operand offset) ,elem))))
 
-(def run (instrs (o fn-args) (o fn-oargs))
-  (ret result nil
-    (with (ninstrs 0  fn-arg-idx 0)
-;?     (prn instrs)
-    (for pc 0 (< pc len.instrs) (do ++.ninstrs ++.pc)
-;?       (if (> ninstrs 10) (break))
-      (let instr instrs.pc
-;?         (prn memory*)
-;?         (prn pc ": " instr)
-        (let delim (or (pos '<- instr) -1)
-          (with (oarg  (if (>= delim 0)
-                         (cut instr 0 delim))
-                 op  (instr (+ delim 1))
-                 arg  (cut instr (+ delim 2)))
-;?             (prn op " " oarg)
-            (let tmp
+; context is a table containing the 'stack' of functions that haven't yet
+; returned
+; ({fn-name pc fn-arg-idx}*)
+
+(mac body (context)  ; assignable
+  `(function* ((,context 0) 'fn-name)))
+
+(mac pc (context)  ; assignable
+  `((,context 0) 'pc))
+
+(mac caller-arg-idx (context)  ; assignable
+  `((,context 0) 'caller-arg-idx))
+
+(= scheduling-interval* 500)
+
+(def parse-instr (instr)
+  (iflet delim (pos '<- instr)
+    (list (cut instr 0 delim)  ; oargs
+          (instr (+ delim 1))  ; op
+          (cut instr (+ delim 2)))  ; args
+    (list nil instr.0 cdr.instr)))
+
+(def caller-args (context)  ; not assignable
+  (let (_ _ args)  (parse-instr ((body cdr.context) (pc cdr.context)))
+    args))
+
+(def caller-oargs (context)  ; not assignable
+  (let (oargs _ _)  (parse-instr ((body cdr.context) (pc cdr.context)))
+    oargs))
+
+(def run (fn-name)
+;?   (prn "AAA")
+  (let context (list (obj fn-name fn-name  pc 0  caller-arg-idx 0))
+;?     (prn "BBB")
+    (for ninstrs 0 (< ninstrs scheduling-interval*) (++ ninstrs)
+;?       (prn "CCC " pc.context " " context " " (len body.context))
+      (if (>= pc.context (len body.context))
+        (pop context))
+      (if (no context) (break))
+;?       (prn "--- " context.0!fn-name " " pc.context ": " (body.context pc.context))
+;?       (prn "  " memory*)
+      (let (oarg op arg)  (parse-instr (body.context pc.context))
+;?         (prn op " " arg " -> " oarg)
+        (let tmp
               (case op
                 literal
                   arg.0
@@ -151,21 +175,23 @@
                 arg
                   (let idx (if arg
                              arg.0
-                             (do1 fn-arg-idx
-                                ++.fn-arg-idx))
-                    (m fn-args.idx))
+                             (do1 caller-arg-idx.context
+                                (++ caller-arg-idx.context)))
+;?                     (prn idx)
+;?                     (prn caller-args.context)
+                    (m caller-args.context.idx))
                 type
-                  (ty (fn-args arg.0))
+                  (ty (caller-args.context arg.0))
                 otype
-                  (ty (fn-oargs arg.0))
+                  (ty (caller-oargs.context arg.0))
                 jmp
-                  (do (= pc (+ pc (v arg.0)))
-;?                       (prn "jumping to " pc)
+                  (do (= pc.context (+ 1 pc.context (v arg.0)))
+;?                       (prn "jumping to " pc.context)
                       (continue))
                 jif
                   (when (is t (m arg.0))
-                    (= pc (+ pc (v arg.1)))
-;?                     (prn "jumping to " pc)
+                    (= pc.context (+ 1 pc.context (v arg.1)))
+;?                     (prn "jumping to " pc.context)
                     (continue))
                 copy
                   (m arg.0)
@@ -188,34 +214,33 @@
                 aref
                   (array-ref arg.0 (v arg.1))
                 reply
-                  (do (= result arg)
-                      (break))
+                  (do (pop context)
+                      (if no.context (break))
+                      (let (caller-oargs _ _)  (parse-instr (body.context pc.context))
+                        (each (dest src)  (zip caller-oargs arg)
+                          (setm dest  (m src))))
+                      (++ pc.context)
+                      (continue))
                 new
                   (let type (v arg.0)
                     (if types*.type!array
                       (new-array type (v arg.1))
                       (new-scalar type)))
                 ; else user-defined function
-                  (let-or new-body function*.op (prn "no definition for " op)
-;?                     (prn "== " memory*)
-                    (let results (run new-body arg oarg)
-;?                       (prn "=> " oarg " " results)
-                      (each o oarg
-;?                         (prn o)
-                        (setm o (m pop.results))))
-                    (continue))
+                  (do (push (obj fn-name op  pc 0  caller-arg-idx 0) context)
+                      (continue))
                 )
               ; opcode generated some value, stored in 'tmp'
-;?               (prn tmp " " oarg)
+;?               (prn "store: " tmp " " oarg)
               (if (acons tmp)
                 (for i 0 (< i (min len.tmp len.oarg)) ++.i
                   (setm oarg.i tmp.i))
                 (when oarg  ; must be a list
 ;?                   (prn oarg.0)
                   (setm oarg.0 tmp)))
-              )))))
-;?     (prn "return " result)
-    )))
+              )
+        (++ pc.context))))
+  nil)
 
 (enq (fn () (= Memory-in-use-until 1000))
      initialization-fns*)
@@ -322,5 +347,5 @@
 (reset)
 (awhen cdr.argv
   (map add-fns:readfile it)
-  (run function*!main)
+  (run 'main)
   (prn memory*))

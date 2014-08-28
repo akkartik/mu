@@ -7,8 +7,38 @@
               ((2 integer) <- literal 2))))
      initialization-fns*)
 
-; todo: copy types* info into simulated machine
-; todo: sizeof
+(enq (fn ()
+       (build-type-table)
+     initialization-fns*)
+
+(= Free 3)
+(= Type-array Free)
+(def build-type-table ()
+  (allocate-type-array)
+  (build-types)
+  (fill-in-type-array))
+
+(def allocate-type-array ()
+  (= memory*.Free len.types*)
+  (++ Free)
+  (++ Free len.types*))
+
+(def build-types ()
+  (each type types*  ; todo
+    (
+
+(def sizeof (typeinfo)
+  (if (~or typeinfo!record typeinfo!array)
+        typeinfo!size
+      typeinfo!record
+        (sum idfn
+          (accum yield
+            (each elem typeinfo!elems
+              (yield (sizeof type*.elem)))))
+      typeinfo!array
+        (* (sizeof (type* typeinfo!elem))
+           (
+
 
 ;; 'new' - simple slab allocator. Intended only to carve out isolated memory
 ;; for different threads/routines as they request.
