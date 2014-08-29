@@ -5,6 +5,32 @@
   (each f (as cons initialization-fns*)
     (f)))
 
+(mac on-init body
+  `(enq (fn () ,@body)
+        initialization-fns*))
+
+(on-init
+  (= traces* nil))
+(def trace (label . args)
+  (push (list label (apply tostring:prn args))
+        traces*))
+(def assert-trace-contains (label string)
+  (assert (pos (fn ((curr-label curr-msg))
+                 (and (is label curr-label)
+                      (posmatch string curr-msg)))
+               traces*)
+          (tostring
+            (prn "Couldn't find " (tostring write.string) " in label:")
+            (each (curr-label curr-msg) traces*
+              (if (is label curr-label)
+                (prn "  " curr-msg))))))
+
+(reset)
+(trace "foo" "abc")
+(assert-trace-contains "foo" "abc")
+(assert-trace-contains "foo" "abd")
+(quit)
+
 (mac init-fn (name . body)
   `(enq (fn () (= (function* ',name) ',body))
         initialization-fns*))
