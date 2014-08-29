@@ -25,12 +25,6 @@
               (if (is label curr-label)
                 (prn "  " curr-msg))))))
 
-(reset)
-(trace "foo" "abc")
-(assert-trace-contains "foo" "abc")
-(assert-trace-contains "foo" "abd")
-(quit)
-
 (mac init-fn (name . body)
   `(enq (fn () (= (function* ',name) ',body))
         initialization-fns*))
