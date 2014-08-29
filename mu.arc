@@ -10,20 +10,37 @@
         initialization-fns*))
 
 (on-init
-  (= traces* nil))
+  (= traces* (queue)))
 (def trace (label . args)
-  (push (list label (apply tostring:prn args))
-        traces*))
-(def assert-trace-contains (label string)
-  (assert (pos (fn ((curr-label curr-msg))
-                 (and (is label curr-label)
-                      (posmatch string curr-msg)))
-               traces*)
-          (tostring
-            (prn "Couldn't find " (tostring write.string) " in label:")
-            (each (curr-label curr-msg) traces*
-              (if (is label curr-label)
-                (prn "  " curr-msg))))))
+  (enq (list label (apply tostring:prn args))
+       traces*))
+
+(def check-trace-contents (msg expected-contents)
+  (unless (trace-contents-match expected-contents)
+    (prn "F - " msg)
+    (prn "  trace contents")
+    (print-trace-contents-mismatch expected-contents)))
+
+(def trace-contents-match (expected-contents)
+  (each (label msg) (as cons traces*)
+    (when (and expected-contents
+               (is label expected-contents.0.0)
+               (posmatch expected-contents.0.1 msg))
+      (pop expected-contents)))
+  (no expected-contents))
+
+(def print-trace-contents-mismatch (expected-contents)
+  (each (label msg) (as cons traces*)
+    (whenlet (expected-label expected-msg)  expected-contents.0
+      (if (and (is label expected-label)
+               (posmatch expected-msg msg))
+        (do (pr "  * ")
+            (pop expected-contents))
+        (pr "    "))
+      (pr label ": " msg)))
+  (prn "  couldn't find")
+  (each (expected-label expected-msg)  expected-contents
+    (prn "  ! " expected-label ": " expected-msg)))
 
 (mac init-fn (name . body)
   `(enq (fn () (= (function* ',name) ',body))
