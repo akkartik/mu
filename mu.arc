@@ -118,6 +118,10 @@
 
 ; context contains the call-stack of functions that haven't yet returned
 
+(def make-context (fn-name)
+  (annotate 'context (obj call-stack (list
+      (obj fn-name fn-name  pc 0  caller-arg-idx 0)))))
+
 (defextend empty (x)  (isa x 'context)
   (no rep.x!call-stack))
 
@@ -162,8 +166,7 @@
 
 (def run (fn-name)
   (ret result 0
-    (let context (annotate 'context (obj call-stack (list
-                     (obj fn-name fn-name  pc 0  caller-arg-idx 0))))
+    (let context (make-context fn-name)
       (while (~empty context)
 ;?         (prn "== " context)
         (let insts-run (run-for-time-slice context scheduling-interval*)
