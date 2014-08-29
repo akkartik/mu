@@ -181,13 +181,20 @@
   (let (oargs _ _)  (parse-instr ((body context 1) (pc context 1)))
     oargs))
 
-(def run (fn-name)
+(= contexts* (queue))
+
+(def run ((o fn-name))
   (ret result 0
-    (let context (make-context fn-name)
-      (while (~empty context)
-;?         (prn "== " context)
+    (aif fn-name
+      (enq make-context.it contexts*))
+    ; simple round-robin scheduler
+    (while (~empty contexts*)
+      (let context deq.contexts*
+        (trace "schedule" top.context!fn-name)
         (let insts-run (run-for-time-slice context scheduling-interval*)
-          (= result (+ result insts-run)))))))
+          (= result (+ result insts-run)))
+        (if (~empty context)
+          (enq context contexts*))))))
 
 (def run-for-time-slice (context time-slice)
 ;?   (prn "AAA")
@@ -199,6 +206,7 @@
         (pop-stack context)
         (if empty.context (return ninstrs))
         (++ pc.context))
+      (trace "run" top.context!fn-name " " pc.context ": " (body.context pc.context))
 ;?       (prn "--- " top.context!fn-name " " pc.context ": " (body.context pc.context))
 ;?       (prn "  " memory*)
       (let (oarg op arg)  (parse-instr (body.context pc.context))

@@ -662,3 +662,27 @@
     (prn "F - 'new' returns current high-water mark"))
   (if (~iso Memory-in-use-until (+ before 5))
     (prn "F - 'new' on primitive arrays increments high-water mark by their size")))
+
+(reset)
+(add-fns
+  '((f1
+      ((1 integer) <- literal 3))
+    (f2
+      ((2 integer) <- literal 4))))
+(enq make-context!f1 contexts*)
+(enq make-context!f2 contexts*)
+(let ninsts (run)
+  (when (~iso 2 ninsts)
+    (prn "F - scheduler didn't run the right number of instructions: " ninsts)))
+(if (~iso memory* (obj 1 3  2 4))
+  (prn "F - scheduler runs multiple functions: " memory*))
+(check-trace-contents "scheduler orders functions correctly"
+  '(("schedule" "f1")
+    ("schedule" "f2")
+  ))
+(check-trace-contents "scheduler orders schedule and run events correctly"
+  '(("schedule" "f1")
+    ("run" "f1 0")
+    ("schedule" "f2")
+    ("run" "f2 0")
+  ))
