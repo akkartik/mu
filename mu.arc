@@ -96,18 +96,32 @@
           offset  (+ 1 (* idx sz.elem)))
     (m `(,(+ v.operand offset) ,elem))))
 
-; context is a table containing the 'stack' of functions that haven't yet
-; returned
-; ({fn-name pc fn-arg-idx}*)
+; context contains the call-stack of functions that haven't yet returned
 
-(mac body (context)  ; assignable
-  `(function* ((,context 0) 'fn-name)))
+(defextend empty (x)  (isa x 'context)
+  (no rep.x!call-stack))
 
-(mac pc (context)  ; assignable
-  `((,context 0) 'pc))
+(def stack (context)
+  ((rep context) 'call-stack))
 
-(mac caller-arg-idx (context)  ; assignable
-  `((,context 0) 'caller-arg-idx))
+(mac push-stack (context op)
+  `(push (obj fn-name ,op  pc 0  caller-arg-idx 0)
+         ((rep ,context) 'call-stack)))
+
+(mac pop-stack (context)
+  `(pop ((rep ,context) 'call-stack)))
+
+(def top (context)
+  stack.context.0)
+
+(def body (context (o idx 0))
+  (function* stack.context.idx!fn-name))
+
+(mac pc (context (o idx 0))  ; assignable
+  `((((rep ,context) 'call-stack) ,idx) 'pc))
+
+(mac caller-arg-idx (context (o idx 0))  ; assignable
+  `((((rep ,context) 'call-stack) ,idx) 'caller-arg-idx))
 
 (= scheduling-interval* 500)
 
@@ -119,35 +133,35 @@
     (list nil instr.0 cdr.instr)))
 
 (def caller-args (context)  ; not assignable
-  (let (_ _ args)  (parse-instr ((body cdr.context) (pc cdr.context)))
+  (let (_ _ args)  (parse-instr ((body context 1) (pc context 1)))
     args))
 
 (def caller-oargs (context)  ; not assignable
-  (let (oargs _ _)  (parse-instr ((body cdr.context) (pc cdr.context)))
+  (let (oargs _ _)  (parse-instr ((body context 1) (pc context 1)))
     oargs))
 
-(= context* nil)
-
 (def run (fn-name)
-  (= context* (list (obj fn-name fn-name  pc 0  caller-arg-idx 0)))
   (ret result 0
-    (while context*
-;?       (prn "== " context*)
-      (= result (+ result (run-for-time-slice scheduling-interval*))))))
+    (let context (annotate 'context (obj call-stack (list
+                     (obj fn-name fn-name  pc 0  caller-arg-idx 0))))
+      (while (~empty context)
+;?         (prn "== " context)
+        (let insts-run (run-for-time-slice context scheduling-interval*)
+          (= result (+ result insts-run)))))))
 
-(def run-for-time-slice (time-slice)
+(def run-for-time-slice (context time-slice)
 ;?   (prn "AAA")
   (point return
 ;?     (prn "BBB")
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
-;?       (prn "CCC " pc.context* " " context* " " (len body.context*))
-      (while (>= pc.context* (len body.context*))
-        (pop context*)
-        (if no.context* (return ninstrs))
-        (++ pc.context*))
-;?       (prn "--- " context*.0!fn-name " " pc.context* ": " (body.context* pc.context*))
+;?       (prn "CCC " pc.context " " context " " (len body.context))
+      (while (>= pc.context (len body.context))
+        (pop-stack context)
+        (if empty.context (return ninstrs))
+        (++ pc.context))
+;?       (prn "--- " top.context!fn-name " " pc.context ": " (body.context pc.context))
 ;?       (prn "  " memory*)
-      (let (oarg op arg)  (parse-instr (body.context* pc.context*))
+      (let (oarg op arg)  (parse-instr (body.context pc.context))
 ;?         (prn op " " arg " -> " oarg)
         (let tmp
               (case op
@@ -185,23 +199,23 @@
                 arg
                   (let idx (if arg
                              arg.0
-                             (do1 caller-arg-idx.context*
-                                (++ caller-arg-idx.context*)))
+                             (do1 caller-arg-idx.context
+                                (++ caller-arg-idx.context)))
 ;?                     (prn idx)
-;?                     (prn caller-args.context*)
-                    (m caller-args.context*.idx))
+;?                     (prn caller-args.context)
+                    (m caller-args.context.idx))
                 type
-                  (ty (caller-args.context* arg.0))
+                  (ty (caller-args.context arg.0))
                 otype
-                  (ty (caller-oargs.context* arg.0))
+                  (ty (caller-oargs.context arg.0))
                 jmp
-                  (do (= pc.context* (+ 1 pc.context* (v arg.0)))
-;?                       (prn "jumping to " pc.context*)
+                  (do (= pc.context (+ 1 pc.context (v arg.0)))
+;?                       (prn "jumping to " pc.context)
                       (continue))
                 jif
                   (when (is t (m arg.0))
-                    (= pc.context* (+ 1 pc.context* (v arg.1)))
-;?                     (prn "jumping to " pc.context*)
+                    (= pc.context (+ 1 pc.context (v arg.1)))
+;?                     (prn "jumping to " pc.context)
                     (continue))
                 copy
                   (m arg.0)
@@ -224,16 +238,16 @@
                 aref
                   (array-ref arg.0 (v arg.1))
                 reply
-                  (do (pop context*)
-                      (if no.context* (return ninstrs))
-                      (let (caller-oargs _ _)  (parse-instr (body.context* pc.context*))
+                  (do (pop-stack context)
+                      (if empty.context (return ninstrs))
+                      (let (caller-oargs _ _)  (parse-instr (body.context pc.context))
                         (each (dest src)  (zip caller-oargs arg)
                           (setm dest  (m src))))
-                      (++ pc.context*)
-                      (while (>= pc.context* (len body.context*))
-                        (pop context*)
-                        (if no.context* (return ninstrs))
-                        (++ pc.context*))
+                      (++ pc.context)
+                      (while (>= pc.context (len body.context))
+                        (pop-stack context)
+                        (if empty.context (return ninstrs))
+                        (++ pc.context))
                       (continue))
                 new
                   (let type (v arg.0)
@@ -241,7 +255,7 @@
                       (new-array type (v arg.1))
                       (new-scalar type)))
                 ; else user-defined function
-                  (do (push (obj fn-name op  pc 0  caller-arg-idx 0) context*)
+                  (do (push-stack context op)
                       (continue))
                 )
               ; opcode generated some value, stored in 'tmp'
@@ -253,7 +267,7 @@
 ;?                   (prn oarg.0)
                   (setm oarg.0 tmp)))
               )
-        (++ pc.context*)))
+        (++ pc.context)))
     (return time-slice)))
 
 (enq (fn () (= Memory-in-use-until 1000))

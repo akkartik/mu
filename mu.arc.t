@@ -8,6 +8,7 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1))
   (prn "F - 'literal' writes a literal value (its lone 'arg' after the instruction name) to a location in memory (an address) specified by its lone 'oarg' or output arg before the arrow"))
+;? (quit)
 
 (reset)
 (add-fns
