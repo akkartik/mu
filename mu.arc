@@ -285,6 +285,11 @@
                         (assert nil "get on invalid type @base")))
                 aref
                   (array-ref arg.0 (v arg.1))
+                new
+                  (let type (v arg.0)
+                    (if types*.type!array
+                      (new-array type (v arg.1))
+                      (new-scalar type)))
                 reply
                   (do (pop-stack context)
                       (if empty.context (return ninstrs))
@@ -297,11 +302,6 @@
                         (if empty.context (return ninstrs))
                         (++ pc.context))
                       (continue))
-                new
-                  (let type (v arg.0)
-                    (if types*.type!array
-                      (new-array type (v arg.1))
-                      (new-scalar type)))
                 ; else user-defined function
                   (do (push-stack context op)
                       (continue))
