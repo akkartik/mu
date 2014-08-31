@@ -669,9 +669,7 @@
       ((1 integer) <- literal 3))
     (f2
       ((2 integer) <- literal 4))))
-(enq make-context!f1 contexts*)
-(enq make-context!f2 contexts*)
-(let ninsts (run)
+(let ninsts (run 'f1 'f2)
   (when (~iso 2 ninsts)
     (prn "F - scheduler didn't run the right number of instructions: " ninsts)))
 (if (~iso memory* (obj 1 3  2 4))

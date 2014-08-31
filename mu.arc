@@ -183,9 +183,9 @@
 
 (= contexts* (queue))
 
-(def run ((o fn-name))
+(def run fn-names
   (ret result 0
-    (aif fn-name
+    (each it fn-names
       (enq make-context.it contexts*))
     ; simple round-robin scheduler
     (while (~empty contexts*)
