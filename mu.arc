@@ -290,6 +290,9 @@
                     (if types*.type!array
                       (new-array type (v arg.1))
                       (new-scalar type)))
+                print
+                  (do1 nil
+                    (apply prn (map m arg)))
                 reply
                   (do (pop-stack context)
                       (if empty.context (return ninstrs))
