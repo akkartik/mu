@@ -343,7 +343,9 @@
                         (++ pc.context))
                       (continue))
                 ; else user-defined function
-                  (do (push-stack context op)
+                  (do (if function*.op
+                        (push-stack context op)
+                        (err "no such op @op"))
                       (continue))
                 )
               ; opcode generated some value, stored in 'tmp'
