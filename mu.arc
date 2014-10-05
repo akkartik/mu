@@ -281,8 +281,7 @@
                          idx (v arg.1))  ; literal integer
                     (if
                       typeinfo.base!array
-                        (do (assert (is 0 idx))  ; 'get' can only lookup array length
-                            (array-len base))
+                        (array-ref base idx)
                       typeinfo.base!record
                         ; field index
                         (do (assert (< -1 idx (len typeinfo.base!elems)))
@@ -292,13 +291,18 @@
                                  ,typeinfo.base!elems.idx)))
                       :else
                         (assert nil "get on invalid type @base")))
-                aref
-                  (array-ref arg.0 (v arg.1))
                 new
                   (let type (v arg.0)
                     (if types*.type!array
                       (new-array type (v arg.1))
                       (new-scalar type)))
+                sizeof
+                  (sizeof (v arg.0))
+                len
+                  (let base arg.0
+                    (if typeinfo.base!array
+                      array-len.base
+                      -1))
 
                 ; multiprocessing
                 run

@@ -416,11 +416,11 @@
       ((3 boolean) <- literal nil)
       ((4 integer) <- literal 24)
       ((5 boolean) <- literal t)
-      ((6 integer) <- get (1 integer-boolean-pair-array) (0 offset)))))
+      ((6 integer-boolean-pair) <- get (1 integer-boolean-pair-array) (1 offset)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 2))
-  (prn "F - 'get' accesses length of array"))
+(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 24 7 t))
+  (prn "F - 'get' accesses indices of arrays"))
 
 (reset)
 (add-fns
@@ -430,11 +430,29 @@
       ((3 boolean) <- literal nil)
       ((4 integer) <- literal 24)
       ((5 boolean) <- literal t)
-      ((6 integer-boolean-pair) <- aref (1 integer-boolean-pair-array) (1 offset)))))
+      ((6 integer) <- len (1 integer-boolean-pair-array)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 24 7 t))
-  (prn "F - 'aref' accesses indices of arrays"))
+(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 2))
+  (prn "F - 'len' accesses length of array"))
+
+(reset)
+(add-fns
+  '((main
+      ((1 integer) <- sizeof (integer-boolean-pair type)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2))
+  (prn "F - 'sizeof' returns space required by arg"))
+
+(reset)
+(add-fns
+  '((main
+      ((1 integer) <- sizeof (integer-point-pair type)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 3))
+  (prn "F - 'sizeof' is different from number of elems"))
 
 ; todo: test that out-of-bounds access throws an error
 
