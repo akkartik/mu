@@ -218,6 +218,7 @@
 ;?     (prn "BBB")
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
 ;?       (prn "CCC " pc.context " " context " " (len body.context))
+      (if (empty body.context) (err "@stack.context.0!fn-name not defined"))
       (while (>= pc.context (len body.context))
         (pop-stack context)
         (if empty.context (return ninstrs))
