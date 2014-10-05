@@ -290,7 +290,7 @@
                                      (apply + (map sz
                                                    (firstn idx typeinfo.base!elems))))
                                  ,typeinfo.base!elems.idx)))
-                      'else
+                      :else
                         (assert nil "get on invalid type @base")))
                 aref
                   (array-ref arg.0 (v arg.1))
