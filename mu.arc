@@ -168,7 +168,7 @@
 (mac caller-arg-idx (context (o idx 0))  ; assignable
   `((((rep ,context) 'call-stack) ,idx) 'caller-arg-idx))
 
-(= scheduling-interval* 5)
+(= scheduling-interval* 500)
 
 (def parse-instr (instr)
   (iflet delim (pos '<- instr)
