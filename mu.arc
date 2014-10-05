@@ -164,7 +164,7 @@
 (mac caller-arg-idx (context (o idx 0))  ; assignable
   `((((rep ,context) 'call-stack) ,idx) 'caller-arg-idx))
 
-(= scheduling-interval* 500)
+(= scheduling-interval* 5)
 
 (def parse-instr (instr)
   (iflet delim (pos '<- instr)
@@ -295,6 +295,13 @@
                 print
                   (do1 nil
                     (apply prn (map m arg)))
+
+                ; multiprocessing
+                run
+                  (run (v arg.0))
+                fork
+                  (enq (make-context (v arg.0)) contexts*)
+
                 reply
                   (do (pop-stack context)
                       (if empty.context (return ninstrs))
