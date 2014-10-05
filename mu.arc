@@ -133,6 +133,13 @@
 (def array-len (operand)
   (m `(,v.operand integer)))
 
+(def array-ref-addr (operand idx)
+  (assert typeinfo.operand!array)
+  (assert (< -1 idx (array-len operand)))
+  (withs (elem  typeinfo.operand!elem
+          offset  (+ 1 (* idx sz.elem)))
+    (+ v.operand offset)))
+
 (def array-ref (operand idx)
   (assert typeinfo.operand!array)
   (assert (< -1 idx (array-len operand)))
@@ -291,6 +298,19 @@
                                  ,typeinfo.base!elems.idx)))
                       :else
                         (assert nil "get on invalid type @base")))
+                get-address
+                  (with (base arg.0
+                         idx (v arg.1))
+                    (if typeinfo.base!array
+                          (array-ref-addr base idx)
+                        typeinfo.base!record
+                          (do (assert (< -1 idx (len typeinfo.base!elems)))
+                              (+ v.base
+                                 (apply + (map sz
+                                               (firstn idx typeinfo.base!elems)))))
+                        :else
+                          (assert nil "get-address on invalid type @base")))
+
                 new
                   (let type (v arg.0)
                     (if types*.type!array
