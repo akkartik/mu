@@ -58,6 +58,9 @@
               location (obj size 1)
               integer (obj size 1)
               boolean (obj size 1)
+              byte (obj size 1)
+;?               string (obj array t  elem 'byte)  ; inspired by Go
+              char (obj size 1)  ; int32 like a Go rune
               string (obj size 1)  ; temporary hack
               ; arrays consist of an integer length followed by the right number of elems
               integer-array (obj array t  elem 'integer)
