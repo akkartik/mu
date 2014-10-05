@@ -93,6 +93,20 @@
 (def typeinfo (operand)
   (types* ty.operand))
 
+;? (def is-array (operand)
+;?   (if (pos 'deref metadata.operand)
+;?     (if typeinfo.operand!address
+;?       ((types* typeinfo.operand!elem) 'array)
+;?       (err "can't deref non-address @operand"))
+;?     typeinfo.operand!array))
+;? 
+;? (def is-record (operand)
+;?   (if (pos 'deref metadata.operand)
+;?     (if typeinfo.operand!address
+;?       ((types* typeinfo.operand!elem) 'record)
+;?       (err "can't deref non-address @operand"))
+;?     typeinfo.operand!record))
+
 (def sz (operand)
 ;?   (prn "sz " operand)
   ; todo: override this for arrays
@@ -287,6 +301,11 @@
                 get
                   (with (base arg.0  ; integer (non-symbol) memory location including metadata
                          idx (v arg.1))  ; literal integer
+;?                     (prn base ": " (memory* v.base))
+                    (when typeinfo.base!address
+                      (assert (pos 'deref metadata.base))
+                      (= base (list (memory* v.base) typeinfo.base!elem)))
+;?                     (prn "after: " base)
                     (if
                       typeinfo.base!array
                         (array-ref base idx)

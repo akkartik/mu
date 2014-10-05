@@ -400,6 +400,19 @@
 (add-fns
   '((main
       ((1 integer) <- literal 34)
+      ((2 boolean) <- literal nil)
+      ((3 integer-boolean-pair-address) <- literal 1)
+      ((4 boolean) <- get (3 integer-boolean-pair-address deref) (1 offset))
+      ((5 integer) <- get (3 integer-boolean-pair-address deref) (0 offset)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 34  2 nil  3 1  4 nil  5 34))
+  (prn "F - 'get' accesses fields of record address"))
+
+(reset)
+(add-fns
+  '((main
+      ((1 integer) <- literal 34)
       ((2 integer) <- literal 35)
       ((3 integer) <- literal 36)
       ((4 integer-integer-pair) <- get (1 integer-point-pair) (1 offset)))))
