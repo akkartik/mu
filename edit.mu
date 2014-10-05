@@ -9,7 +9,7 @@
   (cursor (1 literal) (1 literal))
   (print ("Press a key..." literal))
   ((key string) <- getc)
-  (cll)
+  (console-off)
   (print ("You pressed: " literal))
   (print (key string))
   (print ("\n" literal))

@@ -314,13 +314,17 @@
                 cursor
                   (do1 nil ($.charterm-cursor (m arg.0) (m arg.1)))
                 print
-                  (do1 nil ($.charterm-display (m arg.0)))
+                  (do1 nil ((if ($.current-charterm) $.charterm-display pr) (m arg.0)))
                 getc
                   ($.charterm-read-key)
                 bold-mode
                   (do1 nil ($.charterm-bold))
                 non-bold-mode
                   (do1 nil ($.charterm-normal))
+                console-on
+                  (do1 nil (if ($.current-charterm) ($.open-charterm)))
+                console-off
+                  (do1 nil (if ($.current-charterm) ($.close-charterm)))
 
                 reply
                   (do (pop-stack context)
@@ -457,5 +461,5 @@
   (map add-fns:readfile it)
   ($.open-charterm)
   (run 'main)
-  ($.close-charterm)
+  (if ($.current-charterm) ($.close-charterm))
   (prn memory*))
