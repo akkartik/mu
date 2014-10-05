@@ -174,6 +174,14 @@
 
 (reset)
 (add-fns
+  '((test1
+      ((1 integer) <- add (2 literal) (3 literal)))))
+(run 'test1)
+(if (~iso memory* (obj 1 5))
+  (prn "F - ops can take 'literal' operands (but not return them)"))
+
+(reset)
+(add-fns
   '((main
       ((1 integer) <- literal 1)
       ((2 integer) <- literal 3)

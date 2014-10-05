@@ -113,10 +113,13 @@
 
 (def m (loc)  ; read memory, respecting metadata
 ;?   (prn "m " loc " " sz.loc)
-  (if (is 1 sz.loc)
-    (memory* (addr loc))
-    (annotate 'record
-              (map memory* (addrs (addr loc) sz.loc)))))
+  (if (is 'literal ty.loc)
+        (v loc)
+      (is 1 sz.loc)
+        (memory* (addr loc))
+      :else
+        (annotate 'record
+                  (map memory* (addrs (addr loc) sz.loc)))))
 
 (def setm (loc val)  ; set memory, respecting metadata
 ;?   (prn "setm " loc " " val)
