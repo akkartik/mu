@@ -58,6 +58,7 @@
               location (obj size 1)
               integer (obj size 1)
               boolean (obj size 1)
+              string (obj size 1)  ; temporary hack
               ; arrays consist of an integer length followed by the right number of elems
               integer-array (obj array t  elem 'integer)
               integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
@@ -292,15 +293,28 @@
                     (if types*.type!array
                       (new-array type (v arg.1))
                       (new-scalar type)))
-                print
-                  (do1 nil
-                    (apply prn (map m arg)))
 
                 ; multiprocessing
                 run
                   (run (v arg.0))
                 fork
                   (enq (make-context (v arg.0)) contexts*)
+
+                ; text interaction
+                cls
+                  (do1 nil ($.charterm-clear-screen))
+                cll
+                  (do1 nil ($.charterm-clear-line))
+                cursor
+                  (do1 nil ($.charterm-cursor (m arg.0) (m arg.1)))
+                print
+                  (do1 nil ($.charterm-display (m arg.0)))
+                getc
+                  ($.charterm-read-key)
+                bold-mode
+                  (do1 nil ($.charterm-bold))
+                non-bold-mode
+                  (do1 nil ($.charterm-normal))
 
                 reply
                   (do (pop-stack context)
@@ -435,20 +449,7 @@
 (reset)
 (awhen cdr.argv
   (map add-fns:readfile it)
+  ($.open-charterm)
   (run 'main)
+  ($.close-charterm)
   (prn memory*))
-
-($:with-charterm
-  (charterm-clear-screen)
-  (charterm-cursor 10 5)
-  (charterm-display "Hello, ")
-  (charterm-bold)
-  (charterm-display "you")
-  (charterm-normal)
-  (charterm-display ".")
-  (charterm-cursor 1 1)
-  (charterm-display "Press a key...")
-  (let ((key (charterm-read-key)))
-    (charterm-cursor 1 1)
-    (charterm-clear-line)
-    (printf "You pressed: ~S\r\n" key)))
