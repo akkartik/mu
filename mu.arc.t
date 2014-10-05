@@ -426,7 +426,7 @@
   '((main
       ((1 integer) <- literal 34)
       ((2 integer) <- literal t)
-      ((3 integer-boolean-pair-address) <- get-address (1 integer-point-pair) (1 offset)))))
+      ((3 boolean-address) <- get-address (1 integer-boolean-pair) (1 offset)))))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 t  3 2))

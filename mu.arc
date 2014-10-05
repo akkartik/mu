@@ -58,6 +58,7 @@
               location (obj size 1)
               integer (obj size 1)
               boolean (obj size 1)
+              boolean-address (obj size 1  address t)
               byte (obj size 1)
 ;?               string (obj array t  elem 'byte)  ; inspired by Go
               char (obj size 1)  ; int32 like a Go rune
