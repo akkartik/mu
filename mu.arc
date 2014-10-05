@@ -101,9 +101,9 @@
   types*.typename!size)
 
 (def addr (loc)
-  (if (pos 'deref (metadata loc))
-    (memory* (v loc))
-    (v loc)))
+  (if (pos 'deref metadata.loc)
+    (memory* v.loc)
+    v.loc))
 
 (def addrs (n sz)
   (accum yield
@@ -116,10 +116,10 @@
   (if (is 'literal ty.loc)
         (v loc)
       (is 1 sz.loc)
-        (memory* (addr loc))
+        (memory* addr.loc)
       :else
         (annotate 'record
-                  (map memory* (addrs (addr loc) sz.loc)))))
+                  (map memory* (addrs addr.loc sz.loc)))))
 
 (def setm (loc val)  ; set memory, respecting metadata
 ;?   (prn "setm " loc " " val)
