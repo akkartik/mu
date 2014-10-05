@@ -93,20 +93,6 @@
 (def typeinfo (operand)
   (types* ty.operand))
 
-;? (def is-array (operand)
-;?   (if (pos 'deref metadata.operand)
-;?     (if typeinfo.operand!address
-;?       ((types* typeinfo.operand!elem) 'array)
-;?       (err "can't deref non-address @operand"))
-;?     typeinfo.operand!array))
-;? 
-;? (def is-record (operand)
-;?   (if (pos 'deref metadata.operand)
-;?     (if typeinfo.operand!address
-;?       ((types* typeinfo.operand!elem) 'record)
-;?       (err "can't deref non-address @operand"))
-;?     typeinfo.operand!record))
-
 (def sz (operand)
 ;?   (prn "sz " operand)
   ; todo: override this for arrays
