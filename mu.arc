@@ -308,6 +308,9 @@
                 get-address
                   (with (base arg.0
                          idx (v arg.1))
+                    (when typeinfo.base!address
+                      (assert (pos 'deref metadata.base))
+                      (= base (list (memory* v.base) typeinfo.base!elem)))
                     (if typeinfo.base!array
                           (array-ref-addr base idx)
                         typeinfo.base!record

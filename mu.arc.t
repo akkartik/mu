@@ -435,6 +435,18 @@
 (reset)
 (add-fns
   '((main
+      ((1 integer) <- literal 34)
+      ((2 integer) <- literal t)
+      ((3 integer-boolean-pair-address) <- literal 1)
+      ((4 boolean-address) <- get-address (3 integer-boolean-pair-address deref) (1 offset)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 34  2 t  3 1  4 2))
+  (prn "F - 'get-address' returns address of fields of records"))
+
+(reset)
+(add-fns
+  '((main
       ((1 integer) <- literal 2)
       ((2 integer) <- literal 23)
       ((3 boolean) <- literal nil)
