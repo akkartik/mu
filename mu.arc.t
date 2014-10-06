@@ -442,7 +442,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 t  3 1  4 2))
-  (prn "F - 'get-address' returns address of fields of records"))
+  (prn "F - 'get-address' accesses fields of record address"))
 
 (reset)
 (add-fns
@@ -452,11 +452,11 @@
       ((3 boolean) <- literal nil)
       ((4 integer) <- literal 24)
       ((5 boolean) <- literal t)
-      ((6 integer-boolean-pair) <- get (1 integer-boolean-pair-array) (1 offset)))))
+      ((6 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (1 literal)))))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 24 7 t))
-  (prn "F - 'get' accesses indices of arrays"))
+  (prn "F - 'index' accesses indices of arrays"))
 
 (reset)
 (add-fns
@@ -466,11 +466,27 @@
       ((3 boolean) <- literal nil)
       ((4 integer) <- literal 24)
       ((5 boolean) <- literal t)
-      ((6 integer-boolean-pair-address) <- get-address (1 integer-boolean-pair-array) (1 offset)))))
+      ((6 integer) <- literal 1)
+      ((7 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (6 integer)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 4))
-  (prn "F - 'get-address' returns addresses of indices of arrays"))
+(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 24 8 t))
+  (prn "F - 'index' accesses indices of arrays"))
+
+(reset)
+(add-fns
+  '((main
+      ((1 integer) <- literal 2)
+      ((2 integer) <- literal 23)
+      ((3 boolean) <- literal nil)
+      ((4 integer) <- literal 24)
+      ((5 boolean) <- literal t)
+      ((6 integer) <- literal 1)
+      ((7 integer-boolean-pair-address) <- index-address (1 integer-boolean-pair-array) (6 integer)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 4))
+  (prn "F - 'index-address' returns addresses of indices of arrays"))
 
 (reset)
 (add-fns

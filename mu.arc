@@ -293,33 +293,43 @@
                       (assert (pos 'deref metadata.base))
                       (= base (list (memory* v.base) typeinfo.base!elem)))
 ;?                     (prn "after: " base)
-                    (if
-                      typeinfo.base!array
-                        (array-ref base idx)
-                      typeinfo.base!record
-                        ; field index
-                        (do (assert (< -1 idx (len typeinfo.base!elems)))
-                            (m `(,(+ v.base
-                                     (apply + (map sz
-                                                   (firstn idx typeinfo.base!elems))))
-                                 ,typeinfo.base!elems.idx)))
-                      :else
-                        (assert nil "get on invalid type @base")))
+                    (if typeinfo.base!record
+                      (do (assert (< -1 idx (len typeinfo.base!elems)))
+                          (m `(,(+ v.base
+                                   (apply + (map sz
+                                                 (firstn idx typeinfo.base!elems))))
+                               ,typeinfo.base!elems.idx)))
+                      (assert nil "get on invalid type @base")))
                 get-address
                   (with (base arg.0
                          idx (v arg.1))
                     (when typeinfo.base!address
                       (assert (pos 'deref metadata.base))
                       (= base (list (memory* v.base) typeinfo.base!elem)))
+                    (if typeinfo.base!record
+                      (do (assert (< -1 idx (len typeinfo.base!elems)))
+                          (+ v.base
+                             (apply + (map sz
+                                           (firstn idx typeinfo.base!elems)))))
+                      (assert nil "get-address on invalid type @base")))
+                index
+                  (with (base arg.0  ; integer (non-symbol) memory location including metadata
+                         idx (m arg.1))
+                    (when typeinfo.base!address
+                      (assert (pos 'deref metadata.base))
+                      (= base (list (memory* v.base) typeinfo.base!elem)))
                     (if typeinfo.base!array
-                          (array-ref-addr base idx)
-                        typeinfo.base!record
-                          (do (assert (< -1 idx (len typeinfo.base!elems)))
-                              (+ v.base
-                                 (apply + (map sz
-                                               (firstn idx typeinfo.base!elems)))))
-                        :else
-                          (assert nil "get-address on invalid type @base")))
+                      (array-ref base idx)
+                      (assert nil "get on invalid type @arg.0 => @base")))
+                index-address
+                  (with (base arg.0
+                         idx (m arg.1))
+                    (when typeinfo.base!address
+                      (assert (pos 'deref metadata.base))
+                      (= base (list (memory* v.base) typeinfo.base!elem)))
+                    (if typeinfo.base!array
+                      (array-ref-addr base idx)
+                      (assert nil "get-address on invalid type @arg.0 => @base")))
 
                 new
                   (let type (v arg.0)
