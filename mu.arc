@@ -87,7 +87,7 @@
 
 (def add-fns (fns)
   (each (name . body) fns
-    (= function*.name body)))
+    (= function*.name (convert-braces body))))
 
 (def v (operand)  ; for value
   operand.0)
