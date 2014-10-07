@@ -61,7 +61,8 @@
               boolean-address (obj size 1  address t)
               byte (obj size 1)
 ;?               string (obj array t  elem 'byte)  ; inspired by Go
-              char (obj size 1)  ; int32 like a Go rune
+              character (obj size 1)  ; int32 like a Go rune
+              character-address (obj size 1  address t  elem 'character)
               string (obj size 1)  ; temporary hack
               ; arrays consist of an integer length followed by the right number of elems
               integer-array (obj array t  elem 'integer)
@@ -73,6 +74,12 @@
               integer-integer-pair (obj size 2  record t  elems '(integer integer))
               integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
               custodian  (obj size 1  record t  elems '(integer))
+              ; editor
+              line (obj array t  elem 'character)
+              line-address (obj size 1  address t  elem 'line)
+              line-address-address (obj size 1  address t  elem 'line-address)
+              screen (obj array t  elem 'line-address)
+              screen-address (obj size 1  address t  elem 'screen)
               ))
   (= memory* (table))
   (= function* (table)))
@@ -96,10 +103,12 @@
 
 (def sz (operand)
 ;?   (prn "sz " operand)
-  ; todo: override this for arrays
-  typeinfo.operand!size)
+  (if typeinfo.operand!array
+    array-len.operand
+    typeinfo.operand!size))
 (defextend sz (typename) (isa typename 'sym)
-  types*.typename!size)
+  (or types*.typename!size
+      (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
 
 (def addr (loc)
   (if (pos 'deref metadata.loc)
@@ -132,9 +141,17 @@
       (= (memory* dest) src))))
 
 (def array-len (operand)
-  (m `(,v.operand integer)))
+;?   (prn operand)
+;?   (prn (memory* 1000))
+  (if typeinfo.operand!array
+        (m `(,v.operand integer))
+      (and typeinfo.operand!address (pos 'deref metadata.operand))
+        (array-len (m operand) typeinfo.operand!elem)
+      :else
+        (err "can't take len of non-array @operand")))
 
 (def array-ref-addr (operand idx)
+;?   (prn "aref addr: @operand @idx")
   (assert typeinfo.operand!array)
   (assert (< -1 idx (array-len operand)))
   (withs (elem  typeinfo.operand!elem
@@ -142,10 +159,13 @@
     (+ v.operand offset)))
 
 (def array-ref (operand idx)
+  (prn "aref: @operand @idx")
   (assert typeinfo.operand!array)
   (assert (< -1 idx (array-len operand)))
+  (prn "aref2: @operand @idx")
   (withs (elem  typeinfo.operand!elem
           offset  (+ 1 (* idx sz.elem)))
+    (prn "aref3: @elem @v.operand @offset")
     (m `(,(+ v.operand offset) ,elem))))
 
 ; context contains the call-stack of functions that haven't yet returned
@@ -228,7 +248,7 @@
 ;?       (prn "--- " top.context!fn-name " " pc.context ": " (body.context pc.context))
 ;?       (prn "  " memory*)
       (let (oarg op arg)  (parse-instr (body.context pc.context))
-;?         (prn op " " arg " -> " oarg)
+        (prn op " " arg " -> " oarg)
         (let tmp
               (case op
                 literal
@@ -315,9 +335,12 @@
                 index
                   (with (base arg.0  ; integer (non-symbol) memory location including metadata
                          idx (m arg.1))
+;?                     (prn "processing index: @base @idx")
                     (when typeinfo.base!address
                       (assert (pos 'deref metadata.base))
                       (= base (list (memory* v.base) typeinfo.base!elem)))
+;?                     (prn "after maybe deref: @base @idx")
+;?                     (prn Memory-in-use-until ": " memory*)
                     (if typeinfo.base!array
                       (array-ref base idx)
                       (assert nil "get on invalid type @arg.0 => @base")))
@@ -407,6 +430,7 @@
     (++ Memory-in-use-until sizeof.type)))
 
 (def new-array (type size)
+;?   (prn "new array: @type @size")
   (ret result Memory-in-use-until
     (++ Memory-in-use-until (* (sizeof types*.type!elem) size))))
 
