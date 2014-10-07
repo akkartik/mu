@@ -26,7 +26,10 @@
 ;?   (prn "new-trace " filename)
   (= curr-trace-file* filename))
 
+(= dump-trace* nil)
 (def trace (label . args)
+;?   (prn "trace: " dump-trace*)
+  (if dump-trace* (apply prn label ": " args))
   (enq (list label (apply tostring:prn args))
        traces*))
 
@@ -259,15 +262,17 @@
         (pop-stack context)
         (if empty.context (return ninstrs))
         (++ pc.context))
+;?       (prn memory*)
       (trace "run" top.context!fn-name " " pc.context ": " (body.context pc.context))
 ;?       (prn "--- " top.context!fn-name " " pc.context ": " (body.context pc.context))
-;?       (prn "  " memory*)
       (let (oarg op arg)  (parse-instr (body.context pc.context))
 ;?         (prn op " " arg " -> " oarg)
         (let tmp
               (case op
                 add
+                  (do (trace "add" (m arg.0) " " (m arg.1))
                   (+ (m arg.0) (m arg.1))
+                  )
                 sub
                   (- (m arg.0) (m arg.1))
                 mul
@@ -286,7 +291,9 @@
                 eq
                   (is (m arg.0) (m arg.1))
                 neq
+                  (do (trace "neq" (m arg.0) " " (m arg.1))
                   (~is (m arg.0) (m arg.1))
+                  )
                 lt
                   (< (m arg.0) (m arg.1))
                 gt
@@ -463,7 +470,7 @@
         (each instr instrs
           (if (~is 'begin instr.0)
             (do
-;?               (prn pc " " instr)
+              (trace "cvt0" pc " " instr " -- " locs)
               (++ pc))
             ; hack: racket replaces curlies with parens, so we need the
             ; keyword begin to delimit blocks.
@@ -482,19 +489,21 @@
       (accum yield
         (loop (instrs instrs)
           (each instr instrs
+            (point continue
             (let delim (or (pos '<- instr) -1)
               (with (oarg  (if (>= delim 0)
                              (cut instr 0 delim))
                      op  (instr (+ delim 1))
                      arg  (cut instr (+ delim 2)))
-;?                 (prn op " " oarg)
+                (trace "cvt1" pc " " op " " oarg)
                 (case op
                   begin
                     (do
                       (push pc stack)
                       (assert:is oarg nil)
                       (recur arg)
-                      (pop stack))
+                      (pop stack)
+                      (continue))
                   break
                     (do
                       (assert:is oarg nil)
@@ -512,12 +521,12 @@
                       (yield `(jmp (,(- stack.0 pc) offset))))
                   continueif
                     (do
-;?                       (prn "continueif: " instr)
+                      (trace "cvt0" "continueif: " instr " => " (- stack.0 1))
                       (assert:is oarg nil)
-                      (yield `(jif ,arg.0 (,(- stack.0 pc) offset))))
+                      (yield `(jif ,arg.0 (,(- stack.0 1 pc) offset))))
                   ;else
                     (yield instr))))
-            (++ pc)))))))
+            (++ pc))))))))
 
 (def close-offset (pc locs)
   (let close 0

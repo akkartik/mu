@@ -720,6 +720,29 @@
 
 (reset)
 (new-trace "continue")
+;? (set dump-trace*)
+(add-fns `((main ,@(convert-braces '(((1 integer) <- copy (4 literal))
+                                     ((2 integer) <- copy (1 literal))
+                                     { begin
+                                     ((2 integer) <- add (2 integer) (2 integer))
+                                     ((3 boolean) <- neq (1 integer) (2 integer))
+                                     (continueif (3 boolean))
+                                     ((4 integer) <- copy (34 literal))
+                                     }
+                                     (reply))))))
+;? (each stmt function*!main
+;?   (prn stmt))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
+  (prn "F - continue correctly loops"))
+
+; todo: fuzz-test invariant: convert-braces offsets should be robust to any
+; number of inner blocks inside but not around the continue block.
+
+(reset)
+(new-trace "continue-nested")
+;? (set dump-trace*)
 (add-fns `((main ,@(convert-braces '(((1 integer) <- copy (4 literal))
                                      ((2 integer) <- copy (1 literal))
                                      { begin
@@ -731,6 +754,8 @@
                                      ((4 integer) <- copy (34 literal))
                                      }
                                      (reply))))))
+;? (each stmt function*!main
+;?   (prn stmt))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
