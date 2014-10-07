@@ -334,7 +334,7 @@
                 new
                   (let type (v arg.0)
                     (if types*.type!array
-                      (new-array type (v arg.1))
+                      (new-array type (m arg.1))
                       (new-scalar type)))
                 sizeof
                   (sizeof (v arg.0))

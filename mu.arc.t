@@ -751,9 +751,22 @@
   (run 'main)
   ;? (prn memory*)
   (if (~iso memory*.1 before)
-    (prn "F - 'new' returns current high-water mark"))
+    (prn "F - 'new' on array with literal size returns current high-water mark"))
   (if (~iso Memory-in-use-until (+ before 5))
     (prn "F - 'new' on primitive arrays increments high-water mark by their size")))
+
+(reset)
+(let before Memory-in-use-until
+  (add-fns
+    '((main
+        ((1 integer) <- literal 5)
+        ((2 type-array-address) <- new (type-array type) (1 integer)))))
+  (run 'main)
+  ;? (prn memory*)
+  (if (~iso memory*.2 before)
+    (prn "F - 'new' on array with variable size returns current high-water mark"))
+  (if (~iso Memory-in-use-until (+ before 5))
+    (prn "F - 'new' on primitive arrays increments high-water mark by their (variable) size")))
 
 (reset)
 (add-fns
