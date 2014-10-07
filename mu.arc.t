@@ -6,7 +6,7 @@
       ((1 integer) <- copy (23 literal)))))
 (run 'test1)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 23))
+(if (~is memory*.1 23)
   (prn "F - 'copy' writes its lone 'arg' after the instruction name to its lone 'oarg' or output arg before the arrow. After this test, the value 23 is stored in memory address 1."))
 ;? (quit)
 
@@ -40,7 +40,7 @@
       ((1 integer) <- copy (1 literal)))
     (main
       (test1))))
-(if (~iso 2 (run 'main))
+(if (~is 2 (run 'main))
   (prn "F - calling a user-defined function runs its instructions exactly once"))
 ;? (quit)
 
@@ -85,7 +85,7 @@
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       (test1))))
-(if (~iso 4 (run 'main))  ; last reply sometimes not counted. worth fixing?
+(if (~is 4 (run 'main))  ; last reply sometimes not counted. worth fixing?
   (prn "F - 'reply' executes instructions exactly once"))
 ;? (quit)
 
@@ -117,7 +117,7 @@
       ((4 integer) <- arg 0)
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
-      ((4 integer) <- copy (34 literal)))
+      ((4 integer) <- copy (34 literal)))  ; should never run
     (main
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
@@ -177,106 +177,88 @@
   '((test1
       ((1 integer) <- add (2 literal) (3 literal)))))
 (run 'test1)
-(if (~iso memory* (obj 1 5))
+(if (~is memory*.1 5)
   (prn "F - ops can take 'literal' operands (but not return them)"))
 
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- copy (1 literal))
-      ((2 integer) <- copy (3 literal))
-      ((3 integer) <- sub (1 integer) (2 integer)))))
+      ((1 integer) <- sub (1 literal) (3 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3  3 -2))
+(if (~is memory*.1 -2)
   (prn "F - 'sub' subtracts the value at one address from the value at another"))
 
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- copy (2 literal))
-      ((2 integer) <- copy (3 literal))
-      ((3 integer) <- mul (1 integer) (2 integer)))))
+      ((1 integer) <- mul (2 literal) (3 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 3  3 6))
+(if (~is memory*.1 6)
   (prn "F - 'mul' multiplies like 'add' adds"))
 
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- copy (8 literal))
-      ((2 integer) <- copy (3 literal))
-      ((3 integer) <- div (1 integer) (2 integer)))))
+      ((1 integer) <- div (8 literal) (3 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 8  2 3  3 (/ real.8 3)))
+(if (~is memory*.1 (/ real.8 3))
   (prn "F - 'div' divides like 'add' adds"))
 
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- copy (8 literal))
-      ((2 integer) <- copy (3 literal))
-      ((3 integer) (4 integer) <- idiv (1 integer) (2 integer)))))
+      ((1 integer) (2 integer) <- idiv (8 literal) (3 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 8  2 3  3 2  4 2))
+(if (~iso memory* (obj 1 2  2 2))
   (prn "F - 'idiv' performs integer division, returning quotient and remainder"))
 
 (reset)
 (add-fns
   '((main
-      ((1 boolean) <- copy (t literal))
-      ((2 boolean) <- copy (nil literal))
-      ((3 boolean) <- and (1 boolean) (2 boolean)))))
+      ((1 boolean) <- and (t literal) (nil literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 t  2 nil  3 nil))
+(if (~is memory*.1 nil)
   (prn "F - logical 'and' for booleans"))
 
 (reset)
 (add-fns
   '((main
-      ((1 boolean) <- copy (4 literal))
-      ((2 boolean) <- copy (3 literal))
-      ((3 boolean) <- lt (1 boolean) (2 boolean)))))
+      ((1 boolean) <- lt (4 literal) (3 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 4  2 3  3 nil))
+(if (~is memory*.1 nil)
   (prn "F - 'lt' is the less-than inequality operator"))
 
 (reset)
 (add-fns
   '((main
-      ((1 boolean) <- copy (4 literal))
-      ((2 boolean) <- copy (3 literal))
-      ((3 boolean) <- le (1 boolean) (2 boolean)))))
+      ((1 boolean) <- le (4 literal) (3 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 4  2 3  3 nil))
+(if (~is memory*.1 nil)
   (prn "F - 'le' is the <= inequality operator"))
 
 (reset)
 (add-fns
   '((main
-      ((1 boolean) <- copy (4 literal))
-      ((2 boolean) <- copy (4 literal))
-      ((3 boolean) <- le (1 boolean) (2 boolean)))))
+      ((1 boolean) <- le (4 literal) (4 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 4  2 4  3 t))
+(if (~is memory*.1 t)
   (prn "F - 'le' returns true for equal operands"))
 
 (reset)
 (add-fns
   '((main
-      ((1 boolean) <- copy (4 literal))
-      ((2 boolean) <- copy (5 literal))
-      ((3 boolean) <- le (1 boolean) (2 boolean)))))
+      ((1 boolean) <- le (4 literal) (5 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 4  2 5  3 t))
+(if (~is memory*.1 t)
   (prn "F - le is the <= inequality operator - 2"))
 
 (reset)
@@ -284,7 +266,7 @@
   '((main
       ((1 integer) <- copy (8 literal))
       (jmp (1 offset))
-      ((2 integer) <- copy (3 literal))
+      ((2 integer) <- copy (3 literal))  ; should be skipped
       (reply))))
 (run 'main)
 ;? (prn memory*)
@@ -296,9 +278,9 @@
   '((main
       ((1 integer) <- copy (8 literal))
       (jmp (1 offset))
-      ((2 integer) <- copy (3 literal))
+      ((2 integer) <- copy (3 literal))  ; should be skipped
       (reply)
-      ((3 integer) <- copy (34 literal)))))
+      ((3 integer) <- copy (34 literal)))))  ; never reached
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
@@ -308,31 +290,28 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (1 literal))
-      ((3 boolean) <- eq (1 integer) (2 integer))
+      ((1 boolean) <- eq (1 literal) (2 integer))
+      (jif (1 boolean) (1 offset))
+      ((2 integer) <- copy (3 literal))
+      (reply)
+      ((3 integer) <- copy (34 literal)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 t  2 1))
+  (prn "F - 'jif' is a conditional 'jmp'"))
+
+(reset)
+(add-fns
+  '((main
+      ((1 boolean) <- eq (1 literal) (2 literal))
       (jif (3 boolean) (1 offset))
       ((2 integer) <- copy (3 literal))
       (reply)
       ((3 integer) <- copy (34 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 1  3 t))
-  (prn "F - 'jif' is a conditional 'jmp'"))
-
-(reset)
-(add-fns
-  '((main
-      ((1 integer) <- copy (1 literal))
-      ((2 integer) <- copy (2 literal))
-      ((3 boolean) <- eq (1 integer) (2 integer))
-      (jif (3 boolean) (1 offset))
-      ((4 integer) <- copy (3 literal))
-      (reply)
-      ((3 integer) <- copy (34 literal)))))
-(run 'main)
-;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 2  3 nil  4 3))
+(if (~iso memory* (obj 1 nil  2 3))
   (prn "F - if 'jif's first arg is false, it doesn't skip any instructions"))
 
 (reset)
@@ -340,9 +319,10 @@
   '((main
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (1 literal))
+      ; loop
       ((2 integer) <- add (2 integer) (2 integer))
       ((3 boolean) <- eq (1 integer) (2 integer))
-      (jif (3 boolean) (-3 offset))
+      (jif (3 boolean) (-3 offset))  ; to loop
       ((4 integer) <- copy (3 literal))
       (reply)
       ((3 integer) <- copy (34 literal)))))
@@ -377,11 +357,10 @@
   '((main
       ((1 integer-address) <- copy (2 literal))
       ((2 integer) <- copy (34 literal))
-      ((3 integer) <- copy (2 literal))
-      ((1 integer-address deref) <- add (2 integer) (3 integer)))))
+      ((1 integer-address deref) <- add (2 integer) (2 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 36  3 2))
+(if (~iso memory* (obj 1 2  2 36))
   (prn "F - instructions can perform indirect addressing on output arg"))
 
 (reset)
@@ -508,7 +487,7 @@
       ((1 integer) <- sizeof (integer-boolean-pair type)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2))
+(if (~is memory*.1 2)
   (prn "F - 'sizeof' returns space required by arg"))
 
 (reset)
@@ -517,7 +496,7 @@
       ((1 integer) <- sizeof (integer-point-pair type)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 3))
+(if (~is memory*.1 3)
   (prn "F - 'sizeof' is different from number of elems"))
 
 ; todo: test that out-of-bounds access throws an error
@@ -538,92 +517,82 @@
 (add-fns
   '((test1
       ((4 type) <- otype 0)
-      ((5 type) <- copy (integer literal))
-      ((6 boolean) <- neq (4 type) (5 type))
-      (jif (6 boolean) (3 offset))
+      ((5 boolean) <- neq (4 type) (integer literal))
+      (jif (5 boolean) (3 offset))
+      ((6 integer) <- arg)
       ((7 integer) <- arg)
-      ((8 integer) <- arg)
-      ((9 integer) <- add (7 integer) (8 integer))
-      (reply (9 integer)))
+      ((8 integer) <- add (6 integer) (7 integer))
+      (reply (8 integer)))
     (main
-      ((1 integer) <- copy (1 literal))
-      ((2 integer) <- copy (3 literal))
-      ((3 integer) <- test1 (1 integer) (2 integer)))))
+      ((1 integer) <- test1 (1 literal) (3 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3                     3 4
+(if (~iso memory* (obj 1 4
                          ; add-fn's temporaries
-                         4 'integer  5 'integer  6 nil  7 1  8 3  9 4))
-  (prn "F - an example function that checks that its args are integers"))
+                         4 'integer  5 nil  6 1  7 3  8 4))
+  (prn "F - an example function that checks that its oarg is an integer"))
 ;? (quit)
 
 ; todo - test that reply increments pc for caller frame after popping current frame
 
 (reset)
 (add-fns
-  '((add-fn
+  '((test-fn
       ((4 type) <- otype 0)
-      ((5 type) <- copy (integer literal))
-      ((6 boolean) <- neq (4 type) (5 type))
-      (jif (6 boolean) (4 offset))
+      ; integer needed? add args
+      ((5 boolean) <- neq (4 type) (integer literal))
+      (jif (5 boolean) (4 offset))
+      ((6 integer) <- arg)
       ((7 integer) <- arg)
-      ((8 integer) <- arg)
-      ((9 integer) <- add (7 integer) (8 integer))
-      (reply (9 integer))
-      ((5 type) <- copy (boolean literal))
-      ((6 boolean) <- neq (4 type) (5 type))
-      (jif (6 boolean) (4 offset))
+      ((8 integer) <- add (6 integer) (7 integer))
+      (reply (8 integer))
+      ; boolean needed? 'or' args
+      ((5 boolean) <- neq (4 type) (boolean literal))
+      (jif (5 boolean) (4 offset))
+      ((6 boolean) <- arg)
       ((7 boolean) <- arg)
-      ((8 boolean) <- arg)
-      ((9 boolean) <- or (7 boolean) (8 boolean))
-      (reply (9 boolean)))
+      ((8 boolean) <- or (6 boolean) (7 boolean))
+      (reply (8 boolean)))
     (main
-      ((1 boolean) <- copy (t literal))
-      ((2 boolean) <- copy (t literal))
-      ((3 boolean) <- add-fn (1 boolean) (2 boolean)))))
+      ((1 boolean) <- test-fn (t literal) (t literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj ; first call to add-fn
-                       1 t  2 t                     3 t
-                         ; add-fn's temporaries
-                         4 'boolean  5 'boolean  6 nil  7 t  8 t  9 t))
+(if (~is memory*.1 t)
   (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs"))
+(if (~iso memory* (obj 1 t
+                       ; add-fn's temporaries
+                       4 'boolean  5 nil  6 t  7 t  8 t))
+  (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs (internals)"))
 ;? (quit)
 
 (reset)
 (add-fns
-  '((add-fn
+  '((test-fn
       ((4 type) <- otype 0)
-      ((5 type) <- copy (integer literal))
-      ((6 boolean) <- neq (4 type) (5 type))
-      (jif (6 boolean) (4 offset))
+      ((5 boolean) <- neq (4 type) (integer literal))
+      (jif (5 boolean) (4 offset))
+      ((6 integer) <- arg)
       ((7 integer) <- arg)
-      ((8 integer) <- arg)
-      ((9 integer) <- add (7 integer) (8 integer))
-      (reply (9 integer))
-      ((5 type) <- copy (boolean literal))
-      ((6 boolean) <- neq (4 type) (5 type))
-      (jif (6 boolean) (6 offset))
+      ((8 integer) <- add (6 integer) (7 integer))
+      (reply (8 integer))
+      ((5 boolean) <- neq (4 type) (boolean literal))
+      (jif (5 boolean) (6 offset))
+      ((6 boolean) <- arg)
       ((7 boolean) <- arg)
-      ((8 boolean) <- arg)
-      ((9 boolean) <- or (7 boolean) (8 boolean))
-      (reply (9 boolean)))
+      ((8 boolean) <- or (6 boolean) (7 boolean))
+      (reply (8 boolean)))
     (main
-      ((1 boolean) <- copy (t literal))
-      ((2 boolean) <- copy (t literal))
-      ((3 boolean) <- add-fn (1 boolean) (2 boolean))
-      ((10 integer) <- copy (3 literal))
-      ((11 integer) <- copy (4 literal))
-      ((12 integer) <- add-fn (10 integer) (11 integer)))))
+      ((1 boolean) <- test-fn (t literal) (t literal))
+      ((2 integer) <- test-fn (3 literal) (4 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj ; first call to add-fn
-                       1 t  2 t                     3 t
-                       ; second call to add-fn
-                       10 3  11 4                   12 7
-                         ; temporaries for most recent call to add-fn
-                         4 'integer  5 'integer  6 nil  7 3  8 4  9 7))
+(if (~and (is memory*.1 t) (is memory*.2 7))
   (prn "F - different calls can exercise different clauses of the same function"))
+(if (~iso memory* (obj ; results of first and second calls to test-fn
+                       1 t  2 7
+                       ; temporaries for most recent call to test-fn
+                       4 'integer  5 nil  6 3  7 4  8 7))
+  (prn "F - different calls can exercise different clauses of the same function (internals)"))
 
 (if (~iso (convert-braces '(((1 integer) <- copy (4 literal))
                             ((2 integer) <- copy (2 literal))
