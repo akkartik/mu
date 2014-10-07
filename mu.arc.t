@@ -3,18 +3,18 @@
 (reset)
 (add-fns
   '((test1
-      ((1 integer) <- literal 1))))
+      ((1 integer) <- copy (23 literal)))))
 (run 'test1)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1))
-  (prn "F - 'literal' writes a literal value (its lone 'arg' after the instruction name) to a location in memory (an address) specified by its lone 'oarg' or output arg before the arrow"))
+(if (~iso memory* (obj 1 23))
+  (prn "F - 'copy' writes its lone 'arg' after the instruction name to its lone 'oarg' or output arg before the arrow. After this test, the value 23 is stored in memory address 1."))
 ;? (quit)
 
 (reset)
 (add-fns
   '((test1
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
       ((3 integer) <- add (1 integer) (2 integer)))))
 (run 'test1)
 (if (~iso memory* (obj 1 1  2 3  3 4))
@@ -25,8 +25,8 @@
   '((test1
       ((3 integer) <- add (1 integer) (2 integer)))
     (main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
       (test1))))
 (run 'main)
 ;? (prn memory*)
@@ -37,7 +37,7 @@
 (reset)
 (add-fns
   '((test1
-      ((1 integer) <- literal 1))
+      ((1 integer) <- copy (1 literal)))
     (main
       (test1))))
 (if (~iso 2 (run 'main))
@@ -49,10 +49,10 @@
   '((test1
       ((3 integer) <- add (1 integer) (2 integer))
       (reply)
-      ((4 integer) <- literal 34))
+      ((4 integer) <- copy (34 literal)))
     (main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
       (test1))))
 (run 'main)
 ;? (prn memory*)
@@ -67,7 +67,7 @@
     (test2
       (reply (2 integer)))
     (main
-      ((2 integer) <- literal 34)
+      ((2 integer) <- copy (34 literal))
       (test1))))
 (run 'main)
 ;? (prn memory*)
@@ -80,10 +80,10 @@
   '((test1
       ((3 integer) <- add (1 integer) (2 integer))
       (reply)
-      ((4 integer) <- literal 34))
+      ((4 integer) <- copy (34 literal)))
     (main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
       (test1))))
 (if (~iso 4 (run 'main))  ; last reply sometimes not counted. worth fixing?
   (prn "F - 'reply' executes instructions exactly once"))
@@ -96,10 +96,10 @@
       ((5 integer) <- arg)
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
-      ((4 integer) <- literal 34))
+      ((4 integer) <- copy (34 literal)))
     (main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
       (test1 (1 integer) (2 integer))
     )))
 (run 'main)
@@ -117,10 +117,10 @@
       ((4 integer) <- arg 0)
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
-      ((4 integer) <- literal 34))
+      ((4 integer) <- copy (34 literal)))
     (main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
       (test1 (1 integer) (2 integer))
     )))
 (run 'main)
@@ -141,10 +141,10 @@
       ((5 integer) <- arg)
       ((6 integer) <- add (4 integer) (5 integer))
       (reply (6 integer))
-      ((4 integer) <- literal 34))
+      ((4 integer) <- copy (34 literal)))
     (main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
       ((3 integer) <- test1 (1 integer) (2 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -160,10 +160,10 @@
       ((5 integer) <- arg)
       ((6 integer) <- add (4 integer) (5 integer))
       (reply (6 integer) (5 integer))
-      ((4 integer) <- literal 34))
+      ((4 integer) <- copy (34 literal)))
     (main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
       ((3 integer) (7 integer) <- test1 (1 integer) (2 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -183,8 +183,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
       ((3 integer) <- sub (1 integer) (2 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -194,8 +194,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 2)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (3 literal))
       ((3 integer) <- mul (1 integer) (2 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -205,8 +205,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 8)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (8 literal))
+      ((2 integer) <- copy (3 literal))
       ((3 integer) <- div (1 integer) (2 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -216,8 +216,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 8)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (8 literal))
+      ((2 integer) <- copy (3 literal))
       ((3 integer) (4 integer) <- idiv (1 integer) (2 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -227,8 +227,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 boolean) <- literal t)
-      ((2 boolean) <- literal nil)
+      ((1 boolean) <- copy (t literal))
+      ((2 boolean) <- copy (nil literal))
       ((3 boolean) <- and (1 boolean) (2 boolean)))))
 (run 'main)
 ;? (prn memory*)
@@ -238,8 +238,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 boolean) <- literal 4)
-      ((2 boolean) <- literal 3)
+      ((1 boolean) <- copy (4 literal))
+      ((2 boolean) <- copy (3 literal))
       ((3 boolean) <- lt (1 boolean) (2 boolean)))))
 (run 'main)
 ;? (prn memory*)
@@ -249,8 +249,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 boolean) <- literal 4)
-      ((2 boolean) <- literal 3)
+      ((1 boolean) <- copy (4 literal))
+      ((2 boolean) <- copy (3 literal))
       ((3 boolean) <- le (1 boolean) (2 boolean)))))
 (run 'main)
 ;? (prn memory*)
@@ -260,8 +260,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 boolean) <- literal 4)
-      ((2 boolean) <- literal 4)
+      ((1 boolean) <- copy (4 literal))
+      ((2 boolean) <- copy (4 literal))
       ((3 boolean) <- le (1 boolean) (2 boolean)))))
 (run 'main)
 ;? (prn memory*)
@@ -271,8 +271,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 boolean) <- literal 4)
-      ((2 boolean) <- literal 5)
+      ((1 boolean) <- copy (4 literal))
+      ((2 boolean) <- copy (5 literal))
       ((3 boolean) <- le (1 boolean) (2 boolean)))))
 (run 'main)
 ;? (prn memory*)
@@ -282,9 +282,9 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 8)
+      ((1 integer) <- copy (8 literal))
       (jmp (1 offset))
-      ((2 integer) <- literal 3)
+      ((2 integer) <- copy (3 literal))
       (reply))))
 (run 'main)
 ;? (prn memory*)
@@ -294,11 +294,11 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 8)
+      ((1 integer) <- copy (8 literal))
       (jmp (1 offset))
-      ((2 integer) <- literal 3)
+      ((2 integer) <- copy (3 literal))
       (reply)
-      ((3 integer) <- literal 34))))
+      ((3 integer) <- copy (34 literal)))))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
@@ -308,13 +308,13 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 1)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (1 literal))
       ((3 boolean) <- eq (1 integer) (2 integer))
       (jif (3 boolean) (1 offset))
-      ((2 integer) <- literal 3)
+      ((2 integer) <- copy (3 literal))
       (reply)
-      ((3 integer) <- literal 34))))
+      ((3 integer) <- copy (34 literal)))))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 1  3 t))
@@ -323,13 +323,13 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 2)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (2 literal))
       ((3 boolean) <- eq (1 integer) (2 integer))
       (jif (3 boolean) (1 offset))
-      ((4 integer) <- literal 3)
+      ((4 integer) <- copy (3 literal))
       (reply)
-      ((3 integer) <- literal 34))))
+      ((3 integer) <- copy (34 literal)))))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 2  3 nil  4 3))
@@ -338,14 +338,14 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 2)
-      ((2 integer) <- literal 1)
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (1 literal))
       ((2 integer) <- add (2 integer) (2 integer))
       ((3 boolean) <- eq (1 integer) (2 integer))
       (jif (3 boolean) (-3 offset))
-      ((4 integer) <- literal 3)
+      ((4 integer) <- copy (3 literal))
       (reply)
-      ((3 integer) <- literal 34))))
+      ((3 integer) <- copy (34 literal)))))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
@@ -354,7 +354,7 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 34)
+      ((1 integer) <- copy (34 literal))
       ((2 integer) <- copy (1 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -364,8 +364,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer-address) <- literal 2)
-      ((2 integer) <- literal 34)
+      ((1 integer-address) <- copy (2 literal))
+      ((2 integer) <- copy (34 literal))
       ((3 integer) <- copy (1 integer-address deref)))))
 (run 'main)
 ;? (prn memory*)
@@ -375,9 +375,9 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer-address) <- literal 2)
-      ((2 integer) <- literal 34)
-      ((3 integer) <- literal 2)
+      ((1 integer-address) <- copy (2 literal))
+      ((2 integer) <- copy (34 literal))
+      ((3 integer) <- copy (2 literal))
       ((1 integer-address deref) <- add (2 integer) (3 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -387,8 +387,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 34)
-      ((2 boolean) <- literal nil)
+      ((1 integer) <- copy (34 literal))
+      ((2 boolean) <- copy (nil literal))
       ((3 boolean) <- get (1 integer-boolean-pair) (1 offset))
       ((4 integer) <- get (1 integer-boolean-pair) (0 offset)))))
 (run 'main)
@@ -399,9 +399,9 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 34)
-      ((2 boolean) <- literal nil)
-      ((3 integer-boolean-pair-address) <- literal 1)
+      ((1 integer) <- copy (34 literal))
+      ((2 boolean) <- copy (nil literal))
+      ((3 integer-boolean-pair-address) <- copy (1 literal))
       ((4 boolean) <- get (3 integer-boolean-pair-address deref) (1 offset))
       ((5 integer) <- get (3 integer-boolean-pair-address deref) (0 offset)))))
 (run 'main)
@@ -412,9 +412,9 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 34)
-      ((2 integer) <- literal 35)
-      ((3 integer) <- literal 36)
+      ((1 integer) <- copy (34 literal))
+      ((2 integer) <- copy (35 literal))
+      ((3 integer) <- copy (36 literal))
       ((4 integer-integer-pair) <- get (1 integer-point-pair) (1 offset)))))
 (run 'main)
 ;? (prn memory*)
@@ -424,8 +424,8 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 34)
-      ((2 integer) <- literal t)
+      ((1 integer) <- copy (34 literal))
+      ((2 integer) <- copy (t literal))
       ((3 boolean-address) <- get-address (1 integer-boolean-pair) (1 offset)))))
 (run 'main)
 ;? (prn memory*)
@@ -435,9 +435,9 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 34)
-      ((2 integer) <- literal t)
-      ((3 integer-boolean-pair-address) <- literal 1)
+      ((1 integer) <- copy (34 literal))
+      ((2 integer) <- copy (t literal))
+      ((3 integer-boolean-pair-address) <- copy (1 literal))
       ((4 boolean-address) <- get-address (3 integer-boolean-pair-address deref) (1 offset)))))
 (run 'main)
 ;? (prn memory*)
@@ -447,11 +447,11 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 2)
-      ((2 integer) <- literal 23)
-      ((3 boolean) <- literal nil)
-      ((4 integer) <- literal 24)
-      ((5 boolean) <- literal t)
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 boolean) <- copy (nil literal))
+      ((4 integer) <- copy (24 literal))
+      ((5 boolean) <- copy (t literal))
       ((6 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (1 literal)))))
 (run 'main)
 ;? (prn memory*)
@@ -461,12 +461,12 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 2)
-      ((2 integer) <- literal 23)
-      ((3 boolean) <- literal nil)
-      ((4 integer) <- literal 24)
-      ((5 boolean) <- literal t)
-      ((6 integer) <- literal 1)
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 boolean) <- copy (nil literal))
+      ((4 integer) <- copy (24 literal))
+      ((5 boolean) <- copy (t literal))
+      ((6 integer) <- copy (1 literal))
       ((7 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (6 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -476,12 +476,12 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 2)
-      ((2 integer) <- literal 23)
-      ((3 boolean) <- literal nil)
-      ((4 integer) <- literal 24)
-      ((5 boolean) <- literal t)
-      ((6 integer) <- literal 1)
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 boolean) <- copy (nil literal))
+      ((4 integer) <- copy (24 literal))
+      ((5 boolean) <- copy (t literal))
+      ((6 integer) <- copy (1 literal))
       ((7 integer-boolean-pair-address) <- index-address (1 integer-boolean-pair-array) (6 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -491,11 +491,11 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 2)
-      ((2 integer) <- literal 23)
-      ((3 boolean) <- literal nil)
-      ((4 integer) <- literal 24)
-      ((5 boolean) <- literal t)
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 boolean) <- copy (nil literal))
+      ((4 integer) <- copy (24 literal))
+      ((5 boolean) <- copy (t literal))
       ((6 integer) <- len (1 integer-boolean-pair-array)))))
 (run 'main)
 ;? (prn memory*)
@@ -525,9 +525,9 @@
 (reset)
 (add-fns
   '((main
-      ((1 integer) <- literal 34)
-      ((2 boolean) <- literal nil)
-      ((4 boolean) <- literal t)
+      ((1 integer) <- copy (34 literal))
+      ((2 boolean) <- copy (nil literal))
+      ((4 boolean) <- copy (t literal))
       ((3 integer-boolean-pair) <- copy (1 integer-boolean-pair)))))
 (run 'main)
 ;? (prn memory*)
@@ -538,7 +538,7 @@
 (add-fns
   '((test1
       ((4 type) <- otype 0)
-      ((5 type) <- literal integer)
+      ((5 type) <- copy (integer literal))
       ((6 boolean) <- neq (4 type) (5 type))
       (jif (6 boolean) (3 offset))
       ((7 integer) <- arg)
@@ -546,8 +546,8 @@
       ((9 integer) <- add (7 integer) (8 integer))
       (reply (9 integer)))
     (main
-      ((1 integer) <- literal 1)
-      ((2 integer) <- literal 3)
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
       ((3 integer) <- test1 (1 integer) (2 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -563,14 +563,14 @@
 (add-fns
   '((add-fn
       ((4 type) <- otype 0)
-      ((5 type) <- literal integer)
+      ((5 type) <- copy (integer literal))
       ((6 boolean) <- neq (4 type) (5 type))
       (jif (6 boolean) (4 offset))
       ((7 integer) <- arg)
       ((8 integer) <- arg)
       ((9 integer) <- add (7 integer) (8 integer))
       (reply (9 integer))
-      ((5 type) <- literal boolean)
+      ((5 type) <- copy (boolean literal))
       ((6 boolean) <- neq (4 type) (5 type))
       (jif (6 boolean) (4 offset))
       ((7 boolean) <- arg)
@@ -578,8 +578,8 @@
       ((9 boolean) <- or (7 boolean) (8 boolean))
       (reply (9 boolean)))
     (main
-      ((1 boolean) <- literal t)
-      ((2 boolean) <- literal t)
+      ((1 boolean) <- copy (t literal))
+      ((2 boolean) <- copy (t literal))
       ((3 boolean) <- add-fn (1 boolean) (2 boolean)))))
 (run 'main)
 ;? (prn memory*)
@@ -594,14 +594,14 @@
 (add-fns
   '((add-fn
       ((4 type) <- otype 0)
-      ((5 type) <- literal integer)
+      ((5 type) <- copy (integer literal))
       ((6 boolean) <- neq (4 type) (5 type))
       (jif (6 boolean) (4 offset))
       ((7 integer) <- arg)
       ((8 integer) <- arg)
       ((9 integer) <- add (7 integer) (8 integer))
       (reply (9 integer))
-      ((5 type) <- literal boolean)
+      ((5 type) <- copy (boolean literal))
       ((6 boolean) <- neq (4 type) (5 type))
       (jif (6 boolean) (6 offset))
       ((7 boolean) <- arg)
@@ -609,11 +609,11 @@
       ((9 boolean) <- or (7 boolean) (8 boolean))
       (reply (9 boolean)))
     (main
-      ((1 boolean) <- literal t)
-      ((2 boolean) <- literal t)
+      ((1 boolean) <- copy (t literal))
+      ((2 boolean) <- copy (t literal))
       ((3 boolean) <- add-fn (1 boolean) (2 boolean))
-      ((10 integer) <- literal 3)
-      ((11 integer) <- literal 4)
+      ((10 integer) <- copy (3 literal))
+      ((11 integer) <- copy (4 literal))
       ((12 integer) <- add-fn (10 integer) (11 integer)))))
 (run 'main)
 ;? (prn memory*)
@@ -625,88 +625,88 @@
                          4 'integer  5 'integer  6 nil  7 3  8 4  9 7))
   (prn "F - different calls can exercise different clauses of the same function"))
 
-(if (~iso (convert-braces '(((1 integer) <- literal 4)
-                            ((2 integer) <- literal 2)
+(if (~iso (convert-braces '(((1 integer) <- copy (4 literal))
+                            ((2 integer) <- copy (2 literal))
                             ((3 integer) <- add (2 integer) (2 integer))
                             { begin  ; 'begin' is just a hack because racket turns curlies into parens
                             ((4 boolean) <- neq (1 integer) (3 integer))
                             (breakif (4 boolean))
-                            ((5 integer) <- literal 34)
+                            ((5 integer) <- copy (34 literal))
                             }
                             (reply)))
-          '(((1 integer) <- literal 4)
-            ((2 integer) <- literal 2)
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
             ((4 boolean) <- neq (1 integer) (3 integer))
             (jif (4 boolean) (1 offset))
-            ((5 integer) <- literal 34)
+            ((5 integer) <- copy (34 literal))
             (reply)))
   (prn "F - convert-braces replaces breakif with a jif to after the next close curly"))
 
-(if (~iso (convert-braces '(((1 integer) <- literal 4)
-                            ((2 integer) <- literal 2)
+(if (~iso (convert-braces '(((1 integer) <- copy (4 literal))
+                            ((2 integer) <- copy (2 literal))
                             ((3 integer) <- add (2 integer) (2 integer))
                             { begin
                             (break)
                             }
                             (reply)))
-          '(((1 integer) <- literal 4)
-            ((2 integer) <- literal 2)
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
             (jmp (0 offset))
             (reply)))
   (prn "F - convert-braces works for degenerate blocks"))
 
-(if (~iso (convert-braces '(((1 integer) <- literal 4)
-                            ((2 integer) <- literal 2)
+(if (~iso (convert-braces '(((1 integer) <- copy (4 literal))
+                            ((2 integer) <- copy (2 literal))
                             ((3 integer) <- add (2 integer) (2 integer))
                             { begin
                             ((4 boolean) <- neq (1 integer) (3 integer))
                             (breakif (4 boolean))
                             { begin
-                            ((5 integer) <- literal 34)
+                            ((5 integer) <- copy (34 literal))
                             }
                             }
                             (reply)))
-          '(((1 integer) <- literal 4)
-            ((2 integer) <- literal 2)
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
             ((4 boolean) <- neq (1 integer) (3 integer))
             (jif (4 boolean) (1 offset))
-            ((5 integer) <- literal 34)
+            ((5 integer) <- copy (34 literal))
             (reply)))
   (prn "F - convert-braces balances curlies when converting break"))
 
-(if (~iso (convert-braces '(((1 integer) <- literal 4)
-                            ((2 integer) <- literal 2)
+(if (~iso (convert-braces '(((1 integer) <- copy (4 literal))
+                            ((2 integer) <- copy (2 literal))
                             { begin
                             ((3 integer) <- add (2 integer) (2 integer))
                             { begin
                             ((4 boolean) <- neq (1 integer) (3 integer))
                             }
                             (continueif (4 boolean))
-                            ((5 integer) <- literal 34)
+                            ((5 integer) <- copy (34 literal))
                             }
                             (reply)))
-          '(((1 integer) <- literal 4)
-            ((2 integer) <- literal 2)
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
             ((4 boolean) <- neq (1 integer) (3 integer))
             (jif (4 boolean) (-3 offset))
-            ((5 integer) <- literal 34)
+            ((5 integer) <- copy (34 literal))
             (reply)))
   (prn "F - convert-braces balances curlies when converting continue"))
 
 (reset)
-(add-fns `((main ,@(convert-braces '(((1 integer) <- literal 4)
-                                     ((2 integer) <- literal 1)
+(add-fns `((main ,@(convert-braces '(((1 integer) <- copy (4 literal))
+                                     ((2 integer) <- copy (1 literal))
                                      { begin
                                      ((2 integer) <- add (2 integer) (2 integer))
                                      { begin
                                      ((3 boolean) <- neq (1 integer) (2 integer))
                                      }
                                      (continueif (3 boolean))
-                                     ((4 integer) <- literal 34)
+                                     ((4 integer) <- copy (34 literal))
                                      }
                                      (reply))))))
 (run 'main)
@@ -715,15 +715,15 @@
   (prn "F - continue correctly loops"))
 
 (reset)
-(add-fns `((main ,@(convert-braces '(((1 integer) <- literal 4)
-                                     ((2 integer) <- literal 2)
+(add-fns `((main ,@(convert-braces '(((1 integer) <- copy (4 literal))
+                                     ((2 integer) <- copy (2 literal))
                                      { begin
                                      ((2 integer) <- add (2 integer) (2 integer))
                                      { begin
                                      ((3 boolean) <- neq (1 integer) (2 integer))
                                      }
                                      (continueif (3 boolean))
-                                     ((4 integer) <- literal 34)
+                                     ((4 integer) <- copy (34 literal))
                                      }
                                      (reply))))))
 (run 'main)
@@ -759,7 +759,7 @@
 (let before Memory-in-use-until
   (add-fns
     '((main
-        ((1 integer) <- literal 5)
+        ((1 integer) <- copy (5 literal))
         ((2 type-array-address) <- new (type-array type) (1 integer)))))
   (run 'main)
   ;? (prn memory*)
@@ -771,9 +771,9 @@
 (reset)
 (add-fns
   '((f1
-      ((1 integer) <- literal 3))
+      ((1 integer) <- copy (3 literal)))
     (f2
-      ((2 integer) <- literal 4))))
+      ((2 integer) <- copy (4 literal)))))
 (let ninsts (run 'f1 'f2)
   (when (~iso 2 ninsts)
     (prn "F - scheduler didn't run the right number of instructions: " ninsts)))

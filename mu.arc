@@ -251,8 +251,6 @@
 ;?         (prn op " " arg " -> " oarg)
         (let tmp
               (case op
-                literal
-                  arg.0
                 add
                   (+ (m arg.0) (m arg.1))
                 sub
