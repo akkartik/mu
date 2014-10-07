@@ -159,13 +159,13 @@
     (+ v.operand offset)))
 
 (def array-ref (operand idx)
-  (prn "aref: @operand @idx")
+;?   (prn "aref: @operand @idx")
   (assert typeinfo.operand!array)
   (assert (< -1 idx (array-len operand)))
-  (prn "aref2: @operand @idx")
+;?   (prn "aref2: @operand @idx")
   (withs (elem  typeinfo.operand!elem
           offset  (+ 1 (* idx sz.elem)))
-    (prn "aref3: @elem @v.operand @offset")
+;?     (prn "aref3: @elem @v.operand @offset")
     (m `(,(+ v.operand offset) ,elem))))
 
 ; context contains the call-stack of functions that haven't yet returned
@@ -248,7 +248,7 @@
 ;?       (prn "--- " top.context!fn-name " " pc.context ": " (body.context pc.context))
 ;?       (prn "  " memory*)
       (let (oarg op arg)  (parse-instr (body.context pc.context))
-        (prn op " " arg " -> " oarg)
+;?         (prn op " " arg " -> " oarg)
         (let tmp
               (case op
                 literal
