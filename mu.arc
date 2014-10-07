@@ -9,8 +9,23 @@
   `(enq (fn () ,@body)
         initialization-fns*))
 
+(= traces* (queue))
+(= trace-dir* ".traces/")
+(ensure-dir trace-dir*)
+(= curr-trace-file* nil)
 (on-init
+  (awhen curr-trace-file*
+;?     (prn "reset: " it)
+    (tofile (+ trace-dir* it)
+      (each (label trace) (as cons traces*)
+        (pr label ": " trace))))
+  (= curr-trace-file* nil)
   (= traces* (queue)))
+
+(def new-trace (filename)
+;?   (prn "new-trace " filename)
+  (= curr-trace-file* filename))
+
 (def trace (label . args)
   (enq (list label (apply tostring:prn args))
        traces*))
@@ -523,6 +538,10 @@
                   (= close loc)
                   (set done))))))
     (- close pc 1)))
+
+(def prn2 (msg . args)
+  (pr msg)
+  (apply prn args))
 
 (reset)
 (awhen cdr.argv

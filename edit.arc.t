@@ -1,6 +1,7 @@
 (load "mu.arc")
 
 (reset)
+(new-trace "new-screen")
 (add-fns:readfile "edit.mu")
 (add-fns
   '((test-new-screen
@@ -20,3 +21,5 @@
 ;?       )))
 ;? (run 'test-redraw)
 ;? (prn memory*)
+
+(reset)
