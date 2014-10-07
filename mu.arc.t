@@ -802,7 +802,7 @@
   ;? (prn memory*)
   (if (~iso memory*.1 before)
     (prn "F - 'new' on array with literal size returns current high-water mark"))
-  (if (~iso Memory-in-use-until (+ before 5))
+  (if (~iso Memory-in-use-until (+ before 6))
     (prn "F - 'new' on primitive arrays increments high-water mark by their size")))
 
 (reset)
@@ -816,7 +816,7 @@
   ;? (prn memory*)
   (if (~iso memory*.2 before)
     (prn "F - 'new' on array with variable size returns current high-water mark"))
-  (if (~iso Memory-in-use-until (+ before 5))
+  (if (~iso Memory-in-use-until (+ before 6))
     (prn "F - 'new' on primitive arrays increments high-water mark by their (variable) size")))
 
 (reset)
