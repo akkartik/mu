@@ -403,7 +403,7 @@
                 print
                   (do1 nil ((if ($.current-charterm) $.charterm-display pr) (m arg.0)))
                 getc
-                  ($.charterm-read-key)
+                  (and ($.charterm-byte-ready?) ($.charterm-read-key))
                 bold-mode
                   (do1 nil ($.charterm-bold))
                 non-bold-mode
