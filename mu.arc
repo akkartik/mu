@@ -1,4 +1,4 @@
-; what happens when our virtual machine starts up
+;; what happens when our virtual machine starts up
 (= initialization-fns* (queue))
 (def reset ()
   (each f (as cons initialization-fns*)
@@ -20,7 +20,7 @@
   (= function* (table)))
 (enq clear initialization-fns*)
 
-; persisting and checking traces for each test
+;; persisting and checking traces for each test
 (= traces* (queue))
 (= trace-dir* ".traces/")
 (ensure-dir trace-dir*)
@@ -76,7 +76,7 @@
   (each (name . body) fns
     (= function*.name (convert-braces body))))
 
-; running mu
+;; running mu
 (def v (operand)  ; for value
   operand.0)
 
@@ -443,7 +443,7 @@
             (each elem types*.type!elems
               (yield sizeof.elem))))))
 
-; desugar structured assembly based on blocks
+;; desugar structured assembly based on blocks
 
 (def convert-braces (instrs)
   (let locs ()  ; list of information on each brace: (open/close pc)
@@ -534,7 +534,7 @@
   (pr msg)
   (apply prn args))
 
-; after loading all files, start at 'main'
+;; after loading all files, start at 'main'
 (reset)
 (awhen cdr.argv
   (map add-fns:readfile it)
