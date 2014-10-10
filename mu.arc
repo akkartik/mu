@@ -1,5 +1,4 @@
-; things that a future assembler will need separate memory for:
-;   code; types; args channel
+; what happens when our virtual machine starts up
 (= initialization-fns* (queue))
 (def reset ()
   (each f (as cons initialization-fns*)
@@ -9,6 +8,19 @@
   `(enq (fn () ,@body)
         initialization-fns*))
 
+(mac init-fn (name . body)
+  `(enq (fn () (= (function* ',name) ',body))
+        initialization-fns*))
+
+; things that a future assembler will need separate memory for:
+;   code; types; args channel
+(def clear ()
+  (= types* (table))
+  (= memory* (table))
+  (= function* (table)))
+(enq clear initialization-fns*)
+
+; persisting and checking traces for each test
 (= traces* (queue))
 (= trace-dir* ".traces/")
 (ensure-dir trace-dir*)
@@ -60,53 +72,11 @@
   (each (expected-label expected-msg)  expected-contents
     (prn "  ! " expected-label ": " expected-msg)))
 
-(mac init-fn (name . body)
-  `(enq (fn () (= (function* ',name) ',body))
-        initialization-fns*))
-
-(def clear ()
-  (= types* (obj
-              ; must be scalar or array, sum or product or primitive
-              type (obj size 1)
-              type-array (obj array t  elem 'type)
-              type-array-address (obj size 1  address t  elem 'type-array)
-              typeinfo (obj size 5  record t  elems '(integer boolean boolean boolean type-array))
-              typeinfo-address (obj size 1  address t  elem 'typeinfo)
-              typeinfo-address-array (obj array t  elem 'typeinfo-address)
-              location (obj size 1)
-              integer (obj size 1)
-              boolean (obj size 1)
-              boolean-address (obj size 1  address t)
-              byte (obj size 1)
-;?               string (obj array t  elem 'byte)  ; inspired by Go
-              character (obj size 1)  ; int32 like a Go rune
-              character-address (obj size 1  address t  elem 'character)
-              string (obj size 1)  ; temporary hack
-              ; arrays consist of an integer length followed by the right number of elems
-              integer-array (obj array t  elem 'integer)
-              integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
-              ; records consist of a series of elems, corresponding to a list of types
-              integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
-              integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
-              integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
-              integer-integer-pair (obj size 2  record t  elems '(integer integer))
-              integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
-              custodian  (obj size 1  record t  elems '(integer))
-              ; editor
-              line (obj array t  elem 'character)
-              line-address (obj size 1  address t  elem 'line)
-              line-address-address (obj size 1  address t  elem 'line-address)
-              screen (obj array t  elem 'line-address)
-              screen-address (obj size 1  address t  elem 'screen)
-              ))
-  (= memory* (table))
-  (= function* (table)))
-(enq clear initialization-fns*)
-
 (def add-fns (fns)
   (each (name . body) fns
     (= function*.name (convert-braces body))))
 
+; running mu
 (def v (operand)  ; for value
   operand.0)
 
@@ -269,6 +239,7 @@
 ;?         (prn op " " arg " -> " oarg)
         (let tmp
               (case op
+                ; arithmetic
                 add
                   (do (trace "add" (m arg.0) " " (m arg.1))
                   (+ (m arg.0) (m arg.1))
@@ -282,12 +253,16 @@
                 idiv
                   (list (trunc:/ (m arg.0) (m arg.1))
                         (mod (m arg.0) (m arg.1)))
+
+                ; boolean
                 and
                   (and (m arg.0) (m arg.1))
                 or
                   (or (m arg.0) (m arg.1))
                 not
                   (not (m arg.0))
+
+                ; comparison
                 eq
                   (is (m arg.0) (m arg.1))
                 neq
@@ -302,18 +277,8 @@
                   (<= (m arg.0) (m arg.1))
                 ge
                   (>= (m arg.0) (m arg.1))
-                arg
-                  (let idx (if arg
-                             arg.0
-                             (do1 caller-arg-idx.context
-                                (++ caller-arg-idx.context)))
-;?                     (prn idx)
-;?                     (prn caller-args.context)
-                    (m caller-args.context.idx))
-                type
-                  (ty (caller-args.context arg.0))
-                otype
-                  (ty (caller-oargs.context arg.0))
+
+                ; control flow
                 jmp
                   (do (= pc.context (+ 1 pc.context (v arg.0)))
 ;?                       (prn "jumping to " pc.context)
@@ -323,6 +288,8 @@
                     (= pc.context (+ 1 pc.context (v arg.1)))
 ;?                     (prn "jumping to " pc.context)
                     (continue))
+
+                ; data management: scalars, arrays, records
                 copy
                   (m arg.0)
                 get
@@ -373,7 +340,6 @@
                     (if typeinfo.base!array
                       (array-ref-addr base idx)
                       (assert nil "get-address on invalid type @arg.0 => @base")))
-
                 new
                   (let type (v arg.0)
                     (if types*.type!array
@@ -413,6 +379,19 @@
                 console-off
                   (do1 nil (if ($.current-charterm) ($.close-charterm)))
 
+                ; user-defined functions
+                arg
+                  (let idx (if arg
+                             arg.0
+                             (do1 caller-arg-idx.context
+                                (++ caller-arg-idx.context)))
+;?                     (prn idx)
+;?                     (prn caller-args.context)
+                    (m caller-args.context.idx))
+                type
+                  (ty (caller-args.context arg.0))
+                otype
+                  (ty (caller-oargs.context arg.0))
                 reply
                   (do (pop-stack context)
                       (if empty.context (return ninstrs))
@@ -425,13 +404,14 @@
                         (if empty.context (return ninstrs))
                         (++ pc.context))
                       (continue))
-                ; else user-defined function
+                ; else try to call as a user-defined function
                   (do (if function*.op
                         (push-stack context op)
                         (err "no such op @op"))
                       (continue))
                 )
               ; opcode generated some value, stored in 'tmp'
+              ; copy to output args
 ;?               (prn "store: " tmp " " oarg)
               (if (acons tmp)
                 (for i 0 (< i (min len.tmp len.oarg)) ++.i
@@ -462,6 +442,8 @@
           (accum yield
             (each elem types*.type!elems
               (yield sizeof.elem))))))
+
+; desugar structured assembly based on blocks
 
 (def convert-braces (instrs)
   (let locs ()  ; list of information on each brace: (open/close pc)
@@ -552,6 +534,7 @@
   (pr msg)
   (apply prn args))
 
+; after loading all files, start at 'main'
 (reset)
 (awhen cdr.argv
   (map add-fns:readfile it)
