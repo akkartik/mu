@@ -90,9 +90,13 @@
   (types* ty.operand))
 
 (def sz (operand)
-;?   (prn "sz " operand)
+  (trace "sz" operand)
   (if (is 'literal ty.operand)
         'literal
+      (pos 'deref metadata.operand)
+        (do (assert typeinfo.operand!address)
+            (sz (list (m `(,(v operand) location))
+                      typeinfo.operand!elem)))
       (let-or it typeinfo.operand (err "no such type: @operand")
         (if it!array
           array-len.operand
@@ -113,7 +117,7 @@
       (++ n))))
 
 (def m (loc)  ; read memory, respecting metadata
-;?   (prn "m " loc " " sz.loc)
+  (trace "m" loc " " sz.loc)
   (if (is 'literal ty.loc)
         (v loc)
       (is 1 sz.loc)
@@ -123,13 +127,17 @@
                   (map memory* (addrs addr.loc sz.loc)))))
 
 (def setm (loc val)  ; set memory, respecting metadata
-;?   (prn "setm " loc " " val)
-  (assert sz.loc)
-  (if (is 1 sz.loc)
-    (= (memory* addr.loc) val)
-    (each (dest src) (zip (addrs addr.loc sz.loc)
-                          (rep val))
-      (= (memory* dest) src))))
+  (trace "setm" loc " <= " val)
+  (let n sz.loc
+    (trace "size of " loc " is " n)
+    (assert n)
+    (if (is 1 n)
+      (do (assert (~isa val 'record))
+          (= (memory* addr.loc) val))
+      (do (assert (isa val 'record))
+          (each (dest src) (zip (addrs addr.loc n)
+                                (rep val))
+            (= (memory* dest) src))))))
 
 (def array-len (operand)
 ;?   (prn operand)
@@ -235,7 +243,7 @@
         (pop-stack context)
         (if empty.context (return ninstrs))
         (++ pc.context))
-;?       (prn memory*)
+      (trace "run" "-- " memory*)
       (trace "run" top.context!fn-name " " pc.context ": " (body.context pc.context))
 ;?       (prn "--- " top.context!fn-name " " pc.context ": " (body.context pc.context))
       (let (oarg op arg)  (parse-instr (body.context pc.context))
@@ -388,7 +396,7 @@
                              arg.0
                              (do1 caller-arg-idx.context
                                 (++ caller-arg-idx.context)))
-;?                     (prn arg " " idx " " caller-args.context)
+                    (trace "arg" arg " " idx " " caller-args.context)
                     (m caller-args.context.idx))
                 type
                   (ty (caller-args.context arg.0))
@@ -421,7 +429,7 @@
                 (for i 0 (< i (min len.tmp len.oarg)) ++.i
                   (setm oarg.i tmp.i))
                 (when oarg  ; must be a list
-;?                   (prn oarg.0)
+                  (trace "run" "writing to oarg " tmp " => " oarg.0)
                   (setm oarg.0 tmp)))
               )
         (++ pc.context)))
@@ -541,15 +549,16 @@
 ;; system software
 
 (init-fn maybe-coerce
-  ((23 tagged-value) <- arg)
+  ((x tagged-value-address) <- new (tagged-value type))
+  ((x tagged-value-address deref) <- arg)
   ((p type) <- arg)
-  ((xtype type) <- get (23 tagged-value) (0 offset))
+  ((xtype type) <- get (x tagged-value-address deref) (0 offset))
   ((match? boolean) <- eq (xtype type) (p type))
   { begin
     (breakif (match? boolean))
     (reply (0 literal) (nil boolean))
   }
-  ((xvalue location) <- get (23 tagged-value) (1 offset))
+  ((xvalue location) <- get (x tagged-value-address deref) (1 offset))
   (reply (xvalue location) (match? boolean)))
 
 ; drop all traces while processing above functions
