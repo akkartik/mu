@@ -9,7 +9,7 @@
         initialization-fns*))
 
 (mac init-fn (name . body)
-  `(enq (fn () (= (function* ',name) ',body))
+  `(enq (fn () (= (function* ',name) (convert-braces ',body)))
         initialization-fns*))
 
 ; things that a future assembler will need separate memory for:
@@ -91,9 +91,12 @@
 
 (def sz (operand)
 ;?   (prn "sz " operand)
-  (if typeinfo.operand!array
-    array-len.operand
-    typeinfo.operand!size))
+  (if (is 'literal ty.operand)
+        'literal
+      (let-or it typeinfo.operand (err "no such type: @operand")
+        (if it!array
+          array-len.operand
+          it!size))))
 (defextend sz (typename) (isa typename 'sym)
   (or types*.typename!size
       (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
@@ -353,22 +356,6 @@
                       array-len.base
                       -1))
 
-                ; dynamic types
-                maybe-coerce
-;?                 (do (prn "AAA " arg.0 " " arg.1)
-;?                   (prn (m arg.0))
-;?                   (prn `(,(v arg.0) type))
-;?                   (prn "DDD " (m `(,(v arg.0) type)))
-;?                   (prn (+ 1 (v arg.0)))
-;?                   (prn `(,(+ 1 (v arg.0)) ,(m arg.1)))
-;?                   (prn (m `(,(+ 1 (v arg.0)) ,(m arg.1))))
-                  (if (is (m arg.1) (m `(,(v arg.0) type)))
-                    (list (m `(,(+ 1 (v arg.0)) ,(m arg.1)))
-                          t)
-                    (list 0
-                          nil))
-;?                   )
-
                 ; multiprocessing
                 run
                   (run (v arg.0))
@@ -401,8 +388,7 @@
                              arg.0
                              (do1 caller-arg-idx.context
                                 (++ caller-arg-idx.context)))
-;?                     (prn idx)
-;?                     (prn caller-args.context)
+;?                     (prn arg " " idx " " caller-args.context)
                     (m caller-args.context.idx))
                 type
                   (ty (caller-args.context arg.0))
@@ -412,7 +398,9 @@
                   (do (pop-stack context)
                       (if empty.context (return ninstrs))
                       (let (caller-oargs _ _)  (parse-instr (body.context pc.context))
+;?                         (prn arg " " caller-oargs)
                         (each (dest src)  (zip caller-oargs arg)
+;?                           (prn src " => " dest)
                           (setm dest  (m src))))
                       (++ pc.context)
                       (while (>= pc.context (len body.context))
@@ -549,6 +537,24 @@
 (def prn2 (msg . args)
   (pr msg)
   (apply prn args))
+
+;; system software
+
+(init-fn maybe-coerce
+  ((23 tagged-value) <- arg)
+  ((p type) <- arg)
+  ((xtype type) <- get (23 tagged-value) (0 offset))
+  ((match? boolean) <- eq (xtype type) (p type))
+  { begin
+    (breakif (match? boolean))
+    (reply (0 literal) (nil boolean))
+  }
+  ((xvalue location) <- get (23 tagged-value) (1 offset))
+  (reply (xvalue location) (match? boolean)))
+
+; drop all traces while processing above functions
+(on-init
+  (= traces* (queue)))
 
 ;; after loading all files, start at 'main'
 (reset)

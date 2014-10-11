@@ -1,10 +1,17 @@
 cvt0: 0 ((1 type) <- copy (integer-address literal)) -- nil
-cvt0: 1 ((2 integer-address) <- copy (3 literal)) -- nil
+cvt0: 1 ((2 integer-address) <- copy (34 literal)) -- nil
 cvt0: 2 ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal)) -- nil
 cvt1: 0 copy ((1 type))
 cvt1: 1 copy ((2 integer-address))
 cvt1: 2 maybe-coerce ((3 integer-address) (4 boolean))
 schedule: test1
 run: test1 0: ((1 type) <- copy (integer-address literal))
-run: test1 1: ((2 integer-address) <- copy (3 literal))
+run: test1 1: ((2 integer-address) <- copy (34 literal))
 run: test1 2: ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal))
+run: maybe-coerce 0: ((23 tagged-value) <- arg)
+run: maybe-coerce 1: ((p type) <- arg)
+run: maybe-coerce 2: ((xtype type) <- get (23 tagged-value) (0 offset))
+run: maybe-coerce 3: ((match? boolean) <- eq (xtype type) (p type))
+run: maybe-coerce 4: (jif (match? boolean) (1 offset))
+run: maybe-coerce 6: ((xvalue location) <- get (23 tagged-value) (1 offset))
+run: maybe-coerce 7: (reply (xvalue location) (match? boolean))
