@@ -139,6 +139,7 @@
               integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
               ; tagged-values are the foundation of dynamic types
               tagged-value (obj size 2  record t  elems '(type location))
+              tagged-value-address (obj size 1  address t  elem 'tagged-value)
               )))
 
 ; Our language is assembly-like in that functions consist of series of
@@ -584,10 +585,10 @@
 (if (~is memory*.1 3)
   (prn "F - 'sizeof' is different from number of elems"))
 
-; Regardless of a type's length, you can move it around with 'copy'.
+; Regardless of a type's length, you can move it around just like a primitive.
 
 (reset)
-(new-trace "compound-operand")
+(new-trace "compound-operand-copy")
 (add-fns
   '((test1
       ((1 integer) <- copy (34 literal))
@@ -598,6 +599,35 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 34  4 nil))
   (prn "F - ops can operate on records spanning multiple locations"))
+
+(reset)
+(new-trace "compound-arg")
+(add-fns
+  '((test1
+      ((4 integer-boolean-pair) <- arg))
+    (main
+      ((1 integer) <- copy (34 literal))
+      ((2 boolean) <- copy (nil literal))
+      (test1 (1 integer-boolean-pair)))))
+(run 'main)
+(if (~iso memory* (obj 1 34  2 nil  4 34  5 nil))
+  (prn "F - 'arg' can copy records spanning multiple locations"))
+
+(reset)
+(new-trace "compound-arg")
+;? (set dump-trace*)
+(add-fns
+  '((test1
+      ((4 integer-boolean-pair) <- arg))
+    (main
+      ((1 integer) <- copy (34 literal))
+      ((2 boolean) <- copy (nil literal))
+      ((3 integer-boolean-pair-address) <- copy (1 literal))
+      (test1 (3 integer-boolean-pair-address deref)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 34  2 nil  3 1  4 34  5 nil))
+  (prn "F - 'arg' can copy records spanning multiple locations in indirect mode"))
 
 ; A special kind of record is the 'tagged type'. It lets us represent
 ; dynamically typed values, which save type information in memory rather than
