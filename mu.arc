@@ -353,6 +353,22 @@
                       array-len.base
                       -1))
 
+                ; dynamic types
+                maybe-coerce
+;?                 (do (prn "AAA " arg.0 " " arg.1)
+;?                   (prn (m arg.0))
+;?                   (prn `(,(v arg.0) type))
+;?                   (prn "DDD " (m `(,(v arg.0) type)))
+;?                   (prn (+ 1 (v arg.0)))
+;?                   (prn `(,(+ 1 (v arg.0)) ,(m arg.1)))
+;?                   (prn (m `(,(+ 1 (v arg.0)) ,(m arg.1))))
+                  (if (is (m arg.1) (m `(,(v arg.0) type)))
+                    (list (m `(,(+ 1 (v arg.0)) ,(m arg.1)))
+                          t)
+                    (list 0
+                          nil))
+;?                   )
+
                 ; multiprocessing
                 run
                   (run (v arg.0))
