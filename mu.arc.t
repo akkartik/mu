@@ -90,7 +90,7 @@
 ; http://akkartik.name/post/tracing-tests)
 ;
 ; The common thread here is elimination of abstractions, and it's not an
-; accident Abstractions help insiders manage the evolution of a codebase, but
+; accident. Abstractions help insiders manage the evolution of a codebase, but
 ; they actively hinder outsiders in understanding it from scratch. This
 ; matters, because the funnel to turn outsiders into insiders is critical to
 ; the long-term life of a codebase. Perhaps authors should raise their
@@ -103,7 +103,8 @@
 ; Mu is currently built atop Racket and Arc, but this is temporary and
 ; contingent. We want to keep our options open, whether to port to a different
 ; host language, and easy to rewrite to native code for any platform. So we'll
-; try to avoid cheating by using host functionality 'for free'.
+; try to avoid 'cheating': relying on the host platform for advanced
+; functionality.
 ;
 ; Other than that, we'll say no more about the code, and focus in the rest of
 ; this file on the scenarios the code cares about.
