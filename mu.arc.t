@@ -137,6 +137,8 @@
               integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
               integer-integer-pair (obj size 2  record t  elems '(integer integer))
               integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
+              ; tagged-values are the foundation of dynamic types
+              tagged-value (obj size 2  record t  elems '(type address))
               )))
 
 ; Our language is assembly-like in that functions consist of series of
@@ -592,6 +594,27 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 34  4 nil))
   (prn "F - ops can operate on records spanning multiple locations"))
+
+; A special kind of record is the 'tagged type'. It lets us represent
+; dynamically typed values, which save type information in memory rather than
+; in the code to use them. This will let us do things like create heterogenous
+; lists containing both integers and strings.
+;
+; Open question: should maybe-coerce to type integer return an integer or
+; integer-address on success? Given that types and their addresses have no
+; systematic relation, we should probably be more explicit.
+
+(reset)
+(new-trace "tagged-value")
+(add-fns
+  '((test1
+      ((1 type) <- copy (integer literal))
+      ((2 integer-address) <- copy (3 literal))
+      ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer literal)))))
+(run 'test1)
+;? (prn memory*)
+(if (~iso memory* (obj 1 'integer  2 3  3 3  4 t))
+  (prn "F - 'maybe-coerce' copies value only if type tag matches"))
 
 ; Just like the table of types is centralized, functions are conceptualized as
 ; a centralized table of operations just like the 'primitives' we've seen so
