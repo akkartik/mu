@@ -138,7 +138,7 @@
               integer-integer-pair (obj size 2  record t  elems '(integer integer))
               integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
               ; tagged-values are the foundation of dynamic types
-              tagged-value (obj size 2  record t  elems '(type address))
+              tagged-value (obj size 2  record t  elems '(type location))
               )))
 
 ; Our language is assembly-like in that functions consist of series of
@@ -606,14 +606,15 @@
 
 (reset)
 (new-trace "tagged-value")
+;? (set dump-trace*)
 (add-fns
   '((test1
       ((1 type) <- copy (integer-address literal))
-      ((2 integer-address) <- copy (3 literal))
+      ((2 integer-address) <- copy (34 literal))
       ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal)))))
 (run 'test1)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 'integer-address  2 3  3 3  4 t))
+(if (or (~is memory*.3 34) (~is memory*.4 t))
   (prn "F - 'maybe-coerce' copies value only if type tag matches"))
 
 ; Just like the table of types is centralized, functions are conceptualized as
