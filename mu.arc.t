@@ -163,7 +163,11 @@
 ; various metadata in the rest. In this first example the only metadata is types:
 ; 'integer' for a memory location containing an integer, and 'literal' for a
 ; value included directly in code. (Assembly languages traditionally call them
-; 'immediate' operands.)
+; 'immediate' operands.) In the future a simple tool will check that the types
+; line up as expected in each op. A different tool might add types where they
+; aren't provided. Instead of a monolithic compiler I want to build simple,
+; lightweight tools that can be combined in various ways, say for using
+; different typecheckers in different subsystems.
 
 (reset)
 (new-trace "literal")
