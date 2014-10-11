@@ -599,21 +599,17 @@
 ; dynamically typed values, which save type information in memory rather than
 ; in the code to use them. This will let us do things like create heterogenous
 ; lists containing both integers and strings.
-;
-; Open question: should maybe-coerce to type integer return an integer or
-; integer-address on success? Given that types and their addresses have no
-; systematic relation, we should probably be more explicit.
 
 (reset)
 (new-trace "tagged-value")
 (add-fns
   '((test1
-      ((1 type) <- copy (integer literal))
+      ((1 type) <- copy (integer-address literal))
       ((2 integer-address) <- copy (3 literal))
-      ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer literal)))))
+      ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal)))))
 (run 'test1)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 'integer  2 3  3 3  4 t))
+(if (~iso memory* (obj 1 'integer-address  2 3  3 3  4 t))
   (prn "F - 'maybe-coerce' copies value only if type tag matches"))
 
 ; Just like the table of types is centralized, functions are conceptualized as
