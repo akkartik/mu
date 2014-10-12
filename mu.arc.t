@@ -791,6 +791,21 @@
   (prn "F - missing 'arg' doesn't cause error"))
 ;? (quit)
 
+(reset)
+(new-trace "new-fn-arg-missing-2")
+(add-fns
+  '((test1
+      ((4 integer) <- arg)
+      ((5 integer) (6 boolean) <- arg))
+    (main
+      (test1 (1 literal))
+    )))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 4 1  6 t))
+  (prn "F - missing 'arg' sets a second oarg when provided"))
+;? (quit)
+
 ; how should errors be handled? will be unclear until we support concurrency and routine trees.
 
 (reset)
