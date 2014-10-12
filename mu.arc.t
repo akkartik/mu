@@ -902,11 +902,9 @@
 ; 'type' and 'otype' let us create generic functions that run different code
 ; based on what args the caller provides, or what oargs the caller expects.
 ;
-; These operations are more experimental than their surroundings; we might
-; eventually need more detailed access to the calling instruction.
-;
-; There's also the open question of how to deal with dynamic-typing situations
-; where the caller doesn't know the type of its arg/oarg.
+; These operations are almost certainly bad ideas; they violate our constraint
+; of easily assembling down to native code. We'll eventually switch to dynamic
+; typing with tagged-values.
 
 (reset)
 (new-trace "dispatch-otype")
