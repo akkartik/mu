@@ -118,6 +118,7 @@
   (= types* (obj
               ; Each type must be scalar or array, sum or product or primitive
               type (obj size 1)  ; implicitly scalar and primitive
+              type-address (obj size 1  address t  elem 'type)
               type-array (obj array t  elem 'type)
               type-array-address (obj size 1  address t  elem 'type-array)
               location (obj size 1  address t  elem 'location)  ; assume it points to an atom
@@ -141,6 +142,10 @@
               ; tagged-values are the foundation of dynamic types
               tagged-value (obj size 2  record t  elems '(type location))
               tagged-value-address (obj size 1  address t  elem 'tagged-value)
+              ; heterogeneous lists
+              list (obj size 2  record t  elems '(tagged-value list-address))
+              list-address (obj size 1  address t  elem 'list)
+              list-address-address (obj size 1  address t  elem 'list-address)
               )))
 
 ; Our language is assembly-like in that functions consist of series of
@@ -657,7 +662,7 @@
       ((2 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (boolean-address literal)))))
 (run 'test1)
-(prn memory*)
+;? (prn memory*)
 (if (or (~is memory*.3 0) (~is memory*.4 nil))
   (prn "F - 'maybe-coerce' doesn't copy value when type tag doesn't match"))
 
@@ -673,6 +678,46 @@
 ;? (prn memory*)
 (if (or (~is memory*.3 34) (~is memory*.4 t))
   (prn "F - 'new-tagged-value' is the converse of 'maybe-coerce'"))
+
+; Now that we can record types for values we can construct a dynamically typed
+; list.
+
+(reset)
+(new-trace "list")
+;? (set dump-trace*)
+(add-fns
+  '((test1
+      ; 1 points at first node: tagged-value (int 34)
+      ((1 list-address) <- new (list type))
+      ((2 tagged-value-address) <- get-address (1 list-address deref) (0 offset))
+      ((3 type-address) <- get-address (2 tagged-value-address deref) (0 offset))
+      ((3 type-address deref) <- copy (integer literal))
+      ((4 location) <- get-address (2 tagged-value-address deref) (1 offset))
+      ((4 location deref) <- copy (34 literal))
+      ((5 list-address-address) <- get-address (1 list-address deref) (1 offset))
+      ((5 list-address-address deref) <- new (list type))
+      ; 6 points at second node: tagged-value (boolean t)
+      ((6 list-address) <- copy (5 list-address-address deref))
+      ((7 tagged-value-address) <- get-address (6 list-address deref) (0 offset))
+      ((7 type-address) <- get-address (6 tagged-value-address deref) (0 offset))
+      ((7 type-address deref) <- copy (boolean literal))
+      ((8 location) <- get-address (6 tagged-value-address deref) (1 offset))
+      ((8 location deref) <- copy (t literal)))))
+(let first Memory-in-use-until
+  (run 'test1)
+;?   (prn memory*)
+  (if (or (~all first (map memory* '(1 2 3)))
+          (~is memory*.first  'integer)
+          (~is memory*.4 (+ first 1))
+          (~is (memory* (+ first 1))  34)
+          (~is memory*.5 (+ first 2))
+          (let second memory*.6
+            (~is (memory* (+ first 2)) second)
+            (~is memory*.7 second)
+            (~is memory*.second 'boolean)
+            (~is memory*.8 (+ second 1))
+            (~is (memory* (+ second 1)) t)))
+    (prn "F - 'list' constructs a heterogeneous list, which can contain elements of different types")))
 
 ; Just like the table of types is centralized, functions are conceptualized as
 ; a centralized table of operations just like the 'primitives' we've seen so
