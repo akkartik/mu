@@ -321,9 +321,11 @@
                 get-address
                   (with (base arg.0
                          idx (v arg.1))
+                    (trace "get-address" base "." idx)
                     (when typeinfo.base!address
                       (assert (pos 'deref metadata.base))
                       (= base (list (memory* v.base) typeinfo.base!elem)))
+                    (trace "get-address" "after: " base)
                     (if typeinfo.base!record
                       (do (assert (< -1 idx (len typeinfo.base!elems)))
                           (+ v.base
@@ -579,6 +581,11 @@
   ((resulttype location deref) <- copy (xtype type))
   ((locaddr location) <- get-address (result tagged-value-address deref) (1 offset))
   ((locaddr location deref) <- arg)
+  (reply (result tagged-value-address)))
+
+(init-fn list-value-address
+  ((base list-address) <- arg)
+  ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
   (reply (result tagged-value-address)))
 
 ; drop all traces while processing above functions
