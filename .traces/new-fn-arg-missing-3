@@ -1,36 +1,65 @@
 cvt0: 0 ((4 integer) <- arg) -- nil
-cvt0: 1 ((5 integer) <- copy (34 literal)) -- nil
-cvt0: 2 ((5 integer) (6 boolean) <- arg) -- nil
+cvt0: 1 ((5 integer) (6 boolean) <- arg) -- nil
+cvt0: 2 (breakif (6 boolean)) -- ((open 2))
+cvt0: 3 ((5 integer) <- copy (1 literal)) -- ((open 2))
+cvt0: 4 ((7 integer) <- add (4 integer) (5 integer)) -- ((close 4) (open 2))
 cvt1: 0 arg ((4 integer))
-cvt1: 1 copy ((5 integer))
-cvt1: 2 arg ((5 integer) (6 boolean))
-cvt0: 0 (test1 (1 literal)) -- nil
+cvt1: 1 arg ((5 integer) (6 boolean))
+cvt1: 2 begin nil
+cvt1: 2 breakif nil
+cvt1: 3 copy ((5 integer))
+cvt1: 4 add ((7 integer))
+cvt0: 0 (test1 (34 literal)) -- nil
 cvt1: 0 test1 nil
 schedule: main
 run: -- nil
-run: main 0: (test1 (1 literal))
+run: main 0: (test1 (34 literal))
 run: -- nil
 run: test1 0: ((4 integer) <- arg)
-arg: nil 0 ((1 literal))
-sz: (1 literal)
-m: (1 literal) literal
-setm: (4 integer) <= 1
-sz: (4 integer)
-size of : (4 integer) is 1
-run: -- ((4 1))
-run: test1 1: ((5 integer) <- copy (34 literal))
+arg: nil 0 ((34 literal))
 sz: (34 literal)
 m: (34 literal) literal
-run: writing to oarg 34 => (5 integer)
-setm: (5 integer) <= 34
-sz: (5 integer)
-size of : (5 integer) is 1
-run: -- ((4 1) (5 34))
-run: test1 2: ((5 integer) (6 boolean) <- arg)
-arg: nil 1 ((1 literal))
+setm: (4 integer) <= 34
+sz: (4 integer)
+size of : (4 integer) is 1
+run: -- ((4 34))
+run: test1 1: ((5 integer) (6 boolean) <- arg)
+arg: nil 1 ((34 literal))
 setm: (5 integer) <= nil
 sz: (5 integer)
 size of : (5 integer) is 1
-setm: (6 boolean) <= t
+setm: (6 boolean) <= nil
 sz: (6 boolean)
 size of : (6 boolean) is 1
+run: -- ((4 34))
+run: test1 2: (jif (6 boolean) (1 offset))
+sz: (6 boolean)
+m: (6 boolean) 1
+sz: (6 boolean)
+run: -- ((4 34))
+run: test1 3: ((5 integer) <- copy (1 literal))
+sz: (1 literal)
+m: (1 literal) literal
+run: writing to oarg 1 => (5 integer)
+setm: (5 integer) <= 1
+sz: (5 integer)
+size of : (5 integer) is 1
+run: -- ((4 34) (5 1))
+run: test1 4: ((7 integer) <- add (4 integer) (5 integer))
+sz: (4 integer)
+m: (4 integer) 1
+sz: (4 integer)
+sz: (5 integer)
+m: (5 integer) 1
+sz: (5 integer)
+add: 34 1
+sz: (4 integer)
+m: (4 integer) 1
+sz: (4 integer)
+sz: (5 integer)
+m: (5 integer) 1
+sz: (5 integer)
+run: writing to oarg 35 => (7 integer)
+setm: (7 integer) <= 35
+sz: (7 integer)
+size of : (7 integer) is 1
