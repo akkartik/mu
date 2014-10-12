@@ -5,7 +5,7 @@ cvt1: 0 copy ((1 type))
 cvt1: 1 copy ((2 integer-address))
 cvt1: 2 maybe-coerce ((3 integer-address) (4 boolean))
 schedule: test1
-run: -- #hash()
+run: -- nil
 run: test1 0: ((1 type) <- copy (integer-address literal))
 sz: (integer-address literal)
 m: (integer-address literal) literal
@@ -13,7 +13,7 @@ run: writing to oarg integer-address => (1 type)
 setm: (1 type) <= integer-address
 sz: (1 type)
 size of : (1 type) is 1
-run: -- #hash((1 . integer-address))
+run: -- ((1 integer-address))
 run: test1 1: ((2 integer-address) <- copy (34 literal))
 sz: (34 literal)
 m: (34 literal) literal
@@ -21,22 +21,21 @@ run: writing to oarg 34 => (2 integer-address)
 setm: (2 integer-address) <= 34
 sz: (2 integer-address)
 size of : (2 integer-address) is 1
-run: -- #hash((1 . integer-address) (2 . 34))
+run: -- ((1 integer-address) (2 34))
 run: test1 2: ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal))
-run: -- #hash((1 . integer-address) (2 . 34))
+run: -- ((1 integer-address) (2 34))
 run: maybe-coerce 0: ((x tagged-value-address) <- new (tagged-value type))
 run: writing to oarg 1000 => (x tagged-value-address)
 setm: (x tagged-value-address) <= 1000
 sz: (x tagged-value-address)
 size of : (x tagged-value-address) is 1
-run: -- #hash((1 . integer-address) (2 . 34) (x . 1000))
+run: -- ((1 integer-address) (2 34) (x 1000))
 run: maybe-coerce 1: ((x tagged-value-address deref) <- arg)
 arg: nil 0 ((1 tagged-value) (integer-address literal))
 sz: (1 tagged-value)
 m: (1 tagged-value) 2
 sz: (1 tagged-value)
 sz: (1 tagged-value)
-run: writing to oarg #(tagged record (integer-address 34 . nil)) => (x tagged-value-address deref)
 setm: (x tagged-value-address deref) <= #(tagged record (integer-address 34 . nil))
 sz: (x tagged-value-address deref)
 sz: (x location)
@@ -44,16 +43,15 @@ m: (x location) 1
 sz: (x location)
 sz: (1000 tagged-value)
 size of : (x tagged-value-address deref) is 2
-run: -- #hash((1000 . integer-address) (1 . integer-address) (2 . 34) (x . 1000) (1001 . 34))
+run: -- ((1 integer-address) (1000 integer-address) (1001 34) (2 34) (x 1000))
 run: maybe-coerce 2: ((p type) <- arg)
 arg: nil 1 ((1 tagged-value) (integer-address literal))
 sz: (integer-address literal)
 m: (integer-address literal) literal
-run: writing to oarg integer-address => (p type)
 setm: (p type) <= integer-address
 sz: (p type)
 size of : (p type) is 1
-run: -- #hash((1000 . integer-address) (2 . 34) (p . integer-address) (1 . integer-address) (x . 1000) (1001 . 34))
+run: -- ((1 integer-address) (1000 integer-address) (1001 34) (2 34) (p integer-address) (x 1000))
 run: maybe-coerce 3: ((xtype type) <- get (x tagged-value-address deref) (0 offset))
 sz: (1000 type)
 m: (1000 type) 1
@@ -62,7 +60,7 @@ run: writing to oarg integer-address => (xtype type)
 setm: (xtype type) <= integer-address
 sz: (xtype type)
 size of : (xtype type) is 1
-run: -- #hash((xtype . integer-address) (1 . integer-address) (2 . 34) (x . 1000) (1001 . 34) (1000 . integer-address) (p . integer-address))
+run: -- ((1 integer-address) (1000 integer-address) (1001 34) (2 34) (p integer-address) (x 1000) (xtype integer-address))
 run: maybe-coerce 4: ((match? boolean) <- eq (xtype type) (p type))
 sz: (xtype type)
 m: (xtype type) 1
@@ -74,12 +72,12 @@ run: writing to oarg t => (match? boolean)
 setm: (match? boolean) <= t
 sz: (match? boolean)
 size of : (match? boolean) is 1
-run: -- #hash((xtype . integer-address) (1 . integer-address) (2 . 34) (x . 1000) (1001 . 34) (1000 . integer-address) (match? . t) (p . integer-address))
+run: -- ((1 integer-address) (1000 integer-address) (1001 34) (2 34) (match? t) (p integer-address) (x 1000) (xtype integer-address))
 run: maybe-coerce 5: (jif (match? boolean) (1 offset))
 sz: (match? boolean)
 m: (match? boolean) 1
 sz: (match? boolean)
-run: -- #hash((xtype . integer-address) (1 . integer-address) (2 . 34) (x . 1000) (1001 . 34) (1000 . integer-address) (match? . t) (p . integer-address))
+run: -- ((1 integer-address) (1000 integer-address) (1001 34) (2 34) (match? t) (p integer-address) (x 1000) (xtype integer-address))
 run: maybe-coerce 7: ((xvalue location) <- get (x tagged-value-address deref) (1 offset))
 sz: (1001 location)
 m: (1001 location) 1
@@ -88,7 +86,7 @@ run: writing to oarg 34 => (xvalue location)
 setm: (xvalue location) <= 34
 sz: (xvalue location)
 size of : (xvalue location) is 1
-run: -- #hash((xtype . integer-address) (2 . 34) (xvalue . 34) (1 . integer-address) (x . 1000) (1001 . 34) (1000 . integer-address) (match? . t) (p . integer-address))
+run: -- ((1 integer-address) (1000 integer-address) (1001 34) (2 34) (match? t) (p integer-address) (x 1000) (xtype integer-address) (xvalue 34))
 run: maybe-coerce 8: (reply (xvalue location) (match? boolean))
 sz: (xvalue location)
 m: (xvalue location) 1

@@ -243,7 +243,7 @@
         (pop-stack context)
         (if empty.context (return ninstrs))
         (++ pc.context))
-      (trace "run" "-- " memory*)
+      (trace "run" "-- " (sort (compare < string:car) (as cons memory*)))
       (trace "run" top.context!fn-name " " pc.context ": " (body.context pc.context))
 ;?       (prn "--- " top.context!fn-name " " pc.context ": " (body.context pc.context))
       (let (oarg op arg)  (parse-instr (body.context pc.context))
