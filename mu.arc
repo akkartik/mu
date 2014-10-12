@@ -398,7 +398,8 @@
                                 (++ caller-arg-idx.context)))
                     (trace "arg" arg " " idx " " caller-args.context)
                     (if (len> caller-args.context idx)
-                      (m caller-args.context.idx)))
+                      (list (m caller-args.context.idx) nil)
+                      (list nil t)))
                 type
                   (ty (caller-args.context arg.0))
                 otype
