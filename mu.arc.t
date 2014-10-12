@@ -776,7 +776,21 @@
   (prn "F - 'arg' with index can access function call arguments out of order"))
 ;? (quit)
 
-; todo: test that too few args throws an error
+(reset)
+(new-trace "new-fn-arg-missing")
+(add-fns
+  '((test1
+      ((4 integer) <- arg)
+      ((5 integer) <- arg))
+    (main
+      (test1 (1 literal))
+    )))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 4 1))
+  (prn "F - missing 'arg' doesn't cause error"))
+;? (quit)
+
 ; how should errors be handled? will be unclear until we support concurrency and routine trees.
 
 (reset)
