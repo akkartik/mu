@@ -357,7 +357,7 @@
                       (new-array type (m arg.1))
                       (new-scalar type)))
                 sizeof
-                  (sizeof (v arg.0))
+                  (sizeof (m arg.0))
                 len
                   (let base arg.0
                     (if typeinfo.base!array
@@ -369,6 +369,10 @@
                   (run (v arg.0))
                 fork
                   (enq (make-context (v arg.0)) contexts*)
+                ; todo: errors should stall a process and let its parent
+                ; inspect it
+                assert
+                  (assert (m arg.0))
 
                 ; text interaction
                 cls
@@ -449,6 +453,7 @@
     (++ Memory-in-use-until (+ 1 (* (sizeof types*.type!elem) size)))))
 
 (def sizeof (type)
+  (trace "sizeof" type)
   (if (~or types*.type!record types*.type!array)
         types*.type!size
       types*.type!record
@@ -562,6 +567,19 @@
   }
   ((xvalue location) <- get (x tagged-value-address deref) (1 offset))
   (reply (xvalue location) (match? boolean)))
+
+(init-fn new-tagged-value
+  ((xtype type) <- arg)
+  ((xtypesize integer) <- sizeof (xtype type))
+  ((xcheck boolean) <- eq (xtypesize integer) (1 literal))
+  (assert (xcheck boolean))
+  ; todo: check that arg 0 matches the type? or is that for the future typechecker?
+  ((result tagged-value-address) <- new (tagged-value type))
+  ((resulttype location) <- get-address (result tagged-value-address deref) (0 offset))
+  ((resulttype location deref) <- copy (xtype type))
+  ((locaddr location) <- get-address (result tagged-value-address deref) (1 offset))
+  ((locaddr location deref) <- arg)
+  (reply (result tagged-value-address)))
 
 ; drop all traces while processing above functions
 (on-init

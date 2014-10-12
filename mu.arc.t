@@ -120,7 +120,7 @@
               type (obj size 1)  ; implicitly scalar and primitive
               type-array (obj array t  elem 'type)
               type-array-address (obj size 1  address t  elem 'type-array)
-              location (obj size 1)
+              location (obj size 1  address t  elem 'location)  ; assume it points to an atom
               integer (obj size 1)
               boolean (obj size 1)
               boolean-address (obj size 1  address t)
@@ -570,7 +570,7 @@
 (new-trace "sizeof-record")
 (add-fns
   '((test1
-      ((1 integer) <- sizeof (integer-boolean-pair type)))))
+      ((1 integer) <- sizeof (integer-boolean-pair literal)))))
 (run 'test1)
 ;? (prn memory*)
 (if (~is memory*.1 2)
@@ -580,7 +580,7 @@
 (new-trace "sizeof-record-not-len")
 (add-fns
   '((test1
-      ((1 integer) <- sizeof (integer-point-pair type)))))
+      ((1 integer) <- sizeof (integer-point-pair literal)))))
 (run 'test1)
 ;? (prn memory*)
 (if (~is memory*.1 3)
@@ -660,6 +660,19 @@
 (prn memory*)
 (if (or (~is memory*.3 0) (~is memory*.4 nil))
   (prn "F - 'maybe-coerce' doesn't copy value when type tag doesn't match"))
+
+(reset)
+(new-trace "new-tagged-value")
+;? (set dump-trace*)
+(add-fns
+  '((test1
+      ((1 integer-address) <- copy (34 literal))  ; pointer to nowhere
+      ((2 tagged-value-address) <- new-tagged-value (integer-address literal) (1 integer-address))
+      ((3 integer-address) (4 boolean) <- maybe-coerce (2 tagged-value-address deref) (integer-address literal)))))
+(run 'test1)
+;? (prn memory*)
+(if (or (~is memory*.3 34) (~is memory*.4 t))
+  (prn "F - 'new-tagged-value' is the converse of 'maybe-coerce'"))
 
 ; Just like the table of types is centralized, functions are conceptualized as
 ; a centralized table of operations just like the 'primitives' we've seen so
