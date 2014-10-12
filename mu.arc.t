@@ -641,12 +641,25 @@
 (add-fns
   '((test1
       ((1 type) <- copy (integer-address literal))
-      ((2 integer-address) <- copy (34 literal))
+      ((2 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal)))))
 (run 'test1)
 ;? (prn memory*)
 (if (or (~is memory*.3 34) (~is memory*.4 t))
   (prn "F - 'maybe-coerce' copies value only if type tag matches"))
+
+(reset)
+(new-trace "tagged-value-2")
+;? (set dump-trace*)
+(add-fns
+  '((test1
+      ((1 type) <- copy (integer-address literal))
+      ((2 integer-address) <- copy (34 literal))  ; pointer to nowhere
+      ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (boolean-address literal)))))
+(run 'test1)
+(prn memory*)
+(if (or (~is memory*.3 0) (~is memory*.4 nil))
+  (prn "F - 'maybe-coerce' doesn't copy value when type tag doesn't match"))
 
 ; Just like the table of types is centralized, functions are conceptualized as
 ; a centralized table of operations just like the 'primitives' we've seen so
