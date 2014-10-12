@@ -698,11 +698,11 @@
       ((5 list-address-address deref) <- new (list type))
       ; 6 points at second node: tagged-value (boolean t)
       ((6 list-address) <- copy (5 list-address-address deref))
-      ((7 tagged-value-address) <- get-address (6 list-address deref) (0 offset))
-      ((7 type-address) <- get-address (6 tagged-value-address deref) (0 offset))
-      ((7 type-address deref) <- copy (boolean literal))
-      ((8 location) <- get-address (6 tagged-value-address deref) (1 offset))
-      ((8 location deref) <- copy (t literal)))))
+      ((7 tagged-value-address) <- list-value-address (6 list-address))
+      ((8 type-address) <- get-address (7 tagged-value-address deref) (0 offset))
+      ((8 type-address deref) <- copy (boolean literal))
+      ((9 location) <- get-address (7 tagged-value-address deref) (1 offset))
+      ((9 location deref) <- copy (t literal)))))
 (let first Memory-in-use-until
   (run 'test1)
 ;?   (prn memory*)
@@ -713,9 +713,9 @@
           (~is memory*.5 (+ first 2))
           (let second memory*.6
             (~is (memory* (+ first 2)) second)
-            (~is memory*.7 second)
+            (~all second (map memory* '(6 7 8)))
             (~is memory*.second 'boolean)
-            (~is memory*.8 (+ second 1))
+            (~is memory*.9 (+ second 1))
             (~is (memory* (+ second 1)) t)))
     (prn "F - 'list' constructs a heterogeneous list, which can contain elements of different types")))
 
