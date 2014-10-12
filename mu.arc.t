@@ -777,6 +777,20 @@
 ;? (quit)
 
 (reset)
+(new-trace "new-fn-arg-status")
+(add-fns
+  '((test1
+      ((4 integer) (5 boolean) <- arg))
+    (main
+      (test1 (1 literal))
+    )))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 4 1  5 t))
+  (prn "F - 'arg' sets a second oarg when arg exists"))
+;? (quit)
+
+(reset)
 (new-trace "new-fn-arg-missing")
 (add-fns
   '((test1
@@ -802,8 +816,8 @@
     )))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 4 1  6 t))
-  (prn "F - missing 'arg' sets a second oarg when provided"))
+(if (~iso memory* (obj 4 1  6 nil))
+  (prn "F - missing 'arg' wipes second oarg when provided"))
 ;? (quit)
 
 (reset)
@@ -818,8 +832,29 @@
     )))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 4 1  6 t))
+(if (~iso memory* (obj 4 1  6 nil))
   (prn "F - missing 'arg' consistently wipes its oarg"))
+;? (quit)
+
+(reset)
+(new-trace "new-fn-arg-missing-3")
+(add-fns
+  '((test1
+      ; if given two args, adds them; if given one arg, increments
+      ((4 integer) <- arg)
+      ((5 integer) (6 boolean) <- arg)
+      { begin
+        (breakif (6 boolean))
+        ((5 integer) <- copy (1 literal))
+      }
+      ((7 integer) <- add (4 integer) (5 integer)))
+    (main
+      (test1 (34 literal))
+    )))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 4 34  5 1  6 nil  7 35))
+  (prn "F - function with optional second arg"))
 ;? (quit)
 
 ; how should errors be handled? will be unclear until we support concurrency and routine trees.
