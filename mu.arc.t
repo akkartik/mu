@@ -689,7 +689,7 @@
   '((test1
       ; 1 points at first node: tagged-value (int 34)
       ((1 list-address) <- new (list type))
-      ((2 tagged-value-address) <- get-address (1 list-address deref) (0 offset))
+      ((2 tagged-value-address) <- list-value-address (1 list-address))
       ((3 type-address) <- get-address (2 tagged-value-address deref) (0 offset))
       ((3 type-address deref) <- copy (integer literal))
       ((4 location) <- get-address (2 tagged-value-address deref) (1 offset))
