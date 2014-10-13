@@ -129,7 +129,7 @@
 (def setm (loc val)  ; set memory, respecting metadata
   (trace "setm" loc " <= " val)
   (let n sz.loc
-    (trace "size of " loc " is " n)
+    (trace "setm" "size of " loc " is " n)
     (assert n)
     (if (is 1 n)
       (do (assert (~isa val 'record))
@@ -414,14 +414,14 @@
                   (do (pop-stack context)
                       (if empty.context (return ninstrs))
                       (let (caller-oargs _ _)  (parse-instr (body.context pc.context))
-;?                         (prn arg " " caller-oargs)
+                        (trace "reply" arg " " caller-oargs)
                         (each (dest src)  (zip caller-oargs arg)
-;?                           (prn src " => " dest)
+                          (trace "reply" src " => " dest)
                           (setm dest  (m src))))
                       (++ pc.context)
                       (while (>= pc.context (len body.context))
                         (pop-stack context)
-                        (if empty.context (return ninstrs))
+                        (when empty.context (return ninstrs))
                         (++ pc.context))
                       (continue))
                 ; else try to call as a user-defined function
@@ -583,7 +583,12 @@
   ((locaddr location deref) <- arg)
   (reply (result tagged-value-address)))
 
-(init-fn list-value-address
+(init-fn list-next  ; list-address -> list-address
+  ((base list-address) <- arg)
+  ((result list-address) <- get (base list-address deref) (1 offset))
+  (reply (result list-address)))
+
+(init-fn list-value-address  ; list-address -> tagged-value-address
   ((base list-address) <- arg)
   ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
   (reply (result tagged-value-address)))

@@ -718,6 +718,13 @@
             (~is memory*.9 (+ second 1))
             (~is (memory* (+ second 1)) t)))
     (prn "F - 'list' constructs a heterogeneous list, which can contain elements of different types")))
+(add-fns
+  '((test2
+      ((10 list-address) <- list-next (1 list-address)))))
+(run 'test2)
+;? (prn memory*)
+(if (~is memory*.10 memory*.6)
+  (prn "F - 'list-next can move a list pointer to the next node"))
 
 ; Just like the table of types is centralized, functions are conceptualized as
 ; a centralized table of operations just like the 'primitives' we've seen so
