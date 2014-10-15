@@ -392,7 +392,7 @@
                 non-bold-mode
                   (do1 nil ($.charterm-normal))
                 console-on
-                  (do1 nil (if ($.current-charterm) ($.open-charterm)))
+                  (do1 nil (if (no ($.current-charterm)) ($.open-charterm)))
                 console-off
                   (do1 nil (if ($.current-charterm) ($.close-charterm)))
 
@@ -601,7 +601,6 @@
 (reset)
 (awhen cdr.argv
   (map add-fns:readfile it)
-  ($.open-charterm)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
   (prn memory*))
