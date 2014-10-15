@@ -1,0 +1,464 @@
+cvt0: 0 ((4 tagged-value-address) <- arg) -- nil
+cvt0: 1 ((5 integer) (6 boolean) <- maybe-coerce (4 tagged-value-address deref) (integer literal)) -- ((open 1))
+cvt0: 2 (break-unless (6 boolean)) -- ((open 1))
+cvt0: 3 ((7 tagged-value-address) <- arg) -- ((open 1))
+cvt0: 4 ((8 integer) (9 boolean) <- maybe-coerce (7 tagged-value-address deref) (integer literal)) -- ((open 1))
+cvt0: 5 ((9 integer) <- add (5 integer) (8 integer)) -- ((open 1))
+cvt0: 6 (reply (9 integer)) -- ((open 1))
+cvt0: 7 (reply (nil literal)) -- ((close 7) (open 1))
+cvt1: 0 arg ((4 tagged-value-address))
+cvt1: 1 begin nil
+cvt1: 1 maybe-coerce ((5 integer) (6 boolean))
+cvt1: 2 break-unless nil
+cvt1: 3 arg ((7 tagged-value-address))
+cvt1: 4 maybe-coerce ((8 integer) (9 boolean))
+cvt1: 5 add ((9 integer))
+cvt1: 6 reply nil
+cvt1: 7 reply nil
+cvt0: 0 ((1 tagged-value-address) <- new-tagged-value (integer literal) (34 literal)) -- nil
+cvt0: 1 ((2 tagged-value-address) <- new-tagged-value (integer literal) (3 literal)) -- nil
+cvt0: 2 ((3 integer) <- test1 (1 tagged-value-address) (2 tagged-value-address)) -- nil
+cvt1: 0 new-tagged-value ((1 tagged-value-address))
+cvt1: 1 new-tagged-value ((2 tagged-value-address))
+cvt1: 2 test1 ((3 integer))
+schedule: main
+run: -- nil
+run: main 0: ((1 tagged-value-address) <- new-tagged-value (integer literal) (34 literal))
+run: -- nil
+run: new-tagged-value 0: ((xtype type) <- arg)
+arg: nil 0 ((integer literal) (34 literal))
+sz: (integer literal)
+m: (integer literal) literal
+setm: (xtype type) <= integer
+sz: (xtype type)
+setm: size of (xtype type) is 1
+run: -- ((xtype integer))
+run: new-tagged-value 1: ((xtypesize integer) <- sizeof (xtype type))
+sz: (xtype type)
+m: (xtype type) 1
+sz: (xtype type)
+sizeof: integer
+run: writing to oarg 1 => (xtypesize integer)
+setm: (xtypesize integer) <= 1
+sz: (xtypesize integer)
+setm: size of (xtypesize integer) is 1
+run: -- ((xtype integer) (xtypesize 1))
+run: new-tagged-value 2: ((xcheck boolean) <- eq (xtypesize integer) (1 literal))
+sz: (xtypesize integer)
+m: (xtypesize integer) 1
+sz: (xtypesize integer)
+sz: (1 literal)
+m: (1 literal) literal
+run: writing to oarg t => (xcheck boolean)
+setm: (xcheck boolean) <= t
+sz: (xcheck boolean)
+setm: size of (xcheck boolean) is 1
+run: -- ((xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 3: (assert (xcheck boolean))
+sz: (xcheck boolean)
+m: (xcheck boolean) 1
+sz: (xcheck boolean)
+run: -- ((xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 4: ((result tagged-value-address) <- new (tagged-value type))
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+run: writing to oarg 1000 => (result tagged-value-address)
+setm: (result tagged-value-address) <= 1000
+sz: (result tagged-value-address)
+setm: size of (result tagged-value-address) is 1
+run: -- ((result 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 5: ((resulttype location) <- get-address (result tagged-value-address deref) (0 offset))
+get-address: (result tagged-value-address deref).0
+get-address: after: (1000 tagged-value)
+run: writing to oarg 1000 => (resulttype location)
+setm: (resulttype location) <= 1000
+sz: (resulttype location)
+setm: size of (resulttype location) is 1
+run: -- ((result 1000) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 6: ((resulttype location deref) <- copy (xtype type))
+sz: (xtype type)
+m: (xtype type) 1
+sz: (xtype type)
+run: writing to oarg integer => (resulttype location deref)
+setm: (resulttype location deref) <= integer
+sz: (resulttype location deref)
+sz: (resulttype location)
+m: (resulttype location) 1
+sz: (resulttype location)
+sz: (1000 location)
+setm: size of (resulttype location deref) is 1
+run: -- ((1000 integer) (result 1000) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 7: ((locaddr location) <- get-address (result tagged-value-address deref) (1 offset))
+get-address: (result tagged-value-address deref).1
+get-address: after: (1000 tagged-value)
+run: writing to oarg 1001 => (locaddr location)
+setm: (locaddr location) <= 1001
+sz: (locaddr location)
+setm: size of (locaddr location) is 1
+run: -- ((1000 integer) (locaddr 1001) (result 1000) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 8: ((locaddr location deref) <- arg)
+arg: nil 1 ((integer literal) (34 literal))
+sz: (34 literal)
+m: (34 literal) literal
+setm: (locaddr location deref) <= 34
+sz: (locaddr location deref)
+sz: (locaddr location)
+m: (locaddr location) 1
+sz: (locaddr location)
+sz: (1001 location)
+setm: size of (locaddr location deref) is 1
+run: -- ((1000 integer) (1001 34) (locaddr 1001) (result 1000) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 9: (reply (result tagged-value-address))
+reply: ((result tagged-value-address)) ((1 tagged-value-address))
+reply: (result tagged-value-address) => (1 tagged-value-address)
+sz: (result tagged-value-address)
+m: (result tagged-value-address) 1
+sz: (result tagged-value-address)
+setm: (1 tagged-value-address) <= 1000
+sz: (1 tagged-value-address)
+setm: size of (1 tagged-value-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (locaddr 1001) (result 1000) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: main 1: ((2 tagged-value-address) <- new-tagged-value (integer literal) (3 literal))
+run: -- ((1 1000) (1000 integer) (1001 34) (locaddr 1001) (result 1000) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 0: ((xtype type) <- arg)
+arg: nil 0 ((integer literal) (3 literal))
+sz: (integer literal)
+m: (integer literal) literal
+setm: (xtype type) <= integer
+sz: (xtype type)
+setm: size of (xtype type) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (locaddr 1001) (result 1000) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 1: ((xtypesize integer) <- sizeof (xtype type))
+sz: (xtype type)
+m: (xtype type) 1
+sz: (xtype type)
+sizeof: integer
+run: writing to oarg 1 => (xtypesize integer)
+setm: (xtypesize integer) <= 1
+sz: (xtypesize integer)
+setm: size of (xtypesize integer) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (locaddr 1001) (result 1000) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 2: ((xcheck boolean) <- eq (xtypesize integer) (1 literal))
+sz: (xtypesize integer)
+m: (xtypesize integer) 1
+sz: (xtypesize integer)
+sz: (1 literal)
+m: (1 literal) literal
+run: writing to oarg t => (xcheck boolean)
+setm: (xcheck boolean) <= t
+sz: (xcheck boolean)
+setm: size of (xcheck boolean) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (locaddr 1001) (result 1000) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 3: (assert (xcheck boolean))
+sz: (xcheck boolean)
+m: (xcheck boolean) 1
+sz: (xcheck boolean)
+run: -- ((1 1000) (1000 integer) (1001 34) (locaddr 1001) (result 1000) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 4: ((result tagged-value-address) <- new (tagged-value type))
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+run: writing to oarg 1002 => (result tagged-value-address)
+setm: (result tagged-value-address) <= 1002
+sz: (result tagged-value-address)
+setm: size of (result tagged-value-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (locaddr 1001) (result 1002) (resulttype 1000) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 5: ((resulttype location) <- get-address (result tagged-value-address deref) (0 offset))
+get-address: (result tagged-value-address deref).0
+get-address: after: (1002 tagged-value)
+run: writing to oarg 1002 => (resulttype location)
+setm: (resulttype location) <= 1002
+sz: (resulttype location)
+setm: size of (resulttype location) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (locaddr 1001) (result 1002) (resulttype 1002) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 6: ((resulttype location deref) <- copy (xtype type))
+sz: (xtype type)
+m: (xtype type) 1
+sz: (xtype type)
+run: writing to oarg integer => (resulttype location deref)
+setm: (resulttype location deref) <= integer
+sz: (resulttype location deref)
+sz: (resulttype location)
+m: (resulttype location) 1
+sz: (resulttype location)
+sz: (1002 location)
+setm: size of (resulttype location deref) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (locaddr 1001) (result 1002) (resulttype 1002) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 7: ((locaddr location) <- get-address (result tagged-value-address deref) (1 offset))
+get-address: (result tagged-value-address deref).1
+get-address: after: (1002 tagged-value)
+run: writing to oarg 1003 => (locaddr location)
+setm: (locaddr location) <= 1003
+sz: (locaddr location)
+setm: size of (locaddr location) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (locaddr 1003) (result 1002) (resulttype 1002) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 8: ((locaddr location deref) <- arg)
+arg: nil 1 ((integer literal) (3 literal))
+sz: (3 literal)
+m: (3 literal) literal
+setm: (locaddr location deref) <= 3
+sz: (locaddr location deref)
+sz: (locaddr location)
+m: (locaddr location) 1
+sz: (locaddr location)
+sz: (1003 location)
+setm: size of (locaddr location deref) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (locaddr 1003) (result 1002) (resulttype 1002) (xcheck t) (xtype integer) (xtypesize 1))
+run: new-tagged-value 9: (reply (result tagged-value-address))
+reply: ((result tagged-value-address)) ((2 tagged-value-address))
+reply: (result tagged-value-address) => (2 tagged-value-address)
+sz: (result tagged-value-address)
+m: (result tagged-value-address) 1
+sz: (result tagged-value-address)
+setm: (2 tagged-value-address) <= 1002
+sz: (2 tagged-value-address)
+setm: size of (2 tagged-value-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (2 1002) (locaddr 1003) (result 1002) (resulttype 1002) (xcheck t) (xtype integer) (xtypesize 1))
+run: main 2: ((3 integer) <- test1 (1 tagged-value-address) (2 tagged-value-address))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (2 1002) (locaddr 1003) (result 1002) (resulttype 1002) (xcheck t) (xtype integer) (xtypesize 1))
+run: test1 0: ((4 tagged-value-address) <- arg)
+arg: nil 0 ((1 tagged-value-address) (2 tagged-value-address))
+sz: (1 tagged-value-address)
+m: (1 tagged-value-address) 1
+sz: (1 tagged-value-address)
+setm: (4 tagged-value-address) <= 1000
+sz: (4 tagged-value-address)
+setm: size of (4 tagged-value-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (2 1002) (4 1000) (locaddr 1003) (result 1002) (resulttype 1002) (xcheck t) (xtype integer) (xtypesize 1))
+run: test1 1: ((5 integer) (6 boolean) <- maybe-coerce (4 tagged-value-address deref) (integer literal))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (2 1002) (4 1000) (locaddr 1003) (result 1002) (resulttype 1002) (xcheck t) (xtype integer) (xtypesize 1))
+run: maybe-coerce 0: ((x tagged-value-address) <- new (tagged-value type))
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+run: writing to oarg 1004 => (x tagged-value-address)
+setm: (x tagged-value-address) <= 1004
+sz: (x tagged-value-address)
+setm: size of (x tagged-value-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (2 1002) (4 1000) (locaddr 1003) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1))
+run: maybe-coerce 1: ((x tagged-value-address deref) <- arg)
+arg: nil 0 ((4 tagged-value-address deref) (integer literal))
+sz: (4 tagged-value-address deref)
+sz: (4 location)
+m: (4 location) 1
+sz: (4 location)
+sz: (1000 tagged-value)
+m: (4 tagged-value-address deref) 2
+sz: (4 tagged-value-address deref)
+sz: (4 location)
+m: (4 location) 1
+sz: (4 location)
+sz: (1000 tagged-value)
+sz: (4 tagged-value-address deref)
+sz: (4 location)
+m: (4 location) 1
+sz: (4 location)
+sz: (1000 tagged-value)
+setm: (x tagged-value-address deref) <= #(tagged record (integer 34 . nil))
+sz: (x tagged-value-address deref)
+sz: (x location)
+m: (x location) 1
+sz: (x location)
+sz: (1004 tagged-value)
+setm: size of (x tagged-value-address deref) is 2
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (locaddr 1003) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1))
+run: maybe-coerce 2: ((p type) <- arg)
+arg: nil 1 ((4 tagged-value-address deref) (integer literal))
+sz: (integer literal)
+m: (integer literal) literal
+setm: (p type) <= integer
+sz: (p type)
+setm: size of (p type) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (locaddr 1003) (p integer) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1))
+run: maybe-coerce 3: ((xtype type) <- get (x tagged-value-address deref) (0 offset))
+sz: (1004 type)
+m: (1004 type) 1
+sz: (1004 type)
+run: writing to oarg integer => (xtype type)
+setm: (xtype type) <= integer
+sz: (xtype type)
+setm: size of (xtype type) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (locaddr 1003) (p integer) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1))
+run: maybe-coerce 4: ((match? boolean) <- eq (xtype type) (p type))
+sz: (xtype type)
+m: (xtype type) 1
+sz: (xtype type)
+sz: (p type)
+m: (p type) 1
+sz: (p type)
+run: writing to oarg t => (match? boolean)
+setm: (match? boolean) <= t
+sz: (match? boolean)
+setm: size of (match? boolean) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1))
+run: maybe-coerce 5: (jump-if (match? boolean) (1 offset))
+sz: (match? boolean)
+m: (match? boolean) 1
+sz: (match? boolean)
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1))
+run: maybe-coerce 7: ((xvalue location) <- get (x tagged-value-address deref) (1 offset))
+sz: (1005 location)
+m: (1005 location) 1
+sz: (1005 location)
+run: writing to oarg 34 => (xvalue location)
+setm: (xvalue location) <= 34
+sz: (xvalue location)
+setm: size of (xvalue location) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: maybe-coerce 8: (reply (xvalue location) (match? boolean))
+reply: ((xvalue location) (match? boolean)) ((5 integer) (6 boolean))
+reply: (xvalue location) => (5 integer)
+sz: (xvalue location)
+m: (xvalue location) 1
+sz: (xvalue location)
+setm: (5 integer) <= 34
+sz: (5 integer)
+setm: size of (5 integer) is 1
+reply: (match? boolean) => (6 boolean)
+sz: (match? boolean)
+m: (match? boolean) 1
+sz: (match? boolean)
+setm: (6 boolean) <= t
+sz: (6 boolean)
+setm: size of (6 boolean) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (5 34) (6 t) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: test1 2: (jump-unless (6 boolean) (4 offset))
+sz: (6 boolean)
+m: (6 boolean) 1
+sz: (6 boolean)
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (5 34) (6 t) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: test1 3: ((7 tagged-value-address) <- arg)
+arg: nil 1 ((1 tagged-value-address) (2 tagged-value-address))
+sz: (2 tagged-value-address)
+m: (2 tagged-value-address) 1
+sz: (2 tagged-value-address)
+setm: (7 tagged-value-address) <= 1002
+sz: (7 tagged-value-address)
+setm: size of (7 tagged-value-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: test1 4: ((8 integer) (9 boolean) <- maybe-coerce (7 tagged-value-address deref) (integer literal))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1004) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: maybe-coerce 0: ((x tagged-value-address) <- new (tagged-value type))
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+run: writing to oarg 1006 => (x tagged-value-address)
+setm: (x tagged-value-address) <= 1006
+sz: (x tagged-value-address)
+setm: size of (x tagged-value-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1006) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: maybe-coerce 1: ((x tagged-value-address deref) <- arg)
+arg: nil 0 ((7 tagged-value-address deref) (integer literal))
+sz: (7 tagged-value-address deref)
+sz: (7 location)
+m: (7 location) 1
+sz: (7 location)
+sz: (1002 tagged-value)
+m: (7 tagged-value-address deref) 2
+sz: (7 tagged-value-address deref)
+sz: (7 location)
+m: (7 location) 1
+sz: (7 location)
+sz: (1002 tagged-value)
+sz: (7 tagged-value-address deref)
+sz: (7 location)
+m: (7 location) 1
+sz: (7 location)
+sz: (1002 tagged-value)
+setm: (x tagged-value-address deref) <= #(tagged record (integer 3 . nil))
+sz: (x tagged-value-address deref)
+sz: (x location)
+m: (x location) 1
+sz: (x location)
+sz: (1006 tagged-value)
+setm: size of (x tagged-value-address deref) is 2
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (1006 integer) (1007 3) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1006) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: maybe-coerce 2: ((p type) <- arg)
+arg: nil 1 ((7 tagged-value-address deref) (integer literal))
+sz: (integer literal)
+m: (integer literal) literal
+setm: (p type) <= integer
+sz: (p type)
+setm: size of (p type) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (1006 integer) (1007 3) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1006) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: maybe-coerce 3: ((xtype type) <- get (x tagged-value-address deref) (0 offset))
+sz: (1006 type)
+m: (1006 type) 1
+sz: (1006 type)
+run: writing to oarg integer => (xtype type)
+setm: (xtype type) <= integer
+sz: (xtype type)
+setm: size of (xtype type) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (1006 integer) (1007 3) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1006) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: maybe-coerce 4: ((match? boolean) <- eq (xtype type) (p type))
+sz: (xtype type)
+m: (xtype type) 1
+sz: (xtype type)
+sz: (p type)
+m: (p type) 1
+sz: (p type)
+run: writing to oarg t => (match? boolean)
+setm: (match? boolean) <= t
+sz: (match? boolean)
+setm: size of (match? boolean) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (1006 integer) (1007 3) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1006) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: maybe-coerce 5: (jump-if (match? boolean) (1 offset))
+sz: (match? boolean)
+m: (match? boolean) 1
+sz: (match? boolean)
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (1006 integer) (1007 3) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1006) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 34))
+run: maybe-coerce 7: ((xvalue location) <- get (x tagged-value-address deref) (1 offset))
+sz: (1007 location)
+m: (1007 location) 1
+sz: (1007 location)
+run: writing to oarg 3 => (xvalue location)
+setm: (xvalue location) <= 3
+sz: (xvalue location)
+setm: size of (xvalue location) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (1006 integer) (1007 3) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1006) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 3))
+run: maybe-coerce 8: (reply (xvalue location) (match? boolean))
+reply: ((xvalue location) (match? boolean)) ((8 integer) (9 boolean))
+reply: (xvalue location) => (8 integer)
+sz: (xvalue location)
+m: (xvalue location) 1
+sz: (xvalue location)
+setm: (8 integer) <= 3
+sz: (8 integer)
+setm: size of (8 integer) is 1
+reply: (match? boolean) => (9 boolean)
+sz: (match? boolean)
+m: (match? boolean) 1
+sz: (match? boolean)
+setm: (9 boolean) <= t
+sz: (9 boolean)
+setm: size of (9 boolean) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (1006 integer) (1007 3) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (8 3) (9 t) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1006) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 3))
+run: test1 5: ((9 integer) <- add (5 integer) (8 integer))
+sz: (5 integer)
+m: (5 integer) 1
+sz: (5 integer)
+sz: (8 integer)
+m: (8 integer) 1
+sz: (8 integer)
+add: 34 3
+sz: (5 integer)
+m: (5 integer) 1
+sz: (5 integer)
+sz: (8 integer)
+m: (8 integer) 1
+sz: (8 integer)
+run: writing to oarg 37 => (9 integer)
+setm: (9 integer) <= 37
+sz: (9 integer)
+setm: size of (9 integer) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 integer) (1003 3) (1004 integer) (1005 34) (1006 integer) (1007 3) (2 1002) (4 1000) (5 34) (6 t) (7 1002) (8 3) (9 37) (locaddr 1003) (match? t) (p integer) (result 1002) (resulttype 1002) (x 1006) (xcheck t) (xtype integer) (xtypesize 1) (xvalue 3))
+run: test1 6: (reply (9 integer))
+reply: ((9 integer)) ((3 integer))
+reply: (9 integer) => (3 integer)
+sz: (9 integer)
+m: (9 integer) 1
+sz: (9 integer)
+setm: (3 integer) <= 37
+sz: (3 integer)
+setm: size of (3 integer) is 1

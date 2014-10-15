@@ -411,10 +411,6 @@
                     (if (len> caller-args.context idx)
                       (list (m caller-args.context.idx) t)
                       (list nil nil)))
-                type
-                  (ty (caller-args.context arg.0))
-                otype
-                  (ty (caller-oargs.context arg.0))
                 reply
                   (do (pop-stack context)
                       (if empty.context (return ninstrs))
