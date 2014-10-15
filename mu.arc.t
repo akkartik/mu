@@ -306,69 +306,69 @@
 (if (~is memory*.1 t)
   (prn "F - le is the <= inequality operator - 2"))
 
-; Control flow operations: jmp, jif
+; Control flow operations: jump, jump-if
 ; These introduce a new type -- 'offset' -- for literals that refer to memory
 ; locations relative to the current location.
 
 (reset)
-(new-trace "jmp-skip")
+(new-trace "jump-skip")
 (add-fns
   '((test1
       ((1 integer) <- copy (8 literal))
-      (jmp (1 offset))
+      (jump (1 offset))
       ((2 integer) <- copy (3 literal))  ; should be skipped
       (reply))))
 (run 'test1)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
-  (prn "F - 'jmp' skips some instructions"))
+  (prn "F - 'jump' skips some instructions"))
 
 (reset)
-(new-trace "jmp-target")
+(new-trace "jump-target")
 (add-fns
   '((test1
       ((1 integer) <- copy (8 literal))
-      (jmp (1 offset))
+      (jump (1 offset))
       ((2 integer) <- copy (3 literal))  ; should be skipped
       (reply)
       ((3 integer) <- copy (34 literal)))))  ; never reached
 (run 'test1)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
-  (prn "F - 'jmp' doesn't skip too many instructions"))
+  (prn "F - 'jump' doesn't skip too many instructions"))
 ;? (quit)
 
 (reset)
-(new-trace "jif-skip")
+(new-trace "jump-if-skip")
 (add-fns
   '((test1
       ((2 integer) <- copy (1 literal))
       ((1 boolean) <- eq (1 literal) (2 integer))
-      (jif (1 boolean) (1 offset))
+      (jump-if (1 boolean) (1 offset))
       ((2 integer) <- copy (3 literal))
       (reply)
       ((3 integer) <- copy (34 literal)))))
 (run 'test1)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 t  2 1))
-  (prn "F - 'jif' is a conditional 'jmp'"))
+  (prn "F - 'jump-if' is a conditional 'jump'"))
 
 (reset)
-(new-trace "jif-fallthrough")
+(new-trace "jump-if-fallthrough")
 (add-fns
   '((test1
       ((1 boolean) <- eq (1 literal) (2 literal))
-      (jif (3 boolean) (1 offset))
+      (jump-if (3 boolean) (1 offset))
       ((2 integer) <- copy (3 literal))
       (reply)
       ((3 integer) <- copy (34 literal)))))
 (run 'test1)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 nil  2 3))
-  (prn "F - if 'jif's first arg is false, it doesn't skip any instructions"))
+  (prn "F - if 'jump-if's first arg is false, it doesn't skip any instructions"))
 
 (reset)
-(new-trace "jif-backward")
+(new-trace "jump-if-backward")
 (add-fns
   '((test1
       ((1 integer) <- copy (2 literal))
@@ -376,14 +376,14 @@
       ; loop
       ((2 integer) <- add (2 integer) (2 integer))
       ((3 boolean) <- eq (1 integer) (2 integer))
-      (jif (3 boolean) (-3 offset))  ; to loop
+      (jump-if (3 boolean) (-3 offset))  ; to loop
       ((4 integer) <- copy (3 literal))
       (reply)
       ((3 integer) <- copy (34 literal)))))
 (run 'test1)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
-  (prn "F - 'jif' can take a negative offset to make backward jumps"))
+  (prn "F - 'jump-if' can take a negative offset to make backward jumps"))
 
 ; Data movement relies on addressing modes:
 ;   'direct' - refers to a memory location; default for most types.
@@ -922,7 +922,7 @@
       ((4 integer) <- arg)
       ((5 integer) (6 boolean) <- arg)
       { begin
-        (breakif (6 boolean))
+        (break-if (6 boolean))
         ((5 integer) <- copy (1 literal))
       }
       ((7 integer) <- add (4 integer) (5 integer)))
@@ -990,7 +990,7 @@
   '((test1
       ((4 type) <- otype 0)
       ((5 boolean) <- neq (4 type) (integer literal))
-      (jif (5 boolean) (3 offset))
+      (jump-if (5 boolean) (3 offset))
       ((6 integer) <- arg)
       ((7 integer) <- arg)
       ((8 integer) <- add (6 integer) (7 integer))
@@ -1014,14 +1014,14 @@
       ((4 type) <- otype 0)
       ; integer needed? add args
       ((5 boolean) <- neq (4 type) (integer literal))
-      (jif (5 boolean) (4 offset))
+      (jump-if (5 boolean) (4 offset))
       ((6 integer) <- arg)
       ((7 integer) <- arg)
       ((8 integer) <- add (6 integer) (7 integer))
       (reply (8 integer))
       ; boolean needed? 'or' args
       ((5 boolean) <- neq (4 type) (boolean literal))
-      (jif (5 boolean) (4 offset))
+      (jump-if (5 boolean) (4 offset))
       ((6 boolean) <- arg)
       ((7 boolean) <- arg)
       ((8 boolean) <- or (6 boolean) (7 boolean))
@@ -1044,13 +1044,13 @@
   '((test-fn
       ((4 type) <- otype 0)
       ((5 boolean) <- neq (4 type) (integer literal))
-      (jif (5 boolean) (4 offset))
+      (jump-if (5 boolean) (4 offset))
       ((6 integer) <- arg)
       ((7 integer) <- arg)
       ((8 integer) <- add (6 integer) (7 integer))
       (reply (8 integer))
       ((5 boolean) <- neq (4 type) (boolean literal))
-      (jif (5 boolean) (6 offset))
+      (jump-if (5 boolean) (6 offset))
       ((6 boolean) <- arg)
       ((7 boolean) <- arg)
       ((8 boolean) <- or (6 boolean) (7 boolean))
@@ -1094,7 +1094,7 @@
                             ((3 integer) <- add (2 integer) (2 integer))
                             { begin  ; 'begin' is just a hack because racket turns curlies into parens
                             ((4 boolean) <- neq (1 integer) (3 integer))
-                            (breakif (4 boolean))
+                            (break-if (4 boolean))
                             ((5 integer) <- copy (34 literal))
                             }
                             (reply)))
@@ -1102,10 +1102,10 @@
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
             ((4 boolean) <- neq (1 integer) (3 integer))
-            (jif (4 boolean) (1 offset))
+            (jump-if (4 boolean) (1 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
-  (prn "F - convert-braces replaces breakif with a jif to after the next close curly"))
+  (prn "F - convert-braces replaces break-if with a jump-if to after the next close curly"))
 
 (reset)
 (new-trace "convert-braces-empty-block")
@@ -1119,7 +1119,7 @@
           '(((1 integer) <- copy (4 literal))
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
-            (jmp (0 offset))
+            (jump (0 offset))
             (reply)))
   (prn "F - convert-braces works for degenerate blocks"))
 
@@ -1130,7 +1130,7 @@
                             ((3 integer) <- add (2 integer) (2 integer))
                             { begin
                             ((4 boolean) <- neq (1 integer) (3 integer))
-                            (breakif (4 boolean))
+                            (break-if (4 boolean))
                             { begin
                             ((5 integer) <- copy (34 literal))
                             }
@@ -1140,7 +1140,7 @@
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
             ((4 boolean) <- neq (1 integer) (3 integer))
-            (jif (4 boolean) (1 offset))
+            (jump-if (4 boolean) (1 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
   (prn "F - convert-braces balances curlies when converting break"))
@@ -1154,7 +1154,7 @@
                             { begin
                             ((4 boolean) <- neq (1 integer) (3 integer))
                             }
-                            (continueif (4 boolean))
+                            (continue-if (4 boolean))
                             ((5 integer) <- copy (34 literal))
                             }
                             (reply)))
@@ -1162,7 +1162,7 @@
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
             ((4 boolean) <- neq (1 integer) (3 integer))
-            (jif (4 boolean) (-3 offset))
+            (jump-if (4 boolean) (-3 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
   (prn "F - convert-braces balances curlies when converting continue"))
@@ -1175,7 +1175,7 @@
                                      { begin
                                      ((2 integer) <- add (2 integer) (2 integer))
                                      ((3 boolean) <- neq (1 integer) (2 integer))
-                                     (continueif (3 boolean))
+                                     (continue-if (3 boolean))
                                      ((4 integer) <- copy (34 literal))
                                      }
                                      (reply))))))
@@ -1199,7 +1199,7 @@
                                      { begin
                                      ((3 boolean) <- neq (1 integer) (2 integer))
                                      }
-                                     (continueif (3 boolean))
+                                     (continue-if (3 boolean))
                                      ((4 integer) <- copy (34 literal))
                                      }
                                      (reply))))))
@@ -1219,7 +1219,7 @@
                                      { begin
                                      ((3 boolean) <- neq (1 integer) (2 integer))
                                      }
-                                     (continueif (3 boolean))
+                                     (continue-if (3 boolean))
                                      ((4 integer) <- copy (34 literal))
                                      }
                                      (reply))))))

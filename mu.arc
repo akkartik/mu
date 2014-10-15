@@ -290,11 +290,11 @@
                   (>= (m arg.0) (m arg.1))
 
                 ; control flow
-                jmp
+                jump
                   (do (= pc.context (+ 1 pc.context (v arg.0)))
 ;?                       (prn "jumping to " pc.context)
                       (continue))
-                jif
+                jump-if
                   (when (is t (m arg.0))
                     (= pc.context (+ 1 pc.context (v arg.1)))
 ;?                     (prn "jumping to " pc.context)
@@ -511,22 +511,22 @@
                     (do
                       (assert:is oarg nil)
                       (assert:is arg nil)
-                      (yield `(jmp (,(close-offset pc locs) offset))))
-                  breakif
+                      (yield `(jump (,(close-offset pc locs) offset))))
+                  break-if
                     (do
-;?                       (prn "breakif: " instr)
+;?                       (prn "break-if: " instr)
                       (assert:is oarg nil)
-                      (yield `(jif ,arg.0 (,(close-offset pc locs) offset))))
+                      (yield `(jump-if ,arg.0 (,(close-offset pc locs) offset))))
                   continue
                     (do
                       (assert:is oarg nil)
                       (assert:is arg nil)
-                      (yield `(jmp (,(- stack.0 pc) offset))))
-                  continueif
+                      (yield `(jump (,(- stack.0 pc) offset))))
+                  continue-if
                     (do
-                      (trace "cvt0" "continueif: " instr " => " (- stack.0 1))
+                      (trace "cvt0" "continue-if: " instr " => " (- stack.0 1))
                       (assert:is oarg nil)
-                      (yield `(jif ,arg.0 (,(- stack.0 1 pc) offset))))
+                      (yield `(jump-if ,arg.0 (,(- stack.0 1 pc) offset))))
                   ;else
                     (yield instr))))
             (++ pc))))))))
@@ -564,7 +564,7 @@
   ((xtype type) <- get (x tagged-value-address deref) (0 offset))
   ((match? boolean) <- eq (xtype type) (p type))
   { begin
-    (breakif (match? boolean))
+    (break-if (match? boolean))
     (reply (0 literal) (nil boolean))
   }
   ((xvalue location) <- get (x tagged-value-address deref) (1 offset))
