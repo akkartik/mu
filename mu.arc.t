@@ -977,97 +977,6 @@
                          4 1  5 3  6 4))
   (prn "F - 'reply' permits a function to return multiple values at once"))
 
-; 'type' and 'otype' let us create generic functions that run different code
-; based on what args the caller provides, or what oargs the caller expects.
-;
-; These operations are almost certainly bad ideas; they violate our constraint
-; of easily assembling down to native code. We'll eventually switch to dynamic
-; typing with tagged-values.
-
-(reset)
-(new-trace "dispatch-otype")
-(add-fns
-  '((test1
-      ((4 type) <- otype 0)
-      ((5 boolean) <- neq (4 type) (integer literal))
-      (jump-if (5 boolean) (3 offset))
-      ((6 integer) <- arg)
-      ((7 integer) <- arg)
-      ((8 integer) <- add (6 integer) (7 integer))
-      (reply (8 integer)))
-    (main
-      ((1 integer) <- test1 (1 literal) (3 literal)))))
-(run 'main)
-;? (prn memory*)
-(if (~iso memory* (obj 1 4
-                         ; add-fn's temporaries
-                         4 'integer  5 nil  6 1  7 3  8 4))
-  (prn "F - an example function that checks that its oarg is an integer"))
-;? (quit)
-
-; todo - test that reply increments pc for caller frame after popping current frame
-
-(reset)
-(new-trace "dispatch-otype-multiple-clauses")
-(add-fns
-  '((test-fn
-      ((4 type) <- otype 0)
-      ; integer needed? add args
-      ((5 boolean) <- neq (4 type) (integer literal))
-      (jump-if (5 boolean) (4 offset))
-      ((6 integer) <- arg)
-      ((7 integer) <- arg)
-      ((8 integer) <- add (6 integer) (7 integer))
-      (reply (8 integer))
-      ; boolean needed? 'or' args
-      ((5 boolean) <- neq (4 type) (boolean literal))
-      (jump-if (5 boolean) (4 offset))
-      ((6 boolean) <- arg)
-      ((7 boolean) <- arg)
-      ((8 boolean) <- or (6 boolean) (7 boolean))
-      (reply (8 boolean)))
-    (main
-      ((1 boolean) <- test-fn (t literal) (t literal)))))
-(run 'main)
-;? (prn memory*)
-(if (~is memory*.1 t)
-  (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs"))
-(if (~iso memory* (obj 1 t
-                       ; add-fn's temporaries
-                       4 'boolean  5 nil  6 t  7 t  8 t))
-  (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs (internals)"))
-;? (quit)
-
-(reset)
-(new-trace "dispatch-otype-multiple-calls")
-(add-fns
-  '((test-fn
-      ((4 type) <- otype 0)
-      ((5 boolean) <- neq (4 type) (integer literal))
-      (jump-if (5 boolean) (4 offset))
-      ((6 integer) <- arg)
-      ((7 integer) <- arg)
-      ((8 integer) <- add (6 integer) (7 integer))
-      (reply (8 integer))
-      ((5 boolean) <- neq (4 type) (boolean literal))
-      (jump-if (5 boolean) (6 offset))
-      ((6 boolean) <- arg)
-      ((7 boolean) <- arg)
-      ((8 boolean) <- or (6 boolean) (7 boolean))
-      (reply (8 boolean)))
-    (main
-      ((1 boolean) <- test-fn (t literal) (t literal))
-      ((2 integer) <- test-fn (3 literal) (4 literal)))))
-(run 'main)
-;? (prn memory*)
-(if (~and (is memory*.1 t) (is memory*.2 7))
-  (prn "F - different calls can exercise different clauses of the same function"))
-(if (~iso memory* (obj ; results of first and second calls to test-fn
-                       1 t  2 7
-                       ; temporaries for most recent call to test-fn
-                       4 'integer  5 nil  6 3  7 4  8 7))
-  (prn "F - different calls can exercise different clauses of the same function (internals)"))
-
 ; Our control operators are quite inconvenient to use, so mu provides a
 ; lightweight tool called 'convert-braces' to work in a slightly more
 ; convenient format with nested braces:
@@ -1227,6 +1136,112 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
   (prn "F - continue might never trigger"))
+
+; 'type' and 'otype' let us create generic functions that run different code
+; based on what args the caller provides, or what oargs the caller expects.
+;
+; These operations are almost certainly bad ideas; they violate our constraint
+; of easily assembling down to native code. We'll eventually switch to dynamic
+; typing with tagged-values.
+
+(reset)
+(new-trace "dispatch-otype")
+(add-fns
+  '((test1
+      ((4 type) <- otype 0)
+      { begin
+        ((5 boolean) <- eq (4 type) (integer literal))
+        (break-unless (5 boolean))
+        ((6 integer) <- arg)
+        ((7 integer) <- arg)
+        ((8 integer) <- add (6 integer) (7 integer))
+      }
+      (reply (8 integer)))
+    (main
+      ((1 integer) <- test1 (1 literal) (3 literal)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 4
+                         ; add-fn's temporaries
+                         4 'integer  5 t  6 1  7 3  8 4))
+  (prn "F - an example function that checks that its oarg is an integer"))
+;? (quit)
+
+; todo - test that reply increments pc for caller frame after popping current frame
+
+(reset)
+(new-trace "dispatch-otype-multiple-clauses")
+;? (set dump-trace*)
+(add-fns
+  '((test-fn
+      ((4 type) <- otype 0)
+      { begin
+        ; integer needed? add args
+        ((5 boolean) <- eq (4 type) (integer literal))
+        (break-unless (5 boolean))
+        ((6 integer) <- arg)
+        ((7 integer) <- arg)
+        ((8 integer) <- add (6 integer) (7 integer))
+        (reply (8 integer))
+      }
+      { begin
+        ; boolean needed? 'or' args
+        ((5 boolean) <- eq (4 type) (boolean literal))
+        (break-unless (5 boolean) (4 offset))
+        ((6 boolean) <- arg)
+        ((7 boolean) <- arg)
+        ((8 boolean) <- or (6 boolean) (7 boolean))
+        (reply (8 boolean))
+      })
+    (main
+      ((1 boolean) <- test-fn (t literal) (t literal)))))
+;? (each stmt function*!test-fn
+;?   (prn "  " stmt))
+(run 'main)
+;? (wipe dump-trace*)
+;? (prn memory*)
+(if (~is memory*.1 t)
+  (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs"))
+(if (~iso memory* (obj 1 t
+                       ; add-fn's temporaries
+                       4 'boolean  5 t  6 t  7 t  8 t))
+  (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs (internals)"))
+;? (quit)
+
+(reset)
+(new-trace "dispatch-otype-multiple-calls")
+(add-fns
+  '((test-fn
+      ((4 type) <- otype 0)
+      { begin
+        ((5 boolean) <- eq (4 type) (integer literal))
+        (break-unless (5 boolean))
+        ((6 integer) <- arg)
+        ((7 integer) <- arg)
+        ((8 integer) <- add (6 integer) (7 integer))
+        (reply (8 integer))
+      }
+      { begin
+        ((5 boolean) <- eq (4 type) (boolean literal))
+        (break-unless (5 boolean))
+        ((6 boolean) <- arg)
+        ((7 boolean) <- arg)
+        ((8 boolean) <- or (6 boolean) (7 boolean))
+        (reply (8 boolean))
+      })
+    (main
+      ((1 boolean) <- test-fn (t literal) (t literal))
+      ((2 integer) <- test-fn (3 literal) (4 literal)))))
+(run 'main)
+;? (prn memory*)
+(if (~and (is memory*.1 t) (is memory*.2 7))
+  (prn "F - different calls can exercise different clauses of the same function"))
+(if (~iso memory* (obj ; results of first and second calls to test-fn
+                       1 t  2 7
+                       ; temporaries for most recent call to test-fn
+                       4 'integer  5 t  6 3  7 4  8 7))
+  (prn "F - different calls can exercise different clauses of the same function (internals)"))
+
 
 ; A rudimentary memory allocator. Eventually we want to write this in mu.
 
