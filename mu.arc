@@ -292,12 +292,17 @@
                 ; control flow
                 jump
                   (do (= pc.context (+ 1 pc.context (v arg.0)))
-;?                       (prn "jumping to " pc.context)
+;?                       (trace "jump" "jumping to " pc.context)
                       (continue))
                 jump-if
                   (when (is t (m arg.0))
                     (= pc.context (+ 1 pc.context (v arg.1)))
-;?                     (prn "jumping to " pc.context)
+;?                     (trace "jump-if" "jumping to " pc.context)
+                    (continue))
+                jump-unless  ; convenient helper
+                  (unless (is t (m arg.0))
+                    (= pc.context (+ 1 pc.context (v arg.1)))
+;?                     (trace "jump-unless" "jumping to " pc.context)
                     (continue))
 
                 ; data management: scalars, arrays, records
@@ -517,6 +522,11 @@
 ;?                       (prn "break-if: " instr)
                       (assert:is oarg nil)
                       (yield `(jump-if ,arg.0 (,(close-offset pc locs) offset))))
+                  break-unless
+                    (do
+;?                       (prn "break-if: " instr)
+                      (assert:is oarg nil)
+                      (yield `(jump-unless ,arg.0 (,(close-offset pc locs) offset))))
                   continue
                     (do
                       (assert:is oarg nil)
@@ -527,6 +537,11 @@
                       (trace "cvt0" "continue-if: " instr " => " (- stack.0 1))
                       (assert:is oarg nil)
                       (yield `(jump-if ,arg.0 (,(- stack.0 1 pc) offset))))
+                  continue-unless
+                    (do
+                      (trace "cvt0" "continue-if: " instr " => " (- stack.0 1))
+                      (assert:is oarg nil)
+                      (yield `(jump-unless ,arg.0 (,(- stack.0 1 pc) offset))))
                   ;else
                     (yield instr))))
             (++ pc))))))))

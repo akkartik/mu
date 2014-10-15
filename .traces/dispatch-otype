@@ -1,13 +1,14 @@
 cvt0: 0 ((4 type) <- otype 0) -- nil
-cvt0: 1 ((5 boolean) <- neq (4 type) (integer literal)) -- nil
-cvt0: 2 (jump-if (5 boolean) (3 offset)) -- nil
-cvt0: 3 ((6 integer) <- arg) -- nil
-cvt0: 4 ((7 integer) <- arg) -- nil
-cvt0: 5 ((8 integer) <- add (6 integer) (7 integer)) -- nil
-cvt0: 6 (reply (8 integer)) -- nil
+cvt0: 1 ((5 boolean) <- eq (4 type) (integer literal)) -- ((open 1))
+cvt0: 2 (break-unless (5 boolean)) -- ((open 1))
+cvt0: 3 ((6 integer) <- arg) -- ((open 1))
+cvt0: 4 ((7 integer) <- arg) -- ((open 1))
+cvt0: 5 ((8 integer) <- add (6 integer) (7 integer)) -- ((open 1))
+cvt0: 6 (reply (8 integer)) -- ((close 6) (open 1))
 cvt1: 0 otype ((4 type))
-cvt1: 1 neq ((5 boolean))
-cvt1: 2 jump-if nil
+cvt1: 1 begin nil
+cvt1: 1 eq ((5 boolean))
+cvt1: 2 break-unless nil
 cvt1: 3 arg ((6 integer))
 cvt1: 4 arg ((7 integer))
 cvt1: 5 add ((8 integer))
@@ -24,28 +25,22 @@ setm: (4 type) <= integer
 sz: (4 type)
 setm: size of (4 type) is 1
 run: -- ((4 integer))
-run: test1 1: ((5 boolean) <- neq (4 type) (integer literal))
+run: test1 1: ((5 boolean) <- eq (4 type) (integer literal))
 sz: (4 type)
 m: (4 type) 1
 sz: (4 type)
 sz: (integer literal)
 m: (integer literal) literal
-neq: integer integer
-sz: (4 type)
-m: (4 type) 1
-sz: (4 type)
-sz: (integer literal)
-m: (integer literal) literal
-run: writing to oarg nil => (5 boolean)
-setm: (5 boolean) <= nil
+run: writing to oarg t => (5 boolean)
+setm: (5 boolean) <= t
 sz: (5 boolean)
 setm: size of (5 boolean) is 1
-run: -- ((4 integer))
-run: test1 2: (jump-if (5 boolean) (3 offset))
+run: -- ((4 integer) (5 t))
+run: test1 2: (jump-unless (5 boolean) (3 offset))
 sz: (5 boolean)
 m: (5 boolean) 1
 sz: (5 boolean)
-run: -- ((4 integer))
+run: -- ((4 integer) (5 t))
 run: test1 3: ((6 integer) <- arg)
 arg: nil 0 ((1 literal) (3 literal))
 sz: (1 literal)
@@ -53,7 +48,7 @@ m: (1 literal) literal
 setm: (6 integer) <= 1
 sz: (6 integer)
 setm: size of (6 integer) is 1
-run: -- ((4 integer) (6 1))
+run: -- ((4 integer) (5 t) (6 1))
 run: test1 4: ((7 integer) <- arg)
 arg: nil 1 ((1 literal) (3 literal))
 sz: (3 literal)
@@ -61,7 +56,7 @@ m: (3 literal) literal
 setm: (7 integer) <= 3
 sz: (7 integer)
 setm: size of (7 integer) is 1
-run: -- ((4 integer) (6 1) (7 3))
+run: -- ((4 integer) (5 t) (6 1) (7 3))
 run: test1 5: ((8 integer) <- add (6 integer) (7 integer))
 sz: (6 integer)
 m: (6 integer) 1
@@ -80,7 +75,7 @@ run: writing to oarg 4 => (8 integer)
 setm: (8 integer) <= 4
 sz: (8 integer)
 setm: size of (8 integer) is 1
-run: -- ((4 integer) (6 1) (7 3) (8 4))
+run: -- ((4 integer) (5 t) (6 1) (7 3) (8 4))
 run: test1 6: (reply (8 integer))
 reply: ((8 integer)) ((1 integer))
 reply: (8 integer) => (1 integer)
