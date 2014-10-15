@@ -1,20 +1,3 @@
-(main
-  (cls)
-  (cursor (10 literal) (5 literal))
-  (print ("Hello, " literal))
-  (bold-mode)
-  (print ("you" literal))
-  (non-bold-mode)
-  (print ("." literal))
-  (cursor (1 literal) (1 literal))
-  (print ("Press a key..." literal))
-  ((key string) <- getc)
-  (console-off)
-  (print ("You pressed: " literal))
-  (print (key string))
-  (print ("\n" literal))
-)
-
 ; a screen is an array of pointers to lines, in turn arrays of characters
 
 (new-screen
