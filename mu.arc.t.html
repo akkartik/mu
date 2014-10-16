@@ -1,0 +1,1355 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/mu.arc.t.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="scheme">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+a { color:#4444ff; }
+* { font-size: 1em; }
+.Constant { color: #008080; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #600060; }
+.Normal { color: #d0d0d0; }
+.CommentedCode { color: #6c6c6c; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">; Mu: An exploration on making the global structure of programs more accessible.</span>
+<span class="Comment">;</span>
+<span class="Comment">;   &quot;Is it a language, or an operating system, or a virtual machine? Mu.&quot;</span>
+<span class="Comment">;   (with apologies to Robert Pirsig: <a href="http://en.wikipedia.org/wiki/Mu_%28negative%29#In_popular_culture">http://en.wikipedia.org/wiki/Mu_%28negative%29#In_popular_culture</a>)</span>
+<span class="Comment">;</span>
+<span class="Comment">; I want to live in a world where I can have an itch to tweak a program, clone</span>
+<span class="Comment">; its open-source repository, orient myself on how it's organized, and make</span>
+<span class="Comment">; the simple change I envisioned, all in an afternoon. This codebase tries to</span>
+<span class="Comment">; make this possible for its readers. (More details: <a href="http://akkartik.name/about">http://akkartik.name/about</a>)</span>
+<span class="Comment">;</span>
+<span class="Comment">; What helps comprehend the global structure of programs? For starters, let's</span>
+<span class="Comment">; enumerate what doesn't: idiomatic code, adherence to a style guide or naming</span>
+<span class="Comment">; convention, consistent indentation, API documentation for each class, etc.</span>
+<span class="Comment">; These conventional considerations improve matters in the small, but don't</span>
+<span class="Comment">; help understand global organization. They help existing programmers manage</span>
+<span class="Comment">; day-to-day operations, but they can't turn outsider programmers into</span>
+<span class="Comment">; insiders. (Elaboration: <a href="http://akkartik.name/post/readable-bad">http://akkartik.name/post/readable-bad</a>)</span>
+<span class="Comment">;</span>
+<span class="Comment">; In my experience, two things have improved matters so far: version control</span>
+<span class="Comment">; and automated tests. Version control lets me rewind back to earlier, simpler</span>
+<span class="Comment">; times when the codebase was simpler, when its core skeleton was easier to</span>
+<span class="Comment">; ascertain. Indeed, arguably what came first is by definition the skeleton of</span>
+<span class="Comment">; a program, modulo major rewrites. Once you understand the skeleton, it</span>
+<span class="Comment">; becomes tractable to 'play back' later major features one by one. (Previous</span>
+<span class="Comment">; project that fleshed out this idea: <a href="http://akkartik.name/post/wart-layers">http://akkartik.name/post/wart-layers</a>)</span>
+<span class="Comment">;</span>
+<span class="Comment">; The second and biggest boost to comprehension comes from tests. Tests are</span>
+<span class="Comment">; good for writers for well-understood reasons: they avoid regressions, and</span>
+<span class="Comment">; they can influence code to be more decoupled and easier to change. In</span>
+<span class="Comment">; addition, tests are also good for the outsider reader because they permit</span>
+<span class="Comment">; active reading. If you can't build a program and run its tests it can't help</span>
+<span class="Comment">; you understand it. It hangs limp at best, and might even be actively</span>
+<span class="Comment">; misleading. If you can run its tests, however, it comes alive. You can step</span>
+<span class="Comment">; through scenarios in a debugger. You can add logging and scan logs to make</span>
+<span class="Comment">; sense of them. You can run what-if scenarios: &quot;why is this line not written</span>
+<span class="Comment">; like this?&quot; Make a change, rerun tests: &quot;Oh, that's why.&quot; (Elaboration:</span>
+<span class="Comment">; <a href="http://akkartik.name/post/literate-programming">http://akkartik.name/post/literate-programming</a>)</span>
+<span class="Comment">;</span>
+<span class="Comment">; However, tests are only useful to the extent that they exist. Think back to</span>
+<span class="Comment">; your most recent codebase. Do you feel comfortable releasing a new version</span>
+<span class="Comment">; just because the tests pass? I'm not aware of any such project. There's just</span>
+<span class="Comment">; too many situations envisaged by the authors that were never encoded in a</span>
+<span class="Comment">; test. Even disciplined authors can't test for performance or race conditions</span>
+<span class="Comment">; or fault tolerance. If a line is phrased just so because of some subtle</span>
+<span class="Comment">; performance consideration, it's hard to communicate to newcomers.</span>
+<span class="Comment">;</span>
+<span class="Comment">; This isn't an arcane problem, and it isn't just a matter of altruism. As</span>
+<span class="Comment">; more and more such implicit considerations proliferate, and as the original</span>
+<span class="Comment">; authors are replaced by latecomers for day-to-day operations, knowledge is</span>
+<span class="Comment">; actively forgotten and lost. The once-pristine codebase turns into legacy</span>
+<span class="Comment">; code that is hard to modify without expensive and stress-inducing</span>
+<span class="Comment">; regressions.</span>
+<span class="Comment">;</span>
+<span class="Comment">; How to write tests for performance, fault tolerance, race conditions, etc.?</span>
+<span class="Comment">; How can we state and verify that a codepath doesn't ever perform memory</span>
+<span class="Comment">; allocation, or write to disk? It requires better, more observable primitives</span>
+<span class="Comment">; than we currently have. Modern operating systems have their roots in the</span>
+<span class="Comment">; 70s. Their interfaces were not designed to be testable. They provide no way</span>
+<span class="Comment">; to simulate a full disk, or a specific sequence of writes from different</span>
+<span class="Comment">; threads. We need something better.</span>
+<span class="Comment">;</span>
+<span class="Comment">; This project tries to move, groping, towards that 'something better', a</span>
+<span class="Comment">; platform that is both thoroughly tested and allows programs written for it</span>
+<span class="Comment">; to be thoroughly tested. It tries to answer the question:</span>
+<span class="Comment">;</span>
+<span class="Comment">;   If Denis Ritchie and Ken Thompson were to set out today to co-design unix</span>
+<span class="Comment">;   and C, knowing what we know about automated tests, what would they do</span>
+<span class="Comment">;   differently?</span>
+<span class="Comment">;</span>
+<span class="Comment">; To try to impose *some* constraints on this gigantic yak-shave, we'll try to</span>
+<span class="Comment">; keep both language and OS as simple as possible, focused entirely on</span>
+<span class="Comment">; permitting more kinds of tests, on first *collecting* all the information</span>
+<span class="Comment">; about implicit considerations in some form so that readers and tools can</span>
+<span class="Comment">; have at least some hope of making sense of it.</span>
+<span class="Comment">;</span>
+<span class="Comment">; The initial language will be just assembly. We'll try to make it convenient</span>
+<span class="Comment">; to program in with some simple localized rewrite rules inspired by lisp</span>
+<span class="Comment">; macros and literate programming. Programmers will have to do their own</span>
+<span class="Comment">; memory management and register allocation, but we'll provide libraries to</span>
+<span class="Comment">; help with them.</span>
+<span class="Comment">;</span>
+<span class="Comment">; The initial OS will provide just memory management and concurrency</span>
+<span class="Comment">; primitives. No users or permissions (we don't live on mainframes anymore),</span>
+<span class="Comment">; no kernel- vs user-mode, no virtual memory or process abstraction, all</span>
+<span class="Comment">; threads sharing a single address space (use VMs for security and</span>
+<span class="Comment">; sandboxing). The only use case we care about is getting a test harness to</span>
+<span class="Comment">; run some code, feed it data through blocking channels, stop it and observe</span>
+<span class="Comment">; its internals. The code under test is expected to cooperate in such testing,</span>
+<span class="Comment">; by logging important events for the test harness to observe. (More info:</span>
+<span class="Comment">; <a href="http://akkartik.name/post/tracing-tests">http://akkartik.name/post/tracing-tests</a>)</span>
+<span class="Comment">;</span>
+<span class="Comment">; The common thread here is elimination of abstractions, and it's not an</span>
+<span class="Comment">; accident. Abstractions help insiders manage the evolution of a codebase, but</span>
+<span class="Comment">; they actively hinder outsiders in understanding it from scratch. This</span>
+<span class="Comment">; matters, because the funnel to turn outsiders into insiders is critical to</span>
+<span class="Comment">; the long-term life of a codebase. Perhaps authors should raise their</span>
+<span class="Comment">; estimation of the costs of abstraction, and go against their instincts for</span>
+<span class="Comment">; introducing it. That's what I'll be trying to do: question every abstraction</span>
+<span class="Comment">; before I introduce it. We'll see how it goes.</span>
+
+<span class="Comment">; ---</span>
+
+<span class="Comment">; Mu is currently built atop Racket and Arc, but this is temporary and</span>
+<span class="Comment">; contingent. We want to keep our options open, whether to port to a different</span>
+<span class="Comment">; host language, and easy to rewrite to native code for any platform. So we'll</span>
+<span class="Comment">; try to avoid 'cheating': relying on the host platform for advanced</span>
+<span class="Comment">; functionality.</span>
+<span class="Comment">;</span>
+<span class="Comment">; Other than that, we'll say no more about the code, and focus in the rest of</span>
+<span class="Comment">; this file on the scenarios the code cares about.</span>
+
+<span class="Delimiter">(</span>load <span class="Constant">&quot;mu.arc&quot;</span><span class="Delimiter">)</span>
+
+<span class="Comment">; Every test below is conceptually a run right after our virtual machine</span>
+<span class="Comment">; starts up. When it starts up we assume it knows about the following types.</span>
+
+<span class="Delimiter">(</span>on-init
+  <span class="Delimiter">(</span>= types* <span class="Delimiter">(</span>obj
+              <span class="Comment">; Each type must be scalar or array, sum or product or primitive</span>
+              type <span class="Delimiter">(</span>obj size <span class="Constant">1</span><span class="Delimiter">)</span>  <span class="Comment">; implicitly scalar and primitive</span>
+              type-address <span class="Delimiter">(</span>obj size <span class="Constant">1</span>  address t  elem <span class="Delimiter">'</span>type<span class="Delimiter">)</span>
+              type-array <span class="Delimiter">(</span>obj array t  elem <span class="Delimiter">'</span>type<span class="Delimiter">)</span>
+              type-array-address <span class="Delimiter">(</span>obj size <span class="Constant">1</span>  address t  elem <span class="Delimiter">'</span>type-array<span class="Delimiter">)</span>
+              location <span class="Delimiter">(</span>obj size <span class="Constant">1</span>  address t  elem <span class="Delimiter">'</span>location<span class="Delimiter">)</span>  <span class="Comment">; assume it points to an atom</span>
+              integer <span class="Delimiter">(</span>obj size <span class="Constant">1</span><span class="Delimiter">)</span>
+              boolean <span class="Delimiter">(</span>obj size <span class="Constant">1</span><span class="Delimiter">)</span>
+              boolean-address <span class="Delimiter">(</span>obj size <span class="Constant">1</span>  address t<span class="Delimiter">)</span>
+              byte <span class="Delimiter">(</span>obj size <span class="Constant">1</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;?               string (obj array t  elem 'byte)  ; inspired by Go</span>
+              character <span class="Delimiter">(</span>obj size <span class="Constant">1</span><span class="Delimiter">)</span>  <span class="Comment">; int32 like a Go rune</span>
+              character-address <span class="Delimiter">(</span>obj size <span class="Constant">1</span>  address t  elem <span class="Delimiter">'</span>character<span class="Delimiter">)</span>
+              string <span class="Delimiter">(</span>obj size <span class="Constant">1</span><span class="Delimiter">)</span>  <span class="Comment">; temporary hack</span>
+              <span class="Comment">; arrays consist of an integer length followed by the right number of elems</span>
+              integer-array <span class="Delimiter">(</span>obj array t  elem <span class="Delimiter">'</span>integer<span class="Delimiter">)</span>
+              integer-address <span class="Delimiter">(</span>obj size <span class="Constant">1</span>  address t  elem <span class="Delimiter">'</span>integer<span class="Delimiter">)</span>  <span class="Comment">; pointer to int</span>
+              <span class="Comment">; records consist of a series of elems, corresponding to a list of types</span>
+              integer-boolean-pair <span class="Delimiter">(</span>obj size <span class="Constant">2</span>  record t  elems <span class="Delimiter">'(</span>integer boolean<span class="Delimiter">))</span>
+              integer-boolean-pair-address <span class="Delimiter">(</span>obj size <span class="Constant">1</span>  address t  elem <span class="Delimiter">'</span>integer-boolean-pair<span class="Delimiter">)</span>
+              integer-boolean-pair-array <span class="Delimiter">(</span>obj array t  elem <span class="Delimiter">'</span>integer-boolean-pair<span class="Delimiter">)</span>
+              integer-integer-pair <span class="Delimiter">(</span>obj size <span class="Constant">2</span>  record t  elems <span class="Delimiter">'(</span>integer integer<span class="Delimiter">))</span>
+              integer-point-pair <span class="Delimiter">(</span>obj size <span class="Constant">2</span>  record t  elems <span class="Delimiter">'(</span>integer integer-integer-pair<span class="Delimiter">))</span>
+              <span class="Comment">; tagged-values are the foundation of dynamic types</span>
+              tagged-value <span class="Delimiter">(</span>obj size <span class="Constant">2</span>  record t  elems <span class="Delimiter">'(</span>type location<span class="Delimiter">))</span>
+              tagged-value-address <span class="Delimiter">(</span>obj size <span class="Constant">1</span>  address t  elem <span class="Delimiter">'</span>tagged-value<span class="Delimiter">)</span>
+              <span class="Comment">; heterogeneous lists</span>
+              list <span class="Delimiter">(</span>obj size <span class="Constant">2</span>  record t  elems <span class="Delimiter">'(</span>tagged-value list-address<span class="Delimiter">))</span>
+              list-address <span class="Delimiter">(</span>obj size <span class="Constant">1</span>  address t  elem <span class="Delimiter">'</span>list<span class="Delimiter">)</span>
+              list-address-address <span class="Delimiter">(</span>obj size <span class="Constant">1</span>  address t  elem <span class="Delimiter">'</span>list-address<span class="Delimiter">)</span>
+              <span class="Delimiter">)))</span>
+
+<span class="Comment">; Our language is assembly-like in that functions consist of series of</span>
+<span class="Comment">; statements, and statements consist of an operation and its arguments (input</span>
+<span class="Comment">; and output).</span>
+<span class="Comment">;</span>
+<span class="Comment">;   oarg1, oarg2, ... &lt;- op arg1, arg2, ...</span>
+<span class="Comment">;</span>
+<span class="Comment">; Args must be atomic, like an integer or a memory address, they can't be</span>
+<span class="Comment">; expressions doing arithmetic or function calls. But we can have any number</span>
+<span class="Comment">; of them.</span>
+<span class="Comment">;</span>
+<span class="Comment">; Since we're building on lisp, our code samples won't look quite like the</span>
+<span class="Comment">; idealized syntax above. For now they will be lists of lists:</span>
+<span class="Comment">;</span>
+<span class="Comment">;   (function-name</span>
+<span class="Comment">;     ((oarg1 oarg2 ... &lt;- op arg1 arg2 ...)</span>
+<span class="Comment">;      ...</span>
+<span class="Comment">;      ...))</span>
+<span class="Comment">;</span>
+<span class="Comment">; Each arg/oarg is itself a list, with the payload value at the head, and</span>
+<span class="Comment">; various metadata in the rest. In this first example the only metadata is types:</span>
+<span class="Comment">; 'integer' for a memory location containing an integer, and 'literal' for a</span>
+<span class="Comment">; value included directly in code. (Assembly languages traditionally call them</span>
+<span class="Comment">; 'immediate' operands.) In the future a simple tool will check that the types</span>
+<span class="Comment">; line up as expected in each op. A different tool might add types where they</span>
+<span class="Comment">; aren't provided. Instead of a monolithic compiler I want to build simple,</span>
+<span class="Comment">; lightweight tools that can be combined in various ways, say for using</span>
+<span class="Comment">; different typecheckers in different subsystems.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">23</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 <span class="Constant">23</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'copy' writes its lone 'arg' after the instruction name to its lone 'oarg' or output arg before the arrow. After this test, the value 23 is stored in memory address 1.&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Comment">; Our basic arithmetic ops can operate on memory locations or literals.</span>
+<span class="Comment">; (Ignore hardware details like registers for now.)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;add&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">1</span>  <span class="Constant">2</span> <span class="Constant">3</span>  <span class="Constant">3</span> <span class="Constant">4</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'add' operates on two addresses&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;add-literal&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 <span class="Constant">5</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - ops can take 'literal' operands (but not return them)&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;sub-literal&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- sub <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 <span class="Constant">-2</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'sub' subtracts the second arg from the first&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;mul-literal&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- mul <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 <span class="Constant">6</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'mul' multiplies like 'add' adds&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;div-literal&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- div <span class="Delimiter">(</span><span class="Constant">8</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 <span class="Delimiter">(</span>/ real.8 <span class="Constant">3</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'div' divides like 'sub' subtracts&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;idiv-literal&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- idiv <span class="Delimiter">(</span><span class="Constant">8</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">2</span>  <span class="Constant">2</span> <span class="Constant">2</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'idiv' performs integer division, returning quotient and retest1der&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; Basic boolean operations: and, or, not</span>
+<span class="Comment">; There are easy ways to encode booleans in binary, but we'll skip past those</span>
+<span class="Comment">; details.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;and-literal&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> boolean<span class="Delimiter">)</span> &lt;- and <span class="Delimiter">(</span>t literal<span class="Delimiter">)</span> <span class="Delimiter">(</span>nil literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 nil<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - logical 'and' for booleans&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; Basic comparison operations: lt, le, gt, ge, eq, neq</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;lt-literal&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> boolean<span class="Delimiter">)</span> &lt;- lt <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 nil<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'lt' is the less-than inequality operator&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;le-literal-false&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> boolean<span class="Delimiter">)</span> &lt;- le <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 nil<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'le' is the &lt;= inequality operator&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;le-literal-true&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> boolean<span class="Delimiter">)</span> &lt;- le <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 t<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'le' returns true for equal operands&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;le-literal-true-2&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> boolean<span class="Delimiter">)</span> &lt;- le <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">5</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 t<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - le is the &lt;= inequality operator - 2&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; Control flow operations: jump, jump-if</span>
+<span class="Comment">; These introduce a new type -- 'offset' -- for literals that refer to memory</span>
+<span class="Comment">; locations relative to the current location.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;jump-skip&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">8</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>jump <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>  <span class="Comment">; should be skipped</span>
+      <span class="Delimiter">(</span>reply<span class="Delimiter">))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">8</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'jump' skips some instructions&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;jump-target&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">8</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>jump <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>  <span class="Comment">; should be skipped</span>
+      <span class="Delimiter">(</span>reply<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">)))))</span>  <span class="Comment">; never reached</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">8</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'jump' doesn't skip too many instructions&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;jump-if-skip&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">1</span> boolean<span class="Delimiter">)</span> &lt;- eq <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>jump-if <span class="Delimiter">(</span><span class="Constant">1</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>reply<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> t  <span class="Constant">2</span> <span class="Constant">1</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'jump-if' is a conditional 'jump'&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;jump-if-fallthrough&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> boolean<span class="Delimiter">)</span> &lt;- eq <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>jump-if <span class="Delimiter">(</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>reply<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> nil  <span class="Constant">2</span> <span class="Constant">3</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - if 'jump-if's first arg is false, it doesn't skip any instructions&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;jump-if-backward&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Comment">; loop</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- eq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>jump-if <span class="Delimiter">(</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">-3</span> offset<span class="Delimiter">))</span>  <span class="Comment">; to loop</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>reply<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">2</span>  <span class="Constant">2</span> <span class="Constant">4</span>  <span class="Constant">3</span> nil  <span class="Constant">4</span> <span class="Constant">3</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'jump-if' can take a negative offset to make backward jumps&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; Data movement relies on addressing modes:</span>
+<span class="Comment">;   'direct' - refers to a memory location; default for most types.</span>
+<span class="Comment">;   'literal' - directly encoded in the code; implicit for some types like 'offset'.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;direct-addressing&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">34</span>  <span class="Constant">2</span> <span class="Constant">34</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'copy' performs direct addressing&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; 'Indirect' addressing refers to an address stored in a memory location.</span>
+<span class="Comment">; Indicated by the metadata 'deref'. Usually requires an address type.</span>
+<span class="Comment">; In the test below, the memory location 1 contains '2', so an indirect read</span>
+<span class="Comment">; of location 1 returns the value of location 2.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;indirect-addressing&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer-address<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> integer-address deref<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">2</span>  <span class="Constant">2</span> <span class="Constant">34</span>  <span class="Constant">3</span> <span class="Constant">34</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'copy' performs indirect addressing&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; Output args can use indirect addressing. In the test below the value is</span>
+<span class="Comment">; stored at the location stored in location 1 (i.e. location 2).</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;indirect-addressing-oarg&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer-address<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer-address deref<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">2</span>  <span class="Constant">2</span> <span class="Constant">36</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - instructions can perform indirect addressing on output arg&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; Until now we've dealt with scalar types like integers and booleans and</span>
+<span class="Comment">; addresses. We can also have compound types: arrays and records.</span>
+<span class="Comment">;</span>
+<span class="Comment">; 'get' accesses fields in records</span>
+<span class="Comment">; 'index' accesses indices in arrays</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;get-record&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- get <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- get <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">0</span> offset<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">34</span>  <span class="Constant">2</span> nil  <span class="Constant">3</span> nil  <span class="Constant">4</span> <span class="Constant">34</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'get' accesses fields of records&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;get-indirect&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer-boolean-pair-address<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- get <span class="Delimiter">(</span><span class="Constant">3</span> integer-boolean-pair-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- get <span class="Delimiter">(</span><span class="Constant">3</span> integer-boolean-pair-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">0</span> offset<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">34</span>  <span class="Constant">2</span> nil  <span class="Constant">3</span> <span class="Constant">1</span>  <span class="Constant">4</span> nil  <span class="Constant">5</span> <span class="Constant">34</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'get' accesses fields of record address&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;get-compound-field&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">35</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">36</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer-integer-pair<span class="Delimiter">)</span> &lt;- get <span class="Delimiter">(</span><span class="Constant">1</span> integer-point-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">34</span>  <span class="Constant">2</span> <span class="Constant">35</span>  <span class="Constant">3</span> <span class="Constant">36</span>  <span class="Constant">4</span> <span class="Constant">35</span>  <span class="Constant">5</span> <span class="Constant">36</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'get' accesses fields spanning multiple locations&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;get-address&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>t literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> boolean-address<span class="Delimiter">)</span> &lt;- get-address <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">34</span>  <span class="Constant">2</span> t  <span class="Constant">3</span> <span class="Constant">2</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'get-address' returns address of fields of records&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;get-address-indirect&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>t literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer-boolean-pair-address<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> boolean-address<span class="Delimiter">)</span> &lt;- get-address <span class="Delimiter">(</span><span class="Constant">3</span> integer-boolean-pair-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">34</span>  <span class="Constant">2</span> t  <span class="Constant">3</span> <span class="Constant">1</span>  <span class="Constant">4</span> <span class="Constant">2</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'get-address' accesses fields of record address&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;index-array-literal&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">23</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">24</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>t literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">6</span> integer-boolean-pair<span class="Delimiter">)</span> &lt;- index <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair-array<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">2</span>  <span class="Constant">2</span> <span class="Constant">23</span> <span class="Constant">3</span> nil  <span class="Constant">4</span> <span class="Constant">24</span> <span class="Constant">5</span> t  <span class="Constant">6</span> <span class="Constant">24</span> <span class="Constant">7</span> t<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'index' accesses indices of arrays&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;index-array-direct&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">23</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">24</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>t literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">6</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">7</span> integer-boolean-pair<span class="Delimiter">)</span> &lt;- index <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair-array<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> integer<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">2</span>  <span class="Constant">2</span> <span class="Constant">23</span> <span class="Constant">3</span> nil  <span class="Constant">4</span> <span class="Constant">24</span> <span class="Constant">5</span> t  <span class="Constant">6</span> <span class="Constant">1</span>  <span class="Constant">7</span> <span class="Constant">24</span> <span class="Constant">8</span> t<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'index' accesses indices of arrays&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;index-address&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">23</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">24</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>t literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">6</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">7</span> integer-boolean-pair-address<span class="Delimiter">)</span> &lt;- index-address <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair-array<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> integer<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">2</span>  <span class="Constant">2</span> <span class="Constant">23</span> <span class="Constant">3</span> nil  <span class="Constant">4</span> <span class="Constant">24</span> <span class="Constant">5</span> t  <span class="Constant">6</span> <span class="Constant">1</span>  <span class="Constant">7</span> <span class="Constant">4</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'index-address' returns addresses of indices of arrays&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; todo: test that out-of-bounds access throws an error</span>
+
+<span class="Comment">; Array values know their length. Record lengths are saved in the types table.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;len-array&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">23</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">24</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>t literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">6</span> integer<span class="Delimiter">)</span> &lt;- len <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair-array<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">2</span>  <span class="Constant">2</span> <span class="Constant">23</span> <span class="Constant">3</span> nil  <span class="Constant">4</span> <span class="Constant">24</span> <span class="Constant">5</span> t  <span class="Constant">6</span> <span class="Constant">2</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'len' accesses length of array&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; 'sizeof' is a helper to determine the amount of memory required by a type.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;sizeof-record&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- sizeof <span class="Delimiter">(</span>integer-boolean-pair literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 <span class="Constant">2</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'sizeof' returns space required by arg&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;sizeof-record-not-len&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- sizeof <span class="Delimiter">(</span>integer-point-pair literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.1 <span class="Constant">3</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'sizeof' is different from number of elems&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; Regardless of a type's length, you can move it around just like a primitive.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;compound-operand-copy&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>t literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer-boolean-pair<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">34</span>  <span class="Constant">2</span> nil  <span class="Constant">3</span> <span class="Constant">34</span>  <span class="Constant">4</span> nil<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - ops can operate on records spanning multiple locations&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;compound-arg&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer-boolean-pair<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>test1 <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">34</span>  <span class="Constant">2</span> nil  <span class="Constant">4</span> <span class="Constant">34</span>  <span class="Constant">5</span> nil<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'arg' can copy records spanning multiple locations&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;compound-arg&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer-boolean-pair<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> boolean<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer-boolean-pair-address<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>test1 <span class="Delimiter">(</span><span class="Constant">3</span> integer-boolean-pair-address deref<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">34</span>  <span class="Constant">2</span> nil  <span class="Constant">3</span> <span class="Constant">1</span>  <span class="Constant">4</span> <span class="Constant">34</span>  <span class="Constant">5</span> nil<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'arg' can copy records spanning multiple locations in indirect mode&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; A special kind of record is the 'tagged type'. It lets us represent</span>
+<span class="Comment">; dynamically typed values, which save type information in memory rather than</span>
+<span class="Comment">; in the code to use them. This will let us do things like create heterogenous</span>
+<span class="Comment">; lists containing both integers and strings.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;tagged-value&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> type<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>  <span class="Comment">; pointer to nowhere</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">1</span> tagged-value<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>~is memory*.3 <span class="Constant">34</span><span class="Delimiter">)</span> <span class="Delimiter">(</span>~is memory*.4 t<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'maybe-coerce' copies value only if type tag matches&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;tagged-value-2&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> type<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>  <span class="Comment">; pointer to nowhere</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">1</span> tagged-value<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean-address literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>~is memory*.3 <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">(</span>~is memory*.4 nil<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'maybe-coerce' doesn't copy value when type tag doesn't match&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-tagged-value&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer-address<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>  <span class="Comment">; pointer to nowhere</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> tagged-value-address<span class="Delimiter">)</span> &lt;- new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> integer-address<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">2</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>~is memory*.3 <span class="Constant">34</span><span class="Delimiter">)</span> <span class="Delimiter">(</span>~is memory*.4 t<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'new-tagged-value' is the converse of 'maybe-coerce'&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; Now that we can record types for values we can construct a dynamically typed</span>
+<span class="Comment">; list.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;list&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Comment">; 1 points at first node: tagged-value (int 34)</span>
+      <span class="Delimiter">((</span><span class="Constant">1</span> list-address<span class="Delimiter">)</span> &lt;- new <span class="Delimiter">(</span>list type<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> tagged-value-address<span class="Delimiter">)</span> &lt;- list-value-address <span class="Delimiter">(</span><span class="Constant">1</span> list-address<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> type-address<span class="Delimiter">)</span> &lt;- get-address <span class="Delimiter">(</span><span class="Constant">2</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">0</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> type-address deref<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> location<span class="Delimiter">)</span> &lt;- get-address <span class="Delimiter">(</span><span class="Constant">2</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> location deref<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> list-address-address<span class="Delimiter">)</span> &lt;- get-address <span class="Delimiter">(</span><span class="Constant">1</span> list-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> list-address-address deref<span class="Delimiter">)</span> &lt;- new <span class="Delimiter">(</span>list type<span class="Delimiter">))</span>
+      <span class="Comment">; 6 points at second node: tagged-value (boolean t)</span>
+      <span class="Delimiter">((</span><span class="Constant">6</span> list-address<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">5</span> list-address-address deref<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">7</span> tagged-value-address<span class="Delimiter">)</span> &lt;- list-value-address <span class="Delimiter">(</span><span class="Constant">6</span> list-address<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">8</span> type-address<span class="Delimiter">)</span> &lt;- get-address <span class="Delimiter">(</span><span class="Constant">7</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">0</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">8</span> type-address deref<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">9</span> location<span class="Delimiter">)</span> &lt;- get-address <span class="Delimiter">(</span><span class="Constant">7</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">9</span> location deref<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span>t literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> first Memory-in-use-until
+  <span class="Delimiter">(</span>run <span class="Delimiter">'</span>test1<span class="Delimiter">)</span>
+<span class="CommentedCode">;?   (prn memory*)</span>
+  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>~all first <span class="Delimiter">(</span>map memory* <span class="Delimiter">'(</span><span class="Constant">1</span> <span class="Constant">2</span> <span class="Constant">3</span><span class="Delimiter">)))</span>
+          <span class="Delimiter">(</span>~is memory*.first  <span class="Delimiter">'</span>integer<span class="Delimiter">)</span>
+          <span class="Delimiter">(</span>~is memory*.4 <span class="Delimiter">(</span>+ first <span class="Constant">1</span><span class="Delimiter">))</span>
+          <span class="Delimiter">(</span>~is <span class="Delimiter">(</span>memory* <span class="Delimiter">(</span>+ first <span class="Constant">1</span><span class="Delimiter">))</span>  <span class="Constant">34</span><span class="Delimiter">)</span>
+          <span class="Delimiter">(</span>~is memory*.5 <span class="Delimiter">(</span>+ first <span class="Constant">2</span><span class="Delimiter">))</span>
+          <span class="Delimiter">(</span><span class="Normal">let</span> second memory*.6
+            <span class="Delimiter">(</span>~is <span class="Delimiter">(</span>memory* <span class="Delimiter">(</span>+ first <span class="Constant">2</span><span class="Delimiter">))</span> second<span class="Delimiter">)</span>
+            <span class="Delimiter">(</span>~all second <span class="Delimiter">(</span>map memory* <span class="Delimiter">'(</span><span class="Constant">6</span> <span class="Constant">7</span> <span class="Constant">8</span><span class="Delimiter">)))</span>
+            <span class="Delimiter">(</span>~is memory*.second <span class="Delimiter">'</span>boolean<span class="Delimiter">)</span>
+            <span class="Delimiter">(</span>~is memory*.9 <span class="Delimiter">(</span>+ second <span class="Constant">1</span><span class="Delimiter">))</span>
+            <span class="Delimiter">(</span>~is <span class="Delimiter">(</span>memory* <span class="Delimiter">(</span>+ second <span class="Constant">1</span><span class="Delimiter">))</span> t<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'list' constructs a heterogeneous list, which can contain elements of different types&quot;</span><span class="Delimiter">)))</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test2
+      <span class="Delimiter">((</span><span class="Constant">10</span> list-address<span class="Delimiter">)</span> &lt;- list-next <span class="Delimiter">(</span><span class="Constant">1</span> list-address<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>test2<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.10 memory*.6<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'list-next can move a list pointer to the next node&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; Just like the table of types is centralized, functions are conceptualized as</span>
+<span class="Comment">; a centralized table of operations just like the 'primitives' we've seen so</span>
+<span class="Comment">; far. If you create a function you can call it like any other op.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>test1<span class="Delimiter">))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">1</span>  <span class="Constant">2</span> <span class="Constant">3</span>  <span class="Constant">3</span> <span class="Constant">4</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - calling a user-defined function runs its instructions&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-once&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">(</span>test1<span class="Delimiter">))))</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">2</span> <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - calling a user-defined function runs its instructions exactly once&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Comment">; User-defined functions communicate with their callers through two</span>
+<span class="Comment">; primitives:</span>
+<span class="Comment">;</span>
+<span class="Comment">;   'arg' - to access inputs</span>
+<span class="Comment">;   'reply' - to return outputs</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-reply&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>reply<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>test1<span class="Delimiter">))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">1</span>  <span class="Constant">2</span> <span class="Constant">3</span>  <span class="Constant">3</span> <span class="Constant">4</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'reply' stops executing the current function&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-reply-nested&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">`((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- test2<span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>test2
+      <span class="Delimiter">(</span>reply <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>test1<span class="Delimiter">))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">2</span> <span class="Constant">34</span>  <span class="Constant">3</span> <span class="Constant">34</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'reply' stops executing any callers as necessary&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-reply-once&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>reply<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>test1<span class="Delimiter">))))</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">4</span> <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">))</span>  <span class="Comment">; last reply sometimes not counted. worth fixing?</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'reply' executes instructions exactly once&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-arg-sequential&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">5</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>reply<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>test1 <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+    <span class="Delimiter">)))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">1</span>  <span class="Constant">2</span> <span class="Constant">3</span>  <span class="Constant">3</span> <span class="Constant">4</span>
+                       <span class="Comment">; add-fn's temporaries</span>
+                       <span class="Constant">4</span> <span class="Constant">1</span>  <span class="Constant">5</span> <span class="Constant">3</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'arg' accesses in order the operands of the most recent function call (the caller)&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-arg-random-access&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- arg <span class="Constant">1</span><span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- arg <span class="Constant">0</span><span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">5</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>reply<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">)))</span>  <span class="Comment">; should never run</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>test1 <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+    <span class="Delimiter">)))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">1</span>  <span class="Constant">2</span> <span class="Constant">3</span>  <span class="Constant">3</span> <span class="Constant">4</span>
+                       <span class="Comment">; add-fn's temporaries</span>
+                       <span class="Constant">4</span> <span class="Constant">1</span>  <span class="Constant">5</span> <span class="Constant">3</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'arg' with index can access function call arguments out of order&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-arg-status&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">(</span>test1 <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+    <span class="Delimiter">)))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">4</span> <span class="Constant">1</span>  <span class="Constant">5</span> t<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'arg' sets a second oarg when arg exists&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-arg-missing&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">(</span>test1 <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+    <span class="Delimiter">)))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">4</span> <span class="Constant">1</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - missing 'arg' doesn't cause error&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-arg-missing-2&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">(</span>test1 <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+    <span class="Delimiter">)))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">4</span> <span class="Constant">1</span>  <span class="Constant">6</span> nil<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - missing 'arg' wipes second oarg when provided&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-arg-missing-3&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">(</span>test1 <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+    <span class="Delimiter">)))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">4</span> <span class="Constant">1</span>  <span class="Constant">6</span> nil<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - missing 'arg' consistently wipes its oarg&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-arg-missing-3&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Comment">; if given two args, adds them; if given one arg, increments</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Error">{</span> begin
+        <span class="Delimiter">(</span>break-if <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Error">}</span>
+      <span class="Delimiter">((</span><span class="Constant">7</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">5</span> integer<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">(</span>test1 <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+    <span class="Delimiter">)))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">4</span> <span class="Constant">34</span>  <span class="Constant">5</span> <span class="Constant">1</span>  <span class="Constant">6</span> nil  <span class="Constant">7</span> <span class="Constant">35</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - function with optional second arg&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Comment">; how should errors be handled? will be unclear until we support concurrency and routine trees.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-reply-oarg&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">6</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">5</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>reply <span class="Delimiter">(</span><span class="Constant">6</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- test1 <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">1</span>  <span class="Constant">2</span> <span class="Constant">3</span>  <span class="Constant">3</span> <span class="Constant">4</span>
+                       <span class="Comment">; add-fn's temporaries</span>
+                       <span class="Constant">4</span> <span class="Constant">1</span>  <span class="Constant">5</span> <span class="Constant">3</span>  <span class="Constant">6</span> <span class="Constant">4</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'reply' can take aguments that are returned, or written back into output args of caller&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-fn-reply-oarg-multiple&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Delimiter">((</span><span class="Constant">6</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">5</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">(</span>reply <span class="Delimiter">(</span><span class="Constant">6</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">5</span> integer<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">7</span> integer<span class="Delimiter">)</span> &lt;- test1 <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">1</span>  <span class="Constant">2</span> <span class="Constant">3</span>  <span class="Constant">3</span> <span class="Constant">4</span>    <span class="Constant">7</span> <span class="Constant">3</span>
+                         <span class="Comment">; add-fn's temporaries</span>
+                         <span class="Constant">4</span> <span class="Constant">1</span>  <span class="Constant">5</span> <span class="Constant">3</span>  <span class="Constant">6</span> <span class="Constant">4</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'reply' permits a function to return multiple values at once&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; Our control operators are quite inconvenient to use, so mu provides a</span>
+<span class="Comment">; lightweight tool called 'convert-braces' to work in a slightly more</span>
+<span class="Comment">; convenient format with nested braces:</span>
+<span class="Comment">;</span>
+<span class="Comment">;   {</span>
+<span class="Comment">;     some instructions</span>
+<span class="Comment">;     {</span>
+<span class="Comment">;       more instructions</span>
+<span class="Comment">;     }</span>
+<span class="Comment">;   }</span>
+<span class="Comment">;</span>
+<span class="Comment">; Braces are just labels, they require no special parsing. The operations</span>
+<span class="Comment">; 'break' and 'continue' jump to just after the enclosing '}' and '{'</span>
+<span class="Comment">; respectively.</span>
+<span class="Comment">;</span>
+<span class="Comment">; Conditional and unconditional 'break' and 'continue' should give us 80% of</span>
+<span class="Comment">; the benefits of the control-flow primitives we're used to in other</span>
+<span class="Comment">; languages, like 'if', 'while', 'for', etc.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+                            <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+                            <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+                            <span class="Error">{</span> begin  <span class="Comment">; 'begin' is just a hack because racket turns curlies into parens</span>
+                            <span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> integer<span class="Delimiter">))</span>
+                            <span class="Delimiter">(</span>break-if <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">))</span>
+                            <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+                            <span class="Error">}</span>
+                            <span class="Delimiter">(</span>reply<span class="Delimiter">)))</span>
+          <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> integer<span class="Delimiter">))</span>
+            <span class="Delimiter">(</span>jump-if <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">(</span>reply<span class="Delimiter">)))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces replaces break-if with a jump-if to after the next close curly&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces-empty-block&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+                            <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+                            <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+                            <span class="Error">{</span> begin
+                            <span class="Delimiter">(</span>break<span class="Delimiter">)</span>
+                            <span class="Error">}</span>
+                            <span class="Delimiter">(</span>reply<span class="Delimiter">)))</span>
+          <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+            <span class="Delimiter">(</span>jump <span class="Delimiter">(</span><span class="Constant">0</span> offset<span class="Delimiter">))</span>
+            <span class="Delimiter">(</span>reply<span class="Delimiter">)))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces works for degenerate blocks&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces-nested-break&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+                            <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+                            <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+                            <span class="Error">{</span> begin
+                            <span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> integer<span class="Delimiter">))</span>
+                            <span class="Delimiter">(</span>break-if <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">))</span>
+                            <span class="Error">{</span> begin
+                            <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+                            <span class="Error">}</span>
+                            <span class="Error">}</span>
+                            <span class="Delimiter">(</span>reply<span class="Delimiter">)))</span>
+          <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> integer<span class="Delimiter">))</span>
+            <span class="Delimiter">(</span>jump-if <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> offset<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">(</span>reply<span class="Delimiter">)))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces balances curlies when converting break&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces-nested-continue&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+                            <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+                            <span class="Error">{</span> begin
+                            <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+                            <span class="Error">{</span> begin
+                            <span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> integer<span class="Delimiter">))</span>
+                            <span class="Error">}</span>
+                            <span class="Delimiter">(</span>continue-if <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">))</span>
+                            <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+                            <span class="Error">}</span>
+                            <span class="Delimiter">(</span>reply<span class="Delimiter">)))</span>
+          <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> &lt;- neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> integer<span class="Delimiter">))</span>
+            <span class="Delimiter">(</span>jump-if <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">-3</span> offset<span class="Delimiter">))</span>
+            <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+            <span class="Delimiter">(</span>reply<span class="Delimiter">)))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces balances curlies when converting continue&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;continue&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="Delimiter">(</span>add-fns <span class="Delimiter">`((</span>main <span class="Delimiter">,@(</span>convert-braces <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+                                     <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+                                     <span class="Error">{</span> begin
+                                     <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+                                     <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+                                     <span class="Delimiter">(</span>continue-if <span class="Delimiter">(</span><span class="Constant">3</span> boolean<span class="Delimiter">))</span>
+                                     <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+                                     <span class="Error">}</span>
+                                     <span class="Delimiter">(</span>reply<span class="Delimiter">))))))</span>
+<span class="CommentedCode">;? (each stmt function*!main</span>
+<span class="CommentedCode">;?   (prn stmt))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">4</span>  <span class="Constant">2</span> <span class="Constant">4</span>  <span class="Constant">3</span> nil  <span class="Constant">4</span> <span class="Constant">34</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - continue correctly loops&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; todo: fuzz-test invariant: convert-braces offsets should be robust to any</span>
+<span class="Comment">; number of inner blocks inside but not around the continue block.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;continue-nested&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="Delimiter">(</span>add-fns <span class="Delimiter">`((</span>main <span class="Delimiter">,@(</span>convert-braces <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+                                     <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">1</span> literal<span class="Delimiter">))</span>
+                                     <span class="Error">{</span> begin
+                                     <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+                                     <span class="Error">{</span> begin
+                                     <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+                                     <span class="Error">}</span>
+                                     <span class="Delimiter">(</span>continue-if <span class="Delimiter">(</span><span class="Constant">3</span> boolean<span class="Delimiter">))</span>
+                                     <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+                                     <span class="Error">}</span>
+                                     <span class="Delimiter">(</span>reply<span class="Delimiter">))))))</span>
+<span class="CommentedCode">;? (each stmt function*!main</span>
+<span class="CommentedCode">;?   (prn stmt))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">4</span>  <span class="Constant">2</span> <span class="Constant">4</span>  <span class="Constant">3</span> nil  <span class="Constant">4</span> <span class="Constant">34</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - continue correctly loops&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;continue-fail&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns <span class="Delimiter">`((</span>main <span class="Delimiter">,@(</span>convert-braces <span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">))</span>
+                                     <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">2</span> literal<span class="Delimiter">))</span>
+                                     <span class="Error">{</span> begin
+                                     <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+                                     <span class="Error">{</span> begin
+                                     <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span>
+                                     <span class="Error">}</span>
+                                     <span class="Delimiter">(</span>continue-if <span class="Delimiter">(</span><span class="Constant">3</span> boolean<span class="Delimiter">))</span>
+                                     <span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+                                     <span class="Error">}</span>
+                                     <span class="Delimiter">(</span>reply<span class="Delimiter">))))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">4</span>  <span class="Constant">2</span> <span class="Constant">4</span>  <span class="Constant">3</span> nil  <span class="Constant">4</span> <span class="Constant">34</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - continue might never trigger&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; using tagged-values you can define generic functions that run different code</span>
+<span class="Comment">; based on the types of their args.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;dispatch-clause&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> tagged-value-address<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Error">{</span> begin
+        <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">4</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span>
+        <span class="Delimiter">(</span>break-unless <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">7</span> tagged-value-address<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+        <span class="Delimiter">((</span><span class="Constant">8</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">9</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">7</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">9</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">8</span> integer<span class="Delimiter">))</span>
+        <span class="Delimiter">(</span>reply <span class="Delimiter">(</span><span class="Constant">9</span> integer<span class="Delimiter">))</span>
+      <span class="Error">}</span>
+      <span class="Delimiter">(</span>reply <span class="Delimiter">(</span>nil literal<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> tagged-value-address<span class="Delimiter">)</span> &lt;- new-tagged-value <span class="Delimiter">(</span>integer literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> tagged-value-address<span class="Delimiter">)</span> &lt;- new-tagged-value <span class="Delimiter">(</span>integer literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> &lt;- test1 <span class="Delimiter">(</span><span class="Constant">1</span> tagged-value-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> tagged-value-address<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.3 <span class="Constant">37</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - an example function that checks that its oarg is an integer&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Comment">; todo - test that reply increments pc for caller frame after popping current frame</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;dispatch-multiple-clauses&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> tagged-value-address<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Error">{</span> begin
+        <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">4</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span>
+        <span class="Delimiter">(</span>break-unless <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">7</span> tagged-value-address<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+        <span class="Delimiter">((</span><span class="Constant">8</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">9</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">7</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">9</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">8</span> integer<span class="Delimiter">))</span>
+        <span class="Delimiter">(</span>reply <span class="Delimiter">(</span><span class="Constant">9</span> integer<span class="Delimiter">))</span>
+      <span class="Error">}</span>
+      <span class="Error">{</span> begin
+        <span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">4</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span>
+        <span class="Delimiter">(</span>break-unless <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">7</span> tagged-value-address<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+        <span class="Delimiter">((</span><span class="Constant">8</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">9</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">7</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">9</span> boolean<span class="Delimiter">)</span> &lt;- or <span class="Delimiter">(</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">8</span> boolean<span class="Delimiter">))</span>
+        <span class="Delimiter">(</span>reply <span class="Delimiter">(</span><span class="Constant">9</span> boolean<span class="Delimiter">))</span>
+      <span class="Error">}</span>
+      <span class="Delimiter">(</span>reply <span class="Delimiter">(</span>nil literal<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> tagged-value-address<span class="Delimiter">)</span> &lt;- new-tagged-value <span class="Delimiter">(</span>boolean literal<span class="Delimiter">)</span> <span class="Delimiter">(</span>t literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> tagged-value-address<span class="Delimiter">)</span> &lt;- new-tagged-value <span class="Delimiter">(</span>boolean literal<span class="Delimiter">)</span> <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- test1 <span class="Delimiter">(</span><span class="Constant">1</span> tagged-value-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> tagged-value-address<span class="Delimiter">)))))</span>
+<span class="CommentedCode">;? (each stmt function*!test-fn</span>
+<span class="CommentedCode">;?   (prn &quot;  &quot; stmt))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (wipe dump-trace*)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is memory*.3 t<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - an example function that can do different things (dispatch) based on the type of its args or oargs&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;dispatch-multiple-calls&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>test1
+      <span class="Delimiter">((</span><span class="Constant">4</span> tagged-value-address<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+      <span class="Error">{</span> begin
+        <span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">4</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span>
+        <span class="Delimiter">(</span>break-unless <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">7</span> tagged-value-address<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+        <span class="Delimiter">((</span><span class="Constant">8</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">9</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">7</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">9</span> integer<span class="Delimiter">)</span> &lt;- add <span class="Delimiter">(</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">8</span> integer<span class="Delimiter">))</span>
+        <span class="Delimiter">(</span>reply <span class="Delimiter">(</span><span class="Constant">9</span> integer<span class="Delimiter">))</span>
+      <span class="Error">}</span>
+      <span class="Error">{</span> begin
+        <span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">4</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span>
+        <span class="Delimiter">(</span>break-unless <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">7</span> tagged-value-address<span class="Delimiter">)</span> &lt;- arg<span class="Delimiter">)</span>
+        <span class="Delimiter">((</span><span class="Constant">8</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">9</span> boolean<span class="Delimiter">)</span> &lt;- maybe-coerce <span class="Delimiter">(</span><span class="Constant">7</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">9</span> boolean<span class="Delimiter">)</span> &lt;- or <span class="Delimiter">(</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">8</span> boolean<span class="Delimiter">))</span>
+        <span class="Delimiter">(</span>reply <span class="Delimiter">(</span><span class="Constant">9</span> boolean<span class="Delimiter">))</span>
+      <span class="Error">}</span>
+      <span class="Delimiter">(</span>reply <span class="Delimiter">(</span>nil literal<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>main
+      <span class="Delimiter">((</span><span class="Constant">1</span> tagged-value-address<span class="Delimiter">)</span> &lt;- new-tagged-value <span class="Delimiter">(</span>boolean literal<span class="Delimiter">)</span> <span class="Delimiter">(</span>t literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">2</span> tagged-value-address<span class="Delimiter">)</span> &lt;- new-tagged-value <span class="Delimiter">(</span>boolean literal<span class="Delimiter">)</span> <span class="Delimiter">(</span>nil literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> &lt;- test1 <span class="Delimiter">(</span><span class="Constant">1</span> tagged-value-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> tagged-value-address<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">10</span> tagged-value-address<span class="Delimiter">)</span> &lt;- new-tagged-value <span class="Delimiter">(</span>integer literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">34</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">11</span> tagged-value-address<span class="Delimiter">)</span> &lt;- new-tagged-value <span class="Delimiter">(</span>integer literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">))</span>
+      <span class="Delimiter">((</span><span class="Constant">12</span> integer<span class="Delimiter">)</span> &lt;- test1 <span class="Delimiter">(</span><span class="Constant">10</span> tagged-value-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">11</span> tagged-value-address<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~and <span class="Delimiter">(</span>is memory*.3 t<span class="Delimiter">)</span> <span class="Delimiter">(</span>is memory*.12 <span class="Constant">37</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - different calls can exercise different clauses of the same function&quot;</span><span class="Delimiter">))</span>
+
+<span class="Comment">; A rudimentary memory allocator. Eventually we want to write this in mu.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-primitive&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> before Memory-in-use-until
+  <span class="Delimiter">(</span>add-fns
+    <span class="Delimiter">'((</span>main
+        <span class="Delimiter">((</span><span class="Constant">1</span> integer-address<span class="Delimiter">)</span> &lt;- new <span class="Delimiter">(</span>integer type<span class="Delimiter">)))))</span>
+  <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+  <span class="CommentedCode">;? (prn memory*)</span>
+  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory*.1 before<span class="Delimiter">)</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'new' returns current high-water mark&quot;</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso Memory-in-use-until <span class="Delimiter">(</span>+ before <span class="Constant">1</span><span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'new' on primitive types increments high-water mark by their size&quot;</span><span class="Delimiter">)))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-array-literal&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> before Memory-in-use-until
+  <span class="Delimiter">(</span>add-fns
+    <span class="Delimiter">'((</span>main
+        <span class="Delimiter">((</span><span class="Constant">1</span> type-array-address<span class="Delimiter">)</span> &lt;- new <span class="Delimiter">(</span>type-array type<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">5</span> literal<span class="Delimiter">)))))</span>
+  <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+  <span class="CommentedCode">;? (prn memory*)</span>
+  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory*.1 before<span class="Delimiter">)</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'new' on array with literal size returns current high-water mark&quot;</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso Memory-in-use-until <span class="Delimiter">(</span>+ before <span class="Constant">6</span><span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'new' on primitive arrays increments high-water mark by their size&quot;</span><span class="Delimiter">)))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;new-array-direct&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> before Memory-in-use-until
+  <span class="Delimiter">(</span>add-fns
+    <span class="Delimiter">'((</span>main
+        <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">5</span> literal<span class="Delimiter">))</span>
+        <span class="Delimiter">((</span><span class="Constant">2</span> type-array-address<span class="Delimiter">)</span> &lt;- new <span class="Delimiter">(</span>type-array type<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)))))</span>
+  <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
+  <span class="CommentedCode">;? (prn memory*)</span>
+  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory*.2 before<span class="Delimiter">)</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'new' on array with variable size returns current high-water mark&quot;</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso Memory-in-use-until <span class="Delimiter">(</span>+ before <span class="Constant">6</span><span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'new' on primitive arrays increments high-water mark by their (variable) size&quot;</span><span class="Delimiter">)))</span>
+
+<span class="Comment">; A rudimentary process scheduler. You can 'run' multiple functions at once,</span>
+<span class="Comment">; and they share the virtual processor.</span>
+<span class="Comment">; There's also a 'fork' primitive to let functions create new threads of</span>
+<span class="Comment">; execution.</span>
+<span class="Comment">; Eventually we want to allow callers to influence how much of their CPU they</span>
+<span class="Comment">; give to their 'children', or to rescind a child's running privileges.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;scheduler&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Delimiter">'((</span>f1
+      <span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">3</span> literal<span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>f2
+      <span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> &lt;- copy <span class="Delimiter">(</span><span class="Constant">4</span> literal<span class="Delimiter">)))))</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> ninsts <span class="Delimiter">(</span>run <span class="Delimiter">'</span>f1 <span class="Delimiter">'</span>f2<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>when <span class="Delimiter">(</span>~iso <span class="Constant">2</span> ninsts<span class="Delimiter">)</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - scheduler didn't run the right number of instructions: &quot;</span> ninsts<span class="Delimiter">)))</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso memory* <span class="Delimiter">(</span>obj <span class="Constant">1</span> <span class="Constant">3</span>  <span class="Constant">2</span> <span class="Constant">4</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - scheduler runs multiple functions: &quot;</span> memory*<span class="Delimiter">))</span>
+<span class="Delimiter">(</span>check-trace-contents <span class="Constant">&quot;scheduler orders functions correctly&quot;</span>
+  <span class="Delimiter">'((</span><span class="Constant">&quot;schedule&quot;</span> <span class="Constant">&quot;f1&quot;</span><span class="Delimiter">)</span>
+    <span class="Delimiter">(</span><span class="Constant">&quot;schedule&quot;</span> <span class="Constant">&quot;f2&quot;</span><span class="Delimiter">)</span>
+  <span class="Delimiter">))</span>
+<span class="Delimiter">(</span>check-trace-contents <span class="Constant">&quot;scheduler orders schedule and run events correctly&quot;</span>
+  <span class="Delimiter">'((</span><span class="Constant">&quot;schedule&quot;</span> <span class="Constant">&quot;f1&quot;</span><span class="Delimiter">)</span>
+    <span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span> <span class="Constant">&quot;f1 0&quot;</span><span class="Delimiter">)</span>
+    <span class="Delimiter">(</span><span class="Constant">&quot;schedule&quot;</span> <span class="Constant">&quot;f2&quot;</span><span class="Delimiter">)</span>
+    <span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span> <span class="Constant">&quot;f2 0&quot;</span><span class="Delimiter">)</span>
+  <span class="Delimiter">))</span>
+
+<span class="Comment">; The scheduler needs to keep track of the call stack for each thread.</span>
+<span class="Comment">; Eventually we'll want to save this information in mu's address space itself,</span>
+<span class="Comment">; along with the types array, the magic buffers for args and oargs, and so on.</span>
+<span class="Comment">;</span>
+<span class="Comment">; Eventually we want the right stack-management primitives to build delimited</span>
+<span class="Comment">; continuations in mu.</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>  <span class="Comment">; end file with this to persist the trace for the final test</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
