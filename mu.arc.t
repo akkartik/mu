@@ -179,9 +179,9 @@
 (reset)
 (new-trace "literal")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (23 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 23)
   (prn "F - 'copy' writes its lone 'arg' after the instruction name to its lone 'oarg' or output arg before the arrow. After this test, the value 23 is stored in memory address 1."))
@@ -193,29 +193,29 @@
 (reset)
 (new-trace "add")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       ((3 integer) <- add (1 integer) (2 integer)))))
-(run 'test1)
+(run 'main)
 (if (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - 'add' operates on two addresses"))
 
 (reset)
 (new-trace "add-literal")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- add (2 literal) (3 literal)))))
-(run 'test1)
+(run 'main)
 (if (~is memory*.1 5)
   (prn "F - ops can take 'literal' operands (but not return them)"))
 
 (reset)
 (new-trace "sub-literal")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- sub (1 literal) (3 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 -2)
   (prn "F - 'sub' subtracts the second arg from the first"))
@@ -223,9 +223,9 @@
 (reset)
 (new-trace "mul-literal")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- mul (2 literal) (3 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 6)
   (prn "F - 'mul' multiplies like 'add' adds"))
@@ -233,9 +233,9 @@
 (reset)
 (new-trace "div-literal")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- div (8 literal) (3 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 (/ real.8 3))
   (prn "F - 'div' divides like 'sub' subtracts"))
@@ -243,9 +243,9 @@
 (reset)
 (new-trace "idiv-literal")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) (2 integer) <- idiv (8 literal) (3 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 2))
   (prn "F - 'idiv' performs integer division, returning quotient and remainder"))
@@ -257,9 +257,9 @@
 (reset)
 (new-trace "and-literal")
 (add-fns
-  '((test1
+  '((main
       ((1 boolean) <- and (t literal) (nil literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 nil)
   (prn "F - logical 'and' for booleans"))
@@ -269,9 +269,9 @@
 (reset)
 (new-trace "lt-literal")
 (add-fns
-  '((test1
+  '((main
       ((1 boolean) <- lt (4 literal) (3 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 nil)
   (prn "F - 'lt' is the less-than inequality operator"))
@@ -279,9 +279,9 @@
 (reset)
 (new-trace "le-literal-false")
 (add-fns
-  '((test1
+  '((main
       ((1 boolean) <- le (4 literal) (3 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 nil)
   (prn "F - 'le' is the <= inequality operator"))
@@ -289,9 +289,9 @@
 (reset)
 (new-trace "le-literal-true")
 (add-fns
-  '((test1
+  '((main
       ((1 boolean) <- le (4 literal) (4 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 t)
   (prn "F - 'le' returns true for equal operands"))
@@ -299,9 +299,9 @@
 (reset)
 (new-trace "le-literal-true-2")
 (add-fns
-  '((test1
+  '((main
       ((1 boolean) <- le (4 literal) (5 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 t)
   (prn "F - le is the <= inequality operator - 2"))
@@ -313,12 +313,12 @@
 (reset)
 (new-trace "jump-skip")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (8 literal))
       (jump (1 offset))
       ((2 integer) <- copy (3 literal))  ; should be skipped
       (reply))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
   (prn "F - 'jump' skips some instructions"))
@@ -326,13 +326,13 @@
 (reset)
 (new-trace "jump-target")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (8 literal))
       (jump (1 offset))
       ((2 integer) <- copy (3 literal))  ; should be skipped
       (reply)
       ((3 integer) <- copy (34 literal)))))  ; never reached
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
   (prn "F - 'jump' doesn't skip too many instructions"))
@@ -341,14 +341,14 @@
 (reset)
 (new-trace "jump-if-skip")
 (add-fns
-  '((test1
+  '((main
       ((2 integer) <- copy (1 literal))
       ((1 boolean) <- eq (1 literal) (2 integer))
       (jump-if (1 boolean) (1 offset))
       ((2 integer) <- copy (3 literal))
       (reply)
       ((3 integer) <- copy (34 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 t  2 1))
   (prn "F - 'jump-if' is a conditional 'jump'"))
@@ -356,13 +356,13 @@
 (reset)
 (new-trace "jump-if-fallthrough")
 (add-fns
-  '((test1
+  '((main
       ((1 boolean) <- eq (1 literal) (2 literal))
       (jump-if (3 boolean) (1 offset))
       ((2 integer) <- copy (3 literal))
       (reply)
       ((3 integer) <- copy (34 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 nil  2 3))
   (prn "F - if 'jump-if's first arg is false, it doesn't skip any instructions"))
@@ -370,7 +370,7 @@
 (reset)
 (new-trace "jump-if-backward")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (1 literal))
       ; loop
@@ -380,7 +380,7 @@
       ((4 integer) <- copy (3 literal))
       (reply)
       ((3 integer) <- copy (34 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
   (prn "F - 'jump-if' can take a negative offset to make backward jumps"))
@@ -392,10 +392,10 @@
 (reset)
 (new-trace "direct-addressing")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (34 literal))
       ((2 integer) <- copy (1 integer)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 34))
   (prn "F - 'copy' performs direct addressing"))
@@ -408,11 +408,11 @@
 (reset)
 (new-trace "indirect-addressing")
 (add-fns
-  '((test1
+  '((main
       ((1 integer-address) <- copy (2 literal))
       ((2 integer) <- copy (34 literal))
       ((3 integer) <- copy (1 integer-address deref)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 34  3 34))
   (prn "F - 'copy' performs indirect addressing"))
@@ -423,11 +423,11 @@
 (reset)
 (new-trace "indirect-addressing-oarg")
 (add-fns
-  '((test1
+  '((main
       ((1 integer-address) <- copy (2 literal))
       ((2 integer) <- copy (34 literal))
       ((1 integer-address deref) <- add (2 integer) (2 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 36))
   (prn "F - instructions can perform indirect addressing on output arg"))
@@ -441,12 +441,12 @@
 (reset)
 (new-trace "get-record")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((3 boolean) <- get (1 integer-boolean-pair) (1 offset))
       ((4 integer) <- get (1 integer-boolean-pair) (0 offset)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 nil  4 34))
   (prn "F - 'get' accesses fields of records"))
@@ -454,13 +454,13 @@
 (reset)
 (new-trace "get-indirect")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((3 integer-boolean-pair-address) <- copy (1 literal))
       ((4 boolean) <- get (3 integer-boolean-pair-address deref) (1 offset))
       ((5 integer) <- get (3 integer-boolean-pair-address deref) (0 offset)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 1  4 nil  5 34))
   (prn "F - 'get' accesses fields of record address"))
@@ -468,12 +468,12 @@
 (reset)
 (new-trace "get-compound-field")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (34 literal))
       ((2 integer) <- copy (35 literal))
       ((3 integer) <- copy (36 literal))
       ((4 integer-integer-pair) <- get (1 integer-point-pair) (1 offset)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 35  3 36  4 35  5 36))
   (prn "F - 'get' accesses fields spanning multiple locations"))
@@ -481,11 +481,11 @@
 (reset)
 (new-trace "get-address")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (34 literal))
       ((2 integer) <- copy (t literal))
       ((3 boolean-address) <- get-address (1 integer-boolean-pair) (1 offset)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 t  3 2))
   (prn "F - 'get-address' returns address of fields of records"))
@@ -493,12 +493,12 @@
 (reset)
 (new-trace "get-address-indirect")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (34 literal))
       ((2 integer) <- copy (t literal))
       ((3 integer-boolean-pair-address) <- copy (1 literal))
       ((4 boolean-address) <- get-address (3 integer-boolean-pair-address deref) (1 offset)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 t  3 1  4 2))
   (prn "F - 'get-address' accesses fields of record address"))
@@ -506,14 +506,14 @@
 (reset)
 (new-trace "index-array-literal")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
       ((4 integer) <- copy (24 literal))
       ((5 boolean) <- copy (t literal))
       ((6 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (1 literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 24 7 t))
   (prn "F - 'index' accesses indices of arrays"))
@@ -521,7 +521,7 @@
 (reset)
 (new-trace "index-array-direct")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -529,7 +529,7 @@
       ((5 boolean) <- copy (t literal))
       ((6 integer) <- copy (1 literal))
       ((7 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (6 integer)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 24 8 t))
   (prn "F - 'index' accesses indices of arrays"))
@@ -537,7 +537,7 @@
 (reset)
 (new-trace "index-address")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -545,7 +545,7 @@
       ((5 boolean) <- copy (t literal))
       ((6 integer) <- copy (1 literal))
       ((7 integer-boolean-pair-address) <- index-address (1 integer-boolean-pair-array) (6 integer)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 4))
   (prn "F - 'index-address' returns addresses of indices of arrays"))
@@ -557,14 +557,14 @@
 (reset)
 (new-trace "len-array")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
       ((4 integer) <- copy (24 literal))
       ((5 boolean) <- copy (t literal))
       ((6 integer) <- len (1 integer-boolean-pair-array)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 2))
   (prn "F - 'len' accesses length of array"))
@@ -574,9 +574,9 @@
 (reset)
 (new-trace "sizeof-record")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- sizeof (integer-boolean-pair literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 2)
   (prn "F - 'sizeof' returns space required by arg"))
@@ -584,9 +584,9 @@
 (reset)
 (new-trace "sizeof-record-not-len")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- sizeof (integer-point-pair literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 3)
   (prn "F - 'sizeof' is different from number of elems"))
@@ -596,12 +596,12 @@
 (reset)
 (new-trace "compound-operand-copy")
 (add-fns
-  '((test1
+  '((main
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((4 boolean) <- copy (t literal))
       ((3 integer-boolean-pair) <- copy (1 integer-boolean-pair)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 34  4 nil))
   (prn "F - ops can operate on records spanning multiple locations"))
@@ -644,11 +644,11 @@
 (new-trace "tagged-value")
 ;? (set dump-trace*)
 (add-fns
-  '((test1
+  '((main
       ((1 type) <- copy (integer-address literal))
       ((2 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (or (~is memory*.3 34) (~is memory*.4 t))
   (prn "F - 'maybe-coerce' copies value only if type tag matches"))
@@ -657,11 +657,11 @@
 (new-trace "tagged-value-2")
 ;? (set dump-trace*)
 (add-fns
-  '((test1
+  '((main
       ((1 type) <- copy (integer-address literal))
       ((2 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (boolean-address literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (or (~is memory*.3 0) (~is memory*.4 nil))
   (prn "F - 'maybe-coerce' doesn't copy value when type tag doesn't match"))
@@ -670,11 +670,11 @@
 (new-trace "new-tagged-value")
 ;? (set dump-trace*)
 (add-fns
-  '((test1
+  '((main
       ((1 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((2 tagged-value-address) <- new-tagged-value (integer-address literal) (1 integer-address))
       ((3 integer-address) (4 boolean) <- maybe-coerce (2 tagged-value-address deref) (integer-address literal)))))
-(run 'test1)
+(run 'main)
 ;? (prn memory*)
 (if (or (~is memory*.3 34) (~is memory*.4 t))
   (prn "F - 'new-tagged-value' is the converse of 'maybe-coerce'"))
