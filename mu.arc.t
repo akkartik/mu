@@ -248,7 +248,7 @@
 (run 'test1)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 2))
-  (prn "F - 'idiv' performs integer division, returning quotient and retest1der"))
+  (prn "F - 'idiv' performs integer division, returning quotient and remainder"))
 
 ; Basic boolean operations: and, or, not
 ; There are easy ways to encode booleans in binary, but we'll skip past those
