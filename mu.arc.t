@@ -998,15 +998,16 @@
 
 (reset)
 (new-trace "convert-braces")
-(if (~iso (convert-braces '(((1 integer) <- copy (4 literal))
-                            ((2 integer) <- copy (2 literal))
-                            ((3 integer) <- add (2 integer) (2 integer))
-                            { begin  ; 'begin' is just a hack because racket turns curlies into parens
-                            ((4 boolean) <- neq (1 integer) (3 integer))
-                            (break-if (4 boolean))
-                            ((5 integer) <- copy (34 literal))
-                            }
-                            (reply)))
+(if (~iso (convert-braces
+            '(((1 integer) <- copy (4 literal))
+              ((2 integer) <- copy (2 literal))
+              ((3 integer) <- add (2 integer) (2 integer))
+              { begin  ; 'begin' is just a hack because racket turns curlies into parens
+              ((4 boolean) <- neq (1 integer) (3 integer))
+              (break-if (4 boolean))
+              ((5 integer) <- copy (34 literal))
+              }
+              (reply)))
           '(((1 integer) <- copy (4 literal))
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
@@ -1018,13 +1019,14 @@
 
 (reset)
 (new-trace "convert-braces-empty-block")
-(if (~iso (convert-braces '(((1 integer) <- copy (4 literal))
-                            ((2 integer) <- copy (2 literal))
-                            ((3 integer) <- add (2 integer) (2 integer))
-                            { begin
-                            (break)
-                            }
-                            (reply)))
+(if (~iso (convert-braces
+            '(((1 integer) <- copy (4 literal))
+              ((2 integer) <- copy (2 literal))
+              ((3 integer) <- add (2 integer) (2 integer))
+              { begin
+              (break)
+              }
+              (reply)))
           '(((1 integer) <- copy (4 literal))
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
@@ -1034,17 +1036,18 @@
 
 (reset)
 (new-trace "convert-braces-nested-break")
-(if (~iso (convert-braces '(((1 integer) <- copy (4 literal))
-                            ((2 integer) <- copy (2 literal))
-                            ((3 integer) <- add (2 integer) (2 integer))
-                            { begin
-                            ((4 boolean) <- neq (1 integer) (3 integer))
-                            (break-if (4 boolean))
-                            { begin
-                            ((5 integer) <- copy (34 literal))
-                            }
-                            }
-                            (reply)))
+(if (~iso (convert-braces
+            '(((1 integer) <- copy (4 literal))
+              ((2 integer) <- copy (2 literal))
+              ((3 integer) <- add (2 integer) (2 integer))
+              { begin
+                ((4 boolean) <- neq (1 integer) (3 integer))
+                (break-if (4 boolean))
+                { begin
+                  ((5 integer) <- copy (34 literal))
+                }
+              }
+              (reply)))
           '(((1 integer) <- copy (4 literal))
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
@@ -1056,17 +1059,18 @@
 
 (reset)
 (new-trace "convert-braces-nested-continue")
-(if (~iso (convert-braces '(((1 integer) <- copy (4 literal))
-                            ((2 integer) <- copy (2 literal))
-                            { begin
-                            ((3 integer) <- add (2 integer) (2 integer))
-                            { begin
-                            ((4 boolean) <- neq (1 integer) (3 integer))
-                            }
-                            (continue-if (4 boolean))
-                            ((5 integer) <- copy (34 literal))
-                            }
-                            (reply)))
+(if (~iso (convert-braces
+            '(((1 integer) <- copy (4 literal))
+              ((2 integer) <- copy (2 literal))
+              { begin
+                ((3 integer) <- add (2 integer) (2 integer))
+                { begin
+                  ((4 boolean) <- neq (1 integer) (3 integer))
+                }
+                (continue-if (4 boolean))
+                ((5 integer) <- copy (34 literal))
+              }
+              (reply)))
           '(((1 integer) <- copy (4 literal))
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
@@ -1079,15 +1083,17 @@
 (reset)
 (new-trace "continue")
 ;? (set dump-trace*)
-(add-fns `((main ,@(convert-braces '(((1 integer) <- copy (4 literal))
-                                     ((2 integer) <- copy (1 literal))
-                                     { begin
-                                     ((2 integer) <- add (2 integer) (2 integer))
-                                     ((3 boolean) <- neq (1 integer) (2 integer))
-                                     (continue-if (3 boolean))
-                                     ((4 integer) <- copy (34 literal))
-                                     }
-                                     (reply))))))
+(add-fns
+  '((main
+      ((1 integer) <- copy (4 literal))
+      ((2 integer) <- copy (1 literal))
+      { begin
+        ((2 integer) <- add (2 integer) (2 integer))
+        ((3 boolean) <- neq (1 integer) (2 integer))
+        (continue-if (3 boolean))
+        ((4 integer) <- copy (34 literal))
+      }
+      (reply))))
 ;? (each stmt function*!main
 ;?   (prn stmt))
 (run 'main)
@@ -1101,17 +1107,19 @@
 (reset)
 (new-trace "continue-nested")
 ;? (set dump-trace*)
-(add-fns `((main ,@(convert-braces '(((1 integer) <- copy (4 literal))
-                                     ((2 integer) <- copy (1 literal))
-                                     { begin
-                                     ((2 integer) <- add (2 integer) (2 integer))
-                                     { begin
-                                     ((3 boolean) <- neq (1 integer) (2 integer))
-                                     }
-                                     (continue-if (3 boolean))
-                                     ((4 integer) <- copy (34 literal))
-                                     }
-                                     (reply))))))
+(add-fns
+  '((main
+      ((1 integer) <- copy (4 literal))
+      ((2 integer) <- copy (1 literal))
+      { begin
+        ((2 integer) <- add (2 integer) (2 integer))
+        { begin
+          ((3 boolean) <- neq (1 integer) (2 integer))
+        }
+        (continue-if (3 boolean))
+        ((4 integer) <- copy (34 literal))
+      }
+      (reply))))
 ;? (each stmt function*!main
 ;?   (prn stmt))
 (run 'main)
@@ -1121,17 +1129,19 @@
 
 (reset)
 (new-trace "continue-fail")
-(add-fns `((main ,@(convert-braces '(((1 integer) <- copy (4 literal))
-                                     ((2 integer) <- copy (2 literal))
-                                     { begin
-                                     ((2 integer) <- add (2 integer) (2 integer))
-                                     { begin
-                                     ((3 boolean) <- neq (1 integer) (2 integer))
-                                     }
-                                     (continue-if (3 boolean))
-                                     ((4 integer) <- copy (34 literal))
-                                     }
-                                     (reply))))))
+(add-fns
+  '((main
+      ((1 integer) <- copy (4 literal))
+      ((2 integer) <- copy (2 literal))
+      { begin
+        ((2 integer) <- add (2 integer) (2 integer))
+        { begin
+          ((3 boolean) <- neq (1 integer) (2 integer))
+        }
+        (continue-if (3 boolean))
+        ((4 integer) <- copy (34 literal))
+      }
+      (reply))))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
