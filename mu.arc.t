@@ -638,7 +638,11 @@
 ; A special kind of record is the 'tagged type'. It lets us represent
 ; dynamically typed values, which save type information in memory rather than
 ; in the code to use them. This will let us do things like create heterogenous
-; lists containing both integers and strings.
+; lists containing both integers and strings. Tagged values admit two
+; operations:
+;
+;   'save-type' - turns a regular value into a tagged-value of the appropriate type
+;   'maybe-coerce' - turns a tagged value into a regular value if the type matches
 
 (reset)
 (new-trace "tagged-value")
@@ -665,6 +669,16 @@
 ;? (prn memory*)
 (if (or (~is memory*.3 0) (~is memory*.4 nil))
   (prn "F - 'maybe-coerce' doesn't copy value when type tag doesn't match"))
+
+(reset)
+(new-trace "save-type")
+(add-fns
+  '((main
+      ((1 tagged-value) <- save-type (34 integer-address)))))  ; pointer to nowhere
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj  1 'integer-address  2 34))
+  (prn "F - 'save-type' saves the type of a value at runtime, turning it into a tagged-value"))
 
 (reset)
 (new-trace "new-tagged-value")

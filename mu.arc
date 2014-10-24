@@ -371,6 +371,10 @@
                       array-len.base
                       -1))
 
+                ; tagged-values require one primitive
+                save-type
+                  (annotate 'record `(,(ty arg.0) ,(v arg.0)))
+
                 ; multiprocessing
                 run
                   (run (v arg.0))
