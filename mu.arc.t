@@ -702,7 +702,9 @@
       ((8 type-address) <- get-address (7 tagged-value-address deref) (0 offset))
       ((8 type-address deref) <- copy (boolean literal))
       ((9 location) <- get-address (7 tagged-value-address deref) (1 offset))
-      ((9 location deref) <- copy (t literal)))))
+      ((9 location deref) <- copy (t literal))
+      ((10 list-address) <- get (6 list-address deref) (1 offset))
+      )))
 (let first Memory-in-use-until
   (run 'test1)
 ;?   (prn memory*)
@@ -716,7 +718,8 @@
             (~all second (map memory* '(6 7 8)))
             (~is memory*.second 'boolean)
             (~is memory*.9 (+ second 1))
-            (~is (memory* (+ second 1)) t)))
+            (~is (memory* (+ second 1)) t)
+            (~is memory*.10 nil)))
     (prn "F - 'list' constructs a heterogeneous list, which can contain elements of different types")))
 (add-fns
   '((test2

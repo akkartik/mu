@@ -12,6 +12,7 @@ cvt0: 10 ((8 type-address) <- get-address (7 tagged-value-address deref) (0 offs
 cvt0: 11 ((8 type-address deref) <- copy (boolean literal)) -- nil
 cvt0: 12 ((9 location) <- get-address (7 tagged-value-address deref) (1 offset)) -- nil
 cvt0: 13 ((9 location deref) <- copy (t literal)) -- nil
+cvt0: 14 ((10 list-address) <- get (6 list-address deref) (1 offset)) -- nil
 cvt1: 0 new ((1 list-address))
 cvt1: 1 list-value-address ((2 tagged-value-address))
 cvt1: 2 get-address ((3 type-address))
@@ -26,6 +27,7 @@ cvt1: 10 get-address ((8 type-address))
 cvt1: 11 copy ((8 type-address deref))
 cvt1: 12 get-address ((9 location))
 cvt1: 13 copy ((9 location deref))
+cvt1: 14 get ((10 list-address))
 schedule: test1
 run: -- nil
 run: test1 0: ((1 list-address) <- new (list type))
@@ -216,6 +218,15 @@ m: (9 location) 1
 sz: (9 location)
 sz: (1004 location)
 setm: size of (9 location deref) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004) (base 1003) (result 1003))
+run: test1 14: ((10 list-address) <- get (6 list-address deref) (1 offset))
+sz: (1005 list-address)
+m: (1005 list-address) 1
+sz: (1005 list-address)
+run: writing to oarg nil => (10 list-address)
+setm: (10 list-address) <= nil
+sz: (10 list-address)
+setm: size of (10 list-address) is 1
 cvt0: 0 ((10 list-address) <- list-next (1 list-address)) -- nil
 cvt1: 0 list-next ((10 list-address))
 schedule: test2
