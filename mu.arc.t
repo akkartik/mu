@@ -674,10 +674,11 @@
 (new-trace "save-type")
 (add-fns
   '((main
-      ((1 tagged-value) <- save-type (34 integer-address)))))  ; pointer to nowhere
+      ((1 integer-address) <- copy (34 literal))  ; pointer to nowhere
+      ((2 tagged-value) <- save-type (1 integer-address)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj  1 'integer-address  2 34))
+(if (~iso memory* (obj  1 34  2 'integer-address  3 34))
   (prn "F - 'save-type' saves the type of a value at runtime, turning it into a tagged-value"))
 
 (reset)
@@ -728,13 +729,14 @@
           (~is (memory* (+ first 1))  34)
           (~is memory*.5 (+ first 2))
           (let second memory*.6
-            (~is (memory* (+ first 2)) second)
-            (~all second (map memory* '(6 7 8)))
-            (~is memory*.second 'boolean)
-            (~is memory*.9 (+ second 1))
-            (~is (memory* (+ second 1)) t)
-            (~is memory*.10 nil)))
-    (prn "F - 'list' constructs a heterogeneous list, which can contain elements of different types")))
+            (or
+              (~is (memory* (+ first 2)) second)
+              (~all second (map memory* '(6 7 8)))
+              (~is memory*.second 'boolean)
+              (~is memory*.9 (+ second 1))
+              (~is (memory* (+ second 1)) t)
+              (~is memory*.10 nil))))
+    (prn "F - lists can contain elements of different types")))
 (add-fns
   '((test2
       ((10 list-address) <- list-next (1 list-address)))))
@@ -742,6 +744,32 @@
 ;? (prn memory*)
 (if (~is memory*.10 memory*.6)
   (prn "F - 'list-next can move a list pointer to the next node"))
+
+; 'new-list' takes a variable number of args and constructs a list containing
+; them.
+
+(reset)
+(new-trace "new-list")
+(add-fns
+  '((main
+      ((1 integer) <- new-list (3 literal) (4 literal) (5 literal)))))
+;? (set dump-trace*)
+(run 'main)
+;? (prn memory*)
+(let first memory*.1
+;?   (prn first)
+  (if (or (~is memory*.first  'integer)
+          (~is (memory* (+ first 1))  3)
+          (let second (memory* (+ first 2))
+;?             (prn second)
+            (or (~is memory*.second 'integer)
+                (~is (memory* (+ second 1)) 4)
+                (let third (memory* (+ second 2))
+;?                   (prn third)
+                  (or (~is memory*.third 'integer)
+                      (~is (memory* (+ third 1)) 5)
+                      (~is (memory* (+ third 2) nil)))))))
+    (prn "F - 'new-list' can construct a list of integers")))
 
 ; Just like the table of types is centralized, functions are conceptualized as
 ; a centralized table of operations just like the 'primitives' we've seen so
