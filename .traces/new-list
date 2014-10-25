@@ -1,0 +1,418 @@
+cvt0: 0 ((1 integer) <- new-list (3 literal) (4 literal) (5 literal)) -- nil
+cvt1: 0 new-list ((1 integer))
+schedule: main
+run: -- nil
+run: main 0: ((1 integer) <- new-list (3 literal) (4 literal) (5 literal))
+run: -- nil
+run: new-list 0: ((new-list-result list-address) <- new (list type))
+sizeof: list
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+sizeof: list-address
+run: writing to oarg 1000 => (new-list-result list-address)
+setm: (new-list-result list-address) <= 1000
+sz: (new-list-result list-address)
+setm: size of (new-list-result list-address) is 1
+run: -- ((new-list-result 1000))
+run: new-list 1: ((curr list-address) <- copy (new-list-result list-address))
+sz: (new-list-result list-address)
+m: (new-list-result list-address) 1
+sz: (new-list-result list-address)
+run: writing to oarg 1000 => (curr list-address)
+setm: (curr list-address) <= 1000
+sz: (curr list-address)
+setm: size of (curr list-address) is 1
+run: -- ((curr 1000) (new-list-result 1000))
+run: new-list 2: ((curr-value integer) (exists? boolean) <- arg)
+arg: nil 0 ((3 literal) (4 literal) (5 literal))
+sz: (3 literal)
+m: (3 literal) literal
+setm: (curr-value integer) <= 3
+sz: (curr-value integer)
+setm: size of (curr-value integer) is 1
+setm: (exists? boolean) <= t
+sz: (exists? boolean)
+setm: size of (exists? boolean) is 1
+run: -- ((curr 1000) (curr-value 3) (exists? t) (new-list-result 1000))
+run: new-list 3: (jump-unless (exists? boolean) (6 offset))
+sz: (exists? boolean)
+m: (exists? boolean) 1
+sz: (exists? boolean)
+run: -- ((curr 1000) (curr-value 3) (exists? t) (new-list-result 1000))
+run: new-list 4: ((next list-address-address) <- get-address (curr list-address deref) (1 offset))
+get-address: (curr list-address deref).1
+get-address: after: (1000 list)
+run: writing to oarg 1002 => (next list-address-address)
+setm: (next list-address-address) <= 1002
+sz: (next list-address-address)
+setm: size of (next list-address-address) is 1
+run: -- ((curr 1000) (curr-value 3) (exists? t) (new-list-result 1000) (next 1002))
+run: new-list 5: ((next list-address-address deref) <- new (list type))
+sizeof: list
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+sizeof: list-address
+run: writing to oarg 1003 => (next list-address-address deref)
+setm: (next list-address-address deref) <= 1003
+sz: (next list-address-address deref)
+sz: (next location)
+m: (next location) 1
+sz: (next location)
+sz: (1002 list-address)
+setm: size of (next list-address-address deref) is 1
+run: -- ((1002 1003) (curr 1000) (curr-value 3) (exists? t) (new-list-result 1000) (next 1002))
+run: new-list 6: ((curr list-address) <- list-next (curr list-address))
+run: -- ((1002 1003) (curr 1000) (curr-value 3) (exists? t) (new-list-result 1000) (next 1002))
+run: list-next 0: ((base list-address) <- arg)
+arg: nil 0 ((curr list-address))
+sz: (curr list-address)
+m: (curr list-address) 1
+sz: (curr list-address)
+setm: (base list-address) <= 1000
+sz: (base list-address)
+setm: size of (base list-address) is 1
+run: -- ((1002 1003) (base 1000) (curr 1000) (curr-value 3) (exists? t) (new-list-result 1000) (next 1002))
+run: list-next 1: ((result list-address) <- get (base list-address deref) (1 offset))
+sz: (1002 list-address)
+m: (1002 list-address) 1
+sz: (1002 list-address)
+run: writing to oarg 1003 => (result list-address)
+setm: (result list-address) <= 1003
+sz: (result list-address)
+setm: size of (result list-address) is 1
+run: -- ((1002 1003) (base 1000) (curr 1000) (curr-value 3) (exists? t) (new-list-result 1000) (next 1002) (result 1003))
+run: list-next 2: (reply (result list-address))
+reply: ((result list-address)) ((curr list-address))
+reply: (result list-address) => (curr list-address)
+sz: (result list-address)
+m: (result list-address) 1
+sz: (result list-address)
+setm: (curr list-address) <= 1003
+sz: (curr list-address)
+setm: size of (curr list-address) is 1
+run: -- ((1002 1003) (base 1000) (curr 1003) (curr-value 3) (exists? t) (new-list-result 1000) (next 1002) (result 1003))
+run: new-list 7: ((dest tagged-value-address) <- list-value-address (curr list-address))
+run: -- ((1002 1003) (base 1000) (curr 1003) (curr-value 3) (exists? t) (new-list-result 1000) (next 1002) (result 1003))
+run: list-value-address 0: ((base list-address) <- arg)
+arg: nil 0 ((curr list-address))
+sz: (curr list-address)
+m: (curr list-address) 1
+sz: (curr list-address)
+setm: (base list-address) <= 1003
+sz: (base list-address)
+setm: size of (base list-address) is 1
+run: -- ((1002 1003) (base 1003) (curr 1003) (curr-value 3) (exists? t) (new-list-result 1000) (next 1002) (result 1003))
+run: list-value-address 1: ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
+get-address: (base list-address deref).0
+get-address: after: (1003 list)
+run: writing to oarg 1003 => (result tagged-value-address)
+setm: (result tagged-value-address) <= 1003
+sz: (result tagged-value-address)
+setm: size of (result tagged-value-address) is 1
+run: -- ((1002 1003) (base 1003) (curr 1003) (curr-value 3) (exists? t) (new-list-result 1000) (next 1002) (result 1003))
+run: list-value-address 2: (reply (result tagged-value-address))
+reply: ((result tagged-value-address)) ((dest tagged-value-address))
+reply: (result tagged-value-address) => (dest tagged-value-address)
+sz: (result tagged-value-address)
+m: (result tagged-value-address) 1
+sz: (result tagged-value-address)
+setm: (dest tagged-value-address) <= 1003
+sz: (dest tagged-value-address)
+setm: size of (dest tagged-value-address) is 1
+run: -- ((1002 1003) (base 1003) (curr 1003) (curr-value 3) (dest 1003) (exists? t) (new-list-result 1000) (next 1002) (result 1003))
+run: new-list 8: ((dest tagged-value-address deref) <- save-type (curr-value integer))
+sz: (curr-value integer)
+m: (curr-value integer) 1
+sz: (curr-value integer)
+run: writing to oarg #(tagged record (integer 3)) => (dest tagged-value-address deref)
+setm: (dest tagged-value-address deref) <= #(tagged record (integer 3))
+sz: (dest tagged-value-address deref)
+sz: (dest location)
+m: (dest location) 1
+sz: (dest location)
+sz: (1003 tagged-value)
+setm: size of (dest tagged-value-address deref) is 2
+run: -- ((1002 1003) (1003 integer) (1004 3) (base 1003) (curr 1003) (curr-value 3) (dest 1003) (exists? t) (new-list-result 1000) (next 1002) (result 1003))
+run: new-list 9: (jump (-8 offset))
+run: -- ((1002 1003) (1003 integer) (1004 3) (base 1003) (curr 1003) (curr-value 3) (dest 1003) (exists? t) (new-list-result 1000) (next 1002) (result 1003))
+run: new-list 2: ((curr-value integer) (exists? boolean) <- arg)
+arg: nil 1 ((3 literal) (4 literal) (5 literal))
+sz: (4 literal)
+m: (4 literal) literal
+setm: (curr-value integer) <= 4
+sz: (curr-value integer)
+setm: size of (curr-value integer) is 1
+setm: (exists? boolean) <= t
+sz: (exists? boolean)
+setm: size of (exists? boolean) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (base 1003) (curr 1003) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1002) (result 1003))
+run: new-list 3: (jump-unless (exists? boolean) (6 offset))
+sz: (exists? boolean)
+m: (exists? boolean) 1
+sz: (exists? boolean)
+run: -- ((1002 1003) (1003 integer) (1004 3) (base 1003) (curr 1003) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1002) (result 1003))
+run: new-list 4: ((next list-address-address) <- get-address (curr list-address deref) (1 offset))
+get-address: (curr list-address deref).1
+get-address: after: (1003 list)
+run: writing to oarg 1005 => (next list-address-address)
+setm: (next list-address-address) <= 1005
+sz: (next list-address-address)
+setm: size of (next list-address-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (base 1003) (curr 1003) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1005) (result 1003))
+run: new-list 5: ((next list-address-address deref) <- new (list type))
+sizeof: list
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+sizeof: list-address
+run: writing to oarg 1006 => (next list-address-address deref)
+setm: (next list-address-address deref) <= 1006
+sz: (next list-address-address deref)
+sz: (next location)
+m: (next location) 1
+sz: (next location)
+sz: (1005 list-address)
+setm: size of (next list-address-address deref) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (base 1003) (curr 1003) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1005) (result 1003))
+run: new-list 6: ((curr list-address) <- list-next (curr list-address))
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (base 1003) (curr 1003) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1005) (result 1003))
+run: list-next 0: ((base list-address) <- arg)
+arg: nil 0 ((curr list-address))
+sz: (curr list-address)
+m: (curr list-address) 1
+sz: (curr list-address)
+setm: (base list-address) <= 1003
+sz: (base list-address)
+setm: size of (base list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (base 1003) (curr 1003) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1005) (result 1003))
+run: list-next 1: ((result list-address) <- get (base list-address deref) (1 offset))
+sz: (1005 list-address)
+m: (1005 list-address) 1
+sz: (1005 list-address)
+run: writing to oarg 1006 => (result list-address)
+setm: (result list-address) <= 1006
+sz: (result list-address)
+setm: size of (result list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (base 1003) (curr 1003) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1005) (result 1006))
+run: list-next 2: (reply (result list-address))
+reply: ((result list-address)) ((curr list-address))
+reply: (result list-address) => (curr list-address)
+sz: (result list-address)
+m: (result list-address) 1
+sz: (result list-address)
+setm: (curr list-address) <= 1006
+sz: (curr list-address)
+setm: size of (curr list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (base 1003) (curr 1006) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1005) (result 1006))
+run: new-list 7: ((dest tagged-value-address) <- list-value-address (curr list-address))
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (base 1003) (curr 1006) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1005) (result 1006))
+run: list-value-address 0: ((base list-address) <- arg)
+arg: nil 0 ((curr list-address))
+sz: (curr list-address)
+m: (curr list-address) 1
+sz: (curr list-address)
+setm: (base list-address) <= 1006
+sz: (base list-address)
+setm: size of (base list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (base 1006) (curr 1006) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1005) (result 1006))
+run: list-value-address 1: ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
+get-address: (base list-address deref).0
+get-address: after: (1006 list)
+run: writing to oarg 1006 => (result tagged-value-address)
+setm: (result tagged-value-address) <= 1006
+sz: (result tagged-value-address)
+setm: size of (result tagged-value-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (base 1006) (curr 1006) (curr-value 4) (dest 1003) (exists? t) (new-list-result 1000) (next 1005) (result 1006))
+run: list-value-address 2: (reply (result tagged-value-address))
+reply: ((result tagged-value-address)) ((dest tagged-value-address))
+reply: (result tagged-value-address) => (dest tagged-value-address)
+sz: (result tagged-value-address)
+m: (result tagged-value-address) 1
+sz: (result tagged-value-address)
+setm: (dest tagged-value-address) <= 1006
+sz: (dest tagged-value-address)
+setm: size of (dest tagged-value-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (base 1006) (curr 1006) (curr-value 4) (dest 1006) (exists? t) (new-list-result 1000) (next 1005) (result 1006))
+run: new-list 8: ((dest tagged-value-address deref) <- save-type (curr-value integer))
+sz: (curr-value integer)
+m: (curr-value integer) 1
+sz: (curr-value integer)
+run: writing to oarg #(tagged record (integer 4)) => (dest tagged-value-address deref)
+setm: (dest tagged-value-address deref) <= #(tagged record (integer 4))
+sz: (dest tagged-value-address deref)
+sz: (dest location)
+m: (dest location) 1
+sz: (dest location)
+sz: (1006 tagged-value)
+setm: size of (dest tagged-value-address deref) is 2
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (base 1006) (curr 1006) (curr-value 4) (dest 1006) (exists? t) (new-list-result 1000) (next 1005) (result 1006))
+run: new-list 9: (jump (-8 offset))
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (base 1006) (curr 1006) (curr-value 4) (dest 1006) (exists? t) (new-list-result 1000) (next 1005) (result 1006))
+run: new-list 2: ((curr-value integer) (exists? boolean) <- arg)
+arg: nil 2 ((3 literal) (4 literal) (5 literal))
+sz: (5 literal)
+m: (5 literal) literal
+setm: (curr-value integer) <= 5
+sz: (curr-value integer)
+setm: size of (curr-value integer) is 1
+setm: (exists? boolean) <= t
+sz: (exists? boolean)
+setm: size of (exists? boolean) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (base 1006) (curr 1006) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1005) (result 1006))
+run: new-list 3: (jump-unless (exists? boolean) (6 offset))
+sz: (exists? boolean)
+m: (exists? boolean) 1
+sz: (exists? boolean)
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (base 1006) (curr 1006) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1005) (result 1006))
+run: new-list 4: ((next list-address-address) <- get-address (curr list-address deref) (1 offset))
+get-address: (curr list-address deref).1
+get-address: after: (1006 list)
+run: writing to oarg 1008 => (next list-address-address)
+setm: (next list-address-address) <= 1008
+sz: (next list-address-address)
+setm: size of (next list-address-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (base 1006) (curr 1006) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1008) (result 1006))
+run: new-list 5: ((next list-address-address deref) <- new (list type))
+sizeof: list
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+sizeof: list-address
+run: writing to oarg 1009 => (next list-address-address deref)
+setm: (next list-address-address deref) <= 1009
+sz: (next list-address-address deref)
+sz: (next location)
+m: (next location) 1
+sz: (next location)
+sz: (1008 list-address)
+setm: size of (next list-address-address deref) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (base 1006) (curr 1006) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1008) (result 1006))
+run: new-list 6: ((curr list-address) <- list-next (curr list-address))
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (base 1006) (curr 1006) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1008) (result 1006))
+run: list-next 0: ((base list-address) <- arg)
+arg: nil 0 ((curr list-address))
+sz: (curr list-address)
+m: (curr list-address) 1
+sz: (curr list-address)
+setm: (base list-address) <= 1006
+sz: (base list-address)
+setm: size of (base list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (base 1006) (curr 1006) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1008) (result 1006))
+run: list-next 1: ((result list-address) <- get (base list-address deref) (1 offset))
+sz: (1008 list-address)
+m: (1008 list-address) 1
+sz: (1008 list-address)
+run: writing to oarg 1009 => (result list-address)
+setm: (result list-address) <= 1009
+sz: (result list-address)
+setm: size of (result list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (base 1006) (curr 1006) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1008) (result 1009))
+run: list-next 2: (reply (result list-address))
+reply: ((result list-address)) ((curr list-address))
+reply: (result list-address) => (curr list-address)
+sz: (result list-address)
+m: (result list-address) 1
+sz: (result list-address)
+setm: (curr list-address) <= 1009
+sz: (curr list-address)
+setm: size of (curr list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (base 1006) (curr 1009) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1008) (result 1009))
+run: new-list 7: ((dest tagged-value-address) <- list-value-address (curr list-address))
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (base 1006) (curr 1009) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1008) (result 1009))
+run: list-value-address 0: ((base list-address) <- arg)
+arg: nil 0 ((curr list-address))
+sz: (curr list-address)
+m: (curr list-address) 1
+sz: (curr list-address)
+setm: (base list-address) <= 1009
+sz: (base list-address)
+setm: size of (base list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (base 1009) (curr 1009) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1008) (result 1009))
+run: list-value-address 1: ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
+get-address: (base list-address deref).0
+get-address: after: (1009 list)
+run: writing to oarg 1009 => (result tagged-value-address)
+setm: (result tagged-value-address) <= 1009
+sz: (result tagged-value-address)
+setm: size of (result tagged-value-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (base 1009) (curr 1009) (curr-value 5) (dest 1006) (exists? t) (new-list-result 1000) (next 1008) (result 1009))
+run: list-value-address 2: (reply (result tagged-value-address))
+reply: ((result tagged-value-address)) ((dest tagged-value-address))
+reply: (result tagged-value-address) => (dest tagged-value-address)
+sz: (result tagged-value-address)
+m: (result tagged-value-address) 1
+sz: (result tagged-value-address)
+setm: (dest tagged-value-address) <= 1009
+sz: (dest tagged-value-address)
+setm: size of (dest tagged-value-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (base 1009) (curr 1009) (curr-value 5) (dest 1009) (exists? t) (new-list-result 1000) (next 1008) (result 1009))
+run: new-list 8: ((dest tagged-value-address deref) <- save-type (curr-value integer))
+sz: (curr-value integer)
+m: (curr-value integer) 1
+sz: (curr-value integer)
+run: writing to oarg #(tagged record (integer 5)) => (dest tagged-value-address deref)
+setm: (dest tagged-value-address deref) <= #(tagged record (integer 5))
+sz: (dest tagged-value-address deref)
+sz: (dest location)
+m: (dest location) 1
+sz: (dest location)
+sz: (1009 tagged-value)
+setm: size of (dest tagged-value-address deref) is 2
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (base 1009) (curr 1009) (curr-value 5) (dest 1009) (exists? t) (new-list-result 1000) (next 1008) (result 1009))
+run: new-list 9: (jump (-8 offset))
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (base 1009) (curr 1009) (curr-value 5) (dest 1009) (exists? t) (new-list-result 1000) (next 1008) (result 1009))
+run: new-list 2: ((curr-value integer) (exists? boolean) <- arg)
+arg: nil 3 ((3 literal) (4 literal) (5 literal))
+setm: (curr-value integer) <= nil
+sz: (curr-value integer)
+setm: size of (curr-value integer) is 1
+setm: (exists? boolean) <= nil
+sz: (exists? boolean)
+setm: size of (exists? boolean) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (base 1009) (curr 1009) (dest 1009) (new-list-result 1000) (next 1008) (result 1009))
+run: new-list 3: (jump-unless (exists? boolean) (6 offset))
+sz: (exists? boolean)
+m: (exists? boolean) 1
+sz: (exists? boolean)
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (base 1009) (curr 1009) (dest 1009) (new-list-result 1000) (next 1008) (result 1009))
+run: new-list 10: ((new-list-result list-address) <- list-next (new-list-result list-address))
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (base 1009) (curr 1009) (dest 1009) (new-list-result 1000) (next 1008) (result 1009))
+run: list-next 0: ((base list-address) <- arg)
+arg: nil 0 ((new-list-result list-address))
+sz: (new-list-result list-address)
+m: (new-list-result list-address) 1
+sz: (new-list-result list-address)
+setm: (base list-address) <= 1000
+sz: (base list-address)
+setm: size of (base list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (base 1000) (curr 1009) (dest 1009) (new-list-result 1000) (next 1008) (result 1009))
+run: list-next 1: ((result list-address) <- get (base list-address deref) (1 offset))
+sz: (1002 list-address)
+m: (1002 list-address) 1
+sz: (1002 list-address)
+run: writing to oarg 1003 => (result list-address)
+setm: (result list-address) <= 1003
+sz: (result list-address)
+setm: size of (result list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (base 1000) (curr 1009) (dest 1009) (new-list-result 1000) (next 1008) (result 1003))
+run: list-next 2: (reply (result list-address))
+reply: ((result list-address)) ((new-list-result list-address))
+reply: (result list-address) => (new-list-result list-address)
+sz: (result list-address)
+m: (result list-address) 1
+sz: (result list-address)
+setm: (new-list-result list-address) <= 1003
+sz: (new-list-result list-address)
+setm: size of (new-list-result list-address) is 1
+run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (base 1000) (curr 1009) (dest 1009) (new-list-result 1003) (next 1008) (result 1003))
+run: new-list 11: (reply (new-list-result list-address))
+reply: ((new-list-result list-address)) ((1 integer))
+reply: (new-list-result list-address) => (1 integer)
+sz: (new-list-result list-address)
+m: (new-list-result list-address) 1
+sz: (new-list-result list-address)
+setm: (1 integer) <= 1003
+sz: (1 integer)
+setm: size of (1 integer) is 1

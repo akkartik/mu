@@ -1,9 +1,22 @@
-cvt0: 0 ((1 tagged-value) <- save-type (34 integer-address)) -- nil
-cvt1: 0 save-type ((1 tagged-value))
+cvt0: 0 ((1 integer-address) <- copy (34 literal)) -- nil
+cvt0: 1 ((2 tagged-value) <- save-type (1 integer-address)) -- nil
+cvt1: 0 copy ((1 integer-address))
+cvt1: 1 save-type ((2 tagged-value))
 schedule: main
 run: -- nil
-run: main 0: ((1 tagged-value) <- save-type (34 integer-address))
-run: writing to oarg #(tagged record (integer-address 34)) => (1 tagged-value)
-setm: (1 tagged-value) <= #(tagged record (integer-address 34))
-sz: (1 tagged-value)
-setm: size of (1 tagged-value) is 2
+run: main 0: ((1 integer-address) <- copy (34 literal))
+sz: (34 literal)
+m: (34 literal) literal
+run: writing to oarg 34 => (1 integer-address)
+setm: (1 integer-address) <= 34
+sz: (1 integer-address)
+setm: size of (1 integer-address) is 1
+run: -- ((1 34))
+run: main 1: ((2 tagged-value) <- save-type (1 integer-address))
+sz: (1 integer-address)
+m: (1 integer-address) 1
+sz: (1 integer-address)
+run: writing to oarg #(tagged record (integer-address 34)) => (2 tagged-value)
+setm: (2 tagged-value) <= #(tagged record (integer-address 34))
+sz: (2 tagged-value)
+setm: size of (2 tagged-value) is 2

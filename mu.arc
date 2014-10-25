@@ -373,7 +373,7 @@
 
                 ; tagged-values require one primitive
                 save-type
-                  (annotate 'record `(,(ty arg.0) ,(v arg.0)))
+                  (annotate 'record `(,(ty arg.0) ,(m arg.0)))
 
                 ; multiprocessing
                 run
@@ -531,7 +531,7 @@
                     (do
                       (assert:is oarg nil)
                       (assert:is arg nil)
-                      (yield `(jump (,(- stack.0 pc) offset))))
+                      (yield `(jump (,(- stack.0 1 pc) offset))))
                   continue-if
                     (do
                       (trace "cvt0" "continue-if: " instr " => " (- stack.0 1))
@@ -607,6 +607,22 @@
   ((base list-address) <- arg)
   ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
   (reply (result tagged-value-address)))
+
+(init-fn new-list
+  ((new-list-result list-address) <- new (list type))
+  ((curr list-address) <- copy (new-list-result list-address))
+  { begin
+    ((curr-value integer) (exists? boolean) <- arg)
+    (break-unless (exists? boolean))
+    ((next list-address-address) <- get-address (curr list-address deref) (1 offset))
+    ((next list-address-address deref) <- new (list type))
+    ((curr list-address) <- list-next (curr list-address))
+    ((dest tagged-value-address) <- list-value-address (curr list-address))
+    ((dest tagged-value-address deref) <- save-type (curr-value integer))
+    (continue)
+  }
+  ((new-list-result list-address) <- list-next (new-list-result list-address))  ; memory leak
+  (reply (new-list-result list-address)))
 
 ; drop all traces while processing above functions
 (on-init
