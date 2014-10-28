@@ -43,33 +43,33 @@ setm: size of (1 list-address) is 1
 run: -- ((1 1000))
 run: test1 1: ((2 tagged-value-address) <- list-value-address (1 list-address))
 run: -- ((1 1000))
-run: list-value-address 0: ((base list-address) <- arg)
+run: list-value-address 0: ((401 list-address) <- arg)
 arg: nil 0 ((1 list-address))
 sz: (1 list-address)
 m: (1 list-address) 1
 sz: (1 list-address)
-setm: (base list-address) <= 1000
-sz: (base list-address)
-setm: size of (base list-address) is 1
-run: -- ((1 1000) (base 1000))
-run: list-value-address 1: ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
-get-address: (base list-address deref).0
+setm: (401 list-address) <= 1000
+sz: (401 list-address)
+setm: size of (401 list-address) is 1
+run: -- ((1 1000) (401 1000))
+run: list-value-address 1: ((402 tagged-value-address) <- get-address (401 list-address deref) (0 offset))
+get-address: (401 list-address deref).0
 get-address: after: (1000 list)
-run: writing to oarg 1000 => (result tagged-value-address)
-setm: (result tagged-value-address) <= 1000
-sz: (result tagged-value-address)
-setm: size of (result tagged-value-address) is 1
-run: -- ((1 1000) (base 1000) (result 1000))
-run: list-value-address 2: (reply (result tagged-value-address))
-reply: ((result tagged-value-address)) ((2 tagged-value-address))
-reply: (result tagged-value-address) => (2 tagged-value-address)
-sz: (result tagged-value-address)
-m: (result tagged-value-address) 1
-sz: (result tagged-value-address)
+run: writing to oarg 1000 => (402 tagged-value-address)
+setm: (402 tagged-value-address) <= 1000
+sz: (402 tagged-value-address)
+setm: size of (402 tagged-value-address) is 1
+run: -- ((1 1000) (401 1000) (402 1000))
+run: list-value-address 2: (reply (402 tagged-value-address))
+reply: ((402 tagged-value-address)) ((2 tagged-value-address))
+reply: (402 tagged-value-address) => (2 tagged-value-address)
+sz: (402 tagged-value-address)
+m: (402 tagged-value-address) 1
+sz: (402 tagged-value-address)
 setm: (2 tagged-value-address) <= 1000
 sz: (2 tagged-value-address)
 setm: size of (2 tagged-value-address) is 1
-run: -- ((1 1000) (2 1000) (base 1000) (result 1000))
+run: -- ((1 1000) (2 1000) (401 1000) (402 1000))
 run: test1 2: ((3 type-address) <- get-address (2 tagged-value-address deref) (0 offset))
 get-address: (2 tagged-value-address deref).0
 get-address: after: (1000 tagged-value)
@@ -77,7 +77,7 @@ run: writing to oarg 1000 => (3 type-address)
 setm: (3 type-address) <= 1000
 sz: (3 type-address)
 setm: size of (3 type-address) is 1
-run: -- ((1 1000) (2 1000) (3 1000) (base 1000) (result 1000))
+run: -- ((1 1000) (2 1000) (3 1000) (401 1000) (402 1000))
 run: test1 3: ((3 type-address deref) <- copy (integer literal))
 sz: (integer literal)
 m: (integer literal) literal
@@ -89,7 +89,7 @@ m: (3 location) 1
 sz: (3 location)
 sz: (1000 type)
 setm: size of (3 type-address deref) is 1
-run: -- ((1 1000) (1000 integer) (2 1000) (3 1000) (base 1000) (result 1000))
+run: -- ((1 1000) (1000 integer) (2 1000) (3 1000) (401 1000) (402 1000))
 run: test1 4: ((4 location) <- get-address (2 tagged-value-address deref) (1 offset))
 get-address: (2 tagged-value-address deref).1
 get-address: after: (1000 tagged-value)
@@ -97,7 +97,7 @@ run: writing to oarg 1001 => (4 location)
 setm: (4 location) <= 1001
 sz: (4 location)
 setm: size of (4 location) is 1
-run: -- ((1 1000) (1000 integer) (2 1000) (3 1000) (4 1001) (base 1000) (result 1000))
+run: -- ((1 1000) (1000 integer) (2 1000) (3 1000) (4 1001) (401 1000) (402 1000))
 run: test1 5: ((4 location deref) <- copy (34 literal))
 sz: (34 literal)
 m: (34 literal) literal
@@ -109,7 +109,7 @@ m: (4 location) 1
 sz: (4 location)
 sz: (1001 location)
 setm: size of (4 location deref) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (2 1000) (3 1000) (4 1001) (base 1000) (result 1000))
+run: -- ((1 1000) (1000 integer) (1001 34) (2 1000) (3 1000) (4 1001) (401 1000) (402 1000))
 run: test1 6: ((5 list-address-address) <- get-address (1 list-address deref) (1 offset))
 get-address: (1 list-address deref).1
 get-address: after: (1000 list)
@@ -117,7 +117,7 @@ run: writing to oarg 1002 => (5 list-address-address)
 setm: (5 list-address-address) <= 1002
 sz: (5 list-address-address)
 setm: size of (5 list-address-address) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (2 1000) (3 1000) (4 1001) (5 1002) (base 1000) (result 1000))
+run: -- ((1 1000) (1000 integer) (1001 34) (2 1000) (3 1000) (4 1001) (401 1000) (402 1000) (5 1002))
 run: test1 7: ((5 list-address-address deref) <- new (list type))
 sizeof: list
 sizeof: tagged-value
@@ -132,7 +132,7 @@ m: (5 location) 1
 sz: (5 location)
 sz: (1002 list-address)
 setm: size of (5 list-address-address deref) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (5 1002) (base 1000) (result 1000))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (401 1000) (402 1000) (5 1002))
 run: test1 8: ((6 list-address) <- copy (5 list-address-address deref))
 sz: (5 list-address-address deref)
 sz: (5 location)
@@ -149,36 +149,36 @@ run: writing to oarg 1003 => (6 list-address)
 setm: (6 list-address) <= 1003
 sz: (6 list-address)
 setm: size of (6 list-address) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (base 1000) (result 1000))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (401 1000) (402 1000) (5 1002) (6 1003))
 run: test1 9: ((7 tagged-value-address) <- list-value-address (6 list-address))
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (base 1000) (result 1000))
-run: list-value-address 0: ((base list-address) <- arg)
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (401 1000) (402 1000) (5 1002) (6 1003))
+run: list-value-address 0: ((401 list-address) <- arg)
 arg: nil 0 ((6 list-address))
 sz: (6 list-address)
 m: (6 list-address) 1
 sz: (6 list-address)
-setm: (base list-address) <= 1003
-sz: (base list-address)
-setm: size of (base list-address) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (base 1003) (result 1000))
-run: list-value-address 1: ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
-get-address: (base list-address deref).0
+setm: (401 list-address) <= 1003
+sz: (401 list-address)
+setm: size of (401 list-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (401 1003) (402 1000) (5 1002) (6 1003))
+run: list-value-address 1: ((402 tagged-value-address) <- get-address (401 list-address deref) (0 offset))
+get-address: (401 list-address deref).0
 get-address: after: (1003 list)
-run: writing to oarg 1003 => (result tagged-value-address)
-setm: (result tagged-value-address) <= 1003
-sz: (result tagged-value-address)
-setm: size of (result tagged-value-address) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (base 1003) (result 1003))
-run: list-value-address 2: (reply (result tagged-value-address))
-reply: ((result tagged-value-address)) ((7 tagged-value-address))
-reply: (result tagged-value-address) => (7 tagged-value-address)
-sz: (result tagged-value-address)
-m: (result tagged-value-address) 1
-sz: (result tagged-value-address)
+run: writing to oarg 1003 => (402 tagged-value-address)
+setm: (402 tagged-value-address) <= 1003
+sz: (402 tagged-value-address)
+setm: size of (402 tagged-value-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (401 1003) (402 1003) (5 1002) (6 1003))
+run: list-value-address 2: (reply (402 tagged-value-address))
+reply: ((402 tagged-value-address)) ((7 tagged-value-address))
+reply: (402 tagged-value-address) => (7 tagged-value-address)
+sz: (402 tagged-value-address)
+m: (402 tagged-value-address) 1
+sz: (402 tagged-value-address)
 setm: (7 tagged-value-address) <= 1003
 sz: (7 tagged-value-address)
 setm: size of (7 tagged-value-address) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (7 1003) (base 1003) (result 1003))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (401 1003) (402 1003) (5 1002) (6 1003) (7 1003))
 run: test1 10: ((8 type-address) <- get-address (7 tagged-value-address deref) (0 offset))
 get-address: (7 tagged-value-address deref).0
 get-address: after: (1003 tagged-value)
@@ -186,7 +186,7 @@ run: writing to oarg 1003 => (8 type-address)
 setm: (8 type-address) <= 1003
 sz: (8 type-address)
 setm: size of (8 type-address) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (7 1003) (8 1003) (base 1003) (result 1003))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (2 1000) (3 1000) (4 1001) (401 1003) (402 1003) (5 1002) (6 1003) (7 1003) (8 1003))
 run: test1 11: ((8 type-address deref) <- copy (boolean literal))
 sz: (boolean literal)
 m: (boolean literal) literal
@@ -198,7 +198,7 @@ m: (8 location) 1
 sz: (8 location)
 sz: (1003 type)
 setm: size of (8 type-address deref) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (7 1003) (8 1003) (base 1003) (result 1003))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (2 1000) (3 1000) (4 1001) (401 1003) (402 1003) (5 1002) (6 1003) (7 1003) (8 1003))
 run: test1 12: ((9 location) <- get-address (7 tagged-value-address deref) (1 offset))
 get-address: (7 tagged-value-address deref).1
 get-address: after: (1003 tagged-value)
@@ -206,7 +206,7 @@ run: writing to oarg 1004 => (9 location)
 setm: (9 location) <= 1004
 sz: (9 location)
 setm: size of (9 location) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004) (base 1003) (result 1003))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (2 1000) (3 1000) (4 1001) (401 1003) (402 1003) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004))
 run: test1 13: ((9 location deref) <- copy (t literal))
 sz: (t literal)
 m: (t literal) literal
@@ -218,7 +218,7 @@ m: (9 location) 1
 sz: (9 location)
 sz: (1004 location)
 setm: size of (9 location deref) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004) (base 1003) (result 1003))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (4 1001) (401 1003) (402 1003) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004))
 run: test1 14: ((10 list-address) <- get (6 list-address deref) (1 offset))
 sz: (1005 list-address)
 m: (1005 list-address) 1
@@ -230,33 +230,33 @@ setm: size of (10 list-address) is 1
 cvt0: 0 ((10 list-address) <- list-next (1 list-address)) -- nil
 cvt1: 0 list-next ((10 list-address))
 schedule: test2
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004) (base 1003) (result 1003))
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (4 1001) (401 1003) (402 1003) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004))
 run: test2 0: ((10 list-address) <- list-next (1 list-address))
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004) (base 1003) (result 1003))
-run: list-next 0: ((base list-address) <- arg)
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (4 1001) (401 1003) (402 1003) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004))
+run: list-next 0: ((301 list-address) <- arg)
 arg: nil 0 ((1 list-address))
 sz: (1 list-address)
 m: (1 list-address) 1
 sz: (1 list-address)
-setm: (base list-address) <= 1000
-sz: (base list-address)
-setm: size of (base list-address) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004) (base 1000) (result 1003))
-run: list-next 1: ((result list-address) <- get (base list-address deref) (1 offset))
+setm: (301 list-address) <= 1000
+sz: (301 list-address)
+setm: size of (301 list-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (301 1000) (4 1001) (401 1003) (402 1003) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004))
+run: list-next 1: ((302 list-address) <- get (301 list-address deref) (1 offset))
 sz: (1002 list-address)
 m: (1002 list-address) 1
 sz: (1002 list-address)
-run: writing to oarg 1003 => (result list-address)
-setm: (result list-address) <= 1003
-sz: (result list-address)
-setm: size of (result list-address) is 1
-run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (4 1001) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004) (base 1000) (result 1003))
-run: list-next 2: (reply (result list-address))
-reply: ((result list-address)) ((10 list-address))
-reply: (result list-address) => (10 list-address)
-sz: (result list-address)
-m: (result list-address) 1
-sz: (result list-address)
+run: writing to oarg 1003 => (302 list-address)
+setm: (302 list-address) <= 1003
+sz: (302 list-address)
+setm: size of (302 list-address) is 1
+run: -- ((1 1000) (1000 integer) (1001 34) (1002 1003) (1003 boolean) (1004 t) (2 1000) (3 1000) (301 1000) (302 1003) (4 1001) (401 1003) (402 1003) (5 1002) (6 1003) (7 1003) (8 1003) (9 1004))
+run: list-next 2: (reply (302 list-address))
+reply: ((302 list-address)) ((10 list-address))
+reply: (302 list-address) => (10 list-address)
+sz: (302 list-address)
+m: (302 list-address) 1
+sz: (302 list-address)
 setm: (10 list-address) <= 1003
 sz: (10 list-address)
 setm: size of (10 list-address) is 1
