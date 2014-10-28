@@ -52,6 +52,12 @@
               list (obj size 2  record t  elems '(tagged-value list-address))
               list-address (obj size 1  address t  elem 'list)
               list-address-address (obj size 1  address t  elem 'list-address)
+              ; editor
+              line (obj array t  elem 'character)
+              line-address (obj size 1  address t  elem 'line)
+              line-address-address (obj size 1  address t  elem 'line-address)
+              screen (obj array t  elem 'line-address)
+              screen-address (obj size 1  address t  elem 'screen)
               )))
 
 ;; persisting and checking traces for each test
