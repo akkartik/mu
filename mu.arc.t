@@ -111,43 +111,6 @@
 
 (load "mu.arc")
 
-; Every test below is conceptually a run right after our virtual machine
-; starts up. When it starts up we assume it knows about the following types.
-
-(on-init
-  (= types* (obj
-              ; Each type must be scalar or array, sum or product or primitive
-              type (obj size 1)  ; implicitly scalar and primitive
-              type-address (obj size 1  address t  elem 'type)
-              type-array (obj array t  elem 'type)
-              type-array-address (obj size 1  address t  elem 'type-array)
-              location (obj size 1  address t  elem 'location)  ; assume it points to an atom
-              integer (obj size 1)
-              boolean (obj size 1)
-              boolean-address (obj size 1  address t)
-              byte (obj size 1)
-;?               string (obj array t  elem 'byte)  ; inspired by Go
-              character (obj size 1)  ; int32 like a Go rune
-              character-address (obj size 1  address t  elem 'character)
-              string (obj size 1)  ; temporary hack
-              ; arrays consist of an integer length followed by the right number of elems
-              integer-array (obj array t  elem 'integer)
-              integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
-              ; records consist of a series of elems, corresponding to a list of types
-              integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
-              integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
-              integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
-              integer-integer-pair (obj size 2  record t  elems '(integer integer))
-              integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
-              ; tagged-values are the foundation of dynamic types
-              tagged-value (obj size 2  record t  elems '(type location))
-              tagged-value-address (obj size 1  address t  elem 'tagged-value)
-              ; heterogeneous lists
-              list (obj size 2  record t  elems '(tagged-value list-address))
-              list-address (obj size 1  address t  elem 'list)
-              list-address-address (obj size 1  address t  elem 'list-address)
-              )))
-
 ; Our language is assembly-like in that functions consist of series of
 ; statements, and statements consist of an operation and its arguments (input
 ; and output).
@@ -433,10 +396,16 @@
   (prn "F - instructions can perform indirect addressing on output arg"))
 
 ; Until now we've dealt with scalar types like integers and booleans and
-; addresses. We can also have compound types: arrays and records.
+; addresses, where mu looks like other assembly languages. In addition, mu
+; provides first-class support for compound types: arrays and records.
 ;
 ; 'get' accesses fields in records
 ; 'index' accesses indices in arrays
+;
+; Both operations require knowledge about the types being worked on, so all
+; types used in mu programs are defined in a single global system-wide table
+; (see types* in mu.arc for the complete list of types; we'll add to it over
+; time).
 
 (reset)
 (new-trace "get-record")
