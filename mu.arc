@@ -20,6 +20,40 @@
   (= function* (table)))
 (enq clear initialization-fns*)
 
+(on-init
+  (= types* (obj
+              ; Each type must be scalar or array, sum or product or primitive
+              type (obj size 1)  ; implicitly scalar and primitive
+              type-address (obj size 1  address t  elem 'type)
+              type-array (obj array t  elem 'type)
+              type-array-address (obj size 1  address t  elem 'type-array)
+              location (obj size 1  address t  elem 'location)  ; assume it points to an atom
+              integer (obj size 1)
+              boolean (obj size 1)
+              boolean-address (obj size 1  address t)
+              byte (obj size 1)
+;?               string (obj array t  elem 'byte)  ; inspired by Go
+              character (obj size 1)  ; int32 like a Go rune
+              character-address (obj size 1  address t  elem 'character)
+              string (obj size 1)  ; temporary hack
+              ; arrays consist of an integer length followed by the right number of elems
+              integer-array (obj array t  elem 'integer)
+              integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
+              ; records consist of a series of elems, corresponding to a list of types
+              integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
+              integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
+              integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
+              integer-integer-pair (obj size 2  record t  elems '(integer integer))
+              integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
+              ; tagged-values are the foundation of dynamic types
+              tagged-value (obj size 2  record t  elems '(type location))
+              tagged-value-address (obj size 1  address t  elem 'tagged-value)
+              ; heterogeneous lists
+              list (obj size 2  record t  elems '(tagged-value list-address))
+              list-address (obj size 1  address t  elem 'list)
+              list-address-address (obj size 1  address t  elem 'list-address)
+              )))
+
 ;; persisting and checking traces for each test
 (= traces* (queue))
 (= trace-dir* ".traces/")
