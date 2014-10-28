@@ -117,6 +117,9 @@
       (++ n))))
 
 (def m (loc)  ; read memory, respecting metadata
+;?   (if (~isa v.loc 'int) prn.loc)
+  (assert (or (isa v.loc 'int)
+              (is ty.loc 'literal)))
   (trace "m" loc " " sz.loc)
   (if (is 'literal ty.loc)
         (v loc)
@@ -127,6 +130,7 @@
                   (map memory* (addrs addr.loc sz.loc)))))
 
 (def setm (loc val)  ; set memory, respecting metadata
+  (assert (isa v.loc 'int))
   (trace "setm" loc " <= " val)
   (let n sz.loc
     (trace "setm" "size of " loc " is " n)
@@ -573,56 +577,56 @@
 ;; system software
 
 (init-fn maybe-coerce
-  ((x tagged-value-address) <- new (tagged-value type))
-  ((x tagged-value-address deref) <- arg)
-  ((p type) <- arg)
-  ((xtype type) <- get (x tagged-value-address deref) (0 offset))
-  ((match? boolean) <- eq (xtype type) (p type))
+  ((101 tagged-value-address) <- new (tagged-value type))
+  ((101 tagged-value-address deref) <- arg)
+  ((102 type) <- arg)
+  ((103 type) <- get (101 tagged-value-address deref) (0 offset))
+  ((104 boolean) <- eq (103 type) (102 type))
   { begin
-    (break-if (match? boolean))
-    (reply (0 literal) (nil boolean))
+    (break-if (104 boolean))
+    (reply (0 literal) (nil literal))
   }
-  ((xvalue location) <- get (x tagged-value-address deref) (1 offset))
-  (reply (xvalue location) (match? boolean)))
+  ((105 location) <- get (101 tagged-value-address deref) (1 offset))
+  (reply (105 location) (104 boolean)))
 
 (init-fn new-tagged-value
-  ((xtype type) <- arg)
-  ((xtypesize integer) <- sizeof (xtype type))
-  ((xcheck boolean) <- eq (xtypesize integer) (1 literal))
-  (assert (xcheck boolean))
+  ((201 type) <- arg)
+  ((202 integer) <- sizeof (201 type))
+  ((203 boolean) <- eq (202 integer) (1 literal))
+  (assert (203 boolean))
   ; todo: check that arg 0 matches the type? or is that for the future typechecker?
-  ((result tagged-value-address) <- new (tagged-value type))
-  ((resulttype location) <- get-address (result tagged-value-address deref) (0 offset))
-  ((resulttype location deref) <- copy (xtype type))
-  ((locaddr location) <- get-address (result tagged-value-address deref) (1 offset))
-  ((locaddr location deref) <- arg)
-  (reply (result tagged-value-address)))
+  ((204 tagged-value-address) <- new (tagged-value type))
+  ((205 location) <- get-address (204 tagged-value-address deref) (0 offset))
+  ((205 location deref) <- copy (201 type))
+  ((206 location) <- get-address (204 tagged-value-address deref) (1 offset))
+  ((206 location deref) <- arg)
+  (reply (204 tagged-value-address)))
 
 (init-fn list-next  ; list-address -> list-address
-  ((base list-address) <- arg)
-  ((result list-address) <- get (base list-address deref) (1 offset))
-  (reply (result list-address)))
+  ((301 list-address) <- arg)
+  ((302 list-address) <- get (301 list-address deref) (1 offset))
+  (reply (302 list-address)))
 
 (init-fn list-value-address  ; list-address -> tagged-value-address
-  ((base list-address) <- arg)
-  ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
-  (reply (result tagged-value-address)))
+  ((401 list-address) <- arg)
+  ((402 tagged-value-address) <- get-address (401 list-address deref) (0 offset))
+  (reply (402 tagged-value-address)))
 
 (init-fn new-list
-  ((new-list-result list-address) <- new (list type))
-  ((curr list-address) <- copy (new-list-result list-address))
+  ((501 list-address) <- new (list type))
+  ((502 list-address) <- copy (501 list-address))
   { begin
-    ((curr-value integer) (exists? boolean) <- arg)
-    (break-unless (exists? boolean))
-    ((next list-address-address) <- get-address (curr list-address deref) (1 offset))
-    ((next list-address-address deref) <- new (list type))
-    ((curr list-address) <- list-next (curr list-address))
-    ((dest tagged-value-address) <- list-value-address (curr list-address))
-    ((dest tagged-value-address deref) <- save-type (curr-value integer))
+    ((503 integer) (504 boolean) <- arg)
+    (break-unless (504 boolean))
+    ((505 list-address-address) <- get-address (502 list-address deref) (1 offset))
+    ((505 list-address-address deref) <- new (list type))
+    ((502 list-address) <- list-next (502 list-address))
+    ((506 tagged-value-address) <- list-value-address (502 list-address))
+    ((506 tagged-value-address deref) <- save-type (503 integer))
     (continue)
   }
-  ((new-list-result list-address) <- list-next (new-list-result list-address))  ; memory leak
-  (reply (new-list-result list-address)))
+  ((501 list-address) <- list-next (501 list-address))  ; memory leak
+  (reply (501 list-address)))
 
 ; drop all traces while processing above functions
 (on-init
