@@ -1353,4 +1353,17 @@
             ((3 integer) <- add (1 integer) (2 integer))))
   (prn "F - convert-names renames symbolic names to integer offsets"))
 
+(reset)
+(new-trace "convert-quotes-defer")
+(if (~iso (convert-quotes
+            '(((1 integer) <- copy (4 literal))
+              (defer [
+                       ((3 integer) <- copy (6 literal))
+                     ])
+              ((2 integer) <- copy (5 literal))))
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (5 literal))
+            ((3 integer) <- copy (6 literal))))
+  (prn "F - convert-quotes can handle 'defer'"))
+
 (reset)  ; end file with this to persist the trace for the final test
