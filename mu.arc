@@ -260,6 +260,7 @@
     oargs))
 
 (= contexts* (queue))
+(= context* nil)
 
 (def run fn-names
   (ret result 0
@@ -267,30 +268,30 @@
       (enq make-context.it contexts*))
     ; simple round-robin scheduler
     (while (~empty contexts*)
-      (let context deq.contexts*
-        (trace "schedule" top.context!fn-name)
-        (let insts-run (run-for-time-slice context scheduling-interval*)
-          (= result (+ result insts-run)))
-        (if (~empty context)
-          (enq context contexts*))))))
+      (= context* deq.contexts*)
+      (trace "schedule" top.context*!fn-name)
+      (let insts-run (run-for-time-slice scheduling-interval*)
+        (= result (+ result insts-run)))
+      (if (~empty context*)
+        (enq context* contexts*)))))
 
 ($:require "charterm/main.rkt")
 
-(def run-for-time-slice (context time-slice)
+(def run-for-time-slice (time-slice)
 ;?   (prn "AAA")
   (point return
 ;?     (prn "BBB")
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
-;?       (prn "CCC " pc.context " " context " " (len body.context))
-      (if (empty body.context) (err "@stack.context.0!fn-name not defined"))
-      (while (>= pc.context (len body.context))
-        (pop-stack context)
-        (if empty.context (return ninstrs))
-        (++ pc.context))
+;?       (prn "CCC " pc.context* " " context* " " (len body.context*))
+      (if (empty body.context*) (err "@stack.context*.0!fn-name not defined"))
+      (while (>= pc.context* (len body.context*))
+        (pop-stack context*)
+        (if empty.context* (return ninstrs))
+        (++ pc.context*))
       (trace "run" "-- " (sort (compare < string:car) (as cons memory*)))
-      (trace "run" top.context!fn-name " " pc.context ": " (body.context pc.context))
-;?       (prn "--- " top.context!fn-name " " pc.context ": " (body.context pc.context))
-      (let (oarg op arg)  (parse-instr (body.context pc.context))
+      (trace "run" top.context*!fn-name " " pc.context* ": " (body.context* pc.context*))
+;?       (prn "--- " top.context*!fn-name " " pc.context* ": " (body.context* pc.context*))
+      (let (oarg op arg)  (parse-instr (body.context* pc.context*))
 ;?         (prn op " " arg " -> " oarg)
         (let tmp
               (case op
@@ -335,18 +336,18 @@
 
                 ; control flow
                 jump
-                  (do (= pc.context (+ 1 pc.context (v arg.0)))
-;?                       (trace "jump" "jumping to " pc.context)
+                  (do (= pc.context* (+ 1 pc.context* (v arg.0)))
+;?                       (trace "jump" "jumping to " pc.context*)
                       (continue))
                 jump-if
                   (when (is t (m arg.0))
-                    (= pc.context (+ 1 pc.context (v arg.1)))
-;?                     (trace "jump-if" "jumping to " pc.context)
+                    (= pc.context* (+ 1 pc.context* (v arg.1)))
+;?                     (trace "jump-if" "jumping to " pc.context*)
                     (continue))
                 jump-unless  ; convenient helper
                   (unless (is t (m arg.0))
-                    (= pc.context (+ 1 pc.context (v arg.1)))
-;?                     (trace "jump-unless" "jumping to " pc.context)
+                    (= pc.context* (+ 1 pc.context* (v arg.1)))
+;?                     (trace "jump-unless" "jumping to " pc.context*)
                     (continue))
 
                 ; data management: scalars, arrays, records
@@ -453,29 +454,29 @@
                 arg
                   (let idx (if arg
                              arg.0
-                             (do1 caller-arg-idx.context
-                                (++ caller-arg-idx.context)))
-                    (trace "arg" arg " " idx " " caller-args.context)
-                    (if (len> caller-args.context idx)
-                      (list (m caller-args.context.idx) t)
+                             (do1 caller-arg-idx.context*
+                                (++ caller-arg-idx.context*)))
+                    (trace "arg" arg " " idx " " caller-args.context*)
+                    (if (len> caller-args.context* idx)
+                      (list (m caller-args.context*.idx) t)
                       (list nil nil)))
                 reply
-                  (do (pop-stack context)
-                      (if empty.context (return ninstrs))
-                      (let (caller-oargs _ _)  (parse-instr (body.context pc.context))
+                  (do (pop-stack context*)
+                      (if empty.context* (return ninstrs))
+                      (let (caller-oargs _ _)  (parse-instr (body.context* pc.context*))
                         (trace "reply" arg " " caller-oargs)
                         (each (dest src)  (zip caller-oargs arg)
                           (trace "reply" src " => " dest)
                           (setm dest  (m src))))
-                      (++ pc.context)
-                      (while (>= pc.context (len body.context))
-                        (pop-stack context)
-                        (when empty.context (return ninstrs))
-                        (++ pc.context))
+                      (++ pc.context*)
+                      (while (>= pc.context* (len body.context*))
+                        (pop-stack context*)
+                        (when empty.context* (return ninstrs))
+                        (++ pc.context*))
                       (continue))
                 ; else try to call as a user-defined function
                   (do (if function*.op
-                        (push-stack context op)
+                        (push-stack context* op)
                         (err "no such op @op"))
                       (continue))
                 )
@@ -489,7 +490,7 @@
                   (trace "run" "writing to oarg " tmp " => " oarg.0)
                   (setm oarg.0 tmp)))
               )
-        (++ pc.context)))
+        (++ pc.context*)))
     (return time-slice)))
 
 (enq (fn () (= Memory-in-use-until 1000))
