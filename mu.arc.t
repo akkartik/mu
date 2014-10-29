@@ -452,7 +452,7 @@
 (add-fns
   '((main
       ((1 integer) <- copy (34 literal))
-      ((2 integer) <- copy (t literal))
+      ((2 boolean) <- copy (t literal))
       ((3 boolean-address) <- get-address (1 integer-boolean-pair) (1 offset)))))
 (run 'main)
 ;? (prn memory*)
@@ -464,7 +464,7 @@
 (add-fns
   '((main
       ((1 integer) <- copy (34 literal))
-      ((2 integer) <- copy (t literal))
+      ((2 boolean) <- copy (t literal))
       ((3 integer-boolean-pair-address) <- copy (1 literal))
       ((4 boolean-address) <- get-address (3 integer-boolean-pair-address deref) (1 offset)))))
 (run 'main)
