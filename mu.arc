@@ -36,6 +36,9 @@
               character (obj size 1)  ; int32 like a Go rune
               character-address (obj size 1  address t  elem 'character)
               string (obj size 1)  ; temporary hack
+              ; isolating function calls
+              scope  (obj array t  elem 'location)  ; by convention index 0 points to outer scope
+              scope-address  (obj size 1  address t  elem 'scope)
               ; arrays consist of an integer length followed by the right number of elems
               integer-array (obj array t  elem 'integer)
               integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
@@ -146,9 +149,11 @@
       (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
 
 (def addr (loc)
-  (if (pos 'deref metadata.loc)
-    (memory* v.loc)
-    v.loc))
+  (ret addr v.loc
+    (aif rep.context*!default-scope
+      (++ addr it))
+    (if (pos 'deref metadata.loc)
+      (zap memory* addr))))
 
 (def addrs (n sz)
   (accum yield
@@ -169,18 +174,23 @@
                     (map memory* (addrs addr.loc sz.loc))))))
 
 (def setm (loc val)  ; set memory, respecting metadata
-  (assert (isa v.loc 'int))
-  (trace "setm" loc " <= " val)
-  (let n sz.loc
-    (trace "setm" "size of " loc " is " n)
-    (assert n)
-    (if (is 1 n)
-      (do (assert (~isa val 'record))
-          (= (memory* addr.loc) val))
-      (do (assert (isa val 'record))
-          (each (dest src) (zip (addrs addr.loc n)
-                                (rep val))
-            (= (memory* dest) src))))))
+  (point return
+    (when (is v.loc 'default-scope)
+      (assert (is 1 sz.loc))
+      (= rep.context*!default-scope val)
+      (return))
+    (assert (isa v.loc 'int))
+    (trace "setm" loc " <= " val)
+    (let n sz.loc
+      (trace "setm" "size of " loc " is " n)
+      (assert n)
+      (if (is 1 n)
+        (do (assert (~isa val 'record))
+            (= (memory* addr.loc) val))
+        (do (assert (isa val 'record))
+            (each (dest src) (zip (addrs addr.loc n)
+                                  (rep val))
+              (= (memory* dest) src)))))))
 
 (def array-len (operand)
 ;?   (prn operand)
