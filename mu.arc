@@ -150,7 +150,7 @@
 
 (def addr (loc)
   (ret addr v.loc
-    (aif rep.context*!default-scope
+    (aif rep.routine*!default-scope
       (++ addr it))
     (if (pos 'deref metadata.loc)
       (zap memory* addr))))
@@ -177,7 +177,7 @@
   (point return
     (when (is v.loc 'default-scope)
       (assert (is 1 sz.loc))
-      (= rep.context*!default-scope val)
+      (= rep.routine*!default-scope val)
       (return))
     (assert (isa v.loc 'int))
     (trace "setm" loc " <= " val)
@@ -220,36 +220,37 @@
 ;?     (prn "aref3: @elem @v.operand @offset")
     (m `(,(+ v.operand offset) ,elem))))
 
-; context contains the call-stack of functions that haven't yet returned
+; data structure: routine
+; runtime state for a serial thread of execution
 
-(def make-context (fn-name)
-  (annotate 'context (obj call-stack (list
+(def make-routine (fn-name)
+  (annotate 'routine (obj call-stack (list
       (obj fn-name fn-name  pc 0  caller-arg-idx 0)))))
 
-(defextend empty (x)  (isa x 'context)
+(defextend empty (x)  (isa x 'routine)
   (no rep.x!call-stack))
 
-(def stack (context)
-  ((rep context) 'call-stack))
+(def stack (routine)
+  ((rep routine) 'call-stack))
 
-(mac push-stack (context op)
+(mac push-stack (routine op)
   `(push (obj fn-name ,op  pc 0  caller-arg-idx 0)
-         ((rep ,context) 'call-stack)))
+         ((rep ,routine) 'call-stack)))
 
-(mac pop-stack (context)
-  `(pop ((rep ,context) 'call-stack)))
+(mac pop-stack (routine)
+  `(pop ((rep ,routine) 'call-stack)))
 
-(def top (context)
-  stack.context.0)
+(def top (routine)
+  stack.routine.0)
 
-(def body (context (o idx 0))
-  (function* stack.context.idx!fn-name))
+(def body (routine (o idx 0))
+  (function* stack.routine.idx!fn-name))
 
-(mac pc (context (o idx 0))  ; assignable
-  `((((rep ,context) 'call-stack) ,idx) 'pc))
+(mac pc (routine (o idx 0))  ; assignable
+  `((((rep ,routine) 'call-stack) ,idx) 'pc))
 
-(mac caller-arg-idx (context (o idx 0))  ; assignable
-  `((((rep ,context) 'call-stack) ,idx) 'caller-arg-idx))
+(mac caller-arg-idx (routine (o idx 0))  ; assignable
+  `((((rep ,routine) 'call-stack) ,idx) 'caller-arg-idx))
 
 (= scheduling-interval* 500)
 
@@ -260,29 +261,29 @@
           (cut instr (+ delim 2)))  ; args
     (list nil instr.0 cdr.instr)))
 
-(def caller-args (context)  ; not assignable
-  (let (_ _ args)  (parse-instr ((body context 1) (pc context 1)))
+(def caller-args (routine)  ; not assignable
+  (let (_ _ args)  (parse-instr ((body routine 1) (pc routine 1)))
     args))
 
-(def caller-oargs (context)  ; not assignable
-  (let (oargs _ _)  (parse-instr ((body context 1) (pc context 1)))
+(def caller-oargs (routine)  ; not assignable
+  (let (oargs _ _)  (parse-instr ((body routine 1) (pc routine 1)))
     oargs))
 
-(= contexts* (queue))
-(= context* nil)
+(= routines* (queue))
+(= routine* nil)
 
 (def run fn-names
   (ret result 0
     (each it fn-names
-      (enq make-context.it contexts*))
+      (enq make-routine.it routines*))
     ; simple round-robin scheduler
-    (while (~empty contexts*)
-      (= context* deq.contexts*)
-      (trace "schedule" top.context*!fn-name)
+    (while (~empty routines*)
+      (= routine* deq.routines*)
+      (trace "schedule" top.routine*!fn-name)
       (let insts-run (run-for-time-slice scheduling-interval*)
         (= result (+ result insts-run)))
-      (if (~empty context*)
-        (enq context* contexts*)))))
+      (if (~empty routine*)
+        (enq routine* routines*)))))
 
 ($:require "charterm/main.rkt")
 
@@ -291,16 +292,16 @@
   (point return
 ;?     (prn "BBB")
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
-;?       (prn "CCC " pc.context* " " context* " " (len body.context*))
-      (if (empty body.context*) (err "@stack.context*.0!fn-name not defined"))
-      (while (>= pc.context* (len body.context*))
-        (pop-stack context*)
-        (if empty.context* (return ninstrs))
-        (++ pc.context*))
+;?       (prn "CCC " pc.routine* " " routine* " " (len body.routine*))
+      (if (empty body.routine*) (err "@stack.routine*.0!fn-name not defined"))
+      (while (>= pc.routine* (len body.routine*))
+        (pop-stack routine*)
+        (if empty.routine* (return ninstrs))
+        (++ pc.routine*))
       (trace "run" "-- " (sort (compare < string:car) (as cons memory*)))
-      (trace "run" top.context*!fn-name " " pc.context* ": " (body.context* pc.context*))
-;?       (prn "--- " top.context*!fn-name " " pc.context* ": " (body.context* pc.context*))
-      (let (oarg op arg)  (parse-instr (body.context* pc.context*))
+      (trace "run" top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
+;?       (prn "--- " top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
+      (let (oarg op arg)  (parse-instr (body.routine* pc.routine*))
 ;?         (prn op " " arg " -> " oarg)
         (let tmp
               (case op
@@ -345,18 +346,18 @@
 
                 ; control flow
                 jump
-                  (do (= pc.context* (+ 1 pc.context* (v arg.0)))
-;?                       (trace "jump" "jumping to " pc.context*)
+                  (do (= pc.routine* (+ 1 pc.routine* (v arg.0)))
+;?                       (trace "jump" "jumping to " pc.routine*)
                       (continue))
                 jump-if
                   (when (is t (m arg.0))
-                    (= pc.context* (+ 1 pc.context* (v arg.1)))
-;?                     (trace "jump-if" "jumping to " pc.context*)
+                    (= pc.routine* (+ 1 pc.routine* (v arg.1)))
+;?                     (trace "jump-if" "jumping to " pc.routine*)
                     (continue))
                 jump-unless  ; convenient helper
                   (unless (is t (m arg.0))
-                    (= pc.context* (+ 1 pc.context* (v arg.1)))
-;?                     (trace "jump-unless" "jumping to " pc.context*)
+                    (= pc.routine* (+ 1 pc.routine* (v arg.1)))
+;?                     (trace "jump-unless" "jumping to " pc.routine*)
                     (continue))
 
                 ; data management: scalars, arrays, records
@@ -434,7 +435,7 @@
                 run
                   (run (v arg.0))
                 fork
-                  (enq (make-context (v arg.0)) contexts*)
+                  (enq (make-routine (v arg.0)) routines*)
                 ; todo: errors should stall a process and let its parent
                 ; inspect it
                 assert
@@ -464,29 +465,29 @@
                 arg
                   (let idx (if arg
                              arg.0
-                             (do1 caller-arg-idx.context*
-                                (++ caller-arg-idx.context*)))
-                    (trace "arg" arg " " idx " " caller-args.context*)
-                    (if (len> caller-args.context* idx)
-                      (list (m caller-args.context*.idx) t)
+                             (do1 caller-arg-idx.routine*
+                                (++ caller-arg-idx.routine*)))
+                    (trace "arg" arg " " idx " " caller-args.routine*)
+                    (if (len> caller-args.routine* idx)
+                      (list (m caller-args.routine*.idx) t)
                       (list nil nil)))
                 reply
-                  (do (pop-stack context*)
-                      (if empty.context* (return ninstrs))
-                      (let (caller-oargs _ _)  (parse-instr (body.context* pc.context*))
+                  (do (pop-stack routine*)
+                      (if empty.routine* (return ninstrs))
+                      (let (caller-oargs _ _)  (parse-instr (body.routine* pc.routine*))
                         (trace "reply" arg " " caller-oargs)
                         (each (dest src)  (zip caller-oargs arg)
                           (trace "reply" src " => " dest)
                           (setm dest  (m src))))
-                      (++ pc.context*)
-                      (while (>= pc.context* (len body.context*))
-                        (pop-stack context*)
-                        (when empty.context* (return ninstrs))
-                        (++ pc.context*))
+                      (++ pc.routine*)
+                      (while (>= pc.routine* (len body.routine*))
+                        (pop-stack routine*)
+                        (when empty.routine* (return ninstrs))
+                        (++ pc.routine*))
                       (continue))
                 ; else try to call as a user-defined function
                   (do (if function*.op
-                        (push-stack context* op)
+                        (push-stack routine* op)
                         (err "no such op @op"))
                       (continue))
                 )
@@ -500,7 +501,7 @@
                   (trace "run" "writing to oarg " tmp " => " oarg.0)
                   (setm oarg.0 tmp)))
               )
-        (++ pc.context*)))
+        (++ pc.routine*)))
     (return time-slice)))
 
 (enq (fn () (= Memory-in-use-until 1000))
