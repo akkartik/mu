@@ -1270,7 +1270,7 @@
       ((1 integer-address) <- new (integer type)))))
 (let before Memory-in-use-until
   (run 'main)
-  ;? (prn memory*)
+;?   (prn memory*)
   (if (~iso memory*.1 before)
     (prn "F - 'new' returns current high-water mark"))
   (if (~iso Memory-in-use-until (+ before 1))
@@ -1283,7 +1283,7 @@
       ((1 type-array-address) <- new (type-array type) (5 literal)))))
 (let before Memory-in-use-until
   (run 'main)
-  ;? (prn memory*)
+;?   (prn memory*)
   (if (~iso memory*.1 before)
     (prn "F - 'new' on array with literal size returns current high-water mark"))
   (if (~iso Memory-in-use-until (+ before 6))
@@ -1297,7 +1297,7 @@
       ((2 type-array-address) <- new (type-array type) (1 integer)))))
 (let before Memory-in-use-until
   (run 'main)
-  ;? (prn memory*)
+;?   (prn memory*)
   (if (~iso memory*.2 before)
     (prn "F - 'new' on array with variable size returns current high-water mark"))
   (if (~iso Memory-in-use-until (+ before 6))
