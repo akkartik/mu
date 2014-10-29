@@ -157,17 +157,16 @@
       (++ n))))
 
 (def m (loc)  ; read memory, respecting metadata
-;?   (if (~isa v.loc 'int) prn.loc)
-  (assert (or (isa v.loc 'int)
-              (is ty.loc 'literal)))
-  (trace "m" loc " " sz.loc)
-  (if (is 'literal ty.loc)
-        (v loc)
-      (is 1 sz.loc)
-        (memory* addr.loc)
-      :else
-        (annotate 'record
-                  (map memory* (addrs addr.loc sz.loc)))))
+  (point return
+    (if (is 'literal ty.loc)
+      (return v.loc))
+    (assert (isa v.loc 'int))
+    (trace "m" loc " " sz.loc)
+    (if (is 1 sz.loc)
+          (memory* addr.loc)
+        :else
+          (annotate 'record
+                    (map memory* (addrs addr.loc sz.loc))))))
 
 (def setm (loc val)  ; set memory, respecting metadata
   (assert (isa v.loc 'int))
