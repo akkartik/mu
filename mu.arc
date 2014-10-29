@@ -117,8 +117,8 @@
     (= function*.name (convert-braces body))))
 
 ;; running mu
-(def v (operand)  ; for value
-  operand.0)
+(mac v (operand)  ; for value
+  `(,operand 0))
 
 (def metadata (operand)
   cdr.operand)
@@ -609,6 +609,36 @@
                   (= close loc)
                   (set done))))))
     (- close pc 1)))
+
+;; convert symbolic names to integer offsets
+
+(def convert-names (instrs)
+  (let offset (table)
+    (let idx 1
+      (each instr instrs
+        (let (oargs op args)  (parse-instr instr)
+          (each arg args
+            (when (maybe-add arg offset idx)
+              (err "use before set: @arg")
+              (++ idx)))
+          (each arg oargs
+            (when (maybe-add arg offset idx)
+              (++ idx))))))
+    (each instr instrs
+      (let (oargs op args)  (parse-instr instr)
+        (each arg args
+          (when (offset v.arg)
+            (zap offset v.arg)))
+        (each arg oargs
+          (when (offset v.arg)
+            (zap offset v.arg)))))
+    instrs))
+
+(def maybe-add (arg offset idx)
+  (unless (or (in ty.arg 'literal 'offset)
+              (offset v.arg)
+              (~isa v.arg 'sym))
+    (= (offset v.arg) idx)))
 
 ;; system software
 

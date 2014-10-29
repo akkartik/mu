@@ -1340,4 +1340,17 @@
 ; Eventually we want the right stack-management primitives to build delimited
 ; continuations in mu.
 
+; ---
+
+(reset)
+(new-trace "convert-names-local")
+(if (~iso (convert-names
+            '(((x integer) <- copy (4 literal))
+              ((y integer) <- copy (2 literal))
+              ((z integer) <- add (x integer) (y integer))))
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
+            ((3 integer) <- add (1 integer) (2 integer))))
+  (prn "F - convert-names renames symbolic names to integer offsets"))
+
 (reset)  ; end file with this to persist the trace for the final test
