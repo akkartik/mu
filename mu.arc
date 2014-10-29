@@ -405,6 +405,7 @@
                       (assert nil "get-address on invalid type @arg.0 => @base")))
                 new
                   (let type (v arg.0)
+                    (if (no types*.type)  (err "no such type @type"))
                     (if types*.type!array
                       (new-array type (m arg.1))
                       (new-scalar type)))
@@ -512,7 +513,9 @@
         (sum idfn
           (accum yield
             (each elem types*.type!elems
-              (yield sizeof.elem))))))
+              (yield sizeof.elem))))
+      :else
+        (err "no such type @type")))
 
 ;; desugar structured assembly based on blocks
 
