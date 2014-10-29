@@ -269,21 +269,23 @@
   (let (oargs _ _)  (parse-instr ((body routine 1) (pc routine 1)))
     oargs))
 
-(= routines* (queue))
+(= running-routines* (queue))
+(= completed-routines* (queue))
 (= routine* nil)
 
 (def run fn-names
   (ret result 0
     (each it fn-names
-      (enq make-routine.it routines*))
+      (enq make-routine.it running-routines*))
     ; simple round-robin scheduler
-    (while (~empty routines*)
-      (= routine* deq.routines*)
+    (while (~empty running-routines*)
+      (= routine* deq.running-routines*)
       (trace "schedule" top.routine*!fn-name)
       (let insts-run (run-for-time-slice scheduling-interval*)
         (= result (+ result insts-run)))
       (if (~empty routine*)
-        (enq routine* routines*)))))
+        (enq routine* running-routines*)
+        (enq-limit routine* completed-routines*)))))
 
 ($:require "charterm/main.rkt")
 
@@ -435,7 +437,7 @@
                 run
                   (run (v arg.0))
                 fork
-                  (enq (make-routine (v arg.0)) routines*)
+                  (enq (make-routine (v arg.0)) running-routines*)
                 ; todo: errors should stall a process and let its parent
                 ; inspect it
                 assert
