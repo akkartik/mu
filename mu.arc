@@ -640,6 +640,24 @@
               (~isa v.arg 'sym))
     (= (offset v.arg) idx)))
 
+;; literate tangling system for reordering code
+
+(def convert-quotes (instrs)
+  (let deferred (queue)
+    (each instr instrs
+      (case instr.0
+        defer
+          (let (q qinstrs)  instr.1
+            (assert (is 'make-br-fn q))
+            (each qinstr qinstrs
+              (enq qinstr deferred)))))
+    (accum yield
+      (each instr instrs
+        (unless (in instr.0 'defer)  ; keep sync'd with case clauses above
+          (yield instr)))
+      (each instr (as cons deferred)
+        (yield instr)))))
+
 ;; system software
 
 (init-fn maybe-coerce
