@@ -610,10 +610,6 @@
                   (set done))))))
     (- close pc 1)))
 
-(def prn2 (msg . args)
-  (pr msg)
-  (apply prn args))
-
 ;; system software
 
 (init-fn maybe-coerce
@@ -671,6 +667,10 @@
 ; drop all traces while processing above functions
 (on-init
   (= traces* (queue)))
+
+(def prn2 (msg . args)
+  (pr msg)
+  (apply prn args))
 
 ;; after loading all files, start at 'main'
 (reset)
