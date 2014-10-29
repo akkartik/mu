@@ -1366,4 +1366,18 @@
             ((3 integer) <- copy (6 literal))))
   (prn "F - convert-quotes can handle 'defer'"))
 
+(reset)
+(new-trace "set-default-scope")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope type) (1 literal))
+      ((1 integer) <- copy (23 literal)))))
+(let before Memory-in-use-until
+;?   (set dump-trace*)
+  (run 'main)
+;?   (prn memory*)
+  (if (~and (~is 23 memory*.1)
+            (is 23 (memory* (+ before 1))))
+    (prn "F - default-scope implicitly modifies variable locations")))
+
 (reset)  ; end file with this to persist the trace for the final test
