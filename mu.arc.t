@@ -1265,10 +1265,10 @@
 
 (reset)
 (new-trace "new-primitive")
+(add-fns
+  '((main
+      ((1 integer-address) <- new (integer type)))))
 (let before Memory-in-use-until
-  (add-fns
-    '((main
-        ((1 integer-address) <- new (integer type)))))
   (run 'main)
   ;? (prn memory*)
   (if (~iso memory*.1 before)
@@ -1278,10 +1278,10 @@
 
 (reset)
 (new-trace "new-array-literal")
+(add-fns
+  '((main
+      ((1 type-array-address) <- new (type-array type) (5 literal)))))
 (let before Memory-in-use-until
-  (add-fns
-    '((main
-        ((1 type-array-address) <- new (type-array type) (5 literal)))))
   (run 'main)
   ;? (prn memory*)
   (if (~iso memory*.1 before)
@@ -1291,11 +1291,11 @@
 
 (reset)
 (new-trace "new-array-direct")
+(add-fns
+  '((main
+      ((1 integer) <- copy (5 literal))
+      ((2 type-array-address) <- new (type-array type) (1 integer)))))
 (let before Memory-in-use-until
-  (add-fns
-    '((main
-        ((1 integer) <- copy (5 literal))
-        ((2 type-array-address) <- new (type-array type) (1 integer)))))
   (run 'main)
   ;? (prn memory*)
   (if (~iso memory*.2 before)
