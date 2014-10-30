@@ -1306,7 +1306,7 @@
 ; A rudimentary process scheduler. You can 'run' multiple functions at once,
 ; and they share the virtual processor.
 ; There's also a 'fork' primitive to let functions create new threads of
-; execution.
+; execution (we call them routines).
 ; Eventually we want to allow callers to influence how much of their CPU they
 ; give to their 'children', or to rescind a child's running privileges.
 
@@ -1333,7 +1333,7 @@
     ("run" "f2 0")
   ))
 
-; The scheduler needs to keep track of the call stack for each thread.
+; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
 ; along with the types array, the magic buffers for args and oargs, and so on.
 ;
