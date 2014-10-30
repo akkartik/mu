@@ -519,8 +519,6 @@
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 4))
   (prn "F - 'index-address' returns addresses of indices of arrays"))
 
-; todo: test that out-of-bounds access throws an error
-
 ; Array values know their length. Record lengths are saved in the types table.
 
 (reset)
@@ -1339,6 +1337,22 @@
 ;
 ; Eventually we want the right stack-management primitives to build delimited
 ; continuations in mu.
+
+; Routines can throw errors.
+(reset)
+(new-trace "array-bounds-check")
+(add-fns
+  '((main
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 integer) <- copy (24 literal))
+      ((4 integer) <- index (1 integer-array) (2 literal)))))
+;? (set dump-trace*)
+(run 'main)
+;? (prn memory*)
+(let last-routine (deq completed-routines*)
+  (if (no rep.last-routine!error)
+    (prn "F - 'index' throws an error if out of bounds")))
 
 ; ---
 

@@ -203,21 +203,19 @@
         (err "can't take len of non-array @operand")))
 
 (def array-ref-addr (operand idx)
-;?   (prn "aref addr: @operand @idx")
   (assert typeinfo.operand!array)
-  (assert (< -1 idx (array-len operand)))
+  (unless (< -1 idx (array-len operand))
+    (die "aref-addr: out of bounds index @idx for @operand of size @array-len.operand"))
   (withs (elem  typeinfo.operand!elem
           offset  (+ 1 (* idx sz.elem)))
     (+ v.operand offset)))
 
 (def array-ref (operand idx)
-;?   (prn "aref: @operand @idx")
   (assert typeinfo.operand!array)
-  (assert (< -1 idx (array-len operand)))
-;?   (prn "aref2: @operand @idx")
+  (unless (< -1 idx (array-len operand))
+    (die "aref: out of bounds index @idx for @operand of size @array-len.operand"))
   (withs (elem  typeinfo.operand!elem
           offset  (+ 1 (* idx sz.elem)))
-;?     (prn "aref3: @elem @v.operand @offset")
     (m `(,(+ v.operand offset) ,elem))))
 
 ; data structure: routine
@@ -269,9 +267,10 @@
   (let (oargs _ _)  (parse-instr ((body routine 1) (pc routine 1)))
     oargs))
 
-(= running-routines* (queue))
-(= completed-routines* (queue))
-(= routine* nil)
+(on-init
+  (= running-routines* (queue))
+  (= completed-routines* (queue))
+  (= routine* nil))
 
 (def run fn-names
   (ret result 0
@@ -286,6 +285,11 @@
       (if (~empty routine*)
         (enq routine* running-routines*)
         (enq-limit routine* completed-routines*)))))
+
+(def die (msg)
+  (= rep.routine*!error msg)
+  (= rep.routine*!stack-trace rep.routine*!call-stack)
+  (wipe rep.routine*!call-stack))
 
 ($:require "charterm/main.rkt")
 
@@ -493,6 +497,8 @@
                         (err "no such op @op"))
                       (continue))
                 )
+              (when rep.routine*!error
+                (return time-slice))
               ; opcode generated some value, stored in 'tmp'
               ; copy to output args
 ;?               (prn "store: " tmp " " oarg)
