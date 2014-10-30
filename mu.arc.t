@@ -1384,7 +1384,7 @@
 (new-trace "set-default-scope")
 (add-fns
   '((main
-      ((default-scope scope-address) <- new (scope type) (1 literal))
+      ((default-scope scope-address) <- new (scope type) (2 literal))
       ((1 integer) <- copy (23 literal)))))
 (let before Memory-in-use-until
 ;?   (set dump-trace*)
@@ -1393,5 +1393,18 @@
   (if (~and (~is 23 memory*.1)
             (is 23 (memory* (+ before 1))))
     (prn "F - default-scope implicitly modifies variable locations")))
+
+(reset)
+(new-trace "default-scope-bounds-check")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope type) (2 literal))
+      ((2 integer) <- copy (23 literal)))))
+;? (set dump-trace*)
+(run 'main)
+;? (prn memory*)
+(let last-routine (deq completed-routines*)
+  (if (no rep.last-routine!error)
+    (prn "F - default-scope checks bounds")))
 
 (reset)  ; end file with this to persist the trace for the final test
