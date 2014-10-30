@@ -150,8 +150,8 @@
 
 (def addr (loc)
   (ret result v.loc
-    (aif rep.routine*!default-scope
-      (++ result it))
+    (whenlet base rep.routine*!default-scope
+      (++ result base))
     (if (pos 'deref metadata.loc)
       (zap memory* result))))
 
