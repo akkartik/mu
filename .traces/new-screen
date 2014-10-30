@@ -1,31 +1,27 @@
 cvt0: 0 ((601 integer) <- arg) -- nil
 cvt0: 1 ((602 integer) <- arg) -- nil
 cvt0: 2 ((603 screen-address) <- new (screen type) (601 integer)) -- nil
-cvt0: 3 ((603 integer-address deref) <- copy (601 integer)) -- nil
-cvt0: 4 ((604 integer) <- copy (0 literal)) -- nil
-cvt0: 5 ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer)) -- ((open 5))
-cvt0: 6 ((606 line-address-address deref) <- new (line type) (602 integer)) -- ((open 5))
-cvt0: 7 ((605 line-address) <- copy (606 line-address-address deref)) -- ((open 5))
-cvt0: 8 ((605 integer-address deref) <- copy (602 integer)) -- ((open 5))
-cvt0: 9 ((604 integer) <- add (604 integer) (1 literal)) -- ((open 5))
-cvt0: 10 ((607 boolean) <- neq (604 integer) (601 integer)) -- ((open 5))
-cvt0: 11 (continue-if (607 boolean)) -- ((open 5))
-cvt0: 12 (reply (603 screen-address)) -- ((close 12) (open 5))
+cvt0: 3 ((604 integer) <- copy (0 literal)) -- nil
+cvt0: 4 ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer)) -- ((open 4))
+cvt0: 5 ((606 line-address-address deref) <- new (line type) (602 integer)) -- ((open 4))
+cvt0: 6 ((605 line-address) <- copy (606 line-address-address deref)) -- ((open 4))
+cvt0: 7 ((604 integer) <- add (604 integer) (1 literal)) -- ((open 4))
+cvt0: 8 ((607 boolean) <- neq (604 integer) (601 integer)) -- ((open 4))
+cvt0: 9 (continue-if (607 boolean)) -- ((open 4))
+cvt0: 10 (reply (603 screen-address)) -- ((close 10) (open 4))
 cvt1: 0 arg ((601 integer))
 cvt1: 1 arg ((602 integer))
 cvt1: 2 new ((603 screen-address))
-cvt1: 3 copy ((603 integer-address deref))
-cvt1: 4 copy ((604 integer))
-cvt1: 5 begin nil
-cvt1: 5 index-address ((606 line-address-address))
-cvt1: 6 new ((606 line-address-address deref))
-cvt1: 7 copy ((605 line-address))
-cvt1: 8 copy ((605 integer-address deref))
-cvt1: 9 add ((604 integer))
-cvt1: 10 neq ((607 boolean))
-cvt1: 11 continue-if nil
-cvt0: continue-if: (continue-if (607 boolean)) => 4
-cvt1: 12 reply nil
+cvt1: 3 copy ((604 integer))
+cvt1: 4 begin nil
+cvt1: 4 index-address ((606 line-address-address))
+cvt1: 5 new ((606 line-address-address deref))
+cvt1: 6 copy ((605 line-address))
+cvt1: 7 add ((604 integer))
+cvt1: 8 neq ((607 boolean))
+cvt1: 9 continue-if nil
+cvt0: continue-if: (continue-if (607 boolean)) => 3
+cvt1: 10 reply nil
 cvt0: 0 ((2001 screen-address) <- new-screen (5 literal) (5 literal)) -- nil
 cvt1: 0 new-screen ((2001 screen-address))
 schedule: test-new-screen
@@ -34,16 +30,12 @@ run: test-new-screen 0: ((2001 screen-address) <- new-screen (5 literal) (5 lite
 run: -- nil
 run: new-screen 0: ((601 integer) <- arg)
 arg: nil 0 ((5 literal) (5 literal))
-sz: (5 literal)
-m: (5 literal) literal
 setm: (601 integer) <= 5
 sz: (601 integer)
 setm: size of (601 integer) is 1
 run: -- ((601 5))
 run: new-screen 1: ((602 integer) <- arg)
 arg: nil 1 ((5 literal) (5 literal))
-sz: (5 literal)
-m: (5 literal) literal
 setm: (602 integer) <= 5
 sz: (602 integer)
 setm: size of (602 integer) is 1
@@ -57,29 +49,14 @@ run: writing to oarg 1000 => (603 screen-address)
 setm: (603 screen-address) <= 1000
 sz: (603 screen-address)
 setm: size of (603 screen-address) is 1
-run: -- ((601 5) (602 5) (603 1000))
-run: new-screen 3: ((603 integer-address deref) <- copy (601 integer))
-sz: (601 integer)
-m: (601 integer) 1
-sz: (601 integer)
-run: writing to oarg 5 => (603 integer-address deref)
-setm: (603 integer-address deref) <= 5
-sz: (603 integer-address deref)
-sz: (603 location)
-m: (603 location) 1
-sz: (603 location)
-sz: (1000 integer)
-setm: size of (603 integer-address deref) is 1
 run: -- ((1000 5) (601 5) (602 5) (603 1000))
-run: new-screen 4: ((604 integer) <- copy (0 literal))
-sz: (0 literal)
-m: (0 literal) literal
+run: new-screen 3: ((604 integer) <- copy (0 literal))
 run: writing to oarg 0 => (604 integer)
 setm: (604 integer) <= 0
 sz: (604 integer)
 setm: size of (604 integer) is 1
 run: -- ((1000 5) (601 5) (602 5) (603 1000) (604 0))
-run: new-screen 5: ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
+run: new-screen 4: ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
@@ -91,7 +68,7 @@ setm: (606 line-address-address) <= 1001
 sz: (606 line-address-address)
 setm: size of (606 line-address-address) is 1
 run: -- ((1000 5) (601 5) (602 5) (603 1000) (604 0) (606 1001))
-run: new-screen 6: ((606 line-address-address deref) <- new (line type) (602 integer))
+run: new-screen 5: ((606 line-address-address deref) <- new (line type) (602 integer))
 sz: (602 integer)
 m: (602 integer) 1
 sz: (602 integer)
@@ -104,8 +81,8 @@ m: (606 location) 1
 sz: (606 location)
 sz: (1001 line-address)
 setm: size of (606 line-address-address deref) is 1
-run: -- ((1000 5) (1001 1006) (601 5) (602 5) (603 1000) (604 0) (606 1001))
-run: new-screen 7: ((605 line-address) <- copy (606 line-address-address deref))
+run: -- ((1000 5) (1001 1006) (1006 5) (601 5) (602 5) (603 1000) (604 0) (606 1001))
+run: new-screen 6: ((605 line-address) <- copy (606 line-address-address deref))
 sz: (606 line-address-address deref)
 sz: (606 location)
 m: (606 location) 1
@@ -121,38 +98,21 @@ run: writing to oarg 1006 => (605 line-address)
 setm: (605 line-address) <= 1006
 sz: (605 line-address)
 setm: size of (605 line-address) is 1
-run: -- ((1000 5) (1001 1006) (601 5) (602 5) (603 1000) (604 0) (605 1006) (606 1001))
-run: new-screen 8: ((605 integer-address deref) <- copy (602 integer))
-sz: (602 integer)
-m: (602 integer) 1
-sz: (602 integer)
-run: writing to oarg 5 => (605 integer-address deref)
-setm: (605 integer-address deref) <= 5
-sz: (605 integer-address deref)
-sz: (605 location)
-m: (605 location) 1
-sz: (605 location)
-sz: (1006 integer)
-setm: size of (605 integer-address deref) is 1
 run: -- ((1000 5) (1001 1006) (1006 5) (601 5) (602 5) (603 1000) (604 0) (605 1006) (606 1001))
-run: new-screen 9: ((604 integer) <- add (604 integer) (1 literal))
+run: new-screen 7: ((604 integer) <- add (604 integer) (1 literal))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
-sz: (1 literal)
-m: (1 literal) literal
 add: 0 1
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
-sz: (1 literal)
-m: (1 literal) literal
 run: writing to oarg 1 => (604 integer)
 setm: (604 integer) <= 1
 sz: (604 integer)
 setm: size of (604 integer) is 1
 run: -- ((1000 5) (1001 1006) (1006 5) (601 5) (602 5) (603 1000) (604 1) (605 1006) (606 1001))
-run: new-screen 10: ((607 boolean) <- neq (604 integer) (601 integer))
+run: new-screen 8: ((607 boolean) <- neq (604 integer) (601 integer))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
@@ -171,12 +131,12 @@ setm: (607 boolean) <= t
 sz: (607 boolean)
 setm: size of (607 boolean) is 1
 run: -- ((1000 5) (1001 1006) (1006 5) (601 5) (602 5) (603 1000) (604 1) (605 1006) (606 1001) (607 t))
-run: new-screen 11: (jump-if (607 boolean) (-7 offset))
+run: new-screen 9: (jump-if (607 boolean) (-6 offset))
 sz: (607 boolean)
 m: (607 boolean) 1
 sz: (607 boolean)
 run: -- ((1000 5) (1001 1006) (1006 5) (601 5) (602 5) (603 1000) (604 1) (605 1006) (606 1001) (607 t))
-run: new-screen 5: ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
+run: new-screen 4: ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
@@ -188,7 +148,7 @@ setm: (606 line-address-address) <= 1002
 sz: (606 line-address-address)
 setm: size of (606 line-address-address) is 1
 run: -- ((1000 5) (1001 1006) (1006 5) (601 5) (602 5) (603 1000) (604 1) (605 1006) (606 1002) (607 t))
-run: new-screen 6: ((606 line-address-address deref) <- new (line type) (602 integer))
+run: new-screen 5: ((606 line-address-address deref) <- new (line type) (602 integer))
 sz: (602 integer)
 m: (602 integer) 1
 sz: (602 integer)
@@ -201,8 +161,8 @@ m: (606 location) 1
 sz: (606 location)
 sz: (1002 line-address)
 setm: size of (606 line-address-address deref) is 1
-run: -- ((1000 5) (1001 1006) (1002 1012) (1006 5) (601 5) (602 5) (603 1000) (604 1) (605 1006) (606 1002) (607 t))
-run: new-screen 7: ((605 line-address) <- copy (606 line-address-address deref))
+run: -- ((1000 5) (1001 1006) (1002 1012) (1006 5) (1012 5) (601 5) (602 5) (603 1000) (604 1) (605 1006) (606 1002) (607 t))
+run: new-screen 6: ((605 line-address) <- copy (606 line-address-address deref))
 sz: (606 line-address-address deref)
 sz: (606 location)
 m: (606 location) 1
@@ -218,38 +178,21 @@ run: writing to oarg 1012 => (605 line-address)
 setm: (605 line-address) <= 1012
 sz: (605 line-address)
 setm: size of (605 line-address) is 1
-run: -- ((1000 5) (1001 1006) (1002 1012) (1006 5) (601 5) (602 5) (603 1000) (604 1) (605 1012) (606 1002) (607 t))
-run: new-screen 8: ((605 integer-address deref) <- copy (602 integer))
-sz: (602 integer)
-m: (602 integer) 1
-sz: (602 integer)
-run: writing to oarg 5 => (605 integer-address deref)
-setm: (605 integer-address deref) <= 5
-sz: (605 integer-address deref)
-sz: (605 location)
-m: (605 location) 1
-sz: (605 location)
-sz: (1012 integer)
-setm: size of (605 integer-address deref) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1006 5) (1012 5) (601 5) (602 5) (603 1000) (604 1) (605 1012) (606 1002) (607 t))
-run: new-screen 9: ((604 integer) <- add (604 integer) (1 literal))
+run: new-screen 7: ((604 integer) <- add (604 integer) (1 literal))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
-sz: (1 literal)
-m: (1 literal) literal
 add: 1 1
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
-sz: (1 literal)
-m: (1 literal) literal
 run: writing to oarg 2 => (604 integer)
 setm: (604 integer) <= 2
 sz: (604 integer)
 setm: size of (604 integer) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1006 5) (1012 5) (601 5) (602 5) (603 1000) (604 2) (605 1012) (606 1002) (607 t))
-run: new-screen 10: ((607 boolean) <- neq (604 integer) (601 integer))
+run: new-screen 8: ((607 boolean) <- neq (604 integer) (601 integer))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
@@ -268,12 +211,12 @@ setm: (607 boolean) <= t
 sz: (607 boolean)
 setm: size of (607 boolean) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1006 5) (1012 5) (601 5) (602 5) (603 1000) (604 2) (605 1012) (606 1002) (607 t))
-run: new-screen 11: (jump-if (607 boolean) (-7 offset))
+run: new-screen 9: (jump-if (607 boolean) (-6 offset))
 sz: (607 boolean)
 m: (607 boolean) 1
 sz: (607 boolean)
 run: -- ((1000 5) (1001 1006) (1002 1012) (1006 5) (1012 5) (601 5) (602 5) (603 1000) (604 2) (605 1012) (606 1002) (607 t))
-run: new-screen 5: ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
+run: new-screen 4: ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
@@ -285,7 +228,7 @@ setm: (606 line-address-address) <= 1003
 sz: (606 line-address-address)
 setm: size of (606 line-address-address) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1006 5) (1012 5) (601 5) (602 5) (603 1000) (604 2) (605 1012) (606 1003) (607 t))
-run: new-screen 6: ((606 line-address-address deref) <- new (line type) (602 integer))
+run: new-screen 5: ((606 line-address-address deref) <- new (line type) (602 integer))
 sz: (602 integer)
 m: (602 integer) 1
 sz: (602 integer)
@@ -298,8 +241,8 @@ m: (606 location) 1
 sz: (606 location)
 sz: (1003 line-address)
 setm: size of (606 line-address-address deref) is 1
-run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1006 5) (1012 5) (601 5) (602 5) (603 1000) (604 2) (605 1012) (606 1003) (607 t))
-run: new-screen 7: ((605 line-address) <- copy (606 line-address-address deref))
+run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1006 5) (1012 5) (1018 5) (601 5) (602 5) (603 1000) (604 2) (605 1012) (606 1003) (607 t))
+run: new-screen 6: ((605 line-address) <- copy (606 line-address-address deref))
 sz: (606 line-address-address deref)
 sz: (606 location)
 m: (606 location) 1
@@ -315,38 +258,21 @@ run: writing to oarg 1018 => (605 line-address)
 setm: (605 line-address) <= 1018
 sz: (605 line-address)
 setm: size of (605 line-address) is 1
-run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1006 5) (1012 5) (601 5) (602 5) (603 1000) (604 2) (605 1018) (606 1003) (607 t))
-run: new-screen 8: ((605 integer-address deref) <- copy (602 integer))
-sz: (602 integer)
-m: (602 integer) 1
-sz: (602 integer)
-run: writing to oarg 5 => (605 integer-address deref)
-setm: (605 integer-address deref) <= 5
-sz: (605 integer-address deref)
-sz: (605 location)
-m: (605 location) 1
-sz: (605 location)
-sz: (1018 integer)
-setm: size of (605 integer-address deref) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1006 5) (1012 5) (1018 5) (601 5) (602 5) (603 1000) (604 2) (605 1018) (606 1003) (607 t))
-run: new-screen 9: ((604 integer) <- add (604 integer) (1 literal))
+run: new-screen 7: ((604 integer) <- add (604 integer) (1 literal))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
-sz: (1 literal)
-m: (1 literal) literal
 add: 2 1
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
-sz: (1 literal)
-m: (1 literal) literal
 run: writing to oarg 3 => (604 integer)
 setm: (604 integer) <= 3
 sz: (604 integer)
 setm: size of (604 integer) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1006 5) (1012 5) (1018 5) (601 5) (602 5) (603 1000) (604 3) (605 1018) (606 1003) (607 t))
-run: new-screen 10: ((607 boolean) <- neq (604 integer) (601 integer))
+run: new-screen 8: ((607 boolean) <- neq (604 integer) (601 integer))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
@@ -365,12 +291,12 @@ setm: (607 boolean) <= t
 sz: (607 boolean)
 setm: size of (607 boolean) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1006 5) (1012 5) (1018 5) (601 5) (602 5) (603 1000) (604 3) (605 1018) (606 1003) (607 t))
-run: new-screen 11: (jump-if (607 boolean) (-7 offset))
+run: new-screen 9: (jump-if (607 boolean) (-6 offset))
 sz: (607 boolean)
 m: (607 boolean) 1
 sz: (607 boolean)
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1006 5) (1012 5) (1018 5) (601 5) (602 5) (603 1000) (604 3) (605 1018) (606 1003) (607 t))
-run: new-screen 5: ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
+run: new-screen 4: ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
@@ -382,7 +308,7 @@ setm: (606 line-address-address) <= 1004
 sz: (606 line-address-address)
 setm: size of (606 line-address-address) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1006 5) (1012 5) (1018 5) (601 5) (602 5) (603 1000) (604 3) (605 1018) (606 1004) (607 t))
-run: new-screen 6: ((606 line-address-address deref) <- new (line type) (602 integer))
+run: new-screen 5: ((606 line-address-address deref) <- new (line type) (602 integer))
 sz: (602 integer)
 m: (602 integer) 1
 sz: (602 integer)
@@ -395,8 +321,8 @@ m: (606 location) 1
 sz: (606 location)
 sz: (1004 line-address)
 setm: size of (606 line-address-address deref) is 1
-run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1006 5) (1012 5) (1018 5) (601 5) (602 5) (603 1000) (604 3) (605 1018) (606 1004) (607 t))
-run: new-screen 7: ((605 line-address) <- copy (606 line-address-address deref))
+run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1006 5) (1012 5) (1018 5) (1024 5) (601 5) (602 5) (603 1000) (604 3) (605 1018) (606 1004) (607 t))
+run: new-screen 6: ((605 line-address) <- copy (606 line-address-address deref))
 sz: (606 line-address-address deref)
 sz: (606 location)
 m: (606 location) 1
@@ -412,38 +338,21 @@ run: writing to oarg 1024 => (605 line-address)
 setm: (605 line-address) <= 1024
 sz: (605 line-address)
 setm: size of (605 line-address) is 1
-run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1006 5) (1012 5) (1018 5) (601 5) (602 5) (603 1000) (604 3) (605 1024) (606 1004) (607 t))
-run: new-screen 8: ((605 integer-address deref) <- copy (602 integer))
-sz: (602 integer)
-m: (602 integer) 1
-sz: (602 integer)
-run: writing to oarg 5 => (605 integer-address deref)
-setm: (605 integer-address deref) <= 5
-sz: (605 integer-address deref)
-sz: (605 location)
-m: (605 location) 1
-sz: (605 location)
-sz: (1024 integer)
-setm: size of (605 integer-address deref) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1006 5) (1012 5) (1018 5) (1024 5) (601 5) (602 5) (603 1000) (604 3) (605 1024) (606 1004) (607 t))
-run: new-screen 9: ((604 integer) <- add (604 integer) (1 literal))
+run: new-screen 7: ((604 integer) <- add (604 integer) (1 literal))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
-sz: (1 literal)
-m: (1 literal) literal
 add: 3 1
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
-sz: (1 literal)
-m: (1 literal) literal
 run: writing to oarg 4 => (604 integer)
 setm: (604 integer) <= 4
 sz: (604 integer)
 setm: size of (604 integer) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1006 5) (1012 5) (1018 5) (1024 5) (601 5) (602 5) (603 1000) (604 4) (605 1024) (606 1004) (607 t))
-run: new-screen 10: ((607 boolean) <- neq (604 integer) (601 integer))
+run: new-screen 8: ((607 boolean) <- neq (604 integer) (601 integer))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
@@ -462,12 +371,12 @@ setm: (607 boolean) <= t
 sz: (607 boolean)
 setm: size of (607 boolean) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1006 5) (1012 5) (1018 5) (1024 5) (601 5) (602 5) (603 1000) (604 4) (605 1024) (606 1004) (607 t))
-run: new-screen 11: (jump-if (607 boolean) (-7 offset))
+run: new-screen 9: (jump-if (607 boolean) (-6 offset))
 sz: (607 boolean)
 m: (607 boolean) 1
 sz: (607 boolean)
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1006 5) (1012 5) (1018 5) (1024 5) (601 5) (602 5) (603 1000) (604 4) (605 1024) (606 1004) (607 t))
-run: new-screen 5: ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
+run: new-screen 4: ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
@@ -479,7 +388,7 @@ setm: (606 line-address-address) <= 1005
 sz: (606 line-address-address)
 setm: size of (606 line-address-address) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1006 5) (1012 5) (1018 5) (1024 5) (601 5) (602 5) (603 1000) (604 4) (605 1024) (606 1005) (607 t))
-run: new-screen 6: ((606 line-address-address deref) <- new (line type) (602 integer))
+run: new-screen 5: ((606 line-address-address deref) <- new (line type) (602 integer))
 sz: (602 integer)
 m: (602 integer) 1
 sz: (602 integer)
@@ -492,8 +401,8 @@ m: (606 location) 1
 sz: (606 location)
 sz: (1005 line-address)
 setm: size of (606 line-address-address deref) is 1
-run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1005 1030) (1006 5) (1012 5) (1018 5) (1024 5) (601 5) (602 5) (603 1000) (604 4) (605 1024) (606 1005) (607 t))
-run: new-screen 7: ((605 line-address) <- copy (606 line-address-address deref))
+run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1005 1030) (1006 5) (1012 5) (1018 5) (1024 5) (1030 5) (601 5) (602 5) (603 1000) (604 4) (605 1024) (606 1005) (607 t))
+run: new-screen 6: ((605 line-address) <- copy (606 line-address-address deref))
 sz: (606 line-address-address deref)
 sz: (606 location)
 m: (606 location) 1
@@ -509,38 +418,21 @@ run: writing to oarg 1030 => (605 line-address)
 setm: (605 line-address) <= 1030
 sz: (605 line-address)
 setm: size of (605 line-address) is 1
-run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1005 1030) (1006 5) (1012 5) (1018 5) (1024 5) (601 5) (602 5) (603 1000) (604 4) (605 1030) (606 1005) (607 t))
-run: new-screen 8: ((605 integer-address deref) <- copy (602 integer))
-sz: (602 integer)
-m: (602 integer) 1
-sz: (602 integer)
-run: writing to oarg 5 => (605 integer-address deref)
-setm: (605 integer-address deref) <= 5
-sz: (605 integer-address deref)
-sz: (605 location)
-m: (605 location) 1
-sz: (605 location)
-sz: (1030 integer)
-setm: size of (605 integer-address deref) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1005 1030) (1006 5) (1012 5) (1018 5) (1024 5) (1030 5) (601 5) (602 5) (603 1000) (604 4) (605 1030) (606 1005) (607 t))
-run: new-screen 9: ((604 integer) <- add (604 integer) (1 literal))
+run: new-screen 7: ((604 integer) <- add (604 integer) (1 literal))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
-sz: (1 literal)
-m: (1 literal) literal
 add: 4 1
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
-sz: (1 literal)
-m: (1 literal) literal
 run: writing to oarg 5 => (604 integer)
 setm: (604 integer) <= 5
 sz: (604 integer)
 setm: size of (604 integer) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1005 1030) (1006 5) (1012 5) (1018 5) (1024 5) (1030 5) (601 5) (602 5) (603 1000) (604 5) (605 1030) (606 1005) (607 t))
-run: new-screen 10: ((607 boolean) <- neq (604 integer) (601 integer))
+run: new-screen 8: ((607 boolean) <- neq (604 integer) (601 integer))
 sz: (604 integer)
 m: (604 integer) 1
 sz: (604 integer)
@@ -559,12 +451,12 @@ setm: (607 boolean) <= nil
 sz: (607 boolean)
 setm: size of (607 boolean) is 1
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1005 1030) (1006 5) (1012 5) (1018 5) (1024 5) (1030 5) (601 5) (602 5) (603 1000) (604 5) (605 1030) (606 1005))
-run: new-screen 11: (jump-if (607 boolean) (-7 offset))
+run: new-screen 9: (jump-if (607 boolean) (-6 offset))
 sz: (607 boolean)
 m: (607 boolean) 1
 sz: (607 boolean)
 run: -- ((1000 5) (1001 1006) (1002 1012) (1003 1018) (1004 1024) (1005 1030) (1006 5) (1012 5) (1018 5) (1024 5) (1030 5) (601 5) (602 5) (603 1000) (604 5) (605 1030) (606 1005))
-run: new-screen 12: (reply (603 screen-address))
+run: new-screen 10: (reply (603 screen-address))
 reply: ((603 screen-address)) ((2001 screen-address))
 reply: (603 screen-address) => (2001 screen-address)
 sz: (603 screen-address)
