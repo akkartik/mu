@@ -149,11 +149,11 @@
       (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
 
 (def addr (loc)
-  (ret addr v.loc
+  (ret result v.loc
     (aif rep.routine*!default-scope
-      (++ addr it))
+      (++ result it))
     (if (pos 'deref metadata.loc)
-      (zap memory* addr))))
+      (zap memory* result))))
 
 (def addrs (n sz)
   (accum yield
