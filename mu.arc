@@ -521,7 +521,8 @@
 (def new-array (type size)
 ;?   (prn "new array: @type @size")
   (ret result Memory-in-use-until
-    (++ Memory-in-use-until (+ 1 (* (sizeof types*.type!elem) size)))))
+    (++ Memory-in-use-until (+ 1 (* (sizeof types*.type!elem) size)))
+    (= (memory* result) size)))
 
 (def sizeof (type)
   (trace "sizeof" type)
