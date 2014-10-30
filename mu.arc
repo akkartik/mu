@@ -270,7 +270,15 @@
 (on-init
   (= running-routines* (queue))
   (= completed-routines* (queue))
-  (= routine* nil))
+  (= routine* nil)
+  (= abort-routine* (parameter nil)))
+
+; like arc's 'point' but you can also call ((abort-routine*)) in nested calls
+(mac routine-mark body
+  (w/uniq (g p)
+    `(ccc (fn (,g)
+            (parameterize abort-routine* (fn ((o ,p)) (,g ,p))
+              ,@body)))))
 
 (def run fn-names
   (ret result 0
@@ -280,7 +288,7 @@
     (while (~empty running-routines*)
       (= routine* deq.running-routines*)
       (trace "schedule" top.routine*!fn-name)
-      (let insts-run (run-for-time-slice scheduling-interval*)
+      (whenlet insts-run (routine-mark:run-for-time-slice scheduling-interval*)
         (= result (+ result insts-run)))
       (if (~empty routine*)
         (enq routine* running-routines*)
@@ -289,7 +297,8 @@
 (def die (msg)
   (= rep.routine*!error msg)
   (= rep.routine*!stack-trace rep.routine*!call-stack)
-  (wipe rep.routine*!call-stack))
+  (wipe rep.routine*!call-stack)
+  ((abort-routine*)))
 
 ($:require "charterm/main.rkt")
 
@@ -497,8 +506,6 @@
                         (err "no such op @op"))
                       (continue))
                 )
-              (when rep.routine*!error
-                (return time-slice))
               ; opcode generated some value, stored in 'tmp'
               ; copy to output args
 ;?               (prn "store: " tmp " " oarg)
