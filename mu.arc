@@ -433,6 +433,7 @@
                       (assert nil "get-address on invalid type @arg.0 => @base")))
                 new
                   (let type (v arg.0)
+                    (assert (is 'literal (ty arg.0)))
                     (if (no types*.type)  (err "no such type @type"))
                     (if types*.type!array
                       (new-array type (m arg.1))
@@ -694,7 +695,7 @@
 ;; system software
 
 (init-fn maybe-coerce
-  ((101 tagged-value-address) <- new (tagged-value type))
+  ((101 tagged-value-address) <- new (tagged-value literal))
   ((101 tagged-value-address deref) <- arg)
   ((102 type) <- arg)
   ((103 type) <- get (101 tagged-value-address deref) (0 offset))
@@ -712,7 +713,7 @@
   ((203 boolean) <- eq (202 integer) (1 literal))
   (assert (203 boolean))
   ; todo: check that arg 0 matches the type? or is that for the future typechecker?
-  ((204 tagged-value-address) <- new (tagged-value type))
+  ((204 tagged-value-address) <- new (tagged-value literal))
   ((205 location) <- get-address (204 tagged-value-address deref) (0 offset))
   ((205 location deref) <- copy (201 type))
   ((206 location) <- get-address (204 tagged-value-address deref) (1 offset))
@@ -730,13 +731,13 @@
   (reply (402 tagged-value-address)))
 
 (init-fn new-list
-  ((501 list-address) <- new (list type))
+  ((501 list-address) <- new (list literal))
   ((502 list-address) <- copy (501 list-address))
   { begin
     ((503 integer) (504 boolean) <- arg)
     (break-unless (504 boolean))
     ((505 list-address-address) <- get-address (502 list-address deref) (1 offset))
-    ((505 list-address-address deref) <- new (list type))
+    ((505 list-address-address deref) <- new (list literal))
     ((502 list-address) <- list-next (502 list-address))
     ((506 tagged-value-address) <- list-value-address (502 list-address))
     ((506 tagged-value-address deref) <- save-type (503 integer))
