@@ -1368,6 +1368,17 @@
   (prn "F - convert-names renames symbolic names to integer offsets"))
 
 (reset)
+(new-trace "convert-names-nil")
+(if (~iso (convert-names
+            '(((x integer) <- copy (4 literal))
+              ((y integer) <- copy (2 literal))
+              ((nil integer) <- add (x integer) (y integer))))
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
+            ((nil integer) <- add (1 integer) (2 integer))))
+  (prn "F - convert-names never renames nil"))
+
+(reset)
 (new-trace "convert-quotes-defer")
 (if (~iso (convert-quotes
             '(((1 integer) <- copy (4 literal))
@@ -1420,5 +1431,16 @@
 (let last-routine (deq completed-routines*)
   (if (no rep.last-routine!error)
     (prn "F - default-scope checks bounds")))
+
+(reset)
+(new-trace "convert-names-default-scope")
+(if (~iso (convert-names
+            '(((x integer) <- copy (4 literal))
+              ((y integer) <- copy (2 literal))
+              ((default-scope integer) <- add (x integer) (y integer))))
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
+            ((default-scope integer) <- add (1 integer) (2 integer))))
+  (prn "F - convert-names never renames default-scope"))
 
 (reset)  ; end file with this to persist the trace for the final test
