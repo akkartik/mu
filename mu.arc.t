@@ -670,14 +670,14 @@
 (add-fns
   '((test1
       ; 1 points at first node: tagged-value (int 34)
-      ((1 list-address) <- new (list type))
+      ((1 list-address) <- new (list literal))
       ((2 tagged-value-address) <- list-value-address (1 list-address))
       ((3 type-address) <- get-address (2 tagged-value-address deref) (0 offset))
       ((3 type-address deref) <- copy (integer literal))
       ((4 location) <- get-address (2 tagged-value-address deref) (1 offset))
       ((4 location deref) <- copy (34 literal))
       ((5 list-address-address) <- get-address (1 list-address deref) (1 offset))
-      ((5 list-address-address deref) <- new (list type))
+      ((5 list-address-address deref) <- new (list literal))
       ; 6 points at second node: tagged-value (boolean t)
       ((6 list-address) <- copy (5 list-address-address deref))
       ((7 tagged-value-address) <- list-value-address (6 list-address))
@@ -1265,7 +1265,7 @@
 (new-trace "new-primitive")
 (add-fns
   '((main
-      ((1 integer-address) <- new (integer type)))))
+      ((1 integer-address) <- new (integer literal)))))
 (let before Memory-in-use-until
   (run 'main)
 ;?   (prn memory*)
@@ -1278,7 +1278,7 @@
 (new-trace "new-array-literal")
 (add-fns
   '((main
-      ((1 type-array-address) <- new (type-array type) (5 literal)))))
+      ((1 type-array-address) <- new (type-array literal) (5 literal)))))
 (let before Memory-in-use-until
   (run 'main)
 ;?   (prn memory*)
@@ -1292,7 +1292,7 @@
 (add-fns
   '((main
       ((1 integer) <- copy (5 literal))
-      ((2 type-array-address) <- new (type-array type) (1 integer)))))
+      ((2 type-array-address) <- new (type-array literal) (1 integer)))))
 (let before Memory-in-use-until
   (run 'main)
 ;?   (prn memory*)
@@ -1384,7 +1384,7 @@
 (new-trace "set-default-scope")
 (add-fns
   '((main
-      ((default-scope scope-address) <- new (scope type) (2 literal))
+      ((default-scope scope-address) <- new (scope literal) (2 literal))
       ((1 integer) <- copy (23 literal)))))
 (let before Memory-in-use-until
 ;?   (set dump-trace*)
@@ -1398,7 +1398,7 @@
 (new-trace "set-default-scope-skips-offset")
 (add-fns
   '((main
-      ((default-scope scope-address) <- new (scope type) (2 literal))
+      ((default-scope scope-address) <- new (scope literal) (2 literal))
       ((1 integer) <- copy (23 offset)))))
 (let before Memory-in-use-until
 ;?   (set dump-trace*)
@@ -1412,7 +1412,7 @@
 (new-trace "default-scope-bounds-check")
 (add-fns
   '((main
-      ((default-scope scope-address) <- new (scope type) (2 literal))
+      ((default-scope scope-address) <- new (scope literal) (2 literal))
       ((2 integer) <- copy (23 literal)))))
 ;? (set dump-trace*)
 (run 'main)
