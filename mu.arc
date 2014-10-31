@@ -165,7 +165,7 @@
 
 (def m (loc)  ; read memory, respecting metadata
   (point return
-    (if (is 'literal ty.loc)
+    (if (in ty.loc 'literal 'offset)
       (return v.loc))
     (assert (isa v.loc 'int))
     (trace "m" loc " " sz.loc)
@@ -384,6 +384,7 @@
                   (with (base arg.0  ; integer (non-symbol) memory location including metadata
                          idx (v arg.1))  ; literal integer
 ;?                     (prn base ": " (memory* v.base))
+                    (assert (in (ty arg.1) 'literal 'offset))
                     (when typeinfo.base!address
                       (assert (pos 'deref metadata.base))
                       (= base (list (memory* v.base) typeinfo.base!elem)))

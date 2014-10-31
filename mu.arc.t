@@ -1395,6 +1395,20 @@
     (prn "F - default-scope implicitly modifies variable locations")))
 
 (reset)
+(new-trace "set-default-scope-skips-offset")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope type) (2 literal))
+      ((1 integer) <- copy (23 offset)))))
+(let before Memory-in-use-until
+;?   (set dump-trace*)
+  (run 'main)
+;?   (prn memory*)
+  (if (~and (~is 23 memory*.1)
+            (is 23 (memory* (+ before 1))))
+    (prn "F - default-scope skips 'offset' types just like literals")))
+
+(reset)
 (new-trace "default-scope-bounds-check")
 (add-fns
   '((main
