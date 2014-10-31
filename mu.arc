@@ -671,7 +671,8 @@
 (def maybe-add (arg offset idx)
   (unless (or (in ty.arg 'literal 'offset)
               (offset v.arg)
-              (~isa v.arg 'sym))
+              (~isa v.arg 'sym)
+              (in v.arg 'nil 'default-scope))
     (= (offset v.arg) idx)))
 
 ;; literate tangling system for reordering code
