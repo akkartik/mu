@@ -265,9 +265,6 @@
 (mac caller-args (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'args))
 
-(mac caller-oargs (routine)  ; assignable
-  `((((rep ,routine) 'call-stack) 0) 'oargs))
-
 (on-init
   (= running-routines* (queue))
   (= completed-routines* (queue))
