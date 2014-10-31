@@ -947,6 +947,20 @@
   (prn "F - function with optional second arg"))
 ;? (quit)
 
+(reset)
+(new-trace "new-fn-arg-by-value")
+(add-fns
+  '((test1
+      ((1 integer) <- copy (0 literal))
+      ((2 integer) <- arg))
+    (main
+      ((1 integer) <- copy (34 literal))
+      (test1 (1 integer)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 0  2 34))
+  (prn "F - 'arg' passes by value"))
+
 ; how should errors be handled? will be unclear until we support concurrency and routine trees.
 
 (reset)
