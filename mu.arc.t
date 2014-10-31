@@ -1457,4 +1457,15 @@
             (~is 23 (memory* (+ before 1))))
     (prn "F - default-scope skipped for locations with metadata 'global'")))
 
+(reset)
+(new-trace "convert-names-global")
+(if (~iso (convert-names
+            '(((x integer) <- copy (4 literal))
+              ((y integer global) <- copy (2 literal))
+              ((default-scope integer) <- add (x integer) (y integer global))))
+          '(((1 integer) <- copy (4 literal))
+            ((y integer global) <- copy (2 literal))
+            ((default-scope integer) <- add (1 integer) (y integer global))))
+  (prn "F - convert-names never renames global operands"))
+
 (reset)  ; end file with this to persist the trace for the final test
