@@ -1003,6 +1003,27 @@
                          4 1  5 3  6 4))
   (prn "F - 'reply' permits a function to return multiple values at once"))
 
+(reset)
+(new-trace "new-fn-prepare-reply")
+(add-fns
+  '((test1
+      ((4 integer) <- arg)
+      ((5 integer) <- arg)
+      ((6 integer) <- add (4 integer) (5 integer))
+      (prepare-reply (6 integer) (5 integer))
+      (reply)
+      ((4 integer) <- copy (34 literal)))
+    (main
+      ((1 integer) <- copy (1 literal))
+      ((2 integer) <- copy (3 literal))
+      ((3 integer) (7 integer) <- test1 (1 integer) (2 integer)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 1  2 3  3 4    7 3
+                         ; add-fn's temporaries
+                         4 1  5 3  6 4))
+  (prn "F - without args, 'reply' returns values from previous 'prepare-reply'."))
+
 ; Our control operators are quite inconvenient to use, so mu provides a
 ; lightweight tool called 'convert-braces' to work in a slightly more
 ; convenient format with nested braces:

@@ -489,12 +489,18 @@
                     (if (len> caller-args.routine* idx)
                       (list caller-args.routine*.idx t)
                       (list nil nil)))
+                prepare-reply
+                  (= results.routine*
+                     (accum yield
+                       (each a arg
+                         (yield (m a)))))
                 reply
                   (do
-                      (= results.routine*
-                         (accum yield
-                           (each a arg
-                             (yield (m a)))))
+                      (when arg
+                        (= results.routine*
+                           (accum yield
+                             (each a arg
+                               (yield (m a))))))
                       (let results results.routine*
                         (pop-stack routine*)
                         (if empty.routine* (return ninstrs))
