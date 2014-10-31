@@ -490,17 +490,10 @@
                       (list caller-args.routine*.idx t)
                       (list nil nil)))
                 prepare-reply
-                  (= results.routine*
-                     (accum yield
-                       (each a arg
-                         (yield (m a)))))
+                  (prepare-reply arg)
                 reply
-                  (do
-                      (when arg
-                        (= results.routine*
-                           (accum yield
-                             (each a arg
-                               (yield (m a))))))
+                  (do (when arg
+                        (prepare-reply arg))
                       (let results results.routine*
                         (pop-stack routine*)
                         (if empty.routine* (return ninstrs))
@@ -537,6 +530,12 @@
               )
         (++ pc.routine*)))
     (return time-slice)))
+
+(def prepare-reply (args)
+  (= results.routine*
+     (accum yield
+       (each a args
+         (yield (m a))))))
 
 (enq (fn () (= Memory-in-use-until 1000))
      initialization-fns*)
