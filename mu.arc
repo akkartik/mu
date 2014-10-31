@@ -150,10 +150,11 @@
 
 (def addr (loc)
   (ret result v.loc
-    (whenlet base rep.routine*!default-scope
-      (if (< result memory*.base)
-         (++ result base)
-         (die "addr: no room for var @result")))
+    (unless (pos 'global metadata.loc)
+      (whenlet base rep.routine*!default-scope
+        (if (< result memory*.base)
+           (++ result base)
+           (die "addr: no room for var @result"))))
     (when (pos 'deref metadata.loc)
       (zap memory* result))))
 
