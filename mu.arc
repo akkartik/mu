@@ -151,7 +151,7 @@
 (def addr (loc)
   (ret result v.loc
     (unless (pos 'global metadata.loc)
-      (whenlet base rep.routine*!default-scope
+      (whenlet base rep.routine*!call-stack.0!default-scope
         (if (< result memory*.base)
            (++ result base)
            (die "addr: no room for var @result"))))
@@ -180,7 +180,7 @@
   (point return
     (when (is v.loc 'default-scope)
       (assert (is 1 sz.loc))
-      (= rep.routine*!default-scope val)
+      (= rep.routine*!call-stack.0!default-scope val)
       (return))
     (assert (isa v.loc 'int))
     (trace "setm" loc " <= " val)
