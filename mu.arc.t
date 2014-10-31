@@ -1443,4 +1443,18 @@
             ((default-scope integer) <- add (1 integer) (2 integer))))
   (prn "F - convert-names never renames default-scope"))
 
+(reset)
+(new-trace "suppress-default-scope")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope literal) (2 literal))
+      ((1 integer global) <- copy (23 literal)))))
+(let before Memory-in-use-until
+;?   (set dump-trace*)
+  (run 'main)
+;?   (prn memory*)
+  (if (~and (is 23 memory*.1)
+            (~is 23 (memory* (+ before 1))))
+    (prn "F - default-scope skipped for locations with metadata 'global'")))
+
 (reset)  ; end file with this to persist the trace for the final test
