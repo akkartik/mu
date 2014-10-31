@@ -262,13 +262,11 @@
           (cut instr (+ delim 2)))  ; args
     (list nil instr.0 cdr.instr)))
 
-(def caller-args (routine)  ; not assignable
-  (let (_ _ args)  (parse-instr ((body routine 1) (pc routine 1)))
-    args))
+(mac caller-args (routine)  ; assignable
+  `((((rep ,routine) 'call-stack) 0) 'args))
 
-(def caller-oargs (routine)  ; not assignable
-  (let (oargs _ _)  (parse-instr ((body routine 1) (pc routine 1)))
-    oargs))
+(mac caller-oargs (routine)  ; assignable
+  `((((rep ,routine) 'call-stack) 0) 'oargs))
 
 (on-init
   (= running-routines* (queue))
@@ -489,7 +487,7 @@
                                 (++ caller-arg-idx.routine*)))
                     (trace "arg" arg " " idx " " caller-args.routine*)
                     (if (len> caller-args.routine* idx)
-                      (list (m caller-args.routine*.idx) t)
+                      (list caller-args.routine*.idx t)
                       (list nil nil)))
                 reply
                   (do (pop-stack routine*)
@@ -507,7 +505,11 @@
                       (continue))
                 ; else try to call as a user-defined function
                   (do (if function*.op
-                        (push-stack routine* op)
+                        (do (push-stack routine* op)
+                            (= caller-args.routine*
+                               (accum yield
+                                 (each a arg
+                                   (yield (m a))))))
                         (err "no such op @op"))
                       (continue))
                 )

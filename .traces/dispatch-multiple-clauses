@@ -39,7 +39,7 @@ run: -- nil
 run: main 0: ((1 tagged-value-address) <- new-tagged-value (boolean literal) (t literal))
 run: -- nil
 run: new-tagged-value 0: ((201 type) <- arg)
-arg: nil 0 ((boolean literal) (t literal))
+arg: nil 0 (boolean t)
 setm: (201 type) <= boolean
 sz: (201 type)
 setm: size of (201 type) is 1
@@ -107,7 +107,7 @@ sz: (206 location)
 setm: size of (206 location) is 1
 run: -- ((1000 boolean) (201 boolean) (202 1) (203 t) (204 1000) (205 1000) (206 1001))
 run: new-tagged-value 8: ((206 location deref) <- arg)
-arg: nil 1 ((boolean literal) (t literal))
+arg: nil 1 (boolean t)
 setm: (206 location deref) <= t
 sz: (206 location deref)
 sz: (206 location)
@@ -129,7 +129,7 @@ run: -- ((1 1000) (1000 boolean) (1001 t) (201 boolean) (202 1) (203 t) (204 100
 run: main 1: ((2 tagged-value-address) <- new-tagged-value (boolean literal) (nil literal))
 run: -- ((1 1000) (1000 boolean) (1001 t) (201 boolean) (202 1) (203 t) (204 1000) (205 1000) (206 1001))
 run: new-tagged-value 0: ((201 type) <- arg)
-arg: nil 0 ((boolean literal) (nil literal))
+arg: nil 0 (boolean nil)
 setm: (201 type) <= boolean
 sz: (201 type)
 setm: size of (201 type) is 1
@@ -197,7 +197,7 @@ sz: (206 location)
 setm: size of (206 location) is 1
 run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003))
 run: new-tagged-value 8: ((206 location deref) <- arg)
-arg: nil 1 ((boolean literal) (nil literal))
+arg: nil 1 (boolean nil)
 setm: (206 location deref) <= nil
 sz: (206 location deref)
 sz: (206 location)
@@ -217,29 +217,20 @@ sz: (2 tagged-value-address)
 setm: size of (2 tagged-value-address) is 1
 run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003))
 run: main 2: ((3 boolean) <- test1 (1 tagged-value-address) (2 tagged-value-address))
-run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003))
-run: test1 0: ((4 tagged-value-address) <- arg)
-arg: nil 0 ((1 tagged-value-address) (2 tagged-value-address))
 sz: (1 tagged-value-address)
 m: (1 tagged-value-address) 1
 sz: (1 tagged-value-address)
+sz: (2 tagged-value-address)
+m: (2 tagged-value-address) 1
+sz: (2 tagged-value-address)
+run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003))
+run: test1 0: ((4 tagged-value-address) <- arg)
+arg: nil 0 (1000 1002)
 setm: (4 tagged-value-address) <= 1000
 sz: (4 tagged-value-address)
 setm: size of (4 tagged-value-address) is 1
 run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000))
 run: test1 1: ((5 integer) (6 boolean) <- maybe-coerce (4 tagged-value-address deref) (integer literal))
-run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000))
-run: maybe-coerce 0: ((101 tagged-value-address) <- new (tagged-value literal))
-sizeof: tagged-value
-sizeof: type
-sizeof: location
-run: writing to oarg 1004 => (101 tagged-value-address)
-setm: (101 tagged-value-address) <= 1004
-sz: (101 tagged-value-address)
-setm: size of (101 tagged-value-address) is 1
-run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (101 1004) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000))
-run: maybe-coerce 1: ((101 tagged-value-address deref) <- arg)
-arg: nil 0 ((4 tagged-value-address deref) (integer literal))
 sz: (4 tagged-value-address deref)
 sz: (4 location)
 m: (4 location) 1
@@ -256,6 +247,18 @@ sz: (4 location)
 m: (4 location) 1
 sz: (4 location)
 sz: (1000 tagged-value)
+run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000))
+run: maybe-coerce 0: ((101 tagged-value-address) <- new (tagged-value literal))
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+run: writing to oarg 1004 => (101 tagged-value-address)
+setm: (101 tagged-value-address) <= 1004
+sz: (101 tagged-value-address)
+setm: size of (101 tagged-value-address) is 1
+run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (101 1004) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000))
+run: maybe-coerce 1: ((101 tagged-value-address deref) <- arg)
+arg: nil 0 (#(tagged record (boolean t . nil)) integer)
 setm: (101 tagged-value-address deref) <= #(tagged record (boolean t . nil))
 sz: (101 tagged-value-address deref)
 sz: (101 location)
@@ -265,7 +268,7 @@ sz: (1004 tagged-value)
 setm: size of (101 tagged-value-address deref) is 2
 run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (101 1004) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000))
 run: maybe-coerce 2: ((102 type) <- arg)
-arg: nil 1 ((4 tagged-value-address deref) (integer literal))
+arg: nil 1 (#(tagged record (boolean t . nil)) integer)
 setm: (102 type) <= integer
 sz: (102 type)
 setm: size of (102 type) is 1
@@ -313,18 +316,6 @@ m: (6 boolean) 1
 sz: (6 boolean)
 run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (101 1004) (102 integer) (103 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 0))
 run: test1 7: ((5 boolean) (6 boolean) <- maybe-coerce (4 tagged-value-address deref) (boolean literal))
-run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (101 1004) (102 integer) (103 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 0))
-run: maybe-coerce 0: ((101 tagged-value-address) <- new (tagged-value literal))
-sizeof: tagged-value
-sizeof: type
-sizeof: location
-run: writing to oarg 1006 => (101 tagged-value-address)
-setm: (101 tagged-value-address) <= 1006
-sz: (101 tagged-value-address)
-setm: size of (101 tagged-value-address) is 1
-run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (101 1006) (102 integer) (103 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 0))
-run: maybe-coerce 1: ((101 tagged-value-address deref) <- arg)
-arg: nil 0 ((4 tagged-value-address deref) (boolean literal))
 sz: (4 tagged-value-address deref)
 sz: (4 location)
 m: (4 location) 1
@@ -341,6 +332,18 @@ sz: (4 location)
 m: (4 location) 1
 sz: (4 location)
 sz: (1000 tagged-value)
+run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (101 1004) (102 integer) (103 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 0))
+run: maybe-coerce 0: ((101 tagged-value-address) <- new (tagged-value literal))
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+run: writing to oarg 1006 => (101 tagged-value-address)
+setm: (101 tagged-value-address) <= 1006
+sz: (101 tagged-value-address)
+setm: size of (101 tagged-value-address) is 1
+run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (101 1006) (102 integer) (103 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 0))
+run: maybe-coerce 1: ((101 tagged-value-address deref) <- arg)
+arg: nil 0 (#(tagged record (boolean t . nil)) boolean)
 setm: (101 tagged-value-address deref) <= #(tagged record (boolean t . nil))
 sz: (101 tagged-value-address deref)
 sz: (101 location)
@@ -350,7 +353,7 @@ sz: (1006 tagged-value)
 setm: size of (101 tagged-value-address deref) is 2
 run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (1006 boolean) (1007 t) (101 1006) (102 integer) (103 boolean) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 0))
 run: maybe-coerce 2: ((102 type) <- arg)
-arg: nil 1 ((4 tagged-value-address deref) (boolean literal))
+arg: nil 1 (#(tagged record (boolean t . nil)) boolean)
 setm: (102 type) <= boolean
 sz: (102 type)
 setm: size of (102 type) is 1
@@ -413,27 +416,12 @@ m: (6 boolean) 1
 sz: (6 boolean)
 run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (1006 boolean) (1007 t) (101 1006) (102 boolean) (103 boolean) (104 t) (105 t) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 t) (6 t))
 run: test1 9: ((7 tagged-value-address) <- arg)
-arg: nil 1 ((1 tagged-value-address) (2 tagged-value-address))
-sz: (2 tagged-value-address)
-m: (2 tagged-value-address) 1
-sz: (2 tagged-value-address)
+arg: nil 1 (1000 1002)
 setm: (7 tagged-value-address) <= 1002
 sz: (7 tagged-value-address)
 setm: size of (7 tagged-value-address) is 1
 run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (1006 boolean) (1007 t) (101 1006) (102 boolean) (103 boolean) (104 t) (105 t) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 t) (6 t) (7 1002))
 run: test1 10: ((8 boolean) (9 boolean) <- maybe-coerce (7 tagged-value-address deref) (boolean literal))
-run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (1006 boolean) (1007 t) (101 1006) (102 boolean) (103 boolean) (104 t) (105 t) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 t) (6 t) (7 1002))
-run: maybe-coerce 0: ((101 tagged-value-address) <- new (tagged-value literal))
-sizeof: tagged-value
-sizeof: type
-sizeof: location
-run: writing to oarg 1008 => (101 tagged-value-address)
-setm: (101 tagged-value-address) <= 1008
-sz: (101 tagged-value-address)
-setm: size of (101 tagged-value-address) is 1
-run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (1006 boolean) (1007 t) (101 1008) (102 boolean) (103 boolean) (104 t) (105 t) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 t) (6 t) (7 1002))
-run: maybe-coerce 1: ((101 tagged-value-address deref) <- arg)
-arg: nil 0 ((7 tagged-value-address deref) (boolean literal))
 sz: (7 tagged-value-address deref)
 sz: (7 location)
 m: (7 location) 1
@@ -450,6 +438,18 @@ sz: (7 location)
 m: (7 location) 1
 sz: (7 location)
 sz: (1002 tagged-value)
+run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (1006 boolean) (1007 t) (101 1006) (102 boolean) (103 boolean) (104 t) (105 t) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 t) (6 t) (7 1002))
+run: maybe-coerce 0: ((101 tagged-value-address) <- new (tagged-value literal))
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+run: writing to oarg 1008 => (101 tagged-value-address)
+setm: (101 tagged-value-address) <= 1008
+sz: (101 tagged-value-address)
+setm: size of (101 tagged-value-address) is 1
+run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (1006 boolean) (1007 t) (101 1008) (102 boolean) (103 boolean) (104 t) (105 t) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 t) (6 t) (7 1002))
+run: maybe-coerce 1: ((101 tagged-value-address deref) <- arg)
+arg: nil 0 (#(tagged record (boolean nil . nil)) boolean)
 setm: (101 tagged-value-address deref) <= #(tagged record (boolean nil . nil))
 sz: (101 tagged-value-address deref)
 sz: (101 location)
@@ -459,7 +459,7 @@ sz: (1008 tagged-value)
 setm: size of (101 tagged-value-address deref) is 2
 run: -- ((1 1000) (1000 boolean) (1001 t) (1002 boolean) (1004 boolean) (1005 t) (1006 boolean) (1007 t) (1008 boolean) (101 1008) (102 boolean) (103 boolean) (104 t) (105 t) (2 1002) (201 boolean) (202 1) (203 t) (204 1002) (205 1002) (206 1003) (4 1000) (5 t) (6 t) (7 1002))
 run: maybe-coerce 2: ((102 type) <- arg)
-arg: nil 1 ((7 tagged-value-address deref) (boolean literal))
+arg: nil 1 (#(tagged record (boolean nil . nil)) boolean)
 setm: (102 type) <= boolean
 sz: (102 type)
 setm: size of (102 type) is 1
