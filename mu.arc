@@ -265,6 +265,9 @@
 (mac caller-args (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'args))
 
+(mac results (routine)  ; assignable
+  `((((rep ,routine) 'call-stack) 0) 'results))
+
 (on-init
   (= running-routines* (queue))
   (= completed-routines* (queue))
@@ -487,19 +490,25 @@
                       (list caller-args.routine*.idx t)
                       (list nil nil)))
                 reply
-                  (do (pop-stack routine*)
-                      (if empty.routine* (return ninstrs))
-                      (let (caller-oargs _ _)  (parse-instr (body.routine* pc.routine*))
-                        (trace "reply" arg " " caller-oargs)
-                        (each (dest src)  (zip caller-oargs arg)
-                          (trace "reply" src " => " dest)
-                          (setm dest  (m src))))
-                      (++ pc.routine*)
-                      (while (>= pc.routine* (len body.routine*))
+                  (do
+                      (= results.routine*
+                         (accum yield
+                           (each a arg
+                             (yield (m a)))))
+                      (let results results.routine*
                         (pop-stack routine*)
-                        (when empty.routine* (return ninstrs))
-                        (++ pc.routine*))
-                      (continue))
+                        (if empty.routine* (return ninstrs))
+                        (let (caller-oargs _ _)  (parse-instr (body.routine* pc.routine*))
+                          (trace "reply" arg " " caller-oargs)
+                          (each (dest val)  (zip caller-oargs results)
+                            (trace "reply" val " => " dest)
+                            (setm dest val)))
+                        (++ pc.routine*)
+                        (while (>= pc.routine* (len body.routine*))
+                          (pop-stack routine*)
+                          (when empty.routine* (return ninstrs))
+                          (++ pc.routine*))
+                        (continue)))
                 ; else try to call as a user-defined function
                   (do (if function*.op
                         (do (push-stack routine* op)
