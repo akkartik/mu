@@ -1279,6 +1279,48 @@
             ((nil integer) <- add (1 integer) (2 integer))))
   (prn "F - convert-names never renames nil"))
 
+; A rudimentary memory allocator. Eventually we want to write this in mu.
+
+(reset)
+(new-trace "new-primitive")
+(add-fns
+  '((main
+      ((1 integer-address) <- new (integer literal)))))
+(let before Memory-in-use-until
+  (run 'main)
+;?   (prn memory*)
+  (if (~iso memory*.1 before)
+    (prn "F - 'new' returns current high-water mark"))
+  (if (~iso Memory-in-use-until (+ before 1))
+    (prn "F - 'new' on primitive types increments high-water mark by their size")))
+
+(reset)
+(new-trace "new-array-literal")
+(add-fns
+  '((main
+      ((1 type-array-address) <- new (type-array literal) (5 literal)))))
+(let before Memory-in-use-until
+  (run 'main)
+;?   (prn memory*)
+  (if (~iso memory*.1 before)
+    (prn "F - 'new' on array with literal size returns current high-water mark"))
+  (if (~iso Memory-in-use-until (+ before 6))
+    (prn "F - 'new' on primitive arrays increments high-water mark by their size")))
+
+(reset)
+(new-trace "new-array-direct")
+(add-fns
+  '((main
+      ((1 integer) <- copy (5 literal))
+      ((2 type-array-address) <- new (type-array literal) (1 integer)))))
+(let before Memory-in-use-until
+  (run 'main)
+;?   (prn memory*)
+  (if (~iso memory*.2 before)
+    (prn "F - 'new' on array with variable size returns current high-water mark"))
+  (if (~iso Memory-in-use-until (+ before 6))
+    (prn "F - 'new' on primitive arrays increments high-water mark by their (variable) size")))
+
 (reset)
 (new-trace "set-default-scope")
 (add-fns
@@ -1493,48 +1535,6 @@
 ;? (prn memory*)
 (if (~and (is memory*.3 t) (is memory*.12 37))
   (prn "F - different calls can exercise different clauses of the same function"))
-
-; A rudimentary memory allocator. Eventually we want to write this in mu.
-
-(reset)
-(new-trace "new-primitive")
-(add-fns
-  '((main
-      ((1 integer-address) <- new (integer literal)))))
-(let before Memory-in-use-until
-  (run 'main)
-;?   (prn memory*)
-  (if (~iso memory*.1 before)
-    (prn "F - 'new' returns current high-water mark"))
-  (if (~iso Memory-in-use-until (+ before 1))
-    (prn "F - 'new' on primitive types increments high-water mark by their size")))
-
-(reset)
-(new-trace "new-array-literal")
-(add-fns
-  '((main
-      ((1 type-array-address) <- new (type-array literal) (5 literal)))))
-(let before Memory-in-use-until
-  (run 'main)
-;?   (prn memory*)
-  (if (~iso memory*.1 before)
-    (prn "F - 'new' on array with literal size returns current high-water mark"))
-  (if (~iso Memory-in-use-until (+ before 6))
-    (prn "F - 'new' on primitive arrays increments high-water mark by their size")))
-
-(reset)
-(new-trace "new-array-direct")
-(add-fns
-  '((main
-      ((1 integer) <- copy (5 literal))
-      ((2 type-array-address) <- new (type-array literal) (1 integer)))))
-(let before Memory-in-use-until
-  (run 'main)
-;?   (prn memory*)
-  (if (~iso memory*.2 before)
-    (prn "F - 'new' on array with variable size returns current high-water mark"))
-  (if (~iso Memory-in-use-until (+ before 6))
-    (prn "F - 'new' on primitive arrays increments high-water mark by their (variable) size")))
 
 ; A rudimentary process scheduler. You can 'run' multiple functions at once,
 ; and they share the virtual processor.
