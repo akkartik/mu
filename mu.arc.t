@@ -538,6 +538,24 @@
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 2))
   (prn "F - 'len' accesses length of array"))
 
+(reset)
+(new-trace "len-array-indirect")
+(add-fns
+  '((main
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 boolean) <- copy (nil literal))
+      ((4 integer) <- copy (24 literal))
+      ((5 boolean) <- copy (t literal))
+      ((6 integer-address) <- copy (1 literal))
+      ((7 integer) <- len (6 integer-boolean-pair-array-address deref)))))
+;? (set dump-trace*)
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 2))
+  (prn "F - 'len' accesses length of array address"))
+
 ; 'sizeof' is a helper to determine the amount of memory required by a type.
 
 (reset)
