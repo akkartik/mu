@@ -46,6 +46,7 @@
               integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
               integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
               integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
+              integer-boolean-pair-array-address (obj size 1  address t  elem 'integer-boolean-pair-array)
               integer-integer-pair (obj size 2  record t  elems '(integer integer))
               integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
               ; tagged-values are the foundation of dynamic types
@@ -132,7 +133,8 @@
   operand.1)  ; assume type is always first bit of metadata, and it's always present
 
 (def typeinfo (operand)
-  (types* ty.operand))
+  (or (types* ty.operand)
+      (err "unknown type @operand")))
 
 (def sz (operand)
   (trace "sz" operand)
@@ -201,12 +203,10 @@
               (= (memory* dest) src)))))))
 
 (def array-len (operand)
-;?   (prn operand)
-;?   (prn (memory* 1000))
   (if typeinfo.operand!array
         (m `(,v.operand integer))
       (and typeinfo.operand!address (pos 'deref metadata.operand))
-        (array-len (m operand) typeinfo.operand!elem)
+        (m `(,v.operand integer-address ,@(cut operand 2)))
       :else
         (err "can't take len of non-array @operand")))
 
@@ -437,7 +437,7 @@
                   (sizeof (m arg.0))
                 len
                   (let base arg.0
-                    (if typeinfo.base!array
+                    (if (or typeinfo.base!array typeinfo.base!address)
                       array-len.base
                       -1))
 
