@@ -272,7 +272,7 @@
 (if (~is memory*.1 t)
   (prn "F - le is the <= inequality operator - 2"))
 
-; Control flow operations: jump, jump-if
+; Control flow operations: jump, jump-if, jump-unless
 ; These introduce a new type -- 'offset' -- for literals that refer to memory
 ; locations relative to the current location.
 
