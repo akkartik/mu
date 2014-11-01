@@ -209,6 +209,23 @@
       :else
         (err "can't take len of non-array @operand")))
 
+; (operand field-offset) -> (base-addr field-type)
+; operand can be a deref address
+; operand can be scope-based
+; base-addr returned is always global
+(def record-info (operand field-offset)
+  (assert (is 'offset (ty field-offset)) "record index @field-offset must have type 'offset'")
+  (with (base  addr.operand
+         basetype  typeinfo.operand
+         idx  (v field-offset))
+    (when (pos 'deref metadata.operand)
+      (assert basetype!address "base @operand requests deref, but its type is not an address")
+      (= basetype (types* basetype!elem)))
+    (assert basetype!record "get on non-record @operand")
+    (assert (< -1 idx (len basetype!elems)) "@idx is out of bounds of @operand")
+    (list (+ base (apply + (map sz (firstn idx basetype!elems))))
+          basetype!elems.idx)))
+
 (def array-ref-addr (operand idx)
   (assert typeinfo.operand!array "aref-addr: not an array @operand")
   (unless (< -1 idx (array-len operand))
@@ -384,34 +401,11 @@
                 copy
                   (m arg.0)
                 get
-                  (with (base (addr arg.0)  ; integer (non-symbol) memory location including metadata
-                         basetype  (typeinfo arg.0)
-                         idx (v arg.1))  ; literal integer
-                    (assert (is 'offset (ty arg.1)) "second arg to 'get' must have type 'offset' @arg.1")
-                    (when (pos 'deref (metadata arg.0))
-                      (assert basetype!address "get: base has deref but isn't an address @arg.0 @basetype")
-                      (= basetype (types* basetype!elem)))
-                    (assert basetype!record "get on invalid type @base")
-                    (assert (< -1 idx (len basetype!elems)) "get: out-of-bounds access @idx vs @(len basetype!elems)")
-                    (m `(,(+ base
-                             (apply + (map sz
-                                           (firstn idx basetype!elems))))
-                         ,basetype!elems.idx
-                         global)))
+                  (let (addr type)  (record-info arg.0 arg.1)
+                    (m `(,addr ,type global)))
                 get-address
-                  (with (base (addr arg.0)  ; integer (non-symbol) memory location including metadata
-                         basetype  (typeinfo arg.0)
-                         idx (v arg.1))  ; literal integer
-                    (assert (is 'offset (ty arg.1)) "second arg to 'get-addr' must have type 'offset' @arg.1")
-                    (when (pos 'deref (metadata arg.0))
-                      (assert basetype!address "get-addr: base has deref but isn't an address @arg.0 @basetype")
-                      (assert basetype!address)
-                      (= basetype (types* basetype!elem)))
-                    (assert basetype!record "get-addr on invalid type @base")
-                    (assert (< -1 idx (len basetype!elems)) "get-addr: out-of-bounds access @idx vs @(len basetype!elems)")
-                    (+ base
-                       (apply + (map sz
-                                     (firstn idx basetype!elems)))))
+                  (let (addr _)  (record-info arg.0 arg.1)
+                    addr)
                 index
                   (with (base arg.0  ; integer (non-symbol) memory location including metadata
                          idx (m arg.1))
