@@ -1113,9 +1113,9 @@
               ((2 integer) <- copy (2 literal))
               ((3 integer) <- add (2 integer) (2 integer))
               { begin  ; 'begin' is just a hack because racket turns curlies into parens
-              ((4 boolean) <- neq (1 integer) (3 integer))
-              (break-if (4 boolean))
-              ((5 integer) <- copy (34 literal))
+                ((4 boolean) <- neq (1 integer) (3 integer))
+                (break-if (4 boolean))
+                ((5 integer) <- copy (34 literal))
               }
               (reply)))
           '(((1 integer) <- copy (4 literal))
@@ -1125,7 +1125,7 @@
             (jump-if (4 boolean) (1 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
-  (prn "F - convert-braces replaces break-if with a jump-if to after the next close curly"))
+  (prn "F - convert-braces replaces break-if with a jump-if to after the next close-curly"))
 
 (reset)
 (new-trace "convert-braces-empty-block")
@@ -1134,7 +1134,7 @@
               ((2 integer) <- copy (2 literal))
               ((3 integer) <- add (2 integer) (2 integer))
               { begin
-              (break)
+                (break)
               }
               (reply)))
           '(((1 integer) <- copy (4 literal))
