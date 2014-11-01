@@ -207,10 +207,10 @@
 (new-trace "idiv-literal")
 (add-fns
   '((main
-      ((1 integer) (2 integer) <- idiv (8 literal) (3 literal)))))
+      ((1 integer) (2 integer) <- idiv (23 literal) (6 literal)))))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 2))
+(if (~iso memory* (obj 1 3  2 5))
   (prn "F - 'idiv' performs integer division, returning quotient and remainder"))
 
 ; Basic boolean operations: and, or, not
