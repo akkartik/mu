@@ -1257,6 +1257,143 @@
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
   (prn "F - continue might never trigger"))
 
+(reset)
+(new-trace "convert-names-local")
+(if (~iso (convert-names
+            '(((x integer) <- copy (4 literal))
+              ((y integer) <- copy (2 literal))
+              ((z integer) <- add (x integer) (y integer))))
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
+            ((3 integer) <- add (1 integer) (2 integer))))
+  (prn "F - convert-names renames symbolic names to integer offsets"))
+
+(reset)
+(new-trace "convert-names-nil")
+(if (~iso (convert-names
+            '(((x integer) <- copy (4 literal))
+              ((y integer) <- copy (2 literal))
+              ((nil integer) <- add (x integer) (y integer))))
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
+            ((nil integer) <- add (1 integer) (2 integer))))
+  (prn "F - convert-names never renames nil"))
+
+(reset)
+(new-trace "set-default-scope")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope literal) (2 literal))
+      ((1 integer) <- copy (23 literal)))))
+(let before Memory-in-use-until
+;?   (set dump-trace*)
+  (run 'main)
+;?   (prn memory*)
+  (if (~and (~is 23 memory*.1)
+            (is 23 (memory* (+ before 1))))
+    (prn "F - default-scope implicitly modifies variable locations")))
+
+(reset)
+(new-trace "set-default-scope-skips-offset")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope literal) (2 literal))
+      ((1 integer) <- copy (23 offset)))))
+(let before Memory-in-use-until
+;?   (set dump-trace*)
+  (run 'main)
+;?   (prn memory*)
+  (if (~and (~is 23 memory*.1)
+            (is 23 (memory* (+ before 1))))
+    (prn "F - default-scope skips 'offset' types just like literals")))
+
+(reset)
+(new-trace "default-scope-bounds-check")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope literal) (2 literal))
+      ((2 integer) <- copy (23 literal)))))
+;? (set dump-trace*)
+(run 'main)
+;? (prn memory*)
+(let last-routine (deq completed-routines*)
+  (if (no rep.last-routine!error)
+    (prn "F - default-scope checks bounds")))
+
+(reset)
+(new-trace "default-scope-and-get-indirect")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope literal) (5 literal))
+      ((1 integer-boolean-pair-address) <- new (integer-boolean-pair literal))
+      ((2 integer-address) <- get-address (1 integer-boolean-pair-address deref) (0 offset))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 integer global) <- get (1 integer-boolean-pair-address deref) (0 offset)))))
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+(run 'main)
+;? (prn memory*)
+;? (prn (as cons completed-routines*))
+(let last-routine (deq completed-routines*)
+  (aif rep.last-routine!error (prn "error - " it)))
+(if (~is 34 memory*.3)
+  (prn "F - indirect 'get' works in the presence of default-scope"))
+;? (quit)
+
+(reset)
+(new-trace "default-scope-and-index-indirect")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope literal) (5 literal))
+      ((1 integer-array-address) <- new (integer-array literal) (4 literal))
+      ((2 integer-address) <- index-address (1 integer-array-address deref) (2 offset))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 integer global) <- index (1 integer-array-address deref) (2 offset)))))
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+(run 'main)
+;? (prn memory*)
+;? (prn (as cons completed-routines*))
+(let last-routine (deq completed-routines*)
+  (aif rep.last-routine!error (prn "error - " it)))
+(if (~is 34 memory*.3)
+  (prn "F - indirect 'index' works in the presence of default-scope"))
+;? (quit)
+
+(reset)
+(new-trace "convert-names-default-scope")
+(if (~iso (convert-names
+            '(((x integer) <- copy (4 literal))
+              ((y integer) <- copy (2 literal))
+              ((default-scope integer) <- add (x integer) (y integer))))
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
+            ((default-scope integer) <- add (1 integer) (2 integer))))
+  (prn "F - convert-names never renames default-scope"))
+
+(reset)
+(new-trace "suppress-default-scope")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope literal) (2 literal))
+      ((1 integer global) <- copy (23 literal)))))
+(let before Memory-in-use-until
+;?   (set dump-trace*)
+  (run 'main)
+;?   (prn memory*)
+  (if (~and (is 23 memory*.1)
+            (~is 23 (memory* (+ before 1))))
+    (prn "F - default-scope skipped for locations with metadata 'global'")))
+
+(reset)
+(new-trace "convert-names-global")
+(if (~iso (convert-names
+            '(((x integer) <- copy (4 literal))
+              ((y integer global) <- copy (2 literal))
+              ((default-scope integer) <- add (x integer) (y integer global))))
+          '(((1 integer) <- copy (4 literal))
+            ((y integer global) <- copy (2 literal))
+            ((default-scope integer) <- add (1 integer) (y integer global))))
+  (prn "F - convert-names never renames global operands"))
+
 ; using tagged-values you can define generic functions that run different code
 ; based on the types of their args.
 
@@ -1452,30 +1589,6 @@
   (if (no rep.last-routine!error)
     (prn "F - 'index' throws an error if out of bounds")))
 
-; ---
-
-(reset)
-(new-trace "convert-names-local")
-(if (~iso (convert-names
-            '(((x integer) <- copy (4 literal))
-              ((y integer) <- copy (2 literal))
-              ((z integer) <- add (x integer) (y integer))))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((3 integer) <- add (1 integer) (2 integer))))
-  (prn "F - convert-names renames symbolic names to integer offsets"))
-
-(reset)
-(new-trace "convert-names-nil")
-(if (~iso (convert-names
-            '(((x integer) <- copy (4 literal))
-              ((y integer) <- copy (2 literal))
-              ((nil integer) <- add (x integer) (y integer))))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((nil integer) <- add (1 integer) (2 integer))))
-  (prn "F - convert-names never renames nil"))
-
 (reset)
 (new-trace "convert-quotes-defer")
 (if (~iso (convert-quotes
@@ -1488,120 +1601,5 @@
             ((2 integer) <- copy (5 literal))
             ((3 integer) <- copy (6 literal))))
   (prn "F - convert-quotes can handle 'defer'"))
-
-(reset)
-(new-trace "set-default-scope")
-(add-fns
-  '((main
-      ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((1 integer) <- copy (23 literal)))))
-(let before Memory-in-use-until
-;?   (set dump-trace*)
-  (run 'main)
-;?   (prn memory*)
-  (if (~and (~is 23 memory*.1)
-            (is 23 (memory* (+ before 1))))
-    (prn "F - default-scope implicitly modifies variable locations")))
-
-(reset)
-(new-trace "set-default-scope-skips-offset")
-(add-fns
-  '((main
-      ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((1 integer) <- copy (23 offset)))))
-(let before Memory-in-use-until
-;?   (set dump-trace*)
-  (run 'main)
-;?   (prn memory*)
-  (if (~and (~is 23 memory*.1)
-            (is 23 (memory* (+ before 1))))
-    (prn "F - default-scope skips 'offset' types just like literals")))
-
-(reset)
-(new-trace "default-scope-bounds-check")
-(add-fns
-  '((main
-      ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((2 integer) <- copy (23 literal)))))
-;? (set dump-trace*)
-(run 'main)
-;? (prn memory*)
-(let last-routine (deq completed-routines*)
-  (if (no rep.last-routine!error)
-    (prn "F - default-scope checks bounds")))
-
-(reset)
-(new-trace "default-scope-and-get-indirect")
-(add-fns
-  '((main
-      ((default-scope scope-address) <- new (scope literal) (5 literal))
-      ((1 integer-boolean-pair-address) <- new (integer-boolean-pair literal))
-      ((2 integer-address) <- get-address (1 integer-boolean-pair-address deref) (0 offset))
-      ((2 integer-address deref) <- copy (34 literal))
-      ((3 integer global) <- get (1 integer-boolean-pair-address deref) (0 offset)))))
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
-(run 'main)
-;? (prn memory*)
-;? (prn (as cons completed-routines*))
-(let last-routine (deq completed-routines*)
-  (aif rep.last-routine!error (prn "error - " it)))
-(if (~is 34 memory*.3)
-  (prn "F - indirect 'get' works in the presence of default-scope"))
-;? (quit)
-
-(reset)
-(new-trace "default-scope-and-index-indirect")
-(add-fns
-  '((main
-      ((default-scope scope-address) <- new (scope literal) (5 literal))
-      ((1 integer-array-address) <- new (integer-array literal) (4 literal))
-      ((2 integer-address) <- index-address (1 integer-array-address deref) (2 offset))
-      ((2 integer-address deref) <- copy (34 literal))
-      ((3 integer global) <- index (1 integer-array-address deref) (2 offset)))))
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
-(run 'main)
-;? (prn memory*)
-;? (prn (as cons completed-routines*))
-(let last-routine (deq completed-routines*)
-  (aif rep.last-routine!error (prn "error - " it)))
-(if (~is 34 memory*.3)
-  (prn "F - indirect 'index' works in the presence of default-scope"))
-;? (quit)
-
-(reset)
-(new-trace "convert-names-default-scope")
-(if (~iso (convert-names
-            '(((x integer) <- copy (4 literal))
-              ((y integer) <- copy (2 literal))
-              ((default-scope integer) <- add (x integer) (y integer))))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((default-scope integer) <- add (1 integer) (2 integer))))
-  (prn "F - convert-names never renames default-scope"))
-
-(reset)
-(new-trace "suppress-default-scope")
-(add-fns
-  '((main
-      ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((1 integer global) <- copy (23 literal)))))
-(let before Memory-in-use-until
-;?   (set dump-trace*)
-  (run 'main)
-;?   (prn memory*)
-  (if (~and (is 23 memory*.1)
-            (~is 23 (memory* (+ before 1))))
-    (prn "F - default-scope skipped for locations with metadata 'global'")))
-
-(reset)
-(new-trace "convert-names-global")
-(if (~iso (convert-names
-            '(((x integer) <- copy (4 literal))
-              ((y integer global) <- copy (2 literal))
-              ((default-scope integer) <- add (x integer) (y integer global))))
-          '(((1 integer) <- copy (4 literal))
-            ((y integer global) <- copy (2 literal))
-            ((default-scope integer) <- add (1 integer) (y integer global))))
-  (prn "F - convert-names never renames global operands"))
 
 (reset)  ; end file with this to persist the trace for the final test
