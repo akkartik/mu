@@ -138,6 +138,9 @@
 ; aren't provided. Instead of a monolithic compiler I want to build simple,
 ; lightweight tools that can be combined in various ways, say for using
 ; different typecheckers in different subsystems.
+;
+; In our tests we'll define such mu functions using a call to 'add-fns', so
+; look for it. Everything outside 'add-fns' is just test-harness details.
 
 (reset)
 (new-trace "literal")
@@ -1284,6 +1287,9 @@
   (prn "F - convert-names never renames nil"))
 
 ; A rudimentary memory allocator. Eventually we want to write this in mu.
+;
+; No deallocation yet; let's see how much code we can build in mu before we
+; feel the need for it.
 
 (reset)
 (new-trace "new-primitive")
@@ -1328,14 +1334,14 @@
 ; Even though our memory locations can now have names, the names are all
 ; globals, accessible from any function. To isolate functions from their
 ; callers we need local variables, and mu provides them using a special
-; variable called 'default-scope'. When you initialize such a variable (likely
+; variable called default-scope. When you initialize such a variable (likely
 ; with a call to our just-defined memory allocator) mu interprets memory
 ; locations as offsets from its value. If default-scope is set to 1000, for
 ; example, reads and writes to memory location 1 will really go to 1001.
 ;
 ; 'default-scope' is itself hard-coded to be function-local; it's nil in a new
 ; function, and it's restored when functions return to their callers. But the
-; actual scope allocation is independent. So you can define closures or do
+; actual scope allocation is independent. So you can define closures, or do
 ; even more funky things like share locals between two coroutines.
 
 (reset)
@@ -1422,6 +1428,7 @@
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer) <- copy (2 literal))
+              ; unsafe in general; don't write random values to 'default-scope'
               ((default-scope integer) <- add (x integer) (y integer))))
           '(((1 integer) <- copy (4 literal))
             ((2 integer) <- copy (2 literal))
@@ -1453,22 +1460,24 @@
             ((default-scope integer) <- add (1 integer) (y integer global))))
   (prn "F - convert-names never renames global operands"))
 
-; using tagged-values you can define generic functions that run different code
-; based on the types of their args.
+; Putting it all together, here's how you define generic functions that run
+; different code based on the types of their args.
 
 (reset)
 (new-trace "dispatch-clause")
 ;? (set dump-trace*)
 (add-fns
   '((test1
-      ((4 tagged-value-address) <- arg)
+      ((default-scope scope-address) <- new (scope literal) (20 literal))
+      ((first-arg-box tagged-value-address) <- arg)
+      ; if given integers, add them
       { begin
-        ((5 integer) (6 boolean) <- maybe-coerce (4 tagged-value-address deref) (integer literal))
-        (break-unless (6 boolean))
-        ((7 tagged-value-address) <- arg)
-        ((8 integer) (9 boolean) <- maybe-coerce (7 tagged-value-address deref) (integer literal))
-        ((9 integer) <- add (5 integer) (8 integer))
-        (reply (9 integer))
+        ((first-arg integer) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (integer literal))
+        (break-unless (match? boolean))
+        ((second-arg-box tagged-value-address) <- arg)
+        ((second-arg integer) <- maybe-coerce (second-arg-box tagged-value-address deref) (integer literal))
+        ((result integer) <- add (first-arg integer) (second-arg integer))
+        (reply (result integer))
       }
       (reply (nil literal)))
     (main
@@ -1488,22 +1497,25 @@
 ;? (set dump-trace*)
 (add-fns
   '((test1
-      ((4 tagged-value-address) <- arg)
+      ((default-scope scope-address) <- new (scope literal) (20 literal))
+      ((first-arg-box tagged-value-address) <- arg)
+      ; if given integers, add them
       { begin
-        ((5 integer) (6 boolean) <- maybe-coerce (4 tagged-value-address deref) (integer literal))
-        (break-unless (6 boolean))
-        ((7 tagged-value-address) <- arg)
-        ((8 integer) (9 boolean) <- maybe-coerce (7 tagged-value-address deref) (integer literal))
-        ((9 integer) <- add (5 integer) (8 integer))
-        (reply (9 integer))
+        ((first-arg integer) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (integer literal))
+        (break-unless (match? boolean))
+        ((second-arg-box tagged-value-address) <- arg)
+        ((second-arg integer) <- maybe-coerce (second-arg-box tagged-value-address deref) (integer literal))
+        ((result integer) <- add (first-arg integer) (second-arg integer))
+        (reply (result integer))
       }
+      ; if given booleans, or them (it's a silly kind of generic function)
       { begin
-        ((5 boolean) (6 boolean) <- maybe-coerce (4 tagged-value-address deref) (boolean literal))
-        (break-unless (6 boolean))
-        ((7 tagged-value-address) <- arg)
-        ((8 boolean) (9 boolean) <- maybe-coerce (7 tagged-value-address deref) (boolean literal))
-        ((9 boolean) <- or (5 boolean) (8 boolean))
-        (reply (9 boolean))
+        ((first-arg boolean) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (boolean literal))
+        (break-unless (match? boolean))
+        ((second-arg-box tagged-value-address) <- arg)
+        ((second-arg boolean) <- maybe-coerce (second-arg-box tagged-value-address deref) (boolean literal))
+        ((result boolean) <- or (first-arg boolean) (second-arg boolean))
+        (reply (result integer))
       }
       (reply (nil literal)))
     (main
@@ -1523,22 +1535,25 @@
 (new-trace "dispatch-multiple-calls")
 (add-fns
   '((test1
-      ((4 tagged-value-address) <- arg)
+      ((default-scope scope-address) <- new (scope literal) (20 literal))
+      ((first-arg-box tagged-value-address) <- arg)
+      ; if given integers, add them
       { begin
-        ((5 integer) (6 boolean) <- maybe-coerce (4 tagged-value-address deref) (integer literal))
-        (break-unless (6 boolean))
-        ((7 tagged-value-address) <- arg)
-        ((8 integer) (9 boolean) <- maybe-coerce (7 tagged-value-address deref) (integer literal))
-        ((9 integer) <- add (5 integer) (8 integer))
-        (reply (9 integer))
+        ((first-arg integer) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (integer literal))
+        (break-unless (match? boolean))
+        ((second-arg-box tagged-value-address) <- arg)
+        ((second-arg integer) <- maybe-coerce (second-arg-box tagged-value-address deref) (integer literal))
+        ((result integer) <- add (first-arg integer) (second-arg integer))
+        (reply (result integer))
       }
+      ; if given booleans, or them (it's a silly kind of generic function)
       { begin
-        ((5 boolean) (6 boolean) <- maybe-coerce (4 tagged-value-address deref) (boolean literal))
-        (break-unless (6 boolean))
-        ((7 tagged-value-address) <- arg)
-        ((8 boolean) (9 boolean) <- maybe-coerce (7 tagged-value-address deref) (boolean literal))
-        ((9 boolean) <- or (5 boolean) (8 boolean))
-        (reply (9 boolean))
+        ((first-arg boolean) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (boolean literal))
+        (break-unless (match? boolean))
+        ((second-arg-box tagged-value-address) <- arg)
+        ((second-arg boolean) <- maybe-coerce (second-arg-box tagged-value-address deref) (boolean literal))
+        ((result boolean) <- or (first-arg boolean) (second-arg boolean))
+        (reply (result integer))
       }
       (reply (nil literal)))
     (main
@@ -1555,8 +1570,10 @@
 
 ; A rudimentary process scheduler. You can 'run' multiple functions at once,
 ; and they share the virtual processor.
+;
 ; There's also a 'fork' primitive to let functions create new threads of
 ; execution (we call them routines).
+;
 ; Eventually we want to allow callers to influence how much of their CPU they
 ; give to their 'children', or to rescind a child's running privileges.
 
@@ -1605,6 +1622,18 @@
 (let last-routine (deq completed-routines*)
   (if (no rep.last-routine!error)
     (prn "F - 'index' throws an error if out of bounds")))
+
+; Lightweight tools can also operate on quoted lists of statements surrounded
+; by square brackets. In the example below, we mimic Go's 'defer' keyword
+; using 'convert-quotes'. It lets us write code anywhere in a function, but
+; have it run just before the function exits. Great for keeping code to
+; reclaim memory or other resources close to the code to allocate it. (C++
+; programmers know this as RAII.) We'll use 'defer' when we build a memory
+; deallocation routine like C's 'free'.
+;
+; More powerful reorderings are also possible like in Literate Programming or
+; Aspect-Oriented Programming; one advantage of prohibiting arbitrarily nested
+; code is that we can naturally name 'join points' wherever we want.
 
 (reset)
 (new-trace "convert-quotes-defer")
