@@ -475,7 +475,7 @@
   (prn "F - 'get-address' accesses fields of record address"))
 
 (reset)
-(new-trace "index-array-literal")
+(new-trace "index-literal")
 (add-fns
   '((main
       ((1 integer) <- copy (2 literal))
@@ -490,7 +490,7 @@
   (prn "F - 'index' accesses indices of arrays"))
 
 (reset)
-(new-trace "index-array-direct")
+(new-trace "index-direct")
 (add-fns
   '((main
       ((1 integer) <- copy (2 literal))
