@@ -415,6 +415,7 @@
       ((2 boolean) <- copy (nil literal))
       ((3 boolean) <- get (1 integer-boolean-pair) (1 offset))
       ((4 integer) <- get (1 integer-boolean-pair) (0 offset)))))
+;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 nil  4 34))
@@ -429,6 +430,7 @@
       ((3 integer-boolean-pair-address) <- copy (1 literal))
       ((4 boolean) <- get (3 integer-boolean-pair-address deref) (1 offset))
       ((5 integer) <- get (3 integer-boolean-pair-address deref) (0 offset)))))
+;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 1  4 nil  5 34))
@@ -613,7 +615,7 @@
 
 (reset)
 (new-trace "tagged-value")
-;? (set dump-trace*)
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (add-fns
   '((main
       ((1 type) <- copy (integer-address literal))
@@ -621,8 +623,10 @@
       ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal)))))
 (run 'main)
 ;? (prn memory*)
+;? (prn completed-routines*)
 (if (or (~is memory*.3 34) (~is memory*.4 t))
   (prn "F - 'maybe-coerce' copies value only if type tag matches"))
+;? (quit)
 
 (reset)
 (new-trace "tagged-value-2")
@@ -650,16 +654,17 @@
 
 (reset)
 (new-trace "new-tagged-value")
-;? (set dump-trace*)
 (add-fns
   '((main
       ((1 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((2 tagged-value-address) <- new-tagged-value (integer-address literal) (1 integer-address))
       ((3 integer-address) (4 boolean) <- maybe-coerce (2 tagged-value-address deref) (integer-address literal)))))
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
 ;? (prn memory*)
 (if (or (~is memory*.3 34) (~is memory*.4 t))
   (prn "F - 'new-tagged-value' is the converse of 'maybe-coerce'"))
+;? (quit)
 
 ; Now that we can record types for values we can construct a dynamically typed
 ; list.
@@ -720,7 +725,7 @@
 (add-fns
   '((main
       ((1 integer) <- new-list (3 literal) (4 literal) (5 literal)))))
-;? (set dump-trace*)
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
 ;? (prn memory*)
 (let first memory*.1
