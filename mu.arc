@@ -172,8 +172,8 @@
       (return v.loc))
     (when (is v.loc 'default-scope)
       (return rep.routine*!call-stack.0!default-scope))
-    (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?)")
-    (trace "m" loc " " sz.loc)
+    (trace "m" loc)
+    (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?) @loc")
     (if (is 1 sz.loc)
           (memory* addr.loc)
         :else
