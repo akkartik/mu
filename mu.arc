@@ -220,10 +220,10 @@
          basetype  typeinfo.operand
          idx  (v field-offset))
     (when (pos 'deref metadata.operand)
-      (assert basetype!address "base @operand requests deref, but its type is not an address")
+      (assert basetype!address "@operand requests deref, but it's not an address of a record")
       (= basetype (types* basetype!elem)))
     (assert basetype!record "get on non-record @operand")
-    (assert (< -1 idx (len basetype!elems)) "@idx is out of bounds of @operand")
+    (assert (< -1 idx (len basetype!elems)) "@idx is out of bounds of record @operand")
     (list (+ base (apply + (map sz (firstn idx basetype!elems))))
           basetype!elems.idx)))
 
