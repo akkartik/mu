@@ -1,17 +1,18 @@
 ; a screen is an array of pointers to lines, in turn arrays of characters
 
 (new-screen
-  ((601 integer) <- arg)
-  ((602 integer) <- arg)
-  ((603 screen-address) <- new (screen literal) (601 integer))
-  ((604 integer) <- copy (0 literal))
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((nrows integer) <- arg)
+  ((ncols integer) <- arg)
+  ((result screen-address) <- new (screen literal) (nrows integer))
+  ((rowidx integer) <- copy (0 literal))
   { begin
-    ((606 line-address-address) <- index-address (603 screen-address deref) (604 integer))
-    ((606 line-address-address deref) <- new (line literal) (602 integer))
-    ((605 line-address) <- copy (606 line-address-address deref))
-    ((604 integer) <- add (604 integer) (1 literal))
-    ((607 boolean) <- neq (604 integer) (601 integer))
-    (continue-if (607 boolean))
+    ((curr-line-address-address line-address-address) <- index-address (result screen-address deref) (rowidx integer))
+    ((curr-line-address-address line-address-address deref) <- new (line literal) (ncols integer))
+    ((curr-line-address line-address) <- copy (curr-line-address-address line-address-address deref))
+    ((rowidx integer) <- add (rowidx integer) (1 literal))
+    ((x boolean) <- neq (rowidx integer) (nrows integer))
+    (continue-if (x boolean))
   }
-  (reply (603 screen-address))
+  (reply (result screen-address))
 )
