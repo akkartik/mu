@@ -1286,6 +1286,18 @@
             ((nil integer) <- add (1 integer) (2 integer))))
   (prn "F - convert-names never renames nil"))
 
+; kludgy support for 'fork'
+(reset)
+(new-trace "convert-names-functions")
+(if (~iso (convert-names
+            '(((x integer) <- copy (4 literal))
+              ((y integer) <- copy (2 literal))
+              ((z fn) <- add (x integer) (y integer))))
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (2 literal))
+            ((z fn) <- add (1 integer) (2 integer))))
+  (prn "F - convert-names never renames nil"))
+
 ; A rudimentary memory allocator. Eventually we want to write this in mu.
 ;
 ; No deallocation yet; let's see how much code we can build in mu before we
