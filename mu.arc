@@ -203,14 +203,6 @@
                                   (rep val))
               (= (memory* dest) src)))))))
 
-(def array-len (operand)
-  (if typeinfo.operand!array
-        (m `(,v.operand integer))
-      (and typeinfo.operand!address (pos 'deref metadata.operand))
-        (m `(,v.operand integer-address ,@(cut operand 2)))
-      :else
-        (err "can't take len of non-array @operand")))
-
 ; (operand field-offset) -> (base-addr field-type)
 ; operand can be a deref address
 ; operand can be scope-based
@@ -232,22 +224,24 @@
   (with (base  addr.operand
          basetype  typeinfo.operand
          idx  (m offset))
-;?     (prn operand ": " base " " basetype)
     (when (pos 'deref metadata.operand)
       (assert basetype!address "@operand requests deref, but it's not an address of an array")
-      (= basetype (types* basetype!elem))
-;?       (prn "=> " basetype)
-      )
-;?     (prn "AAA")
+      (= basetype (types* basetype!elem)))
     (assert basetype!array "index on non-array @operand")
-;?     (prn "AAA " idx)
     (unless (< -1 idx array-len.operand)
       (die "@idx is out of bounds of array @operand"))
-;?     (prn "AAA")
     (list (+ base
              1  ; for array size
              (* idx (sz basetype!elem)))
           basetype!elem)))
+
+(def array-len (operand)
+  (if typeinfo.operand!array
+        (m `(,v.operand integer))
+      (and typeinfo.operand!address (pos 'deref metadata.operand))
+        (m `(,v.operand integer-address ,@(cut operand 2)))
+      :else
+        (err "can't take len of non-array @operand")))
 
 ; data structure: routine
 ; runtime state for a serial thread of execution
