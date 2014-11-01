@@ -803,7 +803,7 @@
     (prn "F - 'new-list' can construct a list of integers")))
 
 ; Just like the table of types is centralized, functions are conceptualized as
-; a centralized table of operations just like the 'primitives' we've seen so
+; a centralized table of operations just like the "primitives" we've seen so
 ; far. If you create a function you can call it like any other op.
 
 (reset)
@@ -992,7 +992,7 @@
 ;? (quit)
 
 (reset)
-(new-trace "new-fn-arg-missing-3")
+(new-trace "new-fn-arg-missing-4")
 (add-fns
   '((test1
       ; if given two args, adds them; if given one arg, increments
@@ -1016,8 +1016,8 @@
 (new-trace "new-fn-arg-by-value")
 (add-fns
   '((test1
-      ((1 integer) <- copy (0 literal))
-      ((2 integer) <- arg))
+      ((1 integer) <- copy (0 literal))  ; overwrite caller memory
+      ((2 integer) <- arg))  ; arg not clobbered
     (main
       ((1 integer) <- copy (34 literal))
       (test1 (1 integer)))))
