@@ -215,7 +215,7 @@
 
 ; Basic boolean operations: and, or, not
 ; There are easy ways to encode booleans in binary, but we'll skip past those
-; details.
+; details for now.
 
 (reset)
 (new-trace "and-literal")
@@ -646,7 +646,7 @@
   (prn "F - 'arg' can copy records spanning multiple locations"))
 
 (reset)
-(new-trace "compound-arg")
+(new-trace "compound-arg-indirect")
 ;? (set dump-trace*)
 (add-fns
   '((test1
