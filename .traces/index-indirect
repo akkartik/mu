@@ -4,14 +4,16 @@ cvt0: 2 ((3 boolean) <- copy (nil literal)) -- nil
 cvt0: 3 ((4 integer) <- copy (24 literal)) -- nil
 cvt0: 4 ((5 boolean) <- copy (t literal)) -- nil
 cvt0: 5 ((6 integer) <- copy (1 literal)) -- nil
-cvt0: 6 ((7 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (6 integer)) -- nil
+cvt0: 6 ((7 integer-boolean-pair-array-address) <- copy (1 literal)) -- nil
+cvt0: 7 ((8 integer-boolean-pair) <- index (7 integer-boolean-pair-array-address deref) (6 integer)) -- nil
 cvt1: 0 copy ((1 integer))
 cvt1: 1 copy ((2 integer))
 cvt1: 2 copy ((3 boolean))
 cvt1: 3 copy ((4 integer))
 cvt1: 4 copy ((5 boolean))
 cvt1: 5 copy ((6 integer))
-cvt1: 6 index ((7 integer-boolean-pair))
+cvt1: 6 copy ((7 integer-boolean-pair-array-address))
+cvt1: 7 index ((8 integer-boolean-pair))
 schedule: main
 run: -- nil
 run: main 0: ((1 integer) <- copy (2 literal))
@@ -50,15 +52,24 @@ setm: (6 integer) <= 1
 sz: (6 integer)
 setm: size of (6 integer) is 1
 run: -- ((1 2) (2 23) (4 24) (5 t) (6 1))
-run: main 6: ((7 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (6 integer))
+run: main 6: ((7 integer-boolean-pair-array-address) <- copy (1 literal))
+run: writing to oarg 1 => (7 integer-boolean-pair-array-address)
+setm: (7 integer-boolean-pair-array-address) <= 1
+sz: (7 integer-boolean-pair-array-address)
+setm: size of (7 integer-boolean-pair-array-address) is 1
+run: -- ((1 2) (2 23) (4 24) (5 t) (6 1) (7 1))
+run: main 7: ((8 integer-boolean-pair) <- index (7 integer-boolean-pair-array-address deref) (6 integer))
 m: (6 integer)
 sz: (6 integer)
-m: (1 integer)
+m: (7 integer-address deref)
+sz: (7 integer-address deref)
+m: (7 location)
+sz: (7 location)
 sz: (1 integer)
 m: (4 integer-boolean-pair global)
 sz: (4 integer-boolean-pair global)
 sz: (4 integer-boolean-pair global)
-run: writing to oarg #(tagged record (24 t . nil)) => (7 integer-boolean-pair)
-setm: (7 integer-boolean-pair) <= #(tagged record (24 t . nil))
-sz: (7 integer-boolean-pair)
-setm: size of (7 integer-boolean-pair) is 2
+run: writing to oarg #(tagged record (24 t . nil)) => (8 integer-boolean-pair)
+setm: (8 integer-boolean-pair) <= #(tagged record (24 t . nil))
+sz: (8 integer-boolean-pair)
+setm: size of (8 integer-boolean-pair) is 2
