@@ -24,74 +24,79 @@ m: (1 tagged-value) 2
 sz: (1 tagged-value)
 sz: (1 tagged-value)
 run: -- ((1 integer-address) (2 34))
-run: maybe-coerce 0: ((101 tagged-value-address) <- new (tagged-value literal))
+run: maybe-coerce 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1000 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1 integer-address) (1000 30) (2 34))
+run: maybe-coerce 1: ((1 tagged-value-address) <- new (tagged-value literal))
 sizeof: tagged-value
 sizeof: type
 sizeof: location
-run: writing to oarg 1000 => (101 tagged-value-address)
-setm: (101 tagged-value-address) <= 1000
-sz: (101 tagged-value-address)
-setm: size of (101 tagged-value-address) is 1
-run: -- ((1 integer-address) (101 1000) (2 34))
-run: maybe-coerce 1: ((101 tagged-value-address deref) <- arg)
+run: writing to oarg 1031 => (1 tagged-value-address)
+setm: (1 tagged-value-address) <= 1031
+sz: (1 tagged-value-address)
+setm: size of (1 tagged-value-address) is 1
+run: -- ((1 integer-address) (1000 30) (1001 1031) (2 34))
+run: maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
 arg: nil 0 (#(tagged record (integer-address 34 . nil)) integer-address)
-setm: (101 tagged-value-address deref) <= #(tagged record (integer-address 34 . nil))
-sz: (101 tagged-value-address deref)
-sz: (101 location)
-m: (101 location) 1
-sz: (101 location)
-sz: (1000 tagged-value)
-setm: size of (101 tagged-value-address deref) is 2
-run: -- ((1 integer-address) (1000 integer-address) (1001 34) (101 1000) (2 34))
-run: maybe-coerce 2: ((102 type) <- arg)
+setm: (1 tagged-value-address deref) <= #(tagged record (integer-address 34 . nil))
+sz: (1 tagged-value-address deref)
+sz: (1 location)
+m: (1 location) 1
+sz: (1 location)
+sz: (1031 tagged-value)
+setm: size of (1 tagged-value-address deref) is 2
+run: -- ((1 integer-address) (1000 30) (1001 1031) (1031 integer-address) (1032 34) (2 34))
+run: maybe-coerce 3: ((2 type) <- arg)
 arg: nil 1 (#(tagged record (integer-address 34 . nil)) integer-address)
-setm: (102 type) <= integer-address
-sz: (102 type)
-setm: size of (102 type) is 1
-run: -- ((1 integer-address) (1000 integer-address) (1001 34) (101 1000) (102 integer-address) (2 34))
-run: maybe-coerce 3: ((103 type) <- get (101 tagged-value-address deref) (0 offset))
-sz: (1000 type)
-m: (1000 type) 1
-sz: (1000 type)
-run: writing to oarg integer-address => (103 type)
-setm: (103 type) <= integer-address
-sz: (103 type)
-setm: size of (103 type) is 1
-run: -- ((1 integer-address) (1000 integer-address) (1001 34) (101 1000) (102 integer-address) (103 integer-address) (2 34))
-run: maybe-coerce 4: ((104 boolean) <- eq (103 type) (102 type))
-sz: (103 type)
-m: (103 type) 1
-sz: (103 type)
-sz: (102 type)
-m: (102 type) 1
-sz: (102 type)
-run: writing to oarg t => (104 boolean)
-setm: (104 boolean) <= t
-sz: (104 boolean)
-setm: size of (104 boolean) is 1
-run: -- ((1 integer-address) (1000 integer-address) (1001 34) (101 1000) (102 integer-address) (103 integer-address) (104 t) (2 34))
-run: maybe-coerce 5: (jump-if (104 boolean) (1 offset))
-sz: (104 boolean)
-m: (104 boolean) 1
-sz: (104 boolean)
-run: -- ((1 integer-address) (1000 integer-address) (1001 34) (101 1000) (102 integer-address) (103 integer-address) (104 t) (2 34))
-run: maybe-coerce 7: ((105 location) <- get (101 tagged-value-address deref) (1 offset))
-sz: (1001 location)
-m: (1001 location) 1
-sz: (1001 location)
-run: writing to oarg 34 => (105 location)
-setm: (105 location) <= 34
-sz: (105 location)
-setm: size of (105 location) is 1
-run: -- ((1 integer-address) (1000 integer-address) (1001 34) (101 1000) (102 integer-address) (103 integer-address) (104 t) (105 34) (2 34))
-run: maybe-coerce 8: (reply (105 location) (104 boolean))
-sz: (105 location)
-m: (105 location) 1
-sz: (105 location)
-sz: (104 boolean)
-m: (104 boolean) 1
-sz: (104 boolean)
-reply: ((105 location) (104 boolean)) ((3 integer-address) (4 boolean))
+setm: (2 type) <= integer-address
+sz: (2 type)
+setm: size of (2 type) is 1
+run: -- ((1 integer-address) (1000 30) (1001 1031) (1002 integer-address) (1031 integer-address) (1032 34) (2 34))
+run: maybe-coerce 4: ((3 type) <- get (1 tagged-value-address deref) (0 offset))
+sz: (1031 type global)
+m: (1031 type global) 1
+sz: (1031 type global)
+run: writing to oarg integer-address => (3 type)
+setm: (3 type) <= integer-address
+sz: (3 type)
+setm: size of (3 type) is 1
+run: -- ((1 integer-address) (1000 30) (1001 1031) (1002 integer-address) (1003 integer-address) (1031 integer-address) (1032 34) (2 34))
+run: maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
+sz: (3 type)
+m: (3 type) 1
+sz: (3 type)
+sz: (2 type)
+m: (2 type) 1
+sz: (2 type)
+run: writing to oarg t => (4 boolean)
+setm: (4 boolean) <= t
+sz: (4 boolean)
+setm: size of (4 boolean) is 1
+run: -- ((1 integer-address) (1000 30) (1001 1031) (1002 integer-address) (1003 integer-address) (1004 t) (1031 integer-address) (1032 34) (2 34))
+run: maybe-coerce 6: (jump-if (4 boolean) (1 offset))
+sz: (4 boolean)
+m: (4 boolean) 1
+sz: (4 boolean)
+run: -- ((1 integer-address) (1000 30) (1001 1031) (1002 integer-address) (1003 integer-address) (1004 t) (1031 integer-address) (1032 34) (2 34))
+run: maybe-coerce 8: ((5 location) <- get (1 tagged-value-address deref) (1 offset))
+sz: (1032 location global)
+m: (1032 location global) 1
+sz: (1032 location global)
+run: writing to oarg 34 => (5 location)
+setm: (5 location) <= 34
+sz: (5 location)
+setm: size of (5 location) is 1
+run: -- ((1 integer-address) (1000 30) (1001 1031) (1002 integer-address) (1003 integer-address) (1004 t) (1005 34) (1031 integer-address) (1032 34) (2 34))
+run: maybe-coerce 9: (reply (5 location) (4 boolean))
+sz: (5 location)
+m: (5 location) 1
+sz: (5 location)
+sz: (4 boolean)
+m: (4 boolean) 1
+sz: (4 boolean)
+reply: ((5 location) (4 boolean)) ((3 integer-address) (4 boolean))
 reply: 34 => (3 integer-address)
 setm: (3 integer-address) <= 34
 sz: (3 integer-address)

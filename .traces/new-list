@@ -4,409 +4,437 @@ schedule: main
 run: -- nil
 run: main 0: ((1 integer) <- new-list (3 literal) (4 literal) (5 literal))
 run: -- nil
-run: new-list 0: ((501 list-address) <- new (list literal))
+run: new-list 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1000 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1000 30))
+run: new-list 1: ((1 list-address) <- new (list literal))
 sizeof: list
 sizeof: tagged-value
 sizeof: type
 sizeof: location
 sizeof: list-address
-run: writing to oarg 1000 => (501 list-address)
-setm: (501 list-address) <= 1000
-sz: (501 list-address)
-setm: size of (501 list-address) is 1
-run: -- ((501 1000))
-run: new-list 1: ((502 list-address) <- copy (501 list-address))
-sz: (501 list-address)
-m: (501 list-address) 1
-sz: (501 list-address)
-run: writing to oarg 1000 => (502 list-address)
-setm: (502 list-address) <= 1000
-sz: (502 list-address)
-setm: size of (502 list-address) is 1
-run: -- ((501 1000) (502 1000))
-run: new-list 2: ((503 integer) (504 boolean) <- arg)
+run: writing to oarg 1031 => (1 list-address)
+setm: (1 list-address) <= 1031
+sz: (1 list-address)
+setm: size of (1 list-address) is 1
+run: -- ((1000 30) (1001 1031))
+run: new-list 2: ((2 list-address) <- copy (1 list-address))
+sz: (1 list-address)
+m: (1 list-address) 1
+sz: (1 list-address)
+run: writing to oarg 1031 => (2 list-address)
+setm: (2 list-address) <= 1031
+sz: (2 list-address)
+setm: size of (2 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1031))
+run: new-list 3: ((3 integer) (4 boolean) <- arg)
 arg: nil 0 (3 4 5)
-setm: (503 integer) <= 3
-sz: (503 integer)
-setm: size of (503 integer) is 1
-setm: (504 boolean) <= t
-sz: (504 boolean)
-setm: size of (504 boolean) is 1
-run: -- ((501 1000) (502 1000) (503 3) (504 t))
-run: new-list 3: (jump-unless (504 boolean) (6 offset))
-sz: (504 boolean)
-m: (504 boolean) 1
-sz: (504 boolean)
-run: -- ((501 1000) (502 1000) (503 3) (504 t))
-run: new-list 4: ((505 list-address-address) <- get-address (502 list-address deref) (1 offset))
-get-address: (502 list-address deref).1
-get-address: after: (1000 list)
-run: writing to oarg 1002 => (505 list-address-address)
-setm: (505 list-address-address) <= 1002
-sz: (505 list-address-address)
-setm: size of (505 list-address-address) is 1
-run: -- ((501 1000) (502 1000) (503 3) (504 t) (505 1002))
-run: new-list 5: ((505 list-address-address deref) <- new (list literal))
+setm: (3 integer) <= 3
+sz: (3 integer)
+setm: size of (3 integer) is 1
+setm: (4 boolean) <= t
+sz: (4 boolean)
+setm: size of (4 boolean) is 1
+run: -- ((1000 30) (1001 1031) (1002 1031) (1003 3) (1004 t))
+run: new-list 4: (jump-unless (4 boolean) (6 offset))
+sz: (4 boolean)
+m: (4 boolean) 1
+sz: (4 boolean)
+run: -- ((1000 30) (1001 1031) (1002 1031) (1003 3) (1004 t))
+run: new-list 5: ((5 list-address-address) <- get-address (2 list-address deref) (1 offset))
+run: writing to oarg 1033 => (5 list-address-address)
+setm: (5 list-address-address) <= 1033
+sz: (5 list-address-address)
+setm: size of (5 list-address-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1031) (1003 3) (1004 t) (1005 1033))
+run: new-list 6: ((5 list-address-address deref) <- new (list literal))
 sizeof: list
 sizeof: tagged-value
 sizeof: type
 sizeof: location
 sizeof: list-address
-run: writing to oarg 1003 => (505 list-address-address deref)
-setm: (505 list-address-address deref) <= 1003
-sz: (505 list-address-address deref)
-sz: (505 location)
-m: (505 location) 1
-sz: (505 location)
-sz: (1002 list-address)
-setm: size of (505 list-address-address deref) is 1
-run: -- ((1002 1003) (501 1000) (502 1000) (503 3) (504 t) (505 1002))
-run: new-list 6: ((502 list-address) <- list-next (502 list-address))
-sz: (502 list-address)
-m: (502 list-address) 1
-sz: (502 list-address)
-run: -- ((1002 1003) (501 1000) (502 1000) (503 3) (504 t) (505 1002))
-run: list-next 0: ((301 list-address) <- arg)
-arg: nil 0 (1000)
-setm: (301 list-address) <= 1000
-sz: (301 list-address)
-setm: size of (301 list-address) is 1
-run: -- ((1002 1003) (301 1000) (501 1000) (502 1000) (503 3) (504 t) (505 1002))
-run: list-next 1: ((302 list-address) <- get (301 list-address deref) (1 offset))
-sz: (1002 list-address)
-m: (1002 list-address) 1
-sz: (1002 list-address)
-run: writing to oarg 1003 => (302 list-address)
-setm: (302 list-address) <= 1003
-sz: (302 list-address)
-setm: size of (302 list-address) is 1
-run: -- ((1002 1003) (301 1000) (302 1003) (501 1000) (502 1000) (503 3) (504 t) (505 1002))
-run: list-next 2: (reply (302 list-address))
-sz: (302 list-address)
-m: (302 list-address) 1
-sz: (302 list-address)
-reply: ((302 list-address)) ((502 list-address))
-reply: 1003 => (502 list-address)
-setm: (502 list-address) <= 1003
-sz: (502 list-address)
-setm: size of (502 list-address) is 1
-run: -- ((1002 1003) (301 1000) (302 1003) (501 1000) (502 1003) (503 3) (504 t) (505 1002))
-run: new-list 7: ((506 tagged-value-address) <- list-value-address (502 list-address))
-sz: (502 list-address)
-m: (502 list-address) 1
-sz: (502 list-address)
-run: -- ((1002 1003) (301 1000) (302 1003) (501 1000) (502 1003) (503 3) (504 t) (505 1002))
-run: list-value-address 0: ((401 list-address) <- arg)
-arg: nil 0 (1003)
-setm: (401 list-address) <= 1003
-sz: (401 list-address)
-setm: size of (401 list-address) is 1
-run: -- ((1002 1003) (301 1000) (302 1003) (401 1003) (501 1000) (502 1003) (503 3) (504 t) (505 1002))
-run: list-value-address 1: ((402 tagged-value-address) <- get-address (401 list-address deref) (0 offset))
-get-address: (401 list-address deref).0
-get-address: after: (1003 list)
-run: writing to oarg 1003 => (402 tagged-value-address)
-setm: (402 tagged-value-address) <= 1003
-sz: (402 tagged-value-address)
-setm: size of (402 tagged-value-address) is 1
-run: -- ((1002 1003) (301 1000) (302 1003) (401 1003) (402 1003) (501 1000) (502 1003) (503 3) (504 t) (505 1002))
-run: list-value-address 2: (reply (402 tagged-value-address))
-sz: (402 tagged-value-address)
-m: (402 tagged-value-address) 1
-sz: (402 tagged-value-address)
-reply: ((402 tagged-value-address)) ((506 tagged-value-address))
-reply: 1003 => (506 tagged-value-address)
-setm: (506 tagged-value-address) <= 1003
-sz: (506 tagged-value-address)
-setm: size of (506 tagged-value-address) is 1
-run: -- ((1002 1003) (301 1000) (302 1003) (401 1003) (402 1003) (501 1000) (502 1003) (503 3) (504 t) (505 1002) (506 1003))
-run: new-list 8: ((506 tagged-value-address deref) <- save-type (503 integer))
-sz: (503 integer)
-m: (503 integer) 1
-sz: (503 integer)
-run: writing to oarg #(tagged record (integer 3)) => (506 tagged-value-address deref)
-setm: (506 tagged-value-address deref) <= #(tagged record (integer 3))
-sz: (506 tagged-value-address deref)
-sz: (506 location)
-m: (506 location) 1
-sz: (506 location)
-sz: (1003 tagged-value)
-setm: size of (506 tagged-value-address deref) is 2
-run: -- ((1002 1003) (1003 integer) (1004 3) (301 1000) (302 1003) (401 1003) (402 1003) (501 1000) (502 1003) (503 3) (504 t) (505 1002) (506 1003))
-run: new-list 9: (jump (-8 offset))
-run: -- ((1002 1003) (1003 integer) (1004 3) (301 1000) (302 1003) (401 1003) (402 1003) (501 1000) (502 1003) (503 3) (504 t) (505 1002) (506 1003))
-run: new-list 2: ((503 integer) (504 boolean) <- arg)
+run: writing to oarg 1034 => (5 list-address-address deref)
+setm: (5 list-address-address deref) <= 1034
+sz: (5 list-address-address deref)
+sz: (5 location)
+m: (5 location) 1
+sz: (5 location)
+sz: (1033 list-address)
+setm: size of (5 list-address-address deref) is 1
+run: -- ((1000 30) (1001 1031) (1002 1031) (1003 3) (1004 t) (1005 1033) (1033 1034))
+run: new-list 7: ((2 list-address) <- list-next (2 list-address))
+sz: (2 list-address)
+m: (2 list-address) 1
+sz: (2 list-address)
+run: -- ((1000 30) (1001 1031) (1002 1031) (1003 3) (1004 t) (1005 1033) (1033 1034))
+run: list-next 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1037 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1000 30) (1001 1031) (1002 1031) (1003 3) (1004 t) (1005 1033) (1033 1034) (1037 30))
+run: list-next 1: ((1 list-address) <- arg)
+arg: nil 0 (1031)
+setm: (1 list-address) <= 1031
+sz: (1 list-address)
+setm: size of (1 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1031) (1003 3) (1004 t) (1005 1033) (1033 1034) (1037 30) (1038 1031))
+run: list-next 2: ((2 list-address) <- get (1 list-address deref) (1 offset))
+sz: (1033 list-address global)
+m: (1033 list-address global) 1
+sz: (1033 list-address global)
+run: writing to oarg 1034 => (2 list-address)
+setm: (2 list-address) <= 1034
+sz: (2 list-address)
+setm: size of (2 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1031) (1003 3) (1004 t) (1005 1033) (1033 1034) (1037 30) (1038 1031) (1039 1034))
+run: list-next 3: (reply (2 list-address))
+sz: (2 list-address)
+m: (2 list-address) 1
+sz: (2 list-address)
+reply: ((2 list-address)) ((2 list-address))
+reply: 1034 => (2 list-address)
+setm: (2 list-address) <= 1034
+sz: (2 list-address)
+setm: size of (2 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 3) (1004 t) (1005 1033) (1033 1034) (1037 30) (1038 1031) (1039 1034))
+run: new-list 8: ((6 tagged-value-address) <- list-value-address (2 list-address))
+sz: (2 list-address)
+m: (2 list-address) 1
+sz: (2 list-address)
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 3) (1004 t) (1005 1033) (1033 1034) (1037 30) (1038 1031) (1039 1034))
+run: list-value-address 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1068 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 3) (1004 t) (1005 1033) (1033 1034) (1037 30) (1038 1031) (1039 1034) (1068 30))
+run: list-value-address 1: ((1 list-address) <- arg)
+arg: nil 0 (1034)
+setm: (1 list-address) <= 1034
+sz: (1 list-address)
+setm: size of (1 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 3) (1004 t) (1005 1033) (1033 1034) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034))
+run: list-value-address 2: ((2 tagged-value-address) <- get-address (1 list-address deref) (0 offset))
+run: writing to oarg 1034 => (2 tagged-value-address)
+setm: (2 tagged-value-address) <= 1034
+sz: (2 tagged-value-address)
+setm: size of (2 tagged-value-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 3) (1004 t) (1005 1033) (1033 1034) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034))
+run: list-value-address 3: (reply (2 tagged-value-address))
+sz: (2 tagged-value-address)
+m: (2 tagged-value-address) 1
+sz: (2 tagged-value-address)
+reply: ((2 tagged-value-address)) ((6 tagged-value-address))
+reply: 1034 => (6 tagged-value-address)
+setm: (6 tagged-value-address) <= 1034
+sz: (6 tagged-value-address)
+setm: size of (6 tagged-value-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 3) (1004 t) (1005 1033) (1006 1034) (1033 1034) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034))
+run: new-list 9: ((6 tagged-value-address deref) <- save-type (3 integer))
+sz: (3 integer)
+m: (3 integer) 1
+sz: (3 integer)
+run: writing to oarg #(tagged record (integer 3)) => (6 tagged-value-address deref)
+setm: (6 tagged-value-address deref) <= #(tagged record (integer 3))
+sz: (6 tagged-value-address deref)
+sz: (6 location)
+m: (6 location) 1
+sz: (6 location)
+sz: (1034 tagged-value)
+setm: size of (6 tagged-value-address deref) is 2
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 3) (1004 t) (1005 1033) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034))
+run: new-list 10: (jump (-8 offset))
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 3) (1004 t) (1005 1033) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034))
+run: new-list 3: ((3 integer) (4 boolean) <- arg)
 arg: nil 1 (3 4 5)
-setm: (503 integer) <= 4
-sz: (503 integer)
-setm: size of (503 integer) is 1
-setm: (504 boolean) <= t
-sz: (504 boolean)
-setm: size of (504 boolean) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (301 1000) (302 1003) (401 1003) (402 1003) (501 1000) (502 1003) (503 4) (504 t) (505 1002) (506 1003))
-run: new-list 3: (jump-unless (504 boolean) (6 offset))
-sz: (504 boolean)
-m: (504 boolean) 1
-sz: (504 boolean)
-run: -- ((1002 1003) (1003 integer) (1004 3) (301 1000) (302 1003) (401 1003) (402 1003) (501 1000) (502 1003) (503 4) (504 t) (505 1002) (506 1003))
-run: new-list 4: ((505 list-address-address) <- get-address (502 list-address deref) (1 offset))
-get-address: (502 list-address deref).1
-get-address: after: (1003 list)
-run: writing to oarg 1005 => (505 list-address-address)
-setm: (505 list-address-address) <= 1005
-sz: (505 list-address-address)
-setm: size of (505 list-address-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (301 1000) (302 1003) (401 1003) (402 1003) (501 1000) (502 1003) (503 4) (504 t) (505 1005) (506 1003))
-run: new-list 5: ((505 list-address-address deref) <- new (list literal))
+setm: (3 integer) <= 4
+sz: (3 integer)
+setm: size of (3 integer) is 1
+setm: (4 boolean) <= t
+sz: (4 boolean)
+setm: size of (4 boolean) is 1
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 4) (1004 t) (1005 1033) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034))
+run: new-list 4: (jump-unless (4 boolean) (6 offset))
+sz: (4 boolean)
+m: (4 boolean) 1
+sz: (4 boolean)
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 4) (1004 t) (1005 1033) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034))
+run: new-list 5: ((5 list-address-address) <- get-address (2 list-address deref) (1 offset))
+run: writing to oarg 1036 => (5 list-address-address)
+setm: (5 list-address-address) <= 1036
+sz: (5 list-address-address)
+setm: size of (5 list-address-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034))
+run: new-list 6: ((5 list-address-address deref) <- new (list literal))
 sizeof: list
 sizeof: tagged-value
 sizeof: type
 sizeof: location
 sizeof: list-address
-run: writing to oarg 1006 => (505 list-address-address deref)
-setm: (505 list-address-address deref) <= 1006
-sz: (505 list-address-address deref)
-sz: (505 location)
-m: (505 location) 1
-sz: (505 location)
-sz: (1005 list-address)
-setm: size of (505 list-address-address deref) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (301 1000) (302 1003) (401 1003) (402 1003) (501 1000) (502 1003) (503 4) (504 t) (505 1005) (506 1003))
-run: new-list 6: ((502 list-address) <- list-next (502 list-address))
-sz: (502 list-address)
-m: (502 list-address) 1
-sz: (502 list-address)
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (301 1000) (302 1003) (401 1003) (402 1003) (501 1000) (502 1003) (503 4) (504 t) (505 1005) (506 1003))
-run: list-next 0: ((301 list-address) <- arg)
-arg: nil 0 (1003)
-setm: (301 list-address) <= 1003
-sz: (301 list-address)
-setm: size of (301 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (301 1003) (302 1003) (401 1003) (402 1003) (501 1000) (502 1003) (503 4) (504 t) (505 1005) (506 1003))
-run: list-next 1: ((302 list-address) <- get (301 list-address deref) (1 offset))
-sz: (1005 list-address)
-m: (1005 list-address) 1
-sz: (1005 list-address)
-run: writing to oarg 1006 => (302 list-address)
-setm: (302 list-address) <= 1006
-sz: (302 list-address)
-setm: size of (302 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (301 1003) (302 1006) (401 1003) (402 1003) (501 1000) (502 1003) (503 4) (504 t) (505 1005) (506 1003))
-run: list-next 2: (reply (302 list-address))
-sz: (302 list-address)
-m: (302 list-address) 1
-sz: (302 list-address)
-reply: ((302 list-address)) ((502 list-address))
-reply: 1006 => (502 list-address)
-setm: (502 list-address) <= 1006
-sz: (502 list-address)
-setm: size of (502 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (301 1003) (302 1006) (401 1003) (402 1003) (501 1000) (502 1006) (503 4) (504 t) (505 1005) (506 1003))
-run: new-list 7: ((506 tagged-value-address) <- list-value-address (502 list-address))
-sz: (502 list-address)
-m: (502 list-address) 1
-sz: (502 list-address)
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (301 1003) (302 1006) (401 1003) (402 1003) (501 1000) (502 1006) (503 4) (504 t) (505 1005) (506 1003))
-run: list-value-address 0: ((401 list-address) <- arg)
-arg: nil 0 (1006)
-setm: (401 list-address) <= 1006
-sz: (401 list-address)
-setm: size of (401 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (301 1003) (302 1006) (401 1006) (402 1003) (501 1000) (502 1006) (503 4) (504 t) (505 1005) (506 1003))
-run: list-value-address 1: ((402 tagged-value-address) <- get-address (401 list-address deref) (0 offset))
-get-address: (401 list-address deref).0
-get-address: after: (1006 list)
-run: writing to oarg 1006 => (402 tagged-value-address)
-setm: (402 tagged-value-address) <= 1006
-sz: (402 tagged-value-address)
-setm: size of (402 tagged-value-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (301 1003) (302 1006) (401 1006) (402 1006) (501 1000) (502 1006) (503 4) (504 t) (505 1005) (506 1003))
-run: list-value-address 2: (reply (402 tagged-value-address))
-sz: (402 tagged-value-address)
-m: (402 tagged-value-address) 1
-sz: (402 tagged-value-address)
-reply: ((402 tagged-value-address)) ((506 tagged-value-address))
-reply: 1006 => (506 tagged-value-address)
-setm: (506 tagged-value-address) <= 1006
-sz: (506 tagged-value-address)
-setm: size of (506 tagged-value-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (301 1003) (302 1006) (401 1006) (402 1006) (501 1000) (502 1006) (503 4) (504 t) (505 1005) (506 1006))
-run: new-list 8: ((506 tagged-value-address deref) <- save-type (503 integer))
-sz: (503 integer)
-m: (503 integer) 1
-sz: (503 integer)
-run: writing to oarg #(tagged record (integer 4)) => (506 tagged-value-address deref)
-setm: (506 tagged-value-address deref) <= #(tagged record (integer 4))
-sz: (506 tagged-value-address deref)
-sz: (506 location)
-m: (506 location) 1
-sz: (506 location)
-sz: (1006 tagged-value)
-setm: size of (506 tagged-value-address deref) is 2
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (301 1003) (302 1006) (401 1006) (402 1006) (501 1000) (502 1006) (503 4) (504 t) (505 1005) (506 1006))
-run: new-list 9: (jump (-8 offset))
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (301 1003) (302 1006) (401 1006) (402 1006) (501 1000) (502 1006) (503 4) (504 t) (505 1005) (506 1006))
-run: new-list 2: ((503 integer) (504 boolean) <- arg)
+run: writing to oarg 1099 => (5 list-address-address deref)
+setm: (5 list-address-address deref) <= 1099
+sz: (5 list-address-address deref)
+sz: (5 location)
+m: (5 location) 1
+sz: (5 location)
+sz: (1036 list-address)
+setm: size of (5 list-address-address deref) is 1
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034))
+run: new-list 7: ((2 list-address) <- list-next (2 list-address))
+sz: (2 list-address)
+m: (2 list-address) 1
+sz: (2 list-address)
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034))
+run: list-next 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1102 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1102 30))
+run: list-next 1: ((1 list-address) <- arg)
+arg: nil 0 (1034)
+setm: (1 list-address) <= 1034
+sz: (1 list-address)
+setm: size of (1 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1102 30) (1103 1034))
+run: list-next 2: ((2 list-address) <- get (1 list-address deref) (1 offset))
+sz: (1036 list-address global)
+m: (1036 list-address global) 1
+sz: (1036 list-address global)
+run: writing to oarg 1099 => (2 list-address)
+setm: (2 list-address) <= 1099
+sz: (2 list-address)
+setm: size of (2 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1034) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1102 30) (1103 1034) (1104 1099))
+run: list-next 3: (reply (2 list-address))
+sz: (2 list-address)
+m: (2 list-address) 1
+sz: (2 list-address)
+reply: ((2 list-address)) ((2 list-address))
+reply: 1099 => (2 list-address)
+setm: (2 list-address) <= 1099
+sz: (2 list-address)
+setm: size of (2 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1102 30) (1103 1034) (1104 1099))
+run: new-list 8: ((6 tagged-value-address) <- list-value-address (2 list-address))
+sz: (2 list-address)
+m: (2 list-address) 1
+sz: (2 list-address)
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1102 30) (1103 1034) (1104 1099))
+run: list-value-address 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1133 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1102 30) (1103 1034) (1104 1099) (1133 30))
+run: list-value-address 1: ((1 list-address) <- arg)
+arg: nil 0 (1099)
+setm: (1 list-address) <= 1099
+sz: (1 list-address)
+setm: size of (1 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099))
+run: list-value-address 2: ((2 tagged-value-address) <- get-address (1 list-address deref) (0 offset))
+run: writing to oarg 1099 => (2 tagged-value-address)
+setm: (2 tagged-value-address) <= 1099
+sz: (2 tagged-value-address)
+setm: size of (2 tagged-value-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 4) (1004 t) (1005 1036) (1006 1034) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099))
+run: list-value-address 3: (reply (2 tagged-value-address))
+sz: (2 tagged-value-address)
+m: (2 tagged-value-address) 1
+sz: (2 tagged-value-address)
+reply: ((2 tagged-value-address)) ((6 tagged-value-address))
+reply: 1099 => (6 tagged-value-address)
+setm: (6 tagged-value-address) <= 1099
+sz: (6 tagged-value-address)
+setm: size of (6 tagged-value-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 4) (1004 t) (1005 1036) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099))
+run: new-list 9: ((6 tagged-value-address deref) <- save-type (3 integer))
+sz: (3 integer)
+m: (3 integer) 1
+sz: (3 integer)
+run: writing to oarg #(tagged record (integer 4)) => (6 tagged-value-address deref)
+setm: (6 tagged-value-address deref) <= #(tagged record (integer 4))
+sz: (6 tagged-value-address deref)
+sz: (6 location)
+m: (6 location) 1
+sz: (6 location)
+sz: (1099 tagged-value)
+setm: size of (6 tagged-value-address deref) is 2
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 4) (1004 t) (1005 1036) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099))
+run: new-list 10: (jump (-8 offset))
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 4) (1004 t) (1005 1036) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099))
+run: new-list 3: ((3 integer) (4 boolean) <- arg)
 arg: nil 2 (3 4 5)
-setm: (503 integer) <= 5
-sz: (503 integer)
-setm: size of (503 integer) is 1
-setm: (504 boolean) <= t
-sz: (504 boolean)
-setm: size of (504 boolean) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (301 1003) (302 1006) (401 1006) (402 1006) (501 1000) (502 1006) (503 5) (504 t) (505 1005) (506 1006))
-run: new-list 3: (jump-unless (504 boolean) (6 offset))
-sz: (504 boolean)
-m: (504 boolean) 1
-sz: (504 boolean)
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (301 1003) (302 1006) (401 1006) (402 1006) (501 1000) (502 1006) (503 5) (504 t) (505 1005) (506 1006))
-run: new-list 4: ((505 list-address-address) <- get-address (502 list-address deref) (1 offset))
-get-address: (502 list-address deref).1
-get-address: after: (1006 list)
-run: writing to oarg 1008 => (505 list-address-address)
-setm: (505 list-address-address) <= 1008
-sz: (505 list-address-address)
-setm: size of (505 list-address-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (301 1003) (302 1006) (401 1006) (402 1006) (501 1000) (502 1006) (503 5) (504 t) (505 1008) (506 1006))
-run: new-list 5: ((505 list-address-address deref) <- new (list literal))
+setm: (3 integer) <= 5
+sz: (3 integer)
+setm: size of (3 integer) is 1
+setm: (4 boolean) <= t
+sz: (4 boolean)
+setm: size of (4 boolean) is 1
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 5) (1004 t) (1005 1036) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099))
+run: new-list 4: (jump-unless (4 boolean) (6 offset))
+sz: (4 boolean)
+m: (4 boolean) 1
+sz: (4 boolean)
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 5) (1004 t) (1005 1036) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099))
+run: new-list 5: ((5 list-address-address) <- get-address (2 list-address deref) (1 offset))
+run: writing to oarg 1101 => (5 list-address-address)
+setm: (5 list-address-address) <= 1101
+sz: (5 list-address-address)
+setm: size of (5 list-address-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099))
+run: new-list 6: ((5 list-address-address deref) <- new (list literal))
 sizeof: list
 sizeof: tagged-value
 sizeof: type
 sizeof: location
 sizeof: list-address
-run: writing to oarg 1009 => (505 list-address-address deref)
-setm: (505 list-address-address deref) <= 1009
-sz: (505 list-address-address deref)
-sz: (505 location)
-m: (505 location) 1
-sz: (505 location)
-sz: (1008 list-address)
-setm: size of (505 list-address-address deref) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (301 1003) (302 1006) (401 1006) (402 1006) (501 1000) (502 1006) (503 5) (504 t) (505 1008) (506 1006))
-run: new-list 6: ((502 list-address) <- list-next (502 list-address))
-sz: (502 list-address)
-m: (502 list-address) 1
-sz: (502 list-address)
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (301 1003) (302 1006) (401 1006) (402 1006) (501 1000) (502 1006) (503 5) (504 t) (505 1008) (506 1006))
-run: list-next 0: ((301 list-address) <- arg)
-arg: nil 0 (1006)
-setm: (301 list-address) <= 1006
-sz: (301 list-address)
-setm: size of (301 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (301 1006) (302 1006) (401 1006) (402 1006) (501 1000) (502 1006) (503 5) (504 t) (505 1008) (506 1006))
-run: list-next 1: ((302 list-address) <- get (301 list-address deref) (1 offset))
-sz: (1008 list-address)
-m: (1008 list-address) 1
-sz: (1008 list-address)
-run: writing to oarg 1009 => (302 list-address)
-setm: (302 list-address) <= 1009
-sz: (302 list-address)
-setm: size of (302 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (301 1006) (302 1009) (401 1006) (402 1006) (501 1000) (502 1006) (503 5) (504 t) (505 1008) (506 1006))
-run: list-next 2: (reply (302 list-address))
-sz: (302 list-address)
-m: (302 list-address) 1
-sz: (302 list-address)
-reply: ((302 list-address)) ((502 list-address))
-reply: 1009 => (502 list-address)
-setm: (502 list-address) <= 1009
-sz: (502 list-address)
-setm: size of (502 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (301 1006) (302 1009) (401 1006) (402 1006) (501 1000) (502 1009) (503 5) (504 t) (505 1008) (506 1006))
-run: new-list 7: ((506 tagged-value-address) <- list-value-address (502 list-address))
-sz: (502 list-address)
-m: (502 list-address) 1
-sz: (502 list-address)
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (301 1006) (302 1009) (401 1006) (402 1006) (501 1000) (502 1009) (503 5) (504 t) (505 1008) (506 1006))
-run: list-value-address 0: ((401 list-address) <- arg)
-arg: nil 0 (1009)
-setm: (401 list-address) <= 1009
-sz: (401 list-address)
-setm: size of (401 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (301 1006) (302 1009) (401 1009) (402 1006) (501 1000) (502 1009) (503 5) (504 t) (505 1008) (506 1006))
-run: list-value-address 1: ((402 tagged-value-address) <- get-address (401 list-address deref) (0 offset))
-get-address: (401 list-address deref).0
-get-address: after: (1009 list)
-run: writing to oarg 1009 => (402 tagged-value-address)
-setm: (402 tagged-value-address) <= 1009
-sz: (402 tagged-value-address)
-setm: size of (402 tagged-value-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (301 1006) (302 1009) (401 1009) (402 1009) (501 1000) (502 1009) (503 5) (504 t) (505 1008) (506 1006))
-run: list-value-address 2: (reply (402 tagged-value-address))
-sz: (402 tagged-value-address)
-m: (402 tagged-value-address) 1
-sz: (402 tagged-value-address)
-reply: ((402 tagged-value-address)) ((506 tagged-value-address))
-reply: 1009 => (506 tagged-value-address)
-setm: (506 tagged-value-address) <= 1009
-sz: (506 tagged-value-address)
-setm: size of (506 tagged-value-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (301 1006) (302 1009) (401 1009) (402 1009) (501 1000) (502 1009) (503 5) (504 t) (505 1008) (506 1009))
-run: new-list 8: ((506 tagged-value-address deref) <- save-type (503 integer))
-sz: (503 integer)
-m: (503 integer) 1
-sz: (503 integer)
-run: writing to oarg #(tagged record (integer 5)) => (506 tagged-value-address deref)
-setm: (506 tagged-value-address deref) <= #(tagged record (integer 5))
-sz: (506 tagged-value-address deref)
-sz: (506 location)
-m: (506 location) 1
-sz: (506 location)
-sz: (1009 tagged-value)
-setm: size of (506 tagged-value-address deref) is 2
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (301 1006) (302 1009) (401 1009) (402 1009) (501 1000) (502 1009) (503 5) (504 t) (505 1008) (506 1009))
-run: new-list 9: (jump (-8 offset))
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (301 1006) (302 1009) (401 1009) (402 1009) (501 1000) (502 1009) (503 5) (504 t) (505 1008) (506 1009))
-run: new-list 2: ((503 integer) (504 boolean) <- arg)
+run: writing to oarg 1164 => (5 list-address-address deref)
+setm: (5 list-address-address deref) <= 1164
+sz: (5 list-address-address deref)
+sz: (5 location)
+m: (5 location) 1
+sz: (5 location)
+sz: (1101 list-address)
+setm: size of (5 list-address-address deref) is 1
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099))
+run: new-list 7: ((2 list-address) <- list-next (2 list-address))
+sz: (2 list-address)
+m: (2 list-address) 1
+sz: (2 list-address)
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099))
+run: list-next 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1167 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1167 30))
+run: list-next 1: ((1 list-address) <- arg)
+arg: nil 0 (1099)
+setm: (1 list-address) <= 1099
+sz: (1 list-address)
+setm: size of (1 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1167 30) (1168 1099))
+run: list-next 2: ((2 list-address) <- get (1 list-address deref) (1 offset))
+sz: (1101 list-address global)
+m: (1101 list-address global) 1
+sz: (1101 list-address global)
+run: writing to oarg 1164 => (2 list-address)
+setm: (2 list-address) <= 1164
+sz: (2 list-address)
+setm: size of (2 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1099) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1167 30) (1168 1099) (1169 1164))
+run: list-next 3: (reply (2 list-address))
+sz: (2 list-address)
+m: (2 list-address) 1
+sz: (2 list-address)
+reply: ((2 list-address)) ((2 list-address))
+reply: 1164 => (2 list-address)
+setm: (2 list-address) <= 1164
+sz: (2 list-address)
+setm: size of (2 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1164) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1167 30) (1168 1099) (1169 1164))
+run: new-list 8: ((6 tagged-value-address) <- list-value-address (2 list-address))
+sz: (2 list-address)
+m: (2 list-address) 1
+sz: (2 list-address)
+run: -- ((1000 30) (1001 1031) (1002 1164) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1167 30) (1168 1099) (1169 1164))
+run: list-value-address 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1198 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1000 30) (1001 1031) (1002 1164) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1167 30) (1168 1099) (1169 1164) (1198 30))
+run: list-value-address 1: ((1 list-address) <- arg)
+arg: nil 0 (1164)
+setm: (1 list-address) <= 1164
+sz: (1 list-address)
+setm: size of (1 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1164) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164))
+run: list-value-address 2: ((2 tagged-value-address) <- get-address (1 list-address deref) (0 offset))
+run: writing to oarg 1164 => (2 tagged-value-address)
+setm: (2 tagged-value-address) <= 1164
+sz: (2 tagged-value-address)
+setm: size of (2 tagged-value-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1164) (1003 5) (1004 t) (1005 1101) (1006 1099) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164))
+run: list-value-address 3: (reply (2 tagged-value-address))
+sz: (2 tagged-value-address)
+m: (2 tagged-value-address) 1
+sz: (2 tagged-value-address)
+reply: ((2 tagged-value-address)) ((6 tagged-value-address))
+reply: 1164 => (6 tagged-value-address)
+setm: (6 tagged-value-address) <= 1164
+sz: (6 tagged-value-address)
+setm: size of (6 tagged-value-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1164) (1003 5) (1004 t) (1005 1101) (1006 1164) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164))
+run: new-list 9: ((6 tagged-value-address deref) <- save-type (3 integer))
+sz: (3 integer)
+m: (3 integer) 1
+sz: (3 integer)
+run: writing to oarg #(tagged record (integer 5)) => (6 tagged-value-address deref)
+setm: (6 tagged-value-address deref) <= #(tagged record (integer 5))
+sz: (6 tagged-value-address deref)
+sz: (6 location)
+m: (6 location) 1
+sz: (6 location)
+sz: (1164 tagged-value)
+setm: size of (6 tagged-value-address deref) is 2
+run: -- ((1000 30) (1001 1031) (1002 1164) (1003 5) (1004 t) (1005 1101) (1006 1164) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1164 integer) (1165 5) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164))
+run: new-list 10: (jump (-8 offset))
+run: -- ((1000 30) (1001 1031) (1002 1164) (1003 5) (1004 t) (1005 1101) (1006 1164) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1164 integer) (1165 5) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164))
+run: new-list 3: ((3 integer) (4 boolean) <- arg)
 arg: nil 3 (3 4 5)
-setm: (503 integer) <= nil
-sz: (503 integer)
-setm: size of (503 integer) is 1
-setm: (504 boolean) <= nil
-sz: (504 boolean)
-setm: size of (504 boolean) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (301 1006) (302 1009) (401 1009) (402 1009) (501 1000) (502 1009) (505 1008) (506 1009))
-run: new-list 3: (jump-unless (504 boolean) (6 offset))
-sz: (504 boolean)
-m: (504 boolean) 1
-sz: (504 boolean)
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (301 1006) (302 1009) (401 1009) (402 1009) (501 1000) (502 1009) (505 1008) (506 1009))
-run: new-list 10: ((501 list-address) <- list-next (501 list-address))
-sz: (501 list-address)
-m: (501 list-address) 1
-sz: (501 list-address)
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (301 1006) (302 1009) (401 1009) (402 1009) (501 1000) (502 1009) (505 1008) (506 1009))
-run: list-next 0: ((301 list-address) <- arg)
-arg: nil 0 (1000)
-setm: (301 list-address) <= 1000
-sz: (301 list-address)
-setm: size of (301 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (301 1000) (302 1009) (401 1009) (402 1009) (501 1000) (502 1009) (505 1008) (506 1009))
-run: list-next 1: ((302 list-address) <- get (301 list-address deref) (1 offset))
-sz: (1002 list-address)
-m: (1002 list-address) 1
-sz: (1002 list-address)
-run: writing to oarg 1003 => (302 list-address)
-setm: (302 list-address) <= 1003
-sz: (302 list-address)
-setm: size of (302 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (301 1000) (302 1003) (401 1009) (402 1009) (501 1000) (502 1009) (505 1008) (506 1009))
-run: list-next 2: (reply (302 list-address))
-sz: (302 list-address)
-m: (302 list-address) 1
-sz: (302 list-address)
-reply: ((302 list-address)) ((501 list-address))
-reply: 1003 => (501 list-address)
-setm: (501 list-address) <= 1003
-sz: (501 list-address)
-setm: size of (501 list-address) is 1
-run: -- ((1002 1003) (1003 integer) (1004 3) (1005 1006) (1006 integer) (1007 4) (1008 1009) (1009 integer) (1010 5) (301 1000) (302 1003) (401 1009) (402 1009) (501 1003) (502 1009) (505 1008) (506 1009))
-run: new-list 11: (reply (501 list-address))
-sz: (501 list-address)
-m: (501 list-address) 1
-sz: (501 list-address)
-reply: ((501 list-address)) ((1 integer))
-reply: 1003 => (1 integer)
-setm: (1 integer) <= 1003
+setm: (3 integer) <= nil
+sz: (3 integer)
+setm: size of (3 integer) is 1
+setm: (4 boolean) <= nil
+sz: (4 boolean)
+setm: size of (4 boolean) is 1
+run: -- ((1000 30) (1001 1031) (1002 1164) (1005 1101) (1006 1164) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1164 integer) (1165 5) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164))
+run: new-list 4: (jump-unless (4 boolean) (6 offset))
+sz: (4 boolean)
+m: (4 boolean) 1
+sz: (4 boolean)
+run: -- ((1000 30) (1001 1031) (1002 1164) (1005 1101) (1006 1164) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1164 integer) (1165 5) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164))
+run: new-list 11: ((1 list-address) <- list-next (1 list-address))
+sz: (1 list-address)
+m: (1 list-address) 1
+sz: (1 list-address)
+run: -- ((1000 30) (1001 1031) (1002 1164) (1005 1101) (1006 1164) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1164 integer) (1165 5) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164))
+run: list-next 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1229 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1000 30) (1001 1031) (1002 1164) (1005 1101) (1006 1164) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1164 integer) (1165 5) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164) (1229 30))
+run: list-next 1: ((1 list-address) <- arg)
+arg: nil 0 (1031)
+setm: (1 list-address) <= 1031
+sz: (1 list-address)
+setm: size of (1 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1164) (1005 1101) (1006 1164) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1164 integer) (1165 5) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164) (1229 30) (1230 1031))
+run: list-next 2: ((2 list-address) <- get (1 list-address deref) (1 offset))
+sz: (1033 list-address global)
+m: (1033 list-address global) 1
+sz: (1033 list-address global)
+run: writing to oarg 1034 => (2 list-address)
+setm: (2 list-address) <= 1034
+sz: (2 list-address)
+setm: size of (2 list-address) is 1
+run: -- ((1000 30) (1001 1031) (1002 1164) (1005 1101) (1006 1164) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1164 integer) (1165 5) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164) (1229 30) (1230 1031) (1231 1034))
+run: list-next 3: (reply (2 list-address))
+sz: (2 list-address)
+m: (2 list-address) 1
+sz: (2 list-address)
+reply: ((2 list-address)) ((1 list-address))
+reply: 1034 => (1 list-address)
+setm: (1 list-address) <= 1034
+sz: (1 list-address)
+setm: size of (1 list-address) is 1
+run: -- ((1000 30) (1001 1034) (1002 1164) (1005 1101) (1006 1164) (1033 1034) (1034 integer) (1035 3) (1036 1099) (1037 30) (1038 1031) (1039 1034) (1068 30) (1069 1034) (1070 1034) (1099 integer) (1100 4) (1101 1164) (1102 30) (1103 1034) (1104 1099) (1133 30) (1134 1099) (1135 1099) (1164 integer) (1165 5) (1167 30) (1168 1099) (1169 1164) (1198 30) (1199 1164) (1200 1164) (1229 30) (1230 1031) (1231 1034))
+run: new-list 12: (reply (1 list-address))
+sz: (1 list-address)
+m: (1 list-address) 1
+sz: (1 list-address)
+reply: ((1 list-address)) ((1 integer))
+reply: 1034 => (1 integer)
+setm: (1 integer) <= 1034
 sz: (1 integer)
 setm: size of (1 integer) is 1

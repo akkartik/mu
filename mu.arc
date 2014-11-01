@@ -9,7 +9,7 @@
         initialization-fns*))
 
 (mac init-fn (name . body)
-  `(enq (fn () (= (function* ',name) (convert-braces ',body)))
+  `(enq (fn () (= (function* ',name) (convert-names:convert-braces ',body)))
         initialization-fns*))
 
 ; things that a future assembler will need separate memory for:
@@ -78,13 +78,14 @@
   (= traces* (queue)))
 
 (def new-trace (filename)
-;?   (prn "new-trace " filename)
+  (prn "new-trace " filename)
   (= curr-trace-file* filename))
 
 (= dump-trace* nil)
 (def trace (label . args)
 ;?   (prn "trace: " dump-trace*)
-  (if dump-trace* (apply prn label ": " args))
+  (when (and dump-trace* (~pos label dump-trace*!blacklist))
+    (apply prn label ": " args))
   (enq (list label (apply tostring:prn args))
        traces*))
 
@@ -149,6 +150,7 @@
       (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
 
 (def addr (loc)
+;?   (trace "addr" loc)
   (ret result v.loc
     (unless (pos 'global metadata.loc)
       (whenlet base rep.routine*!call-stack.0!default-scope
@@ -168,6 +170,8 @@
   (point return
     (if (in ty.loc 'literal 'offset)
       (return v.loc))
+    (when (is v.loc 'default-scope)
+      (return rep.routine*!call-stack.0!default-scope))
     (assert (isa v.loc 'int))
     (trace "m" loc " " sz.loc)
     (if (is 1 sz.loc)
@@ -316,7 +320,7 @@
         (++ pc.routine*))
       (trace "run" "-- " (sort (compare < string:car) (as cons memory*)))
       (trace "run" top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
-;?       (prn "--- " top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
+;?       (trace "run" routine*)
       (let (oarg op arg)  (parse-instr (body.routine* pc.routine*))
 ;?         (prn op " " arg " -> " oarg)
         (let tmp
@@ -380,34 +384,38 @@
                 copy
                   (m arg.0)
                 get
-                  (with (base arg.0  ; integer (non-symbol) memory location including metadata
+                  (with (base (addr arg.0)  ; integer (non-symbol) memory location including metadata
+                         basetype  (typeinfo arg.0)
                          idx (v arg.1))  ; literal integer
-;?                     (prn base ": " (memory* v.base))
-                    (assert (in (ty arg.1) 'literal 'offset))
-                    (when typeinfo.base!address
-                      (assert (pos 'deref metadata.base))
-                      (= base (list (memory* v.base) typeinfo.base!elem)))
-;?                     (prn "after: " base)
-                    (if typeinfo.base!record
-                      (do (assert (< -1 idx (len typeinfo.base!elems)))
-                          (m `(,(+ v.base
+                    (assert (is 'offset (ty arg.1)))
+                    (when (pos 'deref (metadata arg.0))
+                      (assert basetype!address)
+                      (= basetype (types* basetype!elem))
+                      )
+                    (if basetype!record
+                      (do (assert (< -1 idx (len basetype!elems)))
+                          (m `(,(+ base
                                    (apply + (map sz
-                                                 (firstn idx typeinfo.base!elems))))
-                               ,typeinfo.base!elems.idx)))
+                                                 (firstn idx basetype!elems))))
+                               ,basetype!elems.idx
+                               global))
+                          )
                       (assert nil "get on invalid type @base")))
                 get-address
-                  (with (base arg.0
-                         idx (v arg.1))
-                    (trace "get-address" base "." idx)
-                    (when typeinfo.base!address
-                      (assert (pos 'deref metadata.base))
-                      (= base (list (memory* v.base) typeinfo.base!elem)))
-                    (trace "get-address" "after: " base)
-                    (if typeinfo.base!record
-                      (do (assert (< -1 idx (len typeinfo.base!elems)))
-                          (+ v.base
+                  (with (base (addr arg.0)  ; integer (non-symbol) memory location including metadata
+                         basetype  (typeinfo arg.0)
+                         idx (v arg.1))  ; literal integer
+                    (assert (is 'offset (ty arg.1)))
+                    (when (pos 'deref (metadata arg.0))
+                      (assert basetype!address)
+                      (= basetype (types* basetype!elem))
+                      )
+                    (if basetype!record
+                      (do (assert (< -1 idx (len basetype!elems)))
+                          (+ base
                              (apply + (map sz
-                                           (firstn idx typeinfo.base!elems)))))
+                                           (firstn idx basetype!elems))))
+                          )
                       (assert nil "get-address on invalid type @base")))
                 index
                   (with (base arg.0  ; integer (non-symbol) memory location including metadata
@@ -510,11 +518,11 @@
                         (continue)))
                 ; else try to call as a user-defined function
                   (do (if function*.op
-                        (do (push-stack routine* op)
-                            (= caller-args.routine*
-                               (accum yield
-                                 (each a arg
-                                   (yield (m a))))))
+                        (let callee-args (accum yield
+                                           (each a arg
+                                             (yield (m a))))
+                          (push-stack routine* op)
+                          (= caller-args.routine* callee-args))
                         (err "no such op @op"))
                       (continue))
                 )
@@ -711,56 +719,61 @@
 ;; system software
 
 (init-fn maybe-coerce
-  ((101 tagged-value-address) <- new (tagged-value literal))
-  ((101 tagged-value-address deref) <- arg)
-  ((102 type) <- arg)
-  ((103 type) <- get (101 tagged-value-address deref) (0 offset))
-  ((104 boolean) <- eq (103 type) (102 type))
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((x tagged-value-address) <- new (tagged-value literal))
+  ((x tagged-value-address deref) <- arg)
+  ((p type) <- arg)
+  ((xtype type) <- get (x tagged-value-address deref) (0 offset))
+  ((match? boolean) <- eq (xtype type) (p type))
   { begin
-    (break-if (104 boolean))
+    (break-if (match? boolean))
     (reply (0 literal) (nil literal))
   }
-  ((105 location) <- get (101 tagged-value-address deref) (1 offset))
-  (reply (105 location) (104 boolean)))
+  ((xvalue location) <- get (x tagged-value-address deref) (1 offset))
+  (reply (xvalue location) (match? boolean)))
 
 (init-fn new-tagged-value
-  ((201 type) <- arg)
-  ((202 integer) <- sizeof (201 type))
-  ((203 boolean) <- eq (202 integer) (1 literal))
-  (assert (203 boolean))
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((xtype type) <- arg)
+  ((xtypesize integer) <- sizeof (xtype type))
+  ((xcheck boolean) <- eq (xtypesize integer) (1 literal))
+  (assert (xcheck boolean))
   ; todo: check that arg 0 matches the type? or is that for the future typechecker?
-  ((204 tagged-value-address) <- new (tagged-value literal))
-  ((205 location) <- get-address (204 tagged-value-address deref) (0 offset))
-  ((205 location deref) <- copy (201 type))
-  ((206 location) <- get-address (204 tagged-value-address deref) (1 offset))
-  ((206 location deref) <- arg)
-  (reply (204 tagged-value-address)))
+  ((result tagged-value-address) <- new (tagged-value literal))
+  ((resulttype location) <- get-address (result tagged-value-address deref) (0 offset))
+  ((resulttype location deref) <- copy (xtype type))
+  ((locaddr location) <- get-address (result tagged-value-address deref) (1 offset))
+  ((locaddr location deref) <- arg)
+  (reply (result tagged-value-address)))
 
 (init-fn list-next  ; list-address -> list-address
-  ((301 list-address) <- arg)
-  ((302 list-address) <- get (301 list-address deref) (1 offset))
-  (reply (302 list-address)))
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((base list-address) <- arg)
+  ((result list-address) <- get (base list-address deref) (1 offset))
+  (reply (result list-address)))
 
 (init-fn list-value-address  ; list-address -> tagged-value-address
-  ((401 list-address) <- arg)
-  ((402 tagged-value-address) <- get-address (401 list-address deref) (0 offset))
-  (reply (402 tagged-value-address)))
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((base list-address) <- arg)
+  ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
+  (reply (result tagged-value-address)))
 
 (init-fn new-list
-  ((501 list-address) <- new (list literal))
-  ((502 list-address) <- copy (501 list-address))
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((new-list-result list-address) <- new (list literal))
+  ((curr list-address) <- copy (new-list-result list-address))
   { begin
-    ((503 integer) (504 boolean) <- arg)
-    (break-unless (504 boolean))
-    ((505 list-address-address) <- get-address (502 list-address deref) (1 offset))
-    ((505 list-address-address deref) <- new (list literal))
-    ((502 list-address) <- list-next (502 list-address))
-    ((506 tagged-value-address) <- list-value-address (502 list-address))
-    ((506 tagged-value-address deref) <- save-type (503 integer))
+    ((curr-value integer) (exists? boolean) <- arg)
+    (break-unless (exists? boolean))
+    ((next list-address-address) <- get-address (curr list-address deref) (1 offset))
+    ((next list-address-address deref) <- new (list literal))
+    ((curr list-address) <- list-next (curr list-address))
+    ((dest tagged-value-address) <- list-value-address (curr list-address))
+    ((dest tagged-value-address deref) <- save-type (curr-value integer))
     (continue)
   }
-  ((501 list-address) <- list-next (501 list-address))  ; memory leak
-  (reply (501 list-address)))
+  ((new-list-result list-address) <- list-next (new-list-result list-address))  ; memory leak
+  (reply (new-list-result list-address)))
 
 ; drop all traces while processing above functions
 (on-init
