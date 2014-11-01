@@ -138,7 +138,7 @@
   (if (is 'literal ty.operand)
         'literal
       (pos 'deref metadata.operand)
-        (do (assert typeinfo.operand!address)
+        (do (assert typeinfo.operand!address "tried to deref non-address @operand")
             (sz (list (m `(,(v operand) location))
                       typeinfo.operand!elem)))
       (let-or it typeinfo.operand (err "no such type: @operand")
@@ -172,7 +172,7 @@
       (return v.loc))
     (when (is v.loc 'default-scope)
       (return rep.routine*!call-stack.0!default-scope))
-    (assert (isa v.loc 'int))
+    (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?)")
     (trace "m" loc " " sz.loc)
     (if (is 1 sz.loc)
           (memory* addr.loc)
@@ -183,18 +183,18 @@
 (def setm (loc val)  ; set memory, respecting metadata
   (point return
     (when (is v.loc 'default-scope)
-      (assert (is 1 sz.loc))
+      (assert (is 1 sz.loc) "can't store compounds in default-scope @loc")
       (= rep.routine*!call-stack.0!default-scope val)
       (return))
-    (assert (isa v.loc 'int))
+    (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
     (trace "setm" loc " <= " val)
     (let n sz.loc
       (trace "setm" "size of " loc " is " n)
-      (assert n)
+      (assert n "setm: can't compute type of @loc")
       (if (is 1 n)
-        (do (assert (~isa val 'record))
+        (do (assert (~isa val 'record) "setm: record of size 1?! @val")
             (= (memory* addr.loc) val))
-        (do (assert (isa val 'record))
+        (do (assert (isa val 'record) "setm: non-record of size >1?! @val")
             (each (dest src) (zip (addrs addr.loc n)
                                   (rep val))
               (= (memory* dest) src)))))))
@@ -210,7 +210,7 @@
         (err "can't take len of non-array @operand")))
 
 (def array-ref-addr (operand idx)
-  (assert typeinfo.operand!array)
+  (assert typeinfo.operand!array "aref-addr: not an array @operand")
   (unless (< -1 idx (array-len operand))
     (die "aref-addr: out of bounds index @idx for @operand of size @array-len.operand"))
   (withs (elem  typeinfo.operand!elem
@@ -218,7 +218,7 @@
     (+ v.operand offset)))
 
 (def array-ref (operand idx)
-  (assert typeinfo.operand!array)
+  (assert typeinfo.operand!array "aref: not an array @operand")
   (unless (< -1 idx (array-len operand))
     (die "aref: out of bounds index @idx for @operand of size @array-len.operand"))
   (withs (elem  typeinfo.operand!elem
@@ -387,60 +387,53 @@
                   (with (base (addr arg.0)  ; integer (non-symbol) memory location including metadata
                          basetype  (typeinfo arg.0)
                          idx (v arg.1))  ; literal integer
-                    (assert (is 'offset (ty arg.1)))
+                    (assert (is 'offset (ty arg.1)) "second arg to 'get' must have type 'offset' @arg.1")
                     (when (pos 'deref (metadata arg.0))
-                      (assert basetype!address)
-                      (= basetype (types* basetype!elem))
-                      )
-                    (if basetype!record
-                      (do (assert (< -1 idx (len basetype!elems)))
-                          (m `(,(+ base
-                                   (apply + (map sz
-                                                 (firstn idx basetype!elems))))
-                               ,basetype!elems.idx
-                               global))
-                          )
-                      (assert nil "get on invalid type @base")))
+                      (assert basetype!address "get: base has deref but isn't an address @arg.0 @basetype")
+                      (= basetype (types* basetype!elem)))
+                    (assert basetype!record "get on invalid type @base")
+                    (assert (< -1 idx (len basetype!elems)) "get: out-of-bounds access @idx vs @(len basetype!elems)")
+                    (m `(,(+ base
+                             (apply + (map sz
+                                           (firstn idx basetype!elems))))
+                         ,basetype!elems.idx
+                         global)))
                 get-address
                   (with (base (addr arg.0)  ; integer (non-symbol) memory location including metadata
                          basetype  (typeinfo arg.0)
                          idx (v arg.1))  ; literal integer
-                    (assert (is 'offset (ty arg.1)))
+                    (assert (is 'offset (ty arg.1)) "second arg to 'get-addr' must have type 'offset' @arg.1")
                     (when (pos 'deref (metadata arg.0))
+                      (assert basetype!address "get-addr: base has deref but isn't an address @arg.0 @basetype")
                       (assert basetype!address)
-                      (= basetype (types* basetype!elem))
-                      )
-                    (if basetype!record
-                      (do (assert (< -1 idx (len basetype!elems)))
-                          (+ base
-                             (apply + (map sz
-                                           (firstn idx basetype!elems))))
-                          )
-                      (assert nil "get-address on invalid type @base")))
+                      (= basetype (types* basetype!elem)))
+                    (assert basetype!record "get-addr on invalid type @base")
+                    (assert (< -1 idx (len basetype!elems)) "get-addr: out-of-bounds access @idx vs @(len basetype!elems)")
+                    (+ base
+                       (apply + (map sz
+                                     (firstn idx basetype!elems)))))
                 index
                   (with (base arg.0  ; integer (non-symbol) memory location including metadata
                          idx (m arg.1))
 ;?                     (prn "processing index: @base @idx")
                     (when typeinfo.base!address
-                      (assert (pos 'deref metadata.base))
+                      (assert (pos 'deref metadata.base) "index: array has deref but isn't an address @base")
                       (= base (list (memory* v.base) typeinfo.base!elem)))
 ;?                     (prn "after maybe deref: @base @idx")
 ;?                     (prn Memory-in-use-until ": " memory*)
-                    (if typeinfo.base!array
-                      (array-ref base idx)
-                      (assert nil "get on invalid type @arg.0 => @base")))
+                    (assert typeinfo.base!array "index on invalid type @arg.0 => @base")
+                    (array-ref base idx))
                 index-address
                   (with (base arg.0
                          idx (m arg.1))
                     (when typeinfo.base!address
-                      (assert (pos 'deref metadata.base))
+                      (assert (pos 'deref metadata.base) "index-addr: array has deref but isn't an address @base")
                       (= base (list (memory* v.base) typeinfo.base!elem)))
-                    (if typeinfo.base!array
-                      (array-ref-addr base idx)
-                      (assert nil "get-address on invalid type @arg.0 => @base")))
+                    (assert typeinfo.base!array "index-addr on invalid type @arg.0 => @base")
+                    (array-ref-addr base idx))
                 new
                   (let type (v arg.0)
-                    (assert (is 'literal (ty arg.0)))
+                    (assert (is 'literal (ty arg.0)) "new: second arg @arg.0 must be literal")
                     (if (no types*.type)  (err "no such type @type"))
                     (if types*.type!array
                       (new-array type (m arg.1))
@@ -608,39 +601,39 @@
                   begin
                     (do
                       (push pc stack)
-                      (assert:is oarg nil)
+                      (assert (is oarg nil) "begin: can't take oarg @instr")
                       (recur arg)
                       (pop stack)
                       (continue))
                   break
                     (do
-                      (assert:is oarg nil)
-                      (assert:is arg nil)
+                      (assert (is oarg nil) "break: can't take oarg @instr")
+                      (assert (is arg nil) "break: can't take arg @instr")
                       (yield `(jump (,(close-offset pc locs) offset))))
                   break-if
                     (do
 ;?                       (prn "break-if: " instr)
-                      (assert:is oarg nil)
+                      (assert (is oarg nil) "break-if: can't take oarg @instr")
                       (yield `(jump-if ,arg.0 (,(close-offset pc locs) offset))))
                   break-unless
                     (do
 ;?                       (prn "break-if: " instr)
-                      (assert:is oarg nil)
+                      (assert (is oarg nil) "break-unless: can't take oarg @instr")
                       (yield `(jump-unless ,arg.0 (,(close-offset pc locs) offset))))
                   continue
                     (do
-                      (assert:is oarg nil)
-                      (assert:is arg nil)
+                      (assert (is oarg nil) "continue: can't take oarg @instr")
+                      (assert (is arg nil) "continue: can't take arg @instr")
                       (yield `(jump (,(- stack.0 1 pc) offset))))
                   continue-if
                     (do
                       (trace "cvt0" "continue-if: " instr " => " (- stack.0 1))
-                      (assert:is oarg nil)
+                      (assert (is oarg nil) "continue-if: can't take oarg @instr")
                       (yield `(jump-if ,arg.0 (,(- stack.0 1 pc) offset))))
                   continue-unless
                     (do
                       (trace "cvt0" "continue-if: " instr " => " (- stack.0 1))
-                      (assert:is oarg nil)
+                      (assert (is oarg nil) "continue-unless: can't take oarg @instr")
                       (yield `(jump-unless ,arg.0 (,(- stack.0 1 pc) offset))))
                   ;else
                     (yield instr))))
@@ -706,7 +699,7 @@
       (case instr.0
         defer
           (let (q qinstrs)  instr.1
-            (assert (is 'make-br-fn q))
+            (assert (is 'make-br-fn q) "defer: first arg must be [quoted]")
             (each qinstr qinstrs
               (enq qinstr deferred)))))
     (accum yield
