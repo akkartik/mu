@@ -669,7 +669,7 @@
     instrs))
 
 (def maybe-add (arg offset idx)
-  (unless (or (in ty.arg 'literal 'offset)
+  (unless (or (in ty.arg 'literal 'offset 'fn)
               (offset v.arg)
               (~isa v.arg 'sym)
               (in v.arg 'nil 'default-scope)
@@ -767,4 +767,6 @@
   (map add-fns:readfile it)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
-  (prn memory*))
+  (prn memory*)
+;?   (prn completed-routines*)
+)
