@@ -1257,8 +1257,12 @@
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
   (prn "F - continue might never trigger"))
 
+; A big convenience high-level languages provide is the ability to name memory
+; locations. In mu, a lightweight tool called 'convert-names' provides this
+; convenience.
+
 (reset)
-(new-trace "convert-names-local")
+(new-trace "convert-names")
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer) <- copy (2 literal))
@@ -1266,7 +1270,7 @@
           '(((1 integer) <- copy (4 literal))
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (1 integer) (2 integer))))
-  (prn "F - convert-names renames symbolic names to integer offsets"))
+  (prn "F - convert-names renames symbolic names to integer locations"))
 
 (reset)
 (new-trace "convert-names-nil")
@@ -1320,6 +1324,19 @@
     (prn "F - 'new' on array with variable size returns current high-water mark"))
   (if (~iso Memory-in-use-until (+ before 6))
     (prn "F - 'new' on primitive arrays increments high-water mark by their (variable) size")))
+
+; Even though our memory locations can now have names, the names are all
+; globals, accessible from any function. To isolate functions from their
+; callers we need local variables, and mu provides them using a special
+; variable called 'default-scope'. When you initialize such a variable (likely
+; with a call to our just-defined memory allocator) mu interprets memory
+; locations as offsets from its value. If default-scope is set to 1000, for
+; example, reads and writes to memory location 1 will really go to 1001.
+;
+; 'default-scope' is itself hard-coded to be function-local; it's nil in a new
+; function, and it's restored when functions return to their callers. But the
+; actual scope allocation is independent. So you can define closures or do
+; even more funky things like share locals between two coroutines.
 
 (reset)
 (new-trace "set-default-scope")
