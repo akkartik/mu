@@ -84,7 +84,8 @@
 (= dump-trace* nil)
 (def trace (label . args)
 ;?   (prn "trace: " dump-trace*)
-  (when (and dump-trace* (~pos label dump-trace*!blacklist))
+  (when (or (is dump-trace* t)
+            (and dump-trace* (~pos label dump-trace*!blacklist)))
     (apply prn label ": " args))
   (enq (list label (apply tostring:prn args))
        traces*))
@@ -118,7 +119,7 @@
 
 (def add-fns (fns)
   (each (name . body) fns
-    (= function*.name (convert-braces body))))
+    (= function*.name (convert-names:convert-braces body))))
 
 ;; running mu
 (mac v (operand)  ; for value
@@ -477,7 +478,8 @@
                 ; user-defined functions
                 arg
                   (let idx (if arg
-                             arg.0
+                             (do (assert (is 'literal (ty arg.0)))
+                                 (v arg.0))
                              (do1 caller-arg-idx.routine*
                                 (++ caller-arg-idx.routine*)))
                     (trace "arg" arg " " idx " " caller-args.routine*)
