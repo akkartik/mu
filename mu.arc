@@ -41,6 +41,7 @@
               scope-address  (obj size 1  address t  elem 'scope)
               ; arrays consist of an integer length followed by the right number of elems
               integer-array (obj array t  elem 'integer)
+              integer-array-address (obj size 1  address t  elem 'integer-array)
               integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
               ; records consist of a series of elems, corresponding to a list of types
               integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
@@ -227,21 +228,26 @@
     (list (+ base (apply + (map sz (firstn idx basetype!elems))))
           basetype!elems.idx)))
 
-(def array-ref-addr (operand idx)
-  (assert typeinfo.operand!array "aref-addr: not an array @operand")
-  (unless (< -1 idx (array-len operand))
-    (die "aref-addr: out of bounds index @idx for @operand of size @array-len.operand"))
-  (withs (elem  typeinfo.operand!elem
-          offset  (+ 1 (* idx sz.elem)))
-    (+ v.operand offset)))
-
-(def array-ref (operand idx)
-  (assert typeinfo.operand!array "aref: not an array @operand")
-  (unless (< -1 idx (array-len operand))
-    (die "aref: out of bounds index @idx for @operand of size @array-len.operand"))
-  (withs (elem  typeinfo.operand!elem
-          offset  (+ 1 (* idx sz.elem)))
-    (m `(,(+ v.operand offset) ,elem))))
+(def array-info (operand offset)
+  (with (base  addr.operand
+         basetype  typeinfo.operand
+         idx  (m offset))
+;?     (prn operand ": " base " " basetype)
+    (when (pos 'deref metadata.operand)
+      (assert basetype!address "@operand requests deref, but it's not an address of an array")
+      (= basetype (types* basetype!elem))
+;?       (prn "=> " basetype)
+      )
+;?     (prn "AAA")
+    (assert basetype!array "index on non-array @operand")
+;?     (prn "AAA " idx)
+    (unless (< -1 idx array-len.operand)
+      (die "@idx is out of bounds of array @operand"))
+;?     (prn "AAA")
+    (list (+ base
+             1  ; for array size
+             (* idx (sz basetype!elem)))
+          basetype!elem)))
 
 ; data structure: routine
 ; runtime state for a serial thread of execution
@@ -403,29 +409,18 @@
                   (m arg.0)
                 get
                   (let (addr type)  (record-info arg.0 arg.1)
+;?                     (prn addr " " type)
                     (m `(,addr ,type global)))
                 get-address
                   (let (addr _)  (record-info arg.0 arg.1)
                     addr)
                 index
-                  (with (base arg.0  ; integer (non-symbol) memory location including metadata
-                         idx (m arg.1))
-;?                     (prn "processing index: @base @idx")
-                    (when typeinfo.base!address
-                      (assert (pos 'deref metadata.base) "index: array has deref but isn't an address @base")
-                      (= base (list (memory* v.base) typeinfo.base!elem)))
-;?                     (prn "after maybe deref: @base @idx")
-;?                     (prn Memory-in-use-until ": " memory*)
-                    (assert typeinfo.base!array "index on invalid type @arg.0 => @base")
-                    (array-ref base idx))
+                  (let (addr type)  (array-info arg.0 arg.1)
+;?                     (prn arg.0 " " arg.1 " => " addr " " type)
+                    (m `(,addr ,type global)))
                 index-address
-                  (with (base arg.0
-                         idx (m arg.1))
-                    (when typeinfo.base!address
-                      (assert (pos 'deref metadata.base) "index-addr: array has deref but isn't an address @base")
-                      (= base (list (memory* v.base) typeinfo.base!elem)))
-                    (assert typeinfo.base!array "index-addr on invalid type @arg.0 => @base")
-                    (array-ref-addr base idx))
+                  (let (addr _)  (array-info arg.0 arg.1)
+                    addr)
                 new
                   (let type (v arg.0)
                     (assert (is 'literal (ty arg.0)) "new: second arg @arg.0 must be literal")

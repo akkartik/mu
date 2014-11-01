@@ -372,7 +372,7 @@
 (new-trace "indirect-addressing")
 (add-fns
   '((main
-      ((1 integer-address) <- copy (2 literal))
+      ((1 integer-address) <- copy (2 literal))  ; unsafe; can't do this in general
       ((2 integer) <- copy (34 literal))
       ((3 integer) <- copy (1 integer-address deref)))))
 (run 'main)
@@ -488,6 +488,7 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 24 7 t))
   (prn "F - 'index' accesses indices of arrays"))
+;? (quit)
 
 (reset)
 (new-trace "index-direct")
@@ -504,6 +505,27 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 24 8 t))
   (prn "F - 'index' accesses indices of arrays"))
+;? (quit)
+
+(reset)
+(new-trace "index-indirect")
+(add-fns
+  '((main
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 boolean) <- copy (nil literal))
+      ((4 integer) <- copy (24 literal))
+      ((5 boolean) <- copy (t literal))
+      ((6 integer) <- copy (1 literal))
+      ((7 integer-boolean-pair-array-address) <- copy (1 literal))
+      ((8 integer-boolean-pair) <- index (7 integer-boolean-pair-array-address deref) (6 integer)))))
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+;? (set dump-trace*)
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 1  8 24 9 t))
+  (prn "F - 'index' accesses indices of array address"))
+;? (quit)
 
 (reset)
 (new-trace "index-address")
@@ -520,6 +542,23 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 4))
   (prn "F - 'index-address' returns addresses of indices of arrays"))
+
+(reset)
+(new-trace "index-address-indirect")
+(add-fns
+  '((main
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 boolean) <- copy (nil literal))
+      ((4 integer) <- copy (24 literal))
+      ((5 boolean) <- copy (t literal))
+      ((6 integer) <- copy (1 literal))
+      ((7 integer-boolean-pair-array-address) <- copy (1 literal))
+      ((8 integer-boolean-pair-address) <- index-address (7 integer-boolean-pair-array-address deref) (6 integer)))))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 1  8 4))
+  (prn "F - 'index-address' returns addresses of indices of array addresses"))
 
 ; Array values know their length. Record lengths are saved in the types table.
 
@@ -1490,6 +1529,40 @@
 (let last-routine (deq completed-routines*)
   (if (no rep.last-routine!error)
     (prn "F - default-scope checks bounds")))
+
+(reset)
+(new-trace "default-scope-and-get-indirect")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope literal) (5 literal))
+      ((1 integer-boolean-pair-address) <- new (integer-boolean-pair literal))
+      ((2 integer-address) <- get-address (1 integer-boolean-pair-address deref) (0 offset))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 integer global) <- get (1 integer-boolean-pair-address deref) (0 offset)))))
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+(run 'main)
+;? (prn memory*)
+;? (prn (as cons completed-routines*))
+(if (~is 34 memory*.3)
+  (prn "F - indirect 'get' works in the presence of default-scope"))
+;? (quit)
+
+(reset)
+(new-trace "default-scope-and-index-indirect")
+(add-fns
+  '((main
+      ((default-scope scope-address) <- new (scope literal) (5 literal))
+      ((1 integer-array-address) <- new (integer-array literal) (4 literal))
+      ((2 integer-address) <- index-address (1 integer-array-address deref) (2 offset))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 integer global) <- index (1 integer-array-address deref) (2 offset)))))
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+(run 'main)
+;? (prn memory*)
+;? (prn (as cons completed-routines*))
+(if (~is 34 memory*.3)
+  (prn "F - indirect 'index' works in the presence of default-scope"))
+;? (quit)
 
 (reset)
 (new-trace "convert-names-default-scope")
