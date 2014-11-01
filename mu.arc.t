@@ -681,6 +681,8 @@
 (run 'main)
 ;? (prn memory*)
 ;? (prn completed-routines*)
+(let last-routine (deq completed-routines*)
+  (aif rep.last-routine!error (prn "error - " it)))
 (if (or (~is memory*.3 34) (~is memory*.4 t))
   (prn "F - 'maybe-coerce' copies value only if type tag matches"))
 ;? (quit)
@@ -1023,8 +1025,6 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 0  2 34))
   (prn "F - 'arg' passes by value"))
-
-; how should errors be handled? will be unclear until we support concurrency and routine trees.
 
 (reset)
 (new-trace "new-fn-reply-oarg")
@@ -1543,6 +1543,8 @@
 (run 'main)
 ;? (prn memory*)
 ;? (prn (as cons completed-routines*))
+(let last-routine (deq completed-routines*)
+  (aif rep.last-routine!error (prn "error - " it)))
 (if (~is 34 memory*.3)
   (prn "F - indirect 'get' works in the presence of default-scope"))
 ;? (quit)
@@ -1560,6 +1562,8 @@
 (run 'main)
 ;? (prn memory*)
 ;? (prn (as cons completed-routines*))
+(let last-routine (deq completed-routines*)
+  (aif rep.last-routine!error (prn "error - " it)))
 (if (~is 34 memory*.3)
   (prn "F - indirect 'index' works in the presence of default-scope"))
 ;? (quit)
