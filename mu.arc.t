@@ -851,10 +851,11 @@
 
 (reset)
 (new-trace "new-fn-arg-random-access")
+;? (set dump-trace*)
 (add-fns
   '((test1
-      ((5 integer) <- arg 1)
-      ((4 integer) <- arg 0)
+      ((5 integer) <- arg (1 literal))
+      ((4 integer) <- arg (0 literal))
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
       ((4 integer) <- copy (34 literal)))  ; should never run
