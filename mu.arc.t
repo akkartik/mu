@@ -1501,6 +1501,9 @@
 ;? (set dump-trace*)
 (add-fns
   '((test1
+      ; doesn't matter too much how many locals you allocate space for (here 20)
+      ; if it's slightly too many -- memory is plentiful
+      ; if it's too few -- mu will raise an error
       ((default-scope scope-address) <- new (scope literal) (20 literal))
       ((first-arg-box tagged-value-address) <- arg)
       ; if given integers, add them
