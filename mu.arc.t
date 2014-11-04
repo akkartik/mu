@@ -1286,6 +1286,17 @@
             ((nil integer) <- add (1 integer) (2 integer))))
   (prn "F - convert-names never renames nil"))
 
+(reset)
+(new-trace "convert-names-global")
+(if (~iso (convert-names
+            '(((x integer) <- copy (4 literal))
+              ((y integer global) <- copy (2 literal))
+              ((default-scope integer) <- add (x integer) (y integer global))))
+          '(((1 integer) <- copy (4 literal))
+            ((y integer global) <- copy (2 literal))
+            ((default-scope integer) <- add (1 integer) (y integer global))))
+  (prn "F - convert-names never renames global operands"))
+
 ; kludgy support for 'fork'
 (reset)
 (new-trace "convert-names-functions")
@@ -1460,17 +1471,6 @@
   (if (~and (is 23 memory*.1)
             (~is 23 (memory* (+ before 1))))
     (prn "F - default-scope skipped for locations with metadata 'global'")))
-
-(reset)
-(new-trace "convert-names-global")
-(if (~iso (convert-names
-            '(((x integer) <- copy (4 literal))
-              ((y integer global) <- copy (2 literal))
-              ((default-scope integer) <- add (x integer) (y integer global))))
-          '(((1 integer) <- copy (4 literal))
-            ((y integer global) <- copy (2 literal))
-            ((default-scope integer) <- add (1 integer) (y integer global))))
-  (prn "F - convert-names never renames global operands"))
 
 ; Putting it all together, here's how you define generic functions that run
 ; different code based on the types of their args.
