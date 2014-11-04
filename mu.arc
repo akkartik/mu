@@ -680,6 +680,7 @@
           (if (in op 'get 'get-address)
             (with (basetype  (typeinfo args.0)
                    field  (v args.1))
+              ; todo: need to rename args.0 as well?
               (when (pos 'deref (metadata args.0))
                 (assert basetype!address "@args.0 requests deref, but it's not an address of a record")
                 (= basetype (types* basetype!elem)))
@@ -694,11 +695,11 @@
               (assert (~isa-field v.arg) "arg @arg is also a field name")
               (when (maybe-add arg offset idx)
                 (err "use before set: @arg")
-                (++ idx))))
+                (++ idx (sizeof ty.arg)))))
           (each arg oargs
             (assert (~isa-field v.arg) "oarg @arg is also a field name")
             (when (maybe-add arg offset idx)
-              (++ idx))))))
+              (++ idx (sizeof ty.arg)))))))
     (each instr instrs
       (let (oargs op args)  (parse-instr instr)
         (each arg args

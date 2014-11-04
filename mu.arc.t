@@ -1276,6 +1276,15 @@
   (prn "F - convert-names renames symbolic names to integer locations"))
 
 (reset)
+;? (new-trace "convert-names-compound")
+(if (~iso (convert-names
+            '(((x integer-boolean-pair) <- copy (4 literal))
+              ((y integer) <- copy (2 literal))))
+          '(((1 integer-boolean-pair) <- copy (4 literal))
+            ((3 integer) <- copy (2 literal))))
+  (prn "F - convert-names increments integer locations by the size of the type of the previous var"))
+
+(reset)
 ;? (new-trace "convert-names-nil")
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
