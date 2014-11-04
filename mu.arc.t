@@ -1691,4 +1691,19 @@
             ((3 integer) <- copy (6 literal))))
   (prn "F - convert-quotes can handle 'defer'"))
 
+; synchronization using channels like in Erlang or Go
+
+(reset)
+(new-trace "channel-new")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal)))))
+;? (set dump-trace*)
+(let before Memory-in-use-until
+  (run 'main)
+;?   (prn memory*)
+  (if (or (~is 0 (memory* memory*.1))
+          (~is 0 (memory* (+ 1 memory*.1))))
+    (prn "F - 'new-channel' initializes 'first-full and 'first-free to 0")))
+
 (reset)  ; end file with this to persist the trace for the final test
