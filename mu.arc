@@ -160,14 +160,17 @@
       (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
 
 (def addr (loc)
-;?   (trace "addr" loc)
+  (trace "addr" loc)
   (ret result v.loc
+    (trace "addr" "initial result: " result)
     (unless (pos 'global metadata.loc)
       (whenlet base rep.routine*!call-stack.0!default-scope
         (if (< result memory*.base)
-           (++ result base)
-           (die "addr: no room for var @result"))))
+          (do (trace "addr" "incrementing by " base)
+              (++ result base))
+          (die "addr: no room for var @result"))))
     (when (pos 'deref metadata.loc)
+      (trace "addr" "deref " result " => " memory*.result)
       (zap memory* result))))
 
 (def addrs (n sz)
@@ -198,15 +201,19 @@
       (return))
     (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
     (trace "setm" loc " <= " val)
-    (let n sz.loc
+    (with (n  sz.loc
+           addr  addr.loc)
       (trace "setm" "size of " loc " is " n)
       (assert n "setm: can't compute type of @loc")
+      (assert addr "setm: null pointer @loc")
       (if (is 1 n)
         (do (assert (~isa val 'record) "setm: record of size 1 @val")
-            (= (memory* addr.loc) val))
+            (trace "setm" loc ": setting " addr " to " val)
+            (= (memory* addr) val))
         (do (assert (isa val 'record) "setm: non-record of size >1 @val")
-            (each (dest src) (zip (addrs addr.loc n)
+            (each (dest src) (zip (addrs addr n)
                                   (rep val))
+              (trace "setm" loc ": setting " dest " to " src)
               (= (memory* dest) src)))))))
 
 ; (operand field-offset) -> (base-addr field-type)
@@ -214,34 +221,44 @@
 ; operand can be scope-based
 ; base-addr returned is always global
 (def record-info (operand field-offset)
+  (trace "record-info" operand " " field-offset)
   (assert (is 'offset (ty field-offset)) "record index @field-offset must have type 'offset'")
   (with (base  addr.operand
          basetype  typeinfo.operand
          idx  (v field-offset))
+    (trace "record-info" "initial base " base " type " canon.basetype)
     (when (pos 'deref metadata.operand)
       (assert basetype!address "@operand requests deref, but it's not an address of a record")
-      (= basetype (types* basetype!elem)))
+      (= basetype (types* basetype!elem))
+      (trace "record-info" operand " requests deref => " canon.basetype))
     (assert basetype!record "get on non-record @operand")
     (assert (< -1 idx (len basetype!elems)) "@idx is out of bounds of record @operand")
     (list (+ base (apply + (map sz (firstn idx basetype!elems))))
           basetype!elems.idx)))
 
 (def array-info (operand offset)
+  (trace "array-info" operand " " offset)
   (with (base  addr.operand
          basetype  typeinfo.operand
          idx  (m offset))
+    (trace "array-info" "initial base " base " type " canon.basetype)
     (when (pos 'deref metadata.operand)
       (assert basetype!address "@operand requests deref, but it's not an address of an array")
-      (= basetype (types* basetype!elem)))
+      (= basetype (types* basetype!elem))
+      (trace "array-info" operand " requests deref => " canon.basetype))
     (assert basetype!array "index on non-array @operand")
-    (unless (< -1 idx array-len.operand)
-      (die "@idx is out of bounds of array @operand"))
+    (let array-len array-len.operand
+      (trace "array-info" "array-len of " operand " is " array-len)
+      (assert array-len "can't compute array-len of @operand")
+      (unless (< -1 idx array-len)
+        (die "@idx is out of bounds of array @operand")))
     (list (+ base
              1  ; for array size
              (* idx (sz basetype!elem)))
           basetype!elem)))
 
 (def array-len (operand)
+  (trace "array-len" operand)
   (if typeinfo.operand!array
         (m `(,v.operand integer))
       (and typeinfo.operand!address (pos 'deref metadata.operand))
@@ -342,7 +359,7 @@
         (pop-stack routine*)
         (if empty.routine* (return ninstrs))
         (++ pc.routine*))
-      (trace "run" "-- " (sort (compare < string:car) (as cons memory*)))
+      (trace "run" "-- " canon.memory*)
       (trace "run" top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
       (let (oarg op arg)  (parse-instr (body.routine* pc.routine*))
@@ -409,17 +426,19 @@
                   (m arg.0)
                 get
                   (let (addr type)  (record-info arg.0 arg.1)
-;?                     (prn addr " " type)
+                    (trace "get" arg.0 " " arg.1 " => " addr " " type)
                     (m `(,addr ,type global)))
                 get-address
                   (let (addr _)  (record-info arg.0 arg.1)
+                    (trace "get-address" arg.0 " " arg.1 " => " addr)
                     addr)
                 index
                   (let (addr type)  (array-info arg.0 arg.1)
-;?                     (prn arg.0 " " arg.1 " => " addr " " type)
+                    (trace "index" arg.0 " " arg.1 " => " addr " " type)
                     (m `(,addr ,type global)))
                 index-address
                   (let (addr _)  (array-info arg.0 arg.1)
+                    (trace "index-address" arg.0 " " arg.1 " => " addr)
                     addr)
                 new
                   (let type (v arg.0)
@@ -795,6 +814,9 @@
 (def prn2 (msg . args)
   (pr msg)
   (apply prn args))
+
+(def canon (table)
+  (sort (compare < string:car) (as cons table)))
 
 ;; after loading all files, start at 'main'
 (reset)

@@ -10,17 +10,25 @@ run: main 0: ((1 type) <- copy (integer-address literal))
 run: writing to oarg integer-address => (1 type)
 setm: (1 type) <= integer-address
 sz: (1 type)
+addr: (1 type)
+addr: initial result: 1
 setm: size of (1 type) is 1
+setm: (1 type): setting 1 to integer-address
 run: -- ((1 integer-address))
 run: main 1: ((2 integer-address) <- copy (34 literal))
 run: writing to oarg 34 => (2 integer-address)
 setm: (2 integer-address) <= 34
 sz: (2 integer-address)
+addr: (2 integer-address)
+addr: initial result: 2
 setm: size of (2 integer-address) is 1
+setm: (2 integer-address): setting 2 to 34
 run: -- ((1 integer-address) (2 34))
 run: main 2: ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (boolean-address literal))
 m: (1 tagged-value)
 sz: (1 tagged-value)
+addr: (1 tagged-value)
+addr: initial result: 1
 sz: (1 tagged-value)
 run: -- ((1 integer-address) (2 34))
 run: maybe-coerce 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
@@ -35,7 +43,11 @@ sizeof: location
 run: writing to oarg 1031 => (1 tagged-value-address)
 setm: (1 tagged-value-address) <= 1031
 sz: (1 tagged-value-address)
+addr: (1 tagged-value-address)
+addr: initial result: 1
+addr: incrementing by 1000
 setm: size of (1 tagged-value-address) is 1
+setm: (1 tagged-value-address): setting 1001 to 1031
 run: -- ((1 integer-address) (1000 30) (1001 1031) (2 34))
 run: maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
 arg: nil 0 (#(tagged record (integer-address 34 . nil)) boolean-address)
@@ -43,44 +55,90 @@ setm: (1 tagged-value-address deref) <= #(tagged record (integer-address 34 . ni
 sz: (1 tagged-value-address deref)
 m: (1 location)
 sz: (1 location)
+addr: (1 location)
+addr: initial result: 1
+addr: incrementing by 1000
 sz: (1031 tagged-value)
+addr: (1 tagged-value-address deref)
+addr: initial result: 1
+addr: incrementing by 1000
+addr: deref 1001 => 1031
 setm: size of (1 tagged-value-address deref) is 2
+setm: (1 tagged-value-address deref): setting 1031 to integer-address
+setm: (1 tagged-value-address deref): setting 1032 to 34
 run: -- ((1 integer-address) (1000 30) (1001 1031) (1031 integer-address) (1032 34) (2 34))
 run: maybe-coerce 3: ((2 type) <- arg)
 arg: nil 1 (#(tagged record (integer-address 34 . nil)) boolean-address)
 setm: (2 type) <= boolean-address
 sz: (2 type)
+addr: (2 type)
+addr: initial result: 2
+addr: incrementing by 1000
 setm: size of (2 type) is 1
+setm: (2 type): setting 1002 to boolean-address
 run: -- ((1 integer-address) (1000 30) (1001 1031) (1002 boolean-address) (1031 integer-address) (1032 34) (2 34))
 run: maybe-coerce 4: ((3 type) <- get (1 tagged-value-address deref) (0 offset))
+record-info: (1 tagged-value-address deref) (0 offset)
+addr: (1 tagged-value-address deref)
+addr: initial result: 1
+addr: incrementing by 1000
+addr: deref 1001 => 1031
+record-info: initial base 1031 type ((address t) (elem tagged-value) (size 1))
+record-info: (1 tagged-value-address deref) requests deref => ((elems (type location)) (record t) (size 2))
+get: (1 tagged-value-address deref) (0 offset) => 1031 type
 m: (1031 type global)
 sz: (1031 type global)
+addr: (1031 type global)
+addr: initial result: 1031
 run: writing to oarg integer-address => (3 type)
 setm: (3 type) <= integer-address
 sz: (3 type)
+addr: (3 type)
+addr: initial result: 3
+addr: incrementing by 1000
 setm: size of (3 type) is 1
+setm: (3 type): setting 1003 to integer-address
 run: -- ((1 integer-address) (1000 30) (1001 1031) (1002 boolean-address) (1003 integer-address) (1031 integer-address) (1032 34) (2 34))
 run: maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
 m: (3 type)
 sz: (3 type)
+addr: (3 type)
+addr: initial result: 3
+addr: incrementing by 1000
 m: (2 type)
 sz: (2 type)
+addr: (2 type)
+addr: initial result: 2
+addr: incrementing by 1000
 run: writing to oarg nil => (4 boolean)
 setm: (4 boolean) <= nil
 sz: (4 boolean)
+addr: (4 boolean)
+addr: initial result: 4
+addr: incrementing by 1000
 setm: size of (4 boolean) is 1
+setm: (4 boolean): setting 1004 to nil
 run: -- ((1 integer-address) (1000 30) (1001 1031) (1002 boolean-address) (1003 integer-address) (1031 integer-address) (1032 34) (2 34))
 run: maybe-coerce 6: (jump-if (4 boolean) (1 offset))
 m: (4 boolean)
 sz: (4 boolean)
+addr: (4 boolean)
+addr: initial result: 4
+addr: incrementing by 1000
 run: -- ((1 integer-address) (1000 30) (1001 1031) (1002 boolean-address) (1003 integer-address) (1031 integer-address) (1032 34) (2 34))
 run: maybe-coerce 7: (reply (0 literal) (nil literal))
 reply: ((0 literal) (nil literal)) ((3 integer-address) (4 boolean))
 reply: 0 => (3 integer-address)
 setm: (3 integer-address) <= 0
 sz: (3 integer-address)
+addr: (3 integer-address)
+addr: initial result: 3
 setm: size of (3 integer-address) is 1
+setm: (3 integer-address): setting 3 to 0
 reply: nil => (4 boolean)
 setm: (4 boolean) <= nil
 sz: (4 boolean)
+addr: (4 boolean)
+addr: initial result: 4
 setm: size of (4 boolean) is 1
+setm: (4 boolean): setting 4 to nil
