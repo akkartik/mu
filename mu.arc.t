@@ -1700,7 +1700,10 @@
             ((3 integer) <- copy (6 literal))))
   (prn "F - convert-quotes can handle 'defer'"))
 
-; synchronization using channels like in Erlang or Go
+; Synchronization using channels like in Erlang or Go.
+; The two ends of a channel will usually belong to different routines, but
+; each end should only be used by a single one. Don't try to read from or
+; write to it from multiple routines at once.
 
 (reset)
 (new-trace "channel-new")
@@ -1708,11 +1711,10 @@
   '((main
       ((1 channel-address) <- new-channel (3 literal)))))
 ;? (set dump-trace*)
-(let before Memory-in-use-until
-  (run 'main)
-;?   (prn memory*)
-  (if (or (~is 0 (memory* memory*.1))
-          (~is 0 (memory* (+ 1 memory*.1))))
-    (prn "F - 'new-channel' initializes 'first-full and 'first-free to 0")))
+(run 'main)
+;? (prn memory*)
+(if (or (~is 0 (memory* memory*.1))
+        (~is 0 (memory* (+ 1 memory*.1))))
+  (prn "F - 'new-channel' initializes 'first-full and 'first-free to 0"))
 
 (reset)  ; end file with this to persist the trace for the final test
