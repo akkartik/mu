@@ -1717,4 +1717,21 @@
         (~is 0 (memory* (+ 1 memory*.1))))
   (prn "F - 'new-channel' initializes 'first-full and 'first-free to 0"))
 
+(reset)
+(new-trace "channel-write")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref)))))
+;? (set dump-trace*)
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
+(run 'main)
+;? (prn memory*)
+(if (or (~is 0 (memory* memory*.1))
+        (~is 1 (memory* (+ 1 memory*.1))))
+  (prn "F - 'write' enqueues item to channel"))
+
 (reset)  ; end file with this to persist the trace for the final test
