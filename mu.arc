@@ -44,7 +44,7 @@
               integer-array-address (obj size 1  address t  elem 'integer-array)
               integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
               ; records consist of a series of elems, corresponding to a list of types
-              integer-boolean-pair (obj size 2  record t  elems '(integer boolean))
+              integer-boolean-pair (obj size 2  record t  elems '(integer boolean)  fields '(int bool))
               integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
               integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
               integer-boolean-pair-array-address (obj size 1  address t  elem 'integer-boolean-pair-array)
@@ -647,15 +647,28 @@
 ;; convert symbolic names to integer offsets
 
 (def convert-names (instrs)
-  (let offset (table)
+  (with (offset  (table)
+         isa-field  (table))
     (let idx 1
       (each instr instrs
         (let (oargs op args)  (parse-instr instr)
-          (each arg args
-            (when (maybe-add arg offset idx)
-              (err "use before set: @arg")
-              (++ idx)))
+          (if (in op 'get 'get-address)
+            (with (fields  ((typeinfo args.0) 'fields)
+                   field  (v args.1))
+              (when (isa field 'sym)
+                (assert (~offset field) "field @args.1 is also a variable")
+                (assert fields "no field names available for @instr")
+                (iflet idx (pos field fields)
+                  (do (set isa-field.field)
+                      (= offset.field idx))
+                  (assert nil "couldn't find field in @instr"))))
+            (each arg args
+              (assert (~isa-field v.arg) "arg @arg is also a field name")
+              (when (maybe-add arg offset idx)
+                (err "use before set: @arg")
+                (++ idx))))
           (each arg oargs
+            (assert (~isa-field v.arg) "oarg @arg is also a field name")
             (when (maybe-add arg offset idx)
               (++ idx))))))
     (each instr instrs

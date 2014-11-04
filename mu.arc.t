@@ -1309,6 +1309,27 @@
             ((z fn) <- add (1 integer) (2 integer))))
   (prn "F - convert-names never renames nil"))
 
+(reset)
+(new-trace "convert-names-record-fields")
+(if (~iso (convert-names
+            '(((x integer) <- get (34 integer-boolean-pair) (bool offset))))
+          '(((1 integer) <- get (34 integer-boolean-pair) (1 offset))))
+  (prn "F - convert-names replaces record field offsets"))
+
+(reset)
+(new-trace "convert-names-record-fields-ambiguous")
+(if (errsafe (convert-names
+               '(((bool boolean) <- copy (t literal))
+                 ((x integer) <- get (34 integer-boolean-pair) (bool offset)))))
+  (prn "F - convert-names doesn't allow offsets and variables with the same name in a function"))
+
+(reset)
+(new-trace "convert-names-record-fields-ambiguous-2")
+(if (errsafe (convert-names
+               '(((x integer) <- get (34 integer-boolean-pair) (bool offset))
+                 ((bool boolean) <- copy (t literal)))))
+  (prn "F - convert-names doesn't allow offsets and variables with the same name in a function - 2"))
+
 ; A rudimentary memory allocator. Eventually we want to write this in mu.
 ;
 ; No deallocation yet; let's see how much code we can build in mu before we
