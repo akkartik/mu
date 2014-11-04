@@ -545,7 +545,7 @@
             (each elem types*.type!elems
               (yield sizeof.elem))))
       :else
-        (err "no such type @type")))
+        (err "sizeof can't handle @type (arrays require a specific variable)")))
 
 ;; desugar structured assembly based on blocks
 
