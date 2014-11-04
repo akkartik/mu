@@ -1330,6 +1330,13 @@
                  ((bool boolean) <- copy (t literal)))))
   (prn "F - convert-names doesn't allow offsets and variables with the same name in a function - 2"))
 
+(reset)
+(new-trace "convert-names-record-fields-indirect")
+(if (~iso (convert-names
+            '(((x integer) <- get (34 integer-boolean-pair-address deref) (bool offset))))
+          '(((1 integer) <- get (34 integer-boolean-pair-address deref) (1 offset))))
+  (prn "F - convert-names replaces field offsets for record addresses"))
+
 ; A rudimentary memory allocator. Eventually we want to write this in mu.
 ;
 ; No deallocation yet; let's see how much code we can build in mu before we
