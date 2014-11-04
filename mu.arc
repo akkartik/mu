@@ -808,6 +808,17 @@
   ((channel-buffer-address tagged-value-array-address-address deref) <- copy (buffer-address tagged-value-array-address))
   (reply (result channel-address)))
 
+(init-fn write
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((chan channel) <- arg)
+  ((val tagged-value) <- arg)
+  ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
+  ((free integer-address) <- get-address (chan channel) (first-free offset))
+  ((dest tagged-value-address) <- index-address (q tagged-value-array-address deref) (free integer-address deref))
+  ((dest tagged-value-address deref) <- copy (val tagged-value))
+  ((free integer-address deref) <- add (free integer-address deref) (1 literal))
+  (reply (chan channel)))
+
 ; drop all traces while processing above functions
 (on-init
   (= traces* (queue)))
