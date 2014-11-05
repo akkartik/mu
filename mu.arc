@@ -359,7 +359,7 @@
         (pop-stack routine*)
         (if empty.routine* (return ninstrs))
         (++ pc.routine*))
-      (trace "run" "-- " canon.memory*)
+      (trace "run" "-- " int-canon.memory*)
       (trace "run" top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
       (let (oarg op arg)  (parse-instr (body.routine* pc.routine*))
@@ -829,6 +829,9 @@
 
 (def canon (table)
   (sort (compare < string:car) (as cons table)))
+
+(def int-canon (table)
+  (sort (compare < car) (as cons table)))
 
 ;; after loading all files, start at 'main'
 (reset)
