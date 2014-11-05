@@ -349,11 +349,8 @@
 ($:require "charterm/main.rkt")
 
 (def run-for-time-slice (time-slice)
-;?   (prn "AAA")
   (point return
-;?     (prn "BBB")
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
-;?       (prn "CCC " pc.routine* " " routine* " " (len body.routine*))
       (if (empty body.routine*) (err "@stack.routine*.0!fn-name not defined"))
       (while (>= pc.routine* (len body.routine*))
         (pop-stack routine*)
@@ -363,7 +360,6 @@
       (trace "run" top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
       (let (oarg op arg)  (parse-instr (body.routine* pc.routine*))
-;?         (prn op " " arg " -> " oarg)
         (let tmp
               (case op
                 ; arithmetic
