@@ -1724,7 +1724,7 @@
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
-      ((3 tagged-value-address) <- new-tagged-value (integer literal) (2 integer-address))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
       ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref)))))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
@@ -1733,5 +1733,26 @@
 (if (or (~is 0 (memory* memory*.1))
         (~is 1 (memory* (+ 1 memory*.1))))
   (prn "F - 'write' enqueues item to channel"))
+
+(reset)
+(new-trace "channel-read")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ((4 tagged-value) (1 channel-address deref) <- read (1 channel-address deref))
+      ((5 integer-address) <- maybe-coerce (4 tagged-value) (integer-address literal)))))
+;? (set dump-trace*)
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
+(run 'main)
+;? (prn int-canon.memory*)
+(if (~is memory*.5 memory*.2)
+  (prn "F - 'read' returns written value"))
+(if (or (~is 1 (memory* memory*.1))
+        (~is 1 (memory* (+ 1 memory*.1))))
+  (prn "F - 'read' dequeues item from channel"))
 
 (reset)  ; end file with this to persist the trace for the final test

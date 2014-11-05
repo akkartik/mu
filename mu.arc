@@ -819,6 +819,15 @@
   ((free integer-address deref) <- add (free integer-address deref) (1 literal))
   (reply (chan channel)))
 
+(init-fn read
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((chan channel) <- arg)
+  ((full integer-address) <- get-address (chan channel) (first-full offset))
+  ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
+  ((result tagged-value) <- index (q tagged-value-array-address deref) (full integer-address deref))
+  ((full integer-address deref) <- add (full integer-address deref) (1 literal))
+  (reply (result tagged-value) (chan channel)))
+
 ; drop all traces while processing above functions
 (on-init
   (= traces* (queue)))

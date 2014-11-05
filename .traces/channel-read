@@ -3,11 +3,15 @@ cvt0: 1 ((2 integer-address) <- new (integer literal)) -- nil
 cvt0: 2 ((2 integer-address deref) <- copy (34 literal)) -- nil
 cvt0: 3 ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address)) -- nil
 cvt0: 4 ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref)) -- nil
+cvt0: 5 ((4 tagged-value) (1 channel-address deref) <- read (1 channel-address deref)) -- nil
+cvt0: 6 ((5 integer-address) <- maybe-coerce (4 tagged-value) (integer-address literal)) -- nil
 cvt1: 0 new-channel ((1 channel-address))
 cvt1: 1 new ((2 integer-address))
 cvt1: 2 copy ((2 integer-address deref))
 cvt1: 3 new-tagged-value ((3 tagged-value-address))
 cvt1: 4 write ((1 channel-address deref))
+cvt1: 5 read ((4 tagged-value) (1 channel-address deref))
+cvt1: 6 maybe-coerce ((5 integer-address))
 schedule: main
 run: -- nil
 run: main 0: ((1 channel-address) <- new-channel (3 literal))
@@ -602,3 +606,348 @@ setm: size of (1 channel-address deref) is 3
 setm: (1 channel-address deref): setting 1038 to 0
 setm: (1 channel-address deref): setting 1039 to 1
 setm: (1 channel-address deref): setting 1040 to 1031
+run: -- ((1 1038) (2 1041) (3 1073) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 0) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032))
+run: main 5: ((4 tagged-value) (1 channel-address deref) <- read (1 channel-address deref))
+m: (1 channel-address deref)
+sz: (1 channel-address deref)
+m: (1 location)
+sz: (1 location)
+addr: (1 location)
+addr: initial result: 1
+sz: (1038 channel)
+addr: (1 channel-address deref)
+addr: initial result: 1
+addr: deref 1 => 1038
+sz: (1 channel-address deref)
+m: (1 location)
+sz: (1 location)
+addr: (1 location)
+addr: initial result: 1
+sz: (1038 channel)
+run: -- ((1 1038) (2 1041) (3 1073) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 0) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032))
+run: read 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1106 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1 1038) (2 1041) (3 1073) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 0) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30))
+run: read 1: ((1 channel) <- arg)
+arg: nil 0 (#(tagged record (0 1 1031 . nil)))
+setm: (1 channel) <= #(tagged record (0 1 1031 . nil))
+sz: (1 channel)
+addr: (1 channel)
+addr: initial result: 1
+addr: incrementing by 1106
+setm: size of (1 channel) is 3
+setm: (1 channel): setting 1107 to 0
+setm: (1 channel): setting 1108 to 1
+setm: (1 channel): setting 1109 to 1031
+run: -- ((1 1038) (2 1041) (3 1073) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 0) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 0) (1108 1) (1109 1031))
+run: read 2: ((4 integer-address) <- get-address (1 channel) (0 offset))
+record-info: (1 channel) (0 offset)
+addr: (1 channel)
+addr: initial result: 1
+addr: incrementing by 1106
+record-info: initial base 1107 type ((elems (integer integer tagged-value-array-address)) (fields (first-full first-free circular-buffer)) (record t) (size 3))
+get-address: (1 channel) (0 offset) => 1107
+run: writing to oarg 1107 => (4 integer-address)
+setm: (4 integer-address) <= 1107
+sz: (4 integer-address)
+addr: (4 integer-address)
+addr: initial result: 4
+addr: incrementing by 1106
+setm: size of (4 integer-address) is 1
+setm: (4 integer-address): setting 1110 to 1107
+run: -- ((1 1038) (2 1041) (3 1073) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 0) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 0) (1108 1) (1109 1031) (1110 1107))
+run: read 3: ((5 tagged-value-array-address) <- get (1 channel) (2 offset))
+record-info: (1 channel) (2 offset)
+addr: (1 channel)
+addr: initial result: 1
+addr: incrementing by 1106
+record-info: initial base 1107 type ((elems (integer integer tagged-value-array-address)) (fields (first-full first-free circular-buffer)) (record t) (size 3))
+get: (1 channel) (2 offset) => 1109 tagged-value-array-address
+m: (1109 tagged-value-array-address global)
+sz: (1109 tagged-value-array-address global)
+addr: (1109 tagged-value-array-address global)
+addr: initial result: 1109
+run: writing to oarg 1031 => (5 tagged-value-array-address)
+setm: (5 tagged-value-array-address) <= 1031
+sz: (5 tagged-value-array-address)
+addr: (5 tagged-value-array-address)
+addr: initial result: 5
+addr: incrementing by 1106
+setm: size of (5 tagged-value-array-address) is 1
+setm: (5 tagged-value-array-address): setting 1111 to 1031
+run: -- ((1 1038) (2 1041) (3 1073) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 0) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 0) (1108 1) (1109 1031) (1110 1107) (1111 1031))
+run: read 4: ((6 tagged-value) <- index (5 tagged-value-array-address deref) (4 integer-address deref))
+array-info: (5 tagged-value-array-address deref) (4 integer-address deref)
+addr: (5 tagged-value-array-address deref)
+addr: initial result: 5
+addr: incrementing by 1106
+addr: deref 1111 => 1031
+m: (4 integer-address deref)
+sz: (4 integer-address deref)
+m: (4 location)
+sz: (4 location)
+addr: (4 location)
+addr: initial result: 4
+addr: incrementing by 1106
+sz: (1107 integer)
+addr: (4 integer-address deref)
+addr: initial result: 4
+addr: incrementing by 1106
+addr: deref 1110 => 1107
+array-info: initial base 1031 type ((address t) (elem tagged-value-array) (size 1))
+array-info: (5 tagged-value-array-address deref) requests deref => ((array t) (elem tagged-value))
+array-len: (5 tagged-value-array-address deref)
+m: (5 integer-address deref)
+sz: (5 integer-address deref)
+m: (5 location)
+sz: (5 location)
+addr: (5 location)
+addr: initial result: 5
+addr: incrementing by 1106
+sz: (1031 integer)
+addr: (5 integer-address deref)
+addr: initial result: 5
+addr: incrementing by 1106
+addr: deref 1111 => 1031
+array-info: array-len of (5 tagged-value-array-address deref) is 3
+index: (5 tagged-value-array-address deref) (4 integer-address deref) => 1032 tagged-value
+m: (1032 tagged-value global)
+sz: (1032 tagged-value global)
+addr: (1032 tagged-value global)
+addr: initial result: 1032
+sz: (1032 tagged-value global)
+run: writing to oarg #(tagged record (integer-address 1041 . nil)) => (6 tagged-value)
+setm: (6 tagged-value) <= #(tagged record (integer-address 1041 . nil))
+sz: (6 tagged-value)
+addr: (6 tagged-value)
+addr: initial result: 6
+addr: incrementing by 1106
+setm: size of (6 tagged-value) is 2
+setm: (6 tagged-value): setting 1112 to integer-address
+setm: (6 tagged-value): setting 1113 to 1041
+run: -- ((1 1038) (2 1041) (3 1073) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 0) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 0) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041))
+run: read 5: ((4 integer-address deref) <- add (4 integer-address deref) (1 literal))
+m: (4 integer-address deref)
+sz: (4 integer-address deref)
+m: (4 location)
+sz: (4 location)
+addr: (4 location)
+addr: initial result: 4
+addr: incrementing by 1106
+sz: (1107 integer)
+addr: (4 integer-address deref)
+addr: initial result: 4
+addr: incrementing by 1106
+addr: deref 1110 => 1107
+add: 0 1
+m: (4 integer-address deref)
+sz: (4 integer-address deref)
+m: (4 location)
+sz: (4 location)
+addr: (4 location)
+addr: initial result: 4
+addr: incrementing by 1106
+sz: (1107 integer)
+addr: (4 integer-address deref)
+addr: initial result: 4
+addr: incrementing by 1106
+addr: deref 1110 => 1107
+run: writing to oarg 1 => (4 integer-address deref)
+setm: (4 integer-address deref) <= 1
+sz: (4 integer-address deref)
+m: (4 location)
+sz: (4 location)
+addr: (4 location)
+addr: initial result: 4
+addr: incrementing by 1106
+sz: (1107 integer)
+addr: (4 integer-address deref)
+addr: initial result: 4
+addr: incrementing by 1106
+addr: deref 1110 => 1107
+setm: size of (4 integer-address deref) is 1
+setm: (4 integer-address deref): setting 1107 to 1
+run: -- ((1 1038) (2 1041) (3 1073) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 0) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041))
+run: read 6: (reply (6 tagged-value) (1 channel))
+m: (6 tagged-value)
+sz: (6 tagged-value)
+addr: (6 tagged-value)
+addr: initial result: 6
+addr: incrementing by 1106
+sz: (6 tagged-value)
+m: (1 channel)
+sz: (1 channel)
+addr: (1 channel)
+addr: initial result: 1
+addr: incrementing by 1106
+sz: (1 channel)
+reply: ((6 tagged-value) (1 channel)) ((4 tagged-value) (1 channel-address deref))
+reply: #(tagged record (integer-address 1041 . nil)) => (4 tagged-value)
+setm: (4 tagged-value) <= #(tagged record (integer-address 1041 . nil))
+sz: (4 tagged-value)
+addr: (4 tagged-value)
+addr: initial result: 4
+setm: size of (4 tagged-value) is 2
+setm: (4 tagged-value): setting 4 to integer-address
+setm: (4 tagged-value): setting 5 to 1041
+reply: #(tagged record (1 1 1031 . nil)) => (1 channel-address deref)
+setm: (1 channel-address deref) <= #(tagged record (1 1 1031 . nil))
+sz: (1 channel-address deref)
+m: (1 location)
+sz: (1 location)
+addr: (1 location)
+addr: initial result: 1
+sz: (1038 channel)
+addr: (1 channel-address deref)
+addr: initial result: 1
+addr: deref 1 => 1038
+setm: size of (1 channel-address deref) is 3
+setm: (1 channel-address deref): setting 1038 to 1
+setm: (1 channel-address deref): setting 1039 to 1
+setm: (1 channel-address deref): setting 1040 to 1031
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041))
+run: main 6: ((5 integer-address) <- maybe-coerce (4 tagged-value) (integer-address literal))
+m: (4 tagged-value)
+sz: (4 tagged-value)
+addr: (4 tagged-value)
+addr: initial result: 4
+sz: (4 tagged-value)
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041))
+run: maybe-coerce 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+sizeof: location
+run: writing to oarg 1137 => (default-scope scope-address)
+sz: (default-scope scope-address)
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041) (1137 30))
+run: maybe-coerce 1: ((1 tagged-value-address) <- new (tagged-value literal))
+sizeof: tagged-value
+sizeof: type
+sizeof: location
+run: writing to oarg 1168 => (1 tagged-value-address)
+setm: (1 tagged-value-address) <= 1168
+sz: (1 tagged-value-address)
+addr: (1 tagged-value-address)
+addr: initial result: 1
+addr: incrementing by 1137
+setm: size of (1 tagged-value-address) is 1
+setm: (1 tagged-value-address): setting 1138 to 1168
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041) (1137 30) (1138 1168))
+run: maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
+arg: nil 0 (#(tagged record (integer-address 1041 . nil)) integer-address)
+setm: (1 tagged-value-address deref) <= #(tagged record (integer-address 1041 . nil))
+sz: (1 tagged-value-address deref)
+m: (1 location)
+sz: (1 location)
+addr: (1 location)
+addr: initial result: 1
+addr: incrementing by 1137
+sz: (1168 tagged-value)
+addr: (1 tagged-value-address deref)
+addr: initial result: 1
+addr: incrementing by 1137
+addr: deref 1138 => 1168
+setm: size of (1 tagged-value-address deref) is 2
+setm: (1 tagged-value-address deref): setting 1168 to integer-address
+setm: (1 tagged-value-address deref): setting 1169 to 1041
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041) (1137 30) (1138 1168) (1168 integer-address) (1169 1041))
+run: maybe-coerce 3: ((2 type) <- arg)
+arg: nil 1 (#(tagged record (integer-address 1041 . nil)) integer-address)
+setm: (2 type) <= integer-address
+sz: (2 type)
+addr: (2 type)
+addr: initial result: 2
+addr: incrementing by 1137
+setm: size of (2 type) is 1
+setm: (2 type): setting 1139 to integer-address
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041) (1137 30) (1138 1168) (1139 integer-address) (1168 integer-address) (1169 1041))
+run: maybe-coerce 4: ((3 type) <- get (1 tagged-value-address deref) (0 offset))
+record-info: (1 tagged-value-address deref) (0 offset)
+addr: (1 tagged-value-address deref)
+addr: initial result: 1
+addr: incrementing by 1137
+addr: deref 1138 => 1168
+record-info: initial base 1168 type ((address t) (elem tagged-value) (size 1))
+record-info: (1 tagged-value-address deref) requests deref => ((elems (type location)) (record t) (size 2))
+get: (1 tagged-value-address deref) (0 offset) => 1168 type
+m: (1168 type global)
+sz: (1168 type global)
+addr: (1168 type global)
+addr: initial result: 1168
+run: writing to oarg integer-address => (3 type)
+setm: (3 type) <= integer-address
+sz: (3 type)
+addr: (3 type)
+addr: initial result: 3
+addr: incrementing by 1137
+setm: size of (3 type) is 1
+setm: (3 type): setting 1140 to integer-address
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041) (1137 30) (1138 1168) (1139 integer-address) (1140 integer-address) (1168 integer-address) (1169 1041))
+run: maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
+m: (3 type)
+sz: (3 type)
+addr: (3 type)
+addr: initial result: 3
+addr: incrementing by 1137
+m: (2 type)
+sz: (2 type)
+addr: (2 type)
+addr: initial result: 2
+addr: incrementing by 1137
+run: writing to oarg t => (4 boolean)
+setm: (4 boolean) <= t
+sz: (4 boolean)
+addr: (4 boolean)
+addr: initial result: 4
+addr: incrementing by 1137
+setm: size of (4 boolean) is 1
+setm: (4 boolean): setting 1141 to t
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041) (1137 30) (1138 1168) (1139 integer-address) (1140 integer-address) (1141 t) (1168 integer-address) (1169 1041))
+run: maybe-coerce 6: (jump-if (4 boolean) (1 offset))
+m: (4 boolean)
+sz: (4 boolean)
+addr: (4 boolean)
+addr: initial result: 4
+addr: incrementing by 1137
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041) (1137 30) (1138 1168) (1139 integer-address) (1140 integer-address) (1141 t) (1168 integer-address) (1169 1041))
+run: maybe-coerce 8: ((5 location) <- get (1 tagged-value-address deref) (1 offset))
+record-info: (1 tagged-value-address deref) (1 offset)
+addr: (1 tagged-value-address deref)
+addr: initial result: 1
+addr: incrementing by 1137
+addr: deref 1138 => 1168
+record-info: initial base 1168 type ((address t) (elem tagged-value) (size 1))
+record-info: (1 tagged-value-address deref) requests deref => ((elems (type location)) (record t) (size 2))
+get: (1 tagged-value-address deref) (1 offset) => 1169 location
+m: (1169 location global)
+sz: (1169 location global)
+addr: (1169 location global)
+addr: initial result: 1169
+run: writing to oarg 1041 => (5 location)
+setm: (5 location) <= 1041
+sz: (5 location)
+addr: (5 location)
+addr: initial result: 5
+addr: incrementing by 1137
+setm: size of (5 location) is 1
+setm: (5 location): setting 1142 to 1041
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041) (1137 30) (1138 1168) (1139 integer-address) (1140 integer-address) (1141 t) (1142 1041) (1168 integer-address) (1169 1041))
+run: maybe-coerce 9: (reply (5 location) (4 boolean))
+m: (5 location)
+sz: (5 location)
+addr: (5 location)
+addr: initial result: 5
+addr: incrementing by 1137
+m: (4 boolean)
+sz: (4 boolean)
+addr: (4 boolean)
+addr: initial result: 4
+addr: incrementing by 1137
+reply: ((5 location) (4 boolean)) ((5 integer-address))
+reply: 1041 => (5 integer-address)
+setm: (5 integer-address) <= 1041
+sz: (5 integer-address)
+addr: (5 integer-address)
+addr: initial result: 5
+setm: size of (5 integer-address) is 1
+setm: (5 integer-address): setting 5 to 1041
