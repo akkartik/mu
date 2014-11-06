@@ -135,7 +135,8 @@
   (= running-routines* (queue))
   (= completed-routines* (queue))
   (= routine* nil)
-  (= abort-routine* (parameter nil)))
+  (= abort-routine* (parameter nil))
+  (= curr-cycle* 0))
 
 ; like arc's 'point' but you can also call ((abort-routine*)) in nested calls
 (mac routine-mark body
@@ -145,18 +146,16 @@
               ,@body)))))
 
 (def run fn-names
-  (ret result 0
-    (each it fn-names
-      (enq make-routine.it running-routines*))
-    ; simple round-robin scheduler
-    (while (~empty running-routines*)
-      (= routine* deq.running-routines*)
-      (trace "schedule" top.routine*!fn-name)
-      (whenlet insts-run (routine-mark:run-for-time-slice scheduling-interval*)
-        (= result (+ result insts-run)))
-      (if (~empty routine*)
-        (enq routine* running-routines*)
-        (enq-limit routine* completed-routines*)))))
+  (each it fn-names
+    (enq make-routine.it running-routines*))
+  ; simple round-robin scheduler
+  (while (~empty running-routines*)
+    (= routine* deq.running-routines*)
+    (trace "schedule" top.routine*!fn-name)
+    (routine-mark:run-for-time-slice scheduling-interval*)
+    (if (~empty routine*)
+      (enq routine* running-routines*)
+      (enq-limit routine* completed-routines*))))
 
 (def die (msg)
   (= rep.routine*!error msg)
@@ -358,8 +357,9 @@
         (pop-stack routine*)
         (if empty.routine* (return ninstrs))
         (++ pc.routine*))
+      (++ curr-cycle*)
       (trace "run" "-- " int-canon.memory*)
-      (trace "run" top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
+      (trace "run" curr-cycle* " " top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
       (let (oarg op arg)  (parse-instr (body.routine* pc.routine*))
         (let tmp

@@ -831,8 +831,10 @@
       ((1 integer) <- copy (1 literal)))
     (main
       (test1))))
-(if (~is 2 (run 'main))
-  (prn "F - calling a user-defined function runs its instructions exactly once"))
+;? (= dump-trace* (obj whitelist '("run")))
+(run 'main)
+(if (~is 2 curr-cycle*)
+  (prn "F - calling a user-defined function runs its instructions exactly once " curr-cycle*))
 ;? (quit)
 
 ; User-defined functions communicate with their callers through two
@@ -885,8 +887,10 @@
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       (test1))))
-(if (~is 4 (run 'main))  ; last reply sometimes not counted. worth fixing?
-  (prn "F - 'reply' executes instructions exactly once"))
+;? (= dump-trace* (obj whitelist '("run")))
+(run 'main)
+(if (~is 5 curr-cycle*)
+  (prn "F - 'reply' executes instructions exactly once " curr-cycle*))
 ;? (quit)
 
 (reset)
@@ -1636,9 +1640,9 @@
       ((1 integer) <- copy (3 literal)))
     (f2
       ((2 integer) <- copy (4 literal)))))
-(let ninsts (run 'f1 'f2)
-  (when (~iso 2 ninsts)
-    (prn "F - scheduler didn't run the right number of instructions: " ninsts)))
+(run 'f1 'f2)
+(when (~iso 2 curr-cycle*)
+  (prn "F - scheduler didn't run the right number of instructions: " curr-cycle*))
 (if (~iso memory* (obj 1 3  2 4))
   (prn "F - scheduler runs multiple functions: " memory*))
 (check-trace-contents "scheduler orders functions correctly"
