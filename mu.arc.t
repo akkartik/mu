@@ -1652,6 +1652,26 @@
     ("run" "f2 0")
   ))
 
+(reset)
+(new-trace "scheduler-alternate")
+(add-fns
+  '((f1
+      ((1 integer) <- copy (3 literal))
+      ((1 integer) <- copy (3 literal)))
+    (f2
+      ((2 integer) <- copy (4 literal))
+      ((2 integer) <- copy (4 literal)))))
+(let old-scheduling-interval scheduling-interval*
+  (= scheduling-interval* 1)
+  (after (run 'f1 'f2)
+     (= scheduling-interval* old-scheduling-interval)))
+(check-trace-contents "scheduler alternates between routines"
+  '(("run" "f1 0")
+    ("run" "f2 0")
+    ("run" "f1 1")
+    ("run" "f2 1")
+  ))
+
 ; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
 ; along with the types array, the magic buffers for args and oargs, and so on.
