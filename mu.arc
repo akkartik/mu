@@ -131,6 +131,45 @@
     (= function*.name (convert-names:convert-braces body))))
 
 ;; managing concurrent routines
+
+; routine = runtime state for a serial thread of execution
+(def make-routine (fn-name)
+  (annotate 'routine (obj call-stack (list
+      (obj fn-name fn-name  pc 0  caller-arg-idx 0)))))
+
+(defextend empty (x)  (isa x 'routine)
+  (no rep.x!call-stack))
+
+(def stack (routine)
+  ((rep routine) 'call-stack))
+
+(mac push-stack (routine op)
+  `(push (obj fn-name ,op  pc 0  caller-arg-idx 0)
+         ((rep ,routine) 'call-stack)))
+
+(mac pop-stack (routine)
+  `(pop ((rep ,routine) 'call-stack)))
+
+(def top (routine)
+  stack.routine.0)
+
+(def body (routine (o idx 0))
+  (function* stack.routine.idx!fn-name))
+
+(mac pc (routine (o idx 0))  ; assignable
+  `((((rep ,routine) 'call-stack) ,idx) 'pc))
+
+(mac caller-arg-idx (routine (o idx 0))  ; assignable
+  `((((rep ,routine) 'call-stack) ,idx) 'caller-arg-idx))
+
+(= scheduling-interval* 500)
+
+(mac caller-args (routine)  ; assignable
+  `((((rep ,routine) 'call-stack) 0) 'args))
+
+(mac results (routine)  ; assignable
+  `((((rep ,routine) 'call-stack) 0) 'results))
+
 (on-init
   (= running-routines* (queue))
   (= completed-routines* (queue))
@@ -300,52 +339,12 @@
       :else
         (err "can't take len of non-array @operand")))
 
-; data structure: routine
-; runtime state for a serial thread of execution
-
-(def make-routine (fn-name)
-  (annotate 'routine (obj call-stack (list
-      (obj fn-name fn-name  pc 0  caller-arg-idx 0)))))
-
-(defextend empty (x)  (isa x 'routine)
-  (no rep.x!call-stack))
-
-(def stack (routine)
-  ((rep routine) 'call-stack))
-
-(mac push-stack (routine op)
-  `(push (obj fn-name ,op  pc 0  caller-arg-idx 0)
-         ((rep ,routine) 'call-stack)))
-
-(mac pop-stack (routine)
-  `(pop ((rep ,routine) 'call-stack)))
-
-(def top (routine)
-  stack.routine.0)
-
-(def body (routine (o idx 0))
-  (function* stack.routine.idx!fn-name))
-
-(mac pc (routine (o idx 0))  ; assignable
-  `((((rep ,routine) 'call-stack) ,idx) 'pc))
-
-(mac caller-arg-idx (routine (o idx 0))  ; assignable
-  `((((rep ,routine) 'call-stack) ,idx) 'caller-arg-idx))
-
-(= scheduling-interval* 500)
-
 (def parse-instr (instr)
   (iflet delim (pos '<- instr)
     (list (cut instr 0 delim)  ; oargs
           (instr (+ delim 1))  ; op
           (cut instr (+ delim 2)))  ; args
     (list nil instr.0 cdr.instr)))
-
-(mac caller-args (routine)  ; assignable
-  `((((rep ,routine) 'call-stack) 0) 'args))
-
-(mac results (routine)  ; assignable
-  `((((rep ,routine) 'call-stack) 0) 'results))
 
 ($:require "charterm/main.rkt")
 
