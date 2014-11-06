@@ -162,8 +162,6 @@
 (mac caller-arg-idx (routine (o idx 0))  ; assignable
   `((((rep ,routine) 'call-stack) ,idx) 'caller-arg-idx))
 
-(= scheduling-interval* 500)
-
 (mac caller-args (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'args))
 
@@ -175,7 +173,9 @@
   (= completed-routines* (queue))
   (= routine* nil)
   (= abort-routine* (parameter nil))
-  (= curr-cycle* 0))
+  (= curr-cycle* 0)
+  (= scheduling-interval* 500)
+  )
 
 ; like arc's 'point' but you can also call ((abort-routine*)) in nested calls
 (mac routine-mark body

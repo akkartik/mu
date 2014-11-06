@@ -1665,10 +1665,8 @@
     (f2
       ((2 integer) <- copy (4 literal))
       ((2 integer) <- copy (4 literal)))))
-(let old-scheduling-interval scheduling-interval*
-  (= scheduling-interval* 1)
-  (after (run 'f1 'f2)
-     (= scheduling-interval* old-scheduling-interval)))
+(= scheduling-interval* 1)
+(run 'f1 'f2)
 (check-trace-contents "scheduler alternates between routines"
   '(("run" "f1 0")
     ("run" "f2 0")
