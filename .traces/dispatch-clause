@@ -31,14 +31,14 @@ cvt1: 1 new-tagged-value ((2 tagged-value-address))
 cvt1: 2 test1 ((3 integer))
 schedule: main
 run: -- nil
-run: main 0: ((1 tagged-value-address) <- new-tagged-value (integer literal) (34 literal))
+run: 1 main 0: ((1 tagged-value-address) <- new-tagged-value (integer literal) (34 literal))
 run: -- nil
-run: new-tagged-value 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+run: 2 new-tagged-value 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
 sizeof: location
 run: writing to oarg 1000 => (default-scope scope-address)
 sz: (default-scope scope-address)
 run: -- ((1000 30))
-run: new-tagged-value 1: ((1 type) <- arg)
+run: 3 new-tagged-value 1: ((1 type) <- arg)
 arg: nil 0 (integer 34)
 setm: (1 type) <= integer
 sz: (1 type)
@@ -48,7 +48,7 @@ addr: incrementing by 1000
 setm: size of (1 type) is 1
 setm: (1 type): setting 1001 to integer
 run: -- ((1000 30) (1001 integer))
-run: new-tagged-value 2: ((2 integer) <- sizeof (1 type))
+run: 4 new-tagged-value 2: ((2 integer) <- sizeof (1 type))
 m: (1 type)
 sz: (1 type)
 addr: (1 type)
@@ -64,7 +64,7 @@ addr: incrementing by 1000
 setm: size of (2 integer) is 1
 setm: (2 integer): setting 1002 to 1
 run: -- ((1000 30) (1001 integer) (1002 1))
-run: new-tagged-value 3: ((3 boolean) <- eq (2 integer) (1 literal))
+run: 5 new-tagged-value 3: ((3 boolean) <- eq (2 integer) (1 literal))
 m: (2 integer)
 sz: (2 integer)
 addr: (2 integer)
@@ -79,14 +79,14 @@ addr: incrementing by 1000
 setm: size of (3 boolean) is 1
 setm: (3 boolean): setting 1003 to t
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t))
-run: new-tagged-value 4: (assert (3 boolean))
+run: 6 new-tagged-value 4: (assert (3 boolean))
 m: (3 boolean)
 sz: (3 boolean)
 addr: (3 boolean)
 addr: initial result: 3
 addr: incrementing by 1000
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t))
-run: new-tagged-value 5: ((4 tagged-value-address) <- new (tagged-value literal))
+run: 7 new-tagged-value 5: ((4 tagged-value-address) <- new (tagged-value literal))
 sizeof: tagged-value
 sizeof: type
 sizeof: location
@@ -99,7 +99,7 @@ addr: incrementing by 1000
 setm: size of (4 tagged-value-address) is 1
 setm: (4 tagged-value-address): setting 1004 to 1031
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031))
-run: new-tagged-value 6: ((5 location) <- get-address (4 tagged-value-address deref) (0 offset))
+run: 8 new-tagged-value 6: ((5 location) <- get-address (4 tagged-value-address deref) (0 offset))
 record-info: (4 tagged-value-address deref) (0 offset)
 addr: (4 tagged-value-address deref)
 addr: initial result: 4
@@ -117,7 +117,7 @@ addr: incrementing by 1000
 setm: size of (5 location) is 1
 setm: (5 location): setting 1005 to 1031
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031))
-run: new-tagged-value 7: ((5 location deref) <- copy (1 type))
+run: 9 new-tagged-value 7: ((5 location deref) <- copy (1 type))
 m: (1 type)
 sz: (1 type)
 addr: (1 type)
@@ -139,7 +139,7 @@ addr: deref 1005 => 1031
 setm: size of (5 location deref) is 1
 setm: (5 location deref): setting 1031 to integer
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1031 integer))
-run: new-tagged-value 8: ((6 location) <- get-address (4 tagged-value-address deref) (1 offset))
+run: 10 new-tagged-value 8: ((6 location) <- get-address (4 tagged-value-address deref) (1 offset))
 record-info: (4 tagged-value-address deref) (1 offset)
 addr: (4 tagged-value-address deref)
 addr: initial result: 4
@@ -157,7 +157,7 @@ addr: incrementing by 1000
 setm: size of (6 location) is 1
 setm: (6 location): setting 1006 to 1032
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer))
-run: new-tagged-value 9: ((6 location deref) <- arg)
+run: 11 new-tagged-value 9: ((6 location deref) <- arg)
 arg: nil 1 (integer 34)
 setm: (6 location deref) <= 34
 sz: (6 location deref)
@@ -174,7 +174,7 @@ addr: deref 1006 => 1032
 setm: size of (6 location deref) is 1
 setm: (6 location deref): setting 1032 to 34
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34))
-run: new-tagged-value 10: (reply (4 tagged-value-address))
+run: 12 new-tagged-value 10: (reply (4 tagged-value-address))
 m: (4 tagged-value-address)
 sz: (4 tagged-value-address)
 addr: (4 tagged-value-address)
@@ -189,14 +189,14 @@ addr: initial result: 1
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1 to 1031
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34))
-run: main 1: ((2 tagged-value-address) <- new-tagged-value (integer literal) (3 literal))
+run: 13 main 1: ((2 tagged-value-address) <- new-tagged-value (integer literal) (3 literal))
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34))
-run: new-tagged-value 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+run: 14 new-tagged-value 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
 sizeof: location
 run: writing to oarg 1033 => (default-scope scope-address)
 sz: (default-scope scope-address)
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30))
-run: new-tagged-value 1: ((1 type) <- arg)
+run: 15 new-tagged-value 1: ((1 type) <- arg)
 arg: nil 0 (integer 3)
 setm: (1 type) <= integer
 sz: (1 type)
@@ -206,7 +206,7 @@ addr: incrementing by 1033
 setm: size of (1 type) is 1
 setm: (1 type): setting 1034 to integer
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer))
-run: new-tagged-value 2: ((2 integer) <- sizeof (1 type))
+run: 16 new-tagged-value 2: ((2 integer) <- sizeof (1 type))
 m: (1 type)
 sz: (1 type)
 addr: (1 type)
@@ -222,7 +222,7 @@ addr: incrementing by 1033
 setm: size of (2 integer) is 1
 setm: (2 integer): setting 1035 to 1
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1))
-run: new-tagged-value 3: ((3 boolean) <- eq (2 integer) (1 literal))
+run: 17 new-tagged-value 3: ((3 boolean) <- eq (2 integer) (1 literal))
 m: (2 integer)
 sz: (2 integer)
 addr: (2 integer)
@@ -237,14 +237,14 @@ addr: incrementing by 1033
 setm: size of (3 boolean) is 1
 setm: (3 boolean): setting 1036 to t
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t))
-run: new-tagged-value 4: (assert (3 boolean))
+run: 18 new-tagged-value 4: (assert (3 boolean))
 m: (3 boolean)
 sz: (3 boolean)
 addr: (3 boolean)
 addr: initial result: 3
 addr: incrementing by 1033
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t))
-run: new-tagged-value 5: ((4 tagged-value-address) <- new (tagged-value literal))
+run: 19 new-tagged-value 5: ((4 tagged-value-address) <- new (tagged-value literal))
 sizeof: tagged-value
 sizeof: type
 sizeof: location
@@ -257,7 +257,7 @@ addr: incrementing by 1033
 setm: size of (4 tagged-value-address) is 1
 setm: (4 tagged-value-address): setting 1037 to 1064
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064))
-run: new-tagged-value 6: ((5 location) <- get-address (4 tagged-value-address deref) (0 offset))
+run: 20 new-tagged-value 6: ((5 location) <- get-address (4 tagged-value-address deref) (0 offset))
 record-info: (4 tagged-value-address deref) (0 offset)
 addr: (4 tagged-value-address deref)
 addr: initial result: 4
@@ -275,7 +275,7 @@ addr: incrementing by 1033
 setm: size of (5 location) is 1
 setm: (5 location): setting 1038 to 1064
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064))
-run: new-tagged-value 7: ((5 location deref) <- copy (1 type))
+run: 21 new-tagged-value 7: ((5 location deref) <- copy (1 type))
 m: (1 type)
 sz: (1 type)
 addr: (1 type)
@@ -297,7 +297,7 @@ addr: deref 1038 => 1064
 setm: size of (5 location deref) is 1
 setm: (5 location deref): setting 1064 to integer
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1064 integer))
-run: new-tagged-value 8: ((6 location) <- get-address (4 tagged-value-address deref) (1 offset))
+run: 22 new-tagged-value 8: ((6 location) <- get-address (4 tagged-value-address deref) (1 offset))
 record-info: (4 tagged-value-address deref) (1 offset)
 addr: (4 tagged-value-address deref)
 addr: initial result: 4
@@ -315,7 +315,7 @@ addr: incrementing by 1033
 setm: size of (6 location) is 1
 setm: (6 location): setting 1039 to 1065
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer))
-run: new-tagged-value 9: ((6 location deref) <- arg)
+run: 23 new-tagged-value 9: ((6 location deref) <- arg)
 arg: nil 1 (integer 3)
 setm: (6 location deref) <= 3
 sz: (6 location deref)
@@ -332,7 +332,7 @@ addr: deref 1039 => 1065
 setm: size of (6 location deref) is 1
 setm: (6 location deref): setting 1065 to 3
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3))
-run: new-tagged-value 10: (reply (4 tagged-value-address))
+run: 24 new-tagged-value 10: (reply (4 tagged-value-address))
 m: (4 tagged-value-address)
 sz: (4 tagged-value-address)
 addr: (4 tagged-value-address)
@@ -347,7 +347,7 @@ addr: initial result: 2
 setm: size of (2 tagged-value-address) is 1
 setm: (2 tagged-value-address): setting 2 to 1064
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3))
-run: main 2: ((3 integer) <- test1 (1 tagged-value-address) (2 tagged-value-address))
+run: 25 main 2: ((3 integer) <- test1 (1 tagged-value-address) (2 tagged-value-address))
 m: (1 tagged-value-address)
 sz: (1 tagged-value-address)
 addr: (1 tagged-value-address)
@@ -357,12 +357,12 @@ sz: (2 tagged-value-address)
 addr: (2 tagged-value-address)
 addr: initial result: 2
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3))
-run: test1 0: ((default-scope scope-address) <- new (scope literal) (20 literal))
+run: 26 test1 0: ((default-scope scope-address) <- new (scope literal) (20 literal))
 sizeof: location
 run: writing to oarg 1066 => (default-scope scope-address)
 sz: (default-scope scope-address)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20))
-run: test1 1: ((1 tagged-value-address) <- arg)
+run: 27 test1 1: ((1 tagged-value-address) <- arg)
 arg: nil 0 (1031 1064)
 setm: (1 tagged-value-address) <= 1031
 sz: (1 tagged-value-address)
@@ -372,7 +372,7 @@ addr: incrementing by 1066
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1067 to 1031
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031))
-run: test1 2: ((2 integer) (3 boolean) <- maybe-coerce (1 tagged-value-address deref) (integer literal))
+run: 28 test1 2: ((2 integer) (3 boolean) <- maybe-coerce (1 tagged-value-address deref) (integer literal))
 m: (1 tagged-value-address deref)
 sz: (1 tagged-value-address deref)
 m: (1 location)
@@ -393,12 +393,12 @@ addr: initial result: 1
 addr: incrementing by 1066
 sz: (1031 tagged-value)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031))
-run: maybe-coerce 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+run: 29 maybe-coerce 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
 sizeof: location
 run: writing to oarg 1087 => (default-scope scope-address)
 sz: (default-scope scope-address)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30))
-run: maybe-coerce 1: ((1 tagged-value-address) <- new (tagged-value literal))
+run: 30 maybe-coerce 1: ((1 tagged-value-address) <- new (tagged-value literal))
 sizeof: tagged-value
 sizeof: type
 sizeof: location
@@ -411,7 +411,7 @@ addr: incrementing by 1087
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1088 to 1118
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30) (1088 1118))
-run: maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
+run: 31 maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
 arg: nil 0 (#(tagged record (integer 34 . nil)) integer)
 setm: (1 tagged-value-address deref) <= #(tagged record (integer 34 . nil))
 sz: (1 tagged-value-address deref)
@@ -429,7 +429,7 @@ setm: size of (1 tagged-value-address deref) is 2
 setm: (1 tagged-value-address deref): setting 1118 to integer
 setm: (1 tagged-value-address deref): setting 1119 to 34
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30) (1088 1118) (1118 integer) (1119 34))
-run: maybe-coerce 3: ((2 type) <- arg)
+run: 32 maybe-coerce 3: ((2 type) <- arg)
 arg: nil 1 (#(tagged record (integer 34 . nil)) integer)
 setm: (2 type) <= integer
 sz: (2 type)
@@ -439,7 +439,7 @@ addr: incrementing by 1087
 setm: size of (2 type) is 1
 setm: (2 type): setting 1089 to integer
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30) (1088 1118) (1089 integer) (1118 integer) (1119 34))
-run: maybe-coerce 4: ((3 type) <- get (1 tagged-value-address deref) (0 offset))
+run: 33 maybe-coerce 4: ((3 type) <- get (1 tagged-value-address deref) (0 offset))
 record-info: (1 tagged-value-address deref) (0 offset)
 addr: (1 tagged-value-address deref)
 addr: initial result: 1
@@ -461,7 +461,7 @@ addr: incrementing by 1087
 setm: size of (3 type) is 1
 setm: (3 type): setting 1090 to integer
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1118 integer) (1119 34))
-run: maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
+run: 34 maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
 m: (3 type)
 sz: (3 type)
 addr: (3 type)
@@ -481,14 +481,14 @@ addr: incrementing by 1087
 setm: size of (4 boolean) is 1
 setm: (4 boolean): setting 1091 to t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1118 integer) (1119 34))
-run: maybe-coerce 6: (jump-if (4 boolean) (1 offset))
+run: 35 maybe-coerce 6: (jump-if (4 boolean) (1 offset))
 m: (4 boolean)
 sz: (4 boolean)
 addr: (4 boolean)
 addr: initial result: 4
 addr: incrementing by 1087
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1118 integer) (1119 34))
-run: maybe-coerce 8: ((5 location) <- get (1 tagged-value-address deref) (1 offset))
+run: 36 maybe-coerce 8: ((5 location) <- get (1 tagged-value-address deref) (1 offset))
 record-info: (1 tagged-value-address deref) (1 offset)
 addr: (1 tagged-value-address deref)
 addr: initial result: 1
@@ -510,7 +510,7 @@ addr: incrementing by 1087
 setm: size of (5 location) is 1
 setm: (5 location): setting 1092 to 34
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34))
-run: maybe-coerce 9: (reply (5 location) (4 boolean))
+run: 37 maybe-coerce 9: (reply (5 location) (4 boolean))
 m: (5 location)
 sz: (5 location)
 addr: (5 location)
@@ -539,14 +539,14 @@ addr: incrementing by 1066
 setm: size of (3 boolean) is 1
 setm: (3 boolean): setting 1069 to t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34))
-run: test1 3: (jump-unless (3 boolean) (4 offset))
+run: 38 test1 3: (jump-unless (3 boolean) (4 offset))
 m: (3 boolean)
 sz: (3 boolean)
 addr: (3 boolean)
 addr: initial result: 3
 addr: incrementing by 1066
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34))
-run: test1 4: ((4 tagged-value-address) <- arg)
+run: 39 test1 4: ((4 tagged-value-address) <- arg)
 arg: nil 1 (1031 1064)
 setm: (4 tagged-value-address) <= 1064
 sz: (4 tagged-value-address)
@@ -556,7 +556,7 @@ addr: incrementing by 1066
 setm: size of (4 tagged-value-address) is 1
 setm: (4 tagged-value-address): setting 1070 to 1064
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34))
-run: test1 5: ((5 integer) <- maybe-coerce (4 tagged-value-address deref) (integer literal))
+run: 40 test1 5: ((5 integer) <- maybe-coerce (4 tagged-value-address deref) (integer literal))
 m: (4 tagged-value-address deref)
 sz: (4 tagged-value-address deref)
 m: (4 location)
@@ -577,12 +577,12 @@ addr: initial result: 4
 addr: incrementing by 1066
 sz: (1064 tagged-value)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34))
-run: maybe-coerce 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
+run: 41 maybe-coerce 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
 sizeof: location
 run: writing to oarg 1120 => (default-scope scope-address)
 sz: (default-scope scope-address)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30))
-run: maybe-coerce 1: ((1 tagged-value-address) <- new (tagged-value literal))
+run: 42 maybe-coerce 1: ((1 tagged-value-address) <- new (tagged-value literal))
 sizeof: tagged-value
 sizeof: type
 sizeof: location
@@ -595,7 +595,7 @@ addr: incrementing by 1120
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1121 to 1151
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151))
-run: maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
+run: 43 maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
 arg: nil 0 (#(tagged record (integer 3 . nil)) integer)
 setm: (1 tagged-value-address deref) <= #(tagged record (integer 3 . nil))
 sz: (1 tagged-value-address deref)
@@ -613,7 +613,7 @@ setm: size of (1 tagged-value-address deref) is 2
 setm: (1 tagged-value-address deref): setting 1151 to integer
 setm: (1 tagged-value-address deref): setting 1152 to 3
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151) (1151 integer) (1152 3))
-run: maybe-coerce 3: ((2 type) <- arg)
+run: 44 maybe-coerce 3: ((2 type) <- arg)
 arg: nil 1 (#(tagged record (integer 3 . nil)) integer)
 setm: (2 type) <= integer
 sz: (2 type)
@@ -623,7 +623,7 @@ addr: incrementing by 1120
 setm: size of (2 type) is 1
 setm: (2 type): setting 1122 to integer
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151) (1122 integer) (1151 integer) (1152 3))
-run: maybe-coerce 4: ((3 type) <- get (1 tagged-value-address deref) (0 offset))
+run: 45 maybe-coerce 4: ((3 type) <- get (1 tagged-value-address deref) (0 offset))
 record-info: (1 tagged-value-address deref) (0 offset)
 addr: (1 tagged-value-address deref)
 addr: initial result: 1
@@ -645,7 +645,7 @@ addr: incrementing by 1120
 setm: size of (3 type) is 1
 setm: (3 type): setting 1123 to integer
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151) (1122 integer) (1123 integer) (1151 integer) (1152 3))
-run: maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
+run: 46 maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
 m: (3 type)
 sz: (3 type)
 addr: (3 type)
@@ -665,14 +665,14 @@ addr: incrementing by 1120
 setm: size of (4 boolean) is 1
 setm: (4 boolean): setting 1124 to t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151) (1122 integer) (1123 integer) (1124 t) (1151 integer) (1152 3))
-run: maybe-coerce 6: (jump-if (4 boolean) (1 offset))
+run: 47 maybe-coerce 6: (jump-if (4 boolean) (1 offset))
 m: (4 boolean)
 sz: (4 boolean)
 addr: (4 boolean)
 addr: initial result: 4
 addr: incrementing by 1120
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151) (1122 integer) (1123 integer) (1124 t) (1151 integer) (1152 3))
-run: maybe-coerce 8: ((5 location) <- get (1 tagged-value-address deref) (1 offset))
+run: 48 maybe-coerce 8: ((5 location) <- get (1 tagged-value-address deref) (1 offset))
 record-info: (1 tagged-value-address deref) (1 offset)
 addr: (1 tagged-value-address deref)
 addr: initial result: 1
@@ -694,7 +694,7 @@ addr: incrementing by 1120
 setm: size of (5 location) is 1
 setm: (5 location): setting 1125 to 3
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151) (1122 integer) (1123 integer) (1124 t) (1125 3) (1151 integer) (1152 3))
-run: maybe-coerce 9: (reply (5 location) (4 boolean))
+run: 49 maybe-coerce 9: (reply (5 location) (4 boolean))
 m: (5 location)
 sz: (5 location)
 addr: (5 location)
@@ -715,7 +715,7 @@ addr: incrementing by 1066
 setm: size of (5 integer) is 1
 setm: (5 integer): setting 1071 to 3
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1071 3) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151) (1122 integer) (1123 integer) (1124 t) (1125 3) (1151 integer) (1152 3))
-run: test1 6: ((6 integer) <- add (2 integer) (5 integer))
+run: 50 test1 6: ((6 integer) <- add (2 integer) (5 integer))
 m: (2 integer)
 sz: (2 integer)
 addr: (2 integer)
@@ -746,7 +746,7 @@ addr: incrementing by 1066
 setm: size of (6 integer) is 1
 setm: (6 integer): setting 1072 to 37
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1071 3) (1072 37) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151) (1122 integer) (1123 integer) (1124 t) (1125 3) (1151 integer) (1152 3))
-run: test1 7: (reply (6 integer))
+run: 51 test1 7: (reply (6 integer))
 m: (6 integer)
 sz: (6 integer)
 addr: (6 integer)
