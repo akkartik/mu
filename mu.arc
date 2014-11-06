@@ -130,7 +130,41 @@
   (each (name . body) fns
     (= function*.name (convert-names:convert-braces body))))
 
-;; running mu
+;; managing concurrent routines
+(on-init
+  (= running-routines* (queue))
+  (= completed-routines* (queue))
+  (= routine* nil)
+  (= abort-routine* (parameter nil)))
+
+; like arc's 'point' but you can also call ((abort-routine*)) in nested calls
+(mac routine-mark body
+  (w/uniq (g p)
+    `(ccc (fn (,g)
+            (parameterize abort-routine* (fn ((o ,p)) (,g ,p))
+              ,@body)))))
+
+(def run fn-names
+  (ret result 0
+    (each it fn-names
+      (enq make-routine.it running-routines*))
+    ; simple round-robin scheduler
+    (while (~empty running-routines*)
+      (= routine* deq.running-routines*)
+      (trace "schedule" top.routine*!fn-name)
+      (whenlet insts-run (routine-mark:run-for-time-slice scheduling-interval*)
+        (= result (+ result insts-run)))
+      (if (~empty routine*)
+        (enq routine* running-routines*)
+        (enq-limit routine* completed-routines*)))))
+
+(def die (msg)
+  (= rep.routine*!error msg)
+  (= rep.routine*!stack-trace rep.routine*!call-stack)
+  (wipe rep.routine*!call-stack)
+  ((abort-routine*)))
+
+;; running a single routine
 (mac v (operand)  ; for value
   `(,operand 0))
 
@@ -313,39 +347,6 @@
 
 (mac results (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'results))
-
-(on-init
-  (= running-routines* (queue))
-  (= completed-routines* (queue))
-  (= routine* nil)
-  (= abort-routine* (parameter nil)))
-
-; like arc's 'point' but you can also call ((abort-routine*)) in nested calls
-(mac routine-mark body
-  (w/uniq (g p)
-    `(ccc (fn (,g)
-            (parameterize abort-routine* (fn ((o ,p)) (,g ,p))
-              ,@body)))))
-
-(def run fn-names
-  (ret result 0
-    (each it fn-names
-      (enq make-routine.it running-routines*))
-    ; simple round-robin scheduler
-    (while (~empty running-routines*)
-      (= routine* deq.running-routines*)
-      (trace "schedule" top.routine*!fn-name)
-      (whenlet insts-run (routine-mark:run-for-time-slice scheduling-interval*)
-        (= result (+ result insts-run)))
-      (if (~empty routine*)
-        (enq routine* running-routines*)
-        (enq-limit routine* completed-routines*)))))
-
-(def die (msg)
-  (= rep.routine*!error msg)
-  (= rep.routine*!stack-trace rep.routine*!call-stack)
-  (wipe rep.routine*!call-stack)
-  ((abort-routine*)))
 
 ($:require "charterm/main.rkt")
 
