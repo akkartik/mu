@@ -171,6 +171,8 @@
 (on-init
   (= running-routines* (queue))
   (= completed-routines* (queue))
+  ; set of sleeping routines; don't modify routines while they're in this table
+  (= sleeping-routines* (table))
   (= routine* nil)
   (= abort-routine* (parameter nil))
   (= curr-cycle* 0)
@@ -189,17 +191,33 @@
     (enq make-routine.it running-routines*))
   ; simple round-robin scheduler
   (while (~empty running-routines*)
+    (each (routine _) sleeping-routines*
+      (awhen (> curr-cycle* rep.routine!sleep.1)
+        (trace "schedule" "waking up " top.routine!fn-name)
+        (wipe sleeping-routines*.routine)  ; before modifying routine below
+        (wipe rep.routine!sleep)
+        (++ pc.routine)  ; complete the sleep instruction
+        (enq routine running-routines*)))
     (= routine* deq.running-routines*)
     (trace "schedule" top.routine*!fn-name)
     (routine-mark:run-for-time-slice scheduling-interval*)
-    (if (~empty routine*)
-      (enq routine* running-routines*)
-      (enq-limit routine* completed-routines*))))
+    (if rep.routine*!sleep
+          (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
+              (set sleeping-routines*.routine*))
+        (~empty routine*)
+          (enq routine* running-routines*)
+        :else
+          (enq-limit routine* completed-routines*))))
 
 (def die (msg)
   (= rep.routine*!error msg)
   (= rep.routine*!stack-trace rep.routine*!call-stack)
   (wipe rep.routine*!call-stack)
+  ((abort-routine*)))
+
+(def sleep-for (delay)
+  (trace "run" "sleeping until " (+ curr-cycle* delay))
+  (= rep.routine*!sleep `(literal ,(+ curr-cycle* delay)))
   ((abort-routine*)))
 
 ;; running a single routine
@@ -465,6 +483,8 @@
                 ; inspect it
                 assert
                   (assert (m arg.0))
+                sleep
+                  (sleep-for (m arg.0))
 
                 ; text interaction
                 cls
