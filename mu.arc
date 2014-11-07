@@ -602,6 +602,7 @@
 
 (def sizeof (type)
   (trace "sizeof" type)
+  (assert types*.type "sizeof: no such type @type")
   (if (~or types*.type!record types*.type!array)
         types*.type!size
       types*.type!record
@@ -715,6 +716,7 @@
           (if (in op 'get 'get-address)
             (with (basetype  (typeinfo args.0)
                    field  (v args.1))
+              (assert basetype "no such type @args.0")
               (trace "cn0" "field-access " field)
               ; todo: need to rename args.0 as well?
               (when (pos 'deref (metadata args.0))
@@ -888,6 +890,34 @@
   ((watch boolean-address) <- get-address (chan channel) (read-watch offset))
   ((watch boolean-address deref) <- copy (t literal))
   (reply (result tagged-value) (chan channel)))
+
+; An empty channel has first-empty and first-full both at the same value.
+; A full channel has first-empty just before first-full, wasting one slot.
+; (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
+
+(init-fn empty?
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((chan channel) <- arg)
+  ((full integer) <- get (chan channel) (first-full offset))
+  ((free integer) <- get (chan channel) (first-free offset))
+  ((result boolean) <- eq (full integer) (free integer))
+  (reply (result boolean)))
+
+(init-fn full?
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((chan channel) <- arg)
+  ((full integer) <- get (chan channel) (first-full offset))
+  ((curr integer) <- get (chan channel) (first-free offset))
+  ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
+  ((qlen integer) <- len (q tagged-value-array-address deref))
+  ((curr integer) <- add (curr integer) (1 literal))
+  { begin
+    ((remaining? boolean) <- lt (curr integer) (qlen integer))
+    (break-if (remaining? boolean))
+    ((curr integer) <- copy (0 literal))
+  }
+  ((result boolean) <- eq (full integer) (curr integer))
+  (reply (result boolean)))
 
 ; drop all traces while processing above functions
 (on-init

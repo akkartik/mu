@@ -147,6 +147,7 @@
 ; look for it. Everything outside 'add-fns' is just test-harness details.
 
 (reset)
+;? (set dump-trace*)
 (new-trace "literal")
 (add-fns
   '((main
@@ -1937,11 +1938,94 @@
         (~is 0 memory*.5))
   (prn "F - 'read' can wrap pointer back to start"))
 
-; An empty channel has first-empty and first-full both at the same value.
-; A full channel has first-empty just before first-full, wasting one slot.
-; (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
+(reset)
+(new-trace "channel-new-empty-not-full")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ((2 boolean) <- empty? (1 channel-address deref))
+      ((3 boolean) <- full? (1 channel-address deref)))))
+;? (set dump-trace*)
+(run 'main)
+;? (prn memory*)
+(if (or (~is t memory*.2)
+        (~is nil memory*.3))
+  (prn "F - a new channel is always empty, never full"))
 
-; TODO
+(reset)
+(new-trace "channel-write-not-empty")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ((4 boolean) <- empty? (1 channel-address deref))
+      ((5 boolean) <- full? (1 channel-address deref)))))
+;? (set dump-trace*)
+(run 'main)
+;? (prn memory*)
+(if (or (~is nil memory*.4)
+        (~is nil memory*.5))
+  (prn "F - a channel after writing is never empty"))
+
+(reset)
+(new-trace "channel-write-full")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (2 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ((4 boolean) <- empty? (1 channel-address deref))
+      ((5 boolean) <- full? (1 channel-address deref)))))
+;? (set dump-trace*)
+(run 'main)
+;? (prn memory*)
+(if (or (~is nil memory*.4)
+        (~is t memory*.5))
+  (prn "F - a channel after writing may be full"))
+
+(reset)
+(new-trace "channel-read-not-full")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      (_ (1 channel-address deref) <- read (1 channel-address deref))
+      ((4 boolean) <- empty? (1 channel-address deref))
+      ((5 boolean) <- full? (1 channel-address deref)))))
+;? (set dump-trace*)
+(run 'main)
+;? (prn memory*)
+(if (or (~is nil memory*.4)
+        (~is nil memory*.5))
+  (prn "F - a channel after reading is never full"))
+
+(reset)
+(new-trace "channel-read-empty")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      (_ (1 channel-address deref) <- read (1 channel-address deref))
+      ((4 boolean) <- empty? (1 channel-address deref))
+      ((5 boolean) <- full? (1 channel-address deref)))))
+;? (set dump-trace*)
+(run 'main)
+;? (prn memory*)
+(if (or (~is t memory*.4)
+        (~is nil memory*.5))
+  (prn "F - a channel after reading may be empty"))
 
 ; We'd like to block routines when they write to a full channel or read from
 ; an empty channel.
