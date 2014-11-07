@@ -78,7 +78,6 @@
 (= curr-trace-file* nil)
 (on-init
   (awhen curr-trace-file*
-;?     (prn "reset: " it)
     (tofile (+ trace-dir* it)
       (each (label trace) (as cons traces*)
         (pr label ": " trace))))
@@ -91,7 +90,6 @@
 
 (= dump-trace* nil)
 (def trace (label . args)
-;?   (prn "trace: " dump-trace*)
   (when (or (is dump-trace* t)
             (and dump-trace* (pos label dump-trace*!whitelist))
             (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
@@ -194,23 +192,19 @@
              (~empty sleeping-routines*))
     (point continue
     (each (routine _) sleeping-routines*
-;?       (prn "DDD " rep.routine!sleep)
       (awhen (case rep.routine!sleep.1
                 literal
                   (> curr-cycle* rep.routine!sleep.0)
                 ;else
                   (aand (m rep.routine!sleep)
-;?                   (aand (m (prn2 "CCC " rep.routine!sleep))
                         (~is it 0)))
         (trace "schedule" "waking up " top.routine!fn-name)
-;?         (prn "BBB " routine)
         (wipe sleeping-routines*.routine)  ; before modifying routine below
         (wipe rep.routine!sleep)
         (++ pc.routine)  ; complete the sleep instruction
         (enq routine running-routines*)))
     (when (empty running-routines*)
       ; ensure forward progress
-;?       (prn sleeping-routines*)
       (trace "schedule" "skipping cycle " curr-cycle*)
       (++ curr-cycle*)
       (continue))
@@ -219,7 +213,6 @@
     (routine-mark:run-for-time-slice scheduling-interval*)
     (if rep.routine*!sleep
           (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
-;?               (prn "AAA " routine*)
               (set sleeping-routines*.routine*))
         (~empty routine*)
           (enq routine* running-routines*)
@@ -625,13 +618,10 @@
             ; ultimately there'll be no nesting and curlies will just be in a
             ; line by themselves.
             (do
-;?               (prn `(open ,pc))
               (push `(open ,pc) locs)
               (recur cdr.instr)
-;?               (prn `(close ,pc))
               (push `(close ,pc) locs))))))
     (zap rev locs)
-;?     (prn locs)
     (with (pc  0
            stack  ())  ; elems are pcs
       (accum yield
@@ -659,12 +649,10 @@
                       (yield `(jump (,(close-offset pc locs) offset))))
                   break-if
                     (do
-;?                       (prn "break-if: " instr)
                       (assert (is oarg nil) "break-if: can't take oarg @instr")
                       (yield `(jump-if ,arg.0 (,(close-offset pc locs) offset))))
                   break-unless
                     (do
-;?                       (prn "break-if: " instr)
                       (assert (is oarg nil) "break-unless: can't take oarg @instr")
                       (yield `(jump-unless ,arg.0 (,(close-offset pc locs) offset))))
                   continue
@@ -691,7 +679,6 @@
     (with (stacksize 0
            done nil)
       (each (state loc) locs
-;?         (prn "  :" close " " state " - " loc)
         (if (< loc pc)
               nil  ; do nothing
             (no done)
