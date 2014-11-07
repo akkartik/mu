@@ -222,11 +222,6 @@
   (wipe rep.routine*!call-stack)
   ((abort-routine*)))
 
-(def sleep-for (delay)
-  (trace "run" "sleeping until " (+ curr-cycle* delay))
-  (= rep.routine*!sleep `(,(+ curr-cycle* delay) literal))
-  ((abort-routine*)))
-
 ;; running a single routine
 (mac v (operand)  ; for value
   `(,operand 0))
@@ -491,7 +486,12 @@
                 assert
                   (assert (m arg.0))
                 sleep
-                  (sleep-for (m arg.0))
+                  (let operand arg.0
+                    (assert (is ty.operand 'literal) "sleep can only handle literal deltas")
+                    (let delay v.operand
+                      (trace "run" "sleeping until " (+ curr-cycle* delay))
+                      (= rep.routine*!sleep `(,(+ curr-cycle* delay) literal)))
+                    ((abort-routine*)))
 
                 ; text interaction
                 cls
