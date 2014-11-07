@@ -1,5 +1,7 @@
 ; Mu: An exploration on making the global structure of programs more accessible.
 ;
+;; Motivation
+;
 ;   "Is it a language, or an operating system, or a virtual machine? Mu."
 ;   (with apologies to Robert Pirsig: http://en.wikipedia.org/wiki/Mu_%28negative%29#In_popular_culture)
 ;
@@ -100,6 +102,8 @@
 
 ; ---
 
+;; Getting started
+;
 ; Mu is currently built atop Racket and Arc, but this is temporary and
 ; contingent. We want to keep our options open, whether to port to a different
 ; host language, and easy to rewrite to native code for any platform. So we'll
@@ -409,6 +413,8 @@
 (if (~iso memory* (obj 1 2  2 36))
   (prn "F - instructions can perform indirect addressing on output arg"))
 
+;; Compound data types
+;
 ; Until now we've dealt with scalar types like integers and booleans and
 ; addresses, where mu looks like other assembly languages. In addition, mu
 ; provides first-class support for compound types: arrays and records.
@@ -824,6 +830,8 @@
                       (~is (memory* (+ third 2) nil)))))))
     (prn "F - 'new-list' can construct a list of integers")))
 
+;; Functions
+;
 ; Just like the table of types is centralized, functions are conceptualized as
 ; a centralized table of operations just like the "primitives" we've seen so
 ; far. If you create a function you can call it like any other op.
@@ -1113,6 +1121,8 @@
                          4 1  5 3  6 4))
   (prn "F - without args, 'reply' returns values from previous 'prepare-reply'."))
 
+;; Structured programming
+;
 ; Our control operators are quite inconvenient to use, so mu provides a
 ; lightweight tool called 'convert-braces' to work in a slightly more
 ; convenient format with nested braces:
@@ -1283,6 +1293,8 @@
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
   (prn "F - continue might never trigger"))
 
+;; Variables
+;
 ; A big convenience high-level languages provide is the ability to name memory
 ; locations. In mu, a lightweight tool called 'convert-names' provides this
 ; convenience.
@@ -1329,7 +1341,7 @@
             ((default-scope integer) <- add (1 integer) (y integer global))))
   (prn "F - convert-names never renames global operands"))
 
-; kludgy support for 'fork'
+; kludgy support for 'fork' below
 (reset)
 ;? (new-trace "convert-names-functions")
 (if (~iso (convert-names
@@ -1542,6 +1554,8 @@
             (~is 23 (memory* (+ before 1))))
     (prn "F - default-scope skipped for locations with metadata 'global'")))
 
+;; Dynamic dispatch
+;
 ; Putting it all together, here's how you define generic functions that run
 ; different code based on the types of their args.
 
@@ -1653,6 +1667,8 @@
 (if (~and (is memory*.3 t) (is memory*.12 37))
   (prn "F - different calls can exercise different clauses of the same function"))
 
+;; Concurrency
+;
 ; A rudimentary process scheduler. You can 'run' multiple functions at once,
 ; and they share the virtual processor.
 ;
@@ -1794,36 +1810,21 @@
   (if (no rep.last-routine!error)
     (prn "F - 'index' throws an error if out of bounds")))
 
-; Lightweight tools can also operate on quoted lists of statements surrounded
-; by square brackets. In the example below, we mimic Go's 'defer' keyword
-; using 'convert-quotes'. It lets us write code anywhere in a function, but
-; have it run just before the function exits. Great for keeping code to
-; reclaim memory or other resources close to the code to allocate it. (C++
-; programmers know this as RAII.) We'll use 'defer' when we build a memory
-; deallocation routine like C's 'free'.
+;; Synchronization
 ;
-; More powerful reorderings are also possible like in Literate Programming or
-; Aspect-Oriented Programming; one advantage of prohibiting arbitrarily nested
-; code is that we can naturally name 'join points' wherever we want.
-
-(reset)
-;? (new-trace "convert-quotes-defer")
-(if (~iso (convert-quotes
-            '(((1 integer) <- copy (4 literal))
-              (defer [
-                       ((3 integer) <- copy (6 literal))
-                     ])
-              ((2 integer) <- copy (5 literal))))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (5 literal))
-            ((3 integer) <- copy (6 literal))))
-  (prn "F - convert-quotes can handle 'defer'"))
-
-; Synchronization using channels like in Erlang or Go.
+; Mu synchronizes using channels rather than locks, like Erlang and Go.
+;
 ; The two ends of a channel will usually belong to different routines, but
 ; each end should only be used by a single one. Don't try to read from or
 ; write to it from multiple routines at once.
+;
+; To avoid locking, writer and reader will never write to the same location.
+; So channels will include fields in pairs, one for the writer and one for the
+; reader.
 
+; The core circular buffer contains values at index 'first-full' up to (but
+; not including) index 'first-empty'. The reader always modifies it at
+; first-full, while the writer always modifies it at first-empty.
 (reset)
 (new-trace "channel-new")
 (add-fns
@@ -1883,39 +1884,6 @@
   (prn "F - 'read' dequeues item from channel"))
 
 (reset)
-(new-trace "channel-write-watch")
-(add-fns
-  '((main
-      ((1 channel-address) <- new-channel (3 literal))
-      ((2 integer-address) <- new (integer literal))
-      ((2 integer-address deref) <- copy (34 literal))
-      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
-      ((4 boolean) <- get (1 channel-address deref) (read-watch offset))
-      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
-      ((5 boolean) <- get (1 channel-address deref) (write-watch offset)))))
-(run 'main)
-(if (or (~is nil memory*.4)
-        (~is t memory*.5))
-  (prn "F - 'write' sets channel watch"))
-
-(reset)
-(new-trace "channel-read-watch")
-(add-fns
-  '((main
-      ((1 channel-address) <- new-channel (3 literal))
-      ((2 integer-address) <- new (integer literal))
-      ((2 integer-address deref) <- copy (34 literal))
-      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
-      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
-      ((4 boolean) <- get (1 channel-address deref) (read-watch offset))
-      (_ (1 channel-address deref) <- read (1 channel-address deref))
-      ((5 integer) <- get (1 channel-address deref) (read-watch offset)))))
-(run 'main)
-(if (or (~is nil memory*.4)
-        (~is t memory*.5))
-  (prn "F - 'read' sets channel watch"))
-
-(reset)
 (new-trace "channel-write-wrap")
 (add-fns
   '((main
@@ -1968,5 +1936,81 @@
 (if (or (~is 1 memory*.4)
         (~is 0 memory*.5))
   (prn "F - 'read' can wrap pointer back to start"))
+
+; An empty channel has first-empty and first-full both at the same value.
+; A full channel has first-empty just before first-full, wasting one slot.
+; (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
+
+; TODO
+
+; We'd like to block routines when they write to a full channel or read from
+; an empty channel.
+
+; TODO
+
+; But how will the sleeping routines wake up? Our scheduler can't watch for
+; changes to arbitrary values, just tell us if a specific raw location becomes
+; non-zero (see the sleep-location test above). So both reader and writer set
+; 'read-watch' and 'write-watch' respectively at the end of a successful call.
+
+(reset)
+(new-trace "channel-write-watch")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((4 boolean) <- get (1 channel-address deref) (read-watch offset))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ((5 boolean) <- get (1 channel-address deref) (write-watch offset)))))
+(run 'main)
+(if (or (~is nil memory*.4)
+        (~is t memory*.5))
+  (prn "F - 'write' sets channel watch"))
+
+(reset)
+(new-trace "channel-read-watch")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ((4 boolean) <- get (1 channel-address deref) (read-watch offset))
+      (_ (1 channel-address deref) <- read (1 channel-address deref))
+      ((5 integer) <- get (1 channel-address deref) (read-watch offset)))))
+(run 'main)
+(if (or (~is nil memory*.4)
+        (~is t memory*.5))
+  (prn "F - 'read' sets channel watch"))
+
+;; Separating concerns
+;
+; Lightweight tools can also operate on quoted lists of statements surrounded
+; by square brackets. In the example below, we mimic Go's 'defer' keyword
+; using 'convert-quotes'. It lets us write code anywhere in a function, but
+; have it run just before the function exits. Great for keeping code to
+; reclaim memory or other resources close to the code to allocate it. (C++
+; programmers know this as RAII.) We'll use 'defer' when we build a memory
+; deallocation routine like C's 'free'.
+;
+; More powerful reorderings are also possible like in Literate Programming or
+; Aspect-Oriented Programming; one advantage of prohibiting arbitrarily nested
+; code is that we can naturally name 'join points' wherever we want.
+
+(reset)
+;? (new-trace "convert-quotes-defer")
+(if (~iso (convert-quotes
+            '(((1 integer) <- copy (4 literal))
+              (defer [
+                       ((3 integer) <- copy (6 literal))
+                     ])
+              ((2 integer) <- copy (5 literal))))
+          '(((1 integer) <- copy (4 literal))
+            ((2 integer) <- copy (5 literal))
+            ((3 integer) <- copy (6 literal))))
+  (prn "F - convert-quotes can handle 'defer'"))
 
 (reset)  ; end file with this to persist the trace for the final test
