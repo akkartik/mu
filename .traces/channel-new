@@ -1,5 +1,9 @@
 cvt0: 0 ((1 channel-address) <- new-channel (3 literal)) -- nil
+cvt0: 1 ((2 integer) <- get (1 channel-address deref) (first-full offset)) -- nil
+cvt0: 2 ((3 integer) <- get (1 channel-address deref) (first-free offset)) -- nil
 cvt1: 0 new-channel ((1 channel-address))
+cvt1: 1 get ((2 integer))
+cvt1: 2 get ((3 integer))
 schedule: main
 run: -- nil
 run: 1 main 0: ((1 channel-address) <- new-channel (3 literal))
@@ -175,3 +179,43 @@ addr: (1 channel-address)
 addr: initial result: 1
 setm: size of (1 channel-address) is 1
 setm: (1 channel-address): setting 1 to 1038
+run: -- ((1 1038) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1038 0) (1039 0) (1040 1031))
+run: 13 main 1: ((2 integer) <- get (1 channel-address deref) (0 offset))
+record-info: (1 channel-address deref) (0 offset)
+addr: (1 channel-address deref)
+addr: initial result: 1
+addr: deref 1 => 1038
+record-info: initial base 1038 type ((address t) (elem channel) (size 1))
+record-info: (1 channel-address deref) requests deref => ((elems (integer integer tagged-value-array-address)) (fields (first-full first-free circular-buffer)) (record t) (size 3))
+get: (1 channel-address deref) (0 offset) => 1038 integer
+m: (1038 integer global)
+sz: (1038 integer global)
+addr: (1038 integer global)
+addr: initial result: 1038
+run: writing to oarg 0 => (2 integer)
+setm: (2 integer) <= 0
+sz: (2 integer)
+addr: (2 integer)
+addr: initial result: 2
+setm: size of (2 integer) is 1
+setm: (2 integer): setting 2 to 0
+run: -- ((1 1038) (2 0) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1038 0) (1039 0) (1040 1031))
+run: 14 main 2: ((3 integer) <- get (1 channel-address deref) (1 offset))
+record-info: (1 channel-address deref) (1 offset)
+addr: (1 channel-address deref)
+addr: initial result: 1
+addr: deref 1 => 1038
+record-info: initial base 1038 type ((address t) (elem channel) (size 1))
+record-info: (1 channel-address deref) requests deref => ((elems (integer integer tagged-value-array-address)) (fields (first-full first-free circular-buffer)) (record t) (size 3))
+get: (1 channel-address deref) (1 offset) => 1039 integer
+m: (1039 integer global)
+sz: (1039 integer global)
+addr: (1039 integer global)
+addr: initial result: 1039
+run: writing to oarg 0 => (3 integer)
+setm: (3 integer) <= 0
+sz: (3 integer)
+addr: (3 integer)
+addr: initial result: 3
+setm: size of (3 integer) is 1
+setm: (3 integer): setting 3 to 0

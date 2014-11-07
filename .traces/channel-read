@@ -5,6 +5,8 @@ cvt0: 3 ((3 tagged-value-address) <- new-tagged-value (integer-address literal) 
 cvt0: 4 ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref)) -- nil
 cvt0: 5 ((4 tagged-value) (1 channel-address deref) <- read (1 channel-address deref)) -- nil
 cvt0: 6 ((5 integer-address) <- maybe-coerce (4 tagged-value) (integer-address literal)) -- nil
+cvt0: 7 ((6 integer) <- get (1 channel-address deref) (first-full offset)) -- nil
+cvt0: 8 ((7 integer) <- get (1 channel-address deref) (first-free offset)) -- nil
 cvt1: 0 new-channel ((1 channel-address))
 cvt1: 1 new ((2 integer-address))
 cvt1: 2 copy ((2 integer-address deref))
@@ -12,6 +14,8 @@ cvt1: 3 new-tagged-value ((3 tagged-value-address))
 cvt1: 4 write ((1 channel-address deref))
 cvt1: 5 read ((4 tagged-value) (1 channel-address deref))
 cvt1: 6 maybe-coerce ((5 integer-address))
+cvt1: 7 get ((6 integer))
+cvt1: 8 get ((7 integer))
 schedule: main
 run: -- nil
 run: 1 main 0: ((1 channel-address) <- new-channel (3 literal))
@@ -951,3 +955,43 @@ addr: (5 integer-address)
 addr: initial result: 5
 setm: size of (5 integer-address) is 1
 setm: (5 integer-address): setting 5 to 1041
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041) (1137 30) (1138 1168) (1139 integer-address) (1140 integer-address) (1141 t) (1142 1041) (1168 integer-address) (1169 1041))
+run: 55 main 7: ((6 integer) <- get (1 channel-address deref) (0 offset))
+record-info: (1 channel-address deref) (0 offset)
+addr: (1 channel-address deref)
+addr: initial result: 1
+addr: deref 1 => 1038
+record-info: initial base 1038 type ((address t) (elem channel) (size 1))
+record-info: (1 channel-address deref) requests deref => ((elems (integer integer tagged-value-array-address)) (fields (first-full first-free circular-buffer)) (record t) (size 3))
+get: (1 channel-address deref) (0 offset) => 1038 integer
+m: (1038 integer global)
+sz: (1038 integer global)
+addr: (1038 integer global)
+addr: initial result: 1038
+run: writing to oarg 1 => (6 integer)
+setm: (6 integer) <= 1
+sz: (6 integer)
+addr: (6 integer)
+addr: initial result: 6
+setm: size of (6 integer) is 1
+setm: (6 integer): setting 6 to 1
+run: -- ((1 1038) (2 1041) (3 1073) (4 integer-address) (5 1041) (6 1) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 1) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032) (1106 30) (1107 1) (1108 1) (1109 1031) (1110 1107) (1111 1031) (1112 integer-address) (1113 1041) (1137 30) (1138 1168) (1139 integer-address) (1140 integer-address) (1141 t) (1142 1041) (1168 integer-address) (1169 1041))
+run: 56 main 8: ((7 integer) <- get (1 channel-address deref) (1 offset))
+record-info: (1 channel-address deref) (1 offset)
+addr: (1 channel-address deref)
+addr: initial result: 1
+addr: deref 1 => 1038
+record-info: initial base 1038 type ((address t) (elem channel) (size 1))
+record-info: (1 channel-address deref) requests deref => ((elems (integer integer tagged-value-array-address)) (fields (first-full first-free circular-buffer)) (record t) (size 3))
+get: (1 channel-address deref) (1 offset) => 1039 integer
+m: (1039 integer global)
+sz: (1039 integer global)
+addr: (1039 integer global)
+addr: initial result: 1039
+run: writing to oarg 1 => (7 integer)
+setm: (7 integer) <= 1
+sz: (7 integer)
+addr: (7 integer)
+addr: initial result: 7
+setm: size of (7 integer) is 1
+setm: (7 integer): setting 7 to 1

@@ -3,11 +3,15 @@ cvt0: 1 ((2 integer-address) <- new (integer literal)) -- nil
 cvt0: 2 ((2 integer-address deref) <- copy (34 literal)) -- nil
 cvt0: 3 ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address)) -- nil
 cvt0: 4 ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref)) -- nil
+cvt0: 5 ((4 integer) <- get (1 channel-address deref) (first-full offset)) -- nil
+cvt0: 6 ((5 integer) <- get (1 channel-address deref) (first-free offset)) -- nil
 cvt1: 0 new-channel ((1 channel-address))
 cvt1: 1 new ((2 integer-address))
 cvt1: 2 copy ((2 integer-address deref))
 cvt1: 3 new-tagged-value ((3 tagged-value-address))
 cvt1: 4 write ((1 channel-address deref))
+cvt1: 5 get ((4 integer))
+cvt1: 6 get ((5 integer))
 schedule: main
 run: -- nil
 run: 1 main 0: ((1 channel-address) <- new-channel (3 literal))
@@ -602,3 +606,43 @@ setm: size of (1 channel-address deref) is 3
 setm: (1 channel-address deref): setting 1038 to 0
 setm: (1 channel-address deref): setting 1039 to 1
 setm: (1 channel-address deref): setting 1040 to 1031
+run: -- ((1 1038) (2 1041) (3 1073) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 0) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032))
+run: 37 main 5: ((4 integer) <- get (1 channel-address deref) (0 offset))
+record-info: (1 channel-address deref) (0 offset)
+addr: (1 channel-address deref)
+addr: initial result: 1
+addr: deref 1 => 1038
+record-info: initial base 1038 type ((address t) (elem channel) (size 1))
+record-info: (1 channel-address deref) requests deref => ((elems (integer integer tagged-value-array-address)) (fields (first-full first-free circular-buffer)) (record t) (size 3))
+get: (1 channel-address deref) (0 offset) => 1038 integer
+m: (1038 integer global)
+sz: (1038 integer global)
+addr: (1038 integer global)
+addr: initial result: 1038
+run: writing to oarg 0 => (4 integer)
+setm: (4 integer) <= 0
+sz: (4 integer)
+addr: (4 integer)
+addr: initial result: 4
+setm: size of (4 integer) is 1
+setm: (4 integer): setting 4 to 0
+run: -- ((1 1038) (2 1041) (3 1073) (4 0) (1000 30) (1001 3) (1002 1031) (1003 1038) (1004 1038) (1005 1039) (1006 1040) (1031 3) (1032 integer-address) (1033 1041) (1038 0) (1039 1) (1040 1031) (1041 34) (1042 30) (1043 integer-address) (1044 1) (1045 t) (1046 1073) (1047 1073) (1048 1074) (1073 integer-address) (1074 1041) (1075 30) (1076 0) (1077 1) (1078 1031) (1079 integer-address) (1080 1041) (1081 1031) (1082 1077) (1083 1032))
+run: 38 main 6: ((5 integer) <- get (1 channel-address deref) (1 offset))
+record-info: (1 channel-address deref) (1 offset)
+addr: (1 channel-address deref)
+addr: initial result: 1
+addr: deref 1 => 1038
+record-info: initial base 1038 type ((address t) (elem channel) (size 1))
+record-info: (1 channel-address deref) requests deref => ((elems (integer integer tagged-value-array-address)) (fields (first-full first-free circular-buffer)) (record t) (size 3))
+get: (1 channel-address deref) (1 offset) => 1039 integer
+m: (1039 integer global)
+sz: (1039 integer global)
+addr: (1039 integer global)
+addr: initial result: 1039
+run: writing to oarg 1 => (5 integer)
+setm: (5 integer) <= 1
+sz: (5 integer)
+addr: (5 integer)
+addr: initial result: 5
+setm: size of (5 integer) is 1
+setm: (5 integer): setting 5 to 1
