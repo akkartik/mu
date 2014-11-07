@@ -191,7 +191,7 @@
   (while (or (~empty running-routines*)
              (~empty sleeping-routines*))
     (point continue
-    (each (routine _) sleeping-routines*
+    (each (routine _) canon.sleeping-routines*
       (awhen (case rep.routine!sleep.1
                 literal
                   (> curr-cycle* rep.routine!sleep.0)
@@ -861,7 +861,7 @@
   (apply prn args))
 
 (def canon (table)
-  (sort (compare < string:car) (as cons table)))
+  (sort (compare < [tostring (prn:car _)]) (as cons table)))
 
 (def int-canon (table)
   (sort (compare < car) (as cons table)))
