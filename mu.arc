@@ -699,14 +699,14 @@
                   (set done))))))
     (- close pc 1)))
 
-;; convert symbolic names to integer offsets
+;; convert symbolic names to raw memory locations
 
 (def convert-names (instrs)
-  (with (offset  (table)
+  (with (location  (table)
          isa-field  (table))
     (let idx 1
       (each instr instrs
-        (trace "cn0" instr " " canon.offset " " canon.isa-field)
+        (trace "cn0" instr " " canon.location " " canon.isa-field)
         (let (oargs op args)  (parse-instr instr)
           (if (in op 'get 'get-address)
             (with (basetype  (typeinfo args.0)
@@ -718,45 +718,45 @@
                 (assert basetype!address "@args.0 requests deref, but it's not an address of a record")
                 (= basetype (types* basetype!elem)))
               (when (isa field 'sym)
-                (assert (or (~offset field) isa-field.field) "field @args.1 is also a variable")
-                (when (~offset field)
-                  (trace "cn0" "new field; computing offset")
+                (assert (or (~location field) isa-field.field) "field @args.1 is also a variable")
+                (when (~location field)
+                  (trace "cn0" "new field; computing location")
                   (assert basetype!fields "no field names available for @instr")
                   (iflet idx (pos field basetype!fields)
                     (do (set isa-field.field)
-                        (= offset.field idx))
+                        (= location.field idx))
                     (assert nil "couldn't find field in @instr")))))
             (each arg args
               (assert (~isa-field v.arg) "arg @arg is also a field name")
-              (when (maybe-add arg offset idx)
+              (when (maybe-add arg location idx)
                 (err "use before set: @arg"))))
           (each arg oargs
             (trace "cn0" "checking " arg)
             (unless (is arg '_)
               (assert (~isa-field v.arg) "oarg @arg is also a field name")
-              (when (maybe-add arg offset idx)
+              (when (maybe-add arg location idx)
                 (trace "cn0" "location for arg " arg ": " idx)
                 (++ idx (sizeof ty.arg))))))))
-    (trace "cn1" "update names " canon.offset " " canon.isa-field)
+    (trace "cn1" "update names " canon.location " " canon.isa-field)
     (each instr instrs
       (let (oargs op args)  (parse-instr instr)
         (each arg args
-          (when (and nondummy.arg (offset v.arg))
-            (zap offset v.arg)))
+          (when (and nondummy.arg (location v.arg))
+            (zap location v.arg)))
         (each arg oargs
-          (when (and nondummy.arg (offset v.arg))
-            (zap offset v.arg)))))
+          (when (and nondummy.arg (location v.arg))
+            (zap location v.arg)))))
     instrs))
 
-(def maybe-add (arg offset idx)
+(def maybe-add (arg location idx)
   (trace "maybe-add" arg)
   (when (and nondummy.arg
              (~in ty.arg 'literal 'offset 'fn)
-             (~offset v.arg)
+             (~location v.arg)
              (isa v.arg 'sym)
              (~in v.arg 'nil 'default-scope)
              (~pos 'global metadata.arg))
-    (= (offset v.arg) idx)))
+    (= (location v.arg) idx)))
 
 ;; literate tangling system for reordering code
 
