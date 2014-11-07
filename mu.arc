@@ -190,7 +190,9 @@
   (each it fn-names
     (enq make-routine.it running-routines*))
   ; simple round-robin scheduler
-  (while (~empty running-routines*)
+  (while (or (~empty running-routines*)
+             (~empty sleeping-routines*))
+    (point continue
     (each (routine _) sleeping-routines*
       (awhen (> curr-cycle* rep.routine!sleep.1)
         (trace "schedule" "waking up " top.routine!fn-name)
@@ -198,6 +200,11 @@
         (wipe rep.routine!sleep)
         (++ pc.routine)  ; complete the sleep instruction
         (enq routine running-routines*)))
+    (when (empty running-routines*)
+      ; ensure forward progress
+      (trace "schedule" "skipping cycle " curr-cycle*)
+      (++ curr-cycle*)
+      (continue))
     (= routine* deq.running-routines*)
     (trace "schedule" top.routine*!fn-name)
     (routine-mark:run-for-time-slice scheduling-interval*)
@@ -207,7 +214,7 @@
         (~empty routine*)
           (enq routine* running-routines*)
         :else
-          (enq-limit routine* completed-routines*))))
+          (enq-limit routine* completed-routines*)))))
 
 (def die (msg)
   (= rep.routine*!error msg)
