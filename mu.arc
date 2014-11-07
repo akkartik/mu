@@ -612,7 +612,7 @@
         (each instr instrs
           (if (~is 'begin instr.0)
             (do
-              (trace "cvt0" pc " " instr " -- " locs)
+              (trace "c{0" pc " " instr " -- " locs)
               (++ pc))
             ; hack: racket replaces curlies with parens, so we need the
             ; keyword begin to delimit blocks.
@@ -634,7 +634,7 @@
                              (cut instr 0 delim))
                      op  (instr (+ delim 1))
                      arg  (cut instr (+ delim 2)))
-                (trace "cvt1" pc " " op " " oarg)
+                (trace "c{1" pc " " op " " oarg)
                 (case op
                   begin
                     (do
