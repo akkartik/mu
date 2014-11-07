@@ -226,6 +226,9 @@
   ((abort-routine*)))
 
 ;; running a single routine
+(def nondummy (operand)  ; precondition for helpers below
+  (~is '_ operand))
+
 (mac v (operand)  ; for value
   `(,operand 0))
 
@@ -542,7 +545,7 @@
                         (let (caller-oargs _ _)  (parse-instr (body.routine* pc.routine*))
                           (trace "reply" arg " " caller-oargs)
                           (each (dest val)  (zip caller-oargs results)
-                            (unless (is dest '_)
+                            (when nondummy.dest
                               (trace "reply" val " => " dest)
                               (setm dest val))))
                         (++ pc.routine*)
@@ -566,7 +569,7 @@
 ;?               (prn "store: " tmp " " oarg)
               (if (acons tmp)
                 (for i 0 (< i (min len.tmp len.oarg)) ++.i
-                  (unless (is oarg.i '_)
+                  (when (nondummy oarg.i)
                     (setm oarg.i tmp.i)))
                 (when oarg  ; must be a list
                   (trace "run" "writing to oarg " tmp " => " oarg.0)
@@ -738,16 +741,16 @@
     (each instr instrs
       (let (oargs op args)  (parse-instr instr)
         (each arg args
-          (when (and acons.arg (offset v.arg))
+          (when (and nondummy.arg (offset v.arg))
             (zap offset v.arg)))
         (each arg oargs
-          (when (and acons.arg (offset v.arg))
+          (when (and nondummy.arg (offset v.arg))
             (zap offset v.arg)))))
     instrs))
 
 (def maybe-add (arg offset idx)
   (trace "maybe-add" arg)
-  (when (and (~is arg '_)
+  (when (and nondummy.arg
              (~in ty.arg 'literal 'offset 'fn)
              (~offset v.arg)
              (isa v.arg 'sym)
