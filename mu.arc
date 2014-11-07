@@ -724,6 +724,7 @@
                   (assert basetype!fields "no field names available for @instr")
                   (iflet idx (pos field basetype!fields)
                     (do (set isa-field.field)
+                        (trace "cn0" "field location @idx")
                         (= location.field idx))
                     (assert nil "couldn't find field in @instr")))))
             (each arg args
