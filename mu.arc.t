@@ -1734,6 +1734,7 @@
       (sleep (30 literal))
       ((1 integer) <- copy (3 literal)))))  ; set to value
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
+;? (set dump-trace*)
 (= scheduling-interval* 1)
 (run 'f1 'f2)
 ;? (prn canon.memory*)
