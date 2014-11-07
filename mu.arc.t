@@ -1906,11 +1906,11 @@
       ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
       ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
       ((4 boolean) <- get (1 channel-address deref) (read-watch offset))
-      ((5 tagged-value) (1 channel-address deref) <- read (1 channel-address deref))
-      ((7 integer) <- get (1 channel-address deref) (read-watch offset)))))
+      (_ (1 channel-address deref) <- read (1 channel-address deref))
+      ((5 integer) <- get (1 channel-address deref) (read-watch offset)))))
 (run 'main)
 (if (or (~is nil memory*.4)
-        (~is t memory*.7))
+        (~is t memory*.5))
   (prn "F - 'read' sets channel watch"))
 
 (reset)  ; end file with this to persist the trace for the final test
