@@ -30,7 +30,7 @@
               location (obj size 1  address t  elem 'location)  ; assume it points to an atom
               integer (obj size 1)
               boolean (obj size 1)
-              boolean-address (obj size 1  address t)
+              boolean-address (obj size 1  address t  elem 'boolean)
               byte (obj size 1)
 ;?               string (obj array t  elem 'byte)  ; inspired by Go
               character (obj size 1)  ; int32 like a Go rune
@@ -61,7 +61,7 @@
               list-address (obj size 1  address t  elem 'list)
               list-address-address (obj size 1  address t  elem 'list-address)
               ; parallel routines use channels to synchronize
-              channel (obj size 3  record t  elems '(integer integer tagged-value-array-address)  fields '(first-full first-free circular-buffer))
+              channel (obj size 5  record t  elems '(boolean boolean integer integer tagged-value-array-address)  fields '(write-watch read-watch first-full first-free circular-buffer))
               channel-address (obj size 1  address t  elem 'channel)
               ; editor
               line (obj array t  elem 'character)
@@ -237,7 +237,7 @@
 
 (def typeinfo (operand)
   (or (types* ty.operand)
-      (err "unknown type @operand")))
+      (err "unknown type @(tostring prn.operand)")))
 
 (def sz (operand)
   (trace "sz" operand)
@@ -464,6 +464,7 @@
                   (let type (v arg.0)
                     (assert (is 'literal (ty arg.0)) "new: second arg @arg.0 must be literal")
                     (if (no types*.type)  (err "no such type @type"))
+                    ; todo: initialize memory. currently racket does it for us
                     (if types*.type!array
                       (new-array type (m arg.1))
                       (new-scalar type)))
@@ -842,6 +843,8 @@
   ((dest tagged-value-address) <- index-address (q tagged-value-array-address deref) (free integer-address deref))
   ((dest tagged-value-address deref) <- copy (val tagged-value))
   ((free integer-address deref) <- add (free integer-address deref) (1 literal))
+  ((watch boolean-address) <- get-address (chan channel) (write-watch offset))
+  ((watch boolean-address deref) <- copy (t literal))
   (reply (chan channel)))
 
 (init-fn read
@@ -851,6 +854,8 @@
   ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
   ((result tagged-value) <- index (q tagged-value-array-address deref) (full integer-address deref))
   ((full integer-address deref) <- add (full integer-address deref) (1 literal))
+  ((watch boolean-address) <- get-address (chan channel) (read-watch offset))
+  ((watch boolean-address deref) <- copy (t literal))
   (reply (result tagged-value) (chan channel)))
 
 ; drop all traces while processing above functions
