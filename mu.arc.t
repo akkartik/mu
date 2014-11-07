@@ -1851,11 +1851,13 @@
       ((5 integer) <- get (1 channel-address deref) (first-free offset)))))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
+;? (= dump-trace* (obj whitelist '("jump")))
 (run 'main)
-;? (prn memory*)
+;? (prn canon.memory*)
 (if (or (~is 0 memory*.4)
         (~is 1 memory*.5))
   (prn "F - 'write' enqueues item to channel"))
+;? (quit)
 
 (reset)
 (new-trace "channel-read")
@@ -1912,5 +1914,59 @@
 (if (or (~is nil memory*.4)
         (~is t memory*.5))
   (prn "F - 'read' sets channel watch"))
+
+(reset)
+(new-trace "channel-write-wrap")
+(add-fns
+  '((main
+      ; channel with 2 slots (capacity 1 since we waste a slot)
+      ((1 channel-address) <- new-channel (2 literal))
+      ; write a value
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ; first-free will now be 1
+      ((4 integer) <- get (1 channel-address deref) (first-free offset))
+      ; read one value
+      (_ (1 channel-address deref) <- read (1 channel-address deref))
+      ; write a second value; verify that first-free wraps around to 0.
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ((5 integer) <- get (1 channel-address deref) (first-free offset)))))
+;? (set dump-trace*)
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
+(run 'main)
+;? (prn canon.memory*)
+(if (or (~is 1 memory*.4)
+        (~is 0 memory*.5))
+  (prn "F - 'write' can wrap pointer back to start"))
+
+(reset)
+(new-trace "channel-read-wrap")
+(add-fns
+  '((main
+      ; channel with 2 slots (capacity 1 since we waste a slot)
+      ((1 channel-address) <- new-channel (2 literal))
+      ; write a value
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ; read one value
+      (_ (1 channel-address deref) <- read (1 channel-address deref))
+      ; first-full will now be 1
+      ((4 integer) <- get (1 channel-address deref) (first-full offset))
+      ; write a second value
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ; read second value; verify that first-full wraps around to 0.
+      (_ (1 channel-address deref) <- read (1 channel-address deref))
+      ((5 integer) <- get (1 channel-address deref) (first-full offset)))))
+;? (set dump-trace*)
+;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
+(run 'main)
+;? (prn canon.memory*)
+(if (or (~is 1 memory*.4)
+        (~is 0 memory*.5))
+  (prn "F - 'read' can wrap pointer back to start"))
 
 (reset)  ; end file with this to persist the trace for the final test

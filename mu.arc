@@ -431,18 +431,22 @@
                 ; control flow
                 jump
                   (do (= pc.routine* (+ 1 pc.routine* (v arg.0)))
-;?                       (trace "jump" "jumping to " pc.routine*)
+                      (trace "jump" "jumping to " pc.routine*)
                       (continue))
                 jump-if
-                  (when (is t (m arg.0))
-                    (= pc.routine* (+ 1 pc.routine* (v arg.1)))
-;?                     (trace "jump-if" "jumping to " pc.routine*)
-                    (continue))
+                  (let flag (m arg.0)
+                    (trace "jump" "checking that " flag " is t")
+                    (when (is t flag)
+                      (= pc.routine* (+ 1 pc.routine* (v arg.1)))
+                      (trace "jump" "jumping to " pc.routine*)
+                      (continue)))
                 jump-unless  ; convenient helper
-                  (unless (is t (m arg.0))
-                    (= pc.routine* (+ 1 pc.routine* (v arg.1)))
-;?                     (trace "jump-unless" "jumping to " pc.routine*)
-                    (continue))
+                  (let flag (m arg.0)
+                    (trace "jump" "checking that " flag " is not t")
+                    (unless (is t flag)
+                      (= pc.routine* (+ 1 pc.routine* (v arg.1)))
+                      (trace "jump" "jumping to " pc.routine*)
+                      (continue)))
 
                 ; data management: scalars, arrays, records
                 copy
@@ -858,6 +862,12 @@
   ((dest tagged-value-address) <- index-address (q tagged-value-array-address deref) (free integer-address deref))
   ((dest tagged-value-address deref) <- copy (val tagged-value))
   ((free integer-address deref) <- add (free integer-address deref) (1 literal))
+  { begin
+    ((qlen integer) <- len (q tagged-value-array-address deref))
+    ((remaining? boolean) <- lt (free integer-address deref) (qlen integer))
+    (break-if (remaining? boolean))
+    ((free integer-address deref) <- copy (0 literal))
+  }
   ((watch boolean-address) <- get-address (chan channel) (write-watch offset))
   ((watch boolean-address deref) <- copy (t literal))
   (reply (chan channel)))
@@ -869,6 +879,12 @@
   ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
   ((result tagged-value) <- index (q tagged-value-array-address deref) (full integer-address deref))
   ((full integer-address deref) <- add (full integer-address deref) (1 literal))
+  { begin
+    ((qlen integer) <- len (q tagged-value-array-address deref))
+    ((remaining? boolean) <- lt (full integer-address deref) (qlen integer))
+    (break-if (remaining? boolean))
+    ((full integer-address deref) <- copy (0 literal))
+  }
   ((watch boolean-address) <- get-address (chan channel) (read-watch offset))
   ((watch boolean-address deref) <- copy (t literal))
   (reply (result tagged-value) (chan channel)))
