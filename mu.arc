@@ -568,9 +568,9 @@
               ; copy to output args
 ;?               (prn "store: " tmp " " oarg)
               (if (acons tmp)
-                (for i 0 (< i (min len.tmp len.oarg)) ++.i
-                  (when (nondummy oarg.i)
-                    (setm oarg.i tmp.i)))
+                (each (dest val) (zip oarg tmp)
+                  (unless (is dest '_)
+                    (setm dest val)))
                 (when oarg  ; must be a list
                   (trace "run" "writing to oarg " tmp " => " oarg.0)
                   (setm oarg.0 tmp)))
