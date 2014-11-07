@@ -194,14 +194,23 @@
              (~empty sleeping-routines*))
     (point continue
     (each (routine _) sleeping-routines*
-      (awhen (> curr-cycle* rep.routine!sleep.0)
+;?       (prn "DDD " rep.routine!sleep)
+      (awhen (case rep.routine!sleep.1
+                literal
+                  (> curr-cycle* rep.routine!sleep.0)
+                ;else
+                  (aand (m rep.routine!sleep)
+;?                   (aand (m (prn2 "CCC " rep.routine!sleep))
+                        (~is it 0)))
         (trace "schedule" "waking up " top.routine!fn-name)
+;?         (prn "BBB " routine)
         (wipe sleeping-routines*.routine)  ; before modifying routine below
         (wipe rep.routine!sleep)
         (++ pc.routine)  ; complete the sleep instruction
         (enq routine running-routines*)))
     (when (empty running-routines*)
       ; ensure forward progress
+;?       (prn sleeping-routines*)
       (trace "schedule" "skipping cycle " curr-cycle*)
       (++ curr-cycle*)
       (continue))
@@ -210,6 +219,7 @@
     (routine-mark:run-for-time-slice scheduling-interval*)
     (if rep.routine*!sleep
           (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
+;?               (prn "AAA " routine*)
               (set sleeping-routines*.routine*))
         (~empty routine*)
           (enq routine* running-routines*)
@@ -487,10 +497,13 @@
                   (assert (m arg.0))
                 sleep
                   (let operand arg.0
-                    (assert (is ty.operand 'literal) "sleep can only handle literal deltas")
-                    (let delay v.operand
-                      (trace "run" "sleeping until " (+ curr-cycle* delay))
-                      (= rep.routine*!sleep `(,(+ curr-cycle* delay) literal)))
+                    (assert (~pos 'deref metadata.operand)
+                            "sleep doesn't support indirect addressing yet")
+                    (if (is ty.operand 'literal)
+                      (let delay v.operand
+                        (trace "run" "sleeping until " (+ curr-cycle* delay))
+                        (= rep.routine*!sleep `(,(+ curr-cycle* delay) literal)))
+                      (= rep.routine*!sleep operand))
                     ((abort-routine*)))
 
                 ; text interaction

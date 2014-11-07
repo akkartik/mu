@@ -1722,6 +1722,25 @@
     ("run" "f1 2")
   ))
 
+(reset)
+(new-trace "sleep-location")
+(add-fns
+  '((f1
+      ; waits for memory location 1 to be set, before computing its successor
+      ((1 integer) <- copy (0 literal))
+      (sleep (1 integer))
+      ((2 integer) <- add (1 integer) (1 literal)))
+    (f2
+      (sleep (30 literal))
+      ((1 integer) <- copy (3 literal)))))  ; set to value
+;? (= dump-trace* (obj whitelist '("run" "schedule")))
+(= scheduling-interval* 1)
+(run 'f1 'f2)
+;? (prn canon.memory*)
+(if (~is memory*.2 4)  ; successor of value
+  (prn "F - scheduler handles routines blocking on a memory location"))
+;? (quit)
+
 ; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
 ; along with the types array, the magic buffers for args and oargs, and so on.
