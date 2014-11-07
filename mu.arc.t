@@ -410,6 +410,14 @@
 ; (see types* in mu.arc for the complete list of types; we'll add to it over
 ; time).
 
+; first a sanity check that the table of types is consistent
+(reset)
+(each (typ typeinfo) types*
+  (when typeinfo!record
+    (assert (is typeinfo!size (len typeinfo!elems)))
+    (when typeinfo!fields
+      (assert (is typeinfo!size (len typeinfo!fields))))))
+
 (reset)
 (new-trace "get-record")
 (add-fns
