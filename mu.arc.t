@@ -1358,6 +1358,16 @@
           '(((1 integer) <- get (34 integer-boolean-pair-address deref) (1 offset))))
   (prn "F - convert-names replaces field offsets for record addresses"))
 
+(reset)
+;? (new-trace "convert-names-record-fields-multiple")
+(if (~iso (convert-names
+            '(((2 boolean) <- get (1 integer-boolean-pair) (bool offset))
+              ((3 boolean) <- get (1 integer-boolean-pair) (bool offset))))
+          '(((2 boolean) <- get (1 integer-boolean-pair) (1 offset))
+            ((3 boolean) <- get (1 integer-boolean-pair) (1 offset))))
+  (prn "F - convert-names replaces field offsets with multiple mentions"))
+;? (quit)
+
 ; A rudimentary memory allocator. Eventually we want to write this in mu.
 ;
 ; No deallocation yet; let's see how much code we can build in mu before we
