@@ -1869,4 +1869,37 @@
         (~is 1 memory*.7))
   (prn "F - 'read' dequeues item from channel"))
 
+(reset)
+(new-trace "channel-write-watch")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((4 boolean) <- get (1 channel-address deref) (read-watch offset))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ((5 boolean) <- get (1 channel-address deref) (write-watch offset)))))
+(run 'main)
+(if (or (~is nil memory*.4)
+        (~is t memory*.5))
+  (prn "F - 'write' sets channel watch"))
+
+(reset)
+(new-trace "channel-read-watch")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ((4 boolean) <- get (1 channel-address deref) (read-watch offset))
+      ((5 tagged-value) (1 channel-address deref) <- read (1 channel-address deref))
+      ((6 integer) <- get (1 channel-address deref) (read-watch offset)))))
+(run 'main)
+(if (or (~is nil memory*.4)
+        (~is t memory*.6))
+  (prn "F - 'read' sets channel watch"))
+
 (reset)  ; end file with this to persist the trace for the final test
