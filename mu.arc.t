@@ -216,6 +216,17 @@
 (if (~iso memory* (obj 1 3  2 5))
   (prn "F - 'idiv' performs integer division, returning quotient and remainder"))
 
+(reset)
+(new-trace "dummy-oarg")
+;? (set dump-trace*)
+(add-fns
+  '((main
+      (_ (2 integer) <- idiv (23 literal) (6 literal)))))
+(run 'main)
+(if (~iso memory* (obj 2 5))
+  (prn "F - '_' oarg can ignore some results"))
+;? (quit)
+
 ; Basic boolean operations: and, or, not
 ; There are easy ways to encode booleans in binary, but we'll skip past those
 ; details for now.
