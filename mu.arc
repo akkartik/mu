@@ -194,7 +194,7 @@
              (~empty sleeping-routines*))
     (point continue
     (each (routine _) sleeping-routines*
-      (awhen (> curr-cycle* rep.routine!sleep.1)
+      (awhen (> curr-cycle* rep.routine!sleep.0)
         (trace "schedule" "waking up " top.routine!fn-name)
         (wipe sleeping-routines*.routine)  ; before modifying routine below
         (wipe rep.routine!sleep)
@@ -224,7 +224,7 @@
 
 (def sleep-for (delay)
   (trace "run" "sleeping until " (+ curr-cycle* delay))
-  (= rep.routine*!sleep `(literal ,(+ curr-cycle* delay)))
+  (= rep.routine*!sleep `(,(+ curr-cycle* delay) literal))
   ((abort-routine*)))
 
 ;; running a single routine
