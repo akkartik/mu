@@ -1698,6 +1698,30 @@
     ("run" "f1 2")
   ))
 
+(reset)
+(new-trace "sleep-long")
+(add-fns
+  '((f1
+      (sleep (20 literal))
+      ((1 integer) <- copy (3 literal))
+      ((1 integer) <- copy (3 literal)))
+    (f2
+      ((2 integer) <- copy (4 literal))
+      ((2 integer) <- copy (4 literal)))))
+;? (= dump-trace* (obj whitelist '("run" "schedule")))
+(= scheduling-interval* 1)
+(run 'f1 'f2)
+(check-trace-contents "scheduler progresses sleeping routines when there are no routines left to run"
+  '(("run" "f1 0")
+    ("run" "sleeping until 21")
+    ("schedule" "pushing f1 to sleep queue")
+    ("run" "f2 0")
+    ("run" "f2 1")
+    ("schedule" "waking up f1")
+    ("run" "f1 1")
+    ("run" "f1 2")
+  ))
+
 ; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
 ; along with the types array, the magic buffers for args and oargs, and so on.
