@@ -868,6 +868,7 @@
   ((chan channel) <- arg)
   ((val tagged-value) <- arg)
   { begin
+    ; block if chan is full
     ((full boolean) <- full? (chan channel))
     ; race condition: might unnecessarily sleep if consumer routine reads from
     ; channel between previous check and the set to watch below
@@ -895,6 +896,7 @@
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((chan channel) <- arg)
   { begin
+    ; block if chan is empty
     ((empty boolean) <- empty? (chan channel))
     ; race condition: might unnecessarily sleep if consumer routine writes to
     ; channel between previous check and the set to watch below
@@ -918,9 +920,6 @@
   (reply (result tagged-value) (chan channel)))
 
 ; An empty channel has first-empty and first-full both at the same value.
-; A full channel has first-empty just before first-full, wasting one slot.
-; (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
-
 (init-fn empty?
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((chan channel) <- arg)
@@ -929,6 +928,8 @@
   ((result boolean) <- eq (full integer) (free integer))
   (reply (result boolean)))
 
+; A full channel has first-empty just before first-full, wasting one slot.
+; (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
 (init-fn full?
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((chan channel) <- arg)
