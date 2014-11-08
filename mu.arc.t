@@ -1784,6 +1784,8 @@
 (= scheduling-interval* 1)
 (run 'f1 'f2)
 ;? (prn canon.memory*)
+(let last-routine (deq completed-routines*)
+  (aif rep.last-routine!error (prn "error - " it)))
 (if (~is memory*.2 4)  ; successor of value
   (prn "F - scheduler handles routines blocking on a memory location"))
 ;? (quit)
@@ -2027,10 +2029,50 @@
         (~is nil memory*.5))
   (prn "F - a channel after reading may be empty"))
 
-; We'd like to block routines when they write to a full channel or read from
-; an empty channel.
+; The key property of channels; writing to a full channel blocks the current
+; routine until it creates space. Ditto reading from an empty channel.
 
-; TODO
+(reset)
+(new-trace "channel-read-block")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (3 literal))
+      ; channel is empty, but receives a read
+      ((2 tagged-value) (1 channel-address deref) <- read (1 channel-address deref)))))
+;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("run")))
+(run 'main)
+;? (prn int-canon.memory*)
+;? (prn sleeping-routines*)
+; read should cause the routine to sleep, and
+; the sole sleeping routine should trigger the deadlock detector
+(let last-routine (deq completed-routines*)
+  (when (or (no rep.last-routine!error)
+            (~posmatch "deadlock" rep.last-routine!error))
+    (prn "F - 'read' on empty channel blocks (puts the routine to sleep until the channel gets data)")))
+;? (quit)
+
+(reset)
+(new-trace "channel-write-block")
+(add-fns
+  '((main
+      ((1 channel-address) <- new-channel (1 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref))
+      ; channel has capacity 1, but receives a second write
+      ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref)))))
+;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("run")))
+(run 'main)
+;? (prn int-canon.memory*)
+; second write should cause the routine to sleep, and
+; the sole sleeping routine should trigger the deadlock detector
+(let last-routine (deq completed-routines*)
+  (when (or (no rep.last-routine!error)
+            (~posmatch "deadlock" rep.last-routine!error))
+    (prn "F - 'write' on full channel blocks (puts the routine to sleep until the channel gets data)")))
 
 ; But how will the sleeping routines wake up? Our scheduler can't watch for
 ; changes to arbitrary values, just tell us if a specific raw location becomes
