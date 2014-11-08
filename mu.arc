@@ -869,9 +869,9 @@
   ((val tagged-value) <- arg)
   { begin
     ((full boolean) <- full? (chan channel))
+    ; race condition: might unnecessarily sleep if consumer routine reads from
+    ; channel between previous check and the set to watch below
     (break-unless (full boolean))
-    ; todo: race condition: what if consumer routine reads between previous
-    ; instruction and next?
     ((watch boolean-address) <- get-address (chan channel) (read-watch offset))
     ((watch boolean-address deref) <- copy (nil literal))
     (sleep (watch boolean-address))
@@ -896,9 +896,9 @@
   ((chan channel) <- arg)
   { begin
     ((empty boolean) <- empty? (chan channel))
+    ; race condition: might unnecessarily sleep if consumer routine writes to
+    ; channel between previous check and the set to watch below
     (break-unless (empty boolean))
-    ; todo: race condition: what if producer routine writes between previous
-    ; instruction and next?
     ((watch boolean-address) <- get-address (chan channel) (write-watch offset))
     ((watch boolean-address deref) <- copy (nil literal))
     (sleep (watch boolean-address deref))
