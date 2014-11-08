@@ -187,9 +187,9 @@
 (def run fn-names
   (each it fn-names
     (enq make-routine.it running-routines*))
-  ; simple round-robin scheduler
   (while (or (~empty running-routines*)
              (~empty sleeping-routines*))
+    (detect-deadlock)
     (point continue
     (each (routine _) canon.sleeping-routines*
       (awhen (case rep.routine!sleep.1
@@ -208,6 +208,7 @@
       (trace "schedule" "skipping cycle " curr-cycle*)
       (++ curr-cycle*)
       (continue))
+    ; simple round-robin scheduler
     (= routine* deq.running-routines*)
     (trace "schedule" top.routine*!fn-name)
     (routine-mark:run-for-time-slice scheduling-interval*)
@@ -218,6 +219,15 @@
           (enq routine* running-routines*)
         :else
           (enq-limit routine* completed-routines*)))))
+
+(def detect-deadlock ()
+  (when (and empty.running-routines*
+             (~some 'literal (map (fn(_) rep._!sleep.1)
+                                  keys.sleeping-routines*)))
+    (each (routine _) sleeping-routines*
+      (wipe sleeping-routines*.routine)
+      (= rep.routine!error "deadlock detected")
+      (enq routine completed-routines*))))
 
 (def die (msg)
   (= rep.routine*!error msg)
@@ -498,8 +508,6 @@
                   (assert (m arg.0))
                 sleep
                   (let operand arg.0
-                    (assert (~pos 'deref metadata.operand)
-                            "sleep doesn't support indirect addressing yet")
                     (if (is ty.operand 'literal)
                       (let delay v.operand
                         (trace "run" "sleeping until " (+ curr-cycle* delay))
@@ -859,6 +867,15 @@
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((chan channel) <- arg)
   ((val tagged-value) <- arg)
+  { begin
+    ((full boolean) <- full? (chan channel))
+    (break-unless (full boolean))
+    ; todo: race condition: what if consumer routine reads between previous
+    ; instruction and next?
+    ((watch boolean-address) <- get-address (chan channel) (read-watch offset))
+    ((watch boolean-address deref) <- copy (nil literal))
+    (sleep (watch boolean-address))
+  }
   ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
   ((free integer-address) <- get-address (chan channel) (first-free offset))
   ((dest tagged-value-address) <- index-address (q tagged-value-array-address deref) (free integer-address deref))
@@ -877,6 +894,15 @@
 (init-fn read
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((chan channel) <- arg)
+  { begin
+    ((empty boolean) <- empty? (chan channel))
+    (break-unless (empty boolean))
+    ; todo: race condition: what if producer routine writes between previous
+    ; instruction and next?
+    ((watch boolean-address) <- get-address (chan channel) (write-watch offset))
+    ((watch boolean-address deref) <- copy (nil literal))
+    (sleep (watch boolean-address deref))
+  }
   ((full integer-address) <- get-address (chan channel) (first-full offset))
   ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
   ((result tagged-value) <- index (q tagged-value-array-address deref) (full integer-address deref))
