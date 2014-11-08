@@ -92,7 +92,7 @@ a { color:#4444ff; }
 <span class="Comment">; allocation, or write to disk? It requires better, more observable primitives</span>
 <span class="Comment">; than we currently have. Modern operating systems have their roots in the</span>
 <span class="Comment">; 70s. Their interfaces were not designed to be testable. They provide no way</span>
-<span class="Comment">; to simulate a full disk, or a specific sequence of writes from different</span>
+<span class="Comment">; to simulate a <span style='color:#5f00af'>full</span> disk, or a specific sequence of writes from different</span>
 <span class="Comment">; threads. We need something better.</span>
 <span class="Comment">;</span>
 <span class="Comment">; This project tries to move, groping, towards that 'something better', a</span>
@@ -1370,12 +1370,12 @@ a { color:#4444ff; }
 <span class="Comment">; Even though our memory locations can now have names, the names are all</span>
 <span class="Comment">; globals, accessible from any function. To isolate functions from their</span>
 <span class="Comment">; callers we need local variables, and mu provides them using a special</span>
-<span class="Comment">; variable called default-scope. When you initialize such a variable (likely</span>
+<span class="Comment">; variable called <span style='color:#00af87'>default-scope</span>. When you initialize such a variable (likely</span>
 <span class="Comment">; with a call to our just-defined memory allocator) mu interprets memory</span>
-<span class="Comment">; locations as offsets from its value. If default-scope is set to 1000, for</span>
+<span class="Comment">; locations as offsets from its value. If <span style='color:#00af87'>default-scope</span> is set to 1000, for</span>
 <span class="Comment">; example, reads and writes to memory location 1 will really go to 1001.</span>
 <span class="Comment">;</span>
-<span class="Comment">; 'default-scope' is itself hard-coded to be function-local; it's nil in a new</span>
+<span class="Comment">; '<span style='color:#00af87'>default-scope</span>' is itself hard-coded to be function-local; it's nil in a new</span>
 <span class="Comment">; function, and it's restored when functions return to their callers. But the</span>
 <span class="Comment">; actual scope allocation is independent. So you can define closures, or do</span>
 <span class="Comment">; even more funky things like share locals between two coroutines.</span>
@@ -1384,7 +1384,7 @@ a { color:#4444ff; }
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;set-default-scope&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>main</span>
-      <span class="Mu"><span class="Delimiter">((</span>default-scope scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">23</span> literal<span class="Delimiter">)))))</span></span>
 <span class="Delimiter">(</span><span class="Normal">let</span> before Memory-in-use-until
 <span class="CommentedCode">;?   (set dump-trace*)</span>
@@ -1392,13 +1392,13 @@ a { color:#4444ff; }
 <span class="CommentedCode">;?   (prn memory*)</span>
   <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~and <span class="Delimiter">(</span>~is <span class="Constant">23</span> <span class="Global">memory*</span><span class="Constant">.1</span><span class="Delimiter">)</span>
             <span class="Delimiter">(</span>is <span class="Constant">23</span> <span class="Delimiter">(</span><span class="Global">memory*</span> <span class="Delimiter">(</span><span class="Identifier">+</span> before <span class="Constant">1</span><span class="Delimiter">))))</span>
-    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - default-scope implicitly modifies variable locations&quot;</span><span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - <span style='color:#00af87'>default-scope</span> implicitly modifies variable locations&quot;</span><span class="Delimiter">)))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;set-default-scope-skips-offset&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>main</span>
-      <span class="Mu"><span class="Delimiter">((</span>default-scope scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">23</span> offset<span class="Delimiter">)))))</span></span>
 <span class="Delimiter">(</span><span class="Normal">let</span> before Memory-in-use-until
 <span class="CommentedCode">;?   (set dump-trace*)</span>
@@ -1406,26 +1406,26 @@ a { color:#4444ff; }
 <span class="CommentedCode">;?   (prn memory*)</span>
   <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~and <span class="Delimiter">(</span>~is <span class="Constant">23</span> <span class="Global">memory*</span><span class="Constant">.1</span><span class="Delimiter">)</span>
             <span class="Delimiter">(</span>is <span class="Constant">23</span> <span class="Delimiter">(</span><span class="Global">memory*</span> <span class="Delimiter">(</span><span class="Identifier">+</span> before <span class="Constant">1</span><span class="Delimiter">))))</span>
-    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - default-scope skips 'offset' types just like literals&quot;</span><span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - <span style='color:#00af87'>default-scope</span> skips 'offset' types just like literals&quot;</span><span class="Delimiter">)))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;default-scope-bounds-check&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>main</span>
-      <span class="Mu"><span class="Delimiter">((</span>default-scope scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">23</span> literal<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
 <span class="CommentedCode">;? (prn memory*)</span>
 <span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
   <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>no rep.last-routine!error<span class="Delimiter">)</span>
-    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - default-scope checks bounds&quot;</span><span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - <span style='color:#00af87'>default-scope</span> checks bounds&quot;</span><span class="Delimiter">)))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;default-scope-and-get-indirect&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>main</span>
-      <span class="Mu"><span class="Delimiter">((</span>default-scope scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">5</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">5</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer-boolean-pair-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer-boolean-pair literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get-address <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">0</span> offset<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
@@ -1437,14 +1437,14 @@ a { color:#4444ff; }
 <span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
   <span class="Delimiter">(</span>aif rep.last-routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">34</span> <span class="Global">memory*</span><span class="Constant">.3</span><span class="Delimiter">)</span>
-  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - indirect 'get' works in the presence of default-scope&quot;</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - indirect 'get' works in the presence of <span style='color:#00af87'>default-scope</span>&quot;</span><span class="Delimiter">))</span>
 <span class="CommentedCode">;? (quit)</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;default-scope-and-index-indirect&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>main</span>
-      <span class="Mu"><span class="Delimiter">((</span>default-scope scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">5</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">5</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer-array-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer-array literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> index-address <span class="Delimiter">(</span><span class="Constant">1</span> integer-array-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">2</span> offset<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
@@ -1456,7 +1456,7 @@ a { color:#4444ff; }
 <span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
   <span class="Delimiter">(</span>aif rep.last-routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">34</span> <span class="Global">memory*</span><span class="Constant">.3</span><span class="Delimiter">)</span>
-  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - indirect 'index' works in the presence of default-scope&quot;</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - indirect 'index' works in the presence of <span style='color:#00af87'>default-scope</span>&quot;</span><span class="Delimiter">))</span>
 <span class="CommentedCode">;? (quit)</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
@@ -1464,18 +1464,18 @@ a { color:#4444ff; }
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
             <span class="Mu"><span class="Delimiter">'(((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span>y integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
-              <span class="Comment">; unsafe in general; don't write random values to 'default-scope'</span>
-              <span class="Mu"><span class="Delimiter">((</span>default-scope integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span>x integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>y integer<span class="Delimiter">))))</span></span>
+              <span class="Comment">; unsafe in general; don't write random values to '<span style='color:#00af87'>default-scope</span>'</span>
+              <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span>x integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>y integer<span class="Delimiter">))))</span></span>
           <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
             <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
-            <span class="Mu"><span class="Delimiter">((</span>default-scope integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))))</span></span>
-  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names never renames default-scope&quot;</span><span class="Delimiter">))</span>
+            <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))))</span></span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names never renames <span style='color:#00af87'>default-scope</span>&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;suppress-default-scope&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>main</span>
-      <span class="Mu"><span class="Delimiter">((</span>default-scope scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer global<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">23</span> literal<span class="Delimiter">)))))</span></span>
 <span class="Delimiter">(</span><span class="Normal">let</span> before Memory-in-use-until
 <span class="CommentedCode">;?   (set dump-trace*)</span>
@@ -1483,17 +1483,17 @@ a { color:#4444ff; }
 <span class="CommentedCode">;?   (prn memory*)</span>
   <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~and <span class="Delimiter">(</span>is <span class="Constant">23</span> <span class="Global">memory*</span><span class="Constant">.1</span><span class="Delimiter">)</span>
             <span class="Delimiter">(</span>~is <span class="Constant">23</span> <span class="Delimiter">(</span><span class="Global">memory*</span> <span class="Delimiter">(</span><span class="Identifier">+</span> before <span class="Constant">1</span><span class="Delimiter">))))</span>
-    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - default-scope skipped for locations with metadata 'global'&quot;</span><span class="Delimiter">)))</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - <span style='color:#00af87'>default-scope</span> skipped for locations with metadata 'global'&quot;</span><span class="Delimiter">)))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-global&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
             <span class="Mu"><span class="Delimiter">'(((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span>y integer global<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
-              <span class="Mu"><span class="Delimiter">((</span>default-scope integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span>x integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>y integer global<span class="Delimiter">))))</span></span>
+              <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span>x integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>y integer global<span class="Delimiter">))))</span></span>
           <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
             <span class="Mu"><span class="Delimiter">((</span>y integer global<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
-            <span class="Mu"><span class="Delimiter">((</span>default-scope integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>y integer global<span class="Delimiter">))))</span></span>
+            <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>y integer global<span class="Delimiter">))))</span></span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names never renames global operands&quot;</span><span class="Delimiter">))</span>
 
 <span class="Comment">; Putting it all together, here's how you define generic functions that run</span>
@@ -1504,16 +1504,16 @@ a { color:#4444ff; }
 <span class="CommentedCode">;? (set dump-trace*)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>test1</span>
-      <span class="Mu"><span class="Delimiter">((</span>default-scope scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">20</span> literal<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span>first-arg-box tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">20</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
       <span class="Comment">; if given integers, add them</span>
       <span class="Mu"><span class="Error">{</span> begin</span>
-        <span class="Mu"><span class="Delimiter">((</span>first-arg integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span>first-arg-box tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-unless</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>second-arg-box tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>second-arg integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span>second-arg-box tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>result integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span>first-arg integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>second-arg integer<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span>result integer<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#af005f'>result</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span style='color:#ffd700'>second-arg</span> integer<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span><span style='color:#af005f'>result</span> integer<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Error">}</span></span>
       <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span><span class="MuConstant">t</span> literal<span class="Delimiter">)))</span></span>
     <span class="Mu"><span class="Delimiter">(</span>main</span>
@@ -1533,25 +1533,25 @@ a { color:#4444ff; }
 <span class="CommentedCode">;? (set dump-trace*)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>test1</span>
-      <span class="Mu"><span class="Delimiter">((</span>default-scope scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">20</span> literal<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span>first-arg-box tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">20</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
       <span class="Comment">; if given integers, add them</span>
       <span class="Mu"><span class="Error">{</span> begin</span>
-        <span class="Mu"><span class="Delimiter">((</span>first-arg integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span>first-arg-box tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-unless</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>second-arg-box tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>second-arg integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span>second-arg-box tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>result integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span>first-arg integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>second-arg integer<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span>result integer<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#af005f'>result</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span style='color:#ffd700'>second-arg</span> integer<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span><span style='color:#af005f'>result</span> integer<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Error">}</span></span>
       <span class="Comment">; if given booleans, or them (it's a silly kind of generic function)</span>
       <span class="Mu"><span class="Error">{</span> begin</span>
-        <span class="Mu"><span class="Delimiter">((</span>first-arg boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span>first-arg-box tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-unless</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>second-arg-box tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>second-arg boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span>second-arg-box tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>result boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> or <span class="Delimiter">(</span>first-arg boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span>second-arg boolean<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span>result integer<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#af005f'>result</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> or <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span style='color:#ffd700'>second-arg</span> boolean<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span><span style='color:#af005f'>result</span> integer<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Error">}</span></span>
       <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span><span class="MuConstant">t</span> literal<span class="Delimiter">)))</span></span>
     <span class="Mu"><span class="Delimiter">(</span>main</span>
@@ -1571,25 +1571,25 @@ a { color:#4444ff; }
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;dispatch-multiple-calls&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>test1</span>
-      <span class="Mu"><span class="Delimiter">((</span>default-scope scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">20</span> literal<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span>first-arg-box tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">20</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
       <span class="Comment">; if given integers, add them</span>
       <span class="Mu"><span class="Error">{</span> begin</span>
-        <span class="Mu"><span class="Delimiter">((</span>first-arg integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span>first-arg-box tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-unless</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>second-arg-box tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>second-arg integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span>second-arg-box tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>result integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span>first-arg integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>second-arg integer<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span>result integer<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#af005f'>result</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span style='color:#ffd700'>second-arg</span> integer<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span><span style='color:#af005f'>result</span> integer<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Error">}</span></span>
       <span class="Comment">; if given booleans, or them (it's a silly kind of generic function)</span>
       <span class="Mu"><span class="Error">{</span> begin</span>
-        <span class="Mu"><span class="Delimiter">((</span>first-arg boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span>first-arg-box tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-unless</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>second-arg-box tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>second-arg boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span>second-arg-box tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">((</span>result boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> or <span class="Delimiter">(</span>first-arg boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span>second-arg boolean<span class="Delimiter">))</span></span>
-        <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span>result integer<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">((</span><span style='color:#af005f'>result</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> or <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span><span style='color:#ffd700'>second-arg</span> boolean<span class="Delimiter">))</span></span>
+        <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span><span style='color:#af005f'>result</span> integer<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Error">}</span></span>
       <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span><span class="MuConstant">t</span> literal<span class="Delimiter">)))</span></span>
     <span class="Mu"><span class="Delimiter">(</span>main</span>
@@ -1665,7 +1665,7 @@ a { color:#4444ff; }
 <span class="Comment">; have it run just before the function exits. Great for keeping code to</span>
 <span class="Comment">; reclaim memory or other resources close to the code to allocate it. (C++</span>
 <span class="Comment">; programmers know this as RAII.) We'll use 'defer' when we build a memory</span>
-<span class="Comment">; deallocation routine like C's 'free'.</span>
+<span class="Comment">; deallocation routine like C's '<span style='color:#00ffd7'>free</span>'.</span>
 <span class="Comment">;</span>
 <span class="Comment">; More powerful reorderings are also possible like in Literate Programming or</span>
 <span class="Comment">; Aspect-Oriented Programming; one advantage of prohibiting arbitrarily nested</span>
