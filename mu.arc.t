@@ -1,9 +1,9 @@
 ; Mu: An exploration on making the global structure of programs more accessible.
 ;
-;; Motivation
-;
 ;   "Is it a language, or an operating system, or a virtual machine? Mu."
 ;   (with apologies to Robert Pirsig: http://en.wikipedia.org/wiki/Mu_%28negative%29#In_popular_culture)
+;
+;; Motivation
 ;
 ; I want to live in a world where I can have an itch to tweak a program, clone
 ; its open-source repository, orient myself on how it's organized, and make
