@@ -1,3 +1,6 @@
+" Highlight current matches (:help matchadd()) in html files.
+" Run this after TOhtml.vim converts your source file to html.
+
 " from $VIMRUNTIME/syntax/2html.vim
 let s:cterm_color = {
 	\   0: "#000000", 1: "#c00000", 2: "#008000", 3: "#804000", 
@@ -5,7 +8,6 @@ let s:cterm_color = {
 	\   8: "#808080", 9: "#ff6060", 10: "#00ff00", 11: "#ffff00",
 	\   12: "#8080ff", 13: "#ff40ff", 14: "#00ffff", 15: "#ffffff"
 	\ }
-
 if &t_Co == 256
   call extend(s:cterm_color, {
 	\   16: "#000000", 17: "#00005f", 18: "#000087", 19: "#0000af",
