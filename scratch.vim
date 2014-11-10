@@ -8,7 +8,7 @@ TOhtml
 %s,\<nil literal,<span class="MuConstant">t</span> literal,gc
 %s,\<t literal,<span class="MuConstant">t</span> literal,gc
 
-map ` :s,<.*,<span class="Mu">&</span>,<CR>
+map ` :s,[{}<].*,<span class="Mu">&</span>,<CR>
 
   " supercedes
   %s,<.*break.*,<span class="Mu">&</span>,gc
@@ -32,6 +32,3 @@ a { color:#4444ff; }
 .Mu, .Mu .Normal, .Mu .Constant { color: #ffffff; }
 .Op { color: #ff8888; }
 .CommentedCode { color: #666666; }
-
-; In the rest of this file we'll highlight lines of the assembly language
-; and deemphasize the (ugly) test harness.
