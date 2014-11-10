@@ -891,7 +891,7 @@
 (reset)
 (new-trace "new-fn-reply-nested")
 (add-fns
-  `((test1
+  '((test1
       ((3 integer) <- test2))
     (test2
       (reply (2 integer)))
