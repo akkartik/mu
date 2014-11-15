@@ -1890,8 +1890,8 @@
 (new-trace "channel-write-wrap")
 (add-fns
   '((main
-      ; channel with 2 slots (capacity 1 since we waste a slot)
-      ((1 channel-address) <- new-channel (2 literal))
+      ; channel with 1 slot
+      ((1 channel-address) <- new-channel (1 literal))
       ; write a value
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -1916,8 +1916,8 @@
 (new-trace "channel-read-wrap")
 (add-fns
   '((main
-      ; channel with 2 slots (capacity 1 since we waste a slot)
-      ((1 channel-address) <- new-channel (2 literal))
+      ; channel with 1 slot
+      ((1 channel-address) <- new-channel (1 literal))
       ; write a value
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -1976,7 +1976,7 @@
 (new-trace "channel-write-full")
 (add-fns
   '((main
-      ((1 channel-address) <- new-channel (2 literal))
+      ((1 channel-address) <- new-channel (1 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
       ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))

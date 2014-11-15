@@ -853,6 +853,7 @@
 (init-fn new-channel
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((capacity integer) <- arg)
+  ((capacity integer) <- add (capacity integer) (1 literal))  ; unused slot for full? below
   ((buffer-address tagged-value-array-address) <- new (tagged-value-array literal) (capacity integer))
   ((result channel-address) <- new (channel literal))
   ((full integer-address) <- get-address (result channel-address deref) (first-full offset))
