@@ -578,10 +578,10 @@
                 )
               ; opcode generated some 'results'
               ; copy to output args
-;?               (prn "store: " results " " oarg)
               (if (acons results)
                 (each (dest val) (zip oarg results)
                   (unless (is dest '_)
+                    (trace "run" val " => " dest)
                     (setm dest val)))
                 (when oarg  ; must be a list
                   (trace "run" results " => " oarg.0)
