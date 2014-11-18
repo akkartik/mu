@@ -876,6 +876,13 @@
   ((channel-buffer-address tagged-value-array-address-address deref) <- new (tagged-value-array literal) (capacity integer))
   (reply (result channel-address)))
 
+(init-fn capacity
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ((chan channel) <- arg)
+  ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
+  ((qlen integer) <- len (q tagged-value-array-address deref))
+  (reply (qlen integer)))
+
 (init-fn write
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((chan channel) <- arg)
@@ -949,11 +956,10 @@
   ((chan channel) <- arg)
   ; curr = chan.first-free + 1
   ((curr integer) <- get (chan channel) (first-free offset))
-  ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
-  ((qlen integer) <- len (q tagged-value-array-address deref))
   ((curr integer) <- add (curr integer) (1 literal))
   { begin
     ; if (curr == chan.capacity) curr = 0
+    ((qlen integer) <- capacity (chan channel))
     ((remaining? boolean) <- lt (curr integer) (qlen integer))
     (break-if (remaining? boolean))
     ((curr integer) <- copy (0 literal))
