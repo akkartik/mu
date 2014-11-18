@@ -51,13 +51,13 @@
               integer-integer-pair (obj size 2  record t  elems '(integer integer))
               integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
               ; tagged-values are the foundation of dynamic types
-              tagged-value (obj size 2  record t  elems '(type location))
+              tagged-value (obj size 2  record t  elems '(type location)  fields '(type payload))
               tagged-value-address (obj size 1  address t  elem 'tagged-value)
               tagged-value-array (obj array t  elem 'tagged-value)
               tagged-value-array-address (obj size 1  address t  elem 'tagged-value-array)
               tagged-value-array-address-address (obj size 1  address t  elem 'tagged-value-array-address)
               ; heterogeneous lists
-              list (obj size 2  record t  elems '(tagged-value list-address))
+              list (obj size 2  record t  elems '(tagged-value list-address)  fields '(car cdr))
               list-address (obj size 1  address t  elem 'list)
               list-address-address (obj size 1  address t  elem 'list-address)
               ; parallel routines use channels to synchronize
@@ -809,59 +809,71 @@
 
 (init-fn new-tagged-value
   ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ; assert (sizeof arg.0) == 1
   ((xtype type) <- arg)
   ((xtypesize integer) <- sizeof (xtype type))
   ((xcheck boolean) <- eq (xtypesize integer) (1 literal))
   (assert (xcheck boolean))
   ; todo: check that arg 0 matches the type? or is that for the future typechecker?
   ((result tagged-value-address) <- new (tagged-value literal))
-  ((resulttype location) <- get-address (result tagged-value-address deref) (0 offset))
+  ; result->type = arg 0
+  ((resulttype location) <- get-address (result tagged-value-address deref) (type offset))
   ((resulttype location deref) <- copy (xtype type))
-  ((locaddr location) <- get-address (result tagged-value-address deref) (1 offset))
+  ; result->payload = arg 1
+  ((locaddr location) <- get-address (result tagged-value-address deref) (payload offset))
   ((locaddr location deref) <- arg)
   (reply (result tagged-value-address)))
 
 (init-fn list-next  ; list-address -> list-address
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((base list-address) <- arg)
-  ((result list-address) <- get (base list-address deref) (1 offset))
+  ((result list-address) <- get (base list-address deref) (cdr offset))
   (reply (result list-address)))
 
 (init-fn list-value-address  ; list-address -> tagged-value-address
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((base list-address) <- arg)
-  ((result tagged-value-address) <- get-address (base list-address deref) (0 offset))
+  ((result tagged-value-address) <- get-address (base list-address deref) (car offset))
   (reply (result tagged-value-address)))
 
 (init-fn new-list
   ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ; new-list = curr = new list
   ((new-list-result list-address) <- new (list literal))
   ((curr list-address) <- copy (new-list-result list-address))
   { begin
+    ; while read curr-value
     ((curr-value integer) (exists? boolean) <- arg)
     (break-unless (exists? boolean))
-    ((next list-address-address) <- get-address (curr list-address deref) (1 offset))
+    ; curr.cdr = new list
+    ((next list-address-address) <- get-address (curr list-address deref) (cdr offset))
     ((next list-address-address deref) <- new (list literal))
+    ; curr = curr.cdr
     ((curr list-address) <- list-next (curr list-address))
+    ; curr.car = (type curr-value)
     ((dest tagged-value-address) <- list-value-address (curr list-address))
     ((dest tagged-value-address deref) <- save-type (curr-value integer))
     (continue)
   }
+  ; return new-list.cdr
   ((new-list-result list-address) <- list-next (new-list-result list-address))  ; memory leak
   (reply (new-list-result list-address)))
 
 (init-fn new-channel
   ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((capacity integer) <- arg)
-  ((capacity integer) <- add (capacity integer) (1 literal))  ; unused slot for full? below
-  ((buffer-address tagged-value-array-address) <- new (tagged-value-array literal) (capacity integer))
+  ; result = new channel
   ((result channel-address) <- new (channel literal))
+  ; result.first-full = 0
   ((full integer-address) <- get-address (result channel-address deref) (first-full offset))
   ((full integer-address deref) <- copy (0 literal))
+  ; result.first-free = 0
   ((free integer-address) <- get-address (result channel-address deref) (first-free offset))
   ((free integer-address deref) <- copy (0 literal))
+  ; result.circular-buffer = new tagged-value[arg+1]
+  ((capacity integer) <- arg)
+  ((capacity integer) <- add (capacity integer) (1 literal))  ; unused slot for full? below
   ((channel-buffer-address tagged-value-array-address-address) <- get-address (result channel-address deref) (circular-buffer offset))
-  ((channel-buffer-address tagged-value-array-address-address deref) <- copy (buffer-address tagged-value-array-address))
+  ((channel-buffer-address tagged-value-array-address-address deref) <- new (tagged-value-array literal) (capacity integer))
   (reply (result channel-address)))
 
 (init-fn write
@@ -923,6 +935,7 @@
 ; An empty channel has first-empty and first-full both at the same value.
 (init-fn empty?
   ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ; return arg.first-full == arg.first-free
   ((chan channel) <- arg)
   ((full integer) <- get (chan channel) (first-full offset))
   ((free integer) <- get (chan channel) (first-free offset))
@@ -934,16 +947,19 @@
 (init-fn full?
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((chan channel) <- arg)
-  ((full integer) <- get (chan channel) (first-full offset))
+  ; curr = chan.first-free + 1
   ((curr integer) <- get (chan channel) (first-free offset))
   ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
   ((qlen integer) <- len (q tagged-value-array-address deref))
   ((curr integer) <- add (curr integer) (1 literal))
   { begin
+    ; if (curr == chan.capacity) curr = 0
     ((remaining? boolean) <- lt (curr integer) (qlen integer))
     (break-if (remaining? boolean))
     ((curr integer) <- copy (0 literal))
   }
+  ; return chan.first-full == curr
+  ((full integer) <- get (chan channel) (first-full offset))
   ((result boolean) <- eq (full integer) (curr integer))
   (reply (result boolean)))
 
