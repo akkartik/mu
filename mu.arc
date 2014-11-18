@@ -584,7 +584,7 @@
                   (unless (is dest '_)
                     (setm dest val)))
                 (when oarg  ; must be a list
-                  (trace "run" "writing to oarg " results " => " oarg.0)
+                  (trace "run" results " => " oarg.0)
                   (setm oarg.0 results)))
               )
         (++ pc.routine*)))
