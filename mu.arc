@@ -397,7 +397,7 @@
       (trace "run" curr-cycle* " " top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
       (let (oarg op arg)  (parse-instr (body.routine* pc.routine*))
-        (let tmp
+        (let results
               (case op
                 ; arithmetic
                 add
@@ -576,16 +576,16 @@
                         (err "no such op @op"))
                       (continue))
                 )
-              ; opcode generated some value, stored in 'tmp'
+              ; opcode generated some 'results'
               ; copy to output args
-;?               (prn "store: " tmp " " oarg)
-              (if (acons tmp)
-                (each (dest val) (zip oarg tmp)
+;?               (prn "store: " results " " oarg)
+              (if (acons results)
+                (each (dest val) (zip oarg results)
                   (unless (is dest '_)
                     (setm dest val)))
                 (when oarg  ; must be a list
-                  (trace "run" "writing to oarg " tmp " => " oarg.0)
-                  (setm oarg.0 tmp)))
+                  (trace "run" "writing to oarg " results " => " oarg.0)
+                  (setm oarg.0 results)))
               )
         (++ pc.routine*)))
     (return time-slice)))
