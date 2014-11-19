@@ -131,9 +131,9 @@
 ;; managing concurrent routines
 
 ; routine = runtime state for a serial thread of execution
-(def make-routine (fn-name)
+(def make-routine (fn-name . args)
   (annotate 'routine (obj call-stack (list
-      (obj fn-name fn-name  pc 0  caller-arg-idx 0)))))
+      (obj fn-name fn-name  pc 0  args args  caller-arg-idx 0)))))
 
 (defextend empty (x)  (isa x 'routine)
   (no rep.x!call-stack))
@@ -501,7 +501,8 @@
                 run
                   (run (v arg.0))
                 fork
-                  (enq (make-routine (v arg.0)) running-routines*)
+                  (let v car  ; same effect as 'v' macro
+                    (enq (apply make-routine (v car.arg) (map v cdr.arg)) running-routines*))
                 ; todo: errors should stall a process and let its parent
                 ; inspect it
                 assert

@@ -1801,6 +1801,17 @@
 (if (~iso memory*.2 4)
   (prn "F - fork works"))
 
+(reset)
+(new-trace "fork-with-args")
+(add-fns
+  '((f1
+      (fork (f2 fn) (4 literal)))
+    (f2
+      ((2 integer) <- arg))))
+(run 'f1)
+(if (~iso memory*.2 4)
+  (prn "F - fork can pass args"))
+
 ; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
 ; along with the types array, the magic buffers for args and oargs, and so on.
