@@ -1812,6 +1812,20 @@
 (if (~iso memory*.2 4)
   (prn "F - fork can pass args"))
 
+(reset)
+(new-trace "fork-copies-args")
+(add-fns
+  '((f1
+      ((default-scope scope-address) <- new (scope literal) (5 literal))
+      ((x integer) <- copy (4 literal))
+      (fork (f2 fn) (x integer))
+      ((x integer) <- copy (0 literal)))  ; should be ignored
+    (f2
+      ((2 integer) <- arg))))
+(run 'f1)
+(if (~iso memory*.2 4)
+  (prn "F - fork passes args by value"))
+
 ; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
 ; along with the types array, the magic buffers for args and oargs, and so on.
