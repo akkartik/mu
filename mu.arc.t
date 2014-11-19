@@ -1790,6 +1790,17 @@
   (prn "F - scheduler handles routines blocking on a memory location"))
 ;? (quit)
 
+(reset)
+(new-trace "fork")
+(add-fns
+  '((f1
+      (fork (f2 fn)))
+    (f2
+      ((2 integer) <- copy (4 literal)))))
+(run 'f1)
+(if (~iso memory*.2 4)
+  (prn "F - fork works"))
+
 ; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
 ; along with the types array, the magic buffers for args and oargs, and so on.
