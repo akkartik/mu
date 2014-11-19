@@ -501,8 +501,7 @@
                 run
                   (run (v arg.0))
                 fork
-                  (let v car  ; same effect as 'v' macro
-                    (enq (apply make-routine (v car.arg) (map v cdr.arg)) running-routines*))
+                  (enq (apply make-routine (v car.arg) (map m cdr.arg)) running-routines*)
                 ; todo: errors should stall a process and let its parent
                 ; inspect it
                 assert
