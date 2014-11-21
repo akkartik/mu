@@ -167,10 +167,10 @@
   `((((rep ,routine) 'call-stack) 0) 'results))
 
 (on-init
-  (= running-routines* (queue))
-  (= completed-routines* (queue))
+  (= running-routines* (queue))  ; simple round-robin scheduler
   ; set of sleeping routines; don't modify routines while they're in this table
   (= sleeping-routines* (table))
+  (= completed-routines* nil)  ; audit trail
   (= routine* nil)
   (= abort-routine* (parameter nil))
   (= curr-cycle* 0)
@@ -187,38 +187,61 @@
 (def run fn-names
   (each it fn-names
     (enq make-routine.it running-routines*))
-  (while (or (~empty running-routines*)
-             (~empty sleeping-routines*))
-    (detect-deadlock)
-    (point continue
-    (each (routine _) canon.sleeping-routines*
-      (awhen (case rep.routine!sleep.1
-                literal
-                  (> curr-cycle* rep.routine!sleep.0)
-                ;else
-                  (aand (m rep.routine!sleep)
-                        (~is it 0)))
-        (trace "schedule" "waking up " top.routine!fn-name)
-        (wipe sleeping-routines*.routine)  ; before modifying routine below
-        (wipe rep.routine!sleep)
-        (++ pc.routine)  ; complete the sleep instruction
-        (enq routine running-routines*)))
-    (when (empty running-routines*)
-      ; ensure forward progress
-      (trace "schedule" "skipping cycle " curr-cycle*)
-      (++ curr-cycle*)
-      (continue))
-    ; simple round-robin scheduler
+  (while (~empty running-routines*)
     (= routine* deq.running-routines*)
     (trace "schedule" top.routine*!fn-name)
-    (routine-mark:run-for-time-slice scheduling-interval*)
-    (if rep.routine*!sleep
-          (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
-              (set sleeping-routines*.routine*))
-        (~empty routine*)
-          (enq routine* running-routines*)
-        :else
-          (enq-limit routine* completed-routines*)))))
+    (routine-mark
+      (run-for-time-slice scheduling-interval*))
+    (update-scheduler-state)))
+
+; prepare next iteration of round-robin scheduler
+;
+; state before: routine* running-routines* sleeping-routines*
+; state after: running-routines* (with next routine to run at head) sleeping-routines*
+;
+; responsibilities:
+;   add routine* to either running-routines* or sleeping-routines* or completed-routines*
+;   wake up any necessary sleeping routines (either by time or on a location)
+;   detect deadlock: kill all sleeping routines when none can be woken
+(def update-scheduler-state ()
+  (push routine* completed-routines*)
+  )
+
+;?   (while (or (~empty running-routines*)
+;?              (~empty sleeping-routines*))
+;?     (detect-deadlock)
+;?     (point continue
+;?     (each (routine _) canon.sleeping-routines*
+;?       (awhen (case rep.routine!sleep.1
+;?                 literal
+;?                   (> curr-cycle* rep.routine!sleep.0)
+;?                 ;else
+;?                   (aand (m rep.routine!sleep)
+;?                         (~is it 0)))
+;?         (trace "schedule" "waking up " top.routine!fn-name)
+;?         (wipe sleeping-routines*.routine)  ; before modifying routine below
+;?         (wipe rep.routine!sleep)
+;?         (++ pc.routine)  ; complete the sleep instruction
+;?         (enq routine running-routines*)))
+;? ;?     (prn running-routines*)
+;?     (detect-deadlock)
+;?     (when (empty running-routines*)
+;?       ; ensure forward progress
+;?       (trace "schedule" "skipping cycle " curr-cycle*)
+;?       (++ curr-cycle*)
+;?       (continue))
+;?     ; simple round-robin scheduler
+;?     (= routine* deq.running-routines*)
+;?     (trace "schedule" top.routine*!fn-name)
+;?     (routine-mark:run-for-time-slice scheduling-interval*)
+;?     (if rep.routine*!sleep
+;?           (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
+;?               (set sleeping-routines*.routine*))
+;?         (~empty routine*)
+;?           (enq routine* running-routines*)
+;?         :else
+;?           (enq-limit routine* completed-routines*))
+;?     )))
 
 (def detect-deadlock ()
   (when (and empty.running-routines*
