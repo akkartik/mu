@@ -85,7 +85,7 @@
   (= traces* (queue)))
 
 (def new-trace (filename)
-;?   (prn "new-trace " filename)
+  (prn "new-trace " filename)
   (= curr-trace-file* filename))
 
 (= dump-trace* nil)
@@ -209,7 +209,10 @@
 ;   wake up any necessary sleeping routines (either by time or on a location)
 ;   detect deadlock: kill all sleeping routines when none can be woken
 (def update-scheduler-state ()
-  (push routine* completed-routines*)
+  (if (~empty routine*)
+        (enq routine* running-routines*)
+      :else
+        (push routine* completed-routines*))
   )
 
 ;?   (while (or (~empty running-routines*)
