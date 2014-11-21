@@ -213,6 +213,13 @@
         (enq routine* running-routines*)
       :else
         (push routine* completed-routines*))
+  (each (routine _) canon.sleeping-routines*
+    (when (> curr-cycle* rep.routine!sleep.1)
+      (trace "schedule" "waking up " top.routine!fn-name)
+      (wipe sleeping-routines*.routine)  ; do this before modifying routine
+      (wipe rep.routine!sleep)
+      (++ pc.routine)
+      (enq routine running-routines*)))
   )
 
 ;?   (while (or (~empty running-routines*)
@@ -226,11 +233,6 @@
 ;?                 ;else
 ;?                   (aand (m rep.routine!sleep)
 ;?                         (~is it 0)))
-;?         (trace "schedule" "waking up " top.routine!fn-name)
-;?         (wipe sleeping-routines*.routine)  ; before modifying routine below
-;?         (wipe rep.routine!sleep)
-;?         (++ pc.routine)  ; complete the sleep instruction
-;?         (enq routine running-routines*)))
 ;? ;?     (prn running-routines*)
 ;?     (detect-deadlock)
 ;?     (when (empty running-routines*)

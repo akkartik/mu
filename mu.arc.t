@@ -1721,6 +1721,46 @@
   ))
 
 (reset)
+(new-trace "scheduler-sleep")
+(add-fns
+  '((f1
+      ((1 integer) <- copy (3 literal)))
+    (f2
+      ((2 integer) <- copy (4 literal)))))
+; add one baseline routine to run (empty running-routines* handled below)
+(enq make-routine!f1 running-routines*)
+(assert (is 1 len.running-routines*))
+; sleeping routine
+(let routine make-routine!f2
+  (= rep.routine!sleep '(literal 23))
+  (set sleeping-routines*.routine))
+; not yet time for it to wake up
+(= curr-cycle* 23)
+(update-scheduler-state)
+(if (~is 1 len.running-routines*)
+  (prn "F - scheduler lets routines sleep"))
+
+(reset)
+(new-trace "scheduler-wakeup")
+(add-fns
+  '((f1
+      ((1 integer) <- copy (3 literal)))
+    (f2
+      ((2 integer) <- copy (4 literal)))))
+; add one baseline routine to run (empty running-routines* handled below)
+(enq make-routine!f1 running-routines*)
+(assert (is 1 len.running-routines*))
+; sleeping routine
+(let routine make-routine!f2
+  (= rep.routine!sleep '(literal 23))
+  (set sleeping-routines*.routine))
+; time for it to wake up
+(= curr-cycle* 24)
+(update-scheduler-state)
+(if (~is 2 len.running-routines*)
+  (prn "F - scheduler wakes up sleeping routines at the right time"))
+
+(reset)
 (new-trace "sleep")
 (add-fns
   '((f1
