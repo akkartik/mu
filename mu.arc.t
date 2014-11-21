@@ -710,8 +710,8 @@
 (run 'main)
 ;? (prn memory*)
 ;? (prn completed-routines*)
-(let last-routine (deq completed-routines*)
-  (aif rep.last-routine!error (prn "error - " it)))
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
 (if (or (~is memory*.3 34) (~is memory*.4 t))
   (prn "F - 'maybe-coerce' copies value only if type tag matches"))
 ;? (quit)
@@ -1487,8 +1487,8 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(let last-routine (deq completed-routines*)
-  (if (no rep.last-routine!error)
+(let routine (car completed-routines*)
+  (if (no rep.routine!error)
     (prn "F - default-scope checks bounds")))
 
 (reset)
@@ -1503,9 +1503,9 @@
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn memory*)
-;? (prn (as cons completed-routines*))
-(let last-routine (deq completed-routines*)
-  (aif rep.last-routine!error (prn "error - " it)))
+;? (prn completed-routines*)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
 (if (~is 34 memory*.3)
   (prn "F - indirect 'get' works in the presence of default-scope"))
 ;? (quit)
@@ -1522,9 +1522,9 @@
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn memory*)
-;? (prn (as cons completed-routines*))
-(let last-routine (deq completed-routines*)
-  (aif rep.last-routine!error (prn "error - " it)))
+;? (prn completed-routines*)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
 (if (~is 34 memory*.3)
   (prn "F - indirect 'index' works in the presence of default-scope"))
 ;? (quit)
@@ -1731,7 +1731,6 @@
       ((2 integer) <- copy (4 literal))
       ((2 integer) <- copy (4 literal)))))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
-(= scheduling-interval* 1)
 (run 'f1 'f2)
 (check-trace-contents "scheduler handles sleeping routines"
   '(("run" "f1 0")
@@ -1755,7 +1754,6 @@
       ((2 integer) <- copy (4 literal))
       ((2 integer) <- copy (4 literal)))))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
-(= scheduling-interval* 1)
 (run 'f1 'f2)
 (check-trace-contents "scheduler progresses sleeping routines when there are no routines left to run"
   '(("run" "f1 0")
@@ -1781,13 +1779,31 @@
       ((1 integer) <- copy (3 literal)))))  ; set to value
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 ;? (set dump-trace*)
-(= scheduling-interval* 1)
 (run 'f1 'f2)
-;? (prn canon.memory*)
-(let last-routine (deq completed-routines*)
-  (aif rep.last-routine!error (prn "error - " it)))
+;? (prn int-canon.memory*)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
 (if (~is memory*.2 4)  ; successor of value
   (prn "F - scheduler handles routines blocking on a memory location"))
+;? (quit)
+
+(reset)
+(new-trace "sleep-scoped-location")
+(add-fns
+  '((f1
+      ; waits for memory location 1 to be set, before computing its successor
+      ((10 integer) <- copy (5 literal))
+      ((default-scope scope-address) <- copy (10 literal))
+      ((1 integer) <- copy (0 literal))  ; really location 11
+      (sleep (1 integer))
+      ((2 integer) <- add (1 integer) (1 literal)))
+    (f2
+      (sleep (30 literal))
+      ((11 integer) <- copy (3 literal)))))  ; set to value
+;? (= dump-trace* (obj whitelist '("run" "schedule")))
+(run 'f1 'f2)
+(if (~is memory*.12 4)  ; successor of value
+  (prn "F - scheduler handles routines blocking on a scoped memory location"))
 ;? (quit)
 
 (reset)
@@ -1845,8 +1861,8 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(let last-routine (deq completed-routines*)
-  (if (no rep.last-routine!error)
+(let routine (car completed-routines*)
+  (if (no rep.routine!error)
     (prn "F - 'index' throws an error if out of bounds")))
 
 ;; Synchronization
@@ -2082,9 +2098,9 @@
 ;? (prn sleeping-routines*)
 ; read should cause the routine to sleep, and
 ; the sole sleeping routine should trigger the deadlock detector
-(let last-routine (deq completed-routines*)
-  (when (or (no rep.last-routine!error)
-            (~posmatch "deadlock" rep.last-routine!error))
+(let routine (car completed-routines*)
+  (when (or (no rep.routine!error)
+            (~posmatch "deadlock" rep.routine!error))
     (prn "F - 'read' on empty channel blocks (puts the routine to sleep until the channel gets data)")))
 ;? (quit)
 
@@ -2105,9 +2121,9 @@
 ;? (prn int-canon.memory*)
 ; second write should cause the routine to sleep, and
 ; the sole sleeping routine should trigger the deadlock detector
-(let last-routine (deq completed-routines*)
-  (when (or (no rep.last-routine!error)
-            (~posmatch "deadlock" rep.last-routine!error))
+(let routine (car completed-routines*)
+  (when (or (no rep.routine!error)
+            (~posmatch "deadlock" rep.routine!error))
     (prn "F - 'write' on full channel blocks (puts the routine to sleep until the channel gets data)")))
 
 ; But how will the sleeping routines wake up? Our scheduler can't watch for
@@ -2147,6 +2163,30 @@
 (if (or (~is nil memory*.4)
         (~is t memory*.5))
   (prn "F - 'read' sets channel watch"))
+
+(reset)
+(new-trace "channel-handoff")
+(add-fns
+  '((f1
+      ((default-scope scope-address) <- new (scope literal) (30 literal))
+      ((chan channel-address) <- new-channel (3 literal))
+      (fork (f2 fn) (chan channel-address))
+      ((1 integer global) <- read (chan channel-address deref)))
+    (f2
+      ((default-scope scope-address) <- new (scope literal) (30 literal))
+      ((n integer-address) <- new (integer literal))
+      ((n integer-address deref) <- copy (24 literal))
+      ((ochan channel-address) <- arg)
+      ((x tagged-value-address) <- new-tagged-value (integer-address literal) (n integer-address))
+      ((ochan channel-address deref) <- write (ochan channel-address deref) (x tagged-value-address deref)))))
+;? (= dump-trace* (obj whitelist '("run")))
+(run 'f1)
+;? (prn memory*)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(if (~is 24 memory*.1)
+  (prn "F - channels are meant to be shared between routines"))
+;? (quit)
 
 ;; Separating concerns
 ;
