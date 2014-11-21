@@ -91,11 +91,16 @@
 (= dump-trace* nil)
 (def trace (label . args)
   (when (or (is dump-trace* t)
+            (and dump-trace* (is label "-"))
             (and dump-trace* (pos label dump-trace*!whitelist))
             (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
     (apply prn label ": " args))
   (enq (list label (apply tostring:prn args))
        traces*))
+
+(redef tr args  ; why am I still returning to prn when debugging? Will this help?
+  (do1 nil
+       (apply trace "-" args)))
 
 (def check-trace-contents (msg expected-contents)
   (unless (trace-contents-match expected-contents)
