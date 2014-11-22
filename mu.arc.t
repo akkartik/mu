@@ -2157,10 +2157,12 @@
 (run 'main)
 ;? (prn int-canon.memory*)
 ;? (prn sleeping-routines*)
+;? (prn completed-routines*)
 ; read should cause the routine to sleep, and
 ; the sole sleeping routine should trigger the deadlock detector
 (let routine (car completed-routines*)
-  (when (or (no rep.routine!error)
+  (when (or (no routine)
+            (no rep.routine!error)
             (~posmatch "deadlock" rep.routine!error))
     (prn "F - 'read' on empty channel blocks (puts the routine to sleep until the channel gets data)")))
 ;? (quit)
@@ -2183,7 +2185,8 @@
 ; second write should cause the routine to sleep, and
 ; the sole sleeping routine should trigger the deadlock detector
 (let routine (car completed-routines*)
-  (when (or (no rep.routine!error)
+  (when (or (no routine)
+            (no rep.routine!error)
             (~posmatch "deadlock" rep.routine!error))
     (prn "F - 'write' on full channel blocks (puts the routine to sleep until the channel gets data)")))
 
