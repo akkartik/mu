@@ -85,7 +85,7 @@
   (= traces* (queue)))
 
 (def new-trace (filename)
-;?   (prn "new-trace " filename)
+  (prn "new-trace " filename)
   (= curr-trace-file* filename))
 
 (= dump-trace* nil)
@@ -933,20 +933,20 @@
 
 (init-fn write
   ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((chan channel) <- arg)
+  ((chan channel-address) <- arg)
   ((val tagged-value) <- arg)
   { begin
     ; block if chan is full
-    ((full boolean) <- full? (chan channel))
+    ((full boolean) <- full? (chan channel-address deref))
     ; race condition: might unnecessarily sleep if consumer routine reads from
     ; channel between previous check and the set to watch below
     (break-unless (full boolean))
-    ((watch boolean-address) <- get-address (chan channel) (read-watch offset))
+    ((watch boolean-address) <- get-address (chan channel-address deref) (read-watch offset))
     ((watch boolean-address deref) <- copy (nil literal))
     (sleep (watch boolean-address deref))
   }
-  ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
-  ((free integer-address) <- get-address (chan channel) (first-free offset))
+  ((q tagged-value-array-address) <- get (chan channel-address deref) (circular-buffer offset))
+  ((free integer-address) <- get-address (chan channel-address deref) (first-free offset))
   ((dest tagged-value-address) <- index-address (q tagged-value-array-address deref) (free integer-address deref))
   ((dest tagged-value-address deref) <- copy (val tagged-value))
   ((free integer-address deref) <- add (free integer-address deref) (1 literal))
@@ -956,25 +956,25 @@
     (break-if (remaining? boolean))
     ((free integer-address deref) <- copy (0 literal))
   }
-  ((watch boolean-address) <- get-address (chan channel) (write-watch offset))
+  ((watch boolean-address) <- get-address (chan channel-address deref) (write-watch offset))
   ((watch boolean-address deref) <- copy (t literal))
-  (reply (chan channel)))
+  (reply (chan channel-address deref)))
 
 (init-fn read
   ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((chan channel) <- arg)
+  ((chan channel-address) <- arg)
   { begin
     ; block if chan is empty
-    ((empty boolean) <- empty? (chan channel))
+    ((empty boolean) <- empty? (chan channel-address deref))
     ; race condition: might unnecessarily sleep if consumer routine writes to
     ; channel between previous check and the set to watch below
     (break-unless (empty boolean))
-    ((watch boolean-address) <- get-address (chan channel) (write-watch offset))
+    ((watch boolean-address) <- get-address (chan channel-address deref) (write-watch offset))
     ((watch boolean-address deref) <- copy (nil literal))
     (sleep (watch boolean-address deref))
   }
-  ((full integer-address) <- get-address (chan channel) (first-full offset))
-  ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
+  ((full integer-address) <- get-address (chan channel-address deref) (first-full offset))
+  ((q tagged-value-array-address) <- get (chan channel-address deref) (circular-buffer offset))
   ((result tagged-value) <- index (q tagged-value-array-address deref) (full integer-address deref))
   ((full integer-address deref) <- add (full integer-address deref) (1 literal))
   { begin
@@ -983,9 +983,9 @@
     (break-if (remaining? boolean))
     ((full integer-address deref) <- copy (0 literal))
   }
-  ((watch boolean-address) <- get-address (chan channel) (read-watch offset))
+  ((watch boolean-address) <- get-address (chan channel-address deref) (read-watch offset))
   ((watch boolean-address deref) <- copy (t literal))
-  (reply (result tagged-value) (chan channel)))
+  (reply (result tagged-value) (chan channel-address deref)))
 
 ; An empty channel has first-empty and first-full both at the same value.
 (init-fn empty?
