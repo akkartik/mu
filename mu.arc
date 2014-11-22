@@ -178,6 +178,15 @@
 (def waiting-for-exact-cycle? (routine)
   (is 'literal rep.routine!sleep.1))
 
+(def ready-to-wake-up (routine)
+  (assert no.routine*)
+  (if (is 'literal rep.routine!sleep.1)
+    (> curr-cycle* rep.routine!sleep.0)
+    (ret result nil
+      (= routine* routine)
+      (= result (in (m rep.routine!sleep) 0 nil))
+      (= routine* nil))))
+
 (on-init
   (= running-routines* (queue))  ; simple round-robin scheduler
   ; set of sleeping routines; don't modify routines while they're in this table
@@ -232,30 +241,18 @@
               (push routine* completed-routines*)))
     (= routine* nil))
   (each (routine _) canon.sleeping-routines*
-    (let (val condition)  rep.routine!sleep
-      (if (is condition 'literal)
-            ; sleeping for an exact time
-            (when (> curr-cycle* val)
-              (trace "schedule" "waking up " top.routine!fn-name)
-              (wipe sleeping-routines*.routine)  ; do this before modifying routine
-              (wipe rep.routine!sleep)
-              (++ pc.routine)
-              (enq routine running-routines*))
-        )))
+    (when (ready-to-wake-up routine)
+      (trace "schedule" "waking up " top.routine!fn-name)
+      (wipe sleeping-routines*.routine)  ; do this before modifying routine
+      (wipe rep.routine!sleep)
+      (++ pc.routine)
+      (enq routine running-routines*)))
   (when (empty running-routines*)
     (whenlet exact-sleeping-routines (keep waiting-for-exact-cycle? keys.sleeping-routines*)
       (let next-wakeup-cycle (apply min (map [rep._!sleep 0] exact-sleeping-routines))
         (= curr-cycle* (+ 1 next-wakeup-cycle))
         (trace "schedule" "skipping to cycle " curr-cycle*)
         (update-scheduler-state)))))
-
-;?     (each (routine _) canon.sleeping-routines*
-;?       (awhen (case rep.routine!sleep.1
-;?                 literal
-;?                   (> curr-cycle* rep.routine!sleep.0)
-;?                 ;else
-;?                   (aand (m rep.routine!sleep)
-;?                         (~is it 0)))
 
 (def detect-deadlock ()
   (when (and empty.running-routines*
@@ -310,14 +307,18 @@
   (ret result v.loc
     (trace "addr" "initial result: " result)
     (unless (pos 'global metadata.loc)
+;?       (tr "aa " routine*)
       (whenlet base rep.routine*!call-stack.0!default-scope
         (if (< result memory*.base)
           (do (trace "addr" "incrementing by " base)
               (++ result base))
           (die "addr: no room for var @result"))))
+;?     (tr "mm")
     (when (pos 'deref metadata.loc)
       (trace "addr" "deref " result " => " memory*.result)
-      (zap memory* result))))
+      (zap memory* result))
+;?     (tr "zz")
+    ))
 
 (def addrs (n sz)
   (accum yield
@@ -335,6 +336,7 @@
     (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?) @loc")
     (with (n  sz.loc
            addr  addr.loc)
+;?       (trace "m" "reading " n " locations starting at " addr)
       (if (is 1 n)
             (memory* addr)
           :else
