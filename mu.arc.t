@@ -2248,9 +2248,12 @@
       ; channel has capacity 1, but receives a second write
       ((1 channel-address deref) <- write (1 channel-address deref) (3 tagged-value-address deref)))))
 ;? (set dump-trace*)
-;? (= dump-trace* (obj whitelist '("run")))
+;? (= dump-trace* (obj whitelist '("run" "schedule" "addr")))
 (run 'main)
 ;? (prn int-canon.memory*)
+;? (prn running-routines*)
+;? (prn sleeping-routines*)
+;? (prn completed-routines*)
 ; second write should cause the routine to sleep, and
 ; the sole sleeping routine should trigger the deadlock detector
 (let routine (car completed-routines*)
@@ -2258,6 +2261,7 @@
             (no rep.routine!error)
             (~posmatch "deadlock" rep.routine!error))
     (prn "F - 'write' on full channel blocks (puts the routine to sleep until the channel gets data)")))
+;? (quit)
 
 ; But how will the sleeping routines wake up? Our scheduler can't watch for
 ; changes to arbitrary values, just tell us if a specific raw location becomes
