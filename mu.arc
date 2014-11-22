@@ -176,8 +176,7 @@
   `((((rep ,routine) 'call-stack) 0) 'results))
 
 (def waiting-for-exact-cycle? (routine)
-  (aand rep.routine!sleep
-        (is 'literal it.1)))
+  (is 'literal rep.routine!sleep.1))
 
 (on-init
   (= running-routines* (queue))  ; simple round-robin scheduler
