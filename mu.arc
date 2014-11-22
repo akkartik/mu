@@ -226,22 +226,22 @@
           (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
               (set sleeping-routines*.routine*))
         (~empty routine*)
-          (do ;(trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
+          (do (trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
               (enq routine* running-routines*))
         :else
-          (do ;(trace "schedule" "done with " routine*)
+          (do (trace "schedule" "done with " routine*)
               (push routine* completed-routines*)))
     (= routine* nil))
   (each (routine _) canon.sleeping-routines*
     (let (val condition)  rep.routine!sleep
       (if (is condition 'literal)
-        ; sleeping for an exact time
-        (when (> curr-cycle* val)
-          (trace "schedule" "waking up " top.routine!fn-name)
-          (wipe sleeping-routines*.routine)  ; do this before modifying routine
-          (wipe rep.routine!sleep)
-          (++ pc.routine)
-          (enq routine running-routines*))
+            ; sleeping for an exact time
+            (when (> curr-cycle* val)
+              (trace "schedule" "waking up " top.routine!fn-name)
+              (wipe sleeping-routines*.routine)  ; do this before modifying routine
+              (wipe rep.routine!sleep)
+              (++ pc.routine)
+              (enq routine running-routines*))
         )))
   (when (empty running-routines*)
     (whenlet exact-sleeping-routines (keep waiting-for-exact-cycle? keys.sleeping-routines*)
