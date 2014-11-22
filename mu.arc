@@ -85,7 +85,7 @@
   (= traces* (queue)))
 
 (def new-trace (filename)
-  (prn "new-trace " filename)
+;?   (prn "new-trace " filename)
   (= curr-trace-file* filename))
 
 (= dump-trace* nil)
@@ -362,7 +362,7 @@
       (assert n "setm: can't compute type of @loc")
       (assert addr "setm: null pointer @loc")
       (if (is 1 n)
-        (do (assert (~isa val 'record) "setm: record of size 1 @val")
+        (do (assert (~isa val 'record) "setm: record of size 1 @(tostring prn.val)")
             (trace "setm" loc ": setting " addr " to " val)
             (= (memory* addr) val))
         (do (assert (isa val 'record) "setm: non-record of size >1 @val")
