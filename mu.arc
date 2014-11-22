@@ -240,7 +240,7 @@
           (do (trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
               (enq routine* running-routines*))
         :else
-          (do (trace "schedule" "done with " routine*)
+          (do (trace "schedule" "done with routine")
               (push routine* completed-routines*)))
     (= routine* nil))
   (each (routine _) canon.sleeping-routines*
