@@ -175,6 +175,10 @@
 (mac results (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'results))
 
+(def waiting-for-exact-cycle? (routine)
+  (aand rep.routine!sleep
+        (is 'literal it.1)))
+
 (on-init
   (= running-routines* (queue))  ; simple round-robin scheduler
   ; set of sleeping routines; don't modify routines while they're in this table
@@ -201,7 +205,10 @@
     (trace "schedule" top.routine*!fn-name)
     (routine-mark
       (run-for-time-slice scheduling-interval*))
-    (update-scheduler-state)))
+    (update-scheduler-state)
+;?     (tr "after run iter " running-routines*)
+;?     (tr "after run iter " empty.running-routines*)
+    ))
 
 ; prepare next iteration of round-robin scheduler
 ;
@@ -213,8 +220,6 @@
 ;   wake up any necessary sleeping routines (either by time or on a location)
 ;   detect deadlock: kill all sleeping routines when none can be woken
 (def update-scheduler-state ()
-;?   (tr "00 " routine*)
-;?   (tr "01 " empty.routine*)
   (when routine*
     (if
         rep.routine*!sleep
@@ -227,28 +232,23 @@
           (do ;(trace "schedule" "done with " routine*)
               (push routine* completed-routines*)))
     (= routine* nil))
-  (let earliest-waking-up-routine nil
-    (each (routine _) canon.sleeping-routines*
-      (if (> curr-cycle* rep.routine!sleep.0)
-        (do
+  (each (routine _) canon.sleeping-routines*
+    (let (val condition)  rep.routine!sleep
+      (if (is condition 'literal)
+        ; sleeping for an exact time
+        (when (> curr-cycle* val)
           (trace "schedule" "waking up " top.routine!fn-name)
           (wipe sleeping-routines*.routine)  ; do this before modifying routine
           (wipe rep.routine!sleep)
           (++ pc.routine)
           (enq routine running-routines*))
-        (when (or no.earliest-waking-up-routine
-                  (> rep.earliest-waking-up-routine!sleep.0
-                     rep.routine!sleep.0))
-          (= earliest-waking-up-routine routine))))
-    ; try to line up at least one routine for next cycle
-    (when (and (empty running-routines*)
-               earliest-waking-up-routine)
-      (= curr-cycle* (+ 1 rep.earliest-waking-up-routine!sleep.0))
-      (trace "schedule" "skipping to cycle " curr-cycle*)
-      (update-scheduler-state)
-      ))
-;?   (tr "zz")
-  )
+        )))
+  (when (empty running-routines*)
+    (whenlet exact-sleeping-routines (keep waiting-for-exact-cycle? keys.sleeping-routines*)
+      (let next-wakeup-cycle (apply min (map [rep._!sleep 0] exact-sleeping-routines))
+        (= curr-cycle* (+ 1 next-wakeup-cycle))
+        (trace "schedule" "skipping to cycle " curr-cycle*)
+        (update-scheduler-state)))))
 
 ;?     (each (routine _) canon.sleeping-routines*
 ;?       (awhen (case rep.routine!sleep.1
