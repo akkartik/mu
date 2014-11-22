@@ -2316,7 +2316,9 @@
       ((ochan channel-address) <- arg)
       ((x tagged-value-address) <- new-tagged-value (integer-address literal) (n integer-address))
       ((ochan channel-address deref) <- write (ochan channel-address deref) (x tagged-value-address deref)))))
-;? (= dump-trace* (obj whitelist '("run")))
+(set dump-trace*)
+;? (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
+;? (= dump-trace* (obj whitelist '("-")))
 (run 'f1)
 ;? (prn memory*)
 (each routine completed-routines*

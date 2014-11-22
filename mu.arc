@@ -184,8 +184,9 @@
     (> curr-cycle* rep.routine!sleep.0)
     (ret result nil
       (= routine* routine)
-;?       (tr "checking location " rep.routine*!sleep)
+;?       (tr "checking location " rep.routine*!sleep " -> " (addr rep.routine*!sleep))
       (= result (~in (m rep.routine!sleep) 0 nil))
+;?       (tr (if result "yep" "nope"))
       (= routine* nil))))
 
 (on-init
@@ -229,6 +230,7 @@
 ;   wake up any necessary sleeping routines (either by time or on a location)
 ;   detect deadlock: kill all sleeping routines when none can be woken
 (def update-scheduler-state ()
+;?   (trace "schedule" curr-cycle*)
   (when routine*
     (if
         rep.routine*!sleep
@@ -257,7 +259,8 @@
   (detect-deadlock))
 
 (def detect-deadlock ()
-  (when (and empty.running-routines*
+  (when (and (empty running-routines*)
+             (~empty sleeping-routines*)
              (~some 'literal (map (fn(_) rep._!sleep.1)
                                   keys.sleeping-routines*)))
     (each (routine _) sleeping-routines*
@@ -555,7 +558,9 @@
                       (let delay v.operand
                         (trace "run" "sleeping until " (+ curr-cycle* delay))
                         (= rep.routine*!sleep `(,(+ curr-cycle* delay) literal)))
-                      (= rep.routine*!sleep operand))
+                      (do
+;?                         (tr "blocking on " operand " -> " (addr operand))
+                        (= rep.routine*!sleep operand)))
                     ((abort-routine*)))
 
                 ; text interaction
