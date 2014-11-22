@@ -184,7 +184,8 @@
     (> curr-cycle* rep.routine!sleep.0)
     (ret result nil
       (= routine* routine)
-      (= result (in (m rep.routine!sleep) 0 nil))
+;?       (tr "checking location " rep.routine*!sleep)
+      (= result (~in (m rep.routine!sleep) 0 nil))
       (= routine* nil))))
 
 (on-init
