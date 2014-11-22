@@ -1764,6 +1764,54 @@
   (prn "F - scheduler wakes up sleeping routines at the right time"))
 
 (reset)
+(new-trace "scheduler-sleep-location")
+(add-fns
+  '((f1
+      ((1 integer) <- copy (3 literal)))
+    (f2
+      ((2 integer) <- copy (4 literal)))))
+; add one baseline routine to run (empty running-routines* handled below)
+(enq make-routine!f1 running-routines*)
+(assert (is 1 len.running-routines*))
+; sleeping routine
+(let routine make-routine!f2
+  (= rep.routine!sleep '(23 integer))
+  (set sleeping-routines*.routine))
+; 'empty' memory location
+(= memory*.23 0)
+;? (prn memory*)
+;? (prn running-routines*)
+;? (prn sleeping-routines*)
+;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("run" "schedule")))
+(update-scheduler-state)
+;? (prn running-routines*)
+;? (prn sleeping-routines*)
+(if (~is 1 len.running-routines*)
+  (prn "F - scheduler lets routines block on locations"))
+;? (quit)
+
+(reset)
+(new-trace "scheduler-wakeup-location")
+(add-fns
+  '((f1
+      ((1 integer) <- copy (3 literal)))
+    (f2
+      ((2 integer) <- copy (4 literal)))))
+; add one baseline routine to run (empty running-routines* handled below)
+(enq make-routine!f1 running-routines*)
+(assert (is 1 len.running-routines*))
+; sleeping routine
+(let routine make-routine!f2
+  (= rep.routine!sleep '(23 integer))
+  (set sleeping-routines*.routine))
+; set memory location
+(= memory*.23 1)
+(update-scheduler-state)
+(if (~is 2 len.running-routines*)
+  (prn "F - scheduler unblocks routines blocked on locations"))
+
+(reset)
 (new-trace "scheduler-skip")
 (add-fns
   '((f1
@@ -1845,7 +1893,7 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 (if (~is memory*.2 4)  ; successor of value
-  (prn "F - scheduler handles routines blocking on a memory location"))
+  (prn "F - sleep can block on a memory location"))
 ;? (quit)
 
 (reset)
@@ -1864,7 +1912,7 @@
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (run 'f1 'f2)
 (if (~is memory*.12 4)  ; successor of value
-  (prn "F - scheduler handles routines blocking on a scoped memory location"))
+  (prn "F - sleep can block on a scoped memory location"))
 ;? (quit)
 
 (reset)
