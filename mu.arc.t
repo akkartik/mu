@@ -152,6 +152,7 @@
 (add-fns
   '((main
       ((1 integer) <- copy (23 literal)))))
+;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 23)
@@ -1732,10 +1733,14 @@
 (assert (is 1 len.running-routines*))
 ; sleeping routine
 (let routine make-routine!f2
-  (= rep.routine!sleep '(literal 23))
+  (= rep.routine!sleep '(23 literal))
   (set sleeping-routines*.routine))
 ; not yet time for it to wake up
 (= curr-cycle* 23)
+; pretend we just finished a routine
+(= routine* (annotate 'routine (table)))
+;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (update-scheduler-state)
 (if (~is 1 len.running-routines*)
   (prn "F - scheduler lets routines sleep"))
@@ -1752,10 +1757,12 @@
 (assert (is 1 len.running-routines*))
 ; sleeping routine
 (let routine make-routine!f2
-  (= rep.routine!sleep '(literal 23))
+  (= rep.routine!sleep '(23 literal))
   (set sleeping-routines*.routine))
 ; time for it to wake up
 (= curr-cycle* 24)
+; pretend we just finished a routine
+(= routine* (annotate 'routine (table)))
 (update-scheduler-state)
 (if (~is 2 len.running-routines*)
   (prn "F - scheduler wakes up sleeping routines at the right time"))
@@ -2227,6 +2234,12 @@
 (if (~is 24 memory*.1)
   (prn "F - channels are meant to be shared between routines"))
 ;? (quit)
+
+;? (reset)
+;? (new-trace "channel-race")
+;? (add-fns
+;?   '((reader
+;?       ((
 
 ;; Separating concerns
 ;

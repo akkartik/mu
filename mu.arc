@@ -85,7 +85,7 @@
   (= traces* (queue)))
 
 (def new-trace (filename)
-  (prn "new-trace " filename)
+;?   (prn "new-trace " filename)
   (= curr-trace-file* filename))
 
 (= dump-trace* nil)
@@ -101,6 +101,10 @@
 (redef tr args  ; why am I still returning to prn when debugging? Will this help?
   (do1 nil
        (apply trace "-" args)))
+
+(def tr2 (msg arg)
+  (tr msg arg)
+  arg)
 
 (def check-trace-contents (msg expected-contents)
   (unless (trace-contents-match expected-contents)
@@ -209,23 +213,31 @@
 ;   wake up any necessary sleeping routines (either by time or on a location)
 ;   detect deadlock: kill all sleeping routines when none can be woken
 (def update-scheduler-state ()
-  (if (~empty routine*)
-        (enq routine* running-routines*)
+;?   (tr "00 " routine*)
+;?   (tr "01 " empty.routine*)
+  (if
+      rep.routine*!sleep
+        (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
+            (set sleeping-routines*.routine*))
+      (~empty routine*)
+        (do ;(trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
+            (enq routine* running-routines*))
       :else
-        (push routine* completed-routines*))
+        (do ;(trace "schedule" "done with " routine*)
+            (push routine* completed-routines*)))
+  (= routine* nil)
+;?   (tr "bb " sleeping-routines*)
   (each (routine _) canon.sleeping-routines*
-    (when (> curr-cycle* rep.routine!sleep.1)
+;?     (tr "cc " sleeping-routines*)
+    (when (> curr-cycle* rep.routine!sleep.0)
       (trace "schedule" "waking up " top.routine!fn-name)
       (wipe sleeping-routines*.routine)  ; do this before modifying routine
       (wipe rep.routine!sleep)
       (++ pc.routine)
       (enq routine running-routines*)))
+;?   (tr "zz")
   )
 
-;?   (while (or (~empty running-routines*)
-;?              (~empty sleeping-routines*))
-;?     (detect-deadlock)
-;?     (point continue
 ;?     (each (routine _) canon.sleeping-routines*
 ;?       (awhen (case rep.routine!sleep.1
 ;?                 literal
@@ -233,24 +245,11 @@
 ;?                 ;else
 ;?                   (aand (m rep.routine!sleep)
 ;?                         (~is it 0)))
-;? ;?     (prn running-routines*)
-;?     (detect-deadlock)
 ;?     (when (empty running-routines*)
 ;?       ; ensure forward progress
 ;?       (trace "schedule" "skipping cycle " curr-cycle*)
 ;?       (++ curr-cycle*)
 ;?       (continue))
-;?     ; simple round-robin scheduler
-;?     (= routine* deq.running-routines*)
-;?     (trace "schedule" top.routine*!fn-name)
-;?     (routine-mark:run-for-time-slice scheduling-interval*)
-;?     (if rep.routine*!sleep
-;?           (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
-;?               (set sleeping-routines*.routine*))
-;?         (~empty routine*)
-;?           (enq routine* running-routines*)
-;?         :else
-;?           (enq-limit routine* completed-routines*))
 ;?     )))
 
 (def detect-deadlock ()
@@ -1005,10 +1004,6 @@
 ; drop all traces while processing above functions
 (on-init
   (= traces* (queue)))
-
-(def prn2 (msg . args)
-  (pr msg)
-  (apply prn args))
 
 (def canon (table)
   (sort (compare < [tostring (prn:car _)]) (as cons table)))
