@@ -938,7 +938,7 @@
     (break-unless (full boolean))
     ((watch boolean-address) <- get-address (chan channel) (read-watch offset))
     ((watch boolean-address deref) <- copy (nil literal))
-    (sleep (watch boolean-address))
+    (sleep (watch boolean-address deref))
   }
   ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
   ((free integer-address) <- get-address (chan channel) (first-free offset))
