@@ -1851,6 +1851,23 @@
 ;? (quit)
 
 (reset)
+(new-trace "scheduler-deadlock2")
+(add-fns
+  '((f1
+      ((1 integer) <- copy (3 literal)))))
+; running-routines* is empty
+(assert (empty running-routines*))
+; blocked routine
+(let routine make-routine!f1
+  (= rep.routine!sleep '(23 integer))
+  (set sleeping-routines*.routine))
+; but is about to become ready
+(= memory*.23 1)
+(update-scheduler-state)
+(when (~empty completed-routines*)
+  (prn "F - scheduler ignores sleeping but ready threads when detecting deadlock"))
+
+(reset)
 (new-trace "sleep")
 (add-fns
   '((f1
