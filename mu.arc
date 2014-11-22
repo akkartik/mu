@@ -333,11 +333,13 @@
       (return rep.routine*!call-stack.0!default-scope))
     (trace "m" loc)
     (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?) @loc")
-    (if (is 1 sz.loc)
-          (memory* addr.loc)
-        :else
-          (annotate 'record
-                    (map memory* (addrs addr.loc sz.loc))))))
+    (with (n  sz.loc
+           addr  addr.loc)
+      (if (is 1 n)
+            (memory* addr)
+          :else
+            (annotate 'record
+                      (map memory* (addrs addr n)))))))
 
 (def setm (loc val)  ; set memory, respecting metadata
   (point return
