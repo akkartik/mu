@@ -215,26 +215,38 @@
 (def update-scheduler-state ()
 ;?   (tr "00 " routine*)
 ;?   (tr "01 " empty.routine*)
-  (if
-      rep.routine*!sleep
-        (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
-            (set sleeping-routines*.routine*))
-      (~empty routine*)
-        (do ;(trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
-            (enq routine* running-routines*))
-      :else
-        (do ;(trace "schedule" "done with " routine*)
-            (push routine* completed-routines*)))
-  (= routine* nil)
-;?   (tr "bb " sleeping-routines*)
-  (each (routine _) canon.sleeping-routines*
-;?     (tr "cc " sleeping-routines*)
-    (when (> curr-cycle* rep.routine!sleep.0)
-      (trace "schedule" "waking up " top.routine!fn-name)
-      (wipe sleeping-routines*.routine)  ; do this before modifying routine
-      (wipe rep.routine!sleep)
-      (++ pc.routine)
-      (enq routine running-routines*)))
+  (when routine*
+    (if
+        rep.routine*!sleep
+          (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
+              (set sleeping-routines*.routine*))
+        (~empty routine*)
+          (do ;(trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
+              (enq routine* running-routines*))
+        :else
+          (do ;(trace "schedule" "done with " routine*)
+              (push routine* completed-routines*)))
+    (= routine* nil))
+  (let earliest-waking-up-routine nil
+    (each (routine _) canon.sleeping-routines*
+      (if (> curr-cycle* rep.routine!sleep.0)
+        (do
+          (trace "schedule" "waking up " top.routine!fn-name)
+          (wipe sleeping-routines*.routine)  ; do this before modifying routine
+          (wipe rep.routine!sleep)
+          (++ pc.routine)
+          (enq routine running-routines*))
+        (when (or no.earliest-waking-up-routine
+                  (> rep.earliest-waking-up-routine!sleep.0
+                     rep.routine!sleep.0))
+          (= earliest-waking-up-routine routine))))
+    ; try to line up at least one routine for next cycle
+    (when (and (empty running-routines*)
+               earliest-waking-up-routine)
+      (= curr-cycle* (+ 1 rep.earliest-waking-up-routine!sleep.0))
+      (trace "schedule" "skipping to cycle " curr-cycle*)
+      (update-scheduler-state)
+      ))
 ;?   (tr "zz")
   )
 
@@ -245,12 +257,6 @@
 ;?                 ;else
 ;?                   (aand (m rep.routine!sleep)
 ;?                         (~is it 0)))
-;?     (when (empty running-routines*)
-;?       ; ensure forward progress
-;?       (trace "schedule" "skipping cycle " curr-cycle*)
-;?       (++ curr-cycle*)
-;?       (continue))
-;?     )))
 
 (def detect-deadlock ()
   (when (and empty.running-routines*

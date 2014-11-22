@@ -1737,8 +1737,6 @@
   (set sleeping-routines*.routine))
 ; not yet time for it to wake up
 (= curr-cycle* 23)
-; pretend we just finished a routine
-(= routine* (annotate 'routine (table)))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (update-scheduler-state)
@@ -1761,11 +1759,27 @@
   (set sleeping-routines*.routine))
 ; time for it to wake up
 (= curr-cycle* 24)
-; pretend we just finished a routine
-(= routine* (annotate 'routine (table)))
 (update-scheduler-state)
 (if (~is 2 len.running-routines*)
   (prn "F - scheduler wakes up sleeping routines at the right time"))
+
+(reset)
+(new-trace "scheduler-skip")
+(add-fns
+  '((f1
+      ((1 integer) <- copy (3 literal)))))
+; running-routines* is empty
+(assert (empty running-routines*))
+; sleeping routine
+(let routine make-routine!f1
+  (= rep.routine!sleep '(23 literal))
+  (set sleeping-routines*.routine))
+; long time left for it to wake up
+(= curr-cycle* 0)
+(update-scheduler-state)
+(assert (is curr-cycle* 24))
+(if (~is 1 len.running-routines*)
+  (prn "F - scheduler skips ahead to earliest sleeping routines when nothing to run"))
 
 (reset)
 (new-trace "sleep")
