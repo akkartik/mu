@@ -1773,7 +1773,7 @@
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
 (assert (is 1 len.running-routines*))
-; sleeping routine
+; blocked routine
 (let routine make-routine!f2
   (= rep.routine!sleep '(23 integer))
   (set sleeping-routines*.routine))
@@ -1801,11 +1801,11 @@
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
 (assert (is 1 len.running-routines*))
-; sleeping routine
+; blocked routine
 (let routine make-routine!f2
   (= rep.routine!sleep '(23 integer))
   (set sleeping-routines*.routine))
-; set memory location
+; set memory location and unblock routine
 (= memory*.23 1)
 (update-scheduler-state)
 (if (~is 2 len.running-routines*)
@@ -1828,6 +1828,27 @@
 (assert (is curr-cycle* 24))
 (if (~is 1 len.running-routines*)
   (prn "F - scheduler skips ahead to earliest sleeping routines when nothing to run"))
+
+(reset)
+(new-trace "scheduler-deadlock")
+(add-fns
+  '((f1
+      ((1 integer) <- copy (3 literal)))))
+(assert (empty running-routines*))
+(assert (empty completed-routines*))
+; blocked routine
+(let routine make-routine!f1
+  (= rep.routine!sleep '(23 integer))
+  (set sleeping-routines*.routine))
+; location it's waiting on is 'empty'
+(= memory*.23 0)
+(update-scheduler-state)
+(assert (~empty completed-routines*))
+;? (prn completed-routines*)
+(let routine completed-routines*.0
+  (when (~posmatch "deadlock" rep.routine!error)
+    (prn "F - scheduler detects deadlock")))
+;? (quit)
 
 (reset)
 (new-trace "sleep")

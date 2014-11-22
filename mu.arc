@@ -253,7 +253,8 @@
       (let next-wakeup-cycle (apply min (map [rep._!sleep 0] exact-sleeping-routines))
         (= curr-cycle* (+ 1 next-wakeup-cycle))
         (trace "schedule" "skipping to cycle " curr-cycle*)
-        (update-scheduler-state)))))
+        (update-scheduler-state))))
+  (detect-deadlock))
 
 (def detect-deadlock ()
   (when (and empty.running-routines*
@@ -262,7 +263,7 @@
     (each (routine _) sleeping-routines*
       (wipe sleeping-routines*.routine)
       (= rep.routine!error "deadlock detected")
-      (enq routine completed-routines*))))
+      (push routine completed-routines*))))
 
 (def die (msg)
   (= rep.routine*!error msg)
