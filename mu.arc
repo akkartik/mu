@@ -701,6 +701,7 @@
             (point continue
             (when (atom instr)  ; label
               (yield instr)
+              (++ pc)
               (continue))
             (let delim (or (pos '<- instr) -1)
               (with (oarg  (if (>= delim 0)
@@ -749,20 +750,22 @@
             (++ pc))))))))
 
 (def close-offset (pc locs)
+;?   (tr "close " pc " " locs)
   (let close 0
     (with (stacksize 0
            done nil)
       (each (state loc) locs
-        (if (< loc pc)
+;?         (tr stacksize "/" done " " state " " loc)
+        (if (<= loc pc)
               nil  ; do nothing
             (no done)
               (do
-                ; first time
-                (when (and (is 0 stacksize) (~is loc pc))
-                  (++ stacksize))
+;?                 (tr "process " stacksize loc)
                 (if (is 'open state) (++ stacksize) (-- stacksize))
                 ; last time
-                (when (is 0 stacksize)
+;?                 (tr "process2 " stacksize loc)
+                (when (is -1 stacksize)
+;?                   (tr "close now " loc)
                   (= close loc)
                   (set done))))))
     (- close pc 1)))
