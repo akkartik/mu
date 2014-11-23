@@ -951,8 +951,10 @@
     ; race condition: might unnecessarily sleep if consumer routine reads from
     ; channel between previous check and the set to watch below
     (break-unless (full boolean))
+    wipe-read
     ((watch boolean-address) <- get-address (chan channel-address deref) (read-watch offset))
     ((watch boolean-address deref) <- copy (nil literal))
+    start-sleep
     (sleep (watch boolean-address deref))
   }
   ; store val
