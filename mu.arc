@@ -61,7 +61,7 @@
               list-address (obj size 1  address t  elem 'list)
               list-address-address (obj size 1  address t  elem 'list-address)
               ; parallel routines use channels to synchronize
-              channel (obj size 5  record t  elems '(boolean boolean integer integer tagged-value-array-address)  fields '(write-watch read-watch first-full first-free circular-buffer))
+              channel (obj size 3  record t  elems '(integer integer tagged-value-array-address)  fields '(first-full first-free circular-buffer))
               channel-address (obj size 1  address t  elem 'channel)
               ; editor
               line (obj array t  elem 'character)
@@ -182,7 +182,7 @@
   (assert no.routine*)
   (if (is 'literal rep.routine!sleep.1)
     (> curr-cycle* rep.routine!sleep.0)
-    (~in (memory* rep.routine!sleep.0) 0 nil)))
+    (~is rep.routine!sleep.1 (memory* rep.routine!sleep.0))))
 
 (on-init
   (= running-routines* (queue))  ; simple round-robin scheduler
@@ -558,13 +558,14 @@
                   (assert (m arg.0))
                 sleep
                   (let operand arg.0
+                    ; store sleep as either (<cycle number> literal) or (<location> <current value>)
                     (if (is ty.operand 'literal)
                       (let delay v.operand
                         (trace "run" "sleeping until " (+ curr-cycle* delay))
                         (= rep.routine*!sleep `(,(+ curr-cycle* delay) literal)))
                       (do
 ;?                         (tr "blocking on " operand " -> " (addr operand))
-                        (= rep.routine*!sleep `(,addr.operand location))))
+                        (= rep.routine*!sleep `(,addr.operand ,m.operand))))
                     ((abort-routine*)))
 
                 ; text interaction
@@ -949,14 +950,9 @@
   { begin
     ; block if chan is full
     ((full boolean) <- full? (chan channel-address deref))
-    ; race condition: might unnecessarily sleep if consumer routine reads from
-    ; channel between previous check and the set to watch below
     (break-unless (full boolean))
-    wipe-read
-    ((watch boolean-address) <- get-address (chan channel-address deref) (read-watch offset))
-    ((watch boolean-address deref) <- copy (nil literal))
-    start-sleep
-    (sleep (watch boolean-address deref))
+    ((full-address integer-address) <- get-address (chan channel-address deref) (first-full offset))
+    (sleep (full-address integer-address deref))
   }
   ; store val
   ((q tagged-value-array-address) <- get (chan channel-address deref) (circular-buffer offset))
@@ -972,9 +968,6 @@
     (break-if (remaining? boolean))
     ((free integer-address deref) <- copy (0 literal))
   }
-  ; set 'write-watch' in case the reader was blocked on it
-  ((watch boolean-address) <- get-address (chan channel-address deref) (write-watch offset))
-  ((watch boolean-address deref) <- copy (t literal))
   (reply (chan channel-address deref)))
 
 (init-fn read
@@ -983,12 +976,9 @@
   { begin
     ; block if chan is empty
     ((empty boolean) <- empty? (chan channel-address deref))
-    ; race condition: might unnecessarily sleep if consumer routine writes to
-    ; channel between previous check and the set to watch below
     (break-unless (empty boolean))
-    ((watch boolean-address) <- get-address (chan channel-address deref) (write-watch offset))
-    ((watch boolean-address deref) <- copy (nil literal))
-    (sleep (watch boolean-address deref))
+    ((free-address integer-address) <- get-address (chan channel-address deref) (first-free offset))
+    (sleep (free-address integer-address deref))
   }
   ; read result
   ((full integer-address) <- get-address (chan channel-address deref) (first-full offset))
@@ -1003,9 +993,6 @@
     (break-if (remaining? boolean))
     ((full integer-address deref) <- copy (0 literal))
   }
-  ; set 'read-watch' in case the writer was blocked on it
-  ((watch boolean-address) <- get-address (chan channel-address deref) (read-watch offset))
-  ((watch boolean-address deref) <- copy (t literal))
   (reply (result tagged-value) (chan channel-address deref)))
 
 ; An empty channel has first-empty and first-full both at the same value.

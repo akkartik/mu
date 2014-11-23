@@ -1863,11 +1863,11 @@
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
 (assert (is 1 len.running-routines*))
-; blocked routine
+; blocked routine waiting for location 23 to change
 (let routine make-routine!f2
-  (= rep.routine!sleep '(23 integer))
+  (= rep.routine!sleep '(23 0))
   (set sleeping-routines*.routine))
-; 'empty' memory location
+; leave memory location 23 unchanged
 (= memory*.23 0)
 ;? (prn memory*)
 ;? (prn running-routines*)
@@ -1877,6 +1877,7 @@
 (update-scheduler-state)
 ;? (prn running-routines*)
 ;? (prn sleeping-routines*)
+; routine remains blocked
 (if (~is 1 len.running-routines*)
   (prn "F - scheduler lets routines block on locations"))
 ;? (quit)
@@ -1891,13 +1892,14 @@
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
 (assert (is 1 len.running-routines*))
-; blocked routine
+; blocked routine waiting for location 23 to change
 (let routine make-routine!f2
-  (= rep.routine!sleep '(23 integer))
+  (= rep.routine!sleep '(23 0))
   (set sleeping-routines*.routine))
-; set memory location and unblock routine
+; change memory location 23
 (= memory*.23 1)
 (update-scheduler-state)
+; routine unblocked
 (if (~is 2 len.running-routines*)
   (prn "F - scheduler unblocks routines blocked on locations"))
 
@@ -1928,9 +1930,9 @@
 (assert (empty completed-routines*))
 ; blocked routine
 (let routine make-routine!f1
-  (= rep.routine!sleep '(23 integer))
+  (= rep.routine!sleep '(23 0))
   (set sleeping-routines*.routine))
-; location it's waiting on is 'empty'
+; location it's waiting on is 'unchanged'
 (= memory*.23 0)
 (update-scheduler-state)
 (assert (~empty completed-routines*))
@@ -1949,7 +1951,7 @@
 (assert (empty running-routines*))
 ; blocked routine
 (let routine make-routine!f1
-  (= rep.routine!sleep '(23 integer))
+  (= rep.routine!sleep '(23 0))
   (set sleeping-routines*.routine))
 ; but is about to become ready
 (= memory*.23 1)
@@ -2028,10 +2030,10 @@
 (new-trace "sleep-scoped-location")
 (add-fns
   '((f1
-      ; waits for memory location 1 to be set, before computing its successor
-      ((10 integer) <- copy (5 literal))
+      ; waits for memory location 1 to be changed, before computing its successor
+      ((10 integer) <- copy (5 literal))  ; array of locals
       ((default-scope scope-address) <- copy (10 literal))
-      ((1 integer) <- copy (0 literal))  ; really location 11
+      ((1 integer) <- copy (23 literal))  ; really location 11
       (sleep (1 integer))
       ((2 integer) <- add (1 integer) (1 literal)))
     (f2
@@ -2370,44 +2372,6 @@
     (prn "F - 'write' on full channel blocks (puts the routine to sleep until the channel gets data)")))
 ;? (quit)
 
-; But how will the sleeping routines wake up? Our scheduler can't watch for
-; changes to arbitrary values, just tell us if a specific raw location becomes
-; non-zero (see the sleep-location test above). So both reader and writer set
-; 'read-watch' and 'write-watch' respectively at the end of a successful call.
-
-(reset)
-(new-trace "channel-write-watch")
-(add-fns
-  '((main
-      ((1 channel-address) <- new-channel (3 literal))
-      ((2 integer-address) <- new (integer literal))
-      ((2 integer-address deref) <- copy (34 literal))
-      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
-      ((4 boolean) <- get (1 channel-address deref) (read-watch offset))
-      ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
-      ((5 boolean) <- get (1 channel-address deref) (write-watch offset)))))
-(run 'main)
-(if (or (~is nil memory*.4)
-        (~is t memory*.5))
-  (prn "F - 'write' sets channel watch"))
-
-(reset)
-(new-trace "channel-read-watch")
-(add-fns
-  '((main
-      ((1 channel-address) <- new-channel (3 literal))
-      ((2 integer-address) <- new (integer literal))
-      ((2 integer-address deref) <- copy (34 literal))
-      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
-      ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
-      ((4 boolean) <- get (1 channel-address deref) (read-watch offset))
-      (_ (1 channel-address deref) <- read (1 channel-address))
-      ((5 integer) <- get (1 channel-address deref) (read-watch offset)))))
-(run 'main)
-(if (or (~is nil memory*.4)
-        (~is t memory*.5))
-  (prn "F - 'read' sets channel watch"))
-
 (reset)
 (new-trace "channel-handoff")
 (add-fns
@@ -2432,32 +2396,6 @@
   (aif rep.routine!error (prn "error - " it)))
 (if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
   (prn "F - channels are meant to be shared between routines"))
-;? (quit)
-
-(reset)
-(new-trace "channel-race")
-(add-fns
-  '((main
-      ; create a channel with capacity 1
-      ((1 channel-address) <- new-channel (1 literal))
-      ((2 integer-address) <- new (integer literal))
-      ((2 integer-address deref) <- copy (34 literal))
-      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
-      ; write a value
-      ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
-      ; write a second value
-      ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref)))
-    (reader
-      (_ (1 channel-address deref) <- read (1 channel-address)))))
-; switch context at just the wrong time
-(= scheduler-switch-table*
-   '((wipe-read  reader)))
-;? (= dump-trace* (obj whitelist '("schedule" "run")))
-(run 'main 'reader)
-; second write should not cause deadlock
-(each routine completed-routines*
-  (when (posmatch "deadlock" rep.routine!error)
-    (prn "F - 'write' race condition 1")))
 ;? (quit)
 
 ;; Separating concerns
