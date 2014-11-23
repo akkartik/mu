@@ -182,12 +182,7 @@
   (assert no.routine*)
   (if (is 'literal rep.routine!sleep.1)
     (> curr-cycle* rep.routine!sleep.0)
-    (ret result nil
-      (= routine* routine)
-;?       (tr "checking location " rep.routine*!sleep " -> " (addr rep.routine*!sleep))
-      (= result (~in (m rep.routine!sleep) 0 nil))
-;?       (tr (if result "yep" "nope"))
-      (= routine* nil))))
+    (~in (memory* rep.routine!sleep.0) 0 nil)))
 
 (on-init
   (= running-routines* (queue))  ; simple round-robin scheduler
@@ -569,7 +564,7 @@
                         (= rep.routine*!sleep `(,(+ curr-cycle* delay) literal)))
                       (do
 ;?                         (tr "blocking on " operand " -> " (addr operand))
-                        (= rep.routine*!sleep operand)))
+                        (= rep.routine*!sleep `(,addr.operand location))))
                     ((abort-routine*)))
 
                 ; text interaction
