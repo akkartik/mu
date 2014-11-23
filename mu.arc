@@ -945,17 +945,21 @@
     ((watch boolean-address deref) <- copy (nil literal))
     (sleep (watch boolean-address deref))
   }
+  ; store val
   ((q tagged-value-array-address) <- get (chan channel-address deref) (circular-buffer offset))
   ((free integer-address) <- get-address (chan channel-address deref) (first-free offset))
   ((dest tagged-value-address) <- index-address (q tagged-value-array-address deref) (free integer-address deref))
   ((dest tagged-value-address deref) <- copy (val tagged-value))
+  ; increment free
   ((free integer-address deref) <- add (free integer-address deref) (1 literal))
   { begin
+    ; wrap free around to 0 if necessary
     ((qlen integer) <- len (q tagged-value-array-address deref))
     ((remaining? boolean) <- lt (free integer-address deref) (qlen integer))
     (break-if (remaining? boolean))
     ((free integer-address deref) <- copy (0 literal))
   }
+  ; set 'write-watch' in case the reader was blocked on it
   ((watch boolean-address) <- get-address (chan channel-address deref) (write-watch offset))
   ((watch boolean-address deref) <- copy (t literal))
   (reply (chan channel-address deref)))
@@ -973,16 +977,20 @@
     ((watch boolean-address deref) <- copy (nil literal))
     (sleep (watch boolean-address deref))
   }
+  ; read result
   ((full integer-address) <- get-address (chan channel-address deref) (first-full offset))
   ((q tagged-value-array-address) <- get (chan channel-address deref) (circular-buffer offset))
   ((result tagged-value) <- index (q tagged-value-array-address deref) (full integer-address deref))
+  ; increment full
   ((full integer-address deref) <- add (full integer-address deref) (1 literal))
   { begin
+    ; wrap full around to 0 if necessary
     ((qlen integer) <- len (q tagged-value-array-address deref))
     ((remaining? boolean) <- lt (full integer-address deref) (qlen integer))
     (break-if (remaining? boolean))
     ((full integer-address deref) <- copy (0 literal))
   }
+  ; set 'read-watch' in case the writer was blocked on it
   ((watch boolean-address) <- get-address (chan channel-address deref) (read-watch offset))
   ((watch boolean-address deref) <- copy (t literal))
   (reply (result tagged-value) (chan channel-address deref)))
