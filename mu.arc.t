@@ -1229,6 +1229,34 @@
   (prn "F - convert-braces balances curlies when converting continue"))
 
 (reset)
+(new-trace "convert-braces-label")
+(if (~iso (convert-braces
+            '(((1 integer) <- copy (4 literal))
+              foo
+              ((2 integer) <- copy (2 literal))))
+          '(((1 integer) <- copy (4 literal))
+            foo
+            ((2 integer) <- copy (2 literal))))
+  (prn "F - convert-braces skips past labels"))
+;? (quit)
+
+(reset)
+(new-trace "convert-braces-label-increments-offset")
+(if (~iso (convert-braces
+            '(((1 integer) <- copy (4 literal))
+              { begin
+                (break)
+                foo
+              }
+              ((2 integer) <- copy (2 literal))))
+          '(((1 integer) <- copy (4 literal))
+            (jump (1 offset))
+            foo
+            ((2 integer) <- copy (2 literal))))
+  (prn "F - convert-braces skips past labels"))
+;? (quit)
+
+(reset)
 (new-trace "continue")
 ;? (set dump-trace*)
 (add-fns
@@ -1391,6 +1419,16 @@
           '(((2 boolean) <- get (1 integer-boolean-pair) (1 offset))
             ((3 boolean) <- get (1 integer-boolean-pair) (1 offset))))
   (prn "F - convert-names replaces field offsets with multiple mentions"))
+;? (quit)
+
+(reset)
+(new-trace "convert-names-label")
+(if (~iso (convert-names
+            '(((1 integer) <- copy (4 literal))
+              foo))
+          '(((1 integer) <- copy (4 literal))
+            foo))
+  (prn "F - convert-names skips past labels"))
 ;? (quit)
 
 ; A rudimentary memory allocator. Eventually we want to write this in mu.
@@ -2343,12 +2381,6 @@
 (if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
   (prn "F - channels are meant to be shared between routines"))
 ;? (quit)
-
-;? (reset)
-;? (new-trace "channel-race")
-;? (add-fns
-;?   '((reader
-;?       ((
 
 ;; Separating concerns
 ;
