@@ -2434,6 +2434,32 @@
   (prn "F - channels are meant to be shared between routines"))
 ;? (quit)
 
+(reset)
+(new-trace "channel-race")
+(add-fns
+  '((main
+      ; create a channel with capacity 1
+      ((1 channel-address) <- new-channel (1 literal))
+      ((2 integer-address) <- new (integer literal))
+      ((2 integer-address deref) <- copy (34 literal))
+      ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
+      ; write a value
+      ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
+      ; write a second value
+      ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref)))
+    (reader
+      (_ (1 channel-address deref) <- read (1 channel-address)))))
+; switch context at just the wrong time
+(= scheduler-switch-table*
+   '((wipe-read  reader)))
+;? (= dump-trace* (obj whitelist '("schedule" "run")))
+(run 'main 'reader)
+; second write should not cause deadlock
+(each routine completed-routines*
+  (when (posmatch "deadlock" rep.routine!error)
+    (prn "F - 'write' race condition 1")))
+;? (quit)
+
 ;; Separating concerns
 ;
 ; Lightweight tools can also operate on quoted lists of statements surrounded

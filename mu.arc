@@ -198,6 +198,7 @@
   (= abort-routine* (parameter nil))
   (= curr-cycle* 0)
   (= scheduling-interval* 500)
+  (= scheduler-switch-table* nil)  ; hook into scheduler for tests
   )
 
 ; like arc's 'point' but you can also call ((abort-routine*)) in nested calls
@@ -443,6 +444,11 @@
       (trace "run" curr-cycle* " " top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
       (when (atom (body.routine* pc.routine*))  ; label
+        (when (aand scheduler-switch-table*
+                    (alref it (body.routine* pc.routine*)))
+          (++ pc.routine*)
+          (trace "run" "context-switch forced " abort-routine*)
+          ((abort-routine*)))
         (++ pc.routine*)
         (continue))
       (let (oarg op arg)  (parse-instr (body.routine* pc.routine*))
