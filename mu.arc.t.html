@@ -189,6 +189,7 @@ a { color:#4444ff; }
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>main</span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">23</span> literal<span class="Delimiter">)))))</span></span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
 <span class="CommentedCode">;? (prn memory*)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Global">memory*</span><span class="Constant">.1</span> <span class="Constant">23</span><span class="Delimiter">)</span>
@@ -747,8 +748,8 @@ a { color:#4444ff; }
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
 <span class="CommentedCode">;? (prn memory*)</span>
 <span class="CommentedCode">;? (prn completed-routines*)</span>
-<span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
-  <span class="Delimiter">(</span>aif rep.last-routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
+<span class="Delimiter">(</span>each routine <span class="Global">completed-routines*</span>
+  <span class="Delimiter">(</span>aif rep.routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>~is <span class="Global">memory*</span><span class="Constant">.3</span> <span class="Constant">34</span><span class="Delimiter">)</span> <span class="Delimiter">(</span>~is <span class="Global">memory*</span><span class="Constant">.4</span> t<span class="Delimiter">))</span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'maybe-coerce' copies value only if type tag matches&quot;</span><span class="Delimiter">))</span>
 <span class="CommentedCode">;? (quit)</span>
@@ -1070,7 +1071,7 @@ a { color:#4444ff; }
       <span class="Comment">; if given two args, adds them; if given one arg, increments</span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
-      <span class="Mu">{ <span class="muHack">begin</span></span>
+      <span class="Mu">{ <span class="CommentedCode">begin</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-if</span> <span class="Delimiter">(</span><span class="Constant">6</span> boolean<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">1</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu">}</span>
@@ -1182,11 +1183,12 @@ a { color:#4444ff; }
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;c{0&quot; &quot;c{1&quot;)))</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces
             <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span></span>
-              <span class="Mu">{ <span class="muHack">begin</span>  <span class="Comment">; 'begin' is just a hack because racket turns curlies into parens</span></span>
+              <span class="Mu">{ <span class="CommentedCode">begin</span>  <span class="Comment">; 'begin' is just a hack because racket turns curlies into parens</span></span>
                 <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> integer<span class="Delimiter">))</span></span>
                 <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-if</span> <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">))</span></span>
                 <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
@@ -1200,14 +1202,16 @@ a { color:#4444ff; }
             <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
             <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span><span class="Delimiter">)))</span></span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces replaces break-if with a jump-if to after the next close-curly&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces-empty-block&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;c{0&quot; &quot;c{1&quot;)))</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces
             <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span></span>
-              <span class="Mu">{ <span class="muHack">begin</span></span>
+              <span class="Mu">{ <span class="CommentedCode">begin</span></span>
                 <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break</span><span class="Delimiter">)</span></span>
               <span class="Mu">}</span>
               <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span><span class="Delimiter">)))</span></span>
@@ -1217,6 +1221,7 @@ a { color:#4444ff; }
             <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">jump</span> <span class="Delimiter">(</span><span class="MuConstant">0</span> offset<span class="Delimiter">))</span></span>
             <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span><span class="Delimiter">)))</span></span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces works for degenerate blocks&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces-nested-break&quot;</span><span class="Delimiter">)</span>
@@ -1224,10 +1229,10 @@ a { color:#4444ff; }
             <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span></span>
-              <span class="Mu">{ <span class="muHack">begin</span></span>
+              <span class="Mu">{ <span class="CommentedCode">begin</span></span>
                 <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> integer<span class="Delimiter">))</span></span>
                 <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-if</span> <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">))</span></span>
-                <span class="Mu">{ <span class="muHack">begin</span></span>
+                <span class="Mu">{ <span class="CommentedCode">begin</span></span>
                   <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
                 <span class="Mu">}</span>
               <span class="Mu">}</span>
@@ -1242,13 +1247,36 @@ a { color:#4444ff; }
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces balances curlies when converting break&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces-repeated-jump&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;c{0&quot; &quot;c{1&quot;)))</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces
+            <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+              <span class="Mu">{ <span class="CommentedCode">begin</span></span>
+                <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break</span><span class="Delimiter">)</span></span>
+                <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">5</span> literal<span class="Delimiter">))</span></span>
+              <span class="Mu">}</span>
+              <span class="Mu">{ <span class="CommentedCode">begin</span></span>
+                <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break</span><span class="Delimiter">)</span></span>
+                <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">6</span> literal<span class="Delimiter">))</span></span>
+              <span class="Mu">}</span>
+              <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">7</span> literal<span class="Delimiter">))))</span></span>
+          <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+            <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">jump</span> <span class="Delimiter">(</span><span class="MuConstant">1</span> offset<span class="Delimiter">))</span></span>
+            <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">5</span> literal<span class="Delimiter">))</span></span>
+            <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">jump</span> <span class="Delimiter">(</span><span class="MuConstant">1</span> offset<span class="Delimiter">))</span></span>
+            <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">6</span> literal<span class="Delimiter">))</span></span>
+            <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">7</span> literal<span class="Delimiter">))))</span></span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces handles jumps on jumps&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces-nested-continue&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces
             <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
-              <span class="Mu">{ <span class="muHack">begin</span></span>
+              <span class="Mu">{ <span class="CommentedCode">begin</span></span>
                 <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span></span>
-                <span class="Mu">{ <span class="muHack">begin</span></span>
+                <span class="Mu">{ <span class="CommentedCode">begin</span></span>
                   <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> integer<span class="Delimiter">))</span></span>
                 <span class="Mu">}</span>
                 <span class="Delimiter">(</span><span class="Identifier">continue-if</span> <span class="Delimiter">(</span><span class="Constant">4</span> boolean<span class="Delimiter">))</span>
@@ -1265,13 +1293,66 @@ a { color:#4444ff; }
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces balances curlies when converting continue&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces-label&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces
+            <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+              foo
+              <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))))</span></span>
+          <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+            foo
+            <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))))</span></span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces skips past labels&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces-label-increments-offset&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces
+            <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+              <span class="Mu">{ <span class="CommentedCode">begin</span></span>
+                <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break</span><span class="Delimiter">)</span></span>
+                foo
+              <span class="Mu">}</span>
+              <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))))</span></span>
+          <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+            <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">jump</span> <span class="Delimiter">(</span><span class="MuConstant">1</span> offset<span class="Delimiter">))</span></span>
+            foo
+            <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))))</span></span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces treats labels as instructions&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-braces-label-increments-offset2&quot;</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;c{0&quot; &quot;c{1&quot;)))</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-braces
+            <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+              <span class="Mu">{ <span class="CommentedCode">begin</span></span>
+                <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break</span><span class="Delimiter">)</span></span>
+                foo
+              <span class="Mu">}</span>
+              <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">5</span> literal<span class="Delimiter">))</span></span>
+              <span class="Mu">{ <span class="CommentedCode">begin</span></span>
+                <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break</span><span class="Delimiter">)</span></span>
+                <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">6</span> literal<span class="Delimiter">))</span></span>
+              <span class="Mu">}</span>
+              <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">7</span> literal<span class="Delimiter">))))</span></span>
+          <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+            <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">jump</span> <span class="Delimiter">(</span><span class="MuConstant">1</span> offset<span class="Delimiter">))</span></span>
+            foo
+            <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">5</span> literal<span class="Delimiter">))</span></span>
+            <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">jump</span> <span class="Delimiter">(</span><span class="MuConstant">1</span> offset<span class="Delimiter">))</span></span>
+            <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">6</span> literal<span class="Delimiter">))</span></span>
+            <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">7</span> literal<span class="Delimiter">))))</span></span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-braces treats labels as instructions - 2&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;continue&quot;</span><span class="Delimiter">)</span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Mu"><span class="Delimiter">'((</span>main</span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">1</span> literal<span class="Delimiter">))</span></span>
-      <span class="Mu">{ <span class="muHack">begin</span></span>
+      <span class="Mu">{ <span class="CommentedCode">begin</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">continue-if</span> <span class="Delimiter">(</span><span class="Constant">3</span> boolean<span class="Delimiter">))</span></span>
@@ -1295,9 +1376,9 @@ a { color:#4444ff; }
   <span class="Mu"><span class="Delimiter">'((</span>main</span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">1</span> literal<span class="Delimiter">))</span></span>
-      <span class="Mu">{ <span class="muHack">begin</span></span>
+      <span class="Mu">{ <span class="CommentedCode">begin</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span></span>
-        <span class="Mu">{ <span class="muHack">begin</span></span>
+        <span class="Mu">{ <span class="CommentedCode">begin</span></span>
           <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span></span>
         <span class="Mu">}</span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">continue-if</span> <span class="Delimiter">(</span><span class="Constant">3</span> boolean<span class="Delimiter">))</span></span>
@@ -1317,9 +1398,9 @@ a { color:#4444ff; }
   <span class="Mu"><span class="Delimiter">'((</span>main</span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
-      <span class="Mu">{ <span class="muHack">begin</span></span>
+      <span class="Mu">{ <span class="CommentedCode">begin</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span></span>
-        <span class="Mu">{ <span class="muHack">begin</span></span>
+        <span class="Mu">{ <span class="CommentedCode">begin</span></span>
           <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> neq <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer<span class="Delimiter">))</span></span>
         <span class="Mu">}</span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">continue-if</span> <span class="Delimiter">(</span><span class="Constant">3</span> boolean<span class="Delimiter">))</span></span>
@@ -1338,7 +1419,7 @@ a { color:#4444ff; }
 <span class="Comment">; convenience.</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (new-trace &quot;convert-names&quot;)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
             <span class="Mu"><span class="Delimiter">'(((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span>y integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
@@ -1349,7 +1430,7 @@ a { color:#4444ff; }
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names renames symbolic names to integer locations&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (new-trace &quot;convert-names-compound&quot;)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-compound&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
             <span class="Mu"><span class="Delimiter">'(((</span>x integer-boolean-pair<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span>y integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))))</span></span>
@@ -1358,7 +1439,7 @@ a { color:#4444ff; }
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names increments integer locations by the size of the type of the previous var&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (new-trace &quot;convert-names-nil&quot;)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-nil&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
             <span class="Mu"><span class="Delimiter">'(((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span>y integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
@@ -1369,7 +1450,7 @@ a { color:#4444ff; }
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names never renames nil&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (new-trace &quot;convert-names-global&quot;)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-global&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
             <span class="Mu"><span class="Delimiter">'(((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span>y integer global<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
@@ -1381,7 +1462,7 @@ a { color:#4444ff; }
 
 <span class="Comment">; kludgy support for 'fork' below</span>
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (new-trace &quot;convert-names-functions&quot;)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-functions&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
             <span class="Mu"><span class="Delimiter">'(((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span>y integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
@@ -1392,41 +1473,51 @@ a { color:#4444ff; }
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names never renames nil&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (new-trace &quot;convert-names-record-fields&quot;)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-record-fields&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
             <span class="Mu"><span class="Delimiter">'(((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">34</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span>bool offset<span class="Delimiter">))))</span></span>
           <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">34</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">1</span> offset<span class="Delimiter">))))</span></span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names replaces record field offsets&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (new-trace &quot;convert-names-record-fields-ambiguous&quot;)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-record-fields-ambiguous&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>errsafe <span class="Delimiter">(</span>convert-names
                <span class="Mu"><span class="Delimiter">'(((</span>bool boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">t</span> literal<span class="Delimiter">))</span></span>
                  <span class="Mu"><span class="Delimiter">((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">34</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span>bool offset<span class="Delimiter">)))))</span></span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names doesn't allow offsets and variables with the same name in a function&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (new-trace &quot;convert-names-record-fields-ambiguous-2&quot;)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-record-fields-ambiguous-2&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>errsafe <span class="Delimiter">(</span>convert-names
                <span class="Mu"><span class="Delimiter">'(((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">34</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span>bool offset<span class="Delimiter">))</span></span>
                  <span class="Mu"><span class="Delimiter">((</span>bool boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">t</span> literal<span class="Delimiter">)))))</span></span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names doesn't allow offsets and variables with the same name in a function - 2&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (new-trace &quot;convert-names-record-fields-indirect&quot;)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-record-fields-indirect&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
             <span class="Mu"><span class="Delimiter">'(((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">34</span> integer-boolean-pair-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>bool offset<span class="Delimiter">))))</span></span>
           <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">34</span> integer-boolean-pair-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">1</span> offset<span class="Delimiter">))))</span></span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names replaces field offsets for record addresses&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (new-trace &quot;convert-names-record-fields-multiple&quot;)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-record-fields-multiple&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
             <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">2</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span>bool offset<span class="Delimiter">))</span></span>
               <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span>bool offset<span class="Delimiter">))))</span></span>
           <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">2</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">1</span> offset<span class="Delimiter">))</span></span>
             <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> integer-boolean-pair<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">1</span> offset<span class="Delimiter">))))</span></span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names replaces field offsets with multiple mentions&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;convert-names-label&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Delimiter">(</span>convert-names
+            <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+              foo<span class="Delimiter">))</span>
+          <span class="Mu"><span class="Delimiter">'(((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+            foo<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - convert-names skips past labels&quot;</span><span class="Delimiter">))</span>
 <span class="CommentedCode">;? (quit)</span>
 
 <span class="Comment">; A rudimentary memory allocator. Eventually we want to write this in mu.</span>
@@ -1524,8 +1615,8 @@ a { color:#4444ff; }
 <span class="CommentedCode">;? (set dump-trace*)</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
 <span class="CommentedCode">;? (prn memory*)</span>
-<span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
-  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>no rep.last-routine!error<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine <span class="Delimiter">(</span><span class="Identifier">car</span> <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>no rep.routine!error<span class="Delimiter">)</span>
     <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - <span style='color:#00af87'>default-scope</span> checks bounds&quot;</span><span class="Delimiter">)))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
@@ -1540,9 +1631,9 @@ a { color:#4444ff; }
 <span class="CommentedCode">;? (= dump-trace* (obj blacklist '(&quot;sz&quot; &quot;m&quot; &quot;setm&quot; &quot;addr&quot; &quot;cvt0&quot; &quot;cvt1&quot;)))</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
 <span class="CommentedCode">;? (prn memory*)</span>
-<span class="CommentedCode">;? (prn (as cons completed-routines*))</span>
-<span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
-  <span class="Delimiter">(</span>aif rep.last-routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
+<span class="CommentedCode">;? (prn completed-routines*)</span>
+<span class="Delimiter">(</span>each routine <span class="Global">completed-routines*</span>
+  <span class="Delimiter">(</span>aif rep.routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">34</span> <span class="Global">memory*</span><span class="Constant">.3</span><span class="Delimiter">)</span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - indirect 'get' works in the presence of <span style='color:#00af87'>default-scope</span>&quot;</span><span class="Delimiter">))</span>
 <span class="CommentedCode">;? (quit)</span>
@@ -1559,9 +1650,9 @@ a { color:#4444ff; }
 <span class="CommentedCode">;? (= dump-trace* (obj blacklist '(&quot;sz&quot; &quot;m&quot; &quot;setm&quot; &quot;addr&quot; &quot;cvt0&quot; &quot;cvt1&quot;)))</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
 <span class="CommentedCode">;? (prn memory*)</span>
-<span class="CommentedCode">;? (prn (as cons completed-routines*))</span>
-<span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
-  <span class="Delimiter">(</span>aif rep.last-routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
+<span class="CommentedCode">;? (prn completed-routines*)</span>
+<span class="Delimiter">(</span>each routine <span class="Global">completed-routines*</span>
+  <span class="Delimiter">(</span>aif rep.routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">34</span> <span class="Global">memory*</span><span class="Constant">.3</span><span class="Delimiter">)</span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - indirect 'index' works in the presence of <span style='color:#00af87'>default-scope</span>&quot;</span><span class="Delimiter">))</span>
 <span class="CommentedCode">;? (quit)</span>
@@ -1608,7 +1699,7 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">20</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
       <span class="Comment">; if given integers, add them</span>
-      <span class="Mu">{ <span class="muHack">begin</span></span>
+      <span class="Mu">{ <span class="CommentedCode">begin</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-unless</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
@@ -1637,7 +1728,7 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">20</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
       <span class="Comment">; if given integers, add them</span>
-      <span class="Mu">{ <span class="muHack">begin</span></span>
+      <span class="Mu">{ <span class="CommentedCode">begin</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-unless</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
@@ -1646,7 +1737,7 @@ a { color:#4444ff; }
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span><span style='color:#af005f'>result</span> integer<span class="Delimiter">))</span></span>
       <span class="Mu">}</span>
       <span class="Comment">; if given booleans, or them (it's a silly kind of generic function)</span>
-      <span class="Mu">{ <span class="muHack">begin</span></span>
+      <span class="Mu">{ <span class="CommentedCode">begin</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-unless</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
@@ -1675,7 +1766,7 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">20</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
       <span class="Comment">; if given integers, add them</span>
-      <span class="Mu">{ <span class="muHack">begin</span></span>
+      <span class="Mu">{ <span class="CommentedCode">begin</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-unless</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
@@ -1684,7 +1775,7 @@ a { color:#4444ff; }
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">reply</span> <span class="Delimiter">(</span><span style='color:#af005f'>result</span> integer<span class="Delimiter">))</span></span>
       <span class="Mu">}</span>
       <span class="Comment">; if given booleans, or them (it's a silly kind of generic function)</span>
-      <span class="Mu">{ <span class="muHack">begin</span></span>
+      <span class="Mu">{ <span class="CommentedCode">begin</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff8700'>first-arg</span> boolean<span class="Delimiter">)</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span style='color:#ff8700'>first-arg-box</span> tagged-value-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>boolean literal<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">(</span><span class="Identifier">break-unless</span> <span class="Delimiter">(</span>match? boolean<span class="Delimiter">))</span></span>
         <span class="Mu"><span class="Delimiter">((</span><span style='color:#ffd700'>second-arg-box</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
@@ -1758,6 +1849,154 @@ a { color:#4444ff; }
   <span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;scheduler-sleep&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">)))</span></span>
+    <span class="Mu"><span class="Delimiter">(</span>f2</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">)))))</span></span>
+<span class="Comment">; add one baseline routine to run (empty running-routines* handled below)</span>
+<span class="Delimiter">(</span>enq make-routine!f1 <span class="Global">running-routines*</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>assert <span class="Delimiter">(</span>is <span class="Constant">1</span> len.running-routines*<span class="Delimiter">))</span>
+<span class="Comment">; sleeping routine</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine make-routine!f2
+  <span class="Delimiter">(</span><span class="Identifier">=</span> rep.routine!sleep <span class="Delimiter">'(</span><span class="MuConstant">23</span> literal<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>set <span class="Global">sleeping-routines*</span><span class="Error">.routine</span><span class="Delimiter">))</span>
+<span class="Comment">; not yet time for it to wake up</span>
+<span class="Delimiter">(</span><span class="Identifier">=</span> <span class="Global">curr-cycle*</span> <span class="Constant">23</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;run&quot; &quot;schedule&quot;)))</span>
+<span class="Delimiter">(</span>update-scheduler-state<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">1</span> len.running-routines*<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - scheduler lets routines sleep&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;scheduler-wakeup&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">)))</span></span>
+    <span class="Mu"><span class="Delimiter">(</span>f2</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">)))))</span></span>
+<span class="Comment">; add one baseline routine to run (empty running-routines* handled below)</span>
+<span class="Delimiter">(</span>enq make-routine!f1 <span class="Global">running-routines*</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>assert <span class="Delimiter">(</span>is <span class="Constant">1</span> len.running-routines*<span class="Delimiter">))</span>
+<span class="Comment">; sleeping routine</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine make-routine!f2
+  <span class="Delimiter">(</span><span class="Identifier">=</span> rep.routine!sleep <span class="Delimiter">'(</span><span class="MuConstant">23</span> literal<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>set <span class="Global">sleeping-routines*</span><span class="Error">.routine</span><span class="Delimiter">))</span>
+<span class="Comment">; time for it to wake up</span>
+<span class="Delimiter">(</span><span class="Identifier">=</span> <span class="Global">curr-cycle*</span> <span class="Constant">24</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>update-scheduler-state<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">2</span> len.running-routines*<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - scheduler wakes up sleeping routines at the right time&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;scheduler-sleep-location&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">)))</span></span>
+    <span class="Mu"><span class="Delimiter">(</span>f2</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">)))))</span></span>
+<span class="Comment">; add one baseline routine to run (empty running-routines* handled below)</span>
+<span class="Delimiter">(</span>enq make-routine!f1 <span class="Global">running-routines*</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>assert <span class="Delimiter">(</span>is <span class="Constant">1</span> len.running-routines*<span class="Delimiter">))</span>
+<span class="Comment">; blocked routine waiting for location 23 to change</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine make-routine!f2
+  <span class="Delimiter">(</span><span class="Identifier">=</span> rep.routine!sleep <span class="Delimiter">'(</span><span class="Constant">23</span> <span class="Constant">0</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>set <span class="Global">sleeping-routines*</span><span class="Error">.routine</span><span class="Delimiter">))</span>
+<span class="Comment">; leave memory location 23 unchanged</span>
+<span class="Delimiter">(</span><span class="Identifier">=</span> <span class="Global">memory*</span><span class="Constant">.23</span> <span class="Constant">0</span><span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="CommentedCode">;? (prn running-routines*)</span>
+<span class="CommentedCode">;? (prn sleeping-routines*)</span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;run&quot; &quot;schedule&quot;)))</span>
+<span class="Delimiter">(</span>update-scheduler-state<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn running-routines*)</span>
+<span class="CommentedCode">;? (prn sleeping-routines*)</span>
+<span class="Comment">; routine remains blocked</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">1</span> len.running-routines*<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - scheduler lets routines block on locations&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;scheduler-wakeup-location&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">)))</span></span>
+    <span class="Mu"><span class="Delimiter">(</span>f2</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">)))))</span></span>
+<span class="Comment">; add one baseline routine to run (empty running-routines* handled below)</span>
+<span class="Delimiter">(</span>enq make-routine!f1 <span class="Global">running-routines*</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>assert <span class="Delimiter">(</span>is <span class="Constant">1</span> len.running-routines*<span class="Delimiter">))</span>
+<span class="Comment">; blocked routine waiting for location 23 to change</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine make-routine!f2
+  <span class="Delimiter">(</span><span class="Identifier">=</span> rep.routine!sleep <span class="Delimiter">'(</span><span class="Constant">23</span> <span class="Constant">0</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>set <span class="Global">sleeping-routines*</span><span class="Error">.routine</span><span class="Delimiter">))</span>
+<span class="Comment">; change memory location 23</span>
+<span class="Delimiter">(</span><span class="Identifier">=</span> <span class="Global">memory*</span><span class="Constant">.23</span> <span class="Constant">1</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>update-scheduler-state<span class="Delimiter">)</span>
+<span class="Comment">; routine unblocked</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">2</span> len.running-routines*<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - scheduler unblocks routines blocked on locations&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;scheduler-skip&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">)))))</span></span>
+<span class="Comment">; running-routines* is empty</span>
+<span class="Delimiter">(</span>assert <span class="Delimiter">(</span>empty <span class="Global">running-routines*</span><span class="Delimiter">))</span>
+<span class="Comment">; sleeping routine</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine make-routine!f1
+  <span class="Delimiter">(</span><span class="Identifier">=</span> rep.routine!sleep <span class="Delimiter">'(</span><span class="MuConstant">23</span> literal<span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>set <span class="Global">sleeping-routines*</span><span class="Error">.routine</span><span class="Delimiter">))</span>
+<span class="Comment">; long time left for it to wake up</span>
+<span class="Delimiter">(</span><span class="Identifier">=</span> <span class="Global">curr-cycle*</span> <span class="Constant">0</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>update-scheduler-state<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>assert <span class="Delimiter">(</span>is <span class="Global">curr-cycle*</span> <span class="Constant">24</span><span class="Delimiter">))</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">1</span> len.running-routines*<span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - scheduler skips ahead to earliest sleeping routines when nothing to run&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;scheduler-deadlock&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">)))))</span></span>
+<span class="Delimiter">(</span>assert <span class="Delimiter">(</span>empty <span class="Global">running-routines*</span><span class="Delimiter">))</span>
+<span class="Delimiter">(</span>assert <span class="Delimiter">(</span>empty <span class="Global">completed-routines*</span><span class="Delimiter">))</span>
+<span class="Comment">; blocked routine</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine make-routine!f1
+  <span class="Delimiter">(</span><span class="Identifier">=</span> rep.routine!sleep <span class="Delimiter">'(</span><span class="Constant">23</span> <span class="Constant">0</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>set <span class="Global">sleeping-routines*</span><span class="Error">.routine</span><span class="Delimiter">))</span>
+<span class="Comment">; location it's waiting on is 'unchanged'</span>
+<span class="Delimiter">(</span><span class="Identifier">=</span> <span class="Global">memory*</span><span class="Constant">.23</span> <span class="Constant">0</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>update-scheduler-state<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>assert <span class="Delimiter">(</span>~empty <span class="Global">completed-routines*</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (prn completed-routines*)</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine <span class="Global">completed-routines*</span><span class="Constant">.0</span>
+  <span class="Delimiter">(</span>when <span class="Delimiter">(</span>~posmatch <span class="Constant">&quot;deadlock&quot;</span> rep.routine!error<span class="Delimiter">)</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - scheduler detects deadlock&quot;</span><span class="Delimiter">)))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;scheduler-deadlock2&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">)))))</span></span>
+<span class="Comment">; running-routines* is empty</span>
+<span class="Delimiter">(</span>assert <span class="Delimiter">(</span>empty <span class="Global">running-routines*</span><span class="Delimiter">))</span>
+<span class="Comment">; blocked routine</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine make-routine!f1
+  <span class="Delimiter">(</span><span class="Identifier">=</span> rep.routine!sleep <span class="Delimiter">'(</span><span class="Constant">23</span> <span class="Constant">0</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>set <span class="Global">sleeping-routines*</span><span class="Error">.routine</span><span class="Delimiter">))</span>
+<span class="Comment">; but is about to become ready</span>
+<span class="Delimiter">(</span><span class="Identifier">=</span> <span class="Global">memory*</span><span class="Constant">.23</span> <span class="Constant">1</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>update-scheduler-state<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>when <span class="Delimiter">(</span>~empty <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - scheduler ignores sleeping but ready threads when detecting deadlock&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;sleep&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Delimiter">'((</span>f1
@@ -1768,7 +2007,6 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;run&quot; &quot;schedule&quot;)))</span>
-<span class="Delimiter">(</span><span class="Identifier">=</span> <span class="Global">scheduling-interval*</span> <span class="Constant">1</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>f1 <span class="Delimiter">'</span>f2<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>check-trace-contents <span class="Constant">&quot;scheduler handles sleeping routines&quot;</span>
   <span class="Delimiter">'((</span><span class="Constant">&quot;run&quot;</span> <span class="Constant">&quot;f1 0&quot;</span><span class="Delimiter">)</span>
@@ -1792,7 +2030,6 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;run&quot; &quot;schedule&quot;)))</span>
-<span class="Delimiter">(</span><span class="Identifier">=</span> <span class="Global">scheduling-interval*</span> <span class="Constant">1</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>f1 <span class="Delimiter">'</span>f2<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>check-trace-contents <span class="Constant">&quot;scheduler progresses sleeping routines when there are no routines left to run&quot;</span>
   <span class="Delimiter">'((</span><span class="Constant">&quot;run&quot;</span> <span class="Constant">&quot;f1 0&quot;</span><span class="Delimiter">)</span>
@@ -1818,14 +2055,68 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">)))))</span>  <span class="Comment">; set to value</span></span>
 <span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;run&quot; &quot;schedule&quot;)))</span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
-<span class="Delimiter">(</span><span class="Identifier">=</span> <span class="Global">scheduling-interval*</span> <span class="Constant">1</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>f1 <span class="Delimiter">'</span>f2<span class="Delimiter">)</span>
-<span class="CommentedCode">;? (prn canon.memory*)</span>
-<span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
-  <span class="Delimiter">(</span>aif rep.last-routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
+<span class="CommentedCode">;? (prn int-canon.memory*)</span>
+<span class="Delimiter">(</span>each routine <span class="Global">completed-routines*</span>
+  <span class="Delimiter">(</span>aif rep.routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Global">memory*</span><span class="Constant">.2</span> <span class="Constant">4</span><span class="Delimiter">)</span>  <span class="Comment">; successor of value</span>
-  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - scheduler handles routines blocking on a memory location&quot;</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - sleep can block on a memory location&quot;</span><span class="Delimiter">))</span>
 <span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;sleep-scoped-location&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Comment">; waits for memory location 1 to be changed, before computing its successor</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">10</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">5</span> literal<span class="Delimiter">))</span>  <span class="Comment">; array of locals</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">10</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">23</span> literal<span class="Delimiter">))</span>  <span class="Comment">; really location 11</span></span>
+      <span class="Mu"><span class="Delimiter">(</span>sleep <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> add <span class="Delimiter">(</span><span class="Constant">1</span> integer<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">1</span> literal<span class="Delimiter">)))</span></span>
+    <span class="Mu"><span class="Delimiter">(</span>f2</span>
+      <span class="Delimiter">(</span>sleep <span class="Delimiter">(</span><span class="MuConstant">30</span> literal<span class="Delimiter">))</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">11</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">)))))</span>  <span class="Comment">; set to value</span></span>
+<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;run&quot; &quot;schedule&quot;)))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>f1 <span class="Delimiter">'</span>f2<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Global">memory*</span><span class="Constant">.12</span> <span class="Constant">4</span><span class="Delimiter">)</span>  <span class="Comment">; successor of value</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - sleep can block on a scoped memory location&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;fork&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Delimiter">(</span>fork <span class="Delimiter">(</span>f2 fn<span class="Delimiter">)))</span>
+    <span class="Mu"><span class="Delimiter">(</span>f2</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">)))))</span></span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>f1<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Global">memory*</span><span class="Constant">.2</span> <span class="Constant">4</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - fork works&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;fork-with-args&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Delimiter">(</span>fork <span class="Delimiter">(</span>f2 fn<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">)))</span>
+    <span class="Mu"><span class="Delimiter">(</span>f2</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">))))</span></span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>f1<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Global">memory*</span><span class="Constant">.2</span> <span class="Constant">4</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - fork can pass args&quot;</span><span class="Delimiter">))</span>
+
+<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;fork-copies-args&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>add-fns
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">5</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">4</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">(</span>fork <span class="Delimiter">(</span>f2 fn<span class="Delimiter">)</span> <span class="Delimiter">(</span>x integer<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span>x integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">0</span> literal<span class="Delimiter">)))</span>  <span class="Comment">; should be ignored</span></span>
+    <span class="Mu"><span class="Delimiter">(</span>f2</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">))))</span></span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>f1<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~iso <span class="Global">memory*</span><span class="Constant">.2</span> <span class="Constant">4</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - fork passes args by value&quot;</span><span class="Delimiter">))</span>
 
 <span class="Comment">; The scheduler needs to keep track of the call stack for each routine.</span>
 <span class="Comment">; Eventually we'll want to save this information in mu's address space itself,</span>
@@ -1846,8 +2137,8 @@ a { color:#4444ff; }
 <span class="CommentedCode">;? (set dump-trace*)</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
 <span class="CommentedCode">;? (prn memory*)</span>
-<span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
-  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>no rep.last-routine!error<span class="Delimiter">)</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine <span class="Delimiter">(</span><span class="Identifier">car</span> <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>no rep.routine!error<span class="Delimiter">)</span>
     <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'index' throws an error if out of bounds&quot;</span><span class="Delimiter">)))</span>
 
 <span class="SalientComment">;; Synchronization</span>
@@ -1887,7 +2178,7 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>first-full offset<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>first-free offset<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
@@ -1908,8 +2199,8 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> tagged-value<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> tagged-value<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">6</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> maybe-coerce <span class="Delimiter">(</span><span class="Constant">4</span> tagged-value<span class="Delimiter">)</span> <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">7</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>first-full offset<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">8</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>first-free offset<span class="Delimiter">)))))</span></span>
@@ -1927,19 +2218,19 @@ a { color:#4444ff; }
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;channel-write-wrap&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Delimiter">'((</span>main
-      <span class="Comment">; channel with 2 slots (capacity 1 since we waste a slot)</span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-channel <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
+      <span class="Comment">; channel with 1 slot</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-channel <span class="Delimiter">(</span><span class="MuConstant">1</span> literal<span class="Delimiter">))</span></span>
       <span class="Comment">; write a value</span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
       <span class="Comment">; first-free will now be 1</span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>first-free offset<span class="Delimiter">))</span></span>
       <span class="Comment">; read one value</span>
-      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">))</span></span>
       <span class="Comment">; write a second value; verify that first-free wraps around to 0.</span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>first-free offset<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
 <span class="CommentedCode">;? (= dump-trace* (obj blacklist '(&quot;sz&quot; &quot;m&quot; &quot;setm&quot; &quot;addr&quot; &quot;array-len&quot; &quot;cvt0&quot; &quot;cvt1&quot;)))</span>
@@ -1953,21 +2244,21 @@ a { color:#4444ff; }
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;channel-read-wrap&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Delimiter">'((</span>main
-      <span class="Comment">; channel with 2 slots (capacity 1 since we waste a slot)</span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-channel <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
+      <span class="Comment">; channel with 1 slot</span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-channel <span class="Delimiter">(</span><span class="MuConstant">1</span> literal<span class="Delimiter">))</span></span>
       <span class="Comment">; write a value</span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
       <span class="Comment">; read one value</span>
-      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">))</span></span>
       <span class="Comment">; first-full will now be 1</span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>first-full offset<span class="Delimiter">))</span></span>
       <span class="Comment">; write a second value</span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
       <span class="Comment">; read second value; verify that first-full wraps around to 0.</span>
-      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>first-full offset<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
 <span class="CommentedCode">;? (= dump-trace* (obj blacklist '(&quot;sz&quot; &quot;m&quot; &quot;setm&quot; &quot;addr&quot; &quot;array-len&quot; &quot;cvt0&quot; &quot;cvt1&quot;)))</span>
@@ -1989,7 +2280,7 @@ a { color:#4444ff; }
 <span class="CommentedCode">;? (prn memory*)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>~is t <span class="Global">memory*</span><span class="Constant">.2</span><span class="Delimiter">)</span>
         <span class="Delimiter">(</span>~is nil <span class="Global">memory*</span><span class="Constant">.3</span><span class="Delimiter">))</span>
-  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - a new channel is always empty, never full&quot;</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - a new channel is always empty, never <span style='color:#5f00af'>full</span>&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;channel-write-not-empty&quot;</span><span class="Delimiter">)</span>
@@ -1999,7 +2290,7 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> empty? <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> full? <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
@@ -2013,11 +2304,11 @@ a { color:#4444ff; }
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;channel-write-full&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
   <span class="Delimiter">'((</span>main
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-channel <span class="Delimiter">(</span><span class="MuConstant">2</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-channel <span class="Delimiter">(</span><span class="MuConstant">1</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> empty? <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> full? <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
@@ -2025,7 +2316,7 @@ a { color:#4444ff; }
 <span class="CommentedCode">;? (prn memory*)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>~is nil <span class="Global">memory*</span><span class="Constant">.4</span><span class="Delimiter">)</span>
         <span class="Delimiter">(</span>~is t <span class="Global">memory*</span><span class="Constant">.5</span><span class="Delimiter">))</span>
-  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - a channel after writing may be full&quot;</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - a channel after writing may be <span style='color:#5f00af'>full</span>&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;channel-read-not-full&quot;</span><span class="Delimiter">)</span>
@@ -2035,9 +2326,9 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> empty? <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> full? <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
@@ -2045,7 +2336,7 @@ a { color:#4444ff; }
 <span class="CommentedCode">;? (prn memory*)</span>
 <span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>~is nil <span class="Global">memory*</span><span class="Constant">.4</span><span class="Delimiter">)</span>
         <span class="Delimiter">(</span>~is nil <span class="Global">memory*</span><span class="Constant">.5</span><span class="Delimiter">))</span>
-  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - a channel after reading is never full&quot;</span><span class="Delimiter">))</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - a channel after reading is never <span style='color:#5f00af'>full</span>&quot;</span><span class="Delimiter">))</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
 <span class="Delimiter">(</span>new-trace <span class="Constant">&quot;channel-read-empty&quot;</span><span class="Delimiter">)</span>
@@ -2055,8 +2346,8 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> empty? <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> full? <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
@@ -2066,7 +2357,7 @@ a { color:#4444ff; }
         <span class="Delimiter">(</span>~is nil <span class="Global">memory*</span><span class="Constant">.5</span><span class="Delimiter">))</span>
   <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - a channel after reading may be empty&quot;</span><span class="Delimiter">))</span>
 
-<span class="Comment">; The key property of channels; writing to a full channel blocks the current</span>
+<span class="Comment">; The key property of channels; writing to a <span style='color:#5f00af'>full</span> channel blocks the current</span>
 <span class="Comment">; routine until it creates space. Ditto reading from an empty channel.</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
@@ -2075,17 +2366,19 @@ a { color:#4444ff; }
   <span class="Delimiter">'((</span>main
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-channel <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">))</span></span>
       <span class="Comment">; channel is empty, but receives a read</span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> tagged-value<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)))))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> tagged-value<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
 <span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;run&quot;)))</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
 <span class="CommentedCode">;? (prn int-canon.memory*)</span>
 <span class="CommentedCode">;? (prn sleeping-routines*)</span>
+<span class="CommentedCode">;? (prn completed-routines*)</span>
 <span class="Comment">; read should cause the routine to sleep, and</span>
 <span class="Comment">; the sole sleeping routine should trigger the deadlock detector</span>
-<span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
-  <span class="Delimiter">(</span>when <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>no rep.last-routine!error<span class="Delimiter">)</span>
-            <span class="Delimiter">(</span>~posmatch <span class="Constant">&quot;deadlock&quot;</span> rep.last-routine!error<span class="Delimiter">))</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine <span class="Delimiter">(</span><span class="Identifier">car</span> <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>when <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>no routine<span class="Delimiter">)</span>
+            <span class="Delimiter">(</span>no rep.routine!error<span class="Delimiter">)</span>
+            <span class="Delimiter">(</span>~posmatch <span class="Constant">&quot;deadlock&quot;</span> rep.routine!error<span class="Delimiter">))</span>
     <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'read' on empty channel blocks (puts the routine to sleep until the channel gets data)&quot;</span><span class="Delimiter">)))</span>
 <span class="CommentedCode">;? (quit)</span>
 
@@ -2097,57 +2390,50 @@ a { color:#4444ff; }
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
       <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
       <span class="Comment">; channel has capacity 1, but receives a second write</span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">)))))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">)))))</span></span>
 <span class="CommentedCode">;? (set dump-trace*)</span>
-<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;run&quot;)))</span>
+<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;run&quot; &quot;schedule&quot; &quot;addr&quot;)))</span>
 <span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
 <span class="CommentedCode">;? (prn int-canon.memory*)</span>
+<span class="CommentedCode">;? (prn running-routines*)</span>
+<span class="CommentedCode">;? (prn sleeping-routines*)</span>
+<span class="CommentedCode">;? (prn completed-routines*)</span>
 <span class="Comment">; second write should cause the routine to sleep, and</span>
 <span class="Comment">; the sole sleeping routine should trigger the deadlock detector</span>
-<span class="Delimiter">(</span><span class="Normal">let</span> last-routine <span class="Delimiter">(</span>deq <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
-  <span class="Delimiter">(</span>when <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>no rep.last-routine!error<span class="Delimiter">)</span>
-            <span class="Delimiter">(</span>~posmatch <span class="Constant">&quot;deadlock&quot;</span> rep.last-routine!error<span class="Delimiter">))</span>
-    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'write' on full channel blocks (puts the routine to sleep until the channel gets data)&quot;</span><span class="Delimiter">)))</span>
-
-<span class="Comment">; But how will the sleeping routines wake up? Our scheduler can't watch for</span>
-<span class="Comment">; changes to arbitrary values, just tell us if a specific raw location becomes</span>
-<span class="Comment">; non-zero (see the sleep-location test above). So both reader and writer set</span>
-<span class="Comment">; 'read-watch' and 'write-watch' respectively at the end of a successful call.</span>
+<span class="Delimiter">(</span><span class="Normal">let</span> routine <span class="Delimiter">(</span><span class="Identifier">car</span> <span class="Global">completed-routines*</span><span class="Delimiter">)</span>
+  <span class="Delimiter">(</span>when <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>no routine<span class="Delimiter">)</span>
+            <span class="Delimiter">(</span>no rep.routine!error<span class="Delimiter">)</span>
+            <span class="Delimiter">(</span>~posmatch <span class="Constant">&quot;deadlock&quot;</span> rep.routine!error<span class="Delimiter">))</span>
+    <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'write' on <span style='color:#5f00af'>full</span> channel blocks (puts the routine to sleep until the channel gets data)&quot;</span><span class="Delimiter">)))</span>
+<span class="CommentedCode">;? (quit)</span>
 
 <span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;channel-write-watch&quot;</span><span class="Delimiter">)</span>
+<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;channel-handoff&quot;</span><span class="Delimiter">)</span>
 <span class="Delimiter">(</span>add-fns
-  <span class="Delimiter">'((</span>main
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-channel <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>read-watch offset<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>write-watch offset<span class="Delimiter">)))))</span></span>
-<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
-<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>~is nil <span class="Global">memory*</span><span class="Constant">.4</span><span class="Delimiter">)</span>
-        <span class="Delimiter">(</span>~is t <span class="Global">memory*</span><span class="Constant">.5</span><span class="Delimiter">))</span>
-  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'write' sets channel watch&quot;</span><span class="Delimiter">))</span>
-
-<span class="Delimiter">(</span>reset<span class="Delimiter">)</span>
-<span class="Delimiter">(</span>new-trace <span class="Constant">&quot;channel-read-watch&quot;</span><span class="Delimiter">)</span>
-<span class="Delimiter">(</span>add-fns
-  <span class="Delimiter">'((</span>main
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-channel <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">2</span> integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">34</span> literal<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">3</span> tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">2</span> integer-address<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="Constant">3</span> tagged-value-address deref<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">4</span> boolean<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>read-watch offset<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">(</span>_ <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">))</span></span>
-      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">5</span> integer<span class="Delimiter">)</span> <span class="Op">&lt;-</span> get <span class="Delimiter">(</span><span class="Constant">1</span> channel-address deref<span class="Delimiter">)</span> <span class="Delimiter">(</span>read-watch offset<span class="Delimiter">)))))</span></span>
-<span class="Delimiter">(</span>run <span class="Delimiter">'</span>main<span class="Delimiter">)</span>
-<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span><span class="Normal">or</span> <span class="Delimiter">(</span>~is nil <span class="Global">memory*</span><span class="Constant">.4</span><span class="Delimiter">)</span>
-        <span class="Delimiter">(</span>~is t <span class="Global">memory*</span><span class="Constant">.5</span><span class="Delimiter">))</span>
-  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - 'read' sets channel watch&quot;</span><span class="Delimiter">))</span>
+  <span class="Mu"><span class="Delimiter">'((</span>f1</span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">30</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#ff87af'>chan</span> channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-channel <span class="Delimiter">(</span><span class="MuConstant">3</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">(</span>fork <span class="Delimiter">(</span>f2 fn<span class="Delimiter">)</span> <span class="Delimiter">(</span><span style='color:#ff87af'>chan</span> channel-address<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span><span class="Constant">1</span> tagged-value global<span class="Delimiter">)</span> <span class="Op">&lt;-</span> read <span class="Delimiter">(</span><span style='color:#ff87af'>chan</span> channel-address<span class="Delimiter">)))</span></span>
+    <span class="Mu"><span class="Delimiter">(</span>f2</span>
+      <span class="Mu"><span class="Delimiter">((</span><span style='color:#00af87'>default-scope</span> scope-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>scope literal<span class="Delimiter">)</span> <span class="Delimiter">(</span><span class="MuConstant">30</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span>n integer-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new <span class="Delimiter">(</span>integer literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span>n integer-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> copy <span class="Delimiter">(</span><span class="MuConstant">24</span> literal<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span>ochan channel-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> <span class="Identifier">arg</span><span class="Delimiter">)</span></span>
+      <span class="Mu"><span class="Delimiter">((</span>x tagged-value-address<span class="Delimiter">)</span> <span class="Op">&lt;-</span> new-tagged-value <span class="Delimiter">(</span>integer-address literal<span class="Delimiter">)</span> <span class="Delimiter">(</span>n integer-address<span class="Delimiter">))</span></span>
+      <span class="Mu"><span class="Delimiter">((</span>ochan channel-address deref<span class="Delimiter">)</span> <span class="Op">&lt;-</span> write <span class="Delimiter">(</span>ochan channel-address<span class="Delimiter">)</span> <span class="Delimiter">(</span>x tagged-value-address deref<span class="Delimiter">)))))</span></span>
+<span class="CommentedCode">;? (set dump-trace*)</span>
+<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;schedule&quot; &quot;run&quot; &quot;addr&quot;)))</span>
+<span class="CommentedCode">;? (= dump-trace* (obj whitelist '(&quot;-&quot;)))</span>
+<span class="Delimiter">(</span>run <span class="Delimiter">'</span>f1<span class="Delimiter">)</span>
+<span class="CommentedCode">;? (prn memory*)</span>
+<span class="Delimiter">(</span>each routine <span class="Global">completed-routines*</span>
+  <span class="Delimiter">(</span>aif rep.routine!error <span class="Delimiter">(</span>prn <span class="Constant">&quot;error - &quot;</span> it<span class="Delimiter">)))</span>
+<span class="Delimiter">(</span><span class="Normal">if</span> <span class="Delimiter">(</span>~is <span class="Constant">24</span> <span class="Delimiter">(</span><span class="Global">memory*</span> <span class="Global">memory*</span><span class="Constant">.2</span><span class="Delimiter">))</span>  <span class="Comment">; location 1 contains tagged-value *x above</span>
+  <span class="Delimiter">(</span>prn <span class="Constant">&quot;F - channels are meant to be shared between routines&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">;? (quit)</span>
 
 <span class="SalientComment">;; Separating concerns</span>
 <span class="Comment">;</span>
