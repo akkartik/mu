@@ -1146,6 +1146,7 @@
 
 (reset)
 (new-trace "convert-braces")
+;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
               ((2 integer) <- copy (2 literal))
@@ -1164,9 +1165,11 @@
             ((5 integer) <- copy (34 literal))
             (reply)))
   (prn "F - convert-braces replaces break-if with a jump-if to after the next close-curly"))
+;? (quit)
 
 (reset)
 (new-trace "convert-braces-empty-block")
+;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
               ((2 integer) <- copy (2 literal))
@@ -1181,6 +1184,7 @@
             (jump (0 offset))
             (reply)))
   (prn "F - convert-braces works for degenerate blocks"))
+;? (quit)
 
 (reset)
 (new-trace "convert-braces-nested-break")
@@ -1204,6 +1208,29 @@
             ((5 integer) <- copy (34 literal))
             (reply)))
   (prn "F - convert-braces balances curlies when converting break"))
+
+(reset)
+(new-trace "convert-braces-repeated-jump")
+;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
+(if (~iso (convert-braces
+            '(((1 integer) <- copy (4 literal))
+              { begin
+                (break)
+                ((2 integer) <- copy (5 literal))
+              }
+              { begin
+                (break)
+                ((3 integer) <- copy (6 literal))
+              }
+              ((4 integer) <- copy (7 literal))))
+          '(((1 integer) <- copy (4 literal))
+            (jump (1 offset))
+            ((2 integer) <- copy (5 literal))
+            (jump (1 offset))
+            ((3 integer) <- copy (6 literal))
+            ((4 integer) <- copy (7 literal))))
+  (prn "F - convert-braces handles jumps on jumps"))
+;? (quit)
 
 (reset)
 (new-trace "convert-braces-nested-continue")
@@ -1253,7 +1280,32 @@
             (jump (1 offset))
             foo
             ((2 integer) <- copy (2 literal))))
-  (prn "F - convert-braces skips past labels"))
+  (prn "F - convert-braces treats labels as instructions"))
+;? (quit)
+
+(reset)
+(new-trace "convert-braces-label-increments-offset2")
+;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
+(if (~iso (convert-braces
+            '(((1 integer) <- copy (4 literal))
+              { begin
+                (break)
+                foo
+              }
+              ((2 integer) <- copy (5 literal))
+              { begin
+                (break)
+                ((3 integer) <- copy (6 literal))
+              }
+              ((4 integer) <- copy (7 literal))))
+          '(((1 integer) <- copy (4 literal))
+            (jump (1 offset))
+            foo
+            ((2 integer) <- copy (5 literal))
+            (jump (1 offset))
+            ((3 integer) <- copy (6 literal))
+            ((4 integer) <- copy (7 literal))))
+  (prn "F - convert-braces treats labels as instructions - 2"))
 ;? (quit)
 
 (reset)
