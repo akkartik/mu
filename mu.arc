@@ -442,6 +442,9 @@
       (trace "run" "-- " int-canon.memory*)
       (trace "run" curr-cycle* " " top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
+      (when (atom (body.routine* pc.routine*))  ; label
+        (++ pc.routine*)
+        (continue))
       (let (oarg op arg)  (parse-instr (body.routine* pc.routine*))
         (let results
               (case op
@@ -676,18 +679,19 @@
     (let pc 0
       (loop (instrs instrs)
         (each instr instrs
-          (if (~is 'begin instr.0)
-            (do
-              (trace "c{0" pc " " instr " -- " locs)
-              (++ pc))
-            ; hack: racket replaces curlies with parens, so we need the
-            ; keyword begin to delimit blocks.
-            ; ultimately there'll be no nesting and curlies will just be in a
-            ; line by themselves.
-            (do
-              (push `(open ,pc) locs)
-              (recur cdr.instr)
-              (push `(close ,pc) locs))))))
+          (if (or atom.instr (~is 'begin instr.0))  ; label or regular instruction
+                (do
+                  (trace "c{0" pc " " instr " -- " locs)
+                  (++ pc))
+                ; hack: racket replaces curlies with parens, so we need the
+                ; keyword begin to delimit blocks.
+                ; ultimately there'll be no nesting and curlies will just be in a
+                ; line by themselves.
+              :else  ; brace
+                (do
+                  (push `(open ,pc) locs)
+                  (recur cdr.instr)
+                  (push `(close ,pc) locs))))))
     (zap rev locs)
     (with (pc  0
            stack  ())  ; elems are pcs
@@ -695,6 +699,9 @@
         (loop (instrs instrs)
           (each instr instrs
             (point continue
+            (when (atom instr)  ; label
+              (yield instr)
+              (continue))
             (let delim (or (pos '<- instr) -1)
               (with (oarg  (if (>= delim 0)
                              (cut instr 0 delim))
@@ -767,6 +774,9 @@
          isa-field  (table))
     (let idx 1
       (each instr instrs
+        (point continue
+        (when atom.instr
+          (continue))
         (trace "cn0" instr " " canon.location " " canon.isa-field)
         (let (oargs op args)  (parse-instr instr)
           (if (in op 'get 'get-address)
@@ -799,16 +809,17 @@
               (assert (~isa-field v.arg) "oarg @arg is also a field name")
               (when (maybe-add arg location idx)
                 (trace "cn0" "location for arg " arg ": " idx)
-                (++ idx (sizeof ty.arg))))))))
+                (++ idx (sizeof ty.arg)))))))))
     (trace "cn1" "update names " canon.location " " canon.isa-field)
     (each instr instrs
-      (let (oargs op args)  (parse-instr instr)
-        (each arg args
-          (when (and nondummy.arg (location v.arg))
-            (zap location v.arg)))
-        (each arg oargs
-          (when (and nondummy.arg (location v.arg))
-            (zap location v.arg)))))
+      (when (acons instr)
+        (let (oargs op args)  (parse-instr instr)
+          (each arg args
+            (when (and nondummy.arg (location v.arg))
+              (zap location v.arg)))
+          (each arg oargs
+            (when (and nondummy.arg (location v.arg))
+              (zap location v.arg))))))
     instrs))
 
 (def maybe-add (arg location idx)
