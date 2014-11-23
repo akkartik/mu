@@ -14,4 +14,7 @@
   (reply (result integer)))
 
 (main
-  ((1 integer) <- factorial (5 literal)))
+  ((1 integer) <- factorial (5 literal))
+  (print-primitive ("result: " literal))
+  (print-primitive (1 integer))
+  (print-primitive ("\n" literal)))
