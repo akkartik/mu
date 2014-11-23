@@ -1302,7 +1302,7 @@
 ; convenience.
 
 (reset)
-;? (new-trace "convert-names")
+(new-trace "convert-names")
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer) <- copy (2 literal))
@@ -1313,7 +1313,7 @@
   (prn "F - convert-names renames symbolic names to integer locations"))
 
 (reset)
-;? (new-trace "convert-names-compound")
+(new-trace "convert-names-compound")
 (if (~iso (convert-names
             '(((x integer-boolean-pair) <- copy (4 literal))
               ((y integer) <- copy (2 literal))))
@@ -1322,7 +1322,7 @@
   (prn "F - convert-names increments integer locations by the size of the type of the previous var"))
 
 (reset)
-;? (new-trace "convert-names-nil")
+(new-trace "convert-names-nil")
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer) <- copy (2 literal))
@@ -1333,7 +1333,7 @@
   (prn "F - convert-names never renames nil"))
 
 (reset)
-;? (new-trace "convert-names-global")
+(new-trace "convert-names-global")
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer global) <- copy (2 literal))
@@ -1345,7 +1345,7 @@
 
 ; kludgy support for 'fork' below
 (reset)
-;? (new-trace "convert-names-functions")
+(new-trace "convert-names-functions")
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer) <- copy (2 literal))
@@ -1356,35 +1356,35 @@
   (prn "F - convert-names never renames nil"))
 
 (reset)
-;? (new-trace "convert-names-record-fields")
+(new-trace "convert-names-record-fields")
 (if (~iso (convert-names
             '(((x integer) <- get (34 integer-boolean-pair) (bool offset))))
           '(((1 integer) <- get (34 integer-boolean-pair) (1 offset))))
   (prn "F - convert-names replaces record field offsets"))
 
 (reset)
-;? (new-trace "convert-names-record-fields-ambiguous")
+(new-trace "convert-names-record-fields-ambiguous")
 (if (errsafe (convert-names
                '(((bool boolean) <- copy (t literal))
                  ((x integer) <- get (34 integer-boolean-pair) (bool offset)))))
   (prn "F - convert-names doesn't allow offsets and variables with the same name in a function"))
 
 (reset)
-;? (new-trace "convert-names-record-fields-ambiguous-2")
+(new-trace "convert-names-record-fields-ambiguous-2")
 (if (errsafe (convert-names
                '(((x integer) <- get (34 integer-boolean-pair) (bool offset))
                  ((bool boolean) <- copy (t literal)))))
   (prn "F - convert-names doesn't allow offsets and variables with the same name in a function - 2"))
 
 (reset)
-;? (new-trace "convert-names-record-fields-indirect")
+(new-trace "convert-names-record-fields-indirect")
 (if (~iso (convert-names
             '(((x integer) <- get (34 integer-boolean-pair-address deref) (bool offset))))
           '(((1 integer) <- get (34 integer-boolean-pair-address deref) (1 offset))))
   (prn "F - convert-names replaces field offsets for record addresses"))
 
 (reset)
-;? (new-trace "convert-names-record-fields-multiple")
+(new-trace "convert-names-record-fields-multiple")
 (if (~iso (convert-names
             '(((2 boolean) <- get (1 integer-boolean-pair) (bool offset))
               ((3 boolean) <- get (1 integer-boolean-pair) (bool offset))))
