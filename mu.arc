@@ -750,25 +750,21 @@
             (++ pc))))))))
 
 (def close-offset (pc locs)
+  (point return
 ;?   (tr "close " pc " " locs)
-  (let close 0
-    (with (stacksize 0
-           done nil)
-      (each (state loc) locs
-;?         (tr stacksize "/" done " " state " " loc)
-        (if (<= loc pc)
-              nil  ; do nothing
-            (no done)
-              (do
-;?                 (tr "process " stacksize loc)
-                (if (is 'open state) (++ stacksize) (-- stacksize))
-                ; last time
-;?                 (tr "process2 " stacksize loc)
-                (when (is -1 stacksize)
-;?                   (tr "close now " loc)
-                  (= close loc)
-                  (set done))))))
-    (- close pc 1)))
+  (let stacksize 0
+    (each (state loc) locs
+      (point continue
+;?       (tr stacksize "/" done " " state " " loc)
+      (when (<= loc pc)
+        (continue))
+;?       (tr "process " stacksize loc)
+      (if (is 'open state) (++ stacksize) (-- stacksize))
+      ; last time
+;?       (tr "process2 " stacksize loc)
+      (when (is -1 stacksize)
+;?         (tr "close now " loc)
+        (return (- loc pc 1))))))))
 
 ;; convert symbolic names to raw memory locations
 
