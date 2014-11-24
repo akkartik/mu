@@ -1125,7 +1125,7 @@
 
 ;; Structured programming
 ;
-; Our control operators are quite inconvenient to use, so mu provides a
+; Our jump operators are quite inconvenient to use, so mu provides a
 ; lightweight tool called 'convert-braces' to work in a slightly more
 ; convenient format with nested braces:
 ;
