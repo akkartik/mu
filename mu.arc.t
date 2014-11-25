@@ -2807,4 +2807,31 @@
             ((1 integer) <- copy (0 literal))))
   (prn "F - before/after can come after the function they need to modify"))
 
+(reset)
+(new-trace "multiple-defs")
+(add-code '((def f1 [
+              ((1 integer) <- copy (0 literal))
+             ])
+            (def f1 [
+              ((2 integer) <- copy (0 literal))
+             ])))
+(freeze-functions)
+(if (~iso function*!f1
+          '(((2 integer) <- copy (0 literal))
+            ((1 integer) <- copy (0 literal))))
+  (prn "F - multiple 'def' of the same function add clauses"))
+
+(reset)
+(new-trace "def!")
+(add-code '((def f1 [
+              ((1 integer) <- copy (0 literal))
+             ])
+            (def! f1 [
+              ((2 integer) <- copy (0 literal))
+             ])))
+(freeze-functions)
+(if (~iso function*!f1
+          '(((2 integer) <- copy (0 literal))))
+  (prn "F - 'def!' clears all previous clauses"))
+
 (reset)  ; end file with this to persist the trace for the final test

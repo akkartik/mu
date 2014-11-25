@@ -1067,11 +1067,15 @@
   (each (op . rest)  forms
     (case op
       ; syntax: def <name> [ <instructions> ]
+      ; don't apply our lightweight tools just yet
+      def!
+        (let (name (_make-br-fn body))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (= function*.name body))
       def
         (let (name (_make-br-fn body))  rest
           (assert (is 'make-br-fn _make-br-fn))
-          ; don't apply our lightweight tools just yet
-          (= function*.name body))
+          (= function*.name (join body function*.name)))
 
       ; syntax: before <label> [ <instructions> ]
       ;
