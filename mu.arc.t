@@ -143,15 +143,16 @@
 ; lightweight tools that can be combined in various ways, say for using
 ; different typecheckers in different subsystems.
 ;
-; In our tests we'll define such mu functions using a call to 'add-fns', so
-; look for it. Everything outside 'add-fns' is just test-harness details.
+; In our tests we'll define such mu functions using a call to 'add-code', so
+; look for it. Everything outside 'add-code' is just test-harness details.
 
 (reset)
 ;? (set dump-trace*)
 (new-trace "literal")
-(add-fns
-  '((main
-      ((1 integer) <- copy (23 literal)))))
+(add-code
+  '((def main [
+      ((1 integer) <- copy (23 literal))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -164,29 +165,32 @@
 
 (reset)
 (new-trace "add")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
-      ((3 integer) <- add (1 integer) (2 integer)))))
+      ((3 integer) <- add (1 integer) (2 integer))
+     ])))
 (run 'main)
 (if (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - 'add' operates on two addresses"))
 
 (reset)
 (new-trace "add-literal")
-(add-fns
-  '((main
-      ((1 integer) <- add (2 literal) (3 literal)))))
+(add-code
+  '((def main [
+      ((1 integer) <- add (2 literal) (3 literal))
+     ])))
 (run 'main)
 (if (~is memory*.1 5)
   (prn "F - ops can take 'literal' operands (but not return them)"))
 
 (reset)
 (new-trace "sub-literal")
-(add-fns
-  '((main
-      ((1 integer) <- sub (1 literal) (3 literal)))))
+(add-code
+  '((def main [
+      ((1 integer) <- sub (1 literal) (3 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 -2)
@@ -194,9 +198,10 @@
 
 (reset)
 (new-trace "mul-literal")
-(add-fns
-  '((main
-      ((1 integer) <- mul (2 literal) (3 literal)))))
+(add-code
+  '((def main [
+      ((1 integer) <- mul (2 literal) (3 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 6)
@@ -204,9 +209,10 @@
 
 (reset)
 (new-trace "div-literal")
-(add-fns
-  '((main
-      ((1 integer) <- div (8 literal) (3 literal)))))
+(add-code
+  '((def main [
+      ((1 integer) <- div (8 literal) (3 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 (/ real.8 3))
@@ -214,9 +220,10 @@
 
 (reset)
 (new-trace "idiv-literal")
-(add-fns
-  '((main
-      ((1 integer) (2 integer) <- idiv (23 literal) (6 literal)))))
+(add-code
+  '((def main [
+      ((1 integer) (2 integer) <- idiv (23 literal) (6 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 3  2 5))
@@ -225,9 +232,10 @@
 (reset)
 (new-trace "dummy-oarg")
 ;? (set dump-trace*)
-(add-fns
-  '((main
-      (_ (2 integer) <- idiv (23 literal) (6 literal)))))
+(add-code
+  '((def main [
+      (_ (2 integer) <- idiv (23 literal) (6 literal))
+     ])))
 (run 'main)
 (if (~iso memory* (obj 2 5))
   (prn "F - '_' oarg can ignore some results"))
@@ -239,9 +247,10 @@
 
 (reset)
 (new-trace "and-literal")
-(add-fns
-  '((main
-      ((1 boolean) <- and (t literal) (nil literal)))))
+(add-code
+  '((def main [
+      ((1 boolean) <- and (t literal) (nil literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 nil)
@@ -251,9 +260,10 @@
 
 (reset)
 (new-trace "lt-literal")
-(add-fns
-  '((main
-      ((1 boolean) <- lt (4 literal) (3 literal)))))
+(add-code
+  '((def main [
+      ((1 boolean) <- lt (4 literal) (3 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 nil)
@@ -261,9 +271,10 @@
 
 (reset)
 (new-trace "le-literal-false")
-(add-fns
-  '((main
-      ((1 boolean) <- le (4 literal) (3 literal)))))
+(add-code
+  '((def main [
+      ((1 boolean) <- le (4 literal) (3 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 nil)
@@ -271,9 +282,10 @@
 
 (reset)
 (new-trace "le-literal-true")
-(add-fns
-  '((main
-      ((1 boolean) <- le (4 literal) (4 literal)))))
+(add-code
+  '((def main [
+      ((1 boolean) <- le (4 literal) (4 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 t)
@@ -281,9 +293,10 @@
 
 (reset)
 (new-trace "le-literal-true-2")
-(add-fns
-  '((main
-      ((1 boolean) <- le (4 literal) (5 literal)))))
+(add-code
+  '((def main [
+      ((1 boolean) <- le (4 literal) (5 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 t)
@@ -295,12 +308,13 @@
 
 (reset)
 (new-trace "jump-skip")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (8 literal))
       (jump (1 offset))
       ((2 integer) <- copy (3 literal))  ; should be skipped
-      (reply))))
+      (reply)
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
@@ -308,13 +322,14 @@
 
 (reset)
 (new-trace "jump-target")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (8 literal))
       (jump (1 offset))
       ((2 integer) <- copy (3 literal))  ; should be skipped
       (reply)
-      ((3 integer) <- copy (34 literal)))))  ; never reached
+      ((3 integer) <- copy (34 literal))
+     ])))  ; never reached
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 8))
@@ -323,14 +338,15 @@
 
 (reset)
 (new-trace "jump-if-skip")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((2 integer) <- copy (1 literal))
       ((1 boolean) <- eq (1 literal) (2 integer))
       (jump-if (1 boolean) (1 offset))
       ((2 integer) <- copy (3 literal))
       (reply)
-      ((3 integer) <- copy (34 literal)))))
+      ((3 integer) <- copy (34 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 t  2 1))
@@ -338,13 +354,14 @@
 
 (reset)
 (new-trace "jump-if-fallthrough")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 boolean) <- eq (1 literal) (2 literal))
       (jump-if (3 boolean) (1 offset))
       ((2 integer) <- copy (3 literal))
       (reply)
-      ((3 integer) <- copy (34 literal)))))
+      ((3 integer) <- copy (34 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 nil  2 3))
@@ -352,8 +369,8 @@
 
 (reset)
 (new-trace "jump-if-backward")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (1 literal))
       ; loop
@@ -362,7 +379,8 @@
       (jump-if (3 boolean) (-3 offset))  ; to loop
       ((4 integer) <- copy (3 literal))
       (reply)
-      ((3 integer) <- copy (34 literal)))))
+      ((3 integer) <- copy (34 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
@@ -374,10 +392,11 @@
 
 (reset)
 (new-trace "direct-addressing")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (34 literal))
-      ((2 integer) <- copy (1 integer)))))
+      ((2 integer) <- copy (1 integer))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 34))
@@ -390,11 +409,12 @@
 
 (reset)
 (new-trace "indirect-addressing")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer-address) <- copy (2 literal))  ; unsafe; can't do this in general
       ((2 integer) <- copy (34 literal))
-      ((3 integer) <- copy (1 integer-address deref)))))
+      ((3 integer) <- copy (1 integer-address deref))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 34  3 34))
@@ -405,11 +425,12 @@
 
 (reset)
 (new-trace "indirect-addressing-oarg")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer-address) <- copy (2 literal))
       ((2 integer) <- copy (34 literal))
-      ((1 integer-address deref) <- add (2 integer) (2 literal)))))
+      ((1 integer-address deref) <- add (2 integer) (2 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 36))
@@ -439,12 +460,13 @@
 
 (reset)
 (new-trace "get-record")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((3 boolean) <- get (1 integer-boolean-pair) (1 offset))
-      ((4 integer) <- get (1 integer-boolean-pair) (0 offset)))))
+      ((4 integer) <- get (1 integer-boolean-pair) (0 offset))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -453,13 +475,14 @@
 
 (reset)
 (new-trace "get-indirect")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((3 integer-boolean-pair-address) <- copy (1 literal))
       ((4 boolean) <- get (3 integer-boolean-pair-address deref) (1 offset))
-      ((5 integer) <- get (3 integer-boolean-pair-address deref) (0 offset)))))
+      ((5 integer) <- get (3 integer-boolean-pair-address deref) (0 offset))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -468,12 +491,13 @@
 
 (reset)
 (new-trace "get-compound-field")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (34 literal))
       ((2 integer) <- copy (35 literal))
       ((3 integer) <- copy (36 literal))
-      ((4 integer-integer-pair) <- get (1 integer-point-pair) (1 offset)))))
+      ((4 integer-integer-pair) <- get (1 integer-point-pair) (1 offset))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 35  3 36  4 35  5 36))
@@ -481,11 +505,12 @@
 
 (reset)
 (new-trace "get-address")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (t literal))
-      ((3 boolean-address) <- get-address (1 integer-boolean-pair) (1 offset)))))
+      ((3 boolean-address) <- get-address (1 integer-boolean-pair) (1 offset))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 t  3 2))
@@ -493,12 +518,13 @@
 
 (reset)
 (new-trace "get-address-indirect")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (t literal))
       ((3 integer-boolean-pair-address) <- copy (1 literal))
-      ((4 boolean-address) <- get-address (3 integer-boolean-pair-address deref) (1 offset)))))
+      ((4 boolean-address) <- get-address (3 integer-boolean-pair-address deref) (1 offset))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 t  3 1  4 2))
@@ -506,14 +532,15 @@
 
 (reset)
 (new-trace "index-literal")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
       ((4 integer) <- copy (24 literal))
       ((5 boolean) <- copy (t literal))
-      ((6 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (1 literal)))))
+      ((6 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (1 literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 24 7 t))
@@ -522,15 +549,16 @@
 
 (reset)
 (new-trace "index-direct")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
       ((4 integer) <- copy (24 literal))
       ((5 boolean) <- copy (t literal))
       ((6 integer) <- copy (1 literal))
-      ((7 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (6 integer)))))
+      ((7 integer-boolean-pair) <- index (1 integer-boolean-pair-array) (6 integer))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 24 8 t))
@@ -539,8 +567,8 @@
 
 (reset)
 (new-trace "index-indirect")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -548,7 +576,8 @@
       ((5 boolean) <- copy (t literal))
       ((6 integer) <- copy (1 literal))
       ((7 integer-boolean-pair-array-address) <- copy (1 literal))
-      ((8 integer-boolean-pair) <- index (7 integer-boolean-pair-array-address deref) (6 integer)))))
+      ((8 integer-boolean-pair) <- index (7 integer-boolean-pair-array-address deref) (6 integer))
+     ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 ;? (set dump-trace*)
 (run 'main)
@@ -559,15 +588,16 @@
 
 (reset)
 (new-trace "index-address")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
       ((4 integer) <- copy (24 literal))
       ((5 boolean) <- copy (t literal))
       ((6 integer) <- copy (1 literal))
-      ((7 integer-boolean-pair-address) <- index-address (1 integer-boolean-pair-array) (6 integer)))))
+      ((7 integer-boolean-pair-address) <- index-address (1 integer-boolean-pair-array) (6 integer))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 4))
@@ -575,8 +605,8 @@
 
 (reset)
 (new-trace "index-address-indirect")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -584,7 +614,8 @@
       ((5 boolean) <- copy (t literal))
       ((6 integer) <- copy (1 literal))
       ((7 integer-boolean-pair-array-address) <- copy (1 literal))
-      ((8 integer-boolean-pair-address) <- index-address (7 integer-boolean-pair-array-address deref) (6 integer)))))
+      ((8 integer-boolean-pair-address) <- index-address (7 integer-boolean-pair-array-address deref) (6 integer))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 1  8 4))
@@ -594,14 +625,15 @@
 
 (reset)
 (new-trace "len-array")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
       ((4 integer) <- copy (24 literal))
       ((5 boolean) <- copy (t literal))
-      ((6 integer) <- len (1 integer-boolean-pair-array)))))
+      ((6 integer) <- len (1 integer-boolean-pair-array))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 2))
@@ -609,15 +641,16 @@
 
 (reset)
 (new-trace "len-array-indirect")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
       ((4 integer) <- copy (24 literal))
       ((5 boolean) <- copy (t literal))
       ((6 integer-address) <- copy (1 literal))
-      ((7 integer) <- len (6 integer-boolean-pair-array-address deref)))))
+      ((7 integer) <- len (6 integer-boolean-pair-array-address deref))
+     ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (run 'main)
@@ -629,9 +662,10 @@
 
 (reset)
 (new-trace "sizeof-record")
-(add-fns
-  '((main
-      ((1 integer) <- sizeof (integer-boolean-pair literal)))))
+(add-code
+  '((def main [
+      ((1 integer) <- sizeof (integer-boolean-pair literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 2)
@@ -639,9 +673,10 @@
 
 (reset)
 (new-trace "sizeof-record-not-len")
-(add-fns
-  '((main
-      ((1 integer) <- sizeof (integer-point-pair literal)))))
+(add-code
+  '((def main [
+      ((1 integer) <- sizeof (integer-point-pair literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 3)
@@ -651,12 +686,13 @@
 
 (reset)
 (new-trace "compound-operand-copy")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((4 boolean) <- copy (t literal))
-      ((3 integer-boolean-pair) <- copy (1 integer-boolean-pair)))))
+      ((3 integer-boolean-pair) <- copy (1 integer-boolean-pair))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 34  4 nil))
@@ -664,13 +700,15 @@
 
 (reset)
 (new-trace "compound-arg")
-(add-fns
-  '((test1
-      ((4 integer-boolean-pair) <- arg))
-    (main
+(add-code
+  '((def test1 [
+      ((4 integer-boolean-pair) <- arg)
+     ])
+    (def main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
-      (test1 (1 integer-boolean-pair)))))
+      (test1 (1 integer-boolean-pair))
+     ])))
 (run 'main)
 (if (~iso memory* (obj 1 34  2 nil  4 34  5 nil))
   (prn "F - 'arg' can copy records spanning multiple locations"))
@@ -678,14 +716,16 @@
 (reset)
 (new-trace "compound-arg-indirect")
 ;? (set dump-trace*)
-(add-fns
-  '((test1
-      ((4 integer-boolean-pair) <- arg))
-    (main
+(add-code
+  '((def test1 [
+      ((4 integer-boolean-pair) <- arg)
+     ])
+    (def main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((3 integer-boolean-pair-address) <- copy (1 literal))
-      (test1 (3 integer-boolean-pair-address deref)))))
+      (test1 (3 integer-boolean-pair-address deref))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 1  4 34  5 nil))
@@ -703,11 +743,12 @@
 (reset)
 (new-trace "tagged-value")
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 type) <- copy (integer-address literal))
       ((2 integer-address) <- copy (34 literal))  ; pointer to nowhere
-      ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal)))))
+      ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 ;? (prn completed-routines*)
@@ -720,11 +761,12 @@
 (reset)
 (new-trace "tagged-value-2")
 ;? (set dump-trace*)
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 type) <- copy (integer-address literal))
       ((2 integer-address) <- copy (34 literal))  ; pointer to nowhere
-      ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (boolean-address literal)))))
+      ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (boolean-address literal))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (or (~is memory*.3 0) (~is memory*.4 nil))
@@ -732,10 +774,11 @@
 
 (reset)
 (new-trace "save-type")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer-address) <- copy (34 literal))  ; pointer to nowhere
-      ((2 tagged-value) <- save-type (1 integer-address)))))
+      ((2 tagged-value) <- save-type (1 integer-address))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj  1 34  2 'integer-address  3 34))
@@ -743,11 +786,12 @@
 
 (reset)
 (new-trace "new-tagged-value")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((2 tagged-value-address) <- new-tagged-value (integer-address literal) (1 integer-address))
-      ((3 integer-address) (4 boolean) <- maybe-coerce (2 tagged-value-address deref) (integer-address literal)))))
+      ((3 integer-address) (4 boolean) <- maybe-coerce (2 tagged-value-address deref) (integer-address literal))
+     ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
 ;? (prn memory*)
@@ -761,8 +805,8 @@
 (reset)
 (new-trace "list")
 ;? (set dump-trace*)
-(add-fns
-  '((test1
+(add-code
+  '((def main [
       ; 1 points at first node: tagged-value (int 34)
       ((1 list-address) <- new (list literal))
       ((2 tagged-value-address) <- list-value-address (1 list-address))
@@ -780,9 +824,9 @@
       ((9 location) <- get-address (7 tagged-value-address deref) (1 offset))
       ((9 location deref) <- copy (t literal))
       ((10 list-address) <- get (6 list-address deref) (1 offset))
-      )))
+     ])))
 (let first Memory-in-use-until
-  (run 'test1)
+  (run 'main)
 ;?   (prn memory*)
   (if (or (~all first (map memory* '(1 2 3)))
           (~is memory*.first  'integer)
@@ -798,9 +842,10 @@
               (~is (memory* (+ second 1)) t)
               (~is memory*.10 nil))))
     (prn "F - lists can contain elements of different types")))
-(add-fns
-  '((test2
-      ((10 list-address) <- list-next (1 list-address)))))
+(add-code
+  '((def test2 [
+      ((10 list-address) <- list-next (1 list-address))
+     ])))
 (run 'test2)
 ;? (prn memory*)
 (if (~is memory*.10 memory*.6)
@@ -811,9 +856,10 @@
 
 (reset)
 (new-trace "new-list")
-(add-fns
-  '((main
-      ((1 integer) <- new-list (3 literal) (4 literal) (5 literal)))))
+(add-code
+  '((def main [
+      ((1 integer) <- new-list (3 literal) (4 literal) (5 literal))
+     ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
 ;? (prn memory*)
@@ -840,13 +886,15 @@
 
 (reset)
 (new-trace "new-fn")
-(add-fns
-  '((test1
-      ((3 integer) <- add (1 integer) (2 integer)))
-    (main
+(add-code
+  '((def test1 [
+      ((3 integer) <- add (1 integer) (2 integer))
+     ])
+    (def main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
-      (test1))))
+      (test1)
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4))
@@ -855,11 +903,13 @@
 
 (reset)
 (new-trace "new-fn-once")
-(add-fns
-  '((test1
-      ((1 integer) <- copy (1 literal)))
-    (main
-      (test1))))
+(add-code
+  '((def test1 [
+      ((1 integer) <- copy (1 literal))
+     ])
+    (def main [
+      (test1)
+     ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
 (if (~is 2 curr-cycle*)
@@ -874,15 +924,17 @@
 
 (reset)
 (new-trace "new-fn-reply")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((3 integer) <- add (1 integer) (2 integer))
       (reply)
-      ((4 integer) <- copy (34 literal)))
-    (main
+      ((4 integer) <- copy (34 literal))
+     ])
+    (def main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
-      (test1))))
+      (test1)
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4))
@@ -891,14 +943,17 @@
 
 (reset)
 (new-trace "new-fn-reply-nested")
-(add-fns
-  '((test1
-      ((3 integer) <- test2))
-    (test2
-      (reply (2 integer)))
-    (main
+(add-code
+  '((def test1 [
+      ((3 integer) <- test2)
+     ])
+    (def test2 [
+      (reply (2 integer))
+     ])
+    (def main [
       ((2 integer) <- copy (34 literal))
-      (test1))))
+      (test1)
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 2 34  3 34))
@@ -907,15 +962,17 @@
 
 (reset)
 (new-trace "new-fn-reply-once")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((3 integer) <- add (1 integer) (2 integer))
       (reply)
-      ((4 integer) <- copy (34 literal)))
-    (main
+      ((4 integer) <- copy (34 literal))
+     ])
+    (def main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
-      (test1))))
+      (test1)
+     ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
 (if (~is 5 curr-cycle*)
@@ -924,18 +981,19 @@
 
 (reset)
 (new-trace "new-fn-arg-sequential")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((4 integer) <- arg)
       ((5 integer) <- arg)
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
-      ((4 integer) <- copy (34 literal)))
-    (main
+      ((4 integer) <- copy (34 literal))
+     ])
+    (def main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       (test1 (1 integer) (2 integer))
-    )))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4
@@ -947,18 +1005,19 @@
 (reset)
 (new-trace "new-fn-arg-random-access")
 ;? (set dump-trace*)
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((5 integer) <- arg (1 literal))
       ((4 integer) <- arg (0 literal))
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
-      ((4 integer) <- copy (34 literal)))  ; should never run
-    (main
+      ((4 integer) <- copy (34 literal))
+     ])  ; should never run
+    (def main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       (test1 (1 integer) (2 integer))
-    )))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4
@@ -969,12 +1028,13 @@
 
 (reset)
 (new-trace "new-fn-arg-status")
-(add-fns
-  '((test1
-      ((4 integer) (5 boolean) <- arg))
-    (main
+(add-code
+  '((def test1 [
+      ((4 integer) (5 boolean) <- arg)
+     ])
+    (def main [
       (test1 (1 literal))
-    )))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 4 1  5 t))
@@ -983,13 +1043,14 @@
 
 (reset)
 (new-trace "new-fn-arg-missing")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((4 integer) <- arg)
-      ((5 integer) <- arg))
-    (main
+      ((5 integer) <- arg)
+     ])
+    (def main [
       (test1 (1 literal))
-    )))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 4 1))
@@ -998,13 +1059,14 @@
 
 (reset)
 (new-trace "new-fn-arg-missing-2")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((4 integer) <- arg)
-      ((5 integer) (6 boolean) <- arg))
-    (main
+      ((5 integer) (6 boolean) <- arg)
+     ])
+    (def main [
       (test1 (1 literal))
-    )))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 4 1  6 nil))
@@ -1013,14 +1075,15 @@
 
 (reset)
 (new-trace "new-fn-arg-missing-3")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((4 integer) <- arg)
       ((5 integer) <- copy (34 literal))
-      ((5 integer) (6 boolean) <- arg))
-    (main
+      ((5 integer) (6 boolean) <- arg)
+    ])
+    (def main [
       (test1 (1 literal))
-    )))
+    ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 4 1  6 nil))
@@ -1029,8 +1092,8 @@
 
 (reset)
 (new-trace "new-fn-arg-missing-4")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ; if given two args, adds them; if given one arg, increments
       ((4 integer) <- arg)
       ((5 integer) (6 boolean) <- arg)
@@ -1038,10 +1101,11 @@
         (break-if (6 boolean))
         ((5 integer) <- copy (1 literal))
       }
-      ((7 integer) <- add (4 integer) (5 integer)))
-    (main
+      ((7 integer) <- add (4 integer) (5 integer))
+     ])
+    (def main [
       (test1 (34 literal))
-    )))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 4 34  5 1  6 nil  7 35))
@@ -1050,13 +1114,15 @@
 
 (reset)
 (new-trace "new-fn-arg-by-value")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((1 integer) <- copy (0 literal))  ; overwrite caller memory
-      ((2 integer) <- arg))  ; arg not clobbered
-    (main
+      ((2 integer) <- arg)
+     ])  ; arg not clobbered
+    (def main [
       ((1 integer) <- copy (34 literal))
-      (test1 (1 integer)))))
+      (test1 (1 integer))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 0  2 34))
@@ -1064,17 +1130,19 @@
 
 (reset)
 (new-trace "new-fn-reply-oarg")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((4 integer) <- arg)
       ((5 integer) <- arg)
       ((6 integer) <- add (4 integer) (5 integer))
       (reply (6 integer))
-      ((4 integer) <- copy (34 literal)))
-    (main
+      ((4 integer) <- copy (34 literal))
+     ])
+    (def main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
-      ((3 integer) <- test1 (1 integer) (2 integer)))))
+      ((3 integer) <- test1 (1 integer) (2 integer))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4
@@ -1084,17 +1152,19 @@
 
 (reset)
 (new-trace "new-fn-reply-oarg-multiple")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((4 integer) <- arg)
       ((5 integer) <- arg)
       ((6 integer) <- add (4 integer) (5 integer))
       (reply (6 integer) (5 integer))
-      ((4 integer) <- copy (34 literal)))
-    (main
+      ((4 integer) <- copy (34 literal))
+     ])
+    (def main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
-      ((3 integer) (7 integer) <- test1 (1 integer) (2 integer)))))
+      ((3 integer) (7 integer) <- test1 (1 integer) (2 integer))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4    7 3
@@ -1104,18 +1174,20 @@
 
 (reset)
 (new-trace "new-fn-prepare-reply")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((4 integer) <- arg)
       ((5 integer) <- arg)
       ((6 integer) <- add (4 integer) (5 integer))
       (prepare-reply (6 integer) (5 integer))
       (reply)
-      ((4 integer) <- copy (34 literal)))
-    (main
+      ((4 integer) <- copy (34 literal))
+     ])
+    (def main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
-      ((3 integer) (7 integer) <- test1 (1 integer) (2 integer)))))
+      ((3 integer) (7 integer) <- test1 (1 integer) (2 integer))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4    7 3
@@ -1311,8 +1383,8 @@
 (reset)
 (new-trace "continue")
 ;? (set dump-trace*)
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (4 literal))
       ((2 integer) <- copy (1 literal))
       { begin
@@ -1321,7 +1393,8 @@
         (continue-if (3 boolean))
         ((4 integer) <- copy (34 literal))
       }
-      (reply))))
+      (reply)
+     ])))
 ;? (each stmt function*!main
 ;?   (prn stmt))
 (run 'main)
@@ -1335,8 +1408,8 @@
 (reset)
 (new-trace "continue-nested")
 ;? (set dump-trace*)
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (4 literal))
       ((2 integer) <- copy (1 literal))
       { begin
@@ -1347,7 +1420,8 @@
         (continue-if (3 boolean))
         ((4 integer) <- copy (34 literal))
       }
-      (reply))))
+      (reply)
+     ])))
 ;? (each stmt function*!main
 ;?   (prn stmt))
 (run 'main)
@@ -1357,8 +1431,8 @@
 
 (reset)
 (new-trace "continue-fail")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (4 literal))
       ((2 integer) <- copy (2 literal))
       { begin
@@ -1369,7 +1443,8 @@
         (continue-if (3 boolean))
         ((4 integer) <- copy (34 literal))
       }
-      (reply))))
+      (reply)
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
@@ -1490,9 +1565,10 @@
 
 (reset)
 (new-trace "new-primitive")
-(add-fns
-  '((main
-      ((1 integer-address) <- new (integer literal)))))
+(add-code
+  '((def main [
+      ((1 integer-address) <- new (integer literal))
+     ])))
 (let before Memory-in-use-until
   (run 'main)
 ;?   (prn memory*)
@@ -1503,9 +1579,10 @@
 
 (reset)
 (new-trace "new-array-literal")
-(add-fns
-  '((main
-      ((1 type-array-address) <- new (type-array literal) (5 literal)))))
+(add-code
+  '((def main [
+      ((1 type-array-address) <- new (type-array literal) (5 literal))
+     ])))
 (let before Memory-in-use-until
   (run 'main)
 ;?   (prn memory*)
@@ -1516,10 +1593,11 @@
 
 (reset)
 (new-trace "new-array-direct")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (5 literal))
-      ((2 type-array-address) <- new (type-array literal) (1 integer)))))
+      ((2 type-array-address) <- new (type-array literal) (1 integer))
+     ])))
 (let before Memory-in-use-until
   (run 'main)
 ;?   (prn memory*)
@@ -1543,10 +1621,11 @@
 
 (reset)
 (new-trace "set-default-scope")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((1 integer) <- copy (23 literal)))))
+      ((1 integer) <- copy (23 literal))
+     ])))
 (let before Memory-in-use-until
 ;?   (set dump-trace*)
   (run 'main)
@@ -1557,10 +1636,11 @@
 
 (reset)
 (new-trace "set-default-scope-skips-offset")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((1 integer) <- copy (23 offset)))))
+      ((1 integer) <- copy (23 offset))
+     ])))
 (let before Memory-in-use-until
 ;?   (set dump-trace*)
   (run 'main)
@@ -1571,10 +1651,11 @@
 
 (reset)
 (new-trace "default-scope-bounds-check")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((2 integer) <- copy (23 literal)))))
+      ((2 integer) <- copy (23 literal))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -1584,13 +1665,14 @@
 
 (reset)
 (new-trace "default-scope-and-get-indirect")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((default-scope scope-address) <- new (scope literal) (5 literal))
       ((1 integer-boolean-pair-address) <- new (integer-boolean-pair literal))
       ((2 integer-address) <- get-address (1 integer-boolean-pair-address deref) (0 offset))
       ((2 integer-address deref) <- copy (34 literal))
-      ((3 integer global) <- get (1 integer-boolean-pair-address deref) (0 offset)))))
+      ((3 integer global) <- get (1 integer-boolean-pair-address deref) (0 offset))
+     ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn memory*)
@@ -1603,13 +1685,14 @@
 
 (reset)
 (new-trace "default-scope-and-index-indirect")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((default-scope scope-address) <- new (scope literal) (5 literal))
       ((1 integer-array-address) <- new (integer-array literal) (4 literal))
       ((2 integer-address) <- index-address (1 integer-array-address deref) (2 offset))
       ((2 integer-address deref) <- copy (34 literal))
-      ((3 integer global) <- index (1 integer-array-address deref) (2 offset)))))
+      ((3 integer global) <- index (1 integer-array-address deref) (2 offset))
+     ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn memory*)
@@ -1634,10 +1717,11 @@
 
 (reset)
 (new-trace "suppress-default-scope")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((1 integer global) <- copy (23 literal)))))
+      ((1 integer global) <- copy (23 literal))
+     ])))
 (let before Memory-in-use-until
 ;?   (set dump-trace*)
   (run 'main)
@@ -1654,8 +1738,8 @@
 (reset)
 (new-trace "dispatch-clause")
 ;? (set dump-trace*)
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ; doesn't matter too much how many locals you allocate space for (here 20)
       ; if it's slightly too many -- memory is plentiful
       ; if it's too few -- mu will raise an error
@@ -1670,11 +1754,13 @@
         ((result integer) <- add (first-arg integer) (second-arg integer))
         (reply (result integer))
       }
-      (reply (nil literal)))
-    (main
+      (reply (nil literal))
+     ])
+    (def main [
       ((1 tagged-value-address) <- new-tagged-value (integer literal) (34 literal))
       ((2 tagged-value-address) <- new-tagged-value (integer literal) (3 literal))
-      ((3 integer) <- test1 (1 tagged-value-address) (2 tagged-value-address)))))
+      ((3 integer) <- test1 (1 tagged-value-address) (2 tagged-value-address))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.3 37)
@@ -1686,8 +1772,8 @@
 (reset)
 (new-trace "dispatch-multiple-clauses")
 ;? (set dump-trace*)
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((default-scope scope-address) <- new (scope literal) (20 literal))
       ((first-arg-box tagged-value-address) <- arg)
       ; if given integers, add them
@@ -1708,11 +1794,13 @@
         ((result boolean) <- or (first-arg boolean) (second-arg boolean))
         (reply (result integer))
       }
-      (reply (nil literal)))
-    (main
+      (reply (nil literal))
+     ])
+    (def main [
       ((1 tagged-value-address) <- new-tagged-value (boolean literal) (t literal))
       ((2 tagged-value-address) <- new-tagged-value (boolean literal) (nil literal))
-      ((3 boolean) <- test1 (1 tagged-value-address) (2 tagged-value-address)))))
+      ((3 boolean) <- test1 (1 tagged-value-address) (2 tagged-value-address))
+     ])))
 ;? (each stmt function*!test-fn
 ;?   (prn "  " stmt))
 (run 'main)
@@ -1724,8 +1812,8 @@
 
 (reset)
 (new-trace "dispatch-multiple-calls")
-(add-fns
-  '((test1
+(add-code
+  '((def test1 [
       ((default-scope scope-address) <- new (scope literal) (20 literal))
       ((first-arg-box tagged-value-address) <- arg)
       ; if given integers, add them
@@ -1746,14 +1834,16 @@
         ((result boolean) <- or (first-arg boolean) (second-arg boolean))
         (reply (result integer))
       }
-      (reply (nil literal)))
-    (main
+      (reply (nil literal))
+     ])
+    (def main [
       ((1 tagged-value-address) <- new-tagged-value (boolean literal) (t literal))
       ((2 tagged-value-address) <- new-tagged-value (boolean literal) (nil literal))
       ((3 boolean) <- test1 (1 tagged-value-address) (2 tagged-value-address))
       ((10 tagged-value-address) <- new-tagged-value (integer literal) (34 literal))
       ((11 tagged-value-address) <- new-tagged-value (integer literal) (3 literal))
-      ((12 integer) <- test1 (10 tagged-value-address) (11 tagged-value-address)))))
+      ((12 integer) <- test1 (10 tagged-value-address) (11 tagged-value-address))
+     ])))
 (run 'main)
 ;? (prn memory*)
 (if (~and (is memory*.3 t) (is memory*.12 37))
@@ -1772,11 +1862,13 @@
 
 (reset)
 (new-trace "scheduler")
-(add-fns
-  '((f1
-      ((1 integer) <- copy (3 literal)))
-    (f2
-      ((2 integer) <- copy (4 literal)))))
+(add-code
+  '((def f1 [
+      ((1 integer) <- copy (3 literal))
+     ])
+    (def f2 [
+      ((2 integer) <- copy (4 literal))
+     ])))
 (run 'f1 'f2)
 (when (~iso 2 curr-cycle*)
   (prn "F - scheduler didn't run the right number of instructions: " curr-cycle*))
@@ -1795,13 +1887,15 @@
 
 (reset)
 (new-trace "scheduler-alternate")
-(add-fns
-  '((f1
+(add-code
+  '((def f1 [
       ((1 integer) <- copy (3 literal))
-      ((1 integer) <- copy (3 literal)))
-    (f2
+      ((1 integer) <- copy (3 literal))
+     ])
+    (def f2 [
       ((2 integer) <- copy (4 literal))
-      ((2 integer) <- copy (4 literal)))))
+      ((2 integer) <- copy (4 literal))
+     ])))
 (= scheduling-interval* 1)
 (run 'f1 'f2)
 (check-trace-contents "scheduler alternates between routines"
@@ -1813,11 +1907,13 @@
 
 (reset)
 (new-trace "scheduler-sleep")
-(add-fns
-  '((f1
-      ((1 integer) <- copy (3 literal)))
-    (f2
-      ((2 integer) <- copy (4 literal)))))
+(add-code
+  '((def f1 [
+      ((1 integer) <- copy (3 literal))
+     ])
+    (def f2 [
+      ((2 integer) <- copy (4 literal))
+     ])))
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
 (assert (is 1 len.running-routines*))
@@ -1835,11 +1931,13 @@
 
 (reset)
 (new-trace "scheduler-wakeup")
-(add-fns
-  '((f1
-      ((1 integer) <- copy (3 literal)))
-    (f2
-      ((2 integer) <- copy (4 literal)))))
+(add-code
+  '((def f1 [
+      ((1 integer) <- copy (3 literal))
+     ])
+    (def f2 [
+      ((2 integer) <- copy (4 literal))
+     ])))
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
 (assert (is 1 len.running-routines*))
@@ -1855,11 +1953,13 @@
 
 (reset)
 (new-trace "scheduler-sleep-location")
-(add-fns
-  '((f1
-      ((1 integer) <- copy (3 literal)))
-    (f2
-      ((2 integer) <- copy (4 literal)))))
+(add-code
+  '((def f1 [
+      ((1 integer) <- copy (3 literal))
+     ])
+    (def f2 [
+      ((2 integer) <- copy (4 literal))
+     ])))
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
 (assert (is 1 len.running-routines*))
@@ -1884,11 +1984,13 @@
 
 (reset)
 (new-trace "scheduler-wakeup-location")
-(add-fns
-  '((f1
-      ((1 integer) <- copy (3 literal)))
-    (f2
-      ((2 integer) <- copy (4 literal)))))
+(add-code
+  '((def f1 [
+      ((1 integer) <- copy (3 literal))
+     ])
+    (def f2 [
+      ((2 integer) <- copy (4 literal))
+     ])))
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
 (assert (is 1 len.running-routines*))
@@ -1905,9 +2007,10 @@
 
 (reset)
 (new-trace "scheduler-skip")
-(add-fns
-  '((f1
-      ((1 integer) <- copy (3 literal)))))
+(add-code
+  '((def f1 [
+      ((1 integer) <- copy (3 literal))
+     ])))
 ; running-routines* is empty
 (assert (empty running-routines*))
 ; sleeping routine
@@ -1923,9 +2026,10 @@
 
 (reset)
 (new-trace "scheduler-deadlock")
-(add-fns
-  '((f1
-      ((1 integer) <- copy (3 literal)))))
+(add-code
+  '((def f1 [
+      ((1 integer) <- copy (3 literal))
+     ])))
 (assert (empty running-routines*))
 (assert (empty completed-routines*))
 ; blocked routine
@@ -1944,9 +2048,10 @@
 
 (reset)
 (new-trace "scheduler-deadlock2")
-(add-fns
-  '((f1
-      ((1 integer) <- copy (3 literal)))))
+(add-code
+  '((def f1 [
+      ((1 integer) <- copy (3 literal))
+     ])))
 ; running-routines* is empty
 (assert (empty running-routines*))
 ; blocked routine
@@ -1961,14 +2066,16 @@
 
 (reset)
 (new-trace "sleep")
-(add-fns
-  '((f1
+(add-code
+  '((def f1 [
       (sleep (1 literal))
       ((1 integer) <- copy (3 literal))
-      ((1 integer) <- copy (3 literal)))
-    (f2
+      ((1 integer) <- copy (3 literal))
+     ])
+    (def f2 [
       ((2 integer) <- copy (4 literal))
-      ((2 integer) <- copy (4 literal)))))
+      ((2 integer) <- copy (4 literal))
+     ])))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (run 'f1 'f2)
 (check-trace-contents "scheduler handles sleeping routines"
@@ -1984,14 +2091,16 @@
 
 (reset)
 (new-trace "sleep-long")
-(add-fns
-  '((f1
+(add-code
+  '((def f1 [
       (sleep (20 literal))
       ((1 integer) <- copy (3 literal))
-      ((1 integer) <- copy (3 literal)))
-    (f2
+      ((1 integer) <- copy (3 literal))
+     ])
+    (def f2 [
       ((2 integer) <- copy (4 literal))
-      ((2 integer) <- copy (4 literal)))))
+      ((2 integer) <- copy (4 literal))
+     ])))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (run 'f1 'f2)
 (check-trace-contents "scheduler progresses sleeping routines when there are no routines left to run"
@@ -2007,15 +2116,17 @@
 
 (reset)
 (new-trace "sleep-location")
-(add-fns
-  '((f1
+(add-code
+  '((def f1 [
       ; waits for memory location 1 to be set, before computing its successor
       ((1 integer) <- copy (0 literal))
       (sleep (1 integer))
-      ((2 integer) <- add (1 integer) (1 literal)))
-    (f2
+      ((2 integer) <- add (1 integer) (1 literal))
+     ])
+    (def f2 [
       (sleep (30 literal))
-      ((1 integer) <- copy (3 literal)))))  ; set to value
+      ((1 integer) <- copy (3 literal))  ; set to value
+     ])))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 ;? (set dump-trace*)
 (run 'f1 'f2)
@@ -2028,17 +2139,19 @@
 
 (reset)
 (new-trace "sleep-scoped-location")
-(add-fns
-  '((f1
+(add-code
+  '((def f1 [
       ; waits for memory location 1 to be changed, before computing its successor
       ((10 integer) <- copy (5 literal))  ; array of locals
       ((default-scope scope-address) <- copy (10 literal))
       ((1 integer) <- copy (23 literal))  ; really location 11
       (sleep (1 integer))
-      ((2 integer) <- add (1 integer) (1 literal)))
-    (f2
+      ((2 integer) <- add (1 integer) (1 literal))
+     ])
+    (def f2 [
       (sleep (30 literal))
-      ((11 integer) <- copy (3 literal)))))  ; set to value
+      ((11 integer) <- copy (3 literal))  ; set to value
+     ])))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (run 'f1 'f2)
 (if (~is memory*.12 4)  ; successor of value
@@ -2047,36 +2160,42 @@
 
 (reset)
 (new-trace "fork")
-(add-fns
-  '((f1
-      (fork (f2 fn)))
-    (f2
-      ((2 integer) <- copy (4 literal)))))
+(add-code
+  '((def f1 [
+      (fork (f2 fn))
+     ])
+    (def f2 [
+      ((2 integer) <- copy (4 literal))
+     ])))
 (run 'f1)
 (if (~iso memory*.2 4)
   (prn "F - fork works"))
 
 (reset)
 (new-trace "fork-with-args")
-(add-fns
-  '((f1
-      (fork (f2 fn) (4 literal)))
-    (f2
-      ((2 integer) <- arg))))
+(add-code
+  '((def f1 [
+      (fork (f2 fn) (4 literal))
+     ])
+    (def f2 [
+      ((2 integer) <- arg)
+     ])))
 (run 'f1)
 (if (~iso memory*.2 4)
   (prn "F - fork can pass args"))
 
 (reset)
 (new-trace "fork-copies-args")
-(add-fns
-  '((f1
+(add-code
+  '((def f1 [
       ((default-scope scope-address) <- new (scope literal) (5 literal))
       ((x integer) <- copy (4 literal))
       (fork (f2 fn) (x integer))
-      ((x integer) <- copy (0 literal)))  ; should be ignored
-    (f2
-      ((2 integer) <- arg))))
+      ((x integer) <- copy (0 literal))  ; should be ignored
+     ])
+    (def f2 [
+      ((2 integer) <- arg)
+     ])))
 (run 'f1)
 (if (~iso memory*.2 4)
   (prn "F - fork passes args by value"))
@@ -2091,12 +2210,13 @@
 ; Routines can throw errors.
 (reset)
 (new-trace "array-bounds-check")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 integer) <- copy (24 literal))
-      ((4 integer) <- index (1 integer-array) (2 literal)))))
+      ((4 integer) <- index (1 integer-array) (2 literal))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -2121,11 +2241,12 @@
 ; first-full, while the writer always modifies it at first-empty.
 (reset)
 (new-trace "channel-new")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer) <- get (1 channel-address deref) (first-full offset))
-      ((3 integer) <- get (1 channel-address deref) (first-free offset)))))
+      ((3 integer) <- get (1 channel-address deref) (first-free offset))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -2135,15 +2256,16 @@
 
 (reset)
 (new-trace "channel-write")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
       ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
       ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
       ((4 integer) <- get (1 channel-address deref) (first-full offset))
-      ((5 integer) <- get (1 channel-address deref) (first-free offset)))))
+      ((5 integer) <- get (1 channel-address deref) (first-free offset))
+     ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
 ;? (= dump-trace* (obj whitelist '("jump")))
@@ -2156,8 +2278,8 @@
 
 (reset)
 (new-trace "channel-read")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -2166,7 +2288,8 @@
       ((4 tagged-value) (1 channel-address deref) <- read (1 channel-address))
       ((6 integer-address) <- maybe-coerce (4 tagged-value) (integer-address literal))
       ((7 integer) <- get (1 channel-address deref) (first-full offset))
-      ((8 integer) <- get (1 channel-address deref) (first-free offset)))))
+      ((8 integer) <- get (1 channel-address deref) (first-free offset))
+     ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
 (run 'main)
@@ -2179,8 +2302,8 @@
 
 (reset)
 (new-trace "channel-write-wrap")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ; channel with 1 slot
       ((1 channel-address) <- new-channel (1 literal))
       ; write a value
@@ -2194,7 +2317,8 @@
       (_ (1 channel-address deref) <- read (1 channel-address))
       ; write a second value; verify that first-free wraps around to 0.
       ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
-      ((5 integer) <- get (1 channel-address deref) (first-free offset)))))
+      ((5 integer) <- get (1 channel-address deref) (first-free offset))
+     ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
 (run 'main)
@@ -2205,8 +2329,8 @@
 
 (reset)
 (new-trace "channel-read-wrap")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ; channel with 1 slot
       ((1 channel-address) <- new-channel (1 literal))
       ; write a value
@@ -2222,7 +2346,8 @@
       ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
       ; read second value; verify that first-full wraps around to 0.
       (_ (1 channel-address deref) <- read (1 channel-address))
-      ((5 integer) <- get (1 channel-address deref) (first-full offset)))))
+      ((5 integer) <- get (1 channel-address deref) (first-full offset))
+     ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
 (run 'main)
@@ -2233,11 +2358,12 @@
 
 (reset)
 (new-trace "channel-new-empty-not-full")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 boolean) <- empty? (1 channel-address deref))
-      ((3 boolean) <- full? (1 channel-address deref)))))
+      ((3 boolean) <- full? (1 channel-address deref))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -2247,15 +2373,16 @@
 
 (reset)
 (new-trace "channel-write-not-empty")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
       ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
       ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
       ((4 boolean) <- empty? (1 channel-address deref))
-      ((5 boolean) <- full? (1 channel-address deref)))))
+      ((5 boolean) <- full? (1 channel-address deref))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -2265,15 +2392,16 @@
 
 (reset)
 (new-trace "channel-write-full")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 channel-address) <- new-channel (1 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
       ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
       ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
       ((4 boolean) <- empty? (1 channel-address deref))
-      ((5 boolean) <- full? (1 channel-address deref)))))
+      ((5 boolean) <- full? (1 channel-address deref))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -2283,8 +2411,8 @@
 
 (reset)
 (new-trace "channel-read-not-full")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -2293,7 +2421,8 @@
       ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
       (_ (1 channel-address deref) <- read (1 channel-address))
       ((4 boolean) <- empty? (1 channel-address deref))
-      ((5 boolean) <- full? (1 channel-address deref)))))
+      ((5 boolean) <- full? (1 channel-address deref))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -2303,8 +2432,8 @@
 
 (reset)
 (new-trace "channel-read-empty")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -2312,7 +2441,8 @@
       ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
       (_ (1 channel-address deref) <- read (1 channel-address))
       ((4 boolean) <- empty? (1 channel-address deref))
-      ((5 boolean) <- full? (1 channel-address deref)))))
+      ((5 boolean) <- full? (1 channel-address deref))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -2325,11 +2455,12 @@
 
 (reset)
 (new-trace "channel-read-block")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 channel-address) <- new-channel (3 literal))
       ; channel is empty, but receives a read
-      ((2 tagged-value) (1 channel-address deref) <- read (1 channel-address)))))
+      ((2 tagged-value) (1 channel-address deref) <- read (1 channel-address))
+     ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
@@ -2347,15 +2478,16 @@
 
 (reset)
 (new-trace "channel-write-block")
-(add-fns
-  '((main
+(add-code
+  '((def main [
       ((1 channel-address) <- new-channel (1 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
       ((3 tagged-value-address) <- new-tagged-value (integer-address literal) (2 integer-address))
       ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
       ; channel has capacity 1, but receives a second write
-      ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref)))))
+      ((1 channel-address deref) <- write (1 channel-address) (3 tagged-value-address deref))
+     ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("run" "schedule" "addr")))
 (run 'main)
@@ -2374,19 +2506,21 @@
 
 (reset)
 (new-trace "channel-handoff")
-(add-fns
-  '((f1
+(add-code
+  '((def f1 [
       ((default-scope scope-address) <- new (scope literal) (30 literal))
       ((chan channel-address) <- new-channel (3 literal))
       (fork (f2 fn) (chan channel-address))
-      ((1 tagged-value global) <- read (chan channel-address)))
-    (f2
+      ((1 tagged-value global) <- read (chan channel-address))
+     ])
+    (def f2 [
       ((default-scope scope-address) <- new (scope literal) (30 literal))
       ((n integer-address) <- new (integer literal))
       ((n integer-address deref) <- copy (24 literal))
       ((ochan channel-address) <- arg)
       ((x tagged-value-address) <- new-tagged-value (integer-address literal) (n integer-address))
-      ((ochan channel-address deref) <- write (ochan channel-address) (x tagged-value-address deref)))))
+      ((ochan channel-address deref) <- write (ochan channel-address) (x tagged-value-address deref))
+     ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
 ;? (= dump-trace* (obj whitelist '("-")))

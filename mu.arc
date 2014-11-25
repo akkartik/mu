@@ -133,8 +133,10 @@
   (each (expected-label expected-msg)  expected-contents
     (prn "  ! " expected-label ": " expected-msg)))
 
-(def add-fns (fns)
-  (each (name . body) fns
+(def add-code (fns)
+  (each (_def name (_make-br-fn body)) fns
+    (assert (is 'def _def))
+    (assert (is 'make-br-fn _make-br-fn))
     (= function*.name (convert-names:convert-braces:insert-code body))))
 
 ;; managing concurrent routines
@@ -1071,7 +1073,7 @@
 ;; after loading all files, start at 'main'
 (reset)
 (awhen cdr.argv
-  (map add-fns:readfile it)
+  (map add-code:readfile it)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
   (prn memory*)

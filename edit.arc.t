@@ -2,11 +2,11 @@
 
 (reset)
 (new-trace "new-screen")
-(add-fns:readfile "edit.mu")
-(add-fns
-  '((test-new-screen
+(add-code:readfile "edit.mu")
+(add-code
+  '((def test-new-screen [
       ((2001 screen-address) <- new-screen (5 literal) (5 literal))
-      )))
+     ])))
 ;? (each stmt function*!new-screen
 ;?   (prn stmt))
 (let before Memory-in-use-until
