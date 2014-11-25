@@ -9,7 +9,7 @@
         initialization-fns*))
 
 (mac init-fn (name . body)
-  `(enq (fn () (= (function* ',name) (convert-names:convert-braces ',body)))
+  `(enq (fn () (= (function* ',name) (convert-names:convert-braces:insert-code ',body)))
         initialization-fns*))
 
 ; things that a future assembler will need separate memory for:
@@ -135,7 +135,7 @@
 
 (def add-fns (fns)
   (each (name . body) fns
-    (= function*.name (convert-names:convert-braces body))))
+    (= function*.name (convert-names:convert-braces:insert-code body))))
 
 ;; managing concurrent routines
 
@@ -852,6 +852,37 @@
           (yield instr)))
       (each instr (as cons deferred)
         (yield instr)))))
+
+(on-init
+  (= before* (table))  ; label -> queue of fragments
+  (= after* (table)))  ; label -> list of fragments
+
+(def add-hooks (clauses)
+  (each (op label . fragment)  clauses
+    ; multiple before directives => code in order
+    (when (is op 'before)
+      (or= before*.label (queue))
+      (enq fragment before*.label))
+    ; multiple after directives => code in *reverse* order
+    ; (if initialization order in a function is A B, corresponding
+    ; finalization order should be B A)
+    (when (is op 'after)
+      (push fragment after*.label))))
+
+(def insert-code (instrs)
+  (accum yield
+    (each instr instrs
+      (if (acons instr)
+        (yield instr)
+        ; label
+        (do
+          (each fragment (as cons before*.instr)
+            (each instr fragment
+              (yield instr)))
+          (yield instr)
+          (each fragment after*.instr
+            (each instr fragment
+              (yield instr))))))))
 
 ;; system software
 
