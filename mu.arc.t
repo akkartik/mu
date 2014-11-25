@@ -2572,13 +2572,14 @@
 
 (reset)
 ;? (new-trace "insert-code-before")
-(add-hooks '((before label1
-               ((2 integer) <- copy (0 literal)))))
+(add-code '((before label1 [
+               ((2 integer) <- copy (0 literal))
+             ])))
 (if (~iso (as cons before*!label1)
           '(; fragment
             (
               ((2 integer) <- copy (0 literal)))))
-  (prn "F - add-hooks records fragments of code to insert before labels"))
+  (prn "F - 'before' records fragments of code to insert before labels"))
 
 (if (~iso (insert-code
             '(((1 integer) <- copy (0 literal))
@@ -2592,17 +2593,19 @@
 
 (reset)
 ;? (new-trace "insert-code-before-multiple")
-(add-hooks '((before label1
-               ((2 integer) <- copy (0 literal)))
-             (before label1
-               ((3 integer) <- copy (0 literal)))))
+(add-code '((before label1 [
+               ((2 integer) <- copy (0 literal))
+             ])
+            (before label1 [
+              ((3 integer) <- copy (0 literal))
+             ])))
 (if (~iso (as cons before*!label1)
           '(; fragment
             (
               ((2 integer) <- copy (0 literal)))
             (
               ((3 integer) <- copy (0 literal)))))
-  (prn "F - add-hooks records 'before' fragments in order"))
+  (prn "F - 'before' records fragments in order"))
 
 (if (~iso (insert-code
             '(((1 integer) <- copy (0 literal))
@@ -2617,13 +2620,14 @@
 
 (reset)
 ;? (new-trace "insert-code-after")
-(add-hooks '((after label1
-               ((2 integer) <- copy (0 literal)))))
+(add-code '((after label1 [
+               ((2 integer) <- copy (0 literal))
+             ])))
 (if (~iso (as cons after*!label1)
           '(; fragment
             (
               ((2 integer) <- copy (0 literal)))))
-  (prn "F - add-hooks records fragments of code to insert after labels"))
+  (prn "F - 'after' records fragments of code to insert after labels"))
 
 (if (~iso (insert-code
             '(((1 integer) <- copy (0 literal))
@@ -2637,17 +2641,19 @@
 
 (reset)
 ;? (new-trace "insert-code-after-multiple")
-(add-hooks '((after label1
-               ((2 integer) <- copy (0 literal)))
-             (after label1
-               ((3 integer) <- copy (0 literal)))))
+(add-code '((after label1 [
+               ((2 integer) <- copy (0 literal))
+             ])
+            (after label1 [
+              ((3 integer) <- copy (0 literal))
+             ])))
 (if (~iso (as cons after*!label1)
           '(; fragment
             (
               ((3 integer) <- copy (0 literal)))
             (
               ((2 integer) <- copy (0 literal)))))
-  (prn "F - add-hooks records 'after' fragments in reverse order"))
+  (prn "F - 'after' records fragments in *reverse* order"))
 
 (if (~iso (insert-code
             '(((1 integer) <- copy (0 literal))
@@ -2662,10 +2668,12 @@
 
 (reset)
 ;? (new-trace "insert-code-before-after")
-(add-hooks '((before label1
-               ((2 integer) <- copy (0 literal)))
-             (after label1
-               ((3 integer) <- copy (0 literal)))))
+(add-code '((before label1 [
+               ((2 integer) <- copy (0 literal))
+             ])
+            (after label1 [
+              ((3 integer) <- copy (0 literal))
+             ])))
 (if (and (~iso (as cons before*!label1)
                '(; fragment
                  (
@@ -2674,7 +2682,7 @@
                '(; fragment
                  (
                    ((3 integer) <- copy (0 literal))))))
-  (prn "F - add-hooks can record 'before' and 'after' fragments at once"))
+  (prn "F - 'before' and 'after' fragments work together"))
 
 (if (~iso (insert-code
             '(((1 integer) <- copy (0 literal))
@@ -2689,16 +2697,20 @@
 
 (reset)
 ;? (new-trace "insert-code-before-after-multiple")
-(add-hooks '((before label1
+(add-code '((before label1 [
                ((2 integer) <- copy (0 literal))
-               ((3 integer) <- copy (0 literal)))
-             (after label1
-               ((4 integer) <- copy (0 literal)))
-             (before label1
-               ((5 integer) <- copy (0 literal)))
-             (after label1
-               ((6 integer) <- copy (0 literal))
-               ((7 integer) <- copy (0 literal)))))
+               ((3 integer) <- copy (0 literal))
+             ])
+            (after label1 [
+              ((4 integer) <- copy (0 literal))
+             ])
+            (before label1 [
+              ((5 integer) <- copy (0 literal))
+             ])
+            (after label1 [
+              ((6 integer) <- copy (0 literal))
+              ((7 integer) <- copy (0 literal))
+             ])))
 (if (or (~iso (as cons before*!label1)
               '(; fragment
                 (
@@ -2713,7 +2725,7 @@
                   ((7 integer) <- copy (0 literal)))
                 (
                   ((4 integer) <- copy (0 literal))))))
-  (prn "F - add-hooks can record multiple 'before' and 'after' fragments at once"))
+  (prn "F - multiple 'before' and 'after' fragments at once"))
 
 (if (~iso (insert-code
             '(((1 integer) <- copy (0 literal))
@@ -2733,25 +2745,33 @@
 ;? (new-trace "insert-code-before-after-independent")
 (if (~iso (do
             (reset)
-            (add-hooks '((before label1
-                           ((2 integer) <- copy (0 literal)))
-                         (after label1
-                           ((3 integer) <- copy (0 literal)))
-                         (before label1
-                           ((4 integer) <- copy (0 literal)))
-                         (after label1
-                           ((5 integer) <- copy (0 literal)))))
+            (add-code '((before label1 [
+                           ((2 integer) <- copy (0 literal))
+                         ])
+                        (after label1 [
+                          ((3 integer) <- copy (0 literal))
+                         ])
+                        (before label1 [
+                          ((4 integer) <- copy (0 literal))
+                         ])
+                        (after label1 [
+                          ((5 integer) <- copy (0 literal))
+                         ])))
             (list before*!label1 after*!label1))
           (do
             (reset)
-            (add-hooks '((before label1
-                           ((2 integer) <- copy (0 literal)))
-                         (before label1
-                           ((4 integer) <- copy (0 literal)))
-                         (after label1
-                           ((3 integer) <- copy (0 literal)))
-                         (after label1
-                           ((5 integer) <- copy (0 literal)))))
+            (add-code '((before label1 [
+                           ((2 integer) <- copy (0 literal))
+                         ])
+                        (before label1 [
+                          ((4 integer) <- copy (0 literal))
+                         ])
+                        (after label1 [
+                          ((3 integer) <- copy (0 literal))
+                         ])
+                        (after label1 [
+                          ((5 integer) <- copy (0 literal))
+                         ])))
             (list before*!label1 after*!label1)))
   (prn "F - order matters within 'before' and 'after' fragments, but not *between* 'before' and 'after' fragments"))
 

@@ -86,6 +86,7 @@
 
 (def new-trace (filename)
 ;?   (prn "new-trace " filename)
+;?   )
   (= curr-trace-file* filename))
 
 (= dump-trace* nil)
@@ -133,11 +134,26 @@
   (each (expected-label expected-msg)  expected-contents
     (prn "  ! " expected-label ": " expected-msg)))
 
-(def add-code (fns)
-  (each (_def name (_make-br-fn body)) fns
-    (assert (is 'def _def))
-    (assert (is 'make-br-fn _make-br-fn))
-    (= function*.name (convert-names:convert-braces:insert-code body))))
+(def add-code (forms)
+  (each (op . rest)  forms
+    (case op
+      def
+        (let (name (_make-br-fn body))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (= function*.name (convert-names:convert-braces:insert-code body)))
+      ; multiple before directives => code in order
+      before
+        (let (label (_make-br-fn fragment))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (or= before*.label (queue))
+          (enq fragment before*.label))
+      ; multiple after directives => code in *reverse* order
+      ; (if initialization order in a function is A B, corresponding
+      ; finalization order should be B A)
+      after
+        (let (label (_make-br-fn fragment))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (push fragment after*.label)))))
 
 ;; managing concurrent routines
 
@@ -859,17 +875,7 @@
   (= before* (table))  ; label -> queue of fragments
   (= after* (table)))  ; label -> list of fragments
 
-(def add-hooks (clauses)
-  (each (op label . fragment)  clauses
-    ; multiple before directives => code in order
-    (when (is op 'before)
-      (or= before*.label (queue))
-      (enq fragment before*.label))
-    ; multiple after directives => code in *reverse* order
-    ; (if initialization order in a function is A B, corresponding
-    ; finalization order should be B A)
-    (when (is op 'after)
-      (push fragment after*.label))))
+; see add-code below for adding to before* and after*
 
 (def insert-code (instrs)
   (accum yield
