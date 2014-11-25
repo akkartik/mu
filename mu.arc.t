@@ -1136,9 +1136,9 @@
 ;     }
 ;   }
 ;
-; Braces are just labels, they require no special parsing. The operations
-; 'break' and 'continue' jump to just after the enclosing '}' and '{'
-; respectively.
+; Braces are like labels in assembly language, they require no special
+; parsing. The operations 'break' and 'continue' jump to just after the
+; enclosing '}' and '{' respectively.
 ;
 ; Conditional and unconditional 'break' and 'continue' should give us 80% of
 ; the benefits of the control-flow primitives we're used to in other
