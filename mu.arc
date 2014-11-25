@@ -12,65 +12,6 @@
   `(enq (fn () (= (function* ',name) (convert-names:convert-braces:insert-code ',body)))
         initialization-fns*))
 
-; things that a future assembler will need separate memory for:
-;   code; types; args channel
-(def clear ()
-  (= types* (table))
-  (= memory* (table))
-  (= function* (table)))
-(enq clear initialization-fns*)
-
-(on-init
-  (= types* (obj
-              ; Each type must be scalar or array, sum or product or primitive
-              type (obj size 1)  ; implicitly scalar and primitive
-              type-address (obj size 1  address t  elem 'type)
-              type-array (obj array t  elem 'type)
-              type-array-address (obj size 1  address t  elem 'type-array)
-              location (obj size 1  address t  elem 'location)  ; assume it points to an atom
-              integer (obj size 1)
-              boolean (obj size 1)
-              boolean-address (obj size 1  address t  elem 'boolean)
-              byte (obj size 1)
-;?               string (obj array t  elem 'byte)  ; inspired by Go
-              character (obj size 1)  ; int32 like a Go rune
-              character-address (obj size 1  address t  elem 'character)
-              string (obj size 1)  ; temporary hack
-              ; isolating function calls
-              scope  (obj array t  elem 'location)  ; by convention index 0 points to outer scope
-              scope-address  (obj size 1  address t  elem 'scope)
-              ; arrays consist of an integer length followed by the right number of elems
-              integer-array (obj array t  elem 'integer)
-              integer-array-address (obj size 1  address t  elem 'integer-array)
-              integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
-              ; records consist of a series of elems, corresponding to a list of types
-              integer-boolean-pair (obj size 2  record t  elems '(integer boolean)  fields '(int bool))
-              integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
-              integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
-              integer-boolean-pair-array-address (obj size 1  address t  elem 'integer-boolean-pair-array)
-              integer-integer-pair (obj size 2  record t  elems '(integer integer))
-              integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
-              ; tagged-values are the foundation of dynamic types
-              tagged-value (obj size 2  record t  elems '(type location)  fields '(type payload))
-              tagged-value-address (obj size 1  address t  elem 'tagged-value)
-              tagged-value-array (obj array t  elem 'tagged-value)
-              tagged-value-array-address (obj size 1  address t  elem 'tagged-value-array)
-              tagged-value-array-address-address (obj size 1  address t  elem 'tagged-value-array-address)
-              ; heterogeneous lists
-              list (obj size 2  record t  elems '(tagged-value list-address)  fields '(car cdr))
-              list-address (obj size 1  address t  elem 'list)
-              list-address-address (obj size 1  address t  elem 'list-address)
-              ; parallel routines use channels to synchronize
-              channel (obj size 3  record t  elems '(integer integer tagged-value-array-address)  fields '(first-full first-free circular-buffer))
-              channel-address (obj size 1  address t  elem 'channel)
-              ; editor
-              line (obj array t  elem 'character)
-              line-address (obj size 1  address t  elem 'line)
-              line-address-address (obj size 1  address t  elem 'line-address)
-              screen (obj array t  elem 'line-address)
-              screen-address (obj size 1  address t  elem 'screen)
-              )))
-
 ;; persisting and checking traces for each test
 (= traces* (queue))
 (= trace-dir* ".traces/")
@@ -134,26 +75,66 @@
   (each (expected-label expected-msg)  expected-contents
     (prn "  ! " expected-label ": " expected-msg)))
 
-(def add-code (forms)
-  (each (op . rest)  forms
-    (case op
-      def
-        (let (name (_make-br-fn body))  rest
-          (assert (is 'make-br-fn _make-br-fn))
-          (= function*.name (convert-names:convert-braces:insert-code body)))
-      ; multiple before directives => code in order
-      before
-        (let (label (_make-br-fn fragment))  rest
-          (assert (is 'make-br-fn _make-br-fn))
-          (or= before*.label (queue))
-          (enq fragment before*.label))
-      ; multiple after directives => code in *reverse* order
-      ; (if initialization order in a function is A B, corresponding
-      ; finalization order should be B A)
-      after
-        (let (label (_make-br-fn fragment))  rest
-          (assert (is 'make-br-fn _make-br-fn))
-          (push fragment after*.label)))))
+;; virtual machine state
+
+; things that a future assembler will need separate memory for:
+;   code; types; args channel
+(def clear ()
+  (= types* (table))
+  (= memory* (table))
+  (= function* (table)))
+(enq clear initialization-fns*)
+
+(on-init
+  (= types* (obj
+              ; Each type must be scalar or array, sum or product or primitive
+              type (obj size 1)  ; implicitly scalar and primitive
+              type-address (obj size 1  address t  elem 'type)
+              type-array (obj array t  elem 'type)
+              type-array-address (obj size 1  address t  elem 'type-array)
+              location (obj size 1  address t  elem 'location)  ; assume it points to an atom
+              integer (obj size 1)
+              boolean (obj size 1)
+              boolean-address (obj size 1  address t  elem 'boolean)
+              byte (obj size 1)
+;?               string (obj array t  elem 'byte)  ; inspired by Go
+              character (obj size 1)  ; int32 like a Go rune
+              character-address (obj size 1  address t  elem 'character)
+              string (obj size 1)  ; temporary hack
+              ; isolating function calls
+              scope  (obj array t  elem 'location)  ; by convention index 0 points to outer scope
+              scope-address  (obj size 1  address t  elem 'scope)
+              ; arrays consist of an integer length followed by the right number of elems
+              integer-array (obj array t  elem 'integer)
+              integer-array-address (obj size 1  address t  elem 'integer-array)
+              integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
+              ; records consist of a series of elems, corresponding to a list of types
+              integer-boolean-pair (obj size 2  record t  elems '(integer boolean)  fields '(int bool))
+              integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
+              integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
+              integer-boolean-pair-array-address (obj size 1  address t  elem 'integer-boolean-pair-array)
+              integer-integer-pair (obj size 2  record t  elems '(integer integer))
+              integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
+              ; tagged-values are the foundation of dynamic types
+              tagged-value (obj size 2  record t  elems '(type location)  fields '(type payload))
+              tagged-value-address (obj size 1  address t  elem 'tagged-value)
+              tagged-value-array (obj array t  elem 'tagged-value)
+              tagged-value-array-address (obj size 1  address t  elem 'tagged-value-array)
+              tagged-value-array-address-address (obj size 1  address t  elem 'tagged-value-array-address)
+              ; heterogeneous lists
+              list (obj size 2  record t  elems '(tagged-value list-address)  fields '(car cdr))
+              list-address (obj size 1  address t  elem 'list)
+              list-address-address (obj size 1  address t  elem 'list-address)
+              ; parallel routines use channels to synchronize
+              channel (obj size 3  record t  elems '(integer integer tagged-value-array-address)  fields '(first-full first-free circular-buffer))
+              channel-address (obj size 1  address t  elem 'channel)
+              ; editor
+              line (obj array t  elem 'character)
+              line-address (obj size 1  address t  elem 'line)
+              line-address-address (obj size 1  address t  elem 'line-address)
+              screen (obj array t  elem 'line-address)
+              screen-address (obj size 1  address t  elem 'screen)
+              )))
 
 ;; managing concurrent routines
 
@@ -1075,6 +1056,29 @@
 
 (def int-canon (table)
   (sort (compare < car) (as cons table)))
+
+;; loading code into the virtual machine
+
+(def add-code (forms)
+  (each (op . rest)  forms
+    (case op
+      def
+        (let (name (_make-br-fn body))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (= function*.name (convert-names:convert-braces:insert-code body)))
+      ; multiple before directives => code in order
+      before
+        (let (label (_make-br-fn fragment))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (or= before*.label (queue))
+          (enq fragment before*.label))
+      ; multiple after directives => code in *reverse* order
+      ; (if initialization order in a function is A B, corresponding
+      ; finalization order should be B A)
+      after
+        (let (label (_make-br-fn fragment))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (push fragment after*.label)))))
 
 ;; after loading all files, start at 'main'
 (reset)
