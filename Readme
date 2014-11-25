@@ -116,6 +116,36 @@ stop.
 
 ---
 
+Another example forks two 'routines' that communicate over a channel:
+
+  $ ./anarki/arc mu.arc channel.mu
+  produce: 0
+  produce: 1
+  produce: 2
+  produce: 3
+  consume: 0
+  consume: 1
+  consume: 2
+  produce: 4
+  consume: 3
+  consume: 4
+
+  # The exact order above might shift over time, but you'll never see a number
+  # consumed before it's produced.
+
+Channels are the unit of synchronization in mu. Blocking on channels are the
+only way tasks can sleep waiting for results. The plan is to do all I/O over
+channels that wait for data to return.
+
+Routines are expected to communicate purely by message passing, though nothing
+stops them from sharing memory since all routines share a common address
+space. However, idiomatic mu will make it hard to accidentally read or clobber
+random memory locations. Bounds checking is baked deeply into the semantics,
+and pointer arithmetic will be mostly forbidden (except inside the memory
+allocator and a few other places).
+
+---
+
 Try running the tests:
 
   $ ./anark/arc mu.arc.t
