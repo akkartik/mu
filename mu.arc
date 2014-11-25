@@ -1062,16 +1062,23 @@
 (def add-code (forms)
   (each (op . rest)  forms
     (case op
+      ; syntax: def <name> [ <instructions> ]
       def
         (let (name (_make-br-fn body))  rest
           (assert (is 'make-br-fn _make-br-fn))
           (= function*.name (convert-names:convert-braces:insert-code body)))
+
+      ; syntax: before <label> [ <instructions> ]
+      ;
       ; multiple before directives => code in order
       before
         (let (label (_make-br-fn fragment))  rest
           (assert (is 'make-br-fn _make-br-fn))
           (or= before*.label (queue))
           (enq fragment before*.label))
+
+      ; syntax: after <label> [ <instructions> ]
+      ;
       ; multiple after directives => code in *reverse* order
       ; (if initialization order in a function is A B, corresponding
       ; finalization order should be B A)
