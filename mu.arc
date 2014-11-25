@@ -203,6 +203,7 @@
               ,@body)))))
 
 (def run fn-names
+  (freeze-functions)
   (each it fn-names
     (enq make-routine.it running-routines*))
   (while (~empty running-routines*)
@@ -1054,10 +1055,6 @@
   ((result boolean) <- eq (full integer) (curr integer))
   (reply (result boolean)))
 
-; drop all traces while processing above functions
-(on-init
-  (= traces* (queue)))
-
 (def canon (table)
   (sort (compare < [tostring (prn:car _)]) (as cons table)))
 
@@ -1073,9 +1070,8 @@
       def
         (let (name (_make-br-fn body))  rest
           (assert (is 'make-br-fn _make-br-fn))
-;?           (prn keys.before* " -- " keys.after*)
-;?           (= function*.name (convert-names:convert-braces:prn:insert-code body)))
-          (= function*.name (convert-names:convert-braces:insert-code body)))
+          ; don't apply our lightweight tools just yet
+          (= function*.name body))
 
       ; syntax: before <label> [ <instructions> ]
       ;
@@ -1095,6 +1091,12 @@
         (let (label (_make-br-fn fragment))  rest
           (assert (is 'make-br-fn _make-br-fn))
           (push fragment after*.label)))))
+
+(def freeze-functions ()
+  (each (name body)  canon.function*
+;?     (prn keys.before* " -- " keys.after*)
+;?     (= function*.name (convert-names:convert-braces:prn:insert-code body)))
+    (= function*.name (convert-names:convert-braces:insert-code body))))
 
 ;; load all provided files and start at 'main'
 (reset)

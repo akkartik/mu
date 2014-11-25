@@ -2785,9 +2785,26 @@
                 label1
               }
              ])))
+(freeze-functions)
 (if (~iso function*!f1
           '(label1
             ((1 integer) <- copy (0 literal))))
   (prn "F - before/after works inside blocks"))
+
+(reset)
+;? (new-trace "before-after-any-order")
+(add-code '((def f1 [
+              { begin
+                label1
+              }
+             ])
+            (after label1 [
+               ((1 integer) <- copy (0 literal))
+             ])))
+(freeze-functions)
+(if (~iso function*!f1
+          '(label1
+            ((1 integer) <- copy (0 literal))))
+  (prn "F - before/after can come after the function they need to modify"))
 
 (reset)  ; end file with this to persist the trace for the final test
