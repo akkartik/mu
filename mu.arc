@@ -1096,7 +1096,7 @@
           (assert (is 'make-br-fn _make-br-fn))
           (push fragment after*.label)))))
 
-;; after loading all files, start at 'main'
+;; load all provided files and start at 'main'
 (reset)
 (awhen cdr.argv
   (map add-code:readfile it)
