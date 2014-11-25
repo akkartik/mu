@@ -2571,7 +2571,7 @@
   (prn "F - convert-quotes can handle labels"))
 
 (reset)
-;? (new-trace "insert-code-before")
+;? (new-trace "before")
 (add-code '((before label1 [
                ((2 integer) <- copy (0 literal))
              ])))
@@ -2592,7 +2592,7 @@
   (prn "F - 'insert-code' can insert fragments before labels"))
 
 (reset)
-;? (new-trace "insert-code-before-multiple")
+;? (new-trace "before-multiple")
 (add-code '((before label1 [
                ((2 integer) <- copy (0 literal))
              ])
@@ -2619,7 +2619,7 @@
   (prn "F - 'insert-code' can insert multiple fragments in order before label"))
 
 (reset)
-;? (new-trace "insert-code-after")
+;? (new-trace "after")
 (add-code '((after label1 [
                ((2 integer) <- copy (0 literal))
              ])))
@@ -2640,7 +2640,7 @@
   (prn "F - 'insert-code' can insert fragments after labels"))
 
 (reset)
-;? (new-trace "insert-code-after-multiple")
+;? (new-trace "after-multiple")
 (add-code '((after label1 [
                ((2 integer) <- copy (0 literal))
              ])
@@ -2667,7 +2667,7 @@
   (prn "F - 'insert-code' can insert multiple fragments in order after label"))
 
 (reset)
-;? (new-trace "insert-code-before-after")
+;? (new-trace "before-after")
 (add-code '((before label1 [
                ((2 integer) <- copy (0 literal))
              ])
@@ -2696,7 +2696,7 @@
   (prn "F - 'insert-code' can insert multiple fragments around label"))
 
 (reset)
-;? (new-trace "insert-code-before-after-multiple")
+;? (new-trace "before-after-multiple")
 (add-code '((before label1 [
                ((2 integer) <- copy (0 literal))
                ((3 integer) <- copy (0 literal))
@@ -2742,7 +2742,7 @@
             ((8 integer) <- copy (0 literal))))
   (prn "F - 'insert-code' can insert multiple fragments around label - 2"))
 
-;? (new-trace "insert-code-before-after-independent")
+;? (new-trace "before-after-independent")
 (if (~iso (do
             (reset)
             (add-code '((before label1 [
