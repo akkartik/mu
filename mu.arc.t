@@ -2425,4 +2425,15 @@
             ((3 integer) <- copy (6 literal))))
   (prn "F - convert-quotes can handle 'defer'"))
 
+(reset)
+;? (new-trace "convert-quotes-label")
+(if (~iso (convert-quotes
+            '(((1 integer) <- copy (4 literal))
+              foo
+              ((2 integer) <- copy (5 literal))))
+          '(((1 integer) <- copy (4 literal))
+            foo
+            ((2 integer) <- copy (5 literal))))
+  (prn "F - convert-quotes can handle labels"))
+
 (reset)  ; end file with this to persist the trace for the final test
