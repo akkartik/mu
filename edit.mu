@@ -1,6 +1,6 @@
 ; a screen is an array of pointers to lines, in turn arrays of characters
 
-(new-screen
+(def new-screen [
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((nrows integer) <- arg)
   ((ncols integer) <- arg)
@@ -15,4 +15,4 @@
     (continue-if (x boolean))
   }
   (reply (result screen-address))
-)
+])
