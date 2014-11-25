@@ -838,15 +838,17 @@
 (def convert-quotes (instrs)
   (let deferred (queue)
     (each instr instrs
-      (case instr.0
-        defer
-          (let (q qinstrs)  instr.1
-            (assert (is 'make-br-fn q) "defer: first arg must be [quoted]")
-            (each qinstr qinstrs
-              (enq qinstr deferred)))))
+      (when (acons instr)
+        (case instr.0
+          defer
+            (let (q qinstrs)  instr.1
+              (assert (is 'make-br-fn q) "defer: first arg must be [quoted]")
+              (each qinstr qinstrs
+                (enq qinstr deferred))))))
     (accum yield
       (each instr instrs
-        (unless (in instr.0 'defer)  ; keep sync'd with case clauses above
+        (unless (and acons.instr
+                     (in instr.0 'defer))  ; keep sync'd with case clauses above
           (yield instr)))
       (each instr (as cons deferred)
         (yield instr)))))
