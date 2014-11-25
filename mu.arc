@@ -859,19 +859,26 @@
 ; see add-code below for adding to before* and after*
 
 (def insert-code (instrs)
-  (accum yield
-    (each instr instrs
-      (if (acons instr)
-        (yield instr)
-        ; label
-        (do
-          (each fragment (as cons before*.instr)
-            (each instr fragment
-              (yield instr)))
-          (yield instr)
-          (each fragment after*.instr
-            (each instr fragment
-              (yield instr))))))))
+  (loop (instrs instrs)
+    (accum yield
+      (each instr instrs
+        (if (and (acons instr) (~is 'begin car.instr))
+              ; simple instruction
+              (yield instr)
+            (and (acons instr) (is 'begin car.instr))
+              ; block
+              (yield `{begin ,@(recur cdr.instr)})
+            (atom instr)
+              ; label
+              (do
+;?                 (prn "tangling " instr)
+                (each fragment (as cons before*.instr)
+                  (each instr fragment
+                    (yield instr)))
+                (yield instr)
+                (each fragment after*.instr
+                  (each instr fragment
+                    (yield instr)))))))))
 
 ;; system software
 
@@ -1066,6 +1073,8 @@
       def
         (let (name (_make-br-fn body))  rest
           (assert (is 'make-br-fn _make-br-fn))
+;?           (prn keys.before* " -- " keys.after*)
+;?           (= function*.name (convert-names:convert-braces:prn:insert-code body)))
           (= function*.name (convert-names:convert-braces:insert-code body)))
 
       ; syntax: before <label> [ <instructions> ]

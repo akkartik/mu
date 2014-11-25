@@ -2775,4 +2775,19 @@
             (list before*!label1 after*!label1)))
   (prn "F - order matters within 'before' and 'after' fragments, but not *between* 'before' and 'after' fragments"))
 
+(reset)
+;? (new-trace "before-after-braces")
+(add-code '((after label1 [
+               ((1 integer) <- copy (0 literal))
+             ])
+            (def f1 [
+              { begin
+                label1
+              }
+             ])))
+(if (~iso function*!f1
+          '(label1
+            ((1 integer) <- copy (0 literal))))
+  (prn "F - before/after works inside blocks"))
+
 (reset)  ; end file with this to persist the trace for the final test
