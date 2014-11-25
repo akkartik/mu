@@ -1,19 +1,19 @@
-Mu: making programs easier to understand in the large
+# Mu: making programs easier to understand in the large
 
 Imagine a world where you can:
 
-  a) think of a tiny improvement to a program you use, clone its sources,
+  1) think of a tiny improvement to a program you use, clone its sources,
   orient yourself on its organization and make your tiny improvement, all in a
   single afternoon.
 
-  b) Record your program as it runs, and easily convert arbitrary logs of runs
+  2) Record your program as it runs, and easily convert arbitrary logs of runs
   into reproducible automatic tests.
 
-  c) Answer arbitrary what-if questions about a codebase by trying out changes
+  3) Answer arbitrary what-if questions about a codebase by trying out changes
   and seeing what tests fail, confident that *every* scenario previous authors
   have considered has been encoded as a test.
 
-  d) Build first simple and successively more complex versions of a program so
+  4) Build first simple and successively more complex versions of a program so
   you can stage your learning.
 
 I think all these abilities might be strongly correlated; not only are they
@@ -21,13 +21,13 @@ achievable with a few common concepts, but you can't easily attack one of them
 without also chasing after the others. The core mechanism enabling them all is
 recording manual tests right after the first time you perform them:
 
-  keyboard input
-  printing to screen
-  disk filling up
-  performance metrics
-  race conditions
-  fault tolerance
-  ...
+&nbsp;&nbsp;keyboard input<br />
+&nbsp;&nbsp;printing to screen<br />
+&nbsp;&nbsp;disk filling up<br />
+&nbsp;&nbsp;performance metrics<br />
+&nbsp;&nbsp;race conditions<br />
+&nbsp;&nbsp;fault tolerance<br />
+&nbsp;&nbsp;...<br />
 
 I hope to attain this world by creating a comprehensive library of fakes and
 hooks for the entire software stack, at all layers of abstraction (programming
@@ -56,16 +56,19 @@ unit of comprehension. If I'm right, it makes sense to prioritize the right
 *tactile* interface for working with and getting feedback on large programs
 before we invest in the *visual* tools for making them concise.
 
-== Taking mu for a spin
+## Taking mu for a spin
 
 Prerequisites: Racket from http://racket-lang.org
 
+```
   $ cd mu
   $ git clone http://github.com/arclanguage/anarki
+```
 
 As a sneak peek, here's how you compute factorial in mu (lines starting with
 semi-colons are comments):
 
+```
   def factorial [
     ; allocate some space for local variables
     default-scope/scope-address <- new scope/literal 30/literal
@@ -83,11 +86,14 @@ semi-colons are comments):
     result/integer <- mul tmp2/integer, n/integer
     reply result/integer
   ]
+```
 
 The grammar is extremely simple. All you have are statements and blocks.
 Statements are either labels or instructions of the form:
 
+```
   oarg1, oarg2, oarg3, ... <- OP arg1, arg2, arg3, ...
+```
 
 Input and output args have to be simple; no sub-expressions are permitted. But
 you can have any number of them. Each arg can have any number of bits of
@@ -98,9 +104,11 @@ ignored.
 
 Try this program out now:
 
+```
   $ ./anarki/arc mu.arc factorial.mu
   result: 120  # factorial of 5
   ...  # ignore the memory dump for now
+```
 
 (The code in factorial.mu looks different from the idealized syntax above.
 We'll get to an actual parser in time.)
@@ -109,7 +117,9 @@ We'll get to an actual parser in time.)
 
 Another example, this time with concurrency.
 
+```
   $ ./anarki/arc mu.arc fork.mu
+```
 
 Notice that it repeatedly prints either '34' or '35' at random. Hit ctrl-c to
 stop.
@@ -118,6 +128,7 @@ stop.
 
 Another example forks two 'routines' that communicate over a channel:
 
+```
   $ ./anarki/arc mu.arc channel.mu
   produce: 0
   produce: 1
@@ -132,6 +143,7 @@ Another example forks two 'routines' that communicate over a channel:
 
   # The exact order above might shift over time, but you'll never see a number
   # consumed before it's produced.
+```
 
 Channels are the unit of synchronization in mu. Blocking on channels are the
 only way tasks can sleep waiting for results. The plan is to do all I/O over
@@ -148,8 +160,10 @@ allocator and a few other places).
 
 Try running the tests:
 
+```
   $ ./anark/arc mu.arc.t
   $  # all tests passed!
+```
 
 Now start reading mu.arc.t to see how it works. A colorized copy of it is at
 mu.arc.t.html and http://akkartik.github.io/mu.
@@ -166,7 +180,7 @@ into reproducible tests by flagging inputs entering the log and outputs
 leaving it. The former will have to be faked in, and the latter will want to
 be asserted on, to turn a trace into a test.
 
-== Credits
+## Credits
 
 Mu builds on many ideas that have come before, especially:
 
