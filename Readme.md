@@ -80,26 +80,33 @@ As a sneak peek, here's how you compute factorial in mu:
       reply 1/literal
     }
     ; return n*factorial(n-1)
-    tmp1/integer <- sub n/integer 1/literal
+    tmp1/integer <- sub n/integer, 1/literal
     tmp2/integer <- factorial tmp1/integer
     result/integer <- mul tmp2/integer, n/integer
     reply result/integer
   ]
 ```
 
-The grammar is extremely simple. All you have are statements and blocks.
-Statements are either labels or instructions of the form:
+Programs are lists of instructions, each on a line, sometimes grouped with
+brackets. Instructions take the form:
 
 ```
   oargs <- OP args
 ```
 
 Input and output args have to be simple; no sub-expressions are permitted. But
-you can have any number of them. Each arg can have any number of bits of
-metadata like the types above, separated by slashes. Anybody can write tools
-to statically analyze or verify programs using new metadata. Or they can just
-be documentation; any metadata the system doesn't recognize gets silently
-ignored.
+you can have any number of them. In particular, instructions can return
+multiple output arguments. For example, you can perform integer division as
+follows:
+
+```
+  quotient/integer, remainder/integer <- idiv 11/literal, 3/literal
+```
+
+Each arg can have any number of bits of metadata like the types above,
+separated by slashes. Anybody can write tools to statically analyze or verify
+programs using new metadata. Or they can just be documentation; any metadata
+the system doesn't recognize gets silently ignored.
 
 Try this program out now:
 
@@ -109,8 +116,41 @@ Try this program out now:
   ...  # ignore the memory dump for now
 ```
 
-(The code in factorial.mu looks different from the idealized syntax above.
+(The code in `factorial.mu` looks different from the idealized syntax above.
 We'll get to an actual parser in time.)
+
+---
+
+An alternative way to define factorial is by including *labels*, and later
+inserting code at them.
+
+```lisp
+  def factorial [
+    default-scope/scope-address <- new scope/literal 30/literal
+    n/integer <- arg
+    {
+      base-case
+    }
+    recursive-case
+  ]
+
+  after base-case [
+    ; if n=0 return 1
+    zero?/boolean <- eq n/integer, 0/literal
+    break-unless zero?/boolean
+    reply 1/literal
+  ]
+
+  after recursive-case [
+    ; return n*factorial(n-1)
+    tmp1/integer <- sub n/integer, 1/literal
+    tmp2/integer <- factorial tmp1/integer
+    result/integer <- mul tmp2/integer, n/integer
+    reply result/integer
+  ]
+```
+
+(You'll find this version in `tangle.mu`.)
 
 ---
 
@@ -164,10 +204,10 @@ Try running the tests:
   $  # all tests passed!
 ```
 
-Now start reading mu.arc.t to see how it works. A colorized copy of it is at
-mu.arc.t.html and http://akkartik.github.io/mu.
+Now start reading `mu.arc.t` to see how it works. A colorized copy of it is at
+`mu.arc.t.html` and http://akkartik.github.io/mu.
 
-You might also want to peek in the .traces directory, which automatically
+You might also want to peek in the `.traces` directory, which automatically
 includes logs for each test showing you just how it ran on my machine. If mu
 eventually gets complex enough that you have trouble running examples, these
 logs might help figure out if my system is somehow different from yours or if
