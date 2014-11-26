@@ -163,9 +163,7 @@ Another example, this time with concurrency.
 Notice that it repeatedly prints either '34' or '35' at random. Hit ctrl-c to
 stop.
 
----
-
-Another example forks two 'routines' that communicate over a channel:
+Yet another example forks two 'routines' that communicate over a channel:
 
 ```shell
   $ ./anarki/arc mu.arc channel.mu
