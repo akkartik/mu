@@ -91,7 +91,7 @@ The grammar is extremely simple. All you have are statements and blocks.
 Statements are either labels or instructions of the form:
 
 ```
-  oarg1, oarg2, oarg3, ... <- OP arg1, arg2, arg3, ...
+  oargs <- OP args
 ```
 
 Input and output args have to be simple; no sub-expressions are permitted. But
