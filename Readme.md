@@ -1,33 +1,33 @@
-# Mu: making programs easier to understand in the large
+## Mu: making programs easier to understand in the large
 
 Imagine a world where you can:
 
-  1) think of a tiny improvement to a program you use, clone its sources,
-  orient yourself on its organization and make your tiny improvement, all in a
-  single afternoon.
+1. think of a tiny improvement to a program you use, clone its sources,
+orient yourself on its organization and make your tiny improvement, all in a
+single afternoon.
 
-  2) Record your program as it runs, and easily convert arbitrary logs of runs
-  into reproducible automatic tests.
+2. Record your program as it runs, and easily convert arbitrary logs of runs
+into reproducible automatic tests.
 
-  3) Answer arbitrary what-if questions about a codebase by trying out changes
-  and seeing what tests fail, confident that *every* scenario previous authors
-  have considered has been encoded as a test.
+3. Answer arbitrary what-if questions about a codebase by trying out changes
+and seeing what tests fail, confident that *every* scenario previous authors
+have considered has been encoded as a test.
 
-  4) Build first simple and successively more complex versions of a program so
-  you can stage your learning.
+4. Build first simple and successively more complex versions of a program so
+you can stage your learning.
 
 I think all these abilities might be strongly correlated; not only are they
 achievable with a few common concepts, but you can't easily attack one of them
 without also chasing after the others. The core mechanism enabling them all is
 recording manual tests right after the first time you perform them:
 
-&nbsp;&nbsp;keyboard input<br />
-&nbsp;&nbsp;printing to screen<br />
-&nbsp;&nbsp;disk filling up<br />
-&nbsp;&nbsp;performance metrics<br />
-&nbsp;&nbsp;race conditions<br />
-&nbsp;&nbsp;fault tolerance<br />
-&nbsp;&nbsp;...<br />
+* keyboard input
+* printing to screen
+* disk filling up
+* performance metrics
+* race conditions
+* fault tolerance
+* ...
 
 I hope to attain this world by creating a comprehensive library of fakes and
 hooks for the entire software stack, at all layers of abstraction (programming
@@ -60,15 +60,14 @@ before we invest in the *visual* tools for making them concise.
 
 Prerequisites: Racket from http://racket-lang.org
 
-```
+```shell
   $ cd mu
   $ git clone http://github.com/arclanguage/anarki
 ```
 
-As a sneak peek, here's how you compute factorial in mu (lines starting with
-semi-colons are comments):
+As a sneak peek, here's how you compute factorial in mu:
 
-```
+```lisp
   def factorial [
     ; allocate some space for local variables
     default-scope/scope-address <- new scope/literal 30/literal
@@ -104,7 +103,7 @@ ignored.
 
 Try this program out now:
 
-```
+```shell
   $ ./anarki/arc mu.arc factorial.mu
   result: 120  # factorial of 5
   ...  # ignore the memory dump for now
@@ -117,7 +116,7 @@ We'll get to an actual parser in time.)
 
 Another example, this time with concurrency.
 
-```
+```shell
   $ ./anarki/arc mu.arc fork.mu
 ```
 
@@ -128,7 +127,7 @@ stop.
 
 Another example forks two 'routines' that communicate over a channel:
 
-```
+```shell
   $ ./anarki/arc mu.arc channel.mu
   produce: 0
   produce: 1
@@ -160,7 +159,7 @@ allocator and a few other places).
 
 Try running the tests:
 
-```
+```shell
   $ ./anark/arc mu.arc.t
   $  # all tests passed!
 ```
@@ -184,32 +183,32 @@ be asserted on, to turn a trace into a test.
 
 Mu builds on many ideas that have come before, especially:
 
-- Peter Naur (http://alistair.cockburn.us/ASD+book+extract%3A+%22Naur,+Ehn,+Musashi%22)
+- [Peter Naur](http://alistair.cockburn.us/ASD+book+extract%3A+%22Naur,+Ehn,+Musashi%22)
   for articulating the paramount problem of programming: communicating a
   codebase to others;
-- Christopher Alexander (http://www.amazon.com/Notes-Synthesis-Form-Harvard-Paperbacks/dp/0674627512)
-  and Richard Gabriel (http://dreamsongs.net/Files/PatternsOfSoftware.pdf) for
+- [Christopher Alexander](http://www.amazon.com/Notes-Synthesis-Form-Harvard-Paperbacks/dp/0674627512)
+  and [Richard Gabriel](http://dreamsongs.net/Files/PatternsOfSoftware.pdf) for
   the intellectual tools for reasoning about the higher order design of a
   codebase;
 - Unix and C for showing us how to co-evolve language and OS, and for teaching
   the (much maligned, misunderstood and underestimated) value of concise
   *implementation* in addition to a clean interface;
-- Donald Knuth's literate programming (http://www.literateprogramming.com/knuthweb.pdf)
+- Donald Knuth's [literate programming](http://www.literateprogramming.com/knuthweb.pdf)
   for liberating "code for humans to read" from the tyranny of compiler order;
-- David Parnas (http://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf)
+- [David Parnas](http://www.cs.umd.edu/class/spring2003/cmsc838p/Design/criteria.pdf)
   and others for highlighting the value of separating concerns and stepwise
   refinement;
-- Lisp (http://www.paulgraham.com/rootsoflisp.html) for showing the power of
+- [Lisp](http://www.paulgraham.com/rootsoflisp.html) for showing the power of
   dynamic languages, late binding and providing the right primitives a la
   carte, especially lisp macros;
 - The folklore of debugging by print and the trace facility in many lisp
   systems;
 - Automated tests for showing the value of developing programs inside an
   elaborate harness;
-- Python doctest (http://docs.python.org/2/library/doctest.html) for
+- [Python doctest](http://docs.python.org/2/library/doctest.html) for
   exemplifying interactive documentation that doubles as tests;
-- ReStructuredText (https://en.wikipedia.org/wiki/ReStructuredText)
-  and its antecedents (https://en.wikipedia.org/wiki/Setext) for showing that
+- [ReStructuredText](https://en.wikipedia.org/wiki/ReStructuredText)
+  and [its antecedents](https://en.wikipedia.org/wiki/Setext) for showing that
   markup can be clean;
 - BDD for challenging us all to write tests at a higher level;
 - JavaScript and CSS for demonstrating the power of a DOM for complex
