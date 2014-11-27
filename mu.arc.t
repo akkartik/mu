@@ -386,6 +386,27 @@
 (if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
   (prn "F - 'jump-if' can take a negative offset to make backward jumps"))
 
+(reset)
+(new-trace "jump-label")
+(add-code
+  '((def main [
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (1 literal))
+      loop
+      ((2 integer) <- add (2 integer) (2 integer))
+      ((3 boolean) <- eq (1 integer) (2 integer))
+      (jump-if (3 boolean) (loop offset))
+      ((4 integer) <- copy (3 literal))
+      (reply)
+      ((3 integer) <- copy (34 literal))
+     ])))
+;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("-")))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
+  (prn "F - 'jump-if' can take a negative offset to make backward jumps"))
+
 ; Data movement relies on addressing modes:
 ;   'direct' - refers to a memory location; default for most types.
 ;   'literal' - directly encoded in the code; implicit for some types like 'offset'.
