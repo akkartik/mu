@@ -1432,6 +1432,30 @@
 ;? (quit)
 
 (reset)
+(new-trace "break-multiple")
+(= traces* (queue))
+;? (= dump-trace* (obj whitelist '("-")))
+(if (~iso (convert-braces
+            '(((1 integer) <- copy (0 literal))
+              { begin
+                { begin
+                  (break (2 blocks))
+                }
+                ((2 integer) <- copy (0 literal))
+                ((3 integer) <- copy (0 literal))
+                ((4 integer) <- copy (0 literal))
+                ((5 integer) <- copy (0 literal))
+              }))
+          '(((1 integer) <- copy (0 literal))
+            (jump (4 offset))
+            ((2 integer) <- copy (0 literal))
+            ((3 integer) <- copy (0 literal))
+            ((4 integer) <- copy (0 literal))
+            ((5 integer) <- copy (0 literal))))
+  (prn "F - 'break' can take an extra arg with number of nested blocks to exit"))
+;? (quit)
+
+(reset)
 (new-trace "loop")
 ;? (set dump-trace*)
 (add-code
@@ -1500,6 +1524,26 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
   (prn "F - 'loop-if' might never trigger"))
+
+(reset)
+(new-trace "loop-multiple")
+(= traces* (queue))
+;? (= dump-trace* (obj whitelist '("-")))
+(if (~iso (convert-braces
+            '(((1 integer) <- copy (0 literal))
+              { begin
+                ((2 integer) <- copy (0 literal))
+                ((3 integer) <- copy (0 literal))
+                { begin
+                  (loop (2 blocks))
+                }
+              }))
+          '(((1 integer) <- copy (0 literal))
+            ((2 integer) <- copy (0 literal))
+            ((3 integer) <- copy (0 literal))
+            (jump (-3 offset))))
+  (prn "F - 'loop' can take an extra arg with number of nested blocks to exit"))
+;? (quit)
 
 ;; Variables
 ;

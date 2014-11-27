@@ -739,36 +739,36 @@
                   break
                     (do
                       (assert (is oarg nil) "break: can't take oarg in @instr")
-                      (assert (is arg nil) "break: can't take arg in @instr")
-                      (yield `(jump (,(close-offset pc locs) offset))))
+                      (yield `(jump (,(close-offset pc locs (and arg arg.0.0)) offset))))
                   break-if
                     (do
                       (assert (is oarg nil) "break-if: can't take oarg in @instr")
-                      (yield `(jump-if ,arg.0 (,(close-offset pc locs) offset))))
+                      (yield `(jump-if ,arg.0 (,(close-offset pc locs (and cdr.arg arg.1.0)) offset))))
                   break-unless
                     (do
                       (assert (is oarg nil) "break-unless: can't take oarg in @instr")
-                      (yield `(jump-unless ,arg.0 (,(close-offset pc locs) offset))))
+                      (yield `(jump-unless ,arg.0 (,(close-offset pc locs (and cdr.arg arg.1.0)) offset))))
                   loop
                     (do
                       (assert (is oarg nil) "loop: can't take oarg in @instr")
-                      (assert (is arg nil) "loop: can't take arg in @instr")
-                      (yield `(jump (,(- stack.0 1 pc) offset))))
+                      (yield `(jump (,(open-offset pc stack (and arg arg.0.0)) offset))))
                   loop-if
                     (do
                       (trace "cvt0" "loop-if: " instr " => " (- stack.0 1))
                       (assert (is oarg nil) "loop-if: can't take oarg in @instr")
-                      (yield `(jump-if ,arg.0 (,(- stack.0 1 pc) offset))))
+                      (yield `(jump-if ,arg.0 (,(open-offset pc stack (and cdr.arg arg.1.0)) offset))))
                   loop-unless
                     (do
                       (trace "cvt0" "loop-if: " instr " => " (- stack.0 1))
                       (assert (is oarg nil) "loop-unless: can't take oarg in @instr")
-                      (yield `(jump-unless ,arg.0 (,(- stack.0 1 pc) offset))))
+                      (yield `(jump-unless ,arg.0 (,(open-offset pc stack (and cdr.arg arg.1.0)) offset))))
                   ;else
                     (yield instr))))
             (++ pc))))))))
 
-(def close-offset (pc locs)
+(def close-offset (pc locs nblocks)
+  (or= nblocks 1)
+;?   (tr nblocks)
   (point return
 ;?   (tr "close " pc " " locs)
   (let stacksize 0
@@ -781,9 +781,13 @@
       (if (is 'open state) (++ stacksize) (-- stacksize))
       ; last time
 ;?       (tr "process2 " stacksize loc)
-      (when (is -1 stacksize)
+      (when (is stacksize (* -1 nblocks))
 ;?         (tr "close now " loc)
         (return (- loc pc 1))))))))
+
+(def open-offset (pc stack nblocks)
+  (or= nblocks 1)
+  (- (stack (- nblocks 1)) 1 pc))
 
 ;; convert jump targets to offsets
 
