@@ -2869,4 +2869,16 @@
           '(((2 integer) <- copy (0 literal))))
   (prn "F - 'def!' clears all previous clauses"))
 
+;; ---
+
+(reset)
+(new-trace "string-new")
+(add-code '((def main [
+              ((1 integer) <- new (string literal) (5 literal))
+             ])))
+(let before Memory-in-use-until
+  (run 'main)
+  (if (~iso Memory-in-use-until (+ before 5 1))
+    (prn "F - 'new' allocates arrays of bytes for strings")))
+
 (reset)  ; end file with this to persist the trace for the final test

@@ -97,7 +97,7 @@
               boolean (obj size 1)
               boolean-address (obj size 1  address t  elem 'boolean)
               byte (obj size 1)
-;?               string (obj array t  elem 'byte)  ; inspired by Go
+              string (obj array t  elem 'byte)  ; inspired by Go
               character (obj size 1)  ; int32 like a Go rune
               character-address (obj size 1  address t  elem 'character)
               ; isolating function calls
