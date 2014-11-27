@@ -2976,4 +2976,25 @@
 (if (~memory-contains memory*.3 "hello, world!")
   (prn "F - 'strcat' concatenates strings"))
 
+; defining rewrite rules
+(reset)
+(new-trace "new-rewrite-rule")
+(= traces* (queue))
+(add-code '((rewrite foo [
+              (def bar [
+                ((1 integer) <- copy (0 literal))
+               ])
+             ])))
+;? (prn rewrite-rules*)
+(if (~iso rewrite-rules*!foo '((def bar [((1 integer) <- copy (0 literal))])))
+  (prn "F - 'rewrite' defines rewrite rules"))
+
+(= function* (table))
+(add-code '((foo)))
+;? (prn function*)
+(if (~iso function*!bar
+          '(
+            ((1 integer) <- copy (0 literal))))
+  (prn "F - simple rewrite-rule correctly expanded"))
+
 (reset)  ; end file with this to persist the trace for the final test
