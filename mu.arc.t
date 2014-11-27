@@ -2874,7 +2874,7 @@
 (reset)
 (new-trace "string-new")
 (add-code '((def main [
-              ((1 integer) <- new (string literal) (5 literal))
+              ((1 string-address) <- new (string literal) (5 literal))
              ])))
 (let before Memory-in-use-until
   (run 'main)
@@ -2885,7 +2885,7 @@
 (reset)
 (new-trace "string-literal")
 (add-code '((def main [
-              ((1 integer) <- new "hello")
+              ((1 string-address) <- new "hello")
              ])))
 (let before Memory-in-use-until
   (run 'main)
