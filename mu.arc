@@ -84,7 +84,8 @@
 (def clear ()
   (= types* (table))
   (= memory* (table))
-  (= function* (table)))
+  (= function* (table))
+  (= rewrite-rules* (table)))
 (enq clear initialization-fns*)
 
 (on-init
@@ -1129,6 +1130,7 @@
 
 (def add-code (forms)
   (each (op . rest)  forms
+;?     (tr op " " rewrite-rules*.op)
     (case op
       ; syntax: def <name> [ <instructions> ]
       ; don't apply our lightweight tools just yet
@@ -1158,7 +1160,20 @@
       after
         (let (label (_make-br-fn fragment))  rest
           (assert (is 'make-br-fn _make-br-fn))
-          (push fragment after*.label)))))
+          (push fragment after*.label))
+
+      rewrite
+        (let (name (_make-br-fn fragment))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (= rewrite-rules*.name fragment))
+
+      ;else  ; must be rewriteable to one of the above
+        (let new-form (rewrite rewrite-rules*.op rest)
+          (add-code new-form))
+      )))
+
+(def rewrite (rewrite-rule params)
+  rewrite-rule)
 
 (def freeze-functions ()
   (each (name body)  canon.function*
