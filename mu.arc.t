@@ -2624,6 +2624,36 @@
   (prn "F - 'insert-code' can insert multiple fragments in order before label"))
 
 (reset)
+(new-trace "before-scoped")
+(add-code '((before f/label1 [  ; label1 only inside function f
+               ((2 integer) <- copy (0 literal))
+             ])))
+(if (~iso (insert-code
+            '(((1 integer) <- copy (0 literal))
+              label1
+              ((3 integer) <- copy (0 literal)))
+            'f)
+          '(((1 integer) <- copy (0 literal))
+            ((2 integer) <- copy (0 literal))
+            label1
+            ((3 integer) <- copy (0 literal))))
+  (prn "F - 'insert-code' can insert fragments before labels just in specified functions"))
+
+(reset)
+(new-trace "before-scoped2")
+(add-code '((before f/label1 [  ; label1 only inside function f
+               ((2 integer) <- copy (0 literal))
+             ])))
+(if (~iso (insert-code
+            '(((1 integer) <- copy (0 literal))
+              label1
+              ((3 integer) <- copy (0 literal))))
+          '(((1 integer) <- copy (0 literal))
+            label1
+            ((3 integer) <- copy (0 literal))))
+  (prn "F - 'insert-code' ignores labels not in specified functions"))
+
+(reset)
 (new-trace "after")
 (add-code '((after label1 [
                ((2 integer) <- copy (0 literal))

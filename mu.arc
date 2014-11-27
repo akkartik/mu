@@ -9,7 +9,7 @@
         initialization-fns*))
 
 (mac init-fn (name . body)
-  `(enq (fn () (= (function* ',name) (convert-names:convert-braces:insert-code ',body)))
+  `(enq (fn () (= (function* ',name) (convert-names:convert-braces:insert-code ',body ',name)))
         initialization-fns*))
 
 ;; persisting and checking traces for each test
@@ -859,7 +859,7 @@
 
 ; see add-code below for adding to before* and after*
 
-(def insert-code (instrs)
+(def insert-code (instrs (o name))
   (loop (instrs instrs)
     (accum yield
       (each instr instrs
@@ -873,11 +873,13 @@
               ; label
               (do
 ;?                 (prn "tangling " instr)
-                (each fragment (as cons before*.instr)
+                (each fragment (as cons (or (and name (before* (sym:string name '/ instr)))
+                                            before*.instr))
                   (each instr fragment
                     (yield instr)))
                 (yield instr)
-                (each fragment after*.instr
+                (each fragment (or (and name (after* (sym:string name '/ instr)))
+                                   after*.instr)
                   (each instr fragment
                     (yield instr)))))))))
 
@@ -1100,7 +1102,7 @@
   (each (name body)  canon.function*
 ;?     (prn keys.before* " -- " keys.after*)
 ;?     (= function*.name (convert-names:convert-braces:prn:insert-code body)))
-    (= function*.name (convert-names:convert-braces:insert-code body))))
+    (= function*.name (convert-names:convert-braces:insert-code body name))))
 
 ;; load all provided files and start at 'main'
 (reset)
