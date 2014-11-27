@@ -702,9 +702,9 @@
                 (do
                   (trace "c{0" pc " " instr " -- " locs)
                   (++ pc))
-                ; hack: racket replaces curlies with parens, so we need the
+                ; hack: racket replaces braces with parens, so we need the
                 ; keyword 'begin' to delimit blocks.
-                ; ultimately there'll be no nesting and curlies will just be
+                ; ultimately there'll be no nesting and braces will just be
                 ; in an instr by themselves.
               :else  ; brace
                 (do

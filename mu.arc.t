@@ -1246,7 +1246,7 @@
             '(((1 integer) <- copy (4 literal))
               ((2 integer) <- copy (2 literal))
               ((3 integer) <- add (2 integer) (2 integer))
-              { begin  ; 'begin' is just a hack because racket turns curlies into parens
+              { begin  ; 'begin' is just a hack because racket turns braces into parens
                 ((4 boolean) <- neq (1 integer) (3 integer))
                 (break-if (4 boolean))
                 ((5 integer) <- copy (34 literal))
@@ -1259,7 +1259,7 @@
             (jump-if (4 boolean) (1 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
-  (prn "F - convert-braces replaces break-if with a jump-if to after the next close-curly"))
+  (prn "F - convert-braces replaces break-if with a jump-if to after the next close-brace"))
 ;? (quit)
 
 (reset)
@@ -1304,7 +1304,7 @@
             (jump-if (4 boolean) (1 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
-  (prn "F - convert-braces balances curlies when converting break"))
+  (prn "F - convert-braces balances braces when converting break"))
 
 (reset)
 (new-trace "convert-braces-repeated-jump")
@@ -1352,7 +1352,7 @@
             (jump-if (4 boolean) (-3 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
-  (prn "F - convert-braces balances curlies when converting 'loop'"))
+  (prn "F - convert-braces balances braces when converting 'loop'"))
 
 (reset)
 (new-trace "convert-braces-label")
@@ -1457,7 +1457,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
-  (prn "F - 'loop' correctly jumps back past nested curlies"))
+  (prn "F - 'loop' correctly jumps back past nested braces"))
 
 (reset)
 (new-trace "loop-fail")
