@@ -1107,6 +1107,8 @@
 (awhen cdr.argv
   (map add-code:readfile it)
 ;?   (= dump-trace* (obj whitelist '("run" "schedule" "add")))
+;?   (freeze-functions)
+;?   (prn function*!factorial)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
   (prn memory*)
