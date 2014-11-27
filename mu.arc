@@ -100,7 +100,6 @@
 ;?               string (obj array t  elem 'byte)  ; inspired by Go
               character (obj size 1)  ; int32 like a Go rune
               character-address (obj size 1  address t  elem 'character)
-              string (obj size 1)  ; temporary hack
               ; isolating function calls
               scope  (obj array t  elem 'location)  ; by convention index 0 points to outer scope
               scope-address  (obj size 1  address t  elem 'scope)
