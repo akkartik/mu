@@ -659,6 +659,7 @@
   (prn "F - 'len' accesses length of array address"))
 
 ; 'sizeof' is a helper to determine the amount of memory required by a type.
+; Only for non-arrays.
 
 (reset)
 (new-trace "sizeof-record")
@@ -679,7 +680,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 3)
+(if (is memory*.1 2)
   (prn "F - 'sizeof' is different from number of elems"))
 
 ; Regardless of a type's length, you can move it around just like a primitive.
