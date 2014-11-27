@@ -2946,6 +2946,34 @@
           (~is #\l (memory* (+ before 3)))
           (~is #\l (memory* (+ before 4)))
           (~is #\o (memory* (+ before 5))))
-    (prn "F - 'new' initializes allocated memory to string literal")))
+    (prn "F - 'new' initializes allocated memory to string literal"))
+
+; helper
+(def memory-contains (addr value)
+  (and (is memory*.addr len.value)
+       (loop (addr (+ addr 1)
+              idx  0)
+         (if (> addr len.value)
+               t
+             (~is memory*.addr value.idx)
+               (do1 nil
+                    (prn "@addr should contain @value.idx but contains @memory*.addr"))
+             :else
+               (recur (+ addr 1) (+ idx 1))))))
+
+  ; test the helper
+  (if (~memory-contains before "hello")
+    (prn "F - 'memory-contains' helper is broken")))
+
+(reset)
+(new-trace "strcat")
+(add-code '((def main [
+              ((1 string-address) <- new "hello,")
+              ((2 string-address) <- new " world!")
+              ((3 string-address) <- strcat (1 string-address) (2 string-address))
+             ])))
+(run 'main)
+(if (~memory-contains memory*.3 "hello, world!")
+  (prn "F - 'strcat' concatenates strings"))
 
 (reset)  ; end file with this to persist the trace for the final test

@@ -9,7 +9,9 @@
         initialization-fns*))
 
 (mac init-fn (name . body)
-  `(enq (fn () (= (function* ',name) (convert-names:convert-braces:insert-code ',body ',name)))
+  `(enq (fn ()
+;?           (prn ',name)
+          (= (function* ',name) (convert-names:convert-braces:insert-code ',body ',name)))
         initialization-fns*))
 
 ;; persisting and checking traces for each test
@@ -97,6 +99,7 @@
               boolean (obj size 1)
               boolean-address (obj size 1  address t  elem 'boolean)
               byte (obj size 1)
+              byte-address (obj  size 1  address t  elem 'byte)
               string (obj array t  elem 'byte)  ; inspired by Go
               string-address (obj size 1  address t  elem 'string)
               character (obj size 1)  ; int32 like a Go rune
@@ -823,6 +826,7 @@
               (assert (~isa-field v.arg) "oarg @arg is also a field name")
               (when (maybe-add arg location idx)
                 (trace "cn0" "location for arg " arg ": " idx)
+                ; todo: can't allocate arrays on the stack
                 (++ idx (sizeof ty.arg)))))))))
     (trace "cn1" "update names " canon.location " " canon.isa-field)
     (each instr instrs
@@ -1069,6 +1073,51 @@
   ((full integer) <- get (chan channel) (first-full offset))
   ((result boolean) <- eq (full integer) (curr integer))
   (reply (result boolean)))
+
+(init-fn strcat
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ; result = new string[a.length + b.length]
+  ((a string-address) <- arg)
+  ((a-len integer) <- len (a string-address deref))
+  ((b string-address) <- arg)
+  ((b-len integer) <- len (b string-address deref))
+  ((result-len integer) <- add (a-len integer) (b-len integer))
+  ((result string-address) <- new (string literal) (result-len integer))
+  ; result-idx = i = 0
+  ((result-idx integer) <- copy (0 literal))
+  ; copy a into result
+  ((i integer) <- copy (0 literal))
+  { begin
+    ; while (i < a.length)
+    ((a-done? boolean) <- lt (i integer) (a-len integer))
+    (break-unless (a-done? boolean))
+    ; result[result-idx] = a[i]
+    ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
+    ((in byte) <- index (a string-address deref) (i integer))
+    ((out byte-address deref) <- copy (in byte))
+    ; ++i
+    ((i integer) <- add (i integer) (1 literal))
+    ; ++result-idx
+    ((result-idx integer) <- add (result-idx integer) (1 literal))
+    (loop)
+  }
+  ; copy b into result
+  ((i integer) <- copy (0 literal))
+  { begin
+    ; while (i < b.length)
+    ((b-done? boolean) <- lt (i integer) (b-len integer))
+    (break-unless (b-done? boolean))
+    ; result[result-idx] = a[i]
+    ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
+    ((in byte) <- index (b string-address deref) (i integer))
+    ((out byte-address deref) <- copy (in byte))
+    ; ++i
+    ((i integer) <- add (i integer) (1 literal))
+    ; ++result-idx
+    ((result-idx integer) <- add (result-idx integer) (1 literal))
+    (loop)
+  }
+  (reply (result string-address)))
 
 (def canon (table)
   (sort (compare < [tostring (prn:car _)]) (as cons table)))
