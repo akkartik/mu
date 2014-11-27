@@ -11,7 +11,7 @@
 (mac init-fn (name . body)
   `(enq (fn ()
 ;?           (prn ',name)
-          (= (function* ',name) (convert-names:convert-braces:insert-code ',body ',name)))
+          (= (function* ',name) (convert-names:convert-labels:convert-braces:insert-code ',body ',name)))
         initialization-fns*))
 
 ;; persisting and checking traces for each test
@@ -785,6 +785,30 @@
 ;?         (tr "close now " loc)
         (return (- loc pc 1))))))))
 
+;; convert jump targets to offsets
+
+(def convert-labels (instrs)
+;?   (tr "convert-labels " instrs)
+  (let labels (table)
+    (let pc 0
+      (each instr instrs
+        (when (~acons instr)
+;?           (tr "label " pc)
+          (= labels.instr pc))
+        (++ pc)))
+    (let pc 0
+      (each instr instrs
+        (when (and acons.instr
+                   (in car.instr 'jump 'jump-if 'jump-unless))
+          (each arg cdr.instr
+;?             (tr "trying " arg " " ty.arg ": " v.arg " => " (labels v.arg))
+            (when (and (is ty.arg 'offset)
+                       (isa v.arg 'sym)
+                       (labels v.arg))
+              (= v.arg (- (labels v.arg) pc 1)))))
+        (++ pc))))
+  instrs)
+
 ;; convert symbolic names to raw memory locations
 
 (def convert-names (instrs)
@@ -1164,9 +1188,10 @@
 
 (def freeze-functions ()
   (each (name body)  canon.function*
+;?     (tr name)
 ;?     (prn keys.before* " -- " keys.after*)
-;?     (= function*.name (convert-names:convert-braces:prn:insert-code body)))
-    (= function*.name (convert-names:convert-braces:insert-code body name))))
+;?     (= function*.name (convert-names:convert-labels:convert-braces:prn:insert-code body)))
+    (= function*.name (convert-names:convert-labels:convert-braces:insert-code body name))))
 
 ;; load all provided files and start at 'main'
 (reset)
