@@ -527,13 +527,16 @@
                     (trace "index-address" arg.0 " " arg.1 " => " addr)
                     addr)
                 new
-                  (let type (v arg.0)
-                    (assert (is 'literal (ty arg.0)) "new: second arg @arg.0 must be literal")
-                    (if (no types*.type)  (err "no such type @type"))
-                    ; todo: initialize memory. currently racket does it for us
-                    (if types*.type!array
-                      (new-array type (m arg.1))
-                      (new-scalar type)))
+                  (if (isa arg.0 'string)
+                    ; special-case: allocate space for a literal string
+                    (new-string arg.0)
+                    (let type (v arg.0)
+                      (assert (is 'literal (ty arg.0)) "new: second arg @arg.0 must be literal")
+                      (if (no types*.type)  (err "no such type @type"))
+                      ; todo: initialize memory. currently racket does it for us
+                      (if types*.type!array
+                        (new-array type (m arg.1))
+                        (new-scalar type))))
                 sizeof
                   (sizeof (m arg.0))
                 len
@@ -650,6 +653,7 @@
 
 (enq (fn () (= Memory-in-use-until 1000))
      initialization-fns*)
+
 (def new-scalar (type)
   (ret result Memory-in-use-until
     (++ Memory-in-use-until sizeof.type)))
@@ -659,6 +663,14 @@
   (ret result Memory-in-use-until
     (++ Memory-in-use-until (+ 1 (* (sizeof types*.type!elem) size)))
     (= (memory* result) size)))
+
+(def new-string (literal-string)
+  (ret result Memory-in-use-until
+    (= memory*.Memory-in-use-until len.literal-string)
+    (++ Memory-in-use-until)
+    (each c literal-string
+      (= memory*.Memory-in-use-until c)
+      (++ Memory-in-use-until))))
 
 (def sizeof (type)
   (trace "sizeof" type)
