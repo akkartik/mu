@@ -1148,6 +1148,79 @@
   }
   (reply (result string-address)))
 
+; replace underscores in first with remaining args
+(init-fn interpolate  ; string-address template, string-address a
+  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  ; result-len = template.length + a.length - 1 (we'll the '_')
+  ((template string-address) <- arg)
+  ((tem-len integer) <- len (template string-address deref))
+  ((a string-address) <- arg)
+  ((a-len integer) <- len (a string-address deref))
+  ((result-len integer) <- add (tem-len integer) (a-len integer))
+  ((result-len integer) <- sub (result-len integer) (1 literal))
+  ; result = new string[result-len]
+  ((result string-address) <- new (string literal) (result-len integer))
+  ; result-idx = i = 0
+  ((result-idx integer) <- copy (0 literal))
+  ((i integer) <- copy (0 literal))
+  { begin
+    ; copy template into result until '_'
+    { begin
+      ; while (i < template.length)
+      ((tem-done? boolean) <- lt (i integer) (tem-len integer))
+      (break-unless (tem-done? boolean) (2 blocks))
+      ; while template[i] != '_'
+      ((in byte) <- index (template string-address deref) (i integer))
+      ((underscore? boolean) <- eq (in byte) (#\_ literal))
+      (break-if (underscore? boolean))
+      ; result[result-idx] = template[i]
+      ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
+      ((out byte-address deref) <- copy (in byte))
+      ; ++i
+      ((i integer) <- add (i integer) (1 literal))
+      ; ++result-idx
+      ((result-idx integer) <- add (result-idx integer) (1 literal))
+      (loop)
+    }
+;?     (print-primitive ("i now: " literal))
+;?     (print-primitive (i integer))
+;?     (print-primitive ("\n" literal))
+    ; copy 'a' into result
+    ((j integer) <- copy (0 literal))
+    { begin
+      ; while (j < a.length)
+      ((arg-done? boolean) <- lt (j integer) (a-len integer))
+      (break-unless (arg-done? boolean))
+      ; result[result-idx] = a[j]
+      ((in byte) <- index (a string-address deref) (j integer))
+      ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
+      ((out byte-address deref) <- copy (in byte))
+      ; ++j
+      ((j integer) <- add (j integer) (1 literal))
+      ; ++result-idx
+      ((result-idx integer) <- add (result-idx integer) (1 literal))
+      (loop)
+    }
+    ; skip '_' in template
+    ((i integer) <- add (i integer) (1 literal))
+    ; copy rest of template into result
+    { begin
+      ; while (i < template.length)
+      ((tem-done? boolean) <- lt (i integer) (tem-len integer))
+      (break-unless (tem-done? boolean))
+      ; result[result-idx] = template[i]
+      ((in byte) <- index (template string-address deref) (i integer))
+      ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
+      ((out byte-address deref) <- copy (in byte))
+      ; ++i
+      ((i integer) <- add (i integer) (1 literal))
+      ; ++result-idx
+      ((result-idx integer) <- add (result-idx integer) (1 literal))
+      (loop)
+    }
+  }
+  (reply (result string-address)))
+
 (def canon (table)
   (sort (compare < [tostring (prn:car _)]) (as cons table)))
 
