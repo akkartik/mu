@@ -85,7 +85,7 @@
   (= types* (table))
   (= memory* (table))
   (= function* (table))
-  (= rewrite-rules* (table)))
+  )
 (enq clear initialization-fns*)
 
 (on-init
@@ -819,7 +819,7 @@
                     (assert nil "couldn't find field in @instr")))))
             (each arg args
               (assert (~isa-field v.arg) "arg @arg is also a field name")
-              (when (and (~is 'quasiquote car.arg) (maybe-add arg location idx))
+              (when (maybe-add arg location idx)
                 (err "use before set: @arg"))))
           (each arg oargs
             (trace "cn0" "checking " arg)
@@ -1130,7 +1130,6 @@
 
 (def add-code (forms)
   (each (op . rest)  forms
-;?     (tr op " " rewrite-rules*.op)
     (case op
       ; syntax: def <name> [ <instructions> ]
       ; don't apply our lightweight tools just yet
@@ -1161,24 +1160,7 @@
         (let (label (_make-br-fn fragment))  rest
           (assert (is 'make-br-fn _make-br-fn))
           (push fragment after*.label))
-
-      rewrite
-        (let (name (_make-br-fn fragment))  rest
-          (assert (is 'make-br-fn _make-br-fn))
-          (set rewrite-rules*.name)
-          (= function*.name (convert-names:convert-braces:insert-code fragment name)))
-
-      ;else  ; must be rewriteable to one of the above
-        (let new-form (rewrite op rest)
-          (add-code new-form))
       )))
-
-(def rewrite (op params)
-  (prn "a: " params)
-  (prn "b: " function*.op)
-  (= routine* (annotate 'routine (obj call-stack (list
-                (obj fn-name op  pc 0  args params  caller-arg-idx 0)))))
-  (run-for-time-slice 10000))
 
 (def freeze-functions ()
   (each (name body)  canon.function*
