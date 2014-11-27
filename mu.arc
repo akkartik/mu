@@ -598,15 +598,15 @@
 
                 ; user-defined functions
                 arg
-                  (let idx (if arg
-                             (do (assert (is 'literal (ty arg.0)))
-                                 (v arg.0))
-                             (do1 caller-arg-idx.routine*
-                                (++ caller-arg-idx.routine*)))
-                    (trace "arg" arg " " idx " " caller-args.routine*)
-                    (if (len> caller-args.routine* idx)
-                      (list caller-args.routine*.idx t)
-                      (list nil nil)))
+                  (do (when arg
+                        (assert (is 'literal (ty arg.0)))
+                        (= caller-arg-idx.routine* (v arg.0)))
+                      (let idx caller-arg-idx.routine*
+                        (++ caller-arg-idx.routine*)
+                        (trace "arg" arg " " idx " " caller-args.routine*)
+                        (if (len> caller-args.routine* idx)
+                          (list caller-args.routine*.idx t)
+                          (list nil nil))))
                 prepare-reply
                   (prepare-reply arg)
                 reply
