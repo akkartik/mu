@@ -998,7 +998,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4
-                       ; add-fn's temporaries
+                       ; test1's temporaries
                        4 1  5 3))
   (prn "F - 'arg' accesses in order the operands of the most recent function call (the caller)"))
 ;? (quit)
@@ -1012,8 +1012,8 @@
       ((4 integer) <- arg (0 literal))
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
-      ((4 integer) <- copy (34 literal))
-     ])  ; should never run
+      ((4 integer) <- copy (34 literal))  ; should never run
+     ])
     (def main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
@@ -1022,7 +1022,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4
-                       ; add-fn's temporaries
+                       ; test's temporaries
                        4 1  5 3))
   (prn "F - 'arg' with index can access function call arguments out of order"))
 ;? (quit)
@@ -1147,7 +1147,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4
-                       ; add-fn's temporaries
+                       ; test1's temporaries
                        4 1  5 3  6 4))
   (prn "F - 'reply' can take aguments that are returned, or written back into output args of caller"))
 
@@ -1169,7 +1169,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4    7 3
-                         ; add-fn's temporaries
+                         ; test1's temporaries
                          4 1  5 3  6 4))
   (prn "F - 'reply' permits a function to return multiple values at once"))
 
@@ -1192,7 +1192,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4    7 3
-                         ; add-fn's temporaries
+                         ; test1's temporaries
                          4 1  5 3  6 4))
   (prn "F - without args, 'reply' returns values from previous 'prepare-reply'."))
 
