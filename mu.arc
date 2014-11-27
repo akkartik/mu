@@ -731,20 +731,20 @@
                     (do
                       (assert (is oarg nil) "break-unless: can't take oarg @instr")
                       (yield `(jump-unless ,arg.0 (,(close-offset pc locs) offset))))
-                  continue
+                  loop
                     (do
-                      (assert (is oarg nil) "continue: can't take oarg @instr")
-                      (assert (is arg nil) "continue: can't take arg @instr")
+                      (assert (is oarg nil) "loop: can't take oarg @instr")
+                      (assert (is arg nil) "loop: can't take arg @instr")
                       (yield `(jump (,(- stack.0 1 pc) offset))))
-                  continue-if
+                  loop-if
                     (do
-                      (trace "cvt0" "continue-if: " instr " => " (- stack.0 1))
-                      (assert (is oarg nil) "continue-if: can't take oarg @instr")
+                      (trace "cvt0" "loop-if: " instr " => " (- stack.0 1))
+                      (assert (is oarg nil) "loop-if: can't take oarg @instr")
                       (yield `(jump-if ,arg.0 (,(- stack.0 1 pc) offset))))
-                  continue-unless
+                  loop-unless
                     (do
-                      (trace "cvt0" "continue-if: " instr " => " (- stack.0 1))
-                      (assert (is oarg nil) "continue-unless: can't take oarg @instr")
+                      (trace "cvt0" "loop-if: " instr " => " (- stack.0 1))
+                      (assert (is oarg nil) "loop-unless: can't take oarg @instr")
                       (yield `(jump-unless ,arg.0 (,(- stack.0 1 pc) offset))))
                   ;else
                     (yield instr))))
@@ -944,7 +944,7 @@
     ; curr.car = (type curr-value)
     ((dest tagged-value-address) <- list-value-address (curr list-address))
     ((dest tagged-value-address deref) <- save-type (curr-value integer))
-    (continue)
+    (loop)
   }
   ; return new-list.cdr
   ((new-list-result list-address) <- list-next (new-list-result list-address))  ; memory leak

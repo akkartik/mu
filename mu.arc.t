@@ -1210,12 +1210,12 @@
 ;   }
 ;
 ; Braces are like labels in assembly language, they require no special
-; parsing. The operations 'break' and 'continue' jump to just after the
-; enclosing '}' and '{' respectively.
+; parsing. The operations 'loop' and 'break' jump to just after the enclosing
+; '{' and '}' respectively.
 ;
-; Conditional and unconditional 'break' and 'continue' should give us 80% of
-; the benefits of the control-flow primitives we're used to in other
-; languages, like 'if', 'while', 'for', etc.
+; Conditional and unconditional 'loop' and 'break' should give us 80% of the
+; benefits of the control-flow primitives we're used to in other languages,
+; like 'if', 'while', 'for', etc.
 ;
 ; Compare 'unquoted blocks' using {} with 'quoted blocks' using [] that we've
 ; gotten used to seeing. Quoted blocks are used by top-level instructions to
@@ -1310,7 +1310,7 @@
 ;? (quit)
 
 (reset)
-(new-trace "convert-braces-nested-continue")
+(new-trace "convert-braces-nested-loop")
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
               ((2 integer) <- copy (2 literal))
@@ -1319,7 +1319,7 @@
                 { begin
                   ((4 boolean) <- neq (1 integer) (3 integer))
                 }
-                (continue-if (4 boolean))
+                (loop-if (4 boolean))
                 ((5 integer) <- copy (34 literal))
               }
               (reply)))
@@ -1330,7 +1330,7 @@
             (jump-if (4 boolean) (-3 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
-  (prn "F - convert-braces balances curlies when converting continue"))
+  (prn "F - convert-braces balances curlies when converting 'loop'"))
 
 (reset)
 (new-trace "convert-braces-label")
@@ -1386,7 +1386,7 @@
 ;? (quit)
 
 (reset)
-(new-trace "continue")
+(new-trace "loop")
 ;? (set dump-trace*)
 (add-code
   '((def main [
@@ -1395,7 +1395,7 @@
       { begin
         ((2 integer) <- add (2 integer) (2 integer))
         ((3 boolean) <- neq (1 integer) (2 integer))
-        (continue-if (3 boolean))
+        (loop-if (3 boolean))
         ((4 integer) <- copy (34 literal))
       }
       (reply)
@@ -1405,13 +1405,13 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
-  (prn "F - continue correctly loops"))
+  (prn "F - 'loop' correctly loops"))
 
 ; todo: fuzz-test invariant: convert-braces offsets should be robust to any
-; number of inner blocks inside but not around the continue block.
+; number of inner blocks inside but not around the loop block.
 
 (reset)
-(new-trace "continue-nested")
+(new-trace "loop-nested")
 ;? (set dump-trace*)
 (add-code
   '((def main [
@@ -1422,7 +1422,7 @@
         { begin
           ((3 boolean) <- neq (1 integer) (2 integer))
         }
-        (continue-if (3 boolean))
+        (loop-if (3 boolean))
         ((4 integer) <- copy (34 literal))
       }
       (reply)
@@ -1432,10 +1432,10 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
-  (prn "F - continue correctly loops"))
+  (prn "F - 'loop' correctly jumps back past nested curlies"))
 
 (reset)
-(new-trace "continue-fail")
+(new-trace "loop-fail")
 (add-code
   '((def main [
       ((1 integer) <- copy (4 literal))
@@ -1445,7 +1445,7 @@
         { begin
           ((3 boolean) <- neq (1 integer) (2 integer))
         }
-        (continue-if (3 boolean))
+        (loop-if (3 boolean))
         ((4 integer) <- copy (34 literal))
       }
       (reply)
@@ -1453,7 +1453,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
-  (prn "F - continue might never trigger"))
+  (prn "F - 'loop-if' might never trigger"))
 
 ;; Variables
 ;
