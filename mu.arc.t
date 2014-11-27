@@ -1223,6 +1223,7 @@
 
 (reset)
 (new-trace "convert-braces")
+(= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
@@ -1246,6 +1247,7 @@
 
 (reset)
 (new-trace "convert-braces-empty-block")
+(= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
@@ -1265,6 +1267,7 @@
 
 (reset)
 (new-trace "convert-braces-nested-break")
+(= traces* (queue))
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
               ((2 integer) <- copy (2 literal))
@@ -1288,6 +1291,7 @@
 
 (reset)
 (new-trace "convert-braces-repeated-jump")
+(= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
@@ -1311,6 +1315,7 @@
 
 (reset)
 (new-trace "convert-braces-nested-loop")
+(= traces* (queue))
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
               ((2 integer) <- copy (2 literal))
@@ -1334,6 +1339,7 @@
 
 (reset)
 (new-trace "convert-braces-label")
+(= traces* (queue))
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
               foo
@@ -1346,6 +1352,7 @@
 
 (reset)
 (new-trace "convert-braces-label-increments-offset")
+(= traces* (queue))
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
               { begin
@@ -1362,6 +1369,7 @@
 
 (reset)
 (new-trace "convert-braces-label-increments-offset2")
+(= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
             '(((1 integer) <- copy (4 literal))
@@ -1463,6 +1471,7 @@
 
 (reset)
 (new-trace "convert-names")
+(= traces* (queue))
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer) <- copy (2 literal))
@@ -1474,6 +1483,7 @@
 
 (reset)
 (new-trace "convert-names-compound")
+(= traces* (queue))
 (if (~iso (convert-names
             '(((x integer-boolean-pair) <- copy (4 literal))
               ((y integer) <- copy (2 literal))))
@@ -1483,6 +1493,7 @@
 
 (reset)
 (new-trace "convert-names-nil")
+(= traces* (queue))
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer) <- copy (2 literal))
@@ -1494,6 +1505,7 @@
 
 (reset)
 (new-trace "convert-names-global")
+(= traces* (queue))
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer global) <- copy (2 literal))
@@ -1506,6 +1518,7 @@
 ; kludgy support for 'fork' below
 (reset)
 (new-trace "convert-names-functions")
+(= traces* (queue))
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer) <- copy (2 literal))
@@ -1517,6 +1530,7 @@
 
 (reset)
 (new-trace "convert-names-record-fields")
+(= traces* (queue))
 (if (~iso (convert-names
             '(((x integer) <- get (34 integer-boolean-pair) (bool offset))))
           '(((1 integer) <- get (34 integer-boolean-pair) (1 offset))))
@@ -1524,6 +1538,7 @@
 
 (reset)
 (new-trace "convert-names-record-fields-ambiguous")
+(= traces* (queue))
 (if (errsafe (convert-names
                '(((bool boolean) <- copy (t literal))
                  ((x integer) <- get (34 integer-boolean-pair) (bool offset)))))
@@ -1531,6 +1546,7 @@
 
 (reset)
 (new-trace "convert-names-record-fields-ambiguous-2")
+(= traces* (queue))
 (if (errsafe (convert-names
                '(((x integer) <- get (34 integer-boolean-pair) (bool offset))
                  ((bool boolean) <- copy (t literal)))))
@@ -1538,6 +1554,7 @@
 
 (reset)
 (new-trace "convert-names-record-fields-indirect")
+(= traces* (queue))
 (if (~iso (convert-names
             '(((x integer) <- get (34 integer-boolean-pair-address deref) (bool offset))))
           '(((1 integer) <- get (34 integer-boolean-pair-address deref) (1 offset))))
@@ -1545,6 +1562,7 @@
 
 (reset)
 (new-trace "convert-names-record-fields-multiple")
+(= traces* (queue))
 (if (~iso (convert-names
             '(((2 boolean) <- get (1 integer-boolean-pair) (bool offset))
               ((3 boolean) <- get (1 integer-boolean-pair) (bool offset))))
@@ -1555,6 +1573,7 @@
 
 (reset)
 (new-trace "convert-names-label")
+(= traces* (queue))
 (if (~iso (convert-names
             '(((1 integer) <- copy (4 literal))
               foo))
@@ -1710,6 +1729,7 @@
 
 (reset)
 (new-trace "convert-names-default-scope")
+(= traces* (queue))
 (if (~iso (convert-names
             '(((x integer) <- copy (4 literal))
               ((y integer) <- copy (2 literal))
@@ -1867,6 +1887,7 @@
 
 (reset)
 (new-trace "scheduler")
+(= traces* (queue))
 (add-code
   '((def f1 [
       ((1 integer) <- copy (3 literal))
@@ -1892,6 +1913,7 @@
 
 (reset)
 (new-trace "scheduler-alternate")
+(= traces* (queue))
 (add-code
   '((def f1 [
       ((1 integer) <- copy (3 literal))
@@ -1912,6 +1934,7 @@
 
 (reset)
 (new-trace "scheduler-sleep")
+(= traces* (queue))
 (add-code
   '((def f1 [
       ((1 integer) <- copy (3 literal))
@@ -1936,6 +1959,7 @@
 
 (reset)
 (new-trace "scheduler-wakeup")
+(= traces* (queue))
 (add-code
   '((def f1 [
       ((1 integer) <- copy (3 literal))
@@ -1958,6 +1982,7 @@
 
 (reset)
 (new-trace "scheduler-sleep-location")
+(= traces* (queue))
 (add-code
   '((def f1 [
       ((1 integer) <- copy (3 literal))
@@ -1989,6 +2014,7 @@
 
 (reset)
 (new-trace "scheduler-wakeup-location")
+(= traces* (queue))
 (add-code
   '((def f1 [
       ((1 integer) <- copy (3 literal))
@@ -2012,6 +2038,7 @@
 
 (reset)
 (new-trace "scheduler-skip")
+(= traces* (queue))
 (add-code
   '((def f1 [
       ((1 integer) <- copy (3 literal))
@@ -2031,6 +2058,7 @@
 
 (reset)
 (new-trace "scheduler-deadlock")
+(= traces* (queue))
 (add-code
   '((def f1 [
       ((1 integer) <- copy (3 literal))
@@ -2053,6 +2081,7 @@
 
 (reset)
 (new-trace "scheduler-deadlock2")
+(= traces* (queue))
 (add-code
   '((def f1 [
       ((1 integer) <- copy (3 literal))
@@ -2553,6 +2582,7 @@
 
 (reset)
 (new-trace "convert-quotes-defer")
+(= traces* (queue))
 (if (~iso (convert-quotes
             '(((1 integer) <- copy (4 literal))
               (defer [
@@ -2566,6 +2596,7 @@
 
 (reset)
 (new-trace "convert-quotes-label")
+(= traces* (queue))
 (if (~iso (convert-quotes
             '(((1 integer) <- copy (4 literal))
               foo
@@ -2577,6 +2608,7 @@
 
 (reset)
 (new-trace "before")
+(= traces* (queue))
 (add-code '((before label1 [
                ((2 integer) <- copy (0 literal))
              ])))
@@ -2598,6 +2630,7 @@
 
 (reset)
 (new-trace "before-multiple")
+(= traces* (queue))
 (add-code '((before label1 [
                ((2 integer) <- copy (0 literal))
              ])
@@ -2625,6 +2658,7 @@
 
 (reset)
 (new-trace "before-scoped")
+(= traces* (queue))
 (add-code '((before f/label1 [  ; label1 only inside function f
                ((2 integer) <- copy (0 literal))
              ])))
@@ -2641,6 +2675,7 @@
 
 (reset)
 (new-trace "before-scoped2")
+(= traces* (queue))
 (add-code '((before f/label1 [  ; label1 only inside function f
                ((2 integer) <- copy (0 literal))
              ])))
@@ -2655,6 +2690,7 @@
 
 (reset)
 (new-trace "after")
+(= traces* (queue))
 (add-code '((after label1 [
                ((2 integer) <- copy (0 literal))
              ])))
@@ -2676,6 +2712,7 @@
 
 (reset)
 (new-trace "after-multiple")
+(= traces* (queue))
 (add-code '((after label1 [
                ((2 integer) <- copy (0 literal))
              ])
@@ -2703,6 +2740,7 @@
 
 (reset)
 (new-trace "before-after")
+(= traces* (queue))
 (add-code '((before label1 [
                ((2 integer) <- copy (0 literal))
              ])
@@ -2732,6 +2770,7 @@
 
 (reset)
 (new-trace "before-after-multiple")
+(= traces* (queue))
 (add-code '((before label1 [
                ((2 integer) <- copy (0 literal))
                ((3 integer) <- copy (0 literal))
@@ -2777,7 +2816,9 @@
             ((8 integer) <- copy (0 literal))))
   (prn "F - 'insert-code' can insert multiple fragments around label - 2"))
 
+(reset)
 (new-trace "before-after-independent")
+(= traces* (queue))
 (if (~iso (do
             (reset)
             (add-code '((before label1 [
@@ -2812,6 +2853,8 @@
 
 (reset)
 (new-trace "before-after-braces")
+(= traces* (queue))
+(= function* (table))
 (add-code '((after label1 [
                ((1 integer) <- copy (0 literal))
              ])
@@ -2828,6 +2871,8 @@
 
 (reset)
 (new-trace "before-after-any-order")
+(= traces* (queue))
+(= function* (table))
 (add-code '((def f1 [
               { begin
                 label1
@@ -2844,6 +2889,8 @@
 
 (reset)
 (new-trace "multiple-defs")
+(= traces* (queue))
+(= function* (table))
 (add-code '((def f1 [
               ((1 integer) <- copy (0 literal))
              ])
@@ -2858,6 +2905,8 @@
 
 (reset)
 (new-trace "def!")
+(= traces* (queue))
+(= function* (table))
 (add-code '((def f1 [
               ((1 integer) <- copy (0 literal))
              ])
