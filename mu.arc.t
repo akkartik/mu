@@ -1028,6 +1028,23 @@
 ;? (quit)
 
 (reset)
+(new-trace "new-fn-arg-random-then-sequential")
+;? (set dump-trace*)
+(add-code
+  '((def test1 [
+      (_ <- arg (1 literal))
+      ((1 integer) <- arg)  ; takes next arg after index 1
+     ])  ; should never run
+    (def main [
+      (test1 (1 literal) (2 literal) (3 literal))
+     ])))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 3))
+  (prn "F - 'arg' with index resets index for later calls"))
+;? (quit)
+
+(reset)
 (new-trace "new-fn-arg-status")
 (add-code
   '((def test1 [
