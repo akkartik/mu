@@ -2881,4 +2881,22 @@
   (if (~iso Memory-in-use-until (+ before 5 1))
     (prn "F - 'new' allocates arrays of bytes for strings")))
 
+; Convenience: initialize strings using string literals
+(reset)
+(new-trace "string-literal")
+(add-code '((def main [
+              ((1 integer) <- new "hello")
+             ])))
+(let before Memory-in-use-until
+  (run 'main)
+  (if (~iso Memory-in-use-until (+ before 5 1))
+    (prn "F - 'new' allocates arrays of bytes for string literals"))
+  (if (or (~is 5 (memory* before))
+          (~is #\h (memory* (+ before 1)))
+          (~is #\e (memory* (+ before 2)))
+          (~is #\l (memory* (+ before 3)))
+          (~is #\l (memory* (+ before 4)))
+          (~is #\o (memory* (+ before 5))))
+    (prn "F - 'new' initializes allocated memory to string literal")))
+
 (reset)  ; end file with this to persist the trace for the final test
