@@ -1216,6 +1216,10 @@
 ; Conditional and unconditional 'break' and 'continue' should give us 80% of
 ; the benefits of the control-flow primitives we're used to in other
 ; languages, like 'if', 'while', 'for', etc.
+;
+; Compare 'unquoted blocks' using {} with 'quoted blocks' using [] that we've
+; gotten used to seeing. Quoted blocks are used by top-level instructions to
+; provide code without running it.
 
 (reset)
 (new-trace "convert-braces")
