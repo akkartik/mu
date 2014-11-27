@@ -5,6 +5,7 @@
 (def factorial [
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((n integer) <- arg (0 literal))
+  more-clauses
   ((x integer) <- sub (n integer) (1 literal))
   ((subresult integer) <- factorial (x integer))
   ((result integer) <- mul (subresult integer) (n integer))
@@ -12,9 +13,7 @@
 ])
 
 ; def factorial 0 = 1
-(def factorial [
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((n integer) <- arg (0 literal))
+(after factorial/more-clauses [
   { begin
     ((zero? boolean) <- eq (n integer) (0 literal))
     (break-unless (zero? boolean))
