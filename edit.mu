@@ -12,7 +12,7 @@
     ((curr-line-address line-address) <- copy (curr-line-address-address line-address-address deref))
     ((rowidx integer) <- add (rowidx integer) (1 literal))
     ((x boolean) <- neq (rowidx integer) (nrows integer))
-    (continue-if (x boolean))
+    (loop-if (x boolean))
   }
   (reply (result screen-address))
 ])

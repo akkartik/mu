@@ -204,6 +204,7 @@
 
 (def run fn-names
   (freeze-functions)
+  (= traces* (queue))
   (each it fn-names
     (enq make-routine.it running-routines*))
   (while (~empty running-routines*)
