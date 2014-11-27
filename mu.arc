@@ -732,37 +732,37 @@
                   begin
                     (do
                       (push pc stack)
-                      (assert (is oarg nil) "begin: can't take oarg @instr")
+                      (assert (is oarg nil) "begin: can't take oarg in @instr")
                       (recur arg)
                       (pop stack)
                       (continue))
                   break
                     (do
-                      (assert (is oarg nil) "break: can't take oarg @instr")
-                      (assert (is arg nil) "break: can't take arg @instr")
+                      (assert (is oarg nil) "break: can't take oarg in @instr")
+                      (assert (is arg nil) "break: can't take arg in @instr")
                       (yield `(jump (,(close-offset pc locs) offset))))
                   break-if
                     (do
-                      (assert (is oarg nil) "break-if: can't take oarg @instr")
+                      (assert (is oarg nil) "break-if: can't take oarg in @instr")
                       (yield `(jump-if ,arg.0 (,(close-offset pc locs) offset))))
                   break-unless
                     (do
-                      (assert (is oarg nil) "break-unless: can't take oarg @instr")
+                      (assert (is oarg nil) "break-unless: can't take oarg in @instr")
                       (yield `(jump-unless ,arg.0 (,(close-offset pc locs) offset))))
                   loop
                     (do
-                      (assert (is oarg nil) "loop: can't take oarg @instr")
-                      (assert (is arg nil) "loop: can't take arg @instr")
+                      (assert (is oarg nil) "loop: can't take oarg in @instr")
+                      (assert (is arg nil) "loop: can't take arg in @instr")
                       (yield `(jump (,(- stack.0 1 pc) offset))))
                   loop-if
                     (do
                       (trace "cvt0" "loop-if: " instr " => " (- stack.0 1))
-                      (assert (is oarg nil) "loop-if: can't take oarg @instr")
+                      (assert (is oarg nil) "loop-if: can't take oarg in @instr")
                       (yield `(jump-if ,arg.0 (,(- stack.0 1 pc) offset))))
                   loop-unless
                     (do
                       (trace "cvt0" "loop-if: " instr " => " (- stack.0 1))
-                      (assert (is oarg nil) "loop-unless: can't take oarg @instr")
+                      (assert (is oarg nil) "loop-unless: can't take oarg in @instr")
                       (yield `(jump-unless ,arg.0 (,(- stack.0 1 pc) offset))))
                   ;else
                     (yield instr))))
