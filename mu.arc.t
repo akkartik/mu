@@ -705,6 +705,33 @@
   (prn "F - 'sizeof' is different from number of elems"))
 
 ; Regardless of a type's length, you can move it around just like a primitive.
+; Various primitives need to support this.
+
+; unit tests for 'addr' helper
+(reset)
+(= routine* nil)
+(if (~is 4 (addr '(4 integer)))
+  (prn "F - directly addressed operands are their own address"))
+(if (~is 4 (addr '(4 integer-address)))
+  (prn "F - directly addressed operands are their own address - 2"))
+(if (~is 4 (addr '(4 literal)))
+  (prn "F - 'addr' doesn't understand literals"))
+(= memory*.4 23)
+(if (~is 23 (addr '(4 integer-address deref)))
+  (prn "F - 'addr' works with indirectly-addressed 'deref'"))
+
+(= routine* make-routine!foo)
+(= rep.routine*!call-stack.0!default-scope 10)
+(= memory*.10 5)  ; bounds check for default-scope
+(if (~is 14 (addr '(4 integer)))
+  (prn "F - directly addressed operands in routines add default-scope"))
+(if (~is 14 (addr '(4 integer-address)))
+  (prn "F - directly addressed operands in routines add default-scope - 2"))
+(if (~is 14 (addr '(4 literal)))
+  (prn "F - 'addr' doesn't understand literals"))
+(= memory*.14 23)
+(if (~is 23 (addr '(4 integer-address deref)))
+  (prn "F - 'addr' adds default-scope before 'deref', not after"))
 
 (reset)
 (new-trace "copy-record")
