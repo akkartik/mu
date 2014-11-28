@@ -312,7 +312,8 @@
   (trace "addr" loc)
   (ret result v.loc
     (trace "addr" "initial result: " result)
-    (unless (pos 'global metadata.loc)
+    (unless (or (pos 'global metadata.loc)
+                (no routine*))
 ;?       (tr "aa " routine*)
       (whenlet base rep.routine*!call-stack.0!default-scope
         (if (< result memory*.base)
