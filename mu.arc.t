@@ -707,7 +707,7 @@
 ; Regardless of a type's length, you can move it around just like a primitive.
 
 (reset)
-(new-trace "compound-operand-copy")
+(new-trace "copy-record")
 (add-code
   '((def main [
       ((1 integer) <- copy (34 literal))
@@ -719,39 +719,6 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 34  4 nil))
   (prn "F - ops can operate on records spanning multiple locations"))
-
-(reset)
-(new-trace "compound-arg")
-(add-code
-  '((def test1 [
-      ((4 integer-boolean-pair) <- arg)
-     ])
-    (def main [
-      ((1 integer) <- copy (34 literal))
-      ((2 boolean) <- copy (nil literal))
-      (test1 (1 integer-boolean-pair))
-     ])))
-(run 'main)
-(if (~iso memory* (obj 1 34  2 nil  4 34  5 nil))
-  (prn "F - 'arg' can copy records spanning multiple locations"))
-
-(reset)
-(new-trace "compound-arg-indirect")
-;? (set dump-trace*)
-(add-code
-  '((def test1 [
-      ((4 integer-boolean-pair) <- arg)
-     ])
-    (def main [
-      ((1 integer) <- copy (34 literal))
-      ((2 boolean) <- copy (nil literal))
-      ((3 integer-boolean-pair-address) <- copy (1 literal))
-      (test1 (3 integer-boolean-pair-address deref))
-     ])))
-(run 'main)
-;? (prn memory*)
-(if (~iso memory* (obj 1 34  2 nil  3 1  4 34  5 nil))
-  (prn "F - 'arg' can copy records spanning multiple locations in indirect mode"))
 
 ; A special kind of record is the 'tagged type'. It lets us represent
 ; dynamically typed values, which save type information in memory rather than
@@ -1166,6 +1133,39 @@
 ;? (prn memory*)
 (if (~iso memory* (obj 1 0  2 34))
   (prn "F - 'arg' passes by value"))
+
+(reset)
+(new-trace "arg-record")
+(add-code
+  '((def test1 [
+      ((4 integer-boolean-pair) <- arg)
+     ])
+    (def main [
+      ((1 integer) <- copy (34 literal))
+      ((2 boolean) <- copy (nil literal))
+      (test1 (1 integer-boolean-pair))
+     ])))
+(run 'main)
+(if (~iso memory* (obj 1 34  2 nil  4 34  5 nil))
+  (prn "F - 'arg' can copy records spanning multiple locations"))
+
+(reset)
+(new-trace "arg-record-indirect")
+;? (set dump-trace*)
+(add-code
+  '((def test1 [
+      ((4 integer-boolean-pair) <- arg)
+     ])
+    (def main [
+      ((1 integer) <- copy (34 literal))
+      ((2 boolean) <- copy (nil literal))
+      ((3 integer-boolean-pair-address) <- copy (1 literal))
+      (test1 (3 integer-boolean-pair-address deref))
+     ])))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 34  2 nil  3 1  4 34  5 nil))
+  (prn "F - 'arg' can copy records spanning multiple locations in indirect mode"))
 
 (reset)
 (new-trace "new-fn-reply-oarg")
