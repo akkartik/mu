@@ -112,6 +112,7 @@
               integer-array (obj array t  elem 'integer)
               integer-array-address (obj size 1  address t  elem 'integer-array)
               integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
+              integer-address-address (obj size 1  address t  elem 'integer-address)
               ; records consist of a series of elems, corresponding to a list of types
               integer-boolean-pair (obj size 2  record t  elems '(integer boolean)  fields '(int bool))
               integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
