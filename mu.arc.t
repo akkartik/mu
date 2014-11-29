@@ -809,6 +809,21 @@
 (if (~is 35 (sizeof '(4 integer-array)))
   (prn "F - 'sizeof' reads array lengths from memory using default-scope"))
 
+; unit tests for 'm' helper
+(reset)
+(if (~is 4 (m '(4 literal)))
+  (prn "F - 'm' avoids reading memory for literals"))
+(if (~is 4 (m '(4 offset)))
+  (prn "F - 'm' avoids reading memory for offsets"))
+(= memory*.4 34)
+(if (~is 34 (m '(4 integer)))
+  (prn "F - 'm' reads memory for simple types"))
+(= memory*.3 4)
+(if (~is 34 (m '(3 integer-address deref)))
+  (prn "F - 'm' redirects addresses"))
+(if (~iso (annotate 'record '(34 nil)) (m '(4 integer-boolean-pair)))
+  (prn "F - 'm' supports compound records"))
+
 (reset)
 (new-trace "copy-record")
 (add-code
