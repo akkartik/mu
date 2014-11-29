@@ -637,9 +637,7 @@
 
 (def array-len (operand)
   (trace "array-len" operand)
-  (zap absolutize operand)
-  (while (pos 'deref metadata.operand)
-    (zap deref operand))
+  (zap canonize operand)
   (if typeinfo.operand!array
         (m `(,v.operand integer ,@(cut operand 2)))
       :else
@@ -649,14 +647,7 @@
   (trace "sizeof" x)
   (point return
   (when (acons x)
-;?     (tr "aa " x)
-    (zap absolutize x)
-;?     (tr "bb " x)
-    (while (pos 'deref metadata.x)
-;?       (tr "cc " x)
-      (zap deref x))
-;?     (tr "dd " x)
-;?     (trace "sizeof" "after canonizing: " x)
+    (zap canonize x)
     (when typeinfo.x!array
       (return (+ 1 (* (m `(,v.x integer ,@(cut x 2)))
                       (sizeof typeinfo.x!elem))))))
