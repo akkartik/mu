@@ -310,10 +310,11 @@
   (or types*.typename!size
       (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
 
-(def addr (loc)
-  (ret result (v absolutize.loc)
-    (when (pos 'deref metadata.loc)
-      (zap memory* result))))
+(def addr (operand)
+  (let loc absolutize.operand
+    (while (pos 'deref metadata.loc)
+      (zap deref loc))
+    v.loc))
 
 (def addrs (n sz)
   (accum yield
