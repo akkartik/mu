@@ -58,8 +58,8 @@ before we invest in the *visual* tools for making them concise.
 
 **Taking mu for a spin**
 
-First install [Racket](http://racket-lang.org). (Just for the initial
-prototype.) Then:
+First install [Racket](http://racket-lang.org) (just for the initial
+prototype). Then:
 
 ```shell
   $ cd mu
