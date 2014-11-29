@@ -121,6 +121,7 @@
               integer-integer-pair (obj size 2  record t  elems '(integer integer))
               integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
               integer-point-pair-address (obj size 1  address t  elem 'integer-point-pair)
+              integer-point-pair-address-address (obj size 1  address t  elem 'integer-point-pair-address)
               ; tagged-values are the foundation of dynamic types
               tagged-value (obj size 2  record t  elems '(type location)  fields '(type payload))
               tagged-value-address (obj size 1  address t  elem 'tagged-value)
@@ -576,10 +577,12 @@
             (trace "setm" loc ": setting " addr " to " val)
             (= memory*.addr val))
         (do (assert (isa val 'record) "setm: non-record of size >1 @val")
-            (each (dest src) (zip (addrs addr n)
-                                  (rep val))
-              (trace "setm" loc ": setting " dest " to " src)
-              (= memory*.dest src)))))))
+            (let addrs (addrs addr n)
+              (when (~is len.addrs (len rep.val))
+                (die "writing to incorrect size @(tostring prn.val) => @loc"))
+              (each (dest src) (zip addrs rep.val)
+                (trace "setm" loc ": setting " dest " to " src)
+                (= memory*.dest src))))))))
 
 (def addr (operand)
   (let loc absolutize.operand
