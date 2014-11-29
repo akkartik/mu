@@ -599,7 +599,9 @@
             (= memory*.addr val))
         (do (if ((types* typeof.loc) 'array)
               ; size check for arrays
-              (when (~is rep.val.0 (- n 1))
+              (when (~is n
+                         (+ 1  ; array length
+                            (* rep.val.0 (sizeof ((types* typeof.loc) 'elem)))))
                 (die "writing invalid array @(tostring prn.val)"))
               ; size check for non-arrays
               (when (~is sizeof.loc n)
@@ -646,14 +648,18 @@
 (def sizeof (x)
   (trace "sizeof" x)
   (point return
-  (when (and (acons x)
-             (pos 'deref metadata.x))
-    (assert typeinfo.x!address)
-    (return (sizeof deref.x)))
-  (when (and (acons x)
-             typeinfo.x!array)
-    (return (+ 1 (* (m `(,v.x integer))
-                    (sizeof typeinfo.x!elem)))))
+  (when (acons x)
+;?     (tr "aa " x)
+    (zap absolutize x)
+;?     (tr "bb " x)
+    (while (pos 'deref metadata.x)
+;?       (tr "cc " x)
+      (zap deref x))
+;?     (tr "dd " x)
+;?     (trace "sizeof" "after canonizing: " x)
+    (when typeinfo.x!array
+      (return (+ 1 (* (m `(,v.x integer ,@(cut x 2)))
+                      (sizeof typeinfo.x!elem))))))
   (let type (if (and acons.x (pos 'deref metadata.x))
                   typeinfo.x!elem  ; deref pointer
                 acons.x
