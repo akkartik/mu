@@ -1,4 +1,4 @@
-## Mu: making programs easier to understand in the large
+**Mu: making programs easier to understand in the large**
 
 Imagine a world where you can:
 
@@ -56,7 +56,7 @@ unit of comprehension. If I'm right, it makes sense to prioritize the right
 *tactile* interface for working with and getting feedback on large programs
 before we invest in the *visual* tools for making them concise.
 
-## Taking mu for a spin
+**Taking mu for a spin**
 
 Prerequisites: Racket from http://racket-lang.org
 
@@ -217,7 +217,7 @@ into reproducible tests by flagging inputs entering the log and outputs
 leaving it. The former will have to be faked in, and the latter will want to
 be asserted on, to turn a trace into a test.
 
-## Credits
+**Credits**
 
 Mu builds on many ideas that have come before, especially:
 
