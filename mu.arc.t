@@ -1892,6 +1892,30 @@
             (~is 23 (memory* (+ before 1))))
     (prn "F - default-scope skipped for locations with metadata 'global'")))
 
+(reset)
+(new-trace "array-copy-indirect-scoped")
+(add-code
+  '((def main [
+      ((10 integer) <- copy (30 literal))  ; pretend allocation
+      ((default-scope scope-address) <- copy (10 literal))  ; unsafe
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 boolean) <- copy (nil literal))
+      ((4 integer) <- copy (24 literal))
+      ((5 boolean) <- copy (t literal))
+      ((6 integer-boolean-pair-array-address) <- copy (11 literal))  ; unsafe
+      ((7 integer-boolean-pair-array) <- copy (6 integer-boolean-pair-array-address deref))
+     ])))
+;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("run" "m" "sizeof")))
+(run 'main)
+;? (prn memory*)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(if (~iso memory*.17 2)
+  (prn "F - indirect array copy in the presence of 'default-scope'"))
+;? (quit)
+
 ;; Dynamic dispatch
 ;
 ; Putting it all together, here's how you define generic functions that run
@@ -3251,6 +3275,12 @@
   (prn "F - 'sizeof' works on record operands with record fields"))
 (if (~is 2 (sizeof '(34 integer-boolean-pair-address deref)))
   (prn "F - 'sizeof' works on pointers to records"))
+(= memory*.35 4)  ; size of array
+(= memory*.34 35)
+;? (= dump-trace* (obj whitelist '("sizeof")))
+(if (~is 9 (sizeof '(34 integer-boolean-pair-array-address deref)))
+  (prn "F - 'sizeof' works on pointers to arrays"))
+;? (quit)
 
 (= memory*.4 23)
 (if (~is 24 (sizeof '(4 integer-array)))
@@ -3266,6 +3296,13 @@
 (= memory*.10 5)  ; bounds check for default-scope
 (if (~is 35 (sizeof '(4 integer-array)))
   (prn "F - 'sizeof' reads array lengths from memory using default-scope"))
+(= memory*.35 4)  ; size of array
+(= memory*.14 35)
+;? (= dump-trace* (obj whitelist '("sizeof")))
+(aif rep.routine*!error (prn "error - " it))
+(if (~is 9 (sizeof '(4 integer-boolean-pair-array-address deref)))
+  (prn "F - 'sizeof' works on pointers to arrays using default-scope"))
+;? (quit)
 
 ; m
 (reset)
@@ -3350,6 +3387,17 @@
 (setm '(4 integer-array) (annotate 'record '(2 31 32 33)))
 (if (~posmatch "invalid array" rep.routine*!error)
   (prn "F - 'setm' checks that array written is well-formed"))
+(= routine* make-routine!foo)
+;? (prn 111)
+;? (= dump-trace* (obj whitelist '("sizeof" "setm")))
+(setm '(4 integer-boolean-pair-array) (annotate 'record '(2 31 nil 32 nil 33)))
+(if (~posmatch "invalid array" rep.routine*!error)
+  (prn "F - 'setm' checks that array of records is well-formed"))
+(= routine* make-routine!foo)
+;? (prn 222)
+(setm '(4 integer-boolean-pair-array) (annotate 'record '(2 31 nil 32 nil)))
+(if (posmatch "invalid array" rep.routine*!error)
+  (prn "F - 'setm' checks that array of records is well-formed - 2"))
 (wipe routine*)
 
 (reset)  ; end file with this to persist the trace for the final test
