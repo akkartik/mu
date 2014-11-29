@@ -404,11 +404,11 @@
                     (trace "get-address" arg.0 " " arg.1 " => " addr)
                     addr)
                 index
-                  (let (addr type)  (array-info arg.0 arg.1)
+                  (let (addr type)  (array-info arg.0 (m arg.1))
                     (trace "index" arg.0 " " arg.1 " => " addr " " type)
                     (m `(,addr ,type global)))
                 index-address
-                  (let (addr _)  (array-info arg.0 arg.1)
+                  (let (addr _)  (array-info arg.0 (m arg.1))
                     (trace "index-address" arg.0 " " arg.1 " => " addr)
                     addr)
                 new
@@ -626,11 +626,10 @@
     (list (+ base (apply + (map sizeof (firstn idx basetype!elems))))
           basetype!elems.idx)))
 
-(def array-info (operand offset)
-  (trace "array-info" operand " " offset)
+(def array-info (operand idx)
+  (trace "array-info" operand " " idx)
   (with (base  addr.operand
-         basetype  typeinfo.operand
-         idx  (m offset))
+         basetype  typeinfo.operand)
     (trace "array-info" "initial base " base " type " canon.basetype)
     (when (pos 'deref metadata.operand)
       (assert basetype!address "@operand requests deref, but it's not an address of an array")
