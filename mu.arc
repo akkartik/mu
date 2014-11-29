@@ -278,6 +278,17 @@
     (abort-continuation)))
 
 ;; running a single routine
+
+; routines consist of instrs
+; instrs consist of oargs, op and args
+(def parse-instr (instr)
+  (iflet delim (pos '<- instr)
+    (list (cut instr 0 delim)  ; oargs
+          (instr (+ delim 1))  ; op
+          (cut instr (+ delim 2)))  ; args
+    (list nil instr.0 cdr.instr)))
+
+; operand accessors
 (def nondummy (operand)  ; precondition for helpers below
   (~is '_ operand))
 
@@ -294,133 +305,9 @@
   (or (types* ty.operand)
       (err "unknown type @(tostring prn.operand)")))
 
-(def sz (operand)
-  (trace "sz" operand)
-  (if (is 'literal ty.operand)
-        'literal
-      (pos 'deref metadata.operand)
-        (do (assert typeinfo.operand!address "tried to deref non-address @operand")
-            (sz (list (m `(,(v operand) location))
-                      typeinfo.operand!elem)))
-      (let-or it typeinfo.operand (err "no such type: @operand")
-        (if it!array
-          array-len.operand
-          it!size))))
-(defextend sz (typename) (isa typename 'sym)
-  (or types*.typename!size
-      (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
-
-(def addr (operand)
-  (let loc absolutize.operand
-    (while (pos 'deref metadata.loc)
-      (zap deref loc))
-    v.loc))
-
-(def addrs (n sz)
-  (accum yield
-    (repeat sz
-      (yield n)
-      (++ n))))
-
-(def m (loc)  ; read memory, respecting metadata
-  (point return
-    (if (in ty.loc 'literal 'offset)
-      (return v.loc))
-    (when (is v.loc 'default-scope)
-      (return rep.routine*!call-stack.0!default-scope))
-    (trace "m" loc)
-    (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?) @loc")
-    (with (n  sz.loc
-           addr  addr.loc)
-;?       (trace "m" "reading " n " locations starting at " addr)
-      (if (is 1 n)
-            (memory* addr)
-          :else
-            (annotate 'record
-                      (map memory* (addrs addr n)))))))
-
-(def setm (loc val)  ; set memory, respecting metadata
-  (point return
-    (when (is v.loc 'default-scope)
-      (assert (is 1 sz.loc) "can't store compounds in default-scope @loc")
-      (= rep.routine*!call-stack.0!default-scope val)
-      (return))
-    (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
-    (trace "setm" loc " <= " val)
-    (with (n  sz.loc
-           addr  addr.loc)
-      (trace "setm" "size of " loc " is " n)
-      (assert n "setm: can't compute type of @loc")
-      (assert addr "setm: null pointer @loc")
-      (if (is 1 n)
-        (do (assert (~isa val 'record) "setm: record of size 1 @(tostring prn.val)")
-            (trace "setm" loc ": setting " addr " to " val)
-            (= (memory* addr) val))
-        (do (assert (isa val 'record) "setm: non-record of size >1 @val")
-            (each (dest src) (zip (addrs addr n)
-                                  (rep val))
-              (trace "setm" loc ": setting " dest " to " src)
-              (= (memory* dest) src)))))))
-
-; (operand field-offset) -> (base-addr field-type)
-; operand can be a deref address
-; operand can be scope-based
-; base-addr returned is always global
-(def record-info (operand field-offset)
-  (trace "record-info" operand " " field-offset)
-  (assert (is 'offset (ty field-offset)) "record index @field-offset must have type 'offset'")
-  (with (base  addr.operand
-         basetype  typeinfo.operand
-         idx  (v field-offset))
-    (trace "record-info" "initial base " base " type " canon.basetype)
-    (when (pos 'deref metadata.operand)
-      (assert basetype!address "@operand requests deref, but it's not an address of a record")
-      (= basetype (types* basetype!elem))
-      (trace "record-info" operand " requests deref => " canon.basetype))
-    (assert basetype!record "get on non-record @operand")
-    (assert (< -1 idx (len basetype!elems)) "@idx is out of bounds of record @operand")
-    (list (+ base (apply + (map sz (firstn idx basetype!elems))))
-          basetype!elems.idx)))
-
-(def array-info (operand offset)
-  (trace "array-info" operand " " offset)
-  (with (base  addr.operand
-         basetype  typeinfo.operand
-         idx  (m offset))
-    (trace "array-info" "initial base " base " type " canon.basetype)
-    (when (pos 'deref metadata.operand)
-      (assert basetype!address "@operand requests deref, but it's not an address of an array")
-      (= basetype (types* basetype!elem))
-      (trace "array-info" operand " requests deref => " canon.basetype))
-    (assert basetype!array "index on non-array @operand")
-    (let array-len array-len.operand
-      (trace "array-info" "array-len of " operand " is " array-len)
-      (assert array-len "can't compute array-len of @operand")
-      (unless (< -1 idx array-len)
-        (die "@idx is out of bounds of array @operand")))
-    (list (+ base
-             1  ; for array size
-             (* idx (sz basetype!elem)))
-          basetype!elem)))
-
-(def array-len (operand)
-  (trace "array-len" operand)
-  (if typeinfo.operand!array
-        (m `(,v.operand integer))
-      (and typeinfo.operand!address (pos 'deref metadata.operand))
-        (m `(,v.operand integer-address ,@(cut operand 2)))
-      :else
-        (err "can't take len of non-array @operand")))
-
-(def parse-instr (instr)
-  (iflet delim (pos '<- instr)
-    (list (cut instr 0 delim)  ; oargs
-          (instr (+ delim 1))  ; op
-          (cut instr (+ delim 2)))  ; args
-    (list nil instr.0 cdr.instr)))
-
 ($:require "charterm/main.rkt")
 
+; run instructions from 'routine*' for 'time-slice'
 (def run-for-time-slice (time-slice)
   (point return
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
@@ -647,26 +534,129 @@
        (each a args
          (yield (m a))))))
 
-(enq (fn () (= Memory-in-use-until 1000))
-     initialization-fns*)
+; helpers for memory access respecting
+;   immediate addressing - 'literal' and 'offset'
+;   direct addressing - default
+;   indirect addressing - 'deref'
+;   relative addressing - if routine* has 'default-scope'
 
-(def new-scalar (type)
-  (ret result Memory-in-use-until
-    (++ Memory-in-use-until sizeof.type)))
+(def m (loc)  ; read memory, respecting metadata
+  (point return
+    (if (in ty.loc 'literal 'offset)
+      (return v.loc))
+    (when (is v.loc 'default-scope)
+      (return rep.routine*!call-stack.0!default-scope))
+    (trace "m" loc)
+    (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?) @loc")
+    (with (n  sz.loc
+           addr  addr.loc)
+;?       (trace "m" "reading " n " locations starting at " addr)
+      (if (is 1 n)
+            (memory* addr)
+          :else
+            (annotate 'record
+                      (map memory* (addrs addr n)))))))
 
-(def new-array (type size)
-;?   (prn "new array: @type @size")
-  (ret result Memory-in-use-until
-    (++ Memory-in-use-until (+ 1 (* (sizeof types*.type!elem) size)))
-    (= (memory* result) size)))
+(def setm (loc val)  ; set memory, respecting metadata
+  (point return
+    (when (is v.loc 'default-scope)
+      (assert (is 1 sz.loc) "can't store compounds in default-scope @loc")
+      (= rep.routine*!call-stack.0!default-scope val)
+      (return))
+    (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
+    (trace "setm" loc " <= " val)
+    (with (n  sz.loc
+           addr  addr.loc)
+      (trace "setm" "size of " loc " is " n)
+      (assert n "setm: can't compute type of @loc")
+      (assert addr "setm: null pointer @loc")
+      (if (is 1 n)
+        (do (assert (~isa val 'record) "setm: record of size 1 @(tostring prn.val)")
+            (trace "setm" loc ": setting " addr " to " val)
+            (= (memory* addr) val))
+        (do (assert (isa val 'record) "setm: non-record of size >1 @val")
+            (each (dest src) (zip (addrs addr n)
+                                  (rep val))
+              (trace "setm" loc ": setting " dest " to " src)
+              (= (memory* dest) src)))))))
 
-(def new-string (literal-string)
-  (ret result Memory-in-use-until
-    (= memory*.Memory-in-use-until len.literal-string)
-    (++ Memory-in-use-until)
-    (each c literal-string
-      (= memory*.Memory-in-use-until c)
-      (++ Memory-in-use-until))))
+(def sz (operand)
+  (trace "sz" operand)
+  (if (is 'literal ty.operand)
+        'literal
+      (pos 'deref metadata.operand)
+        (do (assert typeinfo.operand!address "tried to deref non-address @operand")
+            (sz (list (m `(,(v operand) location))
+                      typeinfo.operand!elem)))
+      (let-or it typeinfo.operand (err "no such type: @operand")
+        (if it!array
+          array-len.operand
+          it!size))))
+(defextend sz (typename) (isa typename 'sym)
+  (or types*.typename!size
+      (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
+
+(def addr (operand)
+  (let loc absolutize.operand
+    (while (pos 'deref metadata.loc)
+      (zap deref loc))
+    v.loc))
+
+(def addrs (n sz)
+  (accum yield
+    (repeat sz
+      (yield n)
+      (++ n))))
+
+; (operand field-offset) -> (base-addr field-type)
+; operand can be a deref address
+; operand can be scope-based
+; base-addr returned is always global
+(def record-info (operand field-offset)
+  (trace "record-info" operand " " field-offset)
+  (assert (is 'offset (ty field-offset)) "record index @field-offset must have type 'offset'")
+  (with (base  addr.operand
+         basetype  typeinfo.operand
+         idx  (v field-offset))
+    (trace "record-info" "initial base " base " type " canon.basetype)
+    (when (pos 'deref metadata.operand)
+      (assert basetype!address "@operand requests deref, but it's not an address of a record")
+      (= basetype (types* basetype!elem))
+      (trace "record-info" operand " requests deref => " canon.basetype))
+    (assert basetype!record "get on non-record @operand")
+    (assert (< -1 idx (len basetype!elems)) "@idx is out of bounds of record @operand")
+    (list (+ base (apply + (map sz (firstn idx basetype!elems))))
+          basetype!elems.idx)))
+
+(def array-info (operand offset)
+  (trace "array-info" operand " " offset)
+  (with (base  addr.operand
+         basetype  typeinfo.operand
+         idx  (m offset))
+    (trace "array-info" "initial base " base " type " canon.basetype)
+    (when (pos 'deref metadata.operand)
+      (assert basetype!address "@operand requests deref, but it's not an address of an array")
+      (= basetype (types* basetype!elem))
+      (trace "array-info" operand " requests deref => " canon.basetype))
+    (assert basetype!array "index on non-array @operand")
+    (let array-len array-len.operand
+      (trace "array-info" "array-len of " operand " is " array-len)
+      (assert array-len "can't compute array-len of @operand")
+      (unless (< -1 idx array-len)
+        (die "@idx is out of bounds of array @operand")))
+    (list (+ base
+             1  ; for array size
+             (* idx (sz basetype!elem)))
+          basetype!elem)))
+
+(def array-len (operand)
+  (trace "array-len" operand)
+  (if typeinfo.operand!array
+        (m `(,v.operand integer))
+      (and typeinfo.operand!address (pos 'deref metadata.operand))
+        (m `(,v.operand integer-address ,@(cut operand 2)))
+      :else
+        (err "can't take len of non-array @operand")))
 
 (def sizeof (x)
   (trace "sizeof" x)
@@ -720,6 +710,29 @@
     (if (testify.f car.x)
       cdr.x
       (cons car.x (drop-one f x)))))
+
+; memory allocation
+
+(enq (fn () (= Memory-in-use-until 1000))
+     initialization-fns*)
+
+(def new-scalar (type)
+  (ret result Memory-in-use-until
+    (++ Memory-in-use-until sizeof.type)))
+
+(def new-array (type size)
+;?   (prn "new array: @type @size")
+  (ret result Memory-in-use-until
+    (++ Memory-in-use-until (+ 1 (* (sizeof types*.type!elem) size)))
+    (= (memory* result) size)))
+
+(def new-string (literal-string)
+  (ret result Memory-in-use-until
+    (= memory*.Memory-in-use-until len.literal-string)
+    (++ Memory-in-use-until)
+    (each c literal-string
+      (= memory*.Memory-in-use-until c)
+      (++ Memory-in-use-until))))
 
 ;; desugar structured assembly based on blocks
 
