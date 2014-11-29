@@ -679,18 +679,20 @@
       (= memory*.Memory-in-use-until c)
       (++ Memory-in-use-until))))
 
-(def sizeof (type)
-  (trace "sizeof" type)
-  (assert types*.type "sizeof: no such type @type")
-  (if (~or types*.type!record types*.type!array)
-        types*.type!size
-      types*.type!record
-        (sum idfn
-          (accum yield
-            (each elem types*.type!elems
-              (yield sizeof.elem))))
-      :else
-        (err "sizeof can't handle @type (arrays require a specific variable)")))
+(def sizeof (x)
+  (trace "sizeof" x)
+  (point return
+  (let type (if acons.x ty.x x)
+    (assert types*.type "sizeof: no such type @type")
+    (if (~or types*.type!record types*.type!array)
+          types*.type!size
+        types*.type!record
+          (sum idfn
+            (accum yield
+              (each elem types*.type!elems
+                (yield sizeof.elem))))
+        :else
+          (err "sizeof can't handle @type (arrays require a specific variable)")))))
 
 ;; desugar structured assembly based on blocks
 
