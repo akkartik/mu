@@ -683,6 +683,10 @@
   (trace "sizeof" x)
   (point return
   (when (and (acons x)
+             (pos 'deref metadata.x))
+    (assert typeinfo.x!address)
+    (return (sizeof deref.x)))
+  (when (and (acons x)
              typeinfo.x!array)
     (return (+ 1 (* (m `(,v.x integer))
                     (sizeof typeinfo.x!elem)))))
