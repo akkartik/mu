@@ -733,6 +733,17 @@
 (if (~is 23 (addr '(4 integer-address deref)))
   (prn "F - 'addr' adds default-scope before 'deref', not after"))
 
+; unit tests for 'sizeof' helper
+(reset)
+(if (~is 1 sizeof!integer)
+  (prn "F - 'sizeof' works on primitives"))
+(if (~is 1 sizeof!integer-address)
+  (prn "F - 'sizeof' works on addresses"))
+(if (~is 2 sizeof!integer-boolean-pair)
+  (prn "F - 'sizeof' works on records"))
+(if (~is 3 sizeof!integer-point-pair)
+  (prn "F - 'sizeof' works on records with record fields"))
+
 (reset)
 (new-trace "copy-record")
 (add-code
