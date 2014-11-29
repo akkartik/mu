@@ -743,6 +743,14 @@
 (if (~is 23 (addr '(4 integer-address deref)))
   (prn "F - 'addr' adds default-scope before 'deref', not after"))
 
+; unit tests for 'deref' helper
+(reset)
+(= memory*.3 4)
+(if (~iso '(4 integer) (deref '(3 integer-address deref)))
+  (prn "F - 'deref' handles simple addresses"))
+(if (~iso '(4 integer deref) (deref '(3 integer-address deref deref)))
+  (prn "F - 'deref' deletes just one deref"))
+
 ; unit tests for 'sizeof' helper
 (reset)
 (if (~is 1 sizeof!integer)

@@ -703,6 +703,19 @@
         :else
           (err "sizeof can't handle @type (arrays require a specific variable)")))))
 
+(def deref (operand)
+  (assert (pos 'deref metadata.operand))
+  (assert typeinfo.operand!address)
+  (apply list (memory* v.operand)
+              typeinfo.operand!elem
+              (drop-one 'deref (cut operand 2))))
+
+(def drop-one (f x)
+  (when acons.x  ; proper lists only
+    (if (testify.f car.x)
+      cdr.x
+      (cons car.x (drop-one f x)))))
+
 ;; desugar structured assembly based on blocks
 
 (def convert-braces (instrs)
