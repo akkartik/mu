@@ -274,7 +274,8 @@
   (= rep.routine*!error msg)
   (= rep.routine*!stack-trace rep.routine*!call-stack)
   (wipe rep.routine*!call-stack)
-  ((abort-routine*)))
+  (iflet abort-continuation (abort-routine*)
+    (abort-continuation)))
 
 ;; running a single routine
 (def nondummy (operand)  ; precondition for helpers below
@@ -707,6 +708,18 @@
                 (yield sizeof.elem))))
         :else
           (err "sizeof can't handle @type (arrays require a specific variable)")))))
+
+(def absolutize (operand)
+  (if (no routine*)
+        operand
+      (pos 'global metadata.operand)
+        operand
+      :else
+        (iflet base rep.routine*!call-stack.0!default-scope
+          (if (< v.operand memory*.base)
+            `(,(+ v.operand base) ,@metadata.operand global)
+            (die "no room for var @operand in routine of size @memory*.base"))
+          operand)))
 
 (def deref (operand)
   (assert (pos 'deref metadata.operand))
