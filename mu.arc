@@ -682,6 +682,10 @@
 (def sizeof (x)
   (trace "sizeof" x)
   (point return
+  (when (and (acons x)
+             typeinfo.x!array)
+    (return (+ 1 (* (m `(,v.x integer))
+                    (sizeof typeinfo.x!elem)))))
   (let type (if acons.x ty.x x)
     (assert types*.type "sizeof: no such type @type")
     (if (~or types*.type!record types*.type!array)
