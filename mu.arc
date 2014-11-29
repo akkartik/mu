@@ -311,23 +311,9 @@
       (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
 
 (def addr (loc)
-  (trace "addr" loc)
-  (ret result v.loc
-    (trace "addr" "initial result: " result)
-    (unless (or (pos 'global metadata.loc)
-                (no routine*))
-;?       (tr "aa " routine*)
-      (whenlet base rep.routine*!call-stack.0!default-scope
-        (if (< result memory*.base)
-          (do (trace "addr" "incrementing by " base)
-              (++ result base))
-          (die "addr: no room for var @result"))))
-;?     (tr "mm")
+  (ret result (v absolutize.loc)
     (when (pos 'deref metadata.loc)
-      (trace "addr" "deref " result " => " memory*.result)
-      (zap memory* result))
-;?     (tr "zz")
-    ))
+      (zap memory* result))))
 
 (def addrs (n sz)
   (accum yield
