@@ -1177,7 +1177,7 @@
 (init-fn interpolate  ; string-address template, string-address a..
   ((default-scope scope-address) <- new (scope literal) (60 literal))
   ((template string-address) <- arg)
-  ; compute space to allocate for result
+  ; compute result-len, space to allocate for result
   ((tem-len integer) <- len (template string-address deref))
   ((result-len integer) <- copy (tem-len integer))
   { begin
@@ -1203,7 +1203,7 @@
   (_ <- arg (0 literal))
   ; result = new string[result-len]
   ((result string-address) <- new (string literal) (result-len integer))
-  ; result-idx = i = 0
+  ; repeatedly copy sections of template and 'holes' into result
   ((result-idx integer) <- copy (0 literal))
   ((i integer) <- copy (0 literal))
   { begin
@@ -1259,26 +1259,26 @@
 ;?     (print-primitive ("\n" literal))
     (loop)  ; interpolate next arg
   }
-    ; copy rest of template into result
-    { begin
-      ; while (i < template.length)
-      ((tem-done? boolean) <- lt (i integer) (tem-len integer))
-      (break-unless (tem-done? boolean))
-      ; result[result-idx] = template[i]
-      ((in byte) <- index (template string-address deref) (i integer))
-;?       (print-primitive ("copying: " literal))
-;?       (print-primitive (in byte))
-;?       (print-primitive (" at: " literal))
-;?       (print-primitive (result-idx integer))
-;?       (print-primitive ("\n" literal))
-      ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
-      ((out byte-address deref) <- copy (in byte))
-      ; ++i
-      ((i integer) <- add (i integer) (1 literal))
-      ; ++result-idx
-      ((result-idx integer) <- add (result-idx integer) (1 literal))
-      (loop)
-    }
+  ; done with holes; copy rest of template directly into result
+  { begin
+    ; while (i < template.length)
+    ((tem-done? boolean) <- lt (i integer) (tem-len integer))
+    (break-unless (tem-done? boolean))
+    ; result[result-idx] = template[i]
+    ((in byte) <- index (template string-address deref) (i integer))
+;?     (print-primitive ("copying: " literal))
+;?     (print-primitive (in byte))
+;?     (print-primitive (" at: " literal))
+;?     (print-primitive (result-idx integer))
+;?     (print-primitive ("\n" literal))
+    ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
+    ((out byte-address deref) <- copy (in byte))
+    ; ++i
+    ((i integer) <- add (i integer) (1 literal))
+    ; ++result-idx
+    ((result-idx integer) <- add (result-idx integer) (1 literal))
+    (loop)
+  }
   (reply (result string-address)))
 
 (def canon (table)
