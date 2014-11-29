@@ -120,6 +120,7 @@
               integer-boolean-pair-array-address (obj size 1  address t  elem 'integer-boolean-pair-array)
               integer-integer-pair (obj size 2  record t  elems '(integer integer))
               integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
+              integer-point-pair-address (obj size 1  address t  elem 'integer-point-pair)
               ; tagged-values are the foundation of dynamic types
               tagged-value (obj size 2  record t  elems '(type location)  fields '(type payload))
               tagged-value-address (obj size 1  address t  elem 'tagged-value)
@@ -548,7 +549,7 @@
       (return rep.routine*!call-stack.0!default-scope))
     (trace "m" loc)
     (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?) @loc")
-    (with (n  sz.loc
+    (with (n  sizeof.loc
            addr  addr.loc)
 ;?       (trace "m" "reading " n " locations starting at " addr)
       (if (is 1 n)
@@ -560,12 +561,12 @@
 (def setm (loc val)  ; set memory, respecting metadata
   (point return
     (when (is v.loc 'default-scope)
-      (assert (is 1 sz.loc) "can't store compounds in default-scope @loc")
+      (assert (is 1 sizeof.loc) "can't store compounds in default-scope @loc")
       (= rep.routine*!call-stack.0!default-scope val)
       (return))
     (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
     (trace "setm" loc " <= " val)
-    (with (n  sz.loc
+    (with (n  sizeof.loc
            addr  addr.loc)
       (trace "setm" "size of " loc " is " n)
       (assert n "setm: can't compute type of @loc")
@@ -579,22 +580,6 @@
                                   (rep val))
               (trace "setm" loc ": setting " dest " to " src)
               (= (memory* dest) src)))))))
-
-(def sz (operand)
-  (trace "sz" operand)
-  (if (is 'literal ty.operand)
-        'literal
-      (pos 'deref metadata.operand)
-        (do (assert typeinfo.operand!address "tried to deref non-address @operand")
-            (sz (list (m `(,(v operand) location))
-                      typeinfo.operand!elem)))
-      (let-or it typeinfo.operand (err "no such type: @operand")
-        (if it!array
-          array-len.operand
-          it!size))))
-(defextend sz (typename) (isa typename 'sym)
-  (or types*.typename!size
-      (err "type @typename doesn't have a size: " (tostring:pr types*.typename))))
 
 (def addr (operand)
   (let loc absolutize.operand
@@ -625,7 +610,7 @@
       (trace "record-info" operand " requests deref => " canon.basetype))
     (assert basetype!record "get on non-record @operand")
     (assert (< -1 idx (len basetype!elems)) "@idx is out of bounds of record @operand")
-    (list (+ base (apply + (map sz (firstn idx basetype!elems))))
+    (list (+ base (apply + (map sizeof (firstn idx basetype!elems))))
           basetype!elems.idx)))
 
 (def array-info (operand offset)
@@ -646,7 +631,7 @@
         (die "@idx is out of bounds of array @operand")))
     (list (+ base
              1  ; for array size
-             (* idx (sz basetype!elem)))
+             (* idx (sizeof basetype!elem)))
           basetype!elem)))
 
 (def array-len (operand)

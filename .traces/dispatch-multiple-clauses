@@ -5,38 +5,38 @@ run: -- nil
 run: 2 new-tagged-value 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
 sizeof: location
 run: 1000 => (default-scope scope-address)
-sz: (default-scope scope-address)
+sizeof: (default-scope scope-address)
 run: -- ((1000 30))
 run: 3 new-tagged-value 1: ((1 type) <- arg)
 arg: nil 0 (boolean t)
 run: boolean => (1 type)
 setm: (1 type) <= boolean
-sz: (1 type)
+sizeof: (1 type)
 setm: size of (1 type) is 1
 setm: (1 type): setting 1001 to boolean
 run: -- ((1000 30) (1001 boolean))
 run: 4 new-tagged-value 2: ((2 integer) <- sizeof (1 type))
 m: (1 type)
-sz: (1 type)
+sizeof: (1 type)
 sizeof: boolean
 run: 1 => (2 integer)
 setm: (2 integer) <= 1
-sz: (2 integer)
+sizeof: (2 integer)
 setm: size of (2 integer) is 1
 setm: (2 integer): setting 1002 to 1
 run: -- ((1000 30) (1001 boolean) (1002 1))
 run: 5 new-tagged-value 3: ((3 boolean) <- eq (2 integer) (1 literal))
 m: (2 integer)
-sz: (2 integer)
+sizeof: (2 integer)
 run: t => (3 boolean)
 setm: (3 boolean) <= t
-sz: (3 boolean)
+sizeof: (3 boolean)
 setm: size of (3 boolean) is 1
 setm: (3 boolean): setting 1003 to t
 run: -- ((1000 30) (1001 boolean) (1002 1) (1003 t))
 run: 6 new-tagged-value 4: (assert (3 boolean))
 m: (3 boolean)
-sz: (3 boolean)
+sizeof: (3 boolean)
 run: -- ((1000 30) (1001 boolean) (1002 1) (1003 t))
 run: 7 new-tagged-value 5: ((4 tagged-value-address) <- new (tagged-value literal))
 sizeof: tagged-value
@@ -44,7 +44,7 @@ sizeof: type
 sizeof: location
 run: 1031 => (4 tagged-value-address)
 setm: (4 tagged-value-address) <= 1031
-sz: (4 tagged-value-address)
+sizeof: (4 tagged-value-address)
 setm: size of (4 tagged-value-address) is 1
 setm: (4 tagged-value-address): setting 1004 to 1031
 run: -- ((1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031))
@@ -55,19 +55,17 @@ record-info: (4 tagged-value-address deref) requests deref => ((elems (type loca
 get-address: (4 tagged-value-address deref) (0 offset) => 1031
 run: 1031 => (5 location)
 setm: (5 location) <= 1031
-sz: (5 location)
+sizeof: (5 location)
 setm: size of (5 location) is 1
 setm: (5 location): setting 1005 to 1031
 run: -- ((1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031))
 run: 9 new-tagged-value 7: ((5 location deref) <- copy (1 type))
 m: (1 type)
-sz: (1 type)
+sizeof: (1 type)
 run: boolean => (5 location deref)
 setm: (5 location deref) <= boolean
-sz: (5 location deref)
-m: (5 location)
-sz: (5 location)
-sz: (1031 location)
+sizeof: (5 location deref)
+sizeof: (nil location)
 setm: size of (5 location deref) is 1
 setm: (5 location deref): setting 1031 to boolean
 run: -- ((1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1031 boolean))
@@ -75,10 +73,11 @@ run: 10 new-tagged-value 8: ((6 location) <- get-address (4 tagged-value-address
 record-info: (4 tagged-value-address deref) (1 offset)
 record-info: initial base 1031 type ((address t) (elem tagged-value) (size 1))
 record-info: (4 tagged-value-address deref) requests deref => ((elems (type location)) (fields (type payload)) (record t) (size 2))
+sizeof: type
 get-address: (4 tagged-value-address deref) (1 offset) => 1032
 run: 1032 => (6 location)
 setm: (6 location) <= 1032
-sz: (6 location)
+sizeof: (6 location)
 setm: size of (6 location) is 1
 setm: (6 location): setting 1006 to 1032
 run: -- ((1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean))
@@ -86,20 +85,18 @@ run: 11 new-tagged-value 9: ((6 location deref) <- arg)
 arg: nil 1 (boolean t)
 run: t => (6 location deref)
 setm: (6 location deref) <= t
-sz: (6 location deref)
-m: (6 location)
-sz: (6 location)
-sz: (1032 location)
+sizeof: (6 location deref)
+sizeof: (nil location)
 setm: size of (6 location deref) is 1
 setm: (6 location deref): setting 1032 to t
 run: -- ((1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t))
 run: 12 new-tagged-value 10: (reply (4 tagged-value-address))
 m: (4 tagged-value-address)
-sz: (4 tagged-value-address)
+sizeof: (4 tagged-value-address)
 reply: ((4 tagged-value-address)) ((1 tagged-value-address))
 reply: 1031 => (1 tagged-value-address)
 setm: (1 tagged-value-address) <= 1031
-sz: (1 tagged-value-address)
+sizeof: (1 tagged-value-address)
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1 to 1031
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t))
@@ -108,38 +105,38 @@ run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1
 run: 14 new-tagged-value 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
 sizeof: location
 run: 1033 => (default-scope scope-address)
-sz: (default-scope scope-address)
+sizeof: (default-scope scope-address)
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30))
 run: 15 new-tagged-value 1: ((1 type) <- arg)
 arg: nil 0 (boolean nil)
 run: boolean => (1 type)
 setm: (1 type) <= boolean
-sz: (1 type)
+sizeof: (1 type)
 setm: size of (1 type) is 1
 setm: (1 type): setting 1034 to boolean
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean))
 run: 16 new-tagged-value 2: ((2 integer) <- sizeof (1 type))
 m: (1 type)
-sz: (1 type)
+sizeof: (1 type)
 sizeof: boolean
 run: 1 => (2 integer)
 setm: (2 integer) <= 1
-sz: (2 integer)
+sizeof: (2 integer)
 setm: size of (2 integer) is 1
 setm: (2 integer): setting 1035 to 1
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1))
 run: 17 new-tagged-value 3: ((3 boolean) <- eq (2 integer) (1 literal))
 m: (2 integer)
-sz: (2 integer)
+sizeof: (2 integer)
 run: t => (3 boolean)
 setm: (3 boolean) <= t
-sz: (3 boolean)
+sizeof: (3 boolean)
 setm: size of (3 boolean) is 1
 setm: (3 boolean): setting 1036 to t
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t))
 run: 18 new-tagged-value 4: (assert (3 boolean))
 m: (3 boolean)
-sz: (3 boolean)
+sizeof: (3 boolean)
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t))
 run: 19 new-tagged-value 5: ((4 tagged-value-address) <- new (tagged-value literal))
 sizeof: tagged-value
@@ -147,7 +144,7 @@ sizeof: type
 sizeof: location
 run: 1064 => (4 tagged-value-address)
 setm: (4 tagged-value-address) <= 1064
-sz: (4 tagged-value-address)
+sizeof: (4 tagged-value-address)
 setm: size of (4 tagged-value-address) is 1
 setm: (4 tagged-value-address): setting 1037 to 1064
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064))
@@ -158,19 +155,17 @@ record-info: (4 tagged-value-address deref) requests deref => ((elems (type loca
 get-address: (4 tagged-value-address deref) (0 offset) => 1064
 run: 1064 => (5 location)
 setm: (5 location) <= 1064
-sz: (5 location)
+sizeof: (5 location)
 setm: size of (5 location) is 1
 setm: (5 location): setting 1038 to 1064
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064))
 run: 21 new-tagged-value 7: ((5 location deref) <- copy (1 type))
 m: (1 type)
-sz: (1 type)
+sizeof: (1 type)
 run: boolean => (5 location deref)
 setm: (5 location deref) <= boolean
-sz: (5 location deref)
-m: (5 location)
-sz: (5 location)
-sz: (1064 location)
+sizeof: (5 location deref)
+sizeof: (nil location)
 setm: size of (5 location deref) is 1
 setm: (5 location deref): setting 1064 to boolean
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1064 boolean))
@@ -178,10 +173,11 @@ run: 22 new-tagged-value 8: ((6 location) <- get-address (4 tagged-value-address
 record-info: (4 tagged-value-address deref) (1 offset)
 record-info: initial base 1064 type ((address t) (elem tagged-value) (size 1))
 record-info: (4 tagged-value-address deref) requests deref => ((elems (type location)) (fields (type payload)) (record t) (size 2))
+sizeof: type
 get-address: (4 tagged-value-address deref) (1 offset) => 1065
 run: 1065 => (6 location)
 setm: (6 location) <= 1065
-sz: (6 location)
+sizeof: (6 location)
 setm: size of (6 location) is 1
 setm: (6 location): setting 1039 to 1065
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean))
@@ -189,53 +185,51 @@ run: 23 new-tagged-value 9: ((6 location deref) <- arg)
 arg: nil 1 (boolean nil)
 run: nil => (6 location deref)
 setm: (6 location deref) <= nil
-sz: (6 location deref)
-m: (6 location)
-sz: (6 location)
-sz: (1065 location)
+sizeof: (6 location deref)
+sizeof: (nil location)
 setm: size of (6 location deref) is 1
 setm: (6 location deref): setting 1065 to nil
 run: -- ((1 1031) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean))
 run: 24 new-tagged-value 10: (reply (4 tagged-value-address))
 m: (4 tagged-value-address)
-sz: (4 tagged-value-address)
+sizeof: (4 tagged-value-address)
 reply: ((4 tagged-value-address)) ((2 tagged-value-address))
 reply: 1064 => (2 tagged-value-address)
 setm: (2 tagged-value-address) <= 1064
-sz: (2 tagged-value-address)
+sizeof: (2 tagged-value-address)
 setm: size of (2 tagged-value-address) is 1
 setm: (2 tagged-value-address): setting 2 to 1064
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean))
 run: 25 main 2: ((3 boolean) <- test1 (1 tagged-value-address) (2 tagged-value-address))
 m: (1 tagged-value-address)
-sz: (1 tagged-value-address)
+sizeof: (1 tagged-value-address)
 m: (2 tagged-value-address)
-sz: (2 tagged-value-address)
+sizeof: (2 tagged-value-address)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean))
 run: 26 test1 0: ((default-scope scope-address) <- new (scope literal) (20 literal))
 sizeof: location
 run: 1066 => (default-scope scope-address)
-sz: (default-scope scope-address)
+sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20))
 run: 27 test1 1: ((1 tagged-value-address) <- arg)
 arg: nil 0 (1031 1064)
 run: 1031 => (1 tagged-value-address)
 setm: (1 tagged-value-address) <= 1031
-sz: (1 tagged-value-address)
+sizeof: (1 tagged-value-address)
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1067 to 1031
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031))
 run: 28 test1 2: ((2 integer) (3 boolean) <- maybe-coerce (1 tagged-value-address deref) (integer literal))
 m: (1 tagged-value-address deref)
-sz: (1 tagged-value-address deref)
-m: (1 location)
-sz: (1 location)
-sz: (1031 tagged-value)
+sizeof: (1 tagged-value-address deref)
+sizeof: (1031 tagged-value)
+sizeof: type
+sizeof: location
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031))
 run: 29 maybe-coerce 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
 sizeof: location
 run: 1087 => (default-scope scope-address)
-sz: (default-scope scope-address)
+sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1087 30))
 run: 30 maybe-coerce 1: ((1 tagged-value-address) <- new (tagged-value literal))
 sizeof: tagged-value
@@ -243,7 +237,7 @@ sizeof: type
 sizeof: location
 run: 1118 => (1 tagged-value-address)
 setm: (1 tagged-value-address) <= 1118
-sz: (1 tagged-value-address)
+sizeof: (1 tagged-value-address)
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1088 to 1118
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1087 30) (1088 1118))
@@ -251,10 +245,10 @@ run: 31 maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
 arg: nil 0 (#(tagged record (boolean t . nil)) integer)
 run: #(tagged record (boolean t . nil)) => (1 tagged-value-address deref)
 setm: (1 tagged-value-address deref) <= #(tagged record (boolean t . nil))
-sz: (1 tagged-value-address deref)
-m: (1 location)
-sz: (1 location)
-sz: (1118 tagged-value)
+sizeof: (1 tagged-value-address deref)
+sizeof: (1031 tagged-value)
+sizeof: type
+sizeof: location
 setm: size of (1 tagged-value-address deref) is 2
 setm: (1 tagged-value-address deref): setting 1118 to boolean
 setm: (1 tagged-value-address deref): setting 1119 to t
@@ -263,7 +257,7 @@ run: 32 maybe-coerce 3: ((2 type) <- arg)
 arg: nil 1 (#(tagged record (boolean t . nil)) integer)
 run: integer => (2 type)
 setm: (2 type) <= integer
-sz: (2 type)
+sizeof: (2 type)
 setm: size of (2 type) is 1
 setm: (2 type): setting 1089 to integer
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1087 30) (1088 1118) (1089 integer) (1118 boolean) (1119 t))
@@ -273,59 +267,59 @@ record-info: initial base 1118 type ((address t) (elem tagged-value) (size 1))
 record-info: (1 tagged-value-address deref) requests deref => ((elems (type location)) (fields (type payload)) (record t) (size 2))
 get: (1 tagged-value-address deref) (0 offset) => 1118 type
 m: (1118 type global)
-sz: (1118 type global)
+sizeof: (1118 type global)
 run: boolean => (3 type)
 setm: (3 type) <= boolean
-sz: (3 type)
+sizeof: (3 type)
 setm: size of (3 type) is 1
 setm: (3 type): setting 1090 to boolean
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t))
 run: 34 maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
 m: (3 type)
-sz: (3 type)
+sizeof: (3 type)
 m: (2 type)
-sz: (2 type)
+sizeof: (2 type)
 run: nil => (4 boolean)
 setm: (4 boolean) <= nil
-sz: (4 boolean)
+sizeof: (4 boolean)
 setm: size of (4 boolean) is 1
 setm: (4 boolean): setting 1091 to nil
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t))
 run: 35 maybe-coerce 6: (jump-if (4 boolean) (1 offset))
 m: (4 boolean)
-sz: (4 boolean)
+sizeof: (4 boolean)
 jump: checking that nil is t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t))
 run: 36 maybe-coerce 7: (reply (0 literal) (nil literal))
 reply: ((0 literal) (nil literal)) ((2 integer) (3 boolean))
 reply: 0 => (2 integer)
 setm: (2 integer) <= 0
-sz: (2 integer)
+sizeof: (2 integer)
 setm: size of (2 integer) is 1
 setm: (2 integer): setting 1068 to 0
 reply: nil => (3 boolean)
 setm: (3 boolean) <= nil
-sz: (3 boolean)
+sizeof: (3 boolean)
 setm: size of (3 boolean) is 1
 setm: (3 boolean): setting 1069 to nil
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 0) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t))
 run: 37 test1 3: (jump-unless (3 boolean) (4 offset))
 m: (3 boolean)
-sz: (3 boolean)
+sizeof: (3 boolean)
 jump: checking that nil is not t
 jump: jumping to 8
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 0) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t))
 run: 38 test1 8: ((2 boolean) (3 boolean) <- maybe-coerce (1 tagged-value-address deref) (boolean literal))
 m: (1 tagged-value-address deref)
-sz: (1 tagged-value-address deref)
-m: (1 location)
-sz: (1 location)
-sz: (1031 tagged-value)
+sizeof: (1 tagged-value-address deref)
+sizeof: (1031 tagged-value)
+sizeof: type
+sizeof: location
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 0) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t))
 run: 39 maybe-coerce 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
 sizeof: location
 run: 1120 => (default-scope scope-address)
-sz: (default-scope scope-address)
+sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 0) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30))
 run: 40 maybe-coerce 1: ((1 tagged-value-address) <- new (tagged-value literal))
 sizeof: tagged-value
@@ -333,7 +327,7 @@ sizeof: type
 sizeof: location
 run: 1151 => (1 tagged-value-address)
 setm: (1 tagged-value-address) <= 1151
-sz: (1 tagged-value-address)
+sizeof: (1 tagged-value-address)
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1121 to 1151
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 0) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151))
@@ -341,10 +335,10 @@ run: 41 maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
 arg: nil 0 (#(tagged record (boolean t . nil)) boolean)
 run: #(tagged record (boolean t . nil)) => (1 tagged-value-address deref)
 setm: (1 tagged-value-address deref) <= #(tagged record (boolean t . nil))
-sz: (1 tagged-value-address deref)
-m: (1 location)
-sz: (1 location)
-sz: (1151 tagged-value)
+sizeof: (1 tagged-value-address deref)
+sizeof: (1031 tagged-value)
+sizeof: type
+sizeof: location
 setm: size of (1 tagged-value-address deref) is 2
 setm: (1 tagged-value-address deref): setting 1151 to boolean
 setm: (1 tagged-value-address deref): setting 1152 to t
@@ -353,7 +347,7 @@ run: 42 maybe-coerce 3: ((2 type) <- arg)
 arg: nil 1 (#(tagged record (boolean t . nil)) boolean)
 run: boolean => (2 type)
 setm: (2 type) <= boolean
-sz: (2 type)
+sizeof: (2 type)
 setm: size of (2 type) is 1
 setm: (2 type): setting 1122 to boolean
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 0) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1151 boolean) (1152 t))
@@ -363,27 +357,27 @@ record-info: initial base 1151 type ((address t) (elem tagged-value) (size 1))
 record-info: (1 tagged-value-address deref) requests deref => ((elems (type location)) (fields (type payload)) (record t) (size 2))
 get: (1 tagged-value-address deref) (0 offset) => 1151 type
 m: (1151 type global)
-sz: (1151 type global)
+sizeof: (1151 type global)
 run: boolean => (3 type)
 setm: (3 type) <= boolean
-sz: (3 type)
+sizeof: (3 type)
 setm: size of (3 type) is 1
 setm: (3 type): setting 1123 to boolean
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 0) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1151 boolean) (1152 t))
 run: 44 maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
 m: (3 type)
-sz: (3 type)
+sizeof: (3 type)
 m: (2 type)
-sz: (2 type)
+sizeof: (2 type)
 run: t => (4 boolean)
 setm: (4 boolean) <= t
-sz: (4 boolean)
+sizeof: (4 boolean)
 setm: size of (4 boolean) is 1
 setm: (4 boolean): setting 1124 to t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 0) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1151 boolean) (1152 t))
 run: 45 maybe-coerce 6: (jump-if (4 boolean) (1 offset))
 m: (4 boolean)
-sz: (4 boolean)
+sizeof: (4 boolean)
 jump: checking that t is t
 jump: jumping to 8
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 0) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1151 boolean) (1152 t))
@@ -391,56 +385,57 @@ run: 46 maybe-coerce 8: ((5 location) <- get (1 tagged-value-address deref) (1 o
 record-info: (1 tagged-value-address deref) (1 offset)
 record-info: initial base 1151 type ((address t) (elem tagged-value) (size 1))
 record-info: (1 tagged-value-address deref) requests deref => ((elems (type location)) (fields (type payload)) (record t) (size 2))
+sizeof: type
 get: (1 tagged-value-address deref) (1 offset) => 1152 location
 m: (1152 location global)
-sz: (1152 location global)
+sizeof: (1152 location global)
 run: t => (5 location)
 setm: (5 location) <= t
-sz: (5 location)
+sizeof: (5 location)
 setm: size of (5 location) is 1
 setm: (5 location): setting 1125 to t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 0) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t))
 run: 47 maybe-coerce 9: (reply (5 location) (4 boolean))
 m: (5 location)
-sz: (5 location)
+sizeof: (5 location)
 m: (4 boolean)
-sz: (4 boolean)
+sizeof: (4 boolean)
 reply: ((5 location) (4 boolean)) ((2 boolean) (3 boolean))
 reply: t => (2 boolean)
 setm: (2 boolean) <= t
-sz: (2 boolean)
+sizeof: (2 boolean)
 setm: size of (2 boolean) is 1
 setm: (2 boolean): setting 1068 to t
 reply: t => (3 boolean)
 setm: (3 boolean) <= t
-sz: (3 boolean)
+sizeof: (3 boolean)
 setm: size of (3 boolean) is 1
 setm: (3 boolean): setting 1069 to t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t))
 run: 48 test1 9: (jump-unless (3 boolean) (4 offset))
 m: (3 boolean)
-sz: (3 boolean)
+sizeof: (3 boolean)
 jump: checking that t is not t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t))
 run: 49 test1 10: ((4 tagged-value-address) <- arg)
 arg: nil 1 (1031 1064)
 run: 1064 => (4 tagged-value-address)
 setm: (4 tagged-value-address) <= 1064
-sz: (4 tagged-value-address)
+sizeof: (4 tagged-value-address)
 setm: size of (4 tagged-value-address) is 1
 setm: (4 tagged-value-address): setting 1070 to 1064
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t))
 run: 50 test1 11: ((5 boolean) <- maybe-coerce (4 tagged-value-address deref) (boolean literal))
 m: (4 tagged-value-address deref)
-sz: (4 tagged-value-address deref)
-m: (4 location)
-sz: (4 location)
-sz: (1064 tagged-value)
+sizeof: (4 tagged-value-address deref)
+sizeof: (nil tagged-value)
+sizeof: type
+sizeof: location
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t))
 run: 51 maybe-coerce 0: ((default-scope scope-address) <- new (scope literal) (30 literal))
 sizeof: location
 run: 1153 => (default-scope scope-address)
-sz: (default-scope scope-address)
+sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t) (1153 30))
 run: 52 maybe-coerce 1: ((1 tagged-value-address) <- new (tagged-value literal))
 sizeof: tagged-value
@@ -448,7 +443,7 @@ sizeof: type
 sizeof: location
 run: 1184 => (1 tagged-value-address)
 setm: (1 tagged-value-address) <= 1184
-sz: (1 tagged-value-address)
+sizeof: (1 tagged-value-address)
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1154 to 1184
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t) (1153 30) (1154 1184))
@@ -456,10 +451,10 @@ run: 53 maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
 arg: nil 0 (#(tagged record (boolean nil . nil)) boolean)
 run: #(tagged record (boolean nil . nil)) => (1 tagged-value-address deref)
 setm: (1 tagged-value-address deref) <= #(tagged record (boolean nil . nil))
-sz: (1 tagged-value-address deref)
-m: (1 location)
-sz: (1 location)
-sz: (1184 tagged-value)
+sizeof: (1 tagged-value-address deref)
+sizeof: (1031 tagged-value)
+sizeof: type
+sizeof: location
 setm: size of (1 tagged-value-address deref) is 2
 setm: (1 tagged-value-address deref): setting 1184 to boolean
 setm: (1 tagged-value-address deref): setting 1185 to nil
@@ -468,7 +463,7 @@ run: 54 maybe-coerce 3: ((2 type) <- arg)
 arg: nil 1 (#(tagged record (boolean nil . nil)) boolean)
 run: boolean => (2 type)
 setm: (2 type) <= boolean
-sz: (2 type)
+sizeof: (2 type)
 setm: size of (2 type) is 1
 setm: (2 type): setting 1155 to boolean
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t) (1153 30) (1154 1184) (1155 boolean) (1184 boolean))
@@ -478,27 +473,27 @@ record-info: initial base 1184 type ((address t) (elem tagged-value) (size 1))
 record-info: (1 tagged-value-address deref) requests deref => ((elems (type location)) (fields (type payload)) (record t) (size 2))
 get: (1 tagged-value-address deref) (0 offset) => 1184 type
 m: (1184 type global)
-sz: (1184 type global)
+sizeof: (1184 type global)
 run: boolean => (3 type)
 setm: (3 type) <= boolean
-sz: (3 type)
+sizeof: (3 type)
 setm: size of (3 type) is 1
 setm: (3 type): setting 1156 to boolean
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t) (1153 30) (1154 1184) (1155 boolean) (1156 boolean) (1184 boolean))
 run: 56 maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
 m: (3 type)
-sz: (3 type)
+sizeof: (3 type)
 m: (2 type)
-sz: (2 type)
+sizeof: (2 type)
 run: t => (4 boolean)
 setm: (4 boolean) <= t
-sz: (4 boolean)
+sizeof: (4 boolean)
 setm: size of (4 boolean) is 1
 setm: (4 boolean): setting 1157 to t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t) (1153 30) (1154 1184) (1155 boolean) (1156 boolean) (1157 t) (1184 boolean))
 run: 57 maybe-coerce 6: (jump-if (4 boolean) (1 offset))
 m: (4 boolean)
-sz: (4 boolean)
+sizeof: (4 boolean)
 jump: checking that t is t
 jump: jumping to 8
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t) (1153 30) (1154 1184) (1155 boolean) (1156 boolean) (1157 t) (1184 boolean))
@@ -506,43 +501,44 @@ run: 58 maybe-coerce 8: ((5 location) <- get (1 tagged-value-address deref) (1 o
 record-info: (1 tagged-value-address deref) (1 offset)
 record-info: initial base 1184 type ((address t) (elem tagged-value) (size 1))
 record-info: (1 tagged-value-address deref) requests deref => ((elems (type location)) (fields (type payload)) (record t) (size 2))
+sizeof: type
 get: (1 tagged-value-address deref) (1 offset) => 1185 location
 m: (1185 location global)
-sz: (1185 location global)
+sizeof: (1185 location global)
 run: nil => (5 location)
 setm: (5 location) <= nil
-sz: (5 location)
+sizeof: (5 location)
 setm: size of (5 location) is 1
 setm: (5 location): setting 1158 to nil
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t) (1153 30) (1154 1184) (1155 boolean) (1156 boolean) (1157 t) (1184 boolean))
 run: 59 maybe-coerce 9: (reply (5 location) (4 boolean))
 m: (5 location)
-sz: (5 location)
+sizeof: (5 location)
 m: (4 boolean)
-sz: (4 boolean)
+sizeof: (4 boolean)
 reply: ((5 location) (4 boolean)) ((5 boolean))
 reply: nil => (5 boolean)
 setm: (5 boolean) <= nil
-sz: (5 boolean)
+sizeof: (5 boolean)
 setm: size of (5 boolean) is 1
 setm: (5 boolean): setting 1071 to nil
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t) (1153 30) (1154 1184) (1155 boolean) (1156 boolean) (1157 t) (1184 boolean))
 run: 60 test1 12: ((6 boolean) <- or (2 boolean) (5 boolean))
 m: (2 boolean)
-sz: (2 boolean)
+sizeof: (2 boolean)
 run: t => (6 boolean)
 setm: (6 boolean) <= t
-sz: (6 boolean)
+sizeof: (6 boolean)
 setm: size of (6 boolean) is 1
 setm: (6 boolean): setting 1072 to t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 boolean) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 boolean) (1032 t) (1033 30) (1034 boolean) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 boolean) (1066 20) (1067 1031) (1068 t) (1069 t) (1070 1064) (1072 t) (1087 30) (1088 1118) (1089 integer) (1090 boolean) (1118 boolean) (1119 t) (1120 30) (1121 1151) (1122 boolean) (1123 boolean) (1124 t) (1125 t) (1151 boolean) (1152 t) (1153 30) (1154 1184) (1155 boolean) (1156 boolean) (1157 t) (1184 boolean))
 run: 61 test1 13: (reply (6 integer))
 m: (6 integer)
-sz: (6 integer)
+sizeof: (6 integer)
 reply: ((6 integer)) ((3 boolean))
 reply: t => (3 boolean)
 setm: (3 boolean) <= t
-sz: (3 boolean)
+sizeof: (3 boolean)
 setm: size of (3 boolean) is 1
 setm: (3 boolean): setting 3 to t
 schedule: done with routine
