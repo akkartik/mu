@@ -567,7 +567,7 @@
       (return))
     (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
     (trace "setm" loc " <= " val)
-    (with (n  sizeof.loc
+    (with (n  (if (isa val 'record) (len rep.val) 1)
            addr  addr.loc)
       (trace "setm" "size of " loc " is " n)
       (assert n "setm: can't compute type of @loc")
@@ -577,12 +577,19 @@
             (trace "setm" loc ": setting " addr " to " val)
             (= memory*.addr val))
         (do (assert (isa val 'record) "setm: non-record of size >1 @val")
+            (unless ((types* typeof.loc) 'array)
+              (when (~is sizeof.loc n)
+                (die "writing to incorrect size @(tostring prn.val) => @loc")))
             (let addrs (addrs addr n)
-              (when (~is len.addrs (len rep.val))
-                (die "writing to incorrect size @(tostring prn.val) => @loc"))
               (each (dest src) (zip addrs rep.val)
                 (trace "setm" loc ": setting " dest " to " src)
                 (= memory*.dest src))))))))
+
+(def typeof (operand)
+  (let loc absolutize.operand
+    (while (pos 'deref metadata.loc)
+      (zap deref loc))
+    ty.loc))
 
 (def addr (operand)
   (let loc absolutize.operand
