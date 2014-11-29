@@ -1916,6 +1916,27 @@
   (prn "F - indirect array copy in the presence of 'default-scope'"))
 ;? (quit)
 
+(reset)
+(new-trace "len-array-indirect-scoped")
+(add-code
+  '((def main [
+      ((10 integer) <- copy (30 literal))  ; pretend allocation
+      ((default-scope scope-address) <- copy (10 literal))  ; unsafe
+      ((1 integer) <- copy (2 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 boolean) <- copy (nil literal))
+      ((4 integer) <- copy (24 literal))
+      ((5 boolean) <- copy (t literal))
+      ((6 integer-address) <- copy (11 literal))  ; unsafe
+      ((7 integer) <- len (6 integer-boolean-pair-array-address deref))
+     ])))
+;? (= dump-trace* (obj whitelist '("run" "addr" "sz" "array-len")))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory*.17 2)
+  (prn "F - 'len' accesses length of array address"))
+;? (quit)
+
 ;; Dynamic dispatch
 ;
 ; Putting it all together, here's how you define generic functions that run
