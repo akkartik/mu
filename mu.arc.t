@@ -744,6 +744,15 @@
 (if (~is 3 sizeof!integer-point-pair)
   (prn "F - 'sizeof' works on records with record fields"))
 
+(if (~is 1 (sizeof '(34 integer)))
+  (prn "F - 'sizeof' works on primitive operands"))
+(if (~is 1 (sizeof '(34 integer-address)))
+  (prn "F - 'sizeof' works on address operands"))
+(if (~is 2 (sizeof '(34 integer-boolean-pair)))
+  (prn "F - 'sizeof' works on record operands"))
+(if (~is 3 (sizeof '(34 integer-point-pair)))
+  (prn "F - 'sizeof' works on record operands with record fields"))
+
 (reset)
 (new-trace "copy-record")
 (add-code
