@@ -763,6 +763,18 @@
 (if (~is 3 (sizeof '(34 integer-point-pair)))
   (prn "F - 'sizeof' works on record operands with record fields"))
 
+(= memory*.4 23)
+(if (~is 24 (sizeof '(4 integer-array)))
+  (prn "F - 'sizeof' reads array lengths from memory"))
+(= memory*.14 34)
+(= routine* make-routine!foo)
+(if (~is 24 (sizeof '(4 integer-array)))
+  (prn "F - 'sizeof' reads array lengths from memory inside routines"))
+(= rep.routine*!call-stack.0!default-scope 10)
+(= memory*.10 5)  ; bounds check for default-scope
+(if (~is 35 (sizeof '(4 integer-array)))
+  (prn "F - 'sizeof' reads array lengths from memory using default-scope"))
+
 (reset)
 (new-trace "copy-record")
 (add-code
