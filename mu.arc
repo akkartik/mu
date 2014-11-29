@@ -1137,9 +1137,8 @@
   ((b-len integer) <- len (b string-address deref))
   ((result-len integer) <- add (a-len integer) (b-len integer))
   ((result string-address) <- new (string literal) (result-len integer))
-  ; result-idx = i = 0
-  ((result-idx integer) <- copy (0 literal))
   ; copy a into result
+  ((result-idx integer) <- copy (0 literal))
   ((i integer) <- copy (0 literal))
   { begin
     ; while (i < a.length)
