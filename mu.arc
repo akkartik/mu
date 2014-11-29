@@ -274,6 +274,7 @@
       (push routine completed-routines*))))
 
 (def die (msg)
+  (tr "die: " msg)
   (= rep.routine*!error msg)
   (= rep.routine*!stack-trace rep.routine*!call-stack)
   (wipe rep.routine*!call-stack)
@@ -1174,21 +1175,42 @@
   (reply (result string-address)))
 
 ; replace underscores in first with remaining args
-(init-fn interpolate  ; string-address template, string-address a
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ; result-len = template.length + a.length - 1 (we'll the '_')
+(init-fn interpolate  ; string-address template, string-address a..
+  ((default-scope scope-address) <- new (scope literal) (60 literal))
   ((template string-address) <- arg)
+  ; compute space to allocate for result
   ((tem-len integer) <- len (template string-address deref))
-  ((a string-address) <- arg)
-  ((a-len integer) <- len (a string-address deref))
-  ((result-len integer) <- add (tem-len integer) (a-len integer))
-  ((result-len integer) <- sub (result-len integer) (1 literal))
+  ((result-len integer) <- copy (tem-len integer))
+  { begin
+    ; while arg received
+    ((a string-address) (arg-received? boolean) <- arg)
+    (break-unless (arg-received? boolean))
+;?     (print-primitive ("arg now: " literal))
+;?     (print-primitive (a string-address))
+;?     (print-primitive ("@" literal))
+;?     (print-primitive (a string-address deref))  ; todo: test (m on scoped array)
+;?     (print-primitive ("\n" literal))
+;? ;?     (assert (nil literal))
+    ; result-len = result-len + arg.length - 1 (for the 'underscore' being replaced)
+    ((a-len integer) <- len (a string-address deref))
+    ((result-len integer) <- add (result-len integer) (a-len integer))
+    ((result-len integer) <- sub (result-len integer) (1 literal))
+;?     (print-primitive ("result-len now: " literal))
+;?     (print-primitive (result-len integer))
+;?     (print-primitive ("\n" literal))
+    (loop)
+  }
+  ; rewind to start of non-template args
+  (_ <- arg (0 literal))
   ; result = new string[result-len]
   ((result string-address) <- new (string literal) (result-len integer))
   ; result-idx = i = 0
   ((result-idx integer) <- copy (0 literal))
   ((i integer) <- copy (0 literal))
   { begin
+    ; while arg received
+    ((a string-address) (arg-received? boolean) <- arg)
+    (break-unless (arg-received? boolean))
     ; copy template into result until '_'
     { begin
       ; while (i < template.length)
@@ -1218,6 +1240,11 @@
       (break-unless (arg-done? boolean))
       ; result[result-idx] = a[j]
       ((in byte) <- index (a string-address deref) (j integer))
+;?       (print-primitive ("copying: " literal))
+;?       (print-primitive (in byte))
+;?       (print-primitive (" at: " literal))
+;?       (print-primitive (result-idx integer))
+;?       (print-primitive ("\n" literal))
       ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
       ((out byte-address deref) <- copy (in byte))
       ; ++j
@@ -1228,6 +1255,11 @@
     }
     ; skip '_' in template
     ((i integer) <- add (i integer) (1 literal))
+;?     (print-primitive ("i now: " literal))
+;?     (print-primitive (i integer))
+;?     (print-primitive ("\n" literal))
+    (loop)  ; interpolate next arg
+  }
     ; copy rest of template into result
     { begin
       ; while (i < template.length)
@@ -1235,6 +1267,11 @@
       (break-unless (tem-done? boolean))
       ; result[result-idx] = template[i]
       ((in byte) <- index (template string-address deref) (i integer))
+;?       (print-primitive ("copying: " literal))
+;?       (print-primitive (in byte))
+;?       (print-primitive (" at: " literal))
+;?       (print-primitive (result-idx integer))
+;?       (print-primitive ("\n" literal))
       ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
       ((out byte-address deref) <- copy (in byte))
       ; ++i
@@ -1243,7 +1280,6 @@
       ((result-idx integer) <- add (result-idx integer) (1 literal))
       (loop)
     }
-  }
   (reply (result string-address)))
 
 (def canon (table)
