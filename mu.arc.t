@@ -866,7 +866,7 @@
 (= routine* make-routine!foo)
 (setm '(4 integer-point-pair) (annotate 'record '(33 34)))
 (if (~posmatch "incorrect size" rep.routine*!error)
-  (prn "F - 'setm' writes checks size of target"))
+  (prn "F - 'setm' checks size of target"))
 (wipe routine*)
 (setm '(3 integer-point-pair-address deref) (annotate 'record '(43 44 45)))
 (if (or (~is memory*.4 43)
@@ -878,6 +878,16 @@
         (~is memory*.5 54)
         (~is memory*.6 55))
   (prn "F - 'setm' supports multiply indirect writes to records"))
+(setm '(4 integer-array) (annotate 'record '(2 31 32)))
+(if (or (~is memory*.4 2)
+        (~is memory*.5 31)
+        (~is memory*.6 32))
+  (prn "F - 'setm' writes arrays"))
+(setm '(3 integer-array-address deref) (annotate 'record '(2 41 42)))
+(if (or (~is memory*.4 2)
+        (~is memory*.5 41)
+        (~is memory*.6 42))
+  (prn "F - 'setm' supports indirect writes to arrays"))
 
 ; back to top level tests
 
