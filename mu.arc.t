@@ -762,6 +762,8 @@
   (prn "F - 'sizeof' works on record operands"))
 (if (~is 3 (sizeof '(34 integer-point-pair)))
   (prn "F - 'sizeof' works on record operands with record fields"))
+(if (~is 2 (sizeof '(34 integer-boolean-pair-address deref)))
+  (prn "F - 'sizeof' works on pointers to records"))
 
 (= memory*.4 23)
 (if (~is 24 (sizeof '(4 integer-array)))

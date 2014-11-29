@@ -686,7 +686,12 @@
              typeinfo.x!array)
     (return (+ 1 (* (m `(,v.x integer))
                     (sizeof typeinfo.x!elem)))))
-  (let type (if acons.x ty.x x)
+  (let type (if (and acons.x (pos 'deref metadata.x))
+                  typeinfo.x!elem  ; deref pointer
+                acons.x
+                  ty.x
+                :else  ; naked type
+                  x)
     (assert types*.type "sizeof: no such type @type")
     (if (~or types*.type!record types*.type!array)
           types*.type!size
