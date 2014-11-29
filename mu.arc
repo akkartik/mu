@@ -576,8 +576,11 @@
         (do (assert (~isa val 'record) "setm: record of size 1 @(tostring prn.val)")
             (trace "setm" loc ": setting " addr " to " val)
             (= memory*.addr val))
-        (do (assert (isa val 'record) "setm: non-record of size >1 @val")
-            (unless ((types* typeof.loc) 'array)
+        (do (if ((types* typeof.loc) 'array)
+              ; size check for arrays
+              (when (~is rep.val.0 (- n 1))
+                (die "writing invalid array @(tostring prn.val)"))
+              ; size check for non-arrays
               (when (~is sizeof.loc n)
                 (die "writing to incorrect size @(tostring prn.val) => @loc")))
             (let addrs (addrs addr n)

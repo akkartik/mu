@@ -888,6 +888,11 @@
         (~is memory*.5 41)
         (~is memory*.6 42))
   (prn "F - 'setm' supports indirect writes to arrays"))
+(= routine* make-routine!foo)
+(setm '(4 integer-array) (annotate 'record '(2 31 32 33)))
+(if (~posmatch "invalid array" rep.routine*!error)
+  (prn "F - 'setm' checks that array written is well-formed"))
+(wipe routine*)
 
 ; back to top level tests
 
