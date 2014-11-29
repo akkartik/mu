@@ -608,6 +608,23 @@
 ;? (quit)
 
 (reset)
+(new-trace "index-indirect-multiple")
+(add-code
+  '((def main [
+      ((1 integer) <- copy (4 literal))
+      ((2 integer) <- copy (23 literal))
+      ((3 integer) <- copy (24 literal))
+      ((4 integer) <- copy (25 literal))
+      ((5 integer) <- copy (26 literal))
+      ((6 integer-array-address) <- copy (1 literal))  ; unsafe
+      ((7 integer-array-address-address) <- copy (6 literal))  ; unsafe
+      ((8 integer) <- index (7 integer-array-address-address deref deref) (1 literal))
+     ])))
+(run 'main)
+(if (~is memory*.8 24)
+  (prn "F - 'index' can deref multiple times"))
+
+(reset)
 (new-trace "index-address")
 (add-code
   '((def main [
@@ -1989,7 +2006,7 @@
       ((2 integer-address deref) <- copy (34 literal))
       ((3 integer global) <- index (1 integer-array-address deref) (2 offset))
      ])))
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+;? (= dump-trace* (obj whitelist '("run" "array-info")))
 (run 'main)
 ;? (prn memory*)
 ;? (prn completed-routines*)
