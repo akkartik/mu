@@ -719,6 +719,9 @@
 (= memory*.4 23)
 (if (~is 23 (addr '(4 integer-address deref)))
   (prn "F - 'addr' works with indirectly-addressed 'deref'"))
+(= memory*.3 4)
+(if (~is 23 (addr '(3 integer-address-address deref deref)))
+  (prn "F - 'addr' works with multiple 'deref'"))
 
 (= routine* make-routine!foo)
 (if (~is 4 (addr '(4 integer)))
