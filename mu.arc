@@ -650,8 +650,7 @@
   (when (acons x)
     (zap canonize x)
     (when typeinfo.x!array
-      (return (+ 1 (* (m `(,v.x integer ,@(cut x 2)))
-                      (sizeof typeinfo.x!elem))))))
+      (return (+ 1 (* array-len.x (sizeof typeinfo.x!elem))))))
   (let type (if (and acons.x (pos 'deref metadata.x))
                   typeinfo.x!elem  ; deref pointer
                 acons.x
