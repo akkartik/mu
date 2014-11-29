@@ -721,6 +721,16 @@
   (prn "F - 'addr' works with indirectly-addressed 'deref'"))
 
 (= routine* make-routine!foo)
+(if (~is 4 (addr '(4 integer)))
+  (prn "F - directly addressed operands are their own address inside routines"))
+(if (~is 4 (addr '(4 integer-address)))
+  (prn "F - directly addressed operands are their own address inside routines - 2"))
+(if (~is 4 (addr '(4 literal)))
+  (prn "F - 'addr' doesn't understand literals inside routines"))
+(= memory*.4 23)
+(if (~is 23 (addr '(4 integer-address deref)))
+  (prn "F - 'addr' works with indirectly-addressed 'deref' inside routines"))
+
 (= rep.routine*!call-stack.0!default-scope 10)
 (= memory*.10 5)  ; bounds check for default-scope
 (if (~is 14 (addr '(4 integer)))
