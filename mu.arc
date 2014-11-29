@@ -397,21 +397,41 @@
                 copy
                   (m arg.0)
                 get
-                  (let (addr type)  (record-info arg.0 arg.1)
-                    (trace "get" arg.0 " " arg.1 " => " addr " " type)
-                    (m `(,addr ,type global)))
+                  (with (operand  (canonize arg.0)
+                         idx  (v arg.1))
+                    (assert (is 'offset (ty arg.1)) "record index @arg.1 must have type 'offset'")
+                    (assert (< -1 idx (len typeinfo.operand!elems)) "@idx is out of bounds of record @operand")
+                    (m (list (apply + v.operand
+                                      (map sizeof (firstn idx typeinfo.operand!elems)))
+                             typeinfo.operand!elems.idx
+                             'global)))
                 get-address
-                  (let (addr _)  (record-info arg.0 arg.1)
-                    (trace "get-address" arg.0 " " arg.1 " => " addr)
-                    addr)
+                  (with (operand  (canonize arg.0)
+                         idx  (v arg.1))
+                    (assert (is 'offset (ty arg.1)) "record index @arg.1 must have type 'offset'")
+                    (assert (< -1 idx (len typeinfo.operand!elems)) "@idx is out of bounds of record @operand")
+                    (apply + v.operand
+                             (map sizeof (firstn idx typeinfo.operand!elems))))
                 index
-                  (let (addr type)  (array-info arg.0 (m arg.1))
-                    (trace "index" arg.0 " " arg.1 " => " addr " " type)
-                    (m `(,addr ,type global)))
+                  (withs (operand  (canonize arg.0)
+                          elemtype  typeinfo.operand!elem
+                          idx  (m arg.1))
+                    (unless (< -1 idx array-len.operand)
+                      (die "@idx is out of bounds of array @operand"))
+                    (m (list (+ v.operand
+                                1  ; for array size
+                                (* idx sizeof.elemtype))
+                             elemtype
+                             'global)))
                 index-address
-                  (let (addr _)  (array-info arg.0 (m arg.1))
-                    (trace "index-address" arg.0 " " arg.1 " => " addr)
-                    addr)
+                  (withs (operand  (canonize arg.0)
+                          elemtype  typeinfo.operand!elem
+                          idx  (m arg.1))
+                    (unless (< -1 idx array-len.operand)
+                      (die "@idx is out of bounds of array @operand"))
+                    (+ v.operand
+                       1  ; for array size
+                       (* idx sizeof.elemtype)))
                 new
                   (if (isa arg.0 'string)
                     ; special-case: allocate space for a literal string
@@ -607,39 +627,11 @@
       (yield n)
       (++ n))))
 
-; (operand field-offset) -> (base-addr field-type)
-; operand can be a deref address
-; operand can be scope-based
-; base-addr returned is always global
-(def record-info (operand field-offset)
-  (trace "record-info" operand " " field-offset)
-  (assert (is 'offset (ty field-offset)) "record index @field-offset must have type 'offset'")
-  (zap absolutize operand)
-  (while (pos 'deref metadata.operand)
-    (zap deref operand))
-  (assert typeinfo.operand!record "get on non-record @operand")
-  (with (base  v.operand
-         basetype  typeinfo.operand
-         idx  (v field-offset))
-    (trace "record-info" "initial base " base " type " canon.basetype)
-    (assert (< -1 idx (len basetype!elems)) "@idx is out of bounds of record @operand")
-    (list (apply + base (map sizeof (firstn idx basetype!elems)))
-          basetype!elems.idx)))
-
-; (operand idx) -> (base-addr elem-type)
-(def array-info (operand idx)
-  (trace "array-info" operand " " idx)
-  (zap absolutize operand)
-  (while (pos 'deref operand)
-    (zap deref operand))
-  (assert typeinfo.operand!array "index on non-array @operand")
-  (unless (< -1 idx array-len.operand)
-    (die "@idx is out of bounds of array @operand"))
-  (let elemtype typeinfo.operand!elem
-    (list (+ v.operand
-             1  ; for array siz
-             (* idx sizeof.elemtype))
-          elemtype)))
+(def canonize (operand)
+  (ret operand
+    (zap absolutize operand)
+    (while (pos 'deref metadata.operand)
+      (zap deref operand))))
 
 (def array-len (operand)
   (trace "array-len" operand)
