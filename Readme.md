@@ -58,7 +58,8 @@ before we invest in the *visual* tools for making them concise.
 
 **Taking mu for a spin**
 
-Prerequisites: Racket from http://racket-lang.org
+First install [Racket](http://racket-lang.org). (Just for the initial
+prototype.) Then:
 
 ```shell
   $ cd mu
@@ -203,7 +204,7 @@ Try running the tests:
 ```
 
 Now start reading `mu.arc.t` to see how it works. A colorized copy of it is at
-`mu.arc.t.html` and http://akkartik.github.io/mu.
+mu.arc.t.html and http://akkartik.github.io/mu.
 
 You might also want to peek in the `.traces` directory, which automatically
 includes logs for each test showing you just how it ran on my machine. If mu
