@@ -553,7 +553,7 @@
            addr  addr.loc)
 ;?       (trace "m" "reading " n " locations starting at " addr)
       (if (is 1 n)
-            (memory* addr)
+            memory*.addr
           :else
             (annotate 'record
                       (map memory* (addrs addr n)))))))
@@ -574,12 +574,12 @@
       (if (is 1 n)
         (do (assert (~isa val 'record) "setm: record of size 1 @(tostring prn.val)")
             (trace "setm" loc ": setting " addr " to " val)
-            (= (memory* addr) val))
+            (= memory*.addr val))
         (do (assert (isa val 'record) "setm: non-record of size >1 @val")
             (each (dest src) (zip (addrs addr n)
                                   (rep val))
               (trace "setm" loc ": setting " dest " to " src)
-              (= (memory* dest) src)))))))
+              (= memory*.dest src)))))))
 
 (def addr (operand)
   (let loc absolutize.operand
@@ -709,7 +709,7 @@
 ;?   (prn "new array: @type @size")
   (ret result Memory-in-use-until
     (++ Memory-in-use-until (+ 1 (* (sizeof types*.type!elem) size)))
-    (= (memory* result) size)))
+    (= memory*.result size)))
 
 (def new-string (literal-string)
   (ret result Memory-in-use-until
