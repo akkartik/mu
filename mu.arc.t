@@ -755,6 +755,26 @@
 (if (~iso memory* (obj 1 34  2 nil  3 34  4 nil))
   (prn "F - ops can operate on records spanning multiple locations"))
 
+(reset)
+(new-trace "copy-record2")
+(add-code
+  '((def main [
+      ((1 integer) <- copy (34 literal))
+      ((2 integer) <- copy (35 literal))
+      ((3 integer) <- copy (36 literal))
+      ((4 integer) <- copy (0 literal))
+      ((5 integer) <- copy (0 literal))
+      ((6 integer) <- copy (0 literal))
+      ((4 integer-point-pair) <- copy (1 integer-point-pair))
+     ])))
+;? (= dump-trace* (obj whitelist '("run" "sizeof")))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory* (obj 1 34  2 35  3 36
+                       ; result
+                       4 34  5 35  6 36))
+  (prn "F - ops can operate on records with fields spanning multiple locations"))
+
 ; A special kind of record is the 'tagged type'. It lets us represent
 ; dynamically typed values, which save type information in memory rather than
 ; in the code to use them. This will let us do things like create heterogenous
