@@ -614,17 +614,16 @@
 (def record-info (operand field-offset)
   (trace "record-info" operand " " field-offset)
   (assert (is 'offset (ty field-offset)) "record index @field-offset must have type 'offset'")
-  (with (base  addr.operand
+  (zap absolutize operand)
+  (while (pos 'deref metadata.operand)
+    (zap deref operand))
+  (assert typeinfo.operand!record "get on non-record @operand")
+  (with (base  v.operand
          basetype  typeinfo.operand
          idx  (v field-offset))
     (trace "record-info" "initial base " base " type " canon.basetype)
-    (when (pos 'deref metadata.operand)
-      (assert basetype!address "@operand requests deref, but it's not an address of a record")
-      (= basetype (types* basetype!elem))
-      (trace "record-info" operand " requests deref => " canon.basetype))
-    (assert basetype!record "get on non-record @operand")
     (assert (< -1 idx (len basetype!elems)) "@idx is out of bounds of record @operand")
-    (list (+ base (apply + (map sizeof (firstn idx basetype!elems))))
+    (list (apply + base (map sizeof (firstn idx basetype!elems)))
           basetype!elems.idx)))
 
 ; (operand idx) -> (base-addr elem-type)
@@ -637,7 +636,7 @@
   (unless (< -1 idx array-len.operand)
     (die "@idx is out of bounds of array @operand"))
   (let elemtype typeinfo.operand!elem
-    (list (+ addr.operand
+    (list (+ v.operand
              1  ; for array siz
              (* idx sizeof.elemtype))
           elemtype)))

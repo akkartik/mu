@@ -511,6 +511,24 @@
   (prn "F - 'get' accesses fields of record address"))
 
 (reset)
+(new-trace "get-indirect-repeated")
+(add-code
+  '((def main [
+      ((1 integer) <- copy (34 literal))
+      ((2 integer) <- copy (35 literal))
+      ((3 integer) <- copy (36 literal))
+      ((4 integer-point-pair-address) <- copy (1 literal))  ; unsafe
+      ((5 integer-point-pair-address-address) <- copy (4 literal))  ; unsafe
+      ((6 integer-integer-pair) <- get (5 integer-point-pair-address-address deref deref) (1 offset))
+      ((8 integer) <- get (5 integer-point-pair-address-address deref deref) (0 offset))
+     ])))
+(run 'main)
+(if (or (~is memory*.6 35)
+        (~is memory*.7 36)
+        (~is memory*.8 34))
+  (prn "F - 'get' can deref multiple times"))
+
+(reset)
 (new-trace "get-compound-field")
 (add-code
   '((def main [
