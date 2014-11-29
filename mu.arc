@@ -111,6 +111,7 @@
               ; arrays consist of an integer length followed by the right number of elems
               integer-array (obj array t  elem 'integer)
               integer-array-address (obj size 1  address t  elem 'integer-array)
+              integer-array-address-address (obj size 1  address t  elem 'integer-array-address)
               integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
               integer-address-address (obj size 1  address t  elem 'integer-address)
               ; records consist of a series of elems, corresponding to a list of types
@@ -626,32 +627,28 @@
     (list (+ base (apply + (map sizeof (firstn idx basetype!elems))))
           basetype!elems.idx)))
 
+; (operand idx) -> (base-addr elem-type)
 (def array-info (operand idx)
   (trace "array-info" operand " " idx)
-  (with (base  addr.operand
-         basetype  typeinfo.operand)
-    (trace "array-info" "initial base " base " type " canon.basetype)
-    (when (pos 'deref metadata.operand)
-      (assert basetype!address "@operand requests deref, but it's not an address of an array")
-      (= basetype (types* basetype!elem))
-      (trace "array-info" operand " requests deref => " canon.basetype))
-    (assert basetype!array "index on non-array @operand")
-    (let array-len array-len.operand
-      (trace "array-info" "array-len of " operand " is " array-len)
-      (assert array-len "can't compute array-len of @operand")
-      (unless (< -1 idx array-len)
-        (die "@idx is out of bounds of array @operand")))
-    (list (+ base
-             1  ; for array size
-             (* idx (sizeof basetype!elem)))
-          basetype!elem)))
+  (zap absolutize operand)
+  (while (pos 'deref operand)
+    (zap deref operand))
+  (assert typeinfo.operand!array "index on non-array @operand")
+  (unless (< -1 idx array-len.operand)
+    (die "@idx is out of bounds of array @operand"))
+  (let elemtype typeinfo.operand!elem
+    (list (+ addr.operand
+             1  ; for array siz
+             (* idx sizeof.elemtype))
+          elemtype)))
 
 (def array-len (operand)
   (trace "array-len" operand)
+  (zap absolutize operand)
+  (while (pos 'deref metadata.operand)
+    (zap deref operand))
   (if typeinfo.operand!array
-        (m `(,v.operand integer))
-      (and typeinfo.operand!address (pos 'deref metadata.operand))
-        (m `(,v.operand integer-address ,@(cut operand 2)))
+        (m `(,v.operand integer ,@(cut operand 2)))
       :else
         (err "can't take len of non-array @operand")))
 
