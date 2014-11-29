@@ -3132,7 +3132,7 @@
 
 ; helper
 (def memory-contains (addr value)
-;?   (prn "Looking for @value starting at @addr")
+;?   (prn "Looking for @value starting at @addr, size @memory*.addr vs @len.value")
   (and (>= memory*.addr len.value)
        (loop (addr (+ addr 1)
               idx  0)
@@ -3207,6 +3207,25 @@
 (run 'main)
 (if (~memory-contains memory*.3 "hello, abc")
   (prn "F - 'interpolate' splices strings at start"))
+
+(reset)
+(new-trace "interpolate-varargs")
+(add-code '((def main [
+              ((1 string-address) <- new "hello, _, _, and _!")
+              ((2 string-address) <- new "abc")
+              ((3 string-address) <- new "def")
+              ((4 string-address) <- new "ghi")
+              ((5 string-address) <- interpolate (1 string-address) (2 string-address) (3 string-address) (4 string-address))
+             ])))
+;? (= dump-trace* (obj whitelist '("run")))
+;? (= dump-trace* (obj whitelist '("run" "array-info")))
+;? (set dump-trace*)
+(run 'main)
+;? (quit)
+;? (up i 1 (+ 1 (memory* memory*.5))
+;?   (prn (memory* (+ memory*.5 i))))
+(if (~memory-contains memory*.5 "hello, abc, def, and ghi!")
+  (prn "F - 'interpolate' splices in any number of strings"))
 
 ;; unit tests for various helpers
 
