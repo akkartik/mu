@@ -750,6 +750,9 @@
   (prn "F - 'deref' handles simple addresses"))
 (if (~iso '(4 integer deref) (deref '(3 integer-address deref deref)))
   (prn "F - 'deref' deletes just one deref"))
+(= memory*.4 5)
+(if (~iso '(5 integer) (deref:deref '(3 integer-address-address deref deref)))
+  (prn "F - 'deref' can be chained"))
 
 ; unit tests for 'sizeof' helper
 (reset)
