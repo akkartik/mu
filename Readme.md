@@ -13,8 +13,8 @@ into reproducible automatic tests.
 and seeing what tests fail, confident that *every* scenario previous authors
 have considered has been encoded as a test.
 
-4. Build first simple and successively more complex versions of a program so
-you can stage your learning.
+4. Run first simple and successively more complex versions to stage your
+learning.
 
 I think all these abilities might be strongly correlated; not only are they
 achievable with a few common concepts, but you can't easily attack one of them
