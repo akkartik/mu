@@ -510,6 +510,19 @@
 (if (~iso memory* (obj 1 34  2 nil  3 1  4 nil  5 34))
   (prn "F - 'get' accesses fields of record address"))
 
+(def memory-contains (addr value)
+;?   (prn "Looking for @value starting at @addr")
+  (loop (addr addr
+         idx  0)
+;?     (prn "@idx vs @addr")
+    (if (>= idx len.value)
+          t
+        (~is memory*.addr value.idx)
+          (do1 nil
+               (prn "@addr should contain @value.idx but contains @memory*.addr"))
+        :else
+          (recur (+ addr 1) (+ idx 1)))))
+
 (reset)
 (new-trace "get-indirect-repeated")
 (add-code
@@ -523,10 +536,9 @@
       ((8 integer) <- get (5 integer-point-pair-address-address deref deref) (0 offset))
      ])))
 (run 'main)
-(if (or (~is memory*.6 35)
-        (~is memory*.7 36)
-        (~is memory*.8 34))
+(if (~memory-contains 6 '(35 36 34))
   (prn "F - 'get' can deref multiple times"))
+;? (quit)
 
 (reset)
 (new-trace "get-compound-field")
@@ -798,7 +810,7 @@
 ;? (prn completed-routines*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (or (~is memory*.3 34) (~is memory*.4 t))
+(if (~memory-contains 3 '(34 t))
   (prn "F - 'maybe-coerce' copies value only if type tag matches"))
 ;? (quit)
 
@@ -813,7 +825,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (or (~is memory*.3 0) (~is memory*.4 nil))
+(if (~memory-contains 3 '(0 nil))
   (prn "F - 'maybe-coerce' doesn't copy value when type tag doesn't match"))
 
 (reset)
@@ -839,7 +851,7 @@
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
 ;? (prn memory*)
-(if (or (~is memory*.3 34) (~is memory*.4 t))
+(if (~memory-contains 3 '(34 t))
   (prn "F - 'new-tagged-value' is the converse of 'maybe-coerce'"))
 ;? (quit)
 
@@ -3145,6 +3157,21 @@
 
 ;; ---
 
+; helper
+(def memory-contains-array (addr value)
+;?   (prn "Looking for @value starting at @addr, size @memory*.addr vs @len.value")
+  (and (>= memory*.addr len.value)
+       (loop (addr (+ addr 1)
+              idx  0)
+;?          (prn "comparing @memory*.addr and @value.idx")
+         (if (>= idx len.value)
+               t
+             (~is memory*.addr value.idx)
+               (do1 nil
+                    (prn "@addr should contain @value.idx but contains @memory*.addr"))
+             :else
+               (recur (+ addr 1) (+ idx 1))))))
+
 (reset)
 (new-trace "string-new")
 (add-code '((def main [
@@ -3165,32 +3192,8 @@
   (run 'main)
   (if (~iso Memory-in-use-until (+ before 5 1))
     (prn "F - 'new' allocates arrays of bytes for string literals"))
-  (if (or (~is 5 (memory* before))
-          (~is #\h (memory* (+ before 1)))
-          (~is #\e (memory* (+ before 2)))
-          (~is #\l (memory* (+ before 3)))
-          (~is #\l (memory* (+ before 4)))
-          (~is #\o (memory* (+ before 5))))
-    (prn "F - 'new' initializes allocated memory to string literal"))
-
-; helper
-(def memory-contains-array (addr value)
-;?   (prn "Looking for @value starting at @addr, size @memory*.addr vs @len.value")
-  (and (>= memory*.addr len.value)
-       (loop (addr (+ addr 1)
-              idx  0)
-;? ;?          (prn "comparing @memory*.addr and @value.idx")
-         (if (>= idx len.value)
-               t
-             (~is memory*.addr value.idx)
-               (do1 nil
-                    (prn "@addr should contain @value.idx but contains @memory*.addr"))
-             :else
-               (recur (+ addr 1) (+ idx 1))))))
-
-  ; test the helper
   (if (~memory-contains-array before "hello")
-    (prn "F - 'memory-contains-array' helper is broken")))
+    (prn "F - 'new' initializes allocated memory to string literal")))
 
 (reset)
 (new-trace "strcat")
@@ -3432,14 +3435,11 @@
 (if (~is 36 memory*.4)
   (prn "F - 'setm' multiply redirects writes"))
 (setm '(4 integer-integer-pair) (annotate 'record '(23 24)))
-(if (or (~is memory*.4 23)
-        (~is memory*.5 24))
+(if (~memory-contains 4 '(23 24))
   (prn "F - 'setm' writes compound records"))
 (assert (is memory*.7 nil))
 (setm '(7 integer-point-pair) (annotate 'record '(23 24 25)))
-(if (or (~is memory*.7 23)
-        (~is memory*.8 24)
-        (~is memory*.9 25))
+(if (~memory-contains 7 '(23 24 25))
   (prn "F - 'setm' writes records with compound fields"))
 (= routine* make-routine!foo)
 (setm '(4 integer-point-pair) (annotate 'record '(33 34)))
@@ -3447,24 +3447,16 @@
   (prn "F - 'setm' checks size of target"))
 (wipe routine*)
 (setm '(3 integer-point-pair-address deref) (annotate 'record '(43 44 45)))
-(if (or (~is memory*.4 43)
-        (~is memory*.5 44)
-        (~is memory*.6 45))
+(if (~memory-contains 4 '(43 44 45))
   (prn "F - 'setm' supports indirect writes to records"))
 (setm '(2 integer-point-pair-address-address deref deref) (annotate 'record '(53 54 55)))
-(if (or (~is memory*.4 53)
-        (~is memory*.5 54)
-        (~is memory*.6 55))
+(if (~memory-contains 4 '(53 54 55))
   (prn "F - 'setm' supports multiply indirect writes to records"))
 (setm '(4 integer-array) (annotate 'record '(2 31 32)))
-(if (or (~is memory*.4 2)
-        (~is memory*.5 31)
-        (~is memory*.6 32))
+(if (~memory-contains 4 '(2 31 32))
   (prn "F - 'setm' writes arrays"))
 (setm '(3 integer-array-address deref) (annotate 'record '(2 41 42)))
-(if (or (~is memory*.4 2)
-        (~is memory*.5 41)
-        (~is memory*.6 42))
+(if (~memory-contains 4 '(2 41 42))
   (prn "F - 'setm' supports indirect writes to arrays"))
 (= routine* make-routine!foo)
 (setm '(4 integer-array) (annotate 'record '(2 31 32 33)))
