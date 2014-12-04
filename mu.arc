@@ -918,6 +918,10 @@
                 (enq qinstr deferred))))))
     (accum yield
       (each instr instrs
+        (when (and acons.instr
+                   (is instr.0 'reply))
+          (each instr (as cons deferred)
+            (yield instr)))
         (unless (and acons.instr
                      (in instr.0 'defer))  ; keep sync'd with case clauses above
           (yield instr)))
