@@ -2750,33 +2750,33 @@
     (prn "F - 'write' on full channel blocks (puts the routine to sleep until the channel gets data)")))
 ;? (quit)
 
-;? (reset)
-;? (new-trace "channel-handoff")
-;? (add-code
-;?   '((def f1 [
-;?       ((default-scope scope-address) <- new (scope literal) (30 literal))
-;?       ((chan channel-address) <- new-channel (3 literal))
-;?       (fork (f2 fn) (chan channel-address))
-;?       ((1 tagged-value global) <- read (chan channel-address))  ; output
-;?      ])
-;?     (def f2 [
-;?       ((default-scope scope-address) <- new (scope literal) (30 literal))
-;?       ((n integer-address) <- new (integer literal))
-;?       ((n integer-address deref) <- copy (24 literal))
-;?       ((ochan channel-address) <- arg)
-;?       ((x tagged-value) <- save-type (n integer-address))
-;?       ((ochan channel-address deref) <- write (ochan channel-address) (x tagged-value))
-;?      ])))
-;? ;? (set dump-trace*)
-;? ;? (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
-;? ;? (= dump-trace* (obj whitelist '("-")))
-;? (run 'f1)
-;? ;? (prn memory*)
-;? (each routine completed-routines*
-;?   (aif rep.routine!error (prn "error - " it)))
-;? (if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
-;?   (prn "F - channels are meant to be shared between routines"))
-;? ;? (quit)
+(reset)
+(new-trace "channel-handoff")
+(add-code
+  '((def f1 [
+      ((default-scope scope-address) <- new (scope literal) (30 literal))
+      ((chan channel-address) <- new-channel (3 literal))
+      (fork (f2 fn) (chan channel-address))
+      ((1 tagged-value global) <- read (chan channel-address))  ; output
+     ])
+    (def f2 [
+      ((default-scope scope-address) <- new (scope literal) (30 literal))
+      ((n integer-address) <- new (integer literal))
+      ((n integer-address deref) <- copy (24 literal))
+      ((ochan channel-address) <- arg)
+      ((x tagged-value) <- save-type (n integer-address))
+      ((ochan channel-address deref) <- write (ochan channel-address) (x tagged-value))
+     ])))
+;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
+;? (= dump-trace* (obj whitelist '("-")))
+(run 'f1)
+;? (prn memory*)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
+  (prn "F - channels are meant to be shared between routines"))
+;? (quit)
 
 ;; Separating concerns
 ;

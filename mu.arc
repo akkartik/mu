@@ -465,7 +465,12 @@
                 run
                   (run (v arg.0))
                 fork
-                  (enq (apply make-routine (v car.arg) (map m cdr.arg)) running-routines*)
+                  (let routine (apply make-routine (v car.arg) (map m cdr.arg))
+;?                     (tr "before: " rep.routine*!alloc)
+                    (= rep.routine!alloc rep.routine*!alloc)
+                    (++ rep.routine*!alloc 1000)
+;?                     (tr "after: " rep.routine*!alloc " " rep.routine!alloc)
+                    (enq routine running-routines*))
                 ; todo: errors should stall a process and let its parent
                 ; inspect it
                 assert
