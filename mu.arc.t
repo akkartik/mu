@@ -2798,6 +2798,28 @@
   (prn "F - convert-quotes inserts code at early exits"))
 
 (reset)
+(new-trace "convert-quotes-defer-reply-arg")
+(= traces* (queue))
+(if (~iso (convert-quotes
+            '(((1 integer) <- copy (0 literal))
+              (defer [
+                       ((5 integer) <- copy (0 literal))
+                     ])
+              ((2 integer) <- copy (0 literal))
+              (reply (2 literal))
+              ((3 integer) <- copy (0 literal))
+              ((4 integer) <- copy (0 literal))))
+          '(((1 integer) <- copy (0 literal))
+            ((2 integer) <- copy (0 literal))
+            (prepare-reply (2 literal))
+            ((5 integer) <- copy (0 literal))
+            (reply)
+            ((3 integer) <- copy (0 literal))
+            ((4 integer) <- copy (0 literal))
+            ((5 integer) <- copy (0 literal))))
+  (prn "F - convert-quotes inserts code at early exits"))
+
+(reset)
 (new-trace "convert-quotes-label")
 (= traces* (queue))
 (if (~iso (convert-quotes
