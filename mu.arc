@@ -148,7 +148,7 @@
 
 ; routine = runtime state for a serial thread of execution
 (def make-routine (fn-name . args)
-  (annotate 'routine (obj call-stack (list
+  (annotate 'routine (obj alloc 1000  call-stack (list
       (obj fn-name fn-name  pc 0  args args  caller-arg-idx 0)))))
 
 (defextend empty (x)  (isa x 'routine)
@@ -248,6 +248,7 @@
           (do (trace "schedule" "done with routine")
               (push routine* completed-routines*)))
     (= routine* nil))
+;?   (tr 111)
   (each (routine _) canon.sleeping-routines*
     (when (ready-to-wake-up routine)
       (trace "schedule" "waking up " top.routine!fn-name)
@@ -255,13 +256,17 @@
       (wipe rep.routine!sleep)
       (++ pc.routine)
       (enq routine running-routines*)))
+;?   (tr 112)
   (when (empty running-routines*)
     (whenlet exact-sleeping-routines (keep waiting-for-exact-cycle? keys.sleeping-routines*)
       (let next-wakeup-cycle (apply min (map [rep._!sleep 0] exact-sleeping-routines))
         (= curr-cycle* (+ 1 next-wakeup-cycle))
         (trace "schedule" "skipping to cycle " curr-cycle*)
         (update-scheduler-state))))
-  (detect-deadlock))
+;?   (tr 113)
+  (detect-deadlock)
+;?   (tr 114)
+  )
 
 (def detect-deadlock ()
   (when (and (empty running-routines*)
@@ -695,26 +700,25 @@
 
 ; memory allocation
 
-(enq (fn () (= Memory-in-use-until 1000))
-     initialization-fns*)
-
 (def new-scalar (type)
-  (ret result Memory-in-use-until
-    (++ Memory-in-use-until sizeof.type)))
+;?   (tr "new scalar: @type")
+  (ret result rep.routine*!alloc
+    (++ rep.routine*!alloc sizeof.type)))
 
 (def new-array (type size)
-;?   (prn "new array: @type @size")
-  (ret result Memory-in-use-until
-    (++ Memory-in-use-until (+ 1 (* (sizeof types*.type!elem) size)))
+;?   (tr "new array: @type @size")
+  (ret result rep.routine*!alloc
+    (++ rep.routine*!alloc (+ 1 (* (sizeof types*.type!elem) size)))
     (= memory*.result size)))
 
 (def new-string (literal-string)
-  (ret result Memory-in-use-until
-    (= memory*.Memory-in-use-until len.literal-string)
-    (++ Memory-in-use-until)
+;?   (tr "new string: @literal-string")
+  (ret result rep.routine*!alloc
+    (= (memory* rep.routine*!alloc) len.literal-string)
+    (++ rep.routine*!alloc)
     (each c literal-string
-      (= memory*.Memory-in-use-until c)
-      (++ Memory-in-use-until))))
+      (= (memory* rep.routine*!alloc) c)
+      (++ rep.routine*!alloc))))
 
 ;; desugar structured assembly based on blocks
 

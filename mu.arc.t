@@ -114,6 +114,7 @@
 ; this file on the scenarios the code cares about.
 
 (load "mu.arc")
+;? (quit)
 
 ; Our language is assembly-like in that functions consist of series of
 ; statements, and statements consist of an operation and its arguments (input
@@ -805,6 +806,7 @@
       ((2 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal))
      ])))
+;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
 ;? (prn completed-routines*)
@@ -881,23 +883,25 @@
       ((9 location deref) <- copy (t literal))
       ((10 list-address) <- get (6 list-address deref) (1 offset))
      ])))
-(let first Memory-in-use-until
-  (run 'main)
-;?   (prn memory*)
-  (if (or (~all first (map memory* '(1 2 3)))
-          (~is memory*.first  'integer)
-          (~is memory*.4 (+ first 1))
-          (~is (memory* (+ first 1))  34)
-          (~is memory*.5 (+ first 2))
-          (let second memory*.6
-            (or
-              (~is (memory* (+ first 2)) second)
-              (~all second (map memory* '(6 7 8)))
-              (~is memory*.second 'boolean)
-              (~is memory*.9 (+ second 1))
-              (~is (memory* (+ second 1)) t)
-              (~is memory*.10 nil))))
-    (prn "F - lists can contain elements of different types")))
+(let routine make-routine!main
+  (enq routine running-routines*)
+  (let first rep.routine!alloc
+    (run)
+;?     (prn memory*)
+    (if (or (~all first (map memory* '(1 2 3)))
+            (~is memory*.first  'integer)
+            (~is memory*.4 (+ first 1))
+            (~is (memory* (+ first 1))  34)
+            (~is memory*.5 (+ first 2))
+            (let second memory*.6
+              (or
+                (~is (memory* (+ first 2)) second)
+                (~all second (map memory* '(6 7 8)))
+                (~is memory*.second 'boolean)
+                (~is memory*.9 (+ second 1))
+                (~is (memory* (+ second 1)) t)
+                (~is memory*.10 nil))))
+      (prn "F - lists can contain elements of different types"))))
 (add-code
   '((def test2 [
       ((10 list-address) <- list-next (1 list-address))
@@ -1742,13 +1746,16 @@
   '((def main [
       ((1 integer-address) <- new (integer literal))
      ])))
-(let before Memory-in-use-until
-  (run 'main)
-;?   (prn memory*)
-  (if (~iso memory*.1 before)
-    (prn "F - 'new' returns current high-water mark"))
-  (if (~iso Memory-in-use-until (+ before 1))
-    (prn "F - 'new' on primitive types increments high-water mark by their size")))
+(let routine make-routine!main
+  (enq routine running-routines*)
+  (let before rep.routine!alloc
+;?     (set dump-trace*)
+    (run)
+  ;?   (prn memory*)
+    (if (~iso memory*.1 before)
+      (prn "F - 'new' returns current high-water mark"))
+    (if (~iso rep.routine!alloc (+ before 1))
+      (prn "F - 'new' on primitive types increments high-water mark by their size"))))
 
 (reset)
 (new-trace "new-array-literal")
@@ -1756,13 +1763,15 @@
   '((def main [
       ((1 type-array-address) <- new (type-array literal) (5 literal))
      ])))
-(let before Memory-in-use-until
-  (run 'main)
-;?   (prn memory*)
-  (if (~iso memory*.1 before)
-    (prn "F - 'new' on array with literal size returns current high-water mark"))
-  (if (~iso Memory-in-use-until (+ before 6))
-    (prn "F - 'new' on primitive arrays increments high-water mark by their size")))
+(let routine make-routine!main
+  (enq routine running-routines*)
+  (let before rep.routine!alloc
+    (run)
+;?     (prn memory*)
+    (if (~iso memory*.1 before)
+      (prn "F - 'new' on array with literal size returns current high-water mark"))
+    (if (~iso rep.routine!alloc (+ before 6))
+      (prn "F - 'new' on primitive arrays increments high-water mark by their size"))))
 
 (reset)
 (new-trace "new-array-direct")
@@ -1771,13 +1780,15 @@
       ((1 integer) <- copy (5 literal))
       ((2 type-array-address) <- new (type-array literal) (1 integer))
      ])))
-(let before Memory-in-use-until
-  (run 'main)
-;?   (prn memory*)
-  (if (~iso memory*.2 before)
-    (prn "F - 'new' on array with variable size returns current high-water mark"))
-  (if (~iso Memory-in-use-until (+ before 6))
-    (prn "F - 'new' on primitive arrays increments high-water mark by their (variable) size")))
+(let routine make-routine!main
+  (enq routine running-routines*)
+  (let before rep.routine!alloc
+    (run)
+;?     (prn memory*)
+    (if (~iso memory*.2 before)
+      (prn "F - 'new' on array with variable size returns current high-water mark"))
+    (if (~iso rep.routine!alloc (+ before 6))
+      (prn "F - 'new' on primitive arrays increments high-water mark by their (variable) size"))))
 
 ; Even though our memory locations can now have names, the names are all
 ; globals, accessible from any function. To isolate functions from their
@@ -1799,13 +1810,15 @@
       ((default-scope scope-address) <- new (scope literal) (2 literal))
       ((1 integer) <- copy (23 literal))
      ])))
-(let before Memory-in-use-until
-;?   (set dump-trace*)
-  (run 'main)
-;?   (prn memory*)
-  (if (~and (~is 23 memory*.1)
-            (is 23 (memory* (+ before 1))))
-    (prn "F - default-scope implicitly modifies variable locations")))
+(let routine make-routine!main
+  (enq routine running-routines*)
+  (let before rep.routine!alloc
+;?     (set dump-trace*)
+    (run)
+;?     (prn memory*)
+    (if (~and (~is 23 memory*.1)
+              (is 23 (memory* (+ before 1))))
+      (prn "F - default-scope implicitly modifies variable locations"))))
 
 (reset)
 (new-trace "set-default-scope-skips-offset")
@@ -1814,13 +1827,15 @@
       ((default-scope scope-address) <- new (scope literal) (2 literal))
       ((1 integer) <- copy (23 offset))
      ])))
-(let before Memory-in-use-until
-;?   (set dump-trace*)
-  (run 'main)
-;?   (prn memory*)
-  (if (~and (~is 23 memory*.1)
-            (is 23 (memory* (+ before 1))))
-    (prn "F - default-scope skips 'offset' types just like literals")))
+(let routine make-routine!main
+  (enq routine running-routines*)
+  (let before rep.routine!alloc
+;?     (set dump-trace*)
+    (run)
+;?     (prn memory*)
+    (if (~and (~is 23 memory*.1)
+              (is 23 (memory* (+ before 1))))
+      (prn "F - default-scope skips 'offset' types just like literals"))))
 
 (reset)
 (new-trace "default-scope-bounds-check")
@@ -1896,13 +1911,16 @@
       ((default-scope scope-address) <- new (scope literal) (2 literal))
       ((1 integer global) <- copy (23 literal))
      ])))
-(let before Memory-in-use-until
-;?   (set dump-trace*)
-  (run 'main)
-;?   (prn memory*)
-  (if (~and (is 23 memory*.1)
-            (~is 23 (memory* (+ before 1))))
-    (prn "F - default-scope skipped for locations with metadata 'global'")))
+(let routine make-routine!main
+  (enq routine running-routines*)
+  (let before rep.routine!alloc
+;?     (set dump-trace*)
+    (run)
+;?     (prn memory*)
+    (if (~and (is 23 memory*.1)
+              (~is 23 (memory* (+ before 1))))
+      (prn "F - default-scope skipped for locations with metadata 'global'"))))
+;? (quit)
 
 (reset)
 (new-trace "array-copy-indirect-scoped")
@@ -2732,33 +2750,33 @@
     (prn "F - 'write' on full channel blocks (puts the routine to sleep until the channel gets data)")))
 ;? (quit)
 
-(reset)
-(new-trace "channel-handoff")
-(add-code
-  '((def f1 [
-      ((default-scope scope-address) <- new (scope literal) (30 literal))
-      ((chan channel-address) <- new-channel (3 literal))
-      (fork (f2 fn) (chan channel-address))
-      ((1 tagged-value global) <- read (chan channel-address))  ; output
-     ])
-    (def f2 [
-      ((default-scope scope-address) <- new (scope literal) (30 literal))
-      ((n integer-address) <- new (integer literal))
-      ((n integer-address deref) <- copy (24 literal))
-      ((ochan channel-address) <- arg)
-      ((x tagged-value) <- save-type (n integer-address))
-      ((ochan channel-address deref) <- write (ochan channel-address) (x tagged-value))
-     ])))
-;? (set dump-trace*)
-;? (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
-;? (= dump-trace* (obj whitelist '("-")))
-(run 'f1)
-;? (prn memory*)
-(each routine completed-routines*
-  (aif rep.routine!error (prn "error - " it)))
-(if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
-  (prn "F - channels are meant to be shared between routines"))
-;? (quit)
+;? (reset)
+;? (new-trace "channel-handoff")
+;? (add-code
+;?   '((def f1 [
+;?       ((default-scope scope-address) <- new (scope literal) (30 literal))
+;?       ((chan channel-address) <- new-channel (3 literal))
+;?       (fork (f2 fn) (chan channel-address))
+;?       ((1 tagged-value global) <- read (chan channel-address))  ; output
+;?      ])
+;?     (def f2 [
+;?       ((default-scope scope-address) <- new (scope literal) (30 literal))
+;?       ((n integer-address) <- new (integer literal))
+;?       ((n integer-address deref) <- copy (24 literal))
+;?       ((ochan channel-address) <- arg)
+;?       ((x tagged-value) <- save-type (n integer-address))
+;?       ((ochan channel-address deref) <- write (ochan channel-address) (x tagged-value))
+;?      ])))
+;? ;? (set dump-trace*)
+;? ;? (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
+;? ;? (= dump-trace* (obj whitelist '("-")))
+;? (run 'f1)
+;? ;? (prn memory*)
+;? (each routine completed-routines*
+;?   (aif rep.routine!error (prn "error - " it)))
+;? (if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
+;?   (prn "F - channels are meant to be shared between routines"))
+;? ;? (quit)
 
 ;; Separating concerns
 ;
@@ -3177,10 +3195,12 @@
 (add-code '((def main [
               ((1 string-address) <- new (string literal) (5 literal))
              ])))
-(let before Memory-in-use-until
-  (run 'main)
-  (if (~iso Memory-in-use-until (+ before 5 1))
-    (prn "F - 'new' allocates arrays of bytes for strings")))
+(let routine make-routine!main
+  (enq routine running-routines*)
+  (let before rep.routine!alloc
+    (run)
+    (if (~iso rep.routine!alloc (+ before 5 1))
+      (prn "F - 'new' allocates arrays of bytes for strings"))))
 
 ; Convenience: initialize strings using string literals
 (reset)
@@ -3188,12 +3208,14 @@
 (add-code '((def main [
               ((1 string-address) <- new "hello")
              ])))
-(let before Memory-in-use-until
-  (run 'main)
-  (if (~iso Memory-in-use-until (+ before 5 1))
-    (prn "F - 'new' allocates arrays of bytes for string literals"))
-  (if (~memory-contains-array before "hello")
-    (prn "F - 'new' initializes allocated memory to string literal")))
+(let routine make-routine!main
+  (enq routine running-routines*)
+  (let before rep.routine!alloc
+    (run)
+    (if (~iso rep.routine!alloc (+ before 5 1))
+      (prn "F - 'new' allocates arrays of bytes for string literals"))
+    (if (~memory-contains-array before "hello")
+      (prn "F - 'new' initializes allocated memory to string literal"))))
 
 (reset)
 (new-trace "strcat")
