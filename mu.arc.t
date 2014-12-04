@@ -3435,7 +3435,7 @@
 (if (or (~is memory*.4 23)
         (~is memory*.5 24))
   (prn "F - 'setm' writes compound records"))
-(assert (is memory*.6 nil))
+(assert (is memory*.7 nil))
 (setm '(7 integer-point-pair) (annotate 'record '(23 24 25)))
 (if (or (~is memory*.7 23)
         (~is memory*.8 24)
