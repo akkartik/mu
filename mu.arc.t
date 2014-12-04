@@ -3174,7 +3174,7 @@
     (prn "F - 'new' initializes allocated memory to string literal"))
 
 ; helper
-(def memory-contains (addr value)
+(def memory-contains-array (addr value)
 ;?   (prn "Looking for @value starting at @addr, size @memory*.addr vs @len.value")
   (and (>= memory*.addr len.value)
        (loop (addr (+ addr 1)
@@ -3189,8 +3189,8 @@
                (recur (+ addr 1) (+ idx 1))))))
 
   ; test the helper
-  (if (~memory-contains before "hello")
-    (prn "F - 'memory-contains' helper is broken")))
+  (if (~memory-contains-array before "hello")
+    (prn "F - 'memory-contains-array' helper is broken")))
 
 (reset)
 (new-trace "strcat")
@@ -3200,7 +3200,7 @@
               ((3 string-address) <- strcat (1 string-address) (2 string-address))
              ])))
 (run 'main)
-(if (~memory-contains memory*.3 "hello, world!")
+(if (~memory-contains-array memory*.3 "hello, world!")
   (prn "F - 'strcat' concatenates strings"))
 
 (reset)
@@ -3212,7 +3212,7 @@
              ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
-(if (~memory-contains memory*.3 "hello, abc!")
+(if (~memory-contains-array memory*.3 "hello, abc!")
   (prn "F - 'interpolate' splices strings"))
 
 (reset)
@@ -3224,7 +3224,7 @@
              ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
-(if (~memory-contains memory*.3 "hello!")
+(if (~memory-contains-array memory*.3 "hello!")
   (prn "F - 'interpolate' without underscore returns template"))
 
 (reset)
@@ -3236,7 +3236,7 @@
              ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
-(if (~memory-contains memory*.3 "abc, hello")
+(if (~memory-contains-array memory*.3 "abc, hello")
   (prn "F - 'interpolate' splices strings at start"))
 
 (reset)
@@ -3248,7 +3248,7 @@
              ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
-(if (~memory-contains memory*.3 "hello, abc")
+(if (~memory-contains-array memory*.3 "hello, abc")
   (prn "F - 'interpolate' splices strings at start"))
 
 (reset)
@@ -3267,7 +3267,7 @@
 ;? (quit)
 ;? (up i 1 (+ 1 (memory* memory*.5))
 ;?   (prn (memory* (+ memory*.5 i))))
-(if (~memory-contains memory*.5 "hello, abc, def, and ghi!")
+(if (~memory-contains-array memory*.5 "hello, abc, def, and ghi!")
   (prn "F - 'interpolate' splices in any number of strings"))
 
 ;; unit tests for various helpers
