@@ -924,9 +924,12 @@
               nil  ; skip
             (is instr.0 'reply)
               (do
+                (when cdr.instr  ; return values
+                  (= instr.0 'prepare-reply)
+                  (yield instr))
                 (each instr (as cons deferred)
                   (yield instr))
-                (yield instr))
+                (yield '(reply)))
             :else
               (yield instr)))
       (each instr (as cons deferred)
