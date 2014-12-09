@@ -18,7 +18,7 @@
     ((n3 tagged-value-address) <- new-tagged-value (integer-address literal) (n2 integer-address))
     ((chan channel-address deref) <- write (chan channel-address) (n3 tagged-value-address deref))
     ((n integer) <- add (n integer) (1 literal))
-    (continue)
+    (loop)
   }
 ])
 
@@ -35,7 +35,7 @@
     (print-primitive ("consume: " literal))
     (print-primitive (n2 integer-address deref))
     (print-primitive ("\n" literal))
-    (continue)
+    (loop)
   }
 ])
 

@@ -4,7 +4,7 @@
   ((x integer) <- copy (34 literal))
   { begin
     (print-primitive (x integer))
-    (continue)
+    (loop)
   }
 ])
 
@@ -13,6 +13,6 @@
   ((y integer) <- copy (35 literal))
   { begin
     (print-primitive (y integer))
-    (continue)
+    (loop)
   }
 ])
