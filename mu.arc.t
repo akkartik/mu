@@ -3310,11 +3310,27 @@
 (assert:iso '<-
             (tokenize-arg '<-))
 
+; support labels
 (assert:iso '((((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
               foo)
             (tokenize-args
               '((default-scope:scope-address <- new scope:literal 30:literal)
                 foo)))
+
+; support braces
+(assert:iso '((((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
+              foo
+              { begin
+                bar
+                (((a b)) <- ((op)) ((c d)) ((e f)))
+              })
+            (tokenize-args
+              '((default-scope:scope-address <- new scope:literal 30:literal)
+                foo
+                { begin
+                  bar
+                  (a:b <- op c:d e:f)
+                })))
 
 ; absolutize
 (prn "absolutize")

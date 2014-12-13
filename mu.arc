@@ -1381,6 +1381,8 @@
     (each instr instrs
       (if atom.instr
             (yield instr)
+          (is 'begin instr.0)
+            (yield `{begin ,@(tokenize-args cdr.instr)})
           :else
             (yield (map tokenize-arg instr))))))
 
