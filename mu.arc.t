@@ -3297,6 +3297,21 @@
 
 ;; unit tests for various helpers
 
+; absolutize
+(reset)
+(if (~iso '(4 integer) (absolutize '(4 integer)))
+  (prn "F - 'absolutize' works without routine"))
+(= routine* make-routine!foo)
+(if (~iso '(4 integer) (absolutize '(4 integer)))
+  (prn "F - 'absolutize' works without default-scope"))
+(= rep.routine*!call-stack.0!default-scope 10)
+(= memory*.10 5)  ; bounds check for default-scope
+(if (~iso '(14 integer global) (absolutize '(4 integer)))
+  (prn "F - 'absolutize' works with default-scope"))
+(absolutize '(5 integer))
+(if (~posmatch "no room" rep.routine*!error)
+  (prn "F - 'absolutize' checks against default-scope bounds"))
+
 ; addr
 (reset)
 (= routine* nil)
@@ -3346,21 +3361,6 @@
 (= memory*.4 5)
 (if (~iso '(5 integer) (deref:deref '(3 integer-address-address deref deref)))
   (prn "F - 'deref' can be chained"))
-
-; absolutize
-(reset)
-(if (~iso '(4 integer) (absolutize '(4 integer)))
-  (prn "F - 'absolutize' works without routine"))
-(= routine* make-routine!foo)
-(if (~iso '(4 integer) (absolutize '(4 integer)))
-  (prn "F - 'absolutize' works without default-scope"))
-(= rep.routine*!call-stack.0!default-scope 10)
-(= memory*.10 5)  ; bounds check for default-scope
-(if (~iso '(14 integer global) (absolutize '(4 integer)))
-  (prn "F - 'absolutize' works with default-scope"))
-(absolutize '(5 integer))
-(if (~posmatch "no room" rep.routine*!error)
-  (prn "F - 'absolutize' checks against default-scope bounds"))
 
 ; sizeof
 (reset)
