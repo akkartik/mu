@@ -1359,6 +1359,35 @@
 ;?     (= function*.name (convert-names:convert-labels:convert-braces:prn:insert-code body)))
     (= function*.name (convert-names:convert-labels:convert-braces:insert-code body name))))
 
+;; test helpers
+
+(def memory-contains (addr value)
+;?   (prn "Looking for @value starting at @addr")
+  (loop (addr addr
+         idx  0)
+;?     (prn "@idx vs @addr")
+    (if (>= idx len.value)
+          t
+        (~is memory*.addr value.idx)
+          (do1 nil
+               (prn "@addr should contain @value.idx but contains @memory*.addr"))
+        :else
+          (recur (+ addr 1) (+ idx 1)))))
+
+(def memory-contains-array (addr value)
+;?   (prn "Looking for @value starting at @addr, size @memory*.addr vs @len.value")
+  (and (>= memory*.addr len.value)
+       (loop (addr (+ addr 1)
+              idx  0)
+;?          (prn "comparing @memory*.addr and @value.idx")
+         (if (>= idx len.value)
+               t
+             (~is memory*.addr value.idx)
+               (do1 nil
+                    (prn "@addr should contain @value.idx but contains @memory*.addr"))
+             :else
+               (recur (+ addr 1) (+ idx 1))))))
+
 ;; load all provided files and start at 'main'
 (reset)
 (awhen (pos "--" argv)
