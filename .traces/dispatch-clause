@@ -7,7 +7,7 @@ sizeof: location
 run: 1000 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1000 30))
-run: 3 new-tagged-value 1: ((1 type) <- arg)
+run: 3 new-tagged-value 1: ((1 type) <- next-input)
 arg: nil 0 (integer 34)
 run: integer => (1 type)
 setm: (1 type) <= integer
@@ -23,7 +23,7 @@ setm: (2 integer) <= 1
 setm: size of (2 integer) is 1
 setm: (2 integer): setting 1002 to 1
 run: -- ((1000 30) (1001 integer) (1002 1))
-run: 5 new-tagged-value 3: ((3 boolean) <- eq (2 integer) (1 literal))
+run: 5 new-tagged-value 3: ((3 boolean) <- equal (2 integer) (1 literal))
 m: (2 integer)
 sizeof: (2 integer)
 run: t => (3 boolean)
@@ -65,7 +65,7 @@ setm: (6 location) <= 1032
 setm: size of (6 location) is 1
 setm: (6 location): setting 1006 to 1032
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer))
-run: 11 new-tagged-value 9: ((6 location deref) <- arg)
+run: 11 new-tagged-value 9: ((6 location deref) <- next-input)
 arg: nil 1 (integer 34)
 run: 34 => (6 location deref)
 setm: (6 location deref) <= 34
@@ -88,7 +88,7 @@ sizeof: location
 run: 1033 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30))
-run: 15 new-tagged-value 1: ((1 type) <- arg)
+run: 15 new-tagged-value 1: ((1 type) <- next-input)
 arg: nil 0 (integer 3)
 run: integer => (1 type)
 setm: (1 type) <= integer
@@ -104,7 +104,7 @@ setm: (2 integer) <= 1
 setm: size of (2 integer) is 1
 setm: (2 integer): setting 1035 to 1
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1))
-run: 17 new-tagged-value 3: ((3 boolean) <- eq (2 integer) (1 literal))
+run: 17 new-tagged-value 3: ((3 boolean) <- equal (2 integer) (1 literal))
 m: (2 integer)
 sizeof: (2 integer)
 run: t => (3 boolean)
@@ -146,7 +146,7 @@ setm: (6 location) <= 1065
 setm: size of (6 location) is 1
 setm: (6 location): setting 1039 to 1065
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer))
-run: 23 new-tagged-value 9: ((6 location deref) <- arg)
+run: 23 new-tagged-value 9: ((6 location deref) <- next-input)
 arg: nil 1 (integer 3)
 run: 3 => (6 location deref)
 setm: (6 location deref) <= 3
@@ -173,7 +173,7 @@ sizeof: location
 run: 1066 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20))
-run: 27 test1 1: ((1 tagged-value-address) <- arg)
+run: 27 test1 1: ((1 tagged-value-address) <- next-input)
 arg: nil 0 (1031 1064)
 run: 1031 => (1 tagged-value-address)
 setm: (1 tagged-value-address) <= 1031
@@ -200,7 +200,7 @@ setm: (1 tagged-value-address) <= 1118
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1088 to 1118
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30) (1088 1118))
-run: 31 maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
+run: 31 maybe-coerce 2: ((1 tagged-value-address deref) <- next-input)
 arg: nil 0 (#(tagged record (integer 34 . nil)) integer)
 run: #(tagged record (integer 34 . nil)) => (1 tagged-value-address deref)
 setm: (1 tagged-value-address deref) <= #(tagged record (integer 34 . nil))
@@ -211,7 +211,7 @@ sizeof: location
 setm: (1 tagged-value-address deref): setting 1118 to integer
 setm: (1 tagged-value-address deref): setting 1119 to 34
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30) (1088 1118) (1118 integer) (1119 34))
-run: 32 maybe-coerce 3: ((2 type) <- arg)
+run: 32 maybe-coerce 3: ((2 type) <- next-input)
 arg: nil 1 (#(tagged record (integer 34 . nil)) integer)
 run: integer => (2 type)
 setm: (2 type) <= integer
@@ -226,7 +226,7 @@ setm: (3 type) <= integer
 setm: size of (3 type) is 1
 setm: (3 type): setting 1090 to integer
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1118 integer) (1119 34))
-run: 34 maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
+run: 34 maybe-coerce 5: ((4 boolean) <- equal (3 type) (2 type))
 m: (3 type)
 sizeof: (3 type)
 m: (2 type)
@@ -271,7 +271,7 @@ m: (3 boolean)
 sizeof: (3 boolean)
 jump: checking that t is not t
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34))
-run: 39 test1 4: ((4 tagged-value-address) <- arg)
+run: 39 test1 4: ((4 tagged-value-address) <- next-input)
 arg: nil 1 (1031 1064)
 run: 1064 => (4 tagged-value-address)
 setm: (4 tagged-value-address) <= 1064
@@ -298,7 +298,7 @@ setm: (1 tagged-value-address) <= 1151
 setm: size of (1 tagged-value-address) is 1
 setm: (1 tagged-value-address): setting 1121 to 1151
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151))
-run: 43 maybe-coerce 2: ((1 tagged-value-address deref) <- arg)
+run: 43 maybe-coerce 2: ((1 tagged-value-address deref) <- next-input)
 arg: nil 0 (#(tagged record (integer 3 . nil)) integer)
 run: #(tagged record (integer 3 . nil)) => (1 tagged-value-address deref)
 setm: (1 tagged-value-address deref) <= #(tagged record (integer 3 . nil))
@@ -309,7 +309,7 @@ sizeof: location
 setm: (1 tagged-value-address deref): setting 1151 to integer
 setm: (1 tagged-value-address deref): setting 1152 to 3
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151) (1151 integer) (1152 3))
-run: 44 maybe-coerce 3: ((2 type) <- arg)
+run: 44 maybe-coerce 3: ((2 type) <- next-input)
 arg: nil 1 (#(tagged record (integer 3 . nil)) integer)
 run: integer => (2 type)
 setm: (2 type) <= integer
@@ -324,7 +324,7 @@ setm: (3 type) <= integer
 setm: size of (3 type) is 1
 setm: (3 type): setting 1123 to integer
 run: -- ((1 1031) (2 1064) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3) (1066 20) (1067 1031) (1068 34) (1069 t) (1070 1064) (1087 30) (1088 1118) (1089 integer) (1090 integer) (1091 t) (1092 34) (1118 integer) (1119 34) (1120 30) (1121 1151) (1122 integer) (1123 integer) (1151 integer) (1152 3))
-run: 46 maybe-coerce 5: ((4 boolean) <- eq (3 type) (2 type))
+run: 46 maybe-coerce 5: ((4 boolean) <- equal (3 type) (2 type))
 m: (3 type)
 sizeof: (3 type)
 m: (2 type)

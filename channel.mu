@@ -1,11 +1,11 @@
 (def producer [
   ; produce numbers 1 to 5 on a channel
   ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((chan channel-address) <- arg)
+  ((chan channel-address) <- next-input)
   ; n = 0
   ((n integer) <- copy (0 literal))
   { begin
-    ((done? boolean) <- lt (n integer) (5 literal))
+    ((done? boolean) <- less-than (n integer) (5 literal))
     (break-unless (done? boolean))
     ; other threads might get between these prints
     (print-primitive ("produce: " literal))
@@ -25,7 +25,7 @@
 (def consumer [
   ; consume and print integers from a channel
   ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((chan channel-address) <- arg)
+  ((chan channel-address) <- next-input)
   { begin
     ; read a tagged value from the channel
     ((x tagged-value) (chan channel-address deref) <- read (chan channel-address))

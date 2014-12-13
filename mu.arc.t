@@ -190,52 +190,52 @@
 (new-trace "sub-literal")
 (add-code
   '((def main [
-      ((1 integer) <- sub (1 literal) (3 literal))
+      ((1 integer) <- subtract (1 literal) (3 literal))
      ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 -2)
-  (prn "F - 'sub' subtracts the second arg from the first"))
+  (prn "F - 'subtract'"))
 
 (reset)
 (new-trace "mul-literal")
 (add-code
   '((def main [
-      ((1 integer) <- mul (2 literal) (3 literal))
+      ((1 integer) <- multiply (2 literal) (3 literal))
      ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 6)
-  (prn "F - 'mul' multiplies like 'add' adds"))
+  (prn "F - 'multiply'"))
 
 (reset)
 (new-trace "div-literal")
 (add-code
   '((def main [
-      ((1 integer) <- div (8 literal) (3 literal))
+      ((1 integer) <- divide (8 literal) (3 literal))
      ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 (/ real.8 3))
-  (prn "F - 'div' divides like 'sub' subtracts"))
+  (prn "F - 'divide'"))
 
 (reset)
 (new-trace "idiv-literal")
 (add-code
   '((def main [
-      ((1 integer) (2 integer) <- idiv (23 literal) (6 literal))
+      ((1 integer) (2 integer) <- divide-with-remainder (23 literal) (6 literal))
      ])))
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 3  2 5))
-  (prn "F - 'idiv' performs integer division, returning quotient and remainder"))
+  (prn "F - 'divide-with-remainder' performs integer division"))
 
 (reset)
 (new-trace "dummy-oarg")
 ;? (set dump-trace*)
 (add-code
   '((def main [
-      (_ (2 integer) <- idiv (23 literal) (6 literal))
+      (_ (2 integer) <- divide-with-remainder (23 literal) (6 literal))
      ])))
 (run 'main)
 (if (~iso memory* (obj 2 5))
@@ -257,51 +257,51 @@
 (if (~is memory*.1 nil)
   (prn "F - logical 'and' for booleans"))
 
-; Basic comparison operations: lt, le, gt, ge, eq, neq
+; Basic comparison operations
 
 (reset)
 (new-trace "lt-literal")
 (add-code
   '((def main [
-      ((1 boolean) <- lt (4 literal) (3 literal))
+      ((1 boolean) <- less-than (4 literal) (3 literal))
      ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 nil)
-  (prn "F - 'lt' is the less-than inequality operator"))
+  (prn "F - 'less-than' inequality operator"))
 
 (reset)
 (new-trace "le-literal-false")
 (add-code
   '((def main [
-      ((1 boolean) <- le (4 literal) (3 literal))
+      ((1 boolean) <- lesser-or-equal (4 literal) (3 literal))
      ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 nil)
-  (prn "F - 'le' is the <= inequality operator"))
+  (prn "F - 'lesser-or-equal'"))
 
 (reset)
 (new-trace "le-literal-true")
 (add-code
   '((def main [
-      ((1 boolean) <- le (4 literal) (4 literal))
+      ((1 boolean) <- lesser-or-equal (4 literal) (4 literal))
      ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 t)
-  (prn "F - 'le' returns true for equal operands"))
+  (prn "F - 'lesser-or-equal' returns true for equal operands"))
 
 (reset)
 (new-trace "le-literal-true-2")
 (add-code
   '((def main [
-      ((1 boolean) <- le (4 literal) (5 literal))
+      ((1 boolean) <- lesser-or-equal (4 literal) (5 literal))
      ])))
 (run 'main)
 ;? (prn memory*)
 (if (~is memory*.1 t)
-  (prn "F - le is the <= inequality operator - 2"))
+  (prn "F - 'lesser-or-equal' - 2"))
 
 ; Control flow operations: jump, jump-if, jump-unless
 ; These introduce a new type -- 'offset' -- for literals that refer to memory
@@ -342,7 +342,7 @@
 (add-code
   '((def main [
       ((2 integer) <- copy (1 literal))
-      ((1 boolean) <- eq (1 literal) (2 integer))
+      ((1 boolean) <- equal (1 literal) (2 integer))
       (jump-if (1 boolean) (1 offset))
       ((2 integer) <- copy (3 literal))
       (reply)
@@ -357,7 +357,7 @@
 (new-trace "jump-if-fallthrough")
 (add-code
   '((def main [
-      ((1 boolean) <- eq (1 literal) (2 literal))
+      ((1 boolean) <- equal (1 literal) (2 literal))
       (jump-if (3 boolean) (1 offset))
       ((2 integer) <- copy (3 literal))
       (reply)
@@ -376,7 +376,7 @@
       ((2 integer) <- copy (1 literal))
       ; loop
       ((2 integer) <- add (2 integer) (2 integer))
-      ((3 boolean) <- eq (1 integer) (2 integer))
+      ((3 boolean) <- equal (1 integer) (2 integer))
       (jump-if (3 boolean) (-3 offset))  ; to loop
       ((4 integer) <- copy (3 literal))
       (reply)
@@ -395,7 +395,7 @@
       ((2 integer) <- copy (1 literal))
       loop
       ((2 integer) <- add (2 integer) (2 integer))
-      ((3 boolean) <- eq (1 integer) (2 integer))
+      ((3 boolean) <- equal (1 integer) (2 integer))
       (jump-if (3 boolean) (loop offset))
       ((4 integer) <- copy (3 literal))
       (reply)
@@ -701,12 +701,12 @@
       ((3 boolean) <- copy (nil literal))
       ((4 integer) <- copy (24 literal))
       ((5 boolean) <- copy (t literal))
-      ((6 integer) <- len (1 integer-boolean-pair-array))
+      ((6 integer) <- length (1 integer-boolean-pair-array))
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 2))
-  (prn "F - 'len' accesses length of array"))
+(if (~is memory*.6 2)
+  (prn "F - 'length' of array"))
 
 (reset)
 (new-trace "len-array-indirect")
@@ -718,14 +718,14 @@
       ((4 integer) <- copy (24 literal))
       ((5 boolean) <- copy (t literal))
       ((6 integer-address) <- copy (1 literal))
-      ((7 integer) <- len (6 integer-boolean-pair-array-address deref))
+      ((7 integer) <- length (6 integer-boolean-pair-array-address deref))
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 2))
-  (prn "F - 'len' accesses length of array address"))
+(if (~is memory*.7 2)
+  (prn "F - 'length' of array address"))
 
 ; 'sizeof' is a helper to determine the amount of memory required by a type.
 ; Only for non-arrays.
@@ -1043,8 +1043,8 @@
 (new-trace "new-fn-arg-sequential")
 (add-code
   '((def test1 [
-      ((4 integer) <- arg)
-      ((5 integer) <- arg)
+      ((4 integer) <- next-input)
+      ((5 integer) <- next-input)
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
       ((4 integer) <- copy (34 literal))
@@ -1067,8 +1067,8 @@
 ;? (set dump-trace*)
 (add-code
   '((def test1 [
-      ((5 integer) <- arg (1 literal))
-      ((4 integer) <- arg (0 literal))
+      ((5 integer) <- input (1 literal))
+      ((4 integer) <- input (0 literal))
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
       ((4 integer) <- copy (34 literal))  ; should never run
@@ -1091,8 +1091,8 @@
 ;? (set dump-trace*)
 (add-code
   '((def test1 [
-      (_ <- arg (1 literal))
-      ((1 integer) <- arg)  ; takes next arg after index 1
+      (_ <- input (1 literal))
+      ((1 integer) <- next-input)  ; takes next arg after index 1
      ])  ; should never run
     (def main [
       (test1 (1 literal) (2 literal) (3 literal))
@@ -1107,7 +1107,7 @@
 (new-trace "new-fn-arg-status")
 (add-code
   '((def test1 [
-      ((4 integer) (5 boolean) <- arg)
+      ((4 integer) (5 boolean) <- next-input)
      ])
     (def main [
       (test1 (1 literal))
@@ -1122,8 +1122,8 @@
 (new-trace "new-fn-arg-missing")
 (add-code
   '((def test1 [
-      ((4 integer) <- arg)
-      ((5 integer) <- arg)
+      ((4 integer) <- next-input)
+      ((5 integer) <- next-input)
      ])
     (def main [
       (test1 (1 literal))
@@ -1138,8 +1138,8 @@
 (new-trace "new-fn-arg-missing-2")
 (add-code
   '((def test1 [
-      ((4 integer) <- arg)
-      ((5 integer) (6 boolean) <- arg)
+      ((4 integer) <- next-input)
+      ((5 integer) (6 boolean) <- next-input)
      ])
     (def main [
       (test1 (1 literal))
@@ -1154,9 +1154,9 @@
 (new-trace "new-fn-arg-missing-3")
 (add-code
   '((def test1 [
-      ((4 integer) <- arg)
+      ((4 integer) <- next-input)
       ((5 integer) <- copy (34 literal))
-      ((5 integer) (6 boolean) <- arg)
+      ((5 integer) (6 boolean) <- next-input)
     ])
     (def main [
       (test1 (1 literal))
@@ -1172,8 +1172,8 @@
 (add-code
   '((def test1 [
       ; if given two args, adds them; if given one arg, increments
-      ((4 integer) <- arg)
-      ((5 integer) (6 boolean) <- arg)
+      ((4 integer) <- next-input)
+      ((5 integer) (6 boolean) <- next-input)
       { begin
         (break-if (6 boolean))
         ((5 integer) <- copy (1 literal))
@@ -1194,7 +1194,7 @@
 (add-code
   '((def test1 [
       ((1 integer) <- copy (0 literal))  ; overwrite caller memory
-      ((2 integer) <- arg)
+      ((2 integer) <- next-input)
      ])  ; arg not clobbered
     (def main [
       ((1 integer) <- copy (34 literal))
@@ -1209,7 +1209,7 @@
 (new-trace "arg-record")
 (add-code
   '((def test1 [
-      ((4 integer-boolean-pair) <- arg)
+      ((4 integer-boolean-pair) <- next-input)
      ])
     (def main [
       ((1 integer) <- copy (34 literal))
@@ -1225,7 +1225,7 @@
 ;? (set dump-trace*)
 (add-code
   '((def test1 [
-      ((4 integer-boolean-pair) <- arg)
+      ((4 integer-boolean-pair) <- next-input)
      ])
     (def main [
       ((1 integer) <- copy (34 literal))
@@ -1242,8 +1242,8 @@
 (new-trace "new-fn-reply-oarg")
 (add-code
   '((def test1 [
-      ((4 integer) <- arg)
-      ((5 integer) <- arg)
+      ((4 integer) <- next-input)
+      ((5 integer) <- next-input)
       ((6 integer) <- add (4 integer) (5 integer))
       (reply (6 integer))
       ((4 integer) <- copy (34 literal))
@@ -1264,8 +1264,8 @@
 (new-trace "new-fn-reply-oarg-multiple")
 (add-code
   '((def test1 [
-      ((4 integer) <- arg)
-      ((5 integer) <- arg)
+      ((4 integer) <- next-input)
+      ((5 integer) <- next-input)
       ((6 integer) <- add (4 integer) (5 integer))
       (reply (6 integer) (5 integer))
       ((4 integer) <- copy (34 literal))
@@ -1286,8 +1286,8 @@
 (new-trace "new-fn-prepare-reply")
 (add-code
   '((def test1 [
-      ((4 integer) <- arg)
-      ((5 integer) <- arg)
+      ((4 integer) <- next-input)
+      ((5 integer) <- next-input)
       ((6 integer) <- add (4 integer) (5 integer))
       (prepare-reply (6 integer) (5 integer))
       (reply)
@@ -1339,7 +1339,7 @@
               ((2 integer) <- copy (2 literal))
               ((3 integer) <- add (2 integer) (2 integer))
               { begin  ; 'begin' is just a hack because racket turns braces into parens
-                ((4 boolean) <- neq (1 integer) (3 integer))
+                ((4 boolean) <- not-equal (1 integer) (3 integer))
                 (break-if (4 boolean))
                 ((5 integer) <- copy (34 literal))
               }
@@ -1347,7 +1347,7 @@
           '(((1 integer) <- copy (4 literal))
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
-            ((4 boolean) <- neq (1 integer) (3 integer))
+            ((4 boolean) <- not-equal (1 integer) (3 integer))
             (jump-if (4 boolean) (1 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
@@ -1382,7 +1382,7 @@
               ((2 integer) <- copy (2 literal))
               ((3 integer) <- add (2 integer) (2 integer))
               { begin
-                ((4 boolean) <- neq (1 integer) (3 integer))
+                ((4 boolean) <- not-equal (1 integer) (3 integer))
                 (break-if (4 boolean))
                 { begin
                   ((5 integer) <- copy (34 literal))
@@ -1392,7 +1392,7 @@
           '(((1 integer) <- copy (4 literal))
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
-            ((4 boolean) <- neq (1 integer) (3 integer))
+            ((4 boolean) <- not-equal (1 integer) (3 integer))
             (jump-if (4 boolean) (1 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
@@ -1431,7 +1431,7 @@
               { begin
                 ((3 integer) <- add (2 integer) (2 integer))
                 { begin
-                  ((4 boolean) <- neq (1 integer) (3 integer))
+                  ((4 boolean) <- not-equal (1 integer) (3 integer))
                 }
                 (loop-if (4 boolean))
                 ((5 integer) <- copy (34 literal))
@@ -1440,7 +1440,7 @@
           '(((1 integer) <- copy (4 literal))
             ((2 integer) <- copy (2 literal))
             ((3 integer) <- add (2 integer) (2 integer))
-            ((4 boolean) <- neq (1 integer) (3 integer))
+            ((4 boolean) <- not-equal (1 integer) (3 integer))
             (jump-if (4 boolean) (-3 offset))
             ((5 integer) <- copy (34 literal))
             (reply)))
@@ -1535,7 +1535,7 @@
       ((2 integer) <- copy (1 literal))
       { begin
         ((2 integer) <- add (2 integer) (2 integer))
-        ((3 boolean) <- neq (1 integer) (2 integer))
+        ((3 boolean) <- not-equal (1 integer) (2 integer))
         (loop-if (3 boolean))
         ((4 integer) <- copy (34 literal))
       }
@@ -1561,7 +1561,7 @@
       { begin
         ((2 integer) <- add (2 integer) (2 integer))
         { begin
-          ((3 boolean) <- neq (1 integer) (2 integer))
+          ((3 boolean) <- not-equal (1 integer) (2 integer))
         }
         (loop-if (3 boolean))
         ((4 integer) <- copy (34 literal))
@@ -1584,7 +1584,7 @@
       { begin
         ((2 integer) <- add (2 integer) (2 integer))
         { begin
-          ((3 boolean) <- neq (1 integer) (2 integer))
+          ((3 boolean) <- not-equal (1 integer) (2 integer))
         }
         (loop-if (3 boolean))
         ((4 integer) <- copy (34 literal))
@@ -1958,7 +1958,7 @@
       ((4 integer) <- copy (24 literal))
       ((5 boolean) <- copy (t literal))
       ((6 integer-address) <- copy (11 literal))  ; unsafe
-      ((7 integer) <- len (6 integer-boolean-pair-array-address deref))
+      ((7 integer) <- length (6 integer-boolean-pair-array-address deref))
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "addr" "sz" "array-len")))
 (run 'main)
@@ -1981,12 +1981,12 @@
       ; if it's slightly too many -- memory is plentiful
       ; if it's too few -- mu will raise an error
       ((default-scope scope-address) <- new (scope literal) (20 literal))
-      ((first-arg-box tagged-value-address) <- arg)
+      ((first-arg-box tagged-value-address) <- next-input)
       ; if given integers, add them
       { begin
         ((first-arg integer) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (integer literal))
         (break-unless (match? boolean))
-        ((second-arg-box tagged-value-address) <- arg)
+        ((second-arg-box tagged-value-address) <- next-input)
         ((second-arg integer) <- maybe-coerce (second-arg-box tagged-value-address deref) (integer literal))
         ((result integer) <- add (first-arg integer) (second-arg integer))
         (reply (result integer))
@@ -2012,12 +2012,12 @@
 (add-code
   '((def test1 [
       ((default-scope scope-address) <- new (scope literal) (20 literal))
-      ((first-arg-box tagged-value-address) <- arg)
+      ((first-arg-box tagged-value-address) <- next-input)
       ; if given integers, add them
       { begin
         ((first-arg integer) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (integer literal))
         (break-unless (match? boolean))
-        ((second-arg-box tagged-value-address) <- arg)
+        ((second-arg-box tagged-value-address) <- next-input)
         ((second-arg integer) <- maybe-coerce (second-arg-box tagged-value-address deref) (integer literal))
         ((result integer) <- add (first-arg integer) (second-arg integer))
         (reply (result integer))
@@ -2026,7 +2026,7 @@
       { begin
         ((first-arg boolean) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (boolean literal))
         (break-unless (match? boolean))
-        ((second-arg-box tagged-value-address) <- arg)
+        ((second-arg-box tagged-value-address) <- next-input)
         ((second-arg boolean) <- maybe-coerce (second-arg-box tagged-value-address deref) (boolean literal))
         ((result boolean) <- or (first-arg boolean) (second-arg boolean))
         (reply (result integer))
@@ -2052,12 +2052,12 @@
 (add-code
   '((def test1 [
       ((default-scope scope-address) <- new (scope literal) (20 literal))
-      ((first-arg-box tagged-value-address) <- arg)
+      ((first-arg-box tagged-value-address) <- next-input)
       ; if given integers, add them
       { begin
         ((first-arg integer) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (integer literal))
         (break-unless (match? boolean))
-        ((second-arg-box tagged-value-address) <- arg)
+        ((second-arg-box tagged-value-address) <- next-input)
         ((second-arg integer) <- maybe-coerce (second-arg-box tagged-value-address deref) (integer literal))
         ((result integer) <- add (first-arg integer) (second-arg integer))
         (reply (result integer))
@@ -2066,7 +2066,7 @@
       { begin
         ((first-arg boolean) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (boolean literal))
         (break-unless (match? boolean))
-        ((second-arg-box tagged-value-address) <- arg)
+        ((second-arg-box tagged-value-address) <- next-input)
         ((second-arg boolean) <- maybe-coerce (second-arg-box tagged-value-address deref) (boolean literal))
         ((result boolean) <- or (first-arg boolean) (second-arg boolean))
         (reply (result integer))
@@ -2424,7 +2424,7 @@
       (fork (f2 fn) (4 literal))
      ])
     (def f2 [
-      ((2 integer) <- arg)
+      ((2 integer) <- next-input)
      ])))
 (run 'f1)
 (if (~iso memory*.2 4)
@@ -2440,7 +2440,7 @@
       ((x integer) <- copy (0 literal))  ; should be ignored
      ])
     (def f2 [
-      ((2 integer) <- arg)
+      ((2 integer) <- next-input)
      ])))
 (run 'f1)
 (if (~iso memory*.2 4)
@@ -2763,7 +2763,7 @@
       ((default-scope scope-address) <- new (scope literal) (30 literal))
       ((n integer-address) <- new (integer literal))
       ((n integer-address deref) <- copy (24 literal))
-      ((ochan channel-address) <- arg)
+      ((ochan channel-address) <- next-input)
       ((x tagged-value) <- save-type (n integer-address))
       ((ochan channel-address deref) <- write (ochan channel-address) (x tagged-value))
      ])))

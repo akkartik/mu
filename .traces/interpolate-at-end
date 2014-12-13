@@ -23,14 +23,14 @@ sizeof: location
 run: 1013 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60))
-run: 5 interpolate 1: ((1 string-address) <- arg)
+run: 5 interpolate 1: ((1 string-address) <- next-input)
 arg: nil 0 (1000 1009)
 run: 1000 => (1 string-address)
 setm: (1 string-address) <= 1000
 setm: size of (1 string-address) is 1
 setm: (1 string-address): setting 1014 to 1000
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000))
-run: 6 interpolate 2: ((2 integer) <- len (1 string-address deref))
+run: 6 interpolate 2: ((2 integer) <- length (1 string-address deref))
 array-len: (1 string-address deref)
 m: (1000 integer global)
 sizeof: (1000 integer global)
@@ -47,7 +47,7 @@ setm: (3 integer) <= 8
 setm: size of (3 integer) is 1
 setm: (3 integer): setting 1016 to 8
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 8))
-run: 8 interpolate 4: ((4 string-address) (5 boolean) <- arg)
+run: 8 interpolate 4: ((4 string-address) (5 boolean) <- next-input)
 arg: nil 1 (1000 1009)
 run: 1009 => (4 string-address)
 setm: (4 string-address) <= 1009
@@ -63,7 +63,7 @@ m: (5 boolean)
 sizeof: (5 boolean)
 jump: checking that t is not t
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 8) (1017 1009) (1018 t))
-run: 10 interpolate 6: ((6 integer) <- len (4 string-address deref))
+run: 10 interpolate 6: ((6 integer) <- length (4 string-address deref))
 array-len: (4 string-address deref)
 m: (1009 integer global)
 sizeof: (1009 integer global)
@@ -87,7 +87,7 @@ setm: (3 integer) <= 11
 setm: size of (3 integer) is 1
 setm: (3 integer): setting 1016 to 11
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 11) (1017 1009) (1018 t) (1019 3))
-run: 12 interpolate 8: ((3 integer) <- sub (3 integer) (1 literal))
+run: 12 interpolate 8: ((3 integer) <- subtract (3 integer) (1 literal))
 m: (3 integer)
 sizeof: (3 integer)
 run: 10 => (3 integer)
@@ -98,7 +98,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 13 interpolate 9: (jump (-6 offset))
 jump: jumping to 4
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3))
-run: 14 interpolate 4: ((4 string-address) (5 boolean) <- arg)
+run: 14 interpolate 4: ((4 string-address) (5 boolean) <- next-input)
 arg: nil 2 (1000 1009)
 run: nil => (4 string-address)
 setm: (4 string-address) <= nil
@@ -115,7 +115,7 @@ sizeof: (5 boolean)
 jump: checking that nil is not t
 jump: jumping to 10
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1019 3))
-run: 16 interpolate 10: (_ <- arg (0 literal))
+run: 16 interpolate 10: (_ <- input (0 literal))
 arg: ((0 literal)) 0 (1000 1009)
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1019 3))
 run: 17 interpolate 11: ((7 string-address) <- new (string literal) (3 integer))
@@ -139,7 +139,7 @@ setm: (9 integer) <= 0
 setm: size of (9 integer) is 1
 setm: (9 integer): setting 1022 to 0
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1019 3) (1020 1074) (1021 0) (1022 0) (1074 10))
-run: 20 interpolate 14: ((4 string-address) (5 boolean) <- arg)
+run: 20 interpolate 14: ((4 string-address) (5 boolean) <- next-input)
 arg: nil 1 (1000 1009)
 run: 1009 => (4 string-address)
 setm: (4 string-address) <= 1009
@@ -155,7 +155,7 @@ m: (5 boolean)
 sizeof: (5 boolean)
 jump: checking that t is not t
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 0) (1022 0) (1074 10))
-run: 22 interpolate 16: ((10 boolean) <- lt (9 integer) (2 integer))
+run: 22 interpolate 16: ((10 boolean) <- less-than (9 integer) (2 integer))
 m: (9 integer)
 sizeof: (9 integer)
 m: (2 integer)
@@ -184,7 +184,7 @@ setm: (11 byte) <= h
 setm: size of (11 byte) is 1
 setm: (11 byte): setting 1024 to h
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 0) (1022 0) (1023 t) (1024 h) (1074 10))
-run: 25 interpolate 19: ((12 boolean) <- eq (11 byte) (_ literal))
+run: 25 interpolate 19: ((12 boolean) <- equal (11 byte) (_ literal))
 m: (11 byte)
 sizeof: (11 byte)
 run: nil => (12 boolean)
@@ -242,7 +242,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 31 interpolate 25: (jump (-10 offset))
 jump: jumping to 16
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 1) (1022 1) (1023 t) (1024 h) (1026 1075) (1074 10) (1075 h))
-run: 32 interpolate 16: ((10 boolean) <- lt (9 integer) (2 integer))
+run: 32 interpolate 16: ((10 boolean) <- less-than (9 integer) (2 integer))
 m: (9 integer)
 sizeof: (9 integer)
 m: (2 integer)
@@ -271,7 +271,7 @@ setm: (11 byte) <= e
 setm: size of (11 byte) is 1
 setm: (11 byte): setting 1024 to e
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 1) (1022 1) (1023 t) (1024 e) (1026 1075) (1074 10) (1075 h))
-run: 35 interpolate 19: ((12 boolean) <- eq (11 byte) (_ literal))
+run: 35 interpolate 19: ((12 boolean) <- equal (11 byte) (_ literal))
 m: (11 byte)
 sizeof: (11 byte)
 run: nil => (12 boolean)
@@ -329,7 +329,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 41 interpolate 25: (jump (-10 offset))
 jump: jumping to 16
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 2) (1022 2) (1023 t) (1024 e) (1026 1076) (1074 10) (1075 h) (1076 e))
-run: 42 interpolate 16: ((10 boolean) <- lt (9 integer) (2 integer))
+run: 42 interpolate 16: ((10 boolean) <- less-than (9 integer) (2 integer))
 m: (9 integer)
 sizeof: (9 integer)
 m: (2 integer)
@@ -358,7 +358,7 @@ setm: (11 byte) <= l
 setm: size of (11 byte) is 1
 setm: (11 byte): setting 1024 to l
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 2) (1022 2) (1023 t) (1024 l) (1026 1076) (1074 10) (1075 h) (1076 e))
-run: 45 interpolate 19: ((12 boolean) <- eq (11 byte) (_ literal))
+run: 45 interpolate 19: ((12 boolean) <- equal (11 byte) (_ literal))
 m: (11 byte)
 sizeof: (11 byte)
 run: nil => (12 boolean)
@@ -416,7 +416,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 51 interpolate 25: (jump (-10 offset))
 jump: jumping to 16
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 3) (1022 3) (1023 t) (1024 l) (1026 1077) (1074 10) (1075 h) (1076 e) (1077 l))
-run: 52 interpolate 16: ((10 boolean) <- lt (9 integer) (2 integer))
+run: 52 interpolate 16: ((10 boolean) <- less-than (9 integer) (2 integer))
 m: (9 integer)
 sizeof: (9 integer)
 m: (2 integer)
@@ -445,7 +445,7 @@ setm: (11 byte) <= l
 setm: size of (11 byte) is 1
 setm: (11 byte): setting 1024 to l
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 3) (1022 3) (1023 t) (1024 l) (1026 1077) (1074 10) (1075 h) (1076 e) (1077 l))
-run: 55 interpolate 19: ((12 boolean) <- eq (11 byte) (_ literal))
+run: 55 interpolate 19: ((12 boolean) <- equal (11 byte) (_ literal))
 m: (11 byte)
 sizeof: (11 byte)
 run: nil => (12 boolean)
@@ -503,7 +503,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 61 interpolate 25: (jump (-10 offset))
 jump: jumping to 16
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 4) (1022 4) (1023 t) (1024 l) (1026 1078) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l))
-run: 62 interpolate 16: ((10 boolean) <- lt (9 integer) (2 integer))
+run: 62 interpolate 16: ((10 boolean) <- less-than (9 integer) (2 integer))
 m: (9 integer)
 sizeof: (9 integer)
 m: (2 integer)
@@ -532,7 +532,7 @@ setm: (11 byte) <= o
 setm: size of (11 byte) is 1
 setm: (11 byte): setting 1024 to o
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 4) (1022 4) (1023 t) (1024 o) (1026 1078) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l))
-run: 65 interpolate 19: ((12 boolean) <- eq (11 byte) (_ literal))
+run: 65 interpolate 19: ((12 boolean) <- equal (11 byte) (_ literal))
 m: (11 byte)
 sizeof: (11 byte)
 run: nil => (12 boolean)
@@ -590,7 +590,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 71 interpolate 25: (jump (-10 offset))
 jump: jumping to 16
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 5) (1022 5) (1023 t) (1024 o) (1026 1079) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o))
-run: 72 interpolate 16: ((10 boolean) <- lt (9 integer) (2 integer))
+run: 72 interpolate 16: ((10 boolean) <- less-than (9 integer) (2 integer))
 m: (9 integer)
 sizeof: (9 integer)
 m: (2 integer)
@@ -619,7 +619,7 @@ setm: (11 byte) <= ,
 setm: size of (11 byte) is 1
 setm: (11 byte): setting 1024 to ,
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 5) (1022 5) (1023 t) (1024 ,) (1026 1079) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o))
-run: 75 interpolate 19: ((12 boolean) <- eq (11 byte) (_ literal))
+run: 75 interpolate 19: ((12 boolean) <- equal (11 byte) (_ literal))
 m: (11 byte)
 sizeof: (11 byte)
 run: nil => (12 boolean)
@@ -677,7 +677,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 81 interpolate 25: (jump (-10 offset))
 jump: jumping to 16
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 6) (1022 6) (1023 t) (1024 ,) (1026 1080) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o) (1080 ,))
-run: 82 interpolate 16: ((10 boolean) <- lt (9 integer) (2 integer))
+run: 82 interpolate 16: ((10 boolean) <- less-than (9 integer) (2 integer))
 m: (9 integer)
 sizeof: (9 integer)
 m: (2 integer)
@@ -706,7 +706,7 @@ setm: (11 byte) <=
 setm: size of (11 byte) is 1
 setm: (11 byte): setting 1024 to  
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 6) (1022 6) (1023 t) (1024  ) (1026 1080) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o) (1080 ,))
-run: 85 interpolate 19: ((12 boolean) <- eq (11 byte) (_ literal))
+run: 85 interpolate 19: ((12 boolean) <- equal (11 byte) (_ literal))
 m: (11 byte)
 sizeof: (11 byte)
 run: nil => (12 boolean)
@@ -764,7 +764,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 91 interpolate 25: (jump (-10 offset))
 jump: jumping to 16
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 7) (1022 7) (1023 t) (1024  ) (1026 1081) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o) (1080 ,) (1081  ))
-run: 92 interpolate 16: ((10 boolean) <- lt (9 integer) (2 integer))
+run: 92 interpolate 16: ((10 boolean) <- less-than (9 integer) (2 integer))
 m: (9 integer)
 sizeof: (9 integer)
 m: (2 integer)
@@ -793,7 +793,7 @@ setm: (11 byte) <= _
 setm: size of (11 byte) is 1
 setm: (11 byte): setting 1024 to _
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 7) (1022 7) (1023 t) (1024 _) (1026 1081) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o) (1080 ,) (1081  ))
-run: 95 interpolate 19: ((12 boolean) <- eq (11 byte) (_ literal))
+run: 95 interpolate 19: ((12 boolean) <- equal (11 byte) (_ literal))
 m: (11 byte)
 sizeof: (11 byte)
 run: t => (12 boolean)
@@ -813,7 +813,7 @@ setm: (14 integer) <= 0
 setm: size of (14 integer) is 1
 setm: (14 integer): setting 1027 to 0
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 7) (1022 7) (1023 t) (1024 _) (1025 t) (1026 1081) (1027 0) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o) (1080 ,) (1081  ))
-run: 98 interpolate 27: ((15 boolean) <- lt (14 integer) (6 integer))
+run: 98 interpolate 27: ((15 boolean) <- less-than (14 integer) (6 integer))
 m: (14 integer)
 sizeof: (14 integer)
 m: (6 integer)
@@ -887,7 +887,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 105 interpolate 34: (jump (-8 offset))
 jump: jumping to 27
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 8) (1022 7) (1023 t) (1024 a) (1025 t) (1026 1082) (1027 1) (1028 t) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o) (1080 ,) (1081  ) (1082 a))
-run: 106 interpolate 27: ((15 boolean) <- lt (14 integer) (6 integer))
+run: 106 interpolate 27: ((15 boolean) <- less-than (14 integer) (6 integer))
 m: (14 integer)
 sizeof: (14 integer)
 m: (6 integer)
@@ -961,7 +961,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 113 interpolate 34: (jump (-8 offset))
 jump: jumping to 27
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 9) (1022 7) (1023 t) (1024 b) (1025 t) (1026 1083) (1027 2) (1028 t) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o) (1080 ,) (1081  ) (1082 a) (1083 b))
-run: 114 interpolate 27: ((15 boolean) <- lt (14 integer) (6 integer))
+run: 114 interpolate 27: ((15 boolean) <- less-than (14 integer) (6 integer))
 m: (14 integer)
 sizeof: (14 integer)
 m: (6 integer)
@@ -1035,7 +1035,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 121 interpolate 34: (jump (-8 offset))
 jump: jumping to 27
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 10) (1022 7) (1023 t) (1024 c) (1025 t) (1026 1084) (1027 3) (1028 t) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o) (1080 ,) (1081  ) (1082 a) (1083 b) (1084 c))
-run: 122 interpolate 27: ((15 boolean) <- lt (14 integer) (6 integer))
+run: 122 interpolate 27: ((15 boolean) <- less-than (14 integer) (6 integer))
 m: (14 integer)
 sizeof: (14 integer)
 m: (6 integer)
@@ -1065,7 +1065,7 @@ run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o)
 run: 125 interpolate 36: (jump (-23 offset))
 jump: jumping to 14
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1017 1009) (1018 t) (1019 3) (1020 1074) (1021 10) (1022 8) (1023 t) (1024 c) (1025 t) (1026 1084) (1027 3) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o) (1080 ,) (1081  ) (1082 a) (1083 b) (1084 c))
-run: 126 interpolate 14: ((4 string-address) (5 boolean) <- arg)
+run: 126 interpolate 14: ((4 string-address) (5 boolean) <- next-input)
 arg: nil 2 (1000 1009)
 run: nil => (4 string-address)
 setm: (4 string-address) <= nil
@@ -1082,7 +1082,7 @@ sizeof: (5 boolean)
 jump: checking that nil is not t
 jump: jumping to 37
 run: -- ((1 1000) (2 1009) (1000 8) (1001 h) (1002 e) (1003 l) (1004 l) (1005 o) (1006 ,) (1007  ) (1008 _) (1009 3) (1010 a) (1011 b) (1012 c) (1013 60) (1014 1000) (1015 8) (1016 10) (1019 3) (1020 1074) (1021 10) (1022 8) (1023 t) (1024 c) (1025 t) (1026 1084) (1027 3) (1074 10) (1075 h) (1076 e) (1077 l) (1078 l) (1079 o) (1080 ,) (1081  ) (1082 a) (1083 b) (1084 c))
-run: 128 interpolate 37: ((10 boolean) <- lt (9 integer) (2 integer))
+run: 128 interpolate 37: ((10 boolean) <- less-than (9 integer) (2 integer))
 m: (9 integer)
 sizeof: (9 integer)
 m: (2 integer)

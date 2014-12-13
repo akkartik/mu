@@ -42,7 +42,7 @@ setm: (3 integer-address deref) <= 0
 setm: size of (3 integer-address deref) is 1
 setm: (3 integer-address deref): setting 1032 to 0
 run: -- ((1000 30) (1001 1031) (1002 1031) (1003 1032) (1031 0) (1032 0))
-run: 8 new-channel 6: ((4 integer) <- arg)
+run: 8 new-channel 6: ((4 integer) <- next-input)
 arg: nil 0 (1)
 run: 1 => (4 integer)
 setm: (4 integer) <= 1
@@ -126,14 +126,14 @@ sizeof: location
 run: 1040 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 2) (1039 34) (1040 30))
-run: 18 write 1: ((1 channel-address) <- arg)
+run: 18 write 1: ((1 channel-address) <- next-input)
 arg: nil 0 (1031 #(tagged record (integer-address 1039 . nil)))
 run: 1031 => (1 channel-address)
 setm: (1 channel-address) <= 1031
 setm: size of (1 channel-address) is 1
 setm: (1 channel-address): setting 1041 to 1031
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 2) (1039 34) (1040 30) (1041 1031))
-run: 19 write 2: ((2 tagged-value) <- arg)
+run: 19 write 2: ((2 tagged-value) <- next-input)
 arg: nil 1 (1031 #(tagged record (integer-address 1039 . nil)))
 run: #(tagged record (integer-address 1039 . nil)) => (2 tagged-value)
 setm: (2 tagged-value) <= #(tagged record (integer-address 1039 . nil))
@@ -156,7 +156,7 @@ sizeof: location
 run: 1071 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 2) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1071 30))
-run: 22 full? 1: ((1 channel) <- arg)
+run: 22 full? 1: ((1 channel) <- next-input)
 arg: nil 0 (#(tagged record (0 0 1034 . nil)))
 run: #(tagged record (0 0 1034 . nil)) => (1 channel)
 setm: (1 channel) <= #(tagged record (0 0 1034 . nil))
@@ -201,7 +201,7 @@ sizeof: location
 run: 1102 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 2) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1102 30))
-run: 27 capacity 1: ((1 channel) <- arg)
+run: 27 capacity 1: ((1 channel) <- next-input)
 arg: nil 0 (#(tagged record (0 0 1034 . nil)))
 run: #(tagged record (0 0 1034 . nil)) => (1 channel)
 setm: (1 channel) <= #(tagged record (0 0 1034 . nil))
@@ -224,7 +224,7 @@ setm: (4 tagged-value-array-address) <= 1034
 setm: size of (4 tagged-value-array-address) is 1
 setm: (4 tagged-value-array-address): setting 1106 to 1034
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 2) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034))
-run: 29 capacity 3: ((5 integer) <- len (4 tagged-value-array-address deref))
+run: 29 capacity 3: ((5 integer) <- length (4 tagged-value-array-address deref))
 array-len: (4 tagged-value-array-address deref)
 m: (1034 integer global)
 sizeof: (1034 integer global)
@@ -242,7 +242,7 @@ setm: (5 integer) <= 2
 setm: size of (5 integer) is 1
 setm: (5 integer): setting 1076 to 2
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 2) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2))
-run: 31 full? 5: ((6 boolean) <- lt (4 integer) (5 integer))
+run: 31 full? 5: ((6 boolean) <- less-than (4 integer) (5 integer))
 m: (4 integer)
 sizeof: (4 integer)
 m: (5 integer)
@@ -266,7 +266,7 @@ setm: (7 integer) <= 0
 setm: size of (7 integer) is 1
 setm: (7 integer): setting 1078 to 0
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 2) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2))
-run: 34 full? 9: ((8 boolean) <- eq (7 integer) (4 integer))
+run: 34 full? 9: ((8 boolean) <- equal (7 integer) (4 integer))
 m: (7 integer)
 sizeof: (7 integer)
 m: (4 integer)
@@ -347,7 +347,7 @@ setm: (7 integer-address deref) <= 1
 setm: size of (7 integer-address deref) is 1
 setm: (7 integer-address deref): setting 1032 to 1
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2))
-run: 42 write 12: ((9 integer) <- len (6 tagged-value-array-address deref))
+run: 42 write 12: ((9 integer) <- length (6 tagged-value-array-address deref))
 array-len: (6 tagged-value-array-address deref)
 m: (1034 integer global)
 sizeof: (1034 integer global)
@@ -356,7 +356,7 @@ setm: (9 integer) <= 2
 setm: size of (9 integer) is 1
 setm: (9 integer): setting 1049 to 2
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2))
-run: 43 write 13: ((10 boolean) <- lt (7 integer-address deref) (9 integer))
+run: 43 write 13: ((10 boolean) <- less-than (7 integer-address deref) (9 integer))
 m: (7 integer-address deref)
 sizeof: (7 integer-address deref)
 m: (9 integer)
@@ -408,7 +408,7 @@ sizeof: location
 run: 1133 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30))
-run: 49 read 1: ((1 channel-address) <- arg)
+run: 49 read 1: ((1 channel-address) <- next-input)
 arg: nil 0 (1031)
 run: 1031 => (1 channel-address)
 setm: (1 channel-address) <= 1031
@@ -427,7 +427,7 @@ sizeof: location
 run: 1164 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1164 30))
-run: 52 empty? 1: ((1 channel) <- arg)
+run: 52 empty? 1: ((1 channel) <- next-input)
 arg: nil 0 (#(tagged record (0 1 1034 . nil)))
 run: #(tagged record (0 1 1034 . nil)) => (1 channel)
 setm: (1 channel) <= #(tagged record (0 1 1034 . nil))
@@ -457,7 +457,7 @@ setm: (5 integer) <= 1
 setm: size of (5 integer) is 1
 setm: (5 integer): setting 1169 to 1
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 0) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1))
-run: 55 empty? 4: ((6 boolean) <- eq (4 integer) (5 integer))
+run: 55 empty? 4: ((6 boolean) <- equal (4 integer) (5 integer))
 m: (4 integer)
 sizeof: (4 integer)
 m: (5 integer)
@@ -531,7 +531,7 @@ setm: (4 integer-address deref) <= 1
 setm: size of (4 integer-address deref) is 1
 setm: (4 integer-address deref): setting 1031 to 1
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1))
-run: 62 read 10: ((8 integer) <- len (5 tagged-value-array-address deref))
+run: 62 read 10: ((8 integer) <- length (5 tagged-value-array-address deref))
 array-len: (5 tagged-value-array-address deref)
 m: (1034 integer global)
 sizeof: (1034 integer global)
@@ -540,7 +540,7 @@ setm: (8 integer) <= 2
 setm: size of (8 integer) is 1
 setm: (8 integer): setting 1141 to 2
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1141 2) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1))
-run: 63 read 11: ((9 boolean) <- lt (4 integer-address deref) (8 integer))
+run: 63 read 11: ((9 boolean) <- less-than (4 integer-address deref) (8 integer))
 m: (4 integer-address deref)
 sizeof: (4 integer-address deref)
 m: (8 integer)
@@ -591,14 +591,14 @@ sizeof: location
 run: 1195 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1141 2) (1142 t) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1) (1195 30))
-run: 68 write 1: ((1 channel-address) <- arg)
+run: 68 write 1: ((1 channel-address) <- next-input)
 arg: nil 0 (1031 #(tagged record (integer-address 1039 . nil)))
 run: 1031 => (1 channel-address)
 setm: (1 channel-address) <= 1031
 setm: size of (1 channel-address) is 1
 setm: (1 channel-address): setting 1196 to 1031
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1141 2) (1142 t) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1) (1195 30) (1196 1031))
-run: 69 write 2: ((2 tagged-value) <- arg)
+run: 69 write 2: ((2 tagged-value) <- next-input)
 arg: nil 1 (1031 #(tagged record (integer-address 1039 . nil)))
 run: #(tagged record (integer-address 1039 . nil)) => (2 tagged-value)
 setm: (2 tagged-value) <= #(tagged record (integer-address 1039 . nil))
@@ -621,7 +621,7 @@ sizeof: location
 run: 1226 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1141 2) (1142 t) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1) (1195 30) (1196 1031) (1197 integer-address) (1198 1039) (1226 30))
-run: 72 full? 1: ((1 channel) <- arg)
+run: 72 full? 1: ((1 channel) <- next-input)
 arg: nil 0 (#(tagged record (1 1 1034 . nil)))
 run: #(tagged record (1 1 1034 . nil)) => (1 channel)
 setm: (1 channel) <= #(tagged record (1 1 1034 . nil))
@@ -666,7 +666,7 @@ sizeof: location
 run: 1257 => (default-scope scope-address)
 sizeof: (default-scope scope-address)
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1141 2) (1142 t) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1) (1195 30) (1196 1031) (1197 integer-address) (1198 1039) (1226 30) (1227 1) (1228 1) (1229 1034) (1230 2) (1257 30))
-run: 77 capacity 1: ((1 channel) <- arg)
+run: 77 capacity 1: ((1 channel) <- next-input)
 arg: nil 0 (#(tagged record (1 1 1034 . nil)))
 run: #(tagged record (1 1 1034 . nil)) => (1 channel)
 setm: (1 channel) <= #(tagged record (1 1 1034 . nil))
@@ -689,7 +689,7 @@ setm: (4 tagged-value-array-address) <= 1034
 setm: size of (4 tagged-value-array-address) is 1
 setm: (4 tagged-value-array-address): setting 1261 to 1034
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1141 2) (1142 t) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1) (1195 30) (1196 1031) (1197 integer-address) (1198 1039) (1226 30) (1227 1) (1228 1) (1229 1034) (1230 2) (1257 30) (1258 1) (1259 1) (1260 1034) (1261 1034))
-run: 79 capacity 3: ((5 integer) <- len (4 tagged-value-array-address deref))
+run: 79 capacity 3: ((5 integer) <- length (4 tagged-value-array-address deref))
 array-len: (4 tagged-value-array-address deref)
 m: (1034 integer global)
 sizeof: (1034 integer global)
@@ -707,7 +707,7 @@ setm: (5 integer) <= 2
 setm: size of (5 integer) is 1
 setm: (5 integer): setting 1231 to 2
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1141 2) (1142 t) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1) (1195 30) (1196 1031) (1197 integer-address) (1198 1039) (1226 30) (1227 1) (1228 1) (1229 1034) (1230 2) (1231 2) (1257 30) (1258 1) (1259 1) (1260 1034) (1261 1034) (1262 2))
-run: 81 full? 5: ((6 boolean) <- lt (4 integer) (5 integer))
+run: 81 full? 5: ((6 boolean) <- less-than (4 integer) (5 integer))
 m: (4 integer)
 sizeof: (4 integer)
 m: (5 integer)
@@ -736,7 +736,7 @@ setm: (7 integer) <= 1
 setm: size of (7 integer) is 1
 setm: (7 integer): setting 1233 to 1
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 1) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1141 2) (1142 t) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1) (1195 30) (1196 1031) (1197 integer-address) (1198 1039) (1226 30) (1227 1) (1228 1) (1229 1034) (1230 0) (1231 2) (1233 1) (1257 30) (1258 1) (1259 1) (1260 1034) (1261 1034) (1262 2))
-run: 85 full? 9: ((8 boolean) <- eq (7 integer) (4 integer))
+run: 85 full? 9: ((8 boolean) <- equal (7 integer) (4 integer))
 m: (7 integer)
 sizeof: (7 integer)
 m: (4 integer)
@@ -817,7 +817,7 @@ setm: (7 integer-address deref) <= 2
 setm: size of (7 integer-address deref) is 1
 setm: (7 integer-address deref): setting 1032 to 2
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 2) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1037 integer-address) (1038 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1141 2) (1142 t) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1) (1195 30) (1196 1031) (1197 integer-address) (1198 1039) (1201 1034) (1202 1032) (1203 1037) (1226 30) (1227 1) (1228 1) (1229 1034) (1230 0) (1231 2) (1233 1) (1257 30) (1258 1) (1259 1) (1260 1034) (1261 1034) (1262 2))
-run: 93 write 12: ((9 integer) <- len (6 tagged-value-array-address deref))
+run: 93 write 12: ((9 integer) <- length (6 tagged-value-array-address deref))
 array-len: (6 tagged-value-array-address deref)
 m: (1034 integer global)
 sizeof: (1034 integer global)
@@ -826,7 +826,7 @@ setm: (9 integer) <= 2
 setm: size of (9 integer) is 1
 setm: (9 integer): setting 1204 to 2
 run: -- ((1 1031) (2 1039) (3 integer-address) (4 1039) (5 1) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 2) (1005 1033) (1031 1) (1032 2) (1033 1034) (1034 2) (1035 integer-address) (1036 1039) (1037 integer-address) (1038 1039) (1039 34) (1040 30) (1041 1031) (1042 integer-address) (1043 1039) (1046 1034) (1047 1032) (1048 1035) (1049 2) (1050 t) (1071 30) (1072 0) (1073 0) (1074 1034) (1075 1) (1076 2) (1077 t) (1078 0) (1102 30) (1103 0) (1104 0) (1105 1034) (1106 1034) (1107 2) (1133 30) (1134 1031) (1137 1031) (1138 1034) (1139 integer-address) (1140 1039) (1141 2) (1142 t) (1164 30) (1165 0) (1166 1) (1167 1034) (1168 0) (1169 1) (1195 30) (1196 1031) (1197 integer-address) (1198 1039) (1201 1034) (1202 1032) (1203 1037) (1204 2) (1226 30) (1227 1) (1228 1) (1229 1034) (1230 0) (1231 2) (1233 1) (1257 30) (1258 1) (1259 1) (1260 1034) (1261 1034) (1262 2))
-run: 94 write 13: ((10 boolean) <- lt (7 integer-address deref) (9 integer))
+run: 94 write 13: ((10 boolean) <- less-than (7 integer-address deref) (9 integer))
 m: (7 integer-address deref)
 sizeof: (7 integer-address deref)
 m: (9 integer)

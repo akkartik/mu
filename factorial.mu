@@ -1,16 +1,16 @@
 (def factorial [
   ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((n integer) <- arg)
+  ((n integer) <- next-input)
   { begin
     ; if n=0 return 1
-    ((zero? boolean) <- eq (n integer) (0 literal))
+    ((zero? boolean) <- equal (n integer) (0 literal))
     (break-unless (zero? boolean))
     (reply (1 literal))
   }
   ; return n*factorial(n-1)
-  ((x integer) <- sub (n integer) (1 literal))
+  ((x integer) <- subtract (n integer) (1 literal))
   ((subresult integer) <- factorial (x integer))
-  ((result integer) <- mul (subresult integer) (n integer))
+  ((result integer) <- multiply (subresult integer) (n integer))
   (reply (result integer))
 ])
 
