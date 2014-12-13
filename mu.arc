@@ -1317,13 +1317,13 @@
 (def add-code (forms)
   (each (op . rest)  forms
     (case op
-      ; syntax: def <name> [ <instructions> ]
+      ; syntax: function <name> [ <instructions> ]
       ; don't apply our lightweight tools just yet
-      def!
+      function!
         (let (name (_make-br-fn body))  rest
           (assert (is 'make-br-fn _make-br-fn))
           (= function*.name body))
-      def
+      function
         (let (name (_make-br-fn body))  rest
           (assert (is 'make-br-fn _make-br-fn))
           (= function*.name (join body function*.name)))

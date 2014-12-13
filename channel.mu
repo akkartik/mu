@@ -1,4 +1,4 @@
-(def producer [
+(function producer [
   ; produce numbers 1 to 5 on a channel
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((chan channel-address) <- next-input)
@@ -22,7 +22,7 @@
   }
 ])
 
-(def consumer [
+(function consumer [
   ; consume and print integers from a channel
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((chan channel-address) <- next-input)
@@ -39,7 +39,7 @@
   }
 ])
 
-(def main [
+(function main [
   ((chan channel-address) <- new-channel (3 literal))
   ; create two background 'routines' that communicate by a channel
   (fork (consumer fn) (chan channel-address))

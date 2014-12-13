@@ -1,4 +1,4 @@
-(def main [
+(function main [
   (fork (thread2 fn))
   ((default-scope scope-address) <- new (scope literal) (2 literal))
   ((x integer) <- copy (34 literal))
@@ -8,7 +8,7 @@
   }
 ])
 
-(def thread2 [
+(function thread2 [
   ((default-scope scope-address) <- new (scope literal) (2 literal))
   ((y integer) <- copy (35 literal))
   { begin
