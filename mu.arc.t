@@ -2809,279 +2809,279 @@
 (new-trace "convert-quotes-defer")
 (= traces* (queue))
 (if (~iso (convert-quotes
-            '(((1 integer) <- copy (4 literal))
+            '((1:integer <- copy 4:literal)
               (defer [
-                       ((3 integer) <- copy (6 literal))
+                       (3:integer <- copy 6:literal)
                      ])
-              ((2 integer) <- copy (5 literal))))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (5 literal))
-            ((3 integer) <- copy (6 literal))))
+              (2:integer <- copy 5:literal)))
+          '((1:integer <- copy 4:literal)
+            (2:integer <- copy 5:literal)
+            (3:integer <- copy 6:literal)))
   (prn "F - convert-quotes can handle 'defer'"))
 
 (reset)
 (new-trace "convert-quotes-defer-reply")
 (= traces* (queue))
 (if (~iso (convert-quotes
-            '(((1 integer) <- copy (0 literal))
+            '((1:integer <- copy 0:literal)
               (defer [
-                       ((5 integer) <- copy (0 literal))
+                       (5:integer <- copy 0:literal)
                      ])
-              ((2 integer) <- copy (0 literal))
+              (2:integer <- copy 0:literal)
               (reply)
-              ((3 integer) <- copy (0 literal))
-              ((4 integer) <- copy (0 literal))))
-          '(((1 integer) <- copy (0 literal))
-            ((2 integer) <- copy (0 literal))
-            ((5 integer) <- copy (0 literal))
+              (3:integer <- copy 0:literal)
+              (4:integer <- copy 0:literal)))
+          '((1:integer <- copy 0:literal)
+            (2:integer <- copy 0:literal)
+            (5:integer <- copy 0:literal)
             (reply)
-            ((3 integer) <- copy (0 literal))
-            ((4 integer) <- copy (0 literal))
-            ((5 integer) <- copy (0 literal))))
+            (3:integer <- copy 0:literal)
+            (4:integer <- copy 0:literal)
+            (5:integer <- copy 0:literal)))
   (prn "F - convert-quotes inserts code at early exits"))
 
 (reset)
 (new-trace "convert-quotes-defer-reply-arg")
 (= traces* (queue))
 (if (~iso (convert-quotes
-            '(((1 integer) <- copy (0 literal))
+            '((1:integer <- copy 0:literal)
               (defer [
-                       ((5 integer) <- copy (0 literal))
+                       (5:integer <- copy 0:literal)
                      ])
-              ((2 integer) <- copy (0 literal))
-              (reply (2 literal))
-              ((3 integer) <- copy (0 literal))
-              ((4 integer) <- copy (0 literal))))
-          '(((1 integer) <- copy (0 literal))
-            ((2 integer) <- copy (0 literal))
-            (prepare-reply (2 literal))
-            ((5 integer) <- copy (0 literal))
+              (2:integer <- copy 0:literal)
+              (reply 2:literal)
+              (3:integer <- copy 0:literal)
+              (4:integer <- copy 0:literal)))
+          '((1:integer <- copy 0:literal)
+            (2:integer <- copy 0:literal)
+            (prepare-reply 2:literal)
+            (5:integer <- copy 0:literal)
             (reply)
-            ((3 integer) <- copy (0 literal))
-            ((4 integer) <- copy (0 literal))
-            ((5 integer) <- copy (0 literal))))
+            (3:integer <- copy 0:literal)
+            (4:integer <- copy 0:literal)
+            (5:integer <- copy 0:literal)))
   (prn "F - convert-quotes inserts code at early exits"))
 
 (reset)
 (new-trace "convert-quotes-label")
 (= traces* (queue))
 (if (~iso (convert-quotes
-            '(((1 integer) <- copy (4 literal))
+            '((1:integer <- copy 4:literal)
               foo
-              ((2 integer) <- copy (5 literal))))
-          '(((1 integer) <- copy (4 literal))
+              (2:integer <- copy 5:literal)))
+          '((1:integer <- copy 4:literal)
             foo
-            ((2 integer) <- copy (5 literal))))
+            (2:integer <- copy 5:literal)))
   (prn "F - convert-quotes can handle labels"))
 
 (reset)
 (new-trace "before")
 (= traces* (queue))
 (add-code '((before label1 [
-               ((2 integer) <- copy (0 literal))
+               (2:integer <- copy 0:literal)
              ])))
 (if (~iso (as cons before*!label1)
           '(; fragment
             (
-              ((2 integer) <- copy (0 literal)))))
+              (2:integer <- copy 0:literal))))
   (prn "F - 'before' records fragments of code to insert before labels"))
 
 (if (~iso (insert-code
-            '(((1 integer) <- copy (0 literal))
+            '((1:integer <- copy 0:literal)
               label1
-              ((3 integer) <- copy (0 literal))))
-          '(((1 integer) <- copy (0 literal))
-            ((2 integer) <- copy (0 literal))
+              (3:integer <- copy 0:literal)))
+          '((1:integer <- copy 0:literal)
+            (2:integer <- copy 0:literal)
             label1
-            ((3 integer) <- copy (0 literal))))
+            (3:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert fragments before labels"))
 
 (reset)
 (new-trace "before-multiple")
 (= traces* (queue))
 (add-code '((before label1 [
-               ((2 integer) <- copy (0 literal))
+               (2:integer <- copy 0:literal)
              ])
             (before label1 [
-              ((3 integer) <- copy (0 literal))
+              (3:integer <- copy 0:literal)
              ])))
 (if (~iso (as cons before*!label1)
           '(; fragment
             (
-              ((2 integer) <- copy (0 literal)))
+              (2:integer <- copy 0:literal))
             (
-              ((3 integer) <- copy (0 literal)))))
+              (3:integer <- copy 0:literal))))
   (prn "F - 'before' records fragments in order"))
 
 (if (~iso (insert-code
-            '(((1 integer) <- copy (0 literal))
+            '((1:integer <- copy 0:literal)
               label1
-              ((4 integer) <- copy (0 literal))))
-          '(((1 integer) <- copy (0 literal))
-            ((2 integer) <- copy (0 literal))
-            ((3 integer) <- copy (0 literal))
+              (4:integer <- copy 0:literal)))
+          '((1:integer <- copy 0:literal)
+            (2:integer <- copy 0:literal)
+            (3:integer <- copy 0:literal)
             label1
-            ((4 integer) <- copy (0 literal))))
+            (4:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert multiple fragments in order before label"))
 
 (reset)
 (new-trace "before-scoped")
 (= traces* (queue))
 (add-code '((before f/label1 [  ; label1 only inside function f
-               ((2 integer) <- copy (0 literal))
+               (2:integer <- copy 0:literal)
              ])))
 (if (~iso (insert-code
-            '(((1 integer) <- copy (0 literal))
+            '((1:integer <- copy 0:literal)
               label1
-              ((3 integer) <- copy (0 literal)))
+              (3:integer <- copy 0:literal))
             'f)
-          '(((1 integer) <- copy (0 literal))
-            ((2 integer) <- copy (0 literal))
+          '((1:integer <- copy 0:literal)
+            (2:integer <- copy 0:literal)
             label1
-            ((3 integer) <- copy (0 literal))))
+            (3:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert fragments before labels just in specified functions"))
 
 (reset)
 (new-trace "before-scoped2")
 (= traces* (queue))
 (add-code '((before f/label1 [  ; label1 only inside function f
-               ((2 integer) <- copy (0 literal))
+               (2:integer <- copy 0:literal)
              ])))
 (if (~iso (insert-code
-            '(((1 integer) <- copy (0 literal))
+            '((1:integer <- copy 0:literal)
               label1
-              ((3 integer) <- copy (0 literal))))
-          '(((1 integer) <- copy (0 literal))
+              (3:integer <- copy 0:literal)))
+          '((1:integer <- copy 0:literal)
             label1
-            ((3 integer) <- copy (0 literal))))
+            (3:integer <- copy 0:literal)))
   (prn "F - 'insert-code' ignores labels not in specified functions"))
 
 (reset)
 (new-trace "after")
 (= traces* (queue))
 (add-code '((after label1 [
-               ((2 integer) <- copy (0 literal))
+               (2:integer <- copy 0:literal)
              ])))
 (if (~iso (as cons after*!label1)
           '(; fragment
             (
-              ((2 integer) <- copy (0 literal)))))
+              (2:integer <- copy 0:literal))))
   (prn "F - 'after' records fragments of code to insert after labels"))
 
 (if (~iso (insert-code
-            '(((1 integer) <- copy (0 literal))
+            '((1:integer <- copy 0:literal)
               label1
-              ((3 integer) <- copy (0 literal))))
-          '(((1 integer) <- copy (0 literal))
+              (3:integer <- copy 0:literal)))
+          '((1:integer <- copy 0:literal)
             label1
-            ((2 integer) <- copy (0 literal))
-            ((3 integer) <- copy (0 literal))))
+            (2:integer <- copy 0:literal)
+            (3:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert fragments after labels"))
 
 (reset)
 (new-trace "after-multiple")
 (= traces* (queue))
 (add-code '((after label1 [
-               ((2 integer) <- copy (0 literal))
+               (2:integer <- copy 0:literal)
              ])
             (after label1 [
-              ((3 integer) <- copy (0 literal))
+              (3:integer <- copy 0:literal)
              ])))
 (if (~iso (as cons after*!label1)
           '(; fragment
             (
-              ((3 integer) <- copy (0 literal)))
+              (3:integer <- copy 0:literal))
             (
-              ((2 integer) <- copy (0 literal)))))
+              (2:integer <- copy 0:literal))))
   (prn "F - 'after' records fragments in *reverse* order"))
 
 (if (~iso (insert-code
-            '(((1 integer) <- copy (0 literal))
+            '((1:integer <- copy 0:literal)
               label1
-              ((4 integer) <- copy (0 literal))))
-          '(((1 integer) <- copy (0 literal))
+              (4:integer <- copy 0:literal)))
+          '((1:integer <- copy 0:literal)
             label1
-            ((3 integer) <- copy (0 literal))
-            ((2 integer) <- copy (0 literal))
-            ((4 integer) <- copy (0 literal))))
+            (3:integer <- copy 0:literal)
+            (2:integer <- copy 0:literal)
+            (4:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert multiple fragments in order after label"))
 
 (reset)
 (new-trace "before-after")
 (= traces* (queue))
 (add-code '((before label1 [
-               ((2 integer) <- copy (0 literal))
+               (2:integer <- copy 0:literal)
              ])
             (after label1 [
-              ((3 integer) <- copy (0 literal))
+              (3:integer <- copy 0:literal)
              ])))
 (if (and (~iso (as cons before*!label1)
                '(; fragment
                  (
-                   ((2 integer) <- copy (0 literal)))))
+                   (2:integer <- copy 0:literal))))
          (~iso (as cons after*!label1)
                '(; fragment
                  (
-                   ((3 integer) <- copy (0 literal))))))
+                   (3:integer <- copy 0:literal)))))
   (prn "F - 'before' and 'after' fragments work together"))
 
 (if (~iso (insert-code
-            '(((1 integer) <- copy (0 literal))
+            '((1:integer <- copy 0:literal)
               label1
-              ((4 integer) <- copy (0 literal))))
-          '(((1 integer) <- copy (0 literal))
-            ((2 integer) <- copy (0 literal))
+              (4:integer <- copy 0:literal)))
+          '((1:integer <- copy 0:literal)
+            (2:integer <- copy 0:literal)
             label1
-            ((3 integer) <- copy (0 literal))
-            ((4 integer) <- copy (0 literal))))
+            (3:integer <- copy 0:literal)
+            (4:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert multiple fragments around label"))
 
 (reset)
 (new-trace "before-after-multiple")
 (= traces* (queue))
 (add-code '((before label1 [
-               ((2 integer) <- copy (0 literal))
-               ((3 integer) <- copy (0 literal))
+               (2:integer <- copy 0:literal)
+               (3:integer <- copy 0:literal)
              ])
             (after label1 [
-              ((4 integer) <- copy (0 literal))
+              (4:integer <- copy 0:literal)
              ])
             (before label1 [
-              ((5 integer) <- copy (0 literal))
+              (5:integer <- copy 0:literal)
              ])
             (after label1 [
-              ((6 integer) <- copy (0 literal))
-              ((7 integer) <- copy (0 literal))
+              (6:integer <- copy 0:literal)
+              (7:integer <- copy 0:literal)
              ])))
 (if (or (~iso (as cons before*!label1)
               '(; fragment
                 (
-                  ((2 integer) <- copy (0 literal))
-                  ((3 integer) <- copy (0 literal)))
+                  (2:integer <- copy 0:literal)
+                  (3:integer <- copy 0:literal))
                 (
-                  ((5 integer) <- copy (0 literal)))))
+                  (5:integer <- copy 0:literal))))
         (~iso (as cons after*!label1)
               '(; fragment
                 (
-                  ((6 integer) <- copy (0 literal))
-                  ((7 integer) <- copy (0 literal)))
+                  (6:integer <- copy 0:literal)
+                  (7:integer <- copy 0:literal))
                 (
-                  ((4 integer) <- copy (0 literal))))))
+                  (4:integer <- copy 0:literal)))))
   (prn "F - multiple 'before' and 'after' fragments at once"))
 
 (if (~iso (insert-code
-            '(((1 integer) <- copy (0 literal))
+            '((1:integer <- copy 0:literal)
               label1
-              ((8 integer) <- copy (0 literal))))
-          '(((1 integer) <- copy (0 literal))
-            ((2 integer) <- copy (0 literal))
-            ((3 integer) <- copy (0 literal))
-            ((5 integer) <- copy (0 literal))
+              (8:integer <- copy 0:literal)))
+          '((1:integer <- copy 0:literal)
+            (2:integer <- copy 0:literal)
+            (3:integer <- copy 0:literal)
+            (5:integer <- copy 0:literal)
             label1
-            ((6 integer) <- copy (0 literal))
-            ((7 integer) <- copy (0 literal))
-            ((4 integer) <- copy (0 literal))
-            ((8 integer) <- copy (0 literal))))
+            (6:integer <- copy 0:literal)
+            (7:integer <- copy 0:literal)
+            (4:integer <- copy 0:literal)
+            (8:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert multiple fragments around label - 2"))
 
 (reset)
@@ -3090,31 +3090,31 @@
 (if (~iso (do
             (reset)
             (add-code '((before label1 [
-                           ((2 integer) <- copy (0 literal))
+                           (2:integer <- copy 0:literal)
                          ])
                         (after label1 [
-                          ((3 integer) <- copy (0 literal))
+                          (3:integer <- copy 0:literal)
                          ])
                         (before label1 [
-                          ((4 integer) <- copy (0 literal))
+                          (4:integer <- copy 0:literal)
                          ])
                         (after label1 [
-                          ((5 integer) <- copy (0 literal))
+                          (5:integer <- copy 0:literal)
                          ])))
             (list before*!label1 after*!label1))
           (do
             (reset)
             (add-code '((before label1 [
-                           ((2 integer) <- copy (0 literal))
+                           (2:integer <- copy 0:literal)
                          ])
                         (before label1 [
-                          ((4 integer) <- copy (0 literal))
+                          (4:integer <- copy 0:literal)
                          ])
                         (after label1 [
-                          ((3 integer) <- copy (0 literal))
+                          (3:integer <- copy 0:literal)
                          ])
                         (after label1 [
-                          ((5 integer) <- copy (0 literal))
+                          (5:integer <- copy 0:literal)
                          ])))
             (list before*!label1 after*!label1)))
   (prn "F - order matters between 'before' and between 'after' fragments, but not *across* 'before' and 'after' fragments"))
