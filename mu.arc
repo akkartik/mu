@@ -1364,6 +1364,6 @@
 ;?   (prn function*!factorial)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
-  (prn memory*)
+  (prn "\nmemory: " memory*)
 ;?   (prn completed-routines*)
 )
