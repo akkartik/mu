@@ -6,6 +6,9 @@
 # Usage:
 #  mu [mu files]
 #  mu test [arc files]
+#
+# To actually mess with load levels, skip this script and call load.arc
+# directly.
 
 if [[ $1 == "test" ]]
 then
