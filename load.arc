@@ -2,7 +2,7 @@
 ; selectively loading just sections at or less than a given level
 
 ; usage:
-;   load.arc [arc files] -- [mu files]
+;   load.arc [level] [arc files] -- [mu files]
 
 (def selective-load (file (o level 999))
 ;?   (prn "loading @file at level @level")
