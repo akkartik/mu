@@ -151,7 +151,7 @@
 ;? (set dump-trace*)
 (new-trace "literal")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (23 literal))
      ])))
 ;? (set dump-trace*)
@@ -167,7 +167,7 @@
 (reset)
 (new-trace "add")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       ((3 integer) <- add (1 integer) (2 integer))
@@ -179,7 +179,7 @@
 (reset)
 (new-trace "add-literal")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- add (2 literal) (3 literal))
      ])))
 (run 'main)
@@ -189,7 +189,7 @@
 (reset)
 (new-trace "sub-literal")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- subtract (1 literal) (3 literal))
      ])))
 (run 'main)
@@ -200,7 +200,7 @@
 (reset)
 (new-trace "mul-literal")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- multiply (2 literal) (3 literal))
      ])))
 (run 'main)
@@ -211,7 +211,7 @@
 (reset)
 (new-trace "div-literal")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- divide (8 literal) (3 literal))
      ])))
 (run 'main)
@@ -222,7 +222,7 @@
 (reset)
 (new-trace "idiv-literal")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) (2 integer) <- divide-with-remainder (23 literal) (6 literal))
      ])))
 (run 'main)
@@ -234,7 +234,7 @@
 (new-trace "dummy-oarg")
 ;? (set dump-trace*)
 (add-code
-  '((def main [
+  '((function main [
       (_ (2 integer) <- divide-with-remainder (23 literal) (6 literal))
      ])))
 (run 'main)
@@ -249,7 +249,7 @@
 (reset)
 (new-trace "and-literal")
 (add-code
-  '((def main [
+  '((function main [
       ((1 boolean) <- and (t literal) (nil literal))
      ])))
 (run 'main)
@@ -262,7 +262,7 @@
 (reset)
 (new-trace "lt-literal")
 (add-code
-  '((def main [
+  '((function main [
       ((1 boolean) <- less-than (4 literal) (3 literal))
      ])))
 (run 'main)
@@ -273,7 +273,7 @@
 (reset)
 (new-trace "le-literal-false")
 (add-code
-  '((def main [
+  '((function main [
       ((1 boolean) <- lesser-or-equal (4 literal) (3 literal))
      ])))
 (run 'main)
@@ -284,7 +284,7 @@
 (reset)
 (new-trace "le-literal-true")
 (add-code
-  '((def main [
+  '((function main [
       ((1 boolean) <- lesser-or-equal (4 literal) (4 literal))
      ])))
 (run 'main)
@@ -295,7 +295,7 @@
 (reset)
 (new-trace "le-literal-true-2")
 (add-code
-  '((def main [
+  '((function main [
       ((1 boolean) <- lesser-or-equal (4 literal) (5 literal))
      ])))
 (run 'main)
@@ -310,7 +310,7 @@
 (reset)
 (new-trace "jump-skip")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (8 literal))
       (jump (1 offset))
       ((2 integer) <- copy (3 literal))  ; should be skipped
@@ -324,7 +324,7 @@
 (reset)
 (new-trace "jump-target")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (8 literal))
       (jump (1 offset))
       ((2 integer) <- copy (3 literal))  ; should be skipped
@@ -340,7 +340,7 @@
 (reset)
 (new-trace "jump-if-skip")
 (add-code
-  '((def main [
+  '((function main [
       ((2 integer) <- copy (1 literal))
       ((1 boolean) <- equal (1 literal) (2 integer))
       (jump-if (1 boolean) (1 offset))
@@ -356,7 +356,7 @@
 (reset)
 (new-trace "jump-if-fallthrough")
 (add-code
-  '((def main [
+  '((function main [
       ((1 boolean) <- equal (1 literal) (2 literal))
       (jump-if (3 boolean) (1 offset))
       ((2 integer) <- copy (3 literal))
@@ -371,7 +371,7 @@
 (reset)
 (new-trace "jump-if-backward")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (1 literal))
       ; loop
@@ -390,7 +390,7 @@
 (reset)
 (new-trace "jump-label")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (1 literal))
       loop
@@ -415,7 +415,7 @@
 (reset)
 (new-trace "direct-addressing")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (34 literal))
       ((2 integer) <- copy (1 integer))
      ])))
@@ -432,7 +432,7 @@
 (reset)
 (new-trace "indirect-addressing")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer-address) <- copy (2 literal))  ; unsafe; can't do this in general
       ((2 integer) <- copy (34 literal))
       ((3 integer) <- copy (1 integer-address deref))
@@ -448,7 +448,7 @@
 (reset)
 (new-trace "indirect-addressing-oarg")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer-address) <- copy (2 literal))
       ((2 integer) <- copy (34 literal))
       ((1 integer-address deref) <- add (2 integer) (2 literal))
@@ -483,7 +483,7 @@
 (reset)
 (new-trace "get-record")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((3 boolean) <- get (1 integer-boolean-pair) (1 offset))
@@ -498,7 +498,7 @@
 (reset)
 (new-trace "get-indirect")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((3 integer-boolean-pair-address) <- copy (1 literal))
@@ -527,7 +527,7 @@
 (reset)
 (new-trace "get-indirect-repeated")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (34 literal))
       ((2 integer) <- copy (35 literal))
       ((3 integer) <- copy (36 literal))
@@ -544,7 +544,7 @@
 (reset)
 (new-trace "get-compound-field")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (34 literal))
       ((2 integer) <- copy (35 literal))
       ((3 integer) <- copy (36 literal))
@@ -558,7 +558,7 @@
 (reset)
 (new-trace "get-address")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (t literal))
       ((3 boolean-address) <- get-address (1 integer-boolean-pair) (1 offset))
@@ -571,7 +571,7 @@
 (reset)
 (new-trace "get-address-indirect")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (t literal))
       ((3 integer-boolean-pair-address) <- copy (1 literal))
@@ -585,7 +585,7 @@
 (reset)
 (new-trace "index-literal")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -602,7 +602,7 @@
 (reset)
 (new-trace "index-direct")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -620,7 +620,7 @@
 (reset)
 (new-trace "index-indirect")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -641,7 +641,7 @@
 (reset)
 (new-trace "index-indirect-multiple")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (4 literal))
       ((2 integer) <- copy (23 literal))
       ((3 integer) <- copy (24 literal))
@@ -658,7 +658,7 @@
 (reset)
 (new-trace "index-address")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -675,7 +675,7 @@
 (reset)
 (new-trace "index-address-indirect")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -695,7 +695,7 @@
 (reset)
 (new-trace "len-array")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -711,7 +711,7 @@
 (reset)
 (new-trace "len-array-indirect")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 boolean) <- copy (nil literal))
@@ -733,7 +733,7 @@
 (reset)
 (new-trace "sizeof-record")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- sizeof (integer-boolean-pair literal))
      ])))
 (run 'main)
@@ -744,7 +744,7 @@
 (reset)
 (new-trace "sizeof-record-not-len")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- sizeof (integer-point-pair literal))
      ])))
 (run 'main)
@@ -757,7 +757,7 @@
 (reset)
 (new-trace "copy-record")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((4 boolean) <- copy (t literal))
@@ -771,7 +771,7 @@
 (reset)
 (new-trace "copy-record2")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (34 literal))
       ((2 integer) <- copy (35 literal))
       ((3 integer) <- copy (36 literal))
@@ -801,7 +801,7 @@
 (new-trace "tagged-value")
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (add-code
-  '((def main [
+  '((function main [
       ((1 type) <- copy (integer-address literal))
       ((2 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (integer-address literal))
@@ -820,7 +820,7 @@
 (new-trace "tagged-value-2")
 ;? (set dump-trace*)
 (add-code
-  '((def main [
+  '((function main [
       ((1 type) <- copy (integer-address literal))
       ((2 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((3 integer-address) (4 boolean) <- maybe-coerce (1 tagged-value) (boolean-address literal))
@@ -833,7 +833,7 @@
 (reset)
 (new-trace "save-type")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((2 tagged-value) <- save-type (1 integer-address))
      ])))
@@ -845,7 +845,7 @@
 (reset)
 (new-trace "new-tagged-value")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer-address) <- copy (34 literal))  ; pointer to nowhere
       ((2 tagged-value-address) <- new-tagged-value (integer-address literal) (1 integer-address))
       ((3 integer-address) (4 boolean) <- maybe-coerce (2 tagged-value-address deref) (integer-address literal))
@@ -864,7 +864,7 @@
 (new-trace "list")
 ;? (set dump-trace*)
 (add-code
-  '((def main [
+  '((function main [
       ; 1 points at first node: tagged-value (int 34)
       ((1 list-address) <- new (list literal))
       ((2 tagged-value-address) <- list-value-address (1 list-address))
@@ -903,7 +903,7 @@
                 (~is memory*.10 nil))))
       (prn "F - lists can contain elements of different types"))))
 (add-code
-  '((def test2 [
+  '((function test2 [
       ((10 list-address) <- list-next (1 list-address))
      ])))
 (run 'test2)
@@ -917,7 +917,7 @@
 (reset)
 (new-trace "new-list")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- new-list (3 literal) (4 literal) (5 literal))
      ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
@@ -947,10 +947,10 @@
 (reset)
 (new-trace "new-fn")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((3 integer) <- add (1 integer) (2 integer))
      ])
-    (def main [
+    (function main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       (test1)
@@ -964,10 +964,10 @@
 (reset)
 (new-trace "new-fn-once")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((1 integer) <- copy (1 literal))
      ])
-    (def main [
+    (function main [
       (test1)
      ])))
 ;? (= dump-trace* (obj whitelist '("run")))
@@ -985,12 +985,12 @@
 (reset)
 (new-trace "new-fn-reply")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((3 integer) <- add (1 integer) (2 integer))
       (reply)
       ((4 integer) <- copy (34 literal))
      ])
-    (def main [
+    (function main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       (test1)
@@ -1004,13 +1004,13 @@
 (reset)
 (new-trace "new-fn-reply-nested")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((3 integer) <- test2)
      ])
-    (def test2 [
+    (function test2 [
       (reply (2 integer))
      ])
-    (def main [
+    (function main [
       ((2 integer) <- copy (34 literal))
       (test1)
      ])))
@@ -1023,12 +1023,12 @@
 (reset)
 (new-trace "new-fn-reply-once")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((3 integer) <- add (1 integer) (2 integer))
       (reply)
       ((4 integer) <- copy (34 literal))
      ])
-    (def main [
+    (function main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       (test1)
@@ -1042,14 +1042,14 @@
 (reset)
 (new-trace "new-fn-arg-sequential")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((4 integer) <- next-input)
       ((5 integer) <- next-input)
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
       ((4 integer) <- copy (34 literal))
      ])
-    (def main [
+    (function main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       (test1 (1 integer) (2 integer))
@@ -1066,14 +1066,14 @@
 (new-trace "new-fn-arg-random-access")
 ;? (set dump-trace*)
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((5 integer) <- input (1 literal))
       ((4 integer) <- input (0 literal))
       ((3 integer) <- add (4 integer) (5 integer))
       (reply)
       ((4 integer) <- copy (34 literal))  ; should never run
      ])
-    (def main [
+    (function main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       (test1 (1 integer) (2 integer))
@@ -1090,11 +1090,11 @@
 (new-trace "new-fn-arg-random-then-sequential")
 ;? (set dump-trace*)
 (add-code
-  '((def test1 [
+  '((function test1 [
       (_ <- input (1 literal))
       ((1 integer) <- next-input)  ; takes next arg after index 1
      ])  ; should never run
-    (def main [
+    (function main [
       (test1 (1 literal) (2 literal) (3 literal))
      ])))
 (run 'main)
@@ -1106,10 +1106,10 @@
 (reset)
 (new-trace "new-fn-arg-status")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((4 integer) (5 boolean) <- next-input)
      ])
-    (def main [
+    (function main [
       (test1 (1 literal))
      ])))
 (run 'main)
@@ -1121,11 +1121,11 @@
 (reset)
 (new-trace "new-fn-arg-missing")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((4 integer) <- next-input)
       ((5 integer) <- next-input)
      ])
-    (def main [
+    (function main [
       (test1 (1 literal))
      ])))
 (run 'main)
@@ -1137,11 +1137,11 @@
 (reset)
 (new-trace "new-fn-arg-missing-2")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((4 integer) <- next-input)
       ((5 integer) (6 boolean) <- next-input)
      ])
-    (def main [
+    (function main [
       (test1 (1 literal))
      ])))
 (run 'main)
@@ -1153,12 +1153,12 @@
 (reset)
 (new-trace "new-fn-arg-missing-3")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((4 integer) <- next-input)
       ((5 integer) <- copy (34 literal))
       ((5 integer) (6 boolean) <- next-input)
     ])
-    (def main [
+    (function main [
       (test1 (1 literal))
     ])))
 (run 'main)
@@ -1170,7 +1170,7 @@
 (reset)
 (new-trace "new-fn-arg-missing-4")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ; if given two args, adds them; if given one arg, increments
       ((4 integer) <- next-input)
       ((5 integer) (6 boolean) <- next-input)
@@ -1180,7 +1180,7 @@
       }
       ((7 integer) <- add (4 integer) (5 integer))
      ])
-    (def main [
+    (function main [
       (test1 (34 literal))
      ])))
 (run 'main)
@@ -1192,11 +1192,11 @@
 (reset)
 (new-trace "new-fn-arg-by-value")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((1 integer) <- copy (0 literal))  ; overwrite caller memory
       ((2 integer) <- next-input)
      ])  ; arg not clobbered
-    (def main [
+    (function main [
       ((1 integer) <- copy (34 literal))
       (test1 (1 integer))
      ])))
@@ -1208,10 +1208,10 @@
 (reset)
 (new-trace "arg-record")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((4 integer-boolean-pair) <- next-input)
      ])
-    (def main [
+    (function main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       (test1 (1 integer-boolean-pair))
@@ -1224,10 +1224,10 @@
 (new-trace "arg-record-indirect")
 ;? (set dump-trace*)
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((4 integer-boolean-pair) <- next-input)
      ])
-    (def main [
+    (function main [
       ((1 integer) <- copy (34 literal))
       ((2 boolean) <- copy (nil literal))
       ((3 integer-boolean-pair-address) <- copy (1 literal))
@@ -1241,14 +1241,14 @@
 (reset)
 (new-trace "new-fn-reply-oarg")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((4 integer) <- next-input)
       ((5 integer) <- next-input)
       ((6 integer) <- add (4 integer) (5 integer))
       (reply (6 integer))
       ((4 integer) <- copy (34 literal))
      ])
-    (def main [
+    (function main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       ((3 integer) <- test1 (1 integer) (2 integer))
@@ -1263,14 +1263,14 @@
 (reset)
 (new-trace "new-fn-reply-oarg-multiple")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((4 integer) <- next-input)
       ((5 integer) <- next-input)
       ((6 integer) <- add (4 integer) (5 integer))
       (reply (6 integer) (5 integer))
       ((4 integer) <- copy (34 literal))
      ])
-    (def main [
+    (function main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       ((3 integer) (7 integer) <- test1 (1 integer) (2 integer))
@@ -1285,7 +1285,7 @@
 (reset)
 (new-trace "new-fn-prepare-reply")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((4 integer) <- next-input)
       ((5 integer) <- next-input)
       ((6 integer) <- add (4 integer) (5 integer))
@@ -1293,7 +1293,7 @@
       (reply)
       ((4 integer) <- copy (34 literal))
      ])
-    (def main [
+    (function main [
       ((1 integer) <- copy (1 literal))
       ((2 integer) <- copy (3 literal))
       ((3 integer) (7 integer) <- test1 (1 integer) (2 integer))
@@ -1530,7 +1530,7 @@
 (new-trace "loop")
 ;? (set dump-trace*)
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (4 literal))
       ((2 integer) <- copy (1 literal))
       { begin
@@ -1555,7 +1555,7 @@
 (new-trace "loop-nested")
 ;? (set dump-trace*)
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (4 literal))
       ((2 integer) <- copy (1 literal))
       { begin
@@ -1578,7 +1578,7 @@
 (reset)
 (new-trace "loop-fail")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (4 literal))
       ((2 integer) <- copy (2 literal))
       { begin
@@ -1743,7 +1743,7 @@
 (reset)
 (new-trace "new-primitive")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer-address) <- new (integer literal))
      ])))
 (let routine make-routine!main
@@ -1760,7 +1760,7 @@
 (reset)
 (new-trace "new-array-literal")
 (add-code
-  '((def main [
+  '((function main [
       ((1 type-array-address) <- new (type-array literal) (5 literal))
      ])))
 (let routine make-routine!main
@@ -1776,7 +1776,7 @@
 (reset)
 (new-trace "new-array-direct")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (5 literal))
       ((2 type-array-address) <- new (type-array literal) (1 integer))
      ])))
@@ -1806,7 +1806,7 @@
 (reset)
 (new-trace "set-default-scope")
 (add-code
-  '((def main [
+  '((function main [
       ((default-scope scope-address) <- new (scope literal) (2 literal))
       ((1 integer) <- copy (23 literal))
      ])))
@@ -1823,7 +1823,7 @@
 (reset)
 (new-trace "set-default-scope-skips-offset")
 (add-code
-  '((def main [
+  '((function main [
       ((default-scope scope-address) <- new (scope literal) (2 literal))
       ((1 integer) <- copy (23 offset))
      ])))
@@ -1840,7 +1840,7 @@
 (reset)
 (new-trace "default-scope-bounds-check")
 (add-code
-  '((def main [
+  '((function main [
       ((default-scope scope-address) <- new (scope literal) (2 literal))
       ((2 integer) <- copy (23 literal))
      ])))
@@ -1854,7 +1854,7 @@
 (reset)
 (new-trace "default-scope-and-get-indirect")
 (add-code
-  '((def main [
+  '((function main [
       ((default-scope scope-address) <- new (scope literal) (5 literal))
       ((1 integer-boolean-pair-address) <- new (integer-boolean-pair literal))
       ((2 integer-address) <- get-address (1 integer-boolean-pair-address deref) (0 offset))
@@ -1874,7 +1874,7 @@
 (reset)
 (new-trace "default-scope-and-index-indirect")
 (add-code
-  '((def main [
+  '((function main [
       ((default-scope scope-address) <- new (scope literal) (5 literal))
       ((1 integer-array-address) <- new (integer-array literal) (4 literal))
       ((2 integer-address) <- index-address (1 integer-array-address deref) (2 offset))
@@ -1907,7 +1907,7 @@
 (reset)
 (new-trace "suppress-default-scope")
 (add-code
-  '((def main [
+  '((function main [
       ((default-scope scope-address) <- new (scope literal) (2 literal))
       ((1 integer global) <- copy (23 literal))
      ])))
@@ -1925,7 +1925,7 @@
 (reset)
 (new-trace "array-copy-indirect-scoped")
 (add-code
-  '((def main [
+  '((function main [
       ((10 integer) <- copy (30 literal))  ; pretend allocation
       ((default-scope scope-address) <- copy (10 literal))  ; unsafe
       ((1 integer) <- copy (2 literal))
@@ -1949,7 +1949,7 @@
 (reset)
 (new-trace "len-array-indirect-scoped")
 (add-code
-  '((def main [
+  '((function main [
       ((10 integer) <- copy (30 literal))  ; pretend allocation
       ((default-scope scope-address) <- copy (10 literal))  ; unsafe
       ((1 integer) <- copy (2 literal))
@@ -1976,7 +1976,7 @@
 (new-trace "dispatch-clause")
 ;? (set dump-trace*)
 (add-code
-  '((def test1 [
+  '((function test1 [
       ; doesn't matter too much how many locals you allocate space for (here 20)
       ; if it's slightly too many -- memory is plentiful
       ; if it's too few -- mu will raise an error
@@ -1993,7 +1993,7 @@
       }
       (reply (nil literal))
      ])
-    (def main [
+    (function main [
       ((1 tagged-value-address) <- new-tagged-value (integer literal) (34 literal))
       ((2 tagged-value-address) <- new-tagged-value (integer literal) (3 literal))
       ((3 integer) <- test1 (1 tagged-value-address) (2 tagged-value-address))
@@ -2010,7 +2010,7 @@
 (new-trace "dispatch-multiple-clauses")
 ;? (set dump-trace*)
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((default-scope scope-address) <- new (scope literal) (20 literal))
       ((first-arg-box tagged-value-address) <- next-input)
       ; if given integers, add them
@@ -2033,7 +2033,7 @@
       }
       (reply (nil literal))
      ])
-    (def main [
+    (function main [
       ((1 tagged-value-address) <- new-tagged-value (boolean literal) (t literal))
       ((2 tagged-value-address) <- new-tagged-value (boolean literal) (nil literal))
       ((3 boolean) <- test1 (1 tagged-value-address) (2 tagged-value-address))
@@ -2050,7 +2050,7 @@
 (reset)
 (new-trace "dispatch-multiple-calls")
 (add-code
-  '((def test1 [
+  '((function test1 [
       ((default-scope scope-address) <- new (scope literal) (20 literal))
       ((first-arg-box tagged-value-address) <- next-input)
       ; if given integers, add them
@@ -2073,7 +2073,7 @@
       }
       (reply (nil literal))
      ])
-    (def main [
+    (function main [
       ((1 tagged-value-address) <- new-tagged-value (boolean literal) (t literal))
       ((2 tagged-value-address) <- new-tagged-value (boolean literal) (nil literal))
       ((3 boolean) <- test1 (1 tagged-value-address) (2 tagged-value-address))
@@ -2101,10 +2101,10 @@
 (new-trace "scheduler")
 (= traces* (queue))
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((1 integer) <- copy (3 literal))
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- copy (4 literal))
      ])))
 (run 'f1 'f2)
@@ -2127,11 +2127,11 @@
 (new-trace "scheduler-alternate")
 (= traces* (queue))
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((1 integer) <- copy (3 literal))
       ((1 integer) <- copy (3 literal))
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- copy (4 literal))
       ((2 integer) <- copy (4 literal))
      ])))
@@ -2148,10 +2148,10 @@
 (new-trace "scheduler-sleep")
 (= traces* (queue))
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((1 integer) <- copy (3 literal))
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- copy (4 literal))
      ])))
 ; add one baseline routine to run (empty running-routines* handled below)
@@ -2173,10 +2173,10 @@
 (new-trace "scheduler-wakeup")
 (= traces* (queue))
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((1 integer) <- copy (3 literal))
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- copy (4 literal))
      ])))
 ; add one baseline routine to run (empty running-routines* handled below)
@@ -2196,10 +2196,10 @@
 (new-trace "scheduler-sleep-location")
 (= traces* (queue))
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((1 integer) <- copy (3 literal))
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- copy (4 literal))
      ])))
 ; add one baseline routine to run (empty running-routines* handled below)
@@ -2228,10 +2228,10 @@
 (new-trace "scheduler-wakeup-location")
 (= traces* (queue))
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((1 integer) <- copy (3 literal))
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- copy (4 literal))
      ])))
 ; add one baseline routine to run (empty running-routines* handled below)
@@ -2252,7 +2252,7 @@
 (new-trace "scheduler-skip")
 (= traces* (queue))
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((1 integer) <- copy (3 literal))
      ])))
 ; running-routines* is empty
@@ -2272,7 +2272,7 @@
 (new-trace "scheduler-deadlock")
 (= traces* (queue))
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((1 integer) <- copy (3 literal))
      ])))
 (assert (empty running-routines*))
@@ -2295,7 +2295,7 @@
 (new-trace "scheduler-deadlock2")
 (= traces* (queue))
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((1 integer) <- copy (3 literal))
      ])))
 ; running-routines* is empty
@@ -2313,12 +2313,12 @@
 (reset)
 (new-trace "sleep")
 (add-code
-  '((def f1 [
+  '((function f1 [
       (sleep (1 literal))
       ((1 integer) <- copy (3 literal))
       ((1 integer) <- copy (3 literal))
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- copy (4 literal))
       ((2 integer) <- copy (4 literal))
      ])))
@@ -2338,12 +2338,12 @@
 (reset)
 (new-trace "sleep-long")
 (add-code
-  '((def f1 [
+  '((function f1 [
       (sleep (20 literal))
       ((1 integer) <- copy (3 literal))
       ((1 integer) <- copy (3 literal))
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- copy (4 literal))
       ((2 integer) <- copy (4 literal))
      ])))
@@ -2363,13 +2363,13 @@
 (reset)
 (new-trace "sleep-location")
 (add-code
-  '((def f1 [
+  '((function f1 [
       ; waits for memory location 1 to be set, before computing its successor
       ((1 integer) <- copy (0 literal))
       (sleep (1 integer))
       ((2 integer) <- add (1 integer) (1 literal))
      ])
-    (def f2 [
+    (function f2 [
       (sleep (30 literal))
       ((1 integer) <- copy (3 literal))  ; set to value
      ])))
@@ -2386,7 +2386,7 @@
 (reset)
 (new-trace "sleep-scoped-location")
 (add-code
-  '((def f1 [
+  '((function f1 [
       ; waits for memory location 1 to be changed, before computing its successor
       ((10 integer) <- copy (5 literal))  ; array of locals
       ((default-scope scope-address) <- copy (10 literal))
@@ -2394,7 +2394,7 @@
       (sleep (1 integer))
       ((2 integer) <- add (1 integer) (1 literal))
      ])
-    (def f2 [
+    (function f2 [
       (sleep (30 literal))
       ((11 integer) <- copy (3 literal))  ; set to value
      ])))
@@ -2407,10 +2407,10 @@
 (reset)
 (new-trace "fork")
 (add-code
-  '((def f1 [
+  '((function f1 [
       (fork (f2 fn))
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- copy (4 literal))
      ])))
 (run 'f1)
@@ -2420,10 +2420,10 @@
 (reset)
 (new-trace "fork-with-args")
 (add-code
-  '((def f1 [
+  '((function f1 [
       (fork (f2 fn) (4 literal))
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- next-input)
      ])))
 (run 'f1)
@@ -2433,13 +2433,13 @@
 (reset)
 (new-trace "fork-copies-args")
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((default-scope scope-address) <- new (scope literal) (5 literal))
       ((x integer) <- copy (4 literal))
       (fork (f2 fn) (x integer))
       ((x integer) <- copy (0 literal))  ; should be ignored
      ])
-    (def f2 [
+    (function f2 [
       ((2 integer) <- next-input)
      ])))
 (run 'f1)
@@ -2457,7 +2457,7 @@
 (reset)
 (new-trace "array-bounds-check")
 (add-code
-  '((def main [
+  '((function main [
       ((1 integer) <- copy (2 literal))
       ((2 integer) <- copy (23 literal))
       ((3 integer) <- copy (24 literal))
@@ -2488,7 +2488,7 @@
 (reset)
 (new-trace "channel-new")
 (add-code
-  '((def main [
+  '((function main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer) <- get (1 channel-address deref) (first-full offset))
       ((3 integer) <- get (1 channel-address deref) (first-free offset))
@@ -2503,7 +2503,7 @@
 (reset)
 (new-trace "channel-write")
 (add-code
-  '((def main [
+  '((function main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -2525,7 +2525,7 @@
 (reset)
 (new-trace "channel-read")
 (add-code
-  '((def main [
+  '((function main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -2549,7 +2549,7 @@
 (reset)
 (new-trace "channel-write-wrap")
 (add-code
-  '((def main [
+  '((function main [
       ; channel with 1 slot
       ((1 channel-address) <- new-channel (1 literal))
       ; write a value
@@ -2576,7 +2576,7 @@
 (reset)
 (new-trace "channel-read-wrap")
 (add-code
-  '((def main [
+  '((function main [
       ; channel with 1 slot
       ((1 channel-address) <- new-channel (1 literal))
       ; write a value
@@ -2605,7 +2605,7 @@
 (reset)
 (new-trace "channel-new-empty-not-full")
 (add-code
-  '((def main [
+  '((function main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 boolean) <- empty? (1 channel-address deref))
       ((3 boolean) <- full? (1 channel-address deref))
@@ -2620,7 +2620,7 @@
 (reset)
 (new-trace "channel-write-not-empty")
 (add-code
-  '((def main [
+  '((function main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -2639,7 +2639,7 @@
 (reset)
 (new-trace "channel-write-full")
 (add-code
-  '((def main [
+  '((function main [
       ((1 channel-address) <- new-channel (1 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -2658,7 +2658,7 @@
 (reset)
 (new-trace "channel-read-not-full")
 (add-code
-  '((def main [
+  '((function main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -2679,7 +2679,7 @@
 (reset)
 (new-trace "channel-read-empty")
 (add-code
-  '((def main [
+  '((function main [
       ((1 channel-address) <- new-channel (3 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -2702,7 +2702,7 @@
 (reset)
 (new-trace "channel-read-block")
 (add-code
-  '((def main [
+  '((function main [
       ((1 channel-address) <- new-channel (3 literal))
       ; channel is empty, but receives a read
       ((2 tagged-value) (1 channel-address deref) <- read (1 channel-address))
@@ -2725,7 +2725,7 @@
 (reset)
 (new-trace "channel-write-block")
 (add-code
-  '((def main [
+  '((function main [
       ((1 channel-address) <- new-channel (1 literal))
       ((2 integer-address) <- new (integer literal))
       ((2 integer-address deref) <- copy (34 literal))
@@ -2753,13 +2753,13 @@
 (reset)
 (new-trace "channel-handoff")
 (add-code
-  '((def f1 [
+  '((function f1 [
       ((default-scope scope-address) <- new (scope literal) (30 literal))
       ((chan channel-address) <- new-channel (3 literal))
       (fork (f2 fn) (chan channel-address))
       ((1 tagged-value global) <- read (chan channel-address))  ; output
      ])
-    (def f2 [
+    (function f2 [
       ((default-scope scope-address) <- new (scope literal) (30 literal))
       ((n integer-address) <- new (integer literal))
       ((n integer-address deref) <- copy (24 literal))
@@ -3113,7 +3113,7 @@
 (add-code '((after label1 [
                ((1 integer) <- copy (0 literal))
              ])
-            (def f1 [
+            (function f1 [
               { begin
                 label1
               }
@@ -3128,7 +3128,7 @@
 (new-trace "before-after-any-order")
 (= traces* (queue))
 (= function* (table))
-(add-code '((def f1 [
+(add-code '((function f1 [
               { begin
                 label1
               }
@@ -3146,10 +3146,10 @@
 (new-trace "multiple-defs")
 (= traces* (queue))
 (= function* (table))
-(add-code '((def f1 [
+(add-code '((function f1 [
               ((1 integer) <- copy (0 literal))
              ])
-            (def f1 [
+            (function f1 [
               ((2 integer) <- copy (0 literal))
              ])))
 (freeze-functions)
@@ -3162,10 +3162,10 @@
 (new-trace "def!")
 (= traces* (queue))
 (= function* (table))
-(add-code '((def f1 [
+(add-code '((function f1 [
               ((1 integer) <- copy (0 literal))
              ])
-            (def! f1 [
+            (function! f1 [
               ((2 integer) <- copy (0 literal))
              ])))
 (freeze-functions)
@@ -3192,7 +3192,7 @@
 
 (reset)
 (new-trace "string-new")
-(add-code '((def main [
+(add-code '((function main [
               ((1 string-address) <- new (string literal) (5 literal))
              ])))
 (let routine make-routine!main
@@ -3205,7 +3205,7 @@
 ; Convenience: initialize strings using string literals
 (reset)
 (new-trace "string-literal")
-(add-code '((def main [
+(add-code '((function main [
               ((1 string-address) <- new "hello")
              ])))
 (let routine make-routine!main
@@ -3219,7 +3219,7 @@
 
 (reset)
 (new-trace "strcat")
-(add-code '((def main [
+(add-code '((function main [
               ((1 string-address) <- new "hello,")
               ((2 string-address) <- new " world!")
               ((3 string-address) <- strcat (1 string-address) (2 string-address))
@@ -3230,7 +3230,7 @@
 
 (reset)
 (new-trace "interpolate")
-(add-code '((def main [
+(add-code '((function main [
               ((1 string-address) <- new "hello, _!")
               ((2 string-address) <- new "abc")
               ((3 string-address) <- interpolate (1 string-address) (2 string-address))
@@ -3242,7 +3242,7 @@
 
 (reset)
 (new-trace "interpolate-empty")
-(add-code '((def main [
+(add-code '((function main [
               ((1 string-address) <- new "hello!")
               ((2 string-address) <- new "abc")
               ((3 string-address) <- interpolate (1 string-address) (2 string-address))
@@ -3254,7 +3254,7 @@
 
 (reset)
 (new-trace "interpolate-at-start")
-(add-code '((def main [
+(add-code '((function main [
               ((1 string-address) <- new "_, hello!")
               ((2 string-address) <- new "abc")
               ((3 string-address) <- interpolate (1 string-address) (2 string-address))
@@ -3266,7 +3266,7 @@
 
 (reset)
 (new-trace "interpolate-at-end")
-(add-code '((def main [
+(add-code '((function main [
               ((1 string-address) <- new "hello, _")
               ((2 string-address) <- new "abc")
               ((3 string-address) <- interpolate (1 string-address) (2 string-address))
@@ -3278,7 +3278,7 @@
 
 (reset)
 (new-trace "interpolate-varargs")
-(add-code '((def main [
+(add-code '((function main [
               ((1 string-address) <- new "hello, _, _, and _!")
               ((2 string-address) <- new "abc")
               ((3 string-address) <- new "def")

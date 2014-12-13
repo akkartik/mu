@@ -3,7 +3,7 @@
 ; This isn't a very realistic example, just a simple demonstration of
 ; possibilities.
 
-(def factorial [
+(function factorial [
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((n integer) <- next-input)
   { begin
@@ -27,7 +27,7 @@
   (reply (result integer))
 ])
 
-(def main [
+(function main [
   ((1 integer) <- factorial (5 literal))
   (print-primitive ("result: " literal))
   (print-primitive (1 integer))

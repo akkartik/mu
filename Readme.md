@@ -70,7 +70,7 @@ prototype). Then:
 As a sneak peek, here's how you compute factorial in mu:
 
 ```lisp
-  def factorial [
+  function factorial [
     ; allocate some space for local variables
     default-scope/scope-address <- new scope/literal, 30/literal
     ; receive inputs in a queue
@@ -127,7 +127,7 @@ An alternative way to define factorial is by including *labels*, and later
 inserting code at them.
 
 ```lisp
-  def factorial [
+  function factorial [
     default-scope/scope-address <- new scope/literal, 30/literal
     n/integer <- next-input
     {
