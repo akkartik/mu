@@ -302,16 +302,16 @@
   (~is '_ operand))
 
 (mac v (operand)  ; for value
-  `(,operand 0))
+  `((,operand 0) 0))
 
 (def metadata (operand)
   cdr.operand)
 
 (def ty (operand)
-  operand.1)  ; assume type is always first bit of metadata, and it's always present
+  (cdr operand.0))
 
 (def typeinfo (operand)
-  (or (types* ty.operand)
+  (or (types* ty.operand.0)
       (err "unknown type @(tostring prn.operand)")))
 
 ($:require "charterm/main.rkt")
@@ -582,7 +582,7 @@
 
 (def m (loc)  ; read memory, respecting metadata
   (point return
-    (if (in ty.loc 'literal 'offset)
+    (if (in ty.loc.0 'literal 'offset)
       (return v.loc))
     (when (is v.loc 'default-scope)
       (return rep.routine*!call-stack.0!default-scope))
@@ -630,14 +630,18 @@
 
 (def typeof (operand)
   (let loc absolutize.operand
-    (while (pos 'deref metadata.loc)
+    (while (pos '(deref) metadata.loc)
       (zap deref loc))
-    ty.loc))
+    ty.loc.0))
 
 (def addr (operand)
+;?   (prn 211 " " operand)
   (let loc absolutize.operand
-    (while (pos 'deref metadata.loc)
+;?     (prn 212 " " loc)
+    (while (pos '(deref) metadata.loc)
+;?       (prn 213 " " loc)
       (zap deref loc))
+;?     (prn 214 " " loc)
     v.loc))
 
 (def addrs (n sz)
@@ -649,14 +653,14 @@
 (def canonize (operand)
   (ret operand
     (zap absolutize operand)
-    (while (pos 'deref metadata.operand)
+    (while (pos '(deref) metadata.operand)
       (zap deref operand))))
 
 (def array-len (operand)
   (trace "array-len" operand)
   (zap canonize operand)
   (if typeinfo.operand!array
-        (m `(,v.operand integer ,@(cut operand 2)))
+        (m `((,v.operand integer) ,@metadata.operand))
       :else
         (err "can't take len of non-array @operand")))
 
@@ -665,12 +669,15 @@
   (point return
   (when (acons x)
     (zap canonize x)
+;?     (tr "sizeof 1 @x")
     (when typeinfo.x!array
+;?       (tr "sizeof 2")
       (return (+ 1 (* array-len.x (sizeof typeinfo.x!elem))))))
-  (let type (if (and acons.x (pos 'deref metadata.x))
+;?   (tr "sizeof 3")
+  (let type (if (and acons.x (pos '(deref) metadata.x))
                   typeinfo.x!elem  ; deref pointer
                 acons.x
-                  ty.x
+                  ty.x.0
                 :else  ; naked type
                   x)
     (assert types*.type "sizeof: no such type @type")
@@ -687,21 +694,24 @@
 (def absolutize (operand)
   (if (no routine*)
         operand
-      (pos 'global metadata.operand)
+      (pos '(global) metadata.operand)
         operand
       :else
         (iflet base rep.routine*!call-stack.0!default-scope
+;?                (do (prn 313 " " operand " " base)
           (if (< v.operand memory*.base)
-            `(,(+ v.operand base) ,@metadata.operand global)
+            `((,(+ v.operand base) ,@(cdr operand.0))
+              ,@metadata.operand
+              (global))
             (die "no room for var @operand in routine of size @memory*.base"))
+;?                 )
           operand)))
 
 (def deref (operand)
-  (assert (pos 'deref metadata.operand))
+  (assert (pos '(deref) metadata.operand))
   (assert typeinfo.operand!address)
-  (apply list (memory* v.operand)
-              typeinfo.operand!elem
-              (drop-one 'deref (cut operand 2))))
+  (cons `(,(memory* v.operand) ,typeinfo.operand!elem)
+        (drop-one '(deref) metadata.operand)))
 
 (def drop-one (f x)
   (when acons.x  ; proper lists only
@@ -871,7 +881,7 @@
               (assert basetype "no such type @args.0")
               (trace "cn0" "field-access " field)
               ; todo: need to rename args.0 as well?
-              (when (pos 'deref (metadata args.0))
+              (when (pos '(deref) (metadata args.0))
                 (trace "cn0" "field-access deref")
                 (assert basetype!address "@args.0 requests deref, but it's not an address of a record")
                 (= basetype (types* basetype!elem)))
@@ -1358,6 +1368,19 @@
 ;?     (prn keys.before* " -- " keys.after*)
 ;?     (= function*.name (convert-names:convert-labels:convert-braces:prn:insert-code body)))
     (= function*.name (convert-names:convert-labels:convert-braces:insert-code body name))))
+
+(def tokenize-arg (arg)
+  (if (is arg '<-)
+    arg
+    (map [map [fromstring _ (read)] _]
+         (map [tokens _ #\:]
+              (tokens string.arg #\/)))))
+
+(def tokenize-args (instrs)
+  (map [if atom._
+         _
+         (map tokenize-arg _)]
+       instrs))
 
 ;; test helpers
 
