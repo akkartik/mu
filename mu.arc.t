@@ -116,6 +116,8 @@
 (selective-load "mu.arc" section-level)
 ;? (quit)
 
+(section 10
+
 ; Our language is assembly-like in that functions consist of series of
 ; statements, and statements consist of an operation and its arguments (input
 ; and output).
@@ -511,19 +513,6 @@
 (if (~iso memory* (obj 1 34  2 nil  3 1  4 nil  5 34))
   (prn "F - 'get' accesses fields of record address"))
 
-(def memory-contains (addr value)
-;?   (prn "Looking for @value starting at @addr")
-  (loop (addr addr
-         idx  0)
-;?     (prn "@idx vs @addr")
-    (if (>= idx len.value)
-          t
-        (~is memory*.addr value.idx)
-          (do1 nil
-               (prn "@addr should contain @value.idx but contains @memory*.addr"))
-        :else
-          (recur (+ addr 1) (+ idx 1)))))
-
 (reset)
 (new-trace "get-indirect-repeated")
 (add-code
@@ -788,6 +777,8 @@
                        4 34  5 35  6 36))
   (prn "F - ops can operate on records with fields spanning multiple locations"))
 
+)  ; section 10
+
 (section 100
 
 ; A special kind of record is the 'tagged type'. It lets us represent
@@ -941,6 +932,8 @@
     (prn "F - 'new-list' can construct a list of integers")))
 
 )  ; section 100
+
+(section 10
 
 ;; Functions
 ;
@@ -1971,6 +1964,8 @@
   (prn "F - 'len' accesses length of array address"))
 ;? (quit)
 
+)  ; section 10
+
 (section 100
 
 ;; Dynamic dispatch
@@ -2093,6 +2088,8 @@
   (prn "F - different calls can exercise different clauses of the same function"))
 
 )  ; section 100
+
+(section 10
 
 ;; Concurrency
 ;
@@ -2477,6 +2474,8 @@
 (let routine (car completed-routines*)
   (if (no rep.routine!error)
     (prn "F - 'index' throws an error if out of bounds")))
+
+)  ; section 10
 
 (section 100
 
@@ -3186,21 +3185,6 @@
   (prn "F - 'def!' clears all previous clauses"))
 
 ;; ---
-
-; helper
-(def memory-contains-array (addr value)
-;?   (prn "Looking for @value starting at @addr, size @memory*.addr vs @len.value")
-  (and (>= memory*.addr len.value)
-       (loop (addr (+ addr 1)
-              idx  0)
-;?          (prn "comparing @memory*.addr and @value.idx")
-         (if (>= idx len.value)
-               t
-             (~is memory*.addr value.idx)
-               (do1 nil
-                    (prn "@addr should contain @value.idx but contains @memory*.addr"))
-             :else
-               (recur (+ addr 1) (+ idx 1))))))
 
 (section 100  ; string utilities
 
