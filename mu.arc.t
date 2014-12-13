@@ -113,7 +113,7 @@
 ; Other than that, we'll say no more about the code, and focus in the rest of
 ; this file on the scenarios the code cares about.
 
-(load "mu.arc")
+(selective-load "mu.arc" section-level)
 ;? (quit)
 
 ; Our language is assembly-like in that functions consist of series of
@@ -788,6 +788,8 @@
                        4 34  5 35  6 36))
   (prn "F - ops can operate on records with fields spanning multiple locations"))
 
+(section 100
+
 ; A special kind of record is the 'tagged type'. It lets us represent
 ; dynamically typed values, which save type information in memory rather than
 ; in the code to use them. This will let us do things like create heterogenous
@@ -937,6 +939,8 @@
                       (~is (memory* (+ third 1)) 5)
                       (~is (memory* (+ third 2) nil)))))))
     (prn "F - 'new-list' can construct a list of integers")))
+
+)  ; section 100
 
 ;; Functions
 ;
@@ -1967,6 +1971,8 @@
   (prn "F - 'len' accesses length of array address"))
 ;? (quit)
 
+(section 100
+
 ;; Dynamic dispatch
 ;
 ; Putting it all together, here's how you define generic functions that run
@@ -2085,6 +2091,8 @@
 ;? (prn memory*)
 (if (~and (is memory*.3 t) (is memory*.12 37))
   (prn "F - different calls can exercise different clauses of the same function"))
+
+)  ; section 100
 
 ;; Concurrency
 ;
@@ -2470,6 +2478,8 @@
   (if (no rep.routine!error)
     (prn "F - 'index' throws an error if out of bounds")))
 
+(section 100
+
 ;; Synchronization
 ;
 ; Mu synchronizes using channels rather than locks, like Erlang and Go.
@@ -2777,6 +2787,8 @@
 (if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
   (prn "F - channels are meant to be shared between routines"))
 ;? (quit)
+
+)  ; section 100
 
 ;; Separating concerns
 ;
@@ -3190,6 +3202,8 @@
              :else
                (recur (+ addr 1) (+ idx 1))))))
 
+(section 100  ; string utilities
+
 (reset)
 (new-trace "string-new")
 (add-code '((function main [
@@ -3294,6 +3308,8 @@
 ;?   (prn (memory* (+ memory*.5 i))))
 (if (~memory-contains-array memory*.5 "hello, abc, def, and ghi!")
   (prn "F - 'interpolate' splices in any number of strings"))
+
+)  ; section 100 for string utilities
 
 ;; unit tests for various helpers
 

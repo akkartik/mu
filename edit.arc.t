@@ -1,4 +1,6 @@
-(load "mu.arc")
+(selective-load "mu.arc" section-level)
+
+(section 100
 
 (reset)
 (new-trace "new-screen")
@@ -26,3 +28,5 @@
         (prn "F - newly-allocated screen didn't initialize all of its row lengths")))))
 
 (reset)
+
+)  ; section 100 for all editor code

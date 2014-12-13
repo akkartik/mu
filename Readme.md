@@ -113,7 +113,7 @@ the system doesn't recognize gets silently ignored.
 Try this program out now:
 
 ```shell
-  $ ./anarki/arc mu.arc factorial.mu
+  $ ./mu factorial.mu
   result: 120  # factorial of 5
   ...  # ignore the memory dump for now
 ```
@@ -159,7 +159,7 @@ inserting code at them.
 Another example, this time with concurrency.
 
 ```shell
-  $ ./anarki/arc mu.arc fork.mu
+  $ ./mu fork.mu
 ```
 
 Notice that it repeatedly prints either '34' or '35' at random. Hit ctrl-c to
@@ -168,7 +168,7 @@ stop.
 Yet another example forks two 'routines' that communicate over a channel:
 
 ```shell
-  $ ./anarki/arc mu.arc channel.mu
+  $ ./mu channel.mu
   produce: 0
   produce: 1
   produce: 2
@@ -200,7 +200,7 @@ allocator and a few other places).
 Try running the tests:
 
 ```shell
-  $ ./anark/arc mu.arc.t
+  $ ./mu test mu.arc.t
   $  # all tests passed!
 ```
 
