@@ -71,19 +71,19 @@ As a sneak peek, here's how you compute factorial in mu:
 ```lisp
   def factorial [
     ; allocate some space for local variables
-    default-scope/scope-address <- new scope/literal 30/literal
-    ; receive args from caller in a queue
-    n/integer <- arg
+    default-scope/scope-address <- new scope/literal, 30/literal
+    ; receive inputs in a queue
+    n/integer <- next-input
     {
       ; if n=0 return 1
-      zero?/boolean <- eq n/integer, 0/literal
+      zero?/boolean <- equal n/integer, 0/literal
       break-unless zero?/boolean
       reply 1/literal
     }
     ; return n*factorial(n-1)
-    tmp1/integer <- sub n/integer, 1/literal
+    tmp1/integer <- subtract n/integer, 1/literal
     tmp2/integer <- factorial tmp1/integer
-    result/integer <- mul tmp2/integer, n/integer
+    result/integer <- multiply tmp2/integer, n/integer
     reply result/integer
   ]
 ```
@@ -101,7 +101,7 @@ multiple output arguments. For example, you can perform integer division as
 follows:
 
 ```
-  quotient/integer, remainder/integer <- idiv 11/literal, 3/literal
+  quotient/integer, remainder/integer <- divide-with-remainder 11/literal, 3/literal
 ```
 
 Each arg can have any number of bits of metadata like the types above,
@@ -127,8 +127,8 @@ inserting code at them.
 
 ```lisp
   def factorial [
-    default-scope/scope-address <- new scope/literal 30/literal
-    n/integer <- arg
+    default-scope/scope-address <- new scope/literal, 30/literal
+    n/integer <- next-input
     {
       base-case
     }
@@ -137,16 +137,16 @@ inserting code at them.
 
   after base-case [
     ; if n=0 return 1
-    zero?/boolean <- eq n/integer, 0/literal
+    zero?/boolean <- equal n/integer, 0/literal
     break-unless zero?/boolean
     reply 1/literal
   ]
 
   after recursive-case [
     ; return n*factorial(n-1)
-    tmp1/integer <- sub n/integer, 1/literal
+    tmp1/integer <- subtract n/integer, 1/literal
     tmp2/integer <- factorial tmp1/integer
-    result/integer <- mul tmp2/integer, n/integer
+    result/integer <- multiply tmp2/integer, n/integer
     reply result/integer
   ]
 ```
