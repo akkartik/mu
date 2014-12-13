@@ -23,6 +23,7 @@ recording manual tests right after the first time you perform them:
 
 * keyboard input
 * printing to screen
+* website layout
 * disk filling up
 * performance metrics
 * race conditions
