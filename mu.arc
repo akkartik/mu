@@ -982,6 +982,8 @@
 
 ;; system software
 
+(section 100
+
 (init-fn maybe-coerce
   ((default-scope scope-address) <- new (scope literal) (30 literal))
   ((x tagged-value-address) <- new (tagged-value literal))
@@ -1306,6 +1308,8 @@
   }
   (reply (result string-address)))
 
+)  ; section 100 for system software
+
 (def canon (table)
   (sort (compare < [tostring (prn:car _)]) (as cons table)))
 
@@ -1357,8 +1361,8 @@
 
 ;; load all provided files and start at 'main'
 (reset)
-(awhen cdr.argv
-  (map add-code:readfile it)
+(awhen (pos "--" argv)
+  (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run" "schedule" "add")))
 ;?   (freeze-functions)
 ;?   (prn function*!factorial)
