@@ -3124,17 +3124,18 @@
 (= traces* (queue))
 (= function* (table))
 (add-code '((after label1 [
-               ((1 integer) <- copy (0 literal))
+               (1:integer <- copy 0:literal)
              ])
             (function f1 [
               { begin
                 label1
               }
              ])))
+;? (= dump-trace* (obj whitelist '("cn0")))
 (freeze-functions)
 (if (~iso function*!f1
           '(label1
-            ((1 integer) <- copy (0 literal))))
+            (((1 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - before/after works inside blocks"))
 
 (reset)
@@ -3147,28 +3148,29 @@
               }
              ])
             (after label1 [
-               ((1 integer) <- copy (0 literal))
+               (1:integer <- copy 0:literal)
              ])))
 (freeze-functions)
 (if (~iso function*!f1
           '(label1
-            ((1 integer) <- copy (0 literal))))
+            (((1 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - before/after can come after the function they need to modify"))
+;? (quit)
 
 (reset)
 (new-trace "multiple-defs")
 (= traces* (queue))
 (= function* (table))
 (add-code '((function f1 [
-              ((1 integer) <- copy (0 literal))
+              (1:integer <- copy 0:literal)
              ])
             (function f1 [
-              ((2 integer) <- copy (0 literal))
+              (2:integer <- copy 0:literal)
              ])))
 (freeze-functions)
 (if (~iso function*!f1
-          '(((2 integer) <- copy (0 literal))
-            ((1 integer) <- copy (0 literal))))
+          '((((2 integer)) <- ((copy)) ((0 literal)))
+            (((1 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - multiple 'def' of the same function add clauses"))
 
 (reset)
@@ -3176,14 +3178,14 @@
 (= traces* (queue))
 (= function* (table))
 (add-code '((function f1 [
-              ((1 integer) <- copy (0 literal))
+              (1:integer <- copy 0:literal)
              ])
             (function! f1 [
-              ((2 integer) <- copy (0 literal))
+              (2:integer <- copy 0:literal)
              ])))
 (freeze-functions)
 (if (~iso function*!f1
-          '(((2 integer) <- copy (0 literal))))
+          '((((2 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - 'def!' clears all previous clauses"))
 
 )  ; section 9

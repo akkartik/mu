@@ -866,6 +866,7 @@
 ;; convert symbolic names to raw memory locations
 
 (def convert-names (instrs)
+;?   (tr "convert-names " instrs)
   (with (location  (table)
          isa-field  (table))
     (let idx 1
@@ -967,6 +968,7 @@
 ; see add-code below for adding to before* and after*
 
 (def insert-code (instrs (o name))
+;?   (tr "insert-code " instrs)
   (loop (instrs instrs)
     (accum yield
       (each instr instrs
@@ -1367,7 +1369,7 @@
 ;?     (tr name)
 ;?     (prn keys.before* " -- " keys.after*)
 ;?     (= function*.name (convert-names:convert-labels:convert-braces:prn:insert-code body)))
-    (= function*.name (convert-names:convert-labels:convert-braces:insert-code body name))))
+    (= function*.name (convert-names:convert-labels:convert-braces:tokenize-args:insert-code body name))))
 
 (def tokenize-arg (arg)
   (if (is arg '<-)
@@ -1377,6 +1379,7 @@
               (tokens string.arg #\/)))))
 
 (def tokenize-args (instrs)
+;?   (tr "tokenize-args " instrs)
   (accum yield
     (each instr instrs
       (if atom.instr
