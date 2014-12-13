@@ -3117,7 +3117,7 @@
                           ((5 integer) <- copy (0 literal))
                          ])))
             (list before*!label1 after*!label1)))
-  (prn "F - order matters within 'before' and 'after' fragments, but not *between* 'before' and 'after' fragments"))
+  (prn "F - order matters between 'before' and between 'after' fragments, but not *across* 'before' and 'after' fragments"))
 
 (reset)
 (new-trace "before-after-braces")
