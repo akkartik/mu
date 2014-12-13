@@ -1377,10 +1377,12 @@
               (tokens string.arg #\/)))))
 
 (def tokenize-args (instrs)
-  (map [if atom._
-         _
-         (map tokenize-arg _)]
-       instrs))
+  (accum yield
+    (each instr instrs
+      (if atom.instr
+            (yield instr)
+          :else
+            (yield (map tokenize-arg instr))))))
 
 ;; test helpers
 
