@@ -780,12 +780,7 @@
               (recur cdr.instr)
               (pop stack)
               (continue))
-;?             (let (oarg op arg)  (parse-instr instr)
-            (let delim (or (pos '<- instr) -1)
-              (with (oarg  (if (>= delim 0)
-                             (cut instr 0 delim))
-                     op  (v (instr (+ delim 1)))
-                     arg  (cut instr (+ delim 2)))
+            (let (oarg op arg)  (parse-instr instr)
                 (trace "c{1" pc " " op " " oarg)
                 (case op
                   break
@@ -815,7 +810,7 @@
                       (assert (is oarg nil) "loop-unless: can't take oarg in @instr")
                       (yield `(((jump-unless)) ,arg.0 ((,(open-offset pc stack (and cdr.arg (v arg.1))) offset)))))
                   ;else
-                    (yield instr))))
+                    (yield instr)))
             (++ pc))))))))
 
 (def close-offset (pc locs nblocks)
