@@ -1585,7 +1585,7 @@
             (((3 integer)) <- copy ((0 literal)))
             (jump ((-3 offset)))))
   (prn "F - 'loop' can take an extra arg with number of nested blocks to exit"))
-(quit)
+;? (quit)
 
 ;; Variables
 ;
@@ -1596,10 +1596,11 @@
 (reset)
 (new-trace "convert-names")
 (= traces* (queue))
+;? (set dump-trace*)
 (if (~iso (convert-names
-            '(((x integer) <- copy ((4 literal)))
-              ((y integer) <- copy ((2 literal)))
-              ((z integer) <- add (x integer) (y integer))))
+            '((((x integer)) <- copy ((4 literal)))
+              (((y integer)) <- copy ((2 literal)))
+              (((z integer)) <- add ((x integer)) ((y integer)))))
           '((((1 integer)) <- copy ((4 literal)))
             (((2 integer)) <- copy ((2 literal)))
             (((3 integer)) <- add ((1 integer)) ((2 integer)))))
@@ -1609,8 +1610,8 @@
 (new-trace "convert-names-compound")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer-boolean-pair) <- copy ((4 literal)))
-              ((y integer) <- copy ((2 literal)))))
+            '((((x integer-boolean-pair)) <- copy ((4 literal)))
+              (((y integer)) <- copy ((2 literal)))))
           '((((1 integer-boolean-pair)) <- copy ((4 literal)))
             (((3 integer)) <- copy ((2 literal)))))
   (prn "F - convert-names increments integer locations by the size of the type of the previous var"))
@@ -1618,45 +1619,56 @@
 (reset)
 (new-trace "convert-names-nil")
 (= traces* (queue))
+;? (set dump-trace*)
 (if (~iso (convert-names
-            '(((x integer) <- copy ((4 literal)))
-              ((y integer) <- copy ((2 literal)))
-              ((nil integer) <- add (x integer) (y integer))))
+            '((((x integer)) <- copy ((4 literal)))
+              (((y integer)) <- copy ((2 literal)))
+              ; nil location is meaningless; just for testing
+              (((nil integer)) <- add ((x integer)) ((y integer)))))
           '((((1 integer)) <- copy ((4 literal)))
             (((2 integer)) <- copy ((2 literal)))
-            ((nil integer) <- add ((1 integer)) ((2 integer)))))
+            (((nil integer)) <- add ((1 integer)) ((2 integer)))))
   (prn "F - convert-names never renames nil"))
 
 (reset)
 (new-trace "convert-names-global")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer) <- copy ((4 literal)))
-              ((y integer global) <- copy ((2 literal)))
-              ((default-scope integer) <- add (x integer) (y integer global))))
+            '((((x integer)) <- copy ((4 literal)))
+              (((y integer) (global)) <- copy ((2 literal)))
+              (((default-scope integer)) <- add ((x integer)) ((y integer) (global)))))
           '((((1 integer)) <- copy ((4 literal)))
-            ((y integer global) <- copy ((2 literal)))
-            ((default-scope integer) <- add ((1 integer)) (y integer global))))
+            (((y integer) (global)) <- copy ((2 literal)))
+            (((default-scope integer)) <- add ((1 integer)) ((y integer) (global)))))
   (prn "F - convert-names never renames global operands"))
+
+(reset)
+(new-trace "convert-names-literal")
+(= traces* (queue))
+(if (~iso (convert-names
+            ; meaningless; just for testing
+            '((((x literal)) <- copy ((0 literal)))))
+          '((((x literal)) <- copy ((0 literal)))))
+  (prn "F - convert-names never renames literals"))
 
 ; kludgy support for 'fork' below
 (reset)
 (new-trace "convert-names-functions")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer) <- copy ((4 literal)))
-              ((y integer) <- copy ((2 literal)))
-              ((z fn) <- add (x integer) (y integer))))
+            '((((x integer)) <- copy ((4 literal)))
+              (((y integer)) <- copy ((2 literal)))
+              (((z fn)) <- add ((x integer)) ((y integer)))))
           '((((1 integer)) <- copy ((4 literal)))
             (((2 integer)) <- copy ((2 literal)))
-            ((z fn) <- add ((1 integer)) ((2 integer)))))
-  (prn "F - convert-names never renames nil"))
+            (((z fn)) <- add ((1 integer)) ((2 integer)))))
+  (prn "F - convert-names never renames fns"))
 
 (reset)
 (new-trace "convert-names-record-fields")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer) <- get ((34 integer-boolean-pair)) (bool offset))))
+            '((((x integer)) <- get ((34 integer-boolean-pair)) ((bool offset)))))
           '((((1 integer)) <- get ((34 integer-boolean-pair)) ((1 offset)))))
   (prn "F - convert-names replaces record field offsets"))
 
@@ -1664,32 +1676,32 @@
 (new-trace "convert-names-record-fields-ambiguous")
 (= traces* (queue))
 (if (errsafe (convert-names
-               '(((bool boolean) <- copy (t literal))
-                 ((x integer) <- get ((34 integer-boolean-pair)) (bool offset)))))
+               '((((bool boolean)) <- copy ((t literal)))
+                 (((x integer)) <- get ((34 integer-boolean-pair)) ((bool offset))))))
   (prn "F - convert-names doesn't allow offsets and variables with the same name in a function"))
 
 (reset)
 (new-trace "convert-names-record-fields-ambiguous-2")
 (= traces* (queue))
 (if (errsafe (convert-names
-               '(((x integer) <- get ((34 integer-boolean-pair)) (bool offset))
-                 ((bool boolean) <- copy (t literal)))))
+               '((((x integer)) <- get ((34 integer-boolean-pair)) ((bool offset)))
+                 (((bool boolean)) <- copy ((t literal))))))
   (prn "F - convert-names doesn't allow offsets and variables with the same name in a function - 2"))
 
 (reset)
 (new-trace "convert-names-record-fields-indirect")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer) <- get (34 integer-boolean-pair-address deref) (bool offset))))
-          '((((1 integer)) <- get (34 integer-boolean-pair-address deref) ((1 offset)))))
+            '((((x integer)) <- get ((34 integer-boolean-pair-address) (deref)) ((bool offset)))))
+          '((((1 integer)) <- get ((34 integer-boolean-pair-address) (deref)) ((1 offset)))))
   (prn "F - convert-names replaces field offsets for record addresses"))
 
 (reset)
 (new-trace "convert-names-record-fields-multiple")
 (= traces* (queue))
 (if (~iso (convert-names
-            '((((2 boolean)) <- get ((1 integer-boolean-pair)) (bool offset))
-              (((3 boolean)) <- get ((1 integer-boolean-pair)) (bool offset))))
+            '((((2 boolean)) <- get ((1 integer-boolean-pair)) ((bool offset)))
+              (((3 boolean)) <- get ((1 integer-boolean-pair)) ((bool offset)))))
           '((((2 boolean)) <- get ((1 integer-boolean-pair)) ((1 offset)))
             (((3 boolean)) <- get ((1 integer-boolean-pair)) ((1 offset)))))
   (prn "F - convert-names replaces field offsets with multiple mentions"))
@@ -1705,6 +1717,10 @@
             foo))
   (prn "F - convert-names skips past labels"))
 ;? (quit)
+
+)  ; section 11
+
+(section 20
 
 ; A rudimentary memory allocator. Eventually we want to write this in mu.
 ;
@@ -1938,7 +1954,7 @@
   (prn "F - 'len' accesses length of array address"))
 ;? (quit)
 
-)  ; section 11
+)  ; section 20
 
 (section 100
 

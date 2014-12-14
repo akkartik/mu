@@ -907,7 +907,7 @@
               (when (maybe-add arg location idx)
                 (trace "cn0" "location for arg " arg ": " idx)
                 ; todo: can't allocate arrays on the stack
-                (++ idx (sizeof ty.arg)))))))))
+                (++ idx (sizeof ty.arg.0)))))))))
     (trace "cn1" "update names " canon.location " " canon.isa-field)
     (each instr instrs
       (when (acons instr)
@@ -923,11 +923,11 @@
 (def maybe-add (arg location idx)
   (trace "maybe-add" arg)
   (when (and nondummy.arg
-             (~in ty.arg 'literal 'offset 'fn)
+             (~in ty.arg.0 'literal 'offset 'fn)
              (~location v.arg)
              (isa v.arg 'sym)
              (~in v.arg 'nil 'default-scope)
-             (~pos 'global metadata.arg))
+             (~assoc 'global metadata.arg))
     (= (location v.arg) idx)))
 
 ;; literate tangling system for reordering code
