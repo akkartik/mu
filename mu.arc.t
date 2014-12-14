@@ -3303,6 +3303,10 @@
 (assert:iso '_
             (tokenize-arg '_))
 
+; idempotent
+(assert:iso (tokenize-arg:tokenize-arg 'a:b/c:d)
+            (tokenize-arg              'a:b/c:d))
+
 ; support labels
 (assert:iso '((((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
               foo)
