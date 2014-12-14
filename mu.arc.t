@@ -1342,7 +1342,7 @@
               { begin  ; 'begin' is just a hack because racket turns braces into parens
                 (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
                 (break-if ((4 boolean)))
-                (((5 integer)) <- copy ((30 literal)))
+                (((5 integer)) <- copy ((0 literal)))
               }
               (reply)))
           '((((1 integer)) <- copy ((0 literal)))
@@ -1350,7 +1350,7 @@
             (((3 integer)) <- copy ((0 literal)))
             (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
             (jump-if ((4 boolean)) ((1 offset)))
-            (((5 integer)) <- copy ((30 literal)))
+            (((5 integer)) <- copy ((0 literal)))
             (reply)))
   (prn "F - convert-braces replaces break-if with a jump-if to after the next close-brace"))
 ;? (quit)
@@ -1386,7 +1386,7 @@
                 (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
                 (break-if ((4 boolean)))
                 { begin
-                  (((5 integer)) <- copy ((30 literal)))
+                  (((5 integer)) <- copy ((0 literal)))
                 }
               }
               (reply)))
@@ -1395,7 +1395,7 @@
             (((3 integer)) <- copy ((0 literal)))
             (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
             (jump-if ((4 boolean)) ((1 offset)))
-            (((5 integer)) <- copy ((30 literal)))
+            (((5 integer)) <- copy ((0 literal)))
             (reply)))
   (prn "F - convert-braces balances braces when converting break"))
 
@@ -1435,7 +1435,7 @@
                   (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
                 }
                 (loop-if ((4 boolean)))
-                (((5 integer)) <- copy ((30 literal)))
+                (((5 integer)) <- copy ((0 literal)))
               }
               (reply)))
           '((((1 integer)) <- copy ((0 literal)))
@@ -1443,7 +1443,7 @@
             (((3 integer)) <- copy ((0 literal)))
             (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
             (jump-if ((4 boolean)) ((-3 offset)))
-            (((5 integer)) <- copy ((30 literal)))
+            (((5 integer)) <- copy ((0 literal)))
             (reply)))
   (prn "F - convert-braces balances braces when converting 'loop'"))
 
@@ -1610,6 +1610,7 @@
 (new-trace "convert-names-compound")
 (= traces* (queue))
 (if (~iso (convert-names
+            ; copying 0 into pair is meaningless; just for testing
             '((((x integer-boolean-pair)) <- copy ((0 literal)))
               (((y integer)) <- copy ((0 literal)))))
           '((((1 integer-boolean-pair)) <- copy ((0 literal)))
