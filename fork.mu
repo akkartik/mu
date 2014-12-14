@@ -1,18 +1,18 @@
 (function main [
-  (fork (thread2 fn))
-  ((default-scope scope-address) <- new (scope literal) (2 literal))
-  ((x integer) <- copy (34 literal))
+  (fork thread2:fn)
+  (default-scope:scope-address <- new scope:literal 2:literal)
+  (x:integer <- copy 34:literal)
   { begin
-    (print-primitive (x integer))
+    (print-primitive x:integer)
     (loop)
   }
 ])
 
 (function thread2 [
-  ((default-scope scope-address) <- new (scope literal) (2 literal))
-  ((y integer) <- copy (35 literal))
+  (default-scope:scope-address <- new scope:literal 2:literal)
+  (y:integer <- copy 35:literal)
   { begin
-    (print-primitive (y integer))
+    (print-primitive y:integer)
     (loop)
   }
 ])

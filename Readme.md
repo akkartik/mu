@@ -71,46 +71,71 @@ As a sneak peek, here's how you compute factorial in mu:
 
 ```lisp
   function factorial [
-    ; allocate some space for local variables
-    default-scope/scope-address <- new scope/literal, 30/literal
+    ; create some space for the variables below
+    default-scope:scope-address <- new scope:literal, 30:literal
     ; receive inputs in a queue
-    n/integer <- next-input
+    n:integer <- next-input
     {
       ; if n=0 return 1
-      zero?/boolean <- equal n/integer, 0/literal
-      break-unless zero?/boolean
-      reply 1/literal
+      zero?:boolean <- equal n:integer, 0:literal
+      break-unless zero?:boolean
+      reply 1:literal
     }
     ; return n*factorial(n-1)
-    tmp1/integer <- subtract n/integer, 1/literal
-    tmp2/integer <- factorial tmp1/integer
-    result/integer <- multiply tmp2/integer, n/integer
-    reply result/integer
+    tmp1:integer <- subtract n:integer, 1:literal
+    tmp2:integer <- factorial tmp1:integer
+    result:integer <- multiply n:integer, tmp2:integer
+    reply result:integer
   ]
 ```
 
 Programs are lists of instructions, each on a line, sometimes grouped with
-brackets. Instructions take the form:
+brackets. Each instruction operates on some *operands* and returns some *results*.
 
 ```
-  oargs <- OP args
+  [results] <- instruction [operands]
 ```
 
-Input and output args have to be simple; no sub-expressions are permitted. But
-you can have any number of them. In particular, instructions can return
-multiple output arguments. For example, you can perform integer division as
-follows:
+Result and operand values have to be simple; you can't nest operations. But
+you can have any number of values. In particular you can have any number of
+results. For example, you can perform integer division as follows:
 
 ```
-  quotient/integer, remainder/integer <- divide-with-remainder 11/literal, 3/literal
+  quotient:integer, remainder:integer <- divide-with-remainder 11:literal, 3:literal
 ```
 
-Each arg can have any number of bits of metadata like the types above,
-separated by slashes. Anybody can write tools to statically analyze or verify
-programs using new metadata. Or they can just be documentation; any metadata
-the system doesn't recognize gets silently ignored.
+Each value provides its data as well as its type separated by a colon. Types
+can be multiple words, like:
 
-Try this program out now:
+```lisp
+  x:integer-array:3  ; x is an array of 3 integers
+  y:list:integer  ; y is a list of integers
+```
+
+In addition you can store other properties in values, separated by slashes.
+
+```lisp
+  x:integer-array:3/uninitialized
+  y:string/tainted:yes
+  z:list:integer/assign-once:true/assigned:false
+```
+
+These properties don't mean anything to mu, and it'll silently skip them when
+running, but they'll allow you to write *meta-programs* to check or modify
+your programs, a task other languages typically hide from their programmers.
+For example, where other programmers are restricted to the checks their type
+system permits and forces them to use, you'll learn to create new checks that
+make sense for your specific program. If it makes sense to perform different
+checks in different parts of your program, you'll be able to do that.
+
+To summarize: instructions have multiple operand and result values, values can
+have multiple rows separated by slashes, and rows can have multiple columns
+separated by colons. Only the very first column of the first row in each
+value's table is required to run mu programs, but the rest of the value
+'table' helps *manage* them over time. Management over time is why programming
+has traditionally been hard.
+
+Try out the factorial program now:
 
 ```shell
   $ ./mu factorial.mu
@@ -118,8 +143,8 @@ Try this program out now:
   ...  # ignore the memory dump for now
 ```
 
-(The code in `factorial.mu` looks different from the idealized syntax above.
-We'll get to an actual parser in time.)
+(The code in `factorial.mu` has a few more parentheses than the idealized
+syntax above. We'll drop them when we build a real parser.)
 
 ---
 
@@ -128,27 +153,27 @@ inserting code at them.
 
 ```lisp
   function factorial [
-    default-scope/scope-address <- new scope/literal, 30/literal
-    n/integer <- next-input
+    default-scope:scope-address <- new scope:literal, 30:literal
+    n:integer <- next-operand
     {
-      base-case
+      base-case:
     }
-    recursive-case
+    recursive-case:
   ]
 
   after base-case [
     ; if n=0 return 1
-    zero?/boolean <- equal n/integer, 0/literal
-    break-unless zero?/boolean
-    reply 1/literal
+    zero?:boolean <- equal n:integer, 0:literal
+    break-unless zero?:boolean
+    reply 1:literal
   ]
 
   after recursive-case [
     ; return n*factorial(n-1)
-    tmp1/integer <- subtract n/integer, 1/literal
-    tmp2/integer <- factorial tmp1/integer
-    result/integer <- multiply tmp2/integer, n/integer
-    reply result/integer
+    tmp1:integer <- subtract n:integer, 1:literal
+    tmp2:integer <- factorial tmp1:integer
+    result:integer <- multiply n:integer, tmp2:integer
+    reply result:integer
   ]
 ```
 
