@@ -1336,21 +1336,21 @@
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
-            '((((1 integer)) <- copy ((4 literal)))
-              (((2 integer)) <- copy ((2 literal)))
-              (((3 integer)) <- add ((2 integer)) ((2 integer)))
+            '((((1 integer)) <- copy ((0 literal)))
+              (((2 integer)) <- copy ((0 literal)))
+              (((3 integer)) <- copy ((0 literal)))
               { begin  ; 'begin' is just a hack because racket turns braces into parens
                 (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
                 (break-if ((4 boolean)))
-                (((5 integer)) <- copy ((34 literal)))
+                (((5 integer)) <- copy ((30 literal)))
               }
               (reply)))
-          '((((1 integer)) <- copy ((4 literal)))
-            (((2 integer)) <- copy ((2 literal)))
-            (((3 integer)) <- add ((2 integer)) ((2 integer)))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((3 integer)) <- copy ((0 literal)))
             (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
             (jump-if ((4 boolean)) ((1 offset)))
-            (((5 integer)) <- copy ((34 literal)))
+            (((5 integer)) <- copy ((30 literal)))
             (reply)))
   (prn "F - convert-braces replaces break-if with a jump-if to after the next close-brace"))
 ;? (quit)
@@ -1360,16 +1360,16 @@
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
-            '((((1 integer)) <- copy ((4 literal)))
-              (((2 integer)) <- copy ((2 literal)))
-              (((3 integer)) <- add ((2 integer)) ((2 integer)))
+            '((((1 integer)) <- copy ((0 literal)))
+              (((2 integer)) <- copy ((0 literal)))
+              (((3 integer)) <- copy ((0 literal)))
               { begin
                 (break)
               }
               (reply)))
-          '((((1 integer)) <- copy ((4 literal)))
-            (((2 integer)) <- copy ((2 literal)))
-            (((3 integer)) <- add ((2 integer)) ((2 integer)))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((3 integer)) <- copy ((0 literal)))
             (jump ((0 offset)))
             (reply)))
   (prn "F - convert-braces works for degenerate blocks"))
@@ -1379,23 +1379,23 @@
 (new-trace "convert-braces-nested-break")
 (= traces* (queue))
 (if (~iso (convert-braces
-            '((((1 integer)) <- copy ((4 literal)))
-              (((2 integer)) <- copy ((2 literal)))
-              (((3 integer)) <- add ((2 integer)) ((2 integer)))
+            '((((1 integer)) <- copy ((0 literal)))
+              (((2 integer)) <- copy ((0 literal)))
+              (((3 integer)) <- copy ((0 literal)))
               { begin
                 (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
                 (break-if ((4 boolean)))
                 { begin
-                  (((5 integer)) <- copy ((34 literal)))
+                  (((5 integer)) <- copy ((30 literal)))
                 }
               }
               (reply)))
-          '((((1 integer)) <- copy ((4 literal)))
-            (((2 integer)) <- copy ((2 literal)))
-            (((3 integer)) <- add ((2 integer)) ((2 integer)))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((3 integer)) <- copy ((0 literal)))
             (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
             (jump-if ((4 boolean)) ((1 offset)))
-            (((5 integer)) <- copy ((34 literal)))
+            (((5 integer)) <- copy ((30 literal)))
             (reply)))
   (prn "F - convert-braces balances braces when converting break"))
 
@@ -1404,22 +1404,22 @@
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
-            '((((1 integer)) <- copy ((4 literal)))
+            '((((1 integer)) <- copy ((0 literal)))
               { begin
                 (break)
-                (((2 integer)) <- copy ((5 literal)))
+                (((2 integer)) <- copy ((0 literal)))
               }
               { begin
                 (break)
-                (((3 integer)) <- copy ((6 literal)))
+                (((3 integer)) <- copy ((0 literal)))
               }
-              (((4 integer)) <- copy ((7 literal)))))
-          '((((1 integer)) <- copy ((4 literal)))
+              (((4 integer)) <- copy ((0 literal)))))
+          '((((1 integer)) <- copy ((0 literal)))
             (jump ((1 offset)))
-            (((2 integer)) <- copy ((5 literal)))
+            (((2 integer)) <- copy ((0 literal)))
             (jump ((1 offset)))
-            (((3 integer)) <- copy ((6 literal)))
-            (((4 integer)) <- copy ((7 literal)))))
+            (((3 integer)) <- copy ((0 literal)))
+            (((4 integer)) <- copy ((0 literal)))))
   (prn "F - convert-braces handles jumps on jumps"))
 ;? (quit)
 
@@ -1427,23 +1427,23 @@
 (new-trace "convert-braces-nested-loop")
 (= traces* (queue))
 (if (~iso (convert-braces
-            '((((1 integer)) <- copy ((4 literal)))
-              (((2 integer)) <- copy ((2 literal)))
+            '((((1 integer)) <- copy ((0 literal)))
+              (((2 integer)) <- copy ((0 literal)))
               { begin
-                (((3 integer)) <- add ((2 integer)) ((2 integer)))
+                (((3 integer)) <- copy ((0 literal)))
                 { begin
                   (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
                 }
                 (loop-if ((4 boolean)))
-                (((5 integer)) <- copy ((34 literal)))
+                (((5 integer)) <- copy ((30 literal)))
               }
               (reply)))
-          '((((1 integer)) <- copy ((4 literal)))
-            (((2 integer)) <- copy ((2 literal)))
-            (((3 integer)) <- add ((2 integer)) ((2 integer)))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((3 integer)) <- copy ((0 literal)))
             (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
             (jump-if ((4 boolean)) ((-3 offset)))
-            (((5 integer)) <- copy ((34 literal)))
+            (((5 integer)) <- copy ((30 literal)))
             (reply)))
   (prn "F - convert-braces balances braces when converting 'loop'"))
 
@@ -1451,12 +1451,12 @@
 (new-trace "convert-braces-label")
 (= traces* (queue))
 (if (~iso (convert-braces
-            '((((1 integer)) <- copy ((4 literal)))
+            '((((1 integer)) <- copy ((0 literal)))
               foo
-              (((2 integer)) <- copy ((2 literal)))))
-          '((((1 integer)) <- copy ((4 literal)))
+              (((2 integer)) <- copy ((0 literal)))))
+          '((((1 integer)) <- copy ((0 literal)))
             foo
-            (((2 integer)) <- copy ((2 literal)))))
+            (((2 integer)) <- copy ((0 literal)))))
   (prn "F - convert-braces skips past labels"))
 ;? (quit)
 
@@ -1464,16 +1464,16 @@
 (new-trace "convert-braces-label-increments-offset")
 (= traces* (queue))
 (if (~iso (convert-braces
-            '((((1 integer)) <- copy ((4 literal)))
+            '((((1 integer)) <- copy ((0 literal)))
               { begin
                 (break)
                 foo
               }
-              (((2 integer)) <- copy ((2 literal)))))
-          '((((1 integer)) <- copy ((4 literal)))
+              (((2 integer)) <- copy ((0 literal)))))
+          '((((1 integer)) <- copy ((0 literal)))
             (jump ((1 offset)))
             foo
-            (((2 integer)) <- copy ((2 literal)))))
+            (((2 integer)) <- copy ((0 literal)))))
   (prn "F - convert-braces treats labels as instructions"))
 ;? (quit)
 
@@ -1482,24 +1482,24 @@
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
-            '((((1 integer)) <- copy ((4 literal)))
+            '((((1 integer)) <- copy ((0 literal)))
               { begin
                 (break)
                 foo
               }
-              (((2 integer)) <- copy ((5 literal)))
+              (((2 integer)) <- copy ((0 literal)))
               { begin
                 (break)
-                (((3 integer)) <- copy ((6 literal)))
+                (((3 integer)) <- copy ((0 literal)))
               }
-              (((4 integer)) <- copy ((7 literal)))))
-          '((((1 integer)) <- copy ((4 literal)))
+              (((4 integer)) <- copy ((0 literal)))))
+          '((((1 integer)) <- copy ((0 literal)))
             (jump ((1 offset)))
             foo
-            (((2 integer)) <- copy ((5 literal)))
+            (((2 integer)) <- copy ((0 literal)))
             (jump ((1 offset)))
-            (((3 integer)) <- copy ((6 literal)))
-            (((4 integer)) <- copy ((7 literal)))))
+            (((3 integer)) <- copy ((0 literal)))
+            (((4 integer)) <- copy ((0 literal)))))
   (prn "F - convert-braces treats labels as instructions - 2"))
 ;? (quit)
 
@@ -1598,22 +1598,22 @@
 (= traces* (queue))
 ;? (set dump-trace*)
 (if (~iso (convert-names
-            '((((x integer)) <- copy ((4 literal)))
-              (((y integer)) <- copy ((2 literal)))
-              (((z integer)) <- add ((x integer)) ((y integer)))))
-          '((((1 integer)) <- copy ((4 literal)))
-            (((2 integer)) <- copy ((2 literal)))
-            (((3 integer)) <- add ((1 integer)) ((2 integer)))))
+            '((((x integer)) <- copy ((0 literal)))
+              (((y integer)) <- copy ((0 literal)))
+              (((z integer)) <- copy ((0 literal)))))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((3 integer)) <- copy ((0 literal)))))
   (prn "F - convert-names renames symbolic names to integer locations"))
 
 (reset)
 (new-trace "convert-names-compound")
 (= traces* (queue))
 (if (~iso (convert-names
-            '((((x integer-boolean-pair)) <- copy ((4 literal)))
-              (((y integer)) <- copy ((2 literal)))))
-          '((((1 integer-boolean-pair)) <- copy ((4 literal)))
-            (((3 integer)) <- copy ((2 literal)))))
+            '((((x integer-boolean-pair)) <- copy ((0 literal)))
+              (((y integer)) <- copy ((0 literal)))))
+          '((((1 integer-boolean-pair)) <- copy ((0 literal)))
+            (((3 integer)) <- copy ((0 literal)))))
   (prn "F - convert-names increments integer locations by the size of the type of the previous var"))
 
 (reset)
@@ -1621,25 +1621,23 @@
 (= traces* (queue))
 ;? (set dump-trace*)
 (if (~iso (convert-names
-            '((((x integer)) <- copy ((4 literal)))
-              (((y integer)) <- copy ((2 literal)))
+            '((((x integer)) <- copy ((0 literal)))
+              (((y integer)) <- copy ((0 literal)))
               ; nil location is meaningless; just for testing
-              (((nil integer)) <- add ((x integer)) ((y integer)))))
-          '((((1 integer)) <- copy ((4 literal)))
-            (((2 integer)) <- copy ((2 literal)))
-            (((nil integer)) <- add ((1 integer)) ((2 integer)))))
+              (((nil integer)) <- copy ((0 literal)))))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((nil integer)) <- copy ((0 literal)))))
   (prn "F - convert-names never renames nil"))
 
 (reset)
 (new-trace "convert-names-global")
 (= traces* (queue))
 (if (~iso (convert-names
-            '((((x integer)) <- copy ((4 literal)))
-              (((y integer) (global)) <- copy ((2 literal)))
-              (((default-scope integer)) <- add ((x integer)) ((y integer) (global)))))
-          '((((1 integer)) <- copy ((4 literal)))
-            (((y integer) (global)) <- copy ((2 literal)))
-            (((default-scope integer)) <- add ((1 integer)) ((y integer) (global)))))
+            '((((x integer)) <- copy ((0 literal)))
+              (((y integer) (global)) <- copy ((0 literal)))))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((y integer) (global)) <- copy ((0 literal)))))
   (prn "F - convert-names never renames global operands"))
 
 (reset)
@@ -1656,12 +1654,13 @@
 (new-trace "convert-names-functions")
 (= traces* (queue))
 (if (~iso (convert-names
-            '((((x integer)) <- copy ((4 literal)))
-              (((y integer)) <- copy ((2 literal)))
-              (((z fn)) <- add ((x integer)) ((y integer)))))
-          '((((1 integer)) <- copy ((4 literal)))
-            (((2 integer)) <- copy ((2 literal)))
-            (((z fn)) <- add ((1 integer)) ((2 integer)))))
+            '((((x integer)) <- copy ((0 literal)))
+              (((y integer)) <- copy ((0 literal)))
+              ; meaningless; just for testing
+              (((z fn)) <- copy ((0 literal)))))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((z fn)) <- copy ((0 literal)))))
   (prn "F - convert-names never renames fns"))
 
 (reset)
@@ -1711,9 +1710,9 @@
 (new-trace "convert-names-label")
 (= traces* (queue))
 (if (~iso (convert-names
-            '((((1 integer)) <- copy ((4 literal)))
+            '((((1 integer)) <- copy ((0 literal)))
               foo))
-          '((((1 integer)) <- copy ((4 literal)))
+          '((((1 integer)) <- copy ((0 literal)))
             foo))
   (prn "F - convert-names skips past labels"))
 ;? (quit)
