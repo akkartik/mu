@@ -10,7 +10,7 @@
     (whilet expr (read)
 ;?       (prn car.expr)
       (if (is 'section expr.0)
-        (when (< expr.1 level)
+        (when (<= expr.1 level)
           (each x (cut expr 2)
             (eval x)))
         (eval expr))

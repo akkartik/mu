@@ -116,7 +116,7 @@
 (selective-load "mu.arc" section-level)
 ;? (quit)
 
-(section 10
+(section 20
 
 ; Our language is assembly-like in that functions consist of series of
 ; statements, and statements consist of an operation and its arguments (input
@@ -777,7 +777,7 @@
                        4 34  5 35  6 36))
   (prn "F - ops can operate on records with fields spanning multiple locations"))
 
-)  ; section 10
+)  ; section 20
 
 (section 100
 
@@ -933,7 +933,7 @@
 
 )  ; section 100
 
-(section 10
+(section 20
 
 ;; Functions
 ;
@@ -1964,7 +1964,7 @@
   (prn "F - 'len' accesses length of array address"))
 ;? (quit)
 
-)  ; section 10
+)  ; section 20
 
 (section 100
 
@@ -2089,7 +2089,7 @@
 
 )  ; section 100
 
-(section 10
+(section 20
 
 ;; Concurrency
 ;
@@ -2475,7 +2475,7 @@
   (if (no rep.routine!error)
     (prn "F - 'index' throws an error if out of bounds")))
 
-)  ; section 10
+)  ; section 20
 
 (section 100
 
@@ -2789,7 +2789,7 @@
 
 )  ; section 100
 
-(section 9
+(section 10
 
 ;; Separating concerns
 ;
@@ -3188,7 +3188,7 @@
           '((((2 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - 'def!' clears all previous clauses"))
 
-)  ; section 9
+)  ; section 10
 
 ;; ---
 
