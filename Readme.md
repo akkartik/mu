@@ -131,9 +131,9 @@ checks in different parts of your program, you'll be able to do that.
 To summarize: instructions have multiple operand and result values, values can
 have multiple rows separated by slashes, and rows can have multiple columns
 separated by colons. Only the very first column of the first row in each
-value's table is required to run mu programs, but the rest of the value
-'table' helps *manage* them over time. Management over time is why programming
-has traditionally been hard.
+value's table is required to run mu programs, but the rest of the value table
+helps *manage* them over time. Management over time is why programming has
+traditionally been hard.
 
 Try out the factorial program now:
 
