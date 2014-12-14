@@ -1372,11 +1372,15 @@
     (= function*.name (convert-names:convert-labels:convert-braces:tokenize-args:insert-code body name))))
 
 (def tokenize-arg (arg)
+;?   (tr "tokenize-arg " arg)
   (if (in arg '<- '_)
-    arg
-    (map [map [fromstring _ (read)] _]
-         (map [tokens _ #\:]
-              (tokens string.arg #\/)))))
+        arg
+      (isa arg 'sym)
+        (map [map [fromstring _ (read)] _]
+             (map [tokens _ #\:]
+                  (tokens string.arg #\/)))
+      :else
+        arg))
 
 (def tokenize-args (instrs)
 ;?   (tr "tokenize-args " instrs)
