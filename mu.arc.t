@@ -1302,6 +1302,10 @@
                          4 1  5 3  6 4))
   (prn "F - without args, 'reply' returns values from previous 'prepare-reply'."))
 
+)  ; section 20
+
+(section 11
+
 ;; Structured programming
 ;
 ; Our jump operators are quite inconvenient to use, so mu provides a
@@ -1332,21 +1336,21 @@
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
-            '(((1 integer) <- copy (4 literal))
-              ((2 integer) <- copy (2 literal))
-              ((3 integer) <- add (2 integer) (2 integer))
+            '((((1 integer)) <- copy ((4 literal)))
+              (((2 integer)) <- copy ((2 literal)))
+              (((3 integer)) <- add ((2 integer)) ((2 integer)))
               { begin  ; 'begin' is just a hack because racket turns braces into parens
-                ((4 boolean) <- not-equal (1 integer) (3 integer))
-                (break-if (4 boolean))
-                ((5 integer) <- copy (34 literal))
+                (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
+                (break-if ((4 boolean)))
+                (((5 integer)) <- copy ((34 literal)))
               }
               (reply)))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((3 integer) <- add (2 integer) (2 integer))
-            ((4 boolean) <- not-equal (1 integer) (3 integer))
-            (jump-if (4 boolean) (1 offset))
-            ((5 integer) <- copy (34 literal))
+          '((((1 integer)) <- copy ((4 literal)))
+            (((2 integer)) <- copy ((2 literal)))
+            (((3 integer)) <- add ((2 integer)) ((2 integer)))
+            (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
+            (jump-if ((4 boolean)) ((1 offset)))
+            (((5 integer)) <- copy ((34 literal)))
             (reply)))
   (prn "F - convert-braces replaces break-if with a jump-if to after the next close-brace"))
 ;? (quit)
@@ -1356,17 +1360,17 @@
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
-            '(((1 integer) <- copy (4 literal))
-              ((2 integer) <- copy (2 literal))
-              ((3 integer) <- add (2 integer) (2 integer))
+            '((((1 integer)) <- copy ((4 literal)))
+              (((2 integer)) <- copy ((2 literal)))
+              (((3 integer)) <- add ((2 integer)) ((2 integer)))
               { begin
                 (break)
               }
               (reply)))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((3 integer) <- add (2 integer) (2 integer))
-            (jump (0 offset))
+          '((((1 integer)) <- copy ((4 literal)))
+            (((2 integer)) <- copy ((2 literal)))
+            (((3 integer)) <- add ((2 integer)) ((2 integer)))
+            (jump ((0 offset)))
             (reply)))
   (prn "F - convert-braces works for degenerate blocks"))
 ;? (quit)
@@ -1375,23 +1379,23 @@
 (new-trace "convert-braces-nested-break")
 (= traces* (queue))
 (if (~iso (convert-braces
-            '(((1 integer) <- copy (4 literal))
-              ((2 integer) <- copy (2 literal))
-              ((3 integer) <- add (2 integer) (2 integer))
+            '((((1 integer)) <- copy ((4 literal)))
+              (((2 integer)) <- copy ((2 literal)))
+              (((3 integer)) <- add ((2 integer)) ((2 integer)))
               { begin
-                ((4 boolean) <- not-equal (1 integer) (3 integer))
-                (break-if (4 boolean))
+                (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
+                (break-if ((4 boolean)))
                 { begin
-                  ((5 integer) <- copy (34 literal))
+                  (((5 integer)) <- copy ((34 literal)))
                 }
               }
               (reply)))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((3 integer) <- add (2 integer) (2 integer))
-            ((4 boolean) <- not-equal (1 integer) (3 integer))
-            (jump-if (4 boolean) (1 offset))
-            ((5 integer) <- copy (34 literal))
+          '((((1 integer)) <- copy ((4 literal)))
+            (((2 integer)) <- copy ((2 literal)))
+            (((3 integer)) <- add ((2 integer)) ((2 integer)))
+            (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
+            (jump-if ((4 boolean)) ((1 offset)))
+            (((5 integer)) <- copy ((34 literal)))
             (reply)))
   (prn "F - convert-braces balances braces when converting break"))
 
@@ -1400,22 +1404,22 @@
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
-            '(((1 integer) <- copy (4 literal))
+            '((((1 integer)) <- copy ((4 literal)))
               { begin
                 (break)
-                ((2 integer) <- copy (5 literal))
+                (((2 integer)) <- copy ((5 literal)))
               }
               { begin
                 (break)
-                ((3 integer) <- copy (6 literal))
+                (((3 integer)) <- copy ((6 literal)))
               }
-              ((4 integer) <- copy (7 literal))))
-          '(((1 integer) <- copy (4 literal))
-            (jump (1 offset))
-            ((2 integer) <- copy (5 literal))
-            (jump (1 offset))
-            ((3 integer) <- copy (6 literal))
-            ((4 integer) <- copy (7 literal))))
+              (((4 integer)) <- copy ((7 literal)))))
+          '((((1 integer)) <- copy ((4 literal)))
+            (jump ((1 offset)))
+            (((2 integer)) <- copy ((5 literal)))
+            (jump ((1 offset)))
+            (((3 integer)) <- copy ((6 literal)))
+            (((4 integer)) <- copy ((7 literal)))))
   (prn "F - convert-braces handles jumps on jumps"))
 ;? (quit)
 
@@ -1423,23 +1427,23 @@
 (new-trace "convert-braces-nested-loop")
 (= traces* (queue))
 (if (~iso (convert-braces
-            '(((1 integer) <- copy (4 literal))
-              ((2 integer) <- copy (2 literal))
+            '((((1 integer)) <- copy ((4 literal)))
+              (((2 integer)) <- copy ((2 literal)))
               { begin
-                ((3 integer) <- add (2 integer) (2 integer))
+                (((3 integer)) <- add ((2 integer)) ((2 integer)))
                 { begin
-                  ((4 boolean) <- not-equal (1 integer) (3 integer))
+                  (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
                 }
-                (loop-if (4 boolean))
-                ((5 integer) <- copy (34 literal))
+                (loop-if ((4 boolean)))
+                (((5 integer)) <- copy ((34 literal)))
               }
               (reply)))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((3 integer) <- add (2 integer) (2 integer))
-            ((4 boolean) <- not-equal (1 integer) (3 integer))
-            (jump-if (4 boolean) (-3 offset))
-            ((5 integer) <- copy (34 literal))
+          '((((1 integer)) <- copy ((4 literal)))
+            (((2 integer)) <- copy ((2 literal)))
+            (((3 integer)) <- add ((2 integer)) ((2 integer)))
+            (((4 boolean)) <- not-equal ((1 integer)) ((3 integer)))
+            (jump-if ((4 boolean)) ((-3 offset)))
+            (((5 integer)) <- copy ((34 literal)))
             (reply)))
   (prn "F - convert-braces balances braces when converting 'loop'"))
 
@@ -1447,12 +1451,12 @@
 (new-trace "convert-braces-label")
 (= traces* (queue))
 (if (~iso (convert-braces
-            '(((1 integer) <- copy (4 literal))
+            '((((1 integer)) <- copy ((4 literal)))
               foo
-              ((2 integer) <- copy (2 literal))))
-          '(((1 integer) <- copy (4 literal))
+              (((2 integer)) <- copy ((2 literal)))))
+          '((((1 integer)) <- copy ((4 literal)))
             foo
-            ((2 integer) <- copy (2 literal))))
+            (((2 integer)) <- copy ((2 literal)))))
   (prn "F - convert-braces skips past labels"))
 ;? (quit)
 
@@ -1460,16 +1464,16 @@
 (new-trace "convert-braces-label-increments-offset")
 (= traces* (queue))
 (if (~iso (convert-braces
-            '(((1 integer) <- copy (4 literal))
+            '((((1 integer)) <- copy ((4 literal)))
               { begin
                 (break)
                 foo
               }
-              ((2 integer) <- copy (2 literal))))
-          '(((1 integer) <- copy (4 literal))
-            (jump (1 offset))
+              (((2 integer)) <- copy ((2 literal)))))
+          '((((1 integer)) <- copy ((4 literal)))
+            (jump ((1 offset)))
             foo
-            ((2 integer) <- copy (2 literal))))
+            (((2 integer)) <- copy ((2 literal)))))
   (prn "F - convert-braces treats labels as instructions"))
 ;? (quit)
 
@@ -1478,24 +1482,24 @@
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
 (if (~iso (convert-braces
-            '(((1 integer) <- copy (4 literal))
+            '((((1 integer)) <- copy ((4 literal)))
               { begin
                 (break)
                 foo
               }
-              ((2 integer) <- copy (5 literal))
+              (((2 integer)) <- copy ((5 literal)))
               { begin
                 (break)
-                ((3 integer) <- copy (6 literal))
+                (((3 integer)) <- copy ((6 literal)))
               }
-              ((4 integer) <- copy (7 literal))))
-          '(((1 integer) <- copy (4 literal))
-            (jump (1 offset))
+              (((4 integer)) <- copy ((7 literal)))))
+          '((((1 integer)) <- copy ((4 literal)))
+            (jump ((1 offset)))
             foo
-            ((2 integer) <- copy (5 literal))
-            (jump (1 offset))
-            ((3 integer) <- copy (6 literal))
-            ((4 integer) <- copy (7 literal))))
+            (((2 integer)) <- copy ((5 literal)))
+            (jump ((1 offset)))
+            (((3 integer)) <- copy ((6 literal)))
+            (((4 integer)) <- copy ((7 literal)))))
   (prn "F - convert-braces treats labels as instructions - 2"))
 ;? (quit)
 
@@ -1504,46 +1508,48 @@
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("-")))
 (if (~iso (convert-braces
-            '(((1 integer) <- copy (0 literal))
+            '((((1 integer)) <- copy ((0 literal)))
               { begin
                 { begin
-                  (break (2 blocks))
+                  (break ((2 blocks)))
                 }
-                ((2 integer) <- copy (0 literal))
-                ((3 integer) <- copy (0 literal))
-                ((4 integer) <- copy (0 literal))
-                ((5 integer) <- copy (0 literal))
+                (((2 integer)) <- copy ((0 literal)))
+                (((3 integer)) <- copy ((0 literal)))
+                (((4 integer)) <- copy ((0 literal)))
+                (((5 integer)) <- copy ((0 literal)))
               }))
-          '(((1 integer) <- copy (0 literal))
-            (jump (4 offset))
-            ((2 integer) <- copy (0 literal))
-            ((3 integer) <- copy (0 literal))
-            ((4 integer) <- copy (0 literal))
-            ((5 integer) <- copy (0 literal))))
+          '((((1 integer)) <- copy ((0 literal)))
+            (jump ((4 offset)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((3 integer)) <- copy ((0 literal)))
+            (((4 integer)) <- copy ((0 literal)))
+            (((5 integer)) <- copy ((0 literal)))))
   (prn "F - 'break' can take an extra arg with number of nested blocks to exit"))
-;? (quit)
+(quit)
 
 (reset)
 (new-trace "loop")
 ;? (set dump-trace*)
 (add-code
   '((function main [
-      ((1 integer) <- copy (4 literal))
-      ((2 integer) <- copy (1 literal))
+      (((1 integer)) <- copy ((4 literal)))
+      (((2 integer)) <- copy ((1 literal)))
       { begin
-        ((2 integer) <- add (2 integer) (2 integer))
-        ((3 boolean) <- not-equal (1 integer) (2 integer))
-        (loop-if (3 boolean))
-        ((4 integer) <- copy (34 literal))
+        (((2 integer)) <- add ((2 integer)) ((2 integer)))
+        (((3 boolean)) <- not-equal ((1 integer)) ((2 integer)))
+        (loop-if ((3 boolean)))
+        (((4 integer)) <- copy ((34 literal)))
       }
       (reply)
      ])))
 ;? (each stmt function*!main
 ;?   (prn stmt))
+;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
   (prn "F - 'loop' correctly loops"))
+;? (quit)
 
 ; todo: fuzz-test invariant: convert-braces offsets should be robust to any
 ; number of inner blocks inside but not around the loop block.
@@ -1553,15 +1559,15 @@
 ;? (set dump-trace*)
 (add-code
   '((function main [
-      ((1 integer) <- copy (4 literal))
-      ((2 integer) <- copy (1 literal))
+      (((1 integer)) <- copy ((4 literal)))
+      (((2 integer)) <- copy ((1 literal)))
       { begin
-        ((2 integer) <- add (2 integer) (2 integer))
+        (((2 integer)) <- add ((2 integer)) ((2 integer)))
         { begin
-          ((3 boolean) <- not-equal (1 integer) (2 integer))
+          (((3 boolean)) <- not-equal ((1 integer)) ((2 integer)))
         }
-        (loop-if (3 boolean))
-        ((4 integer) <- copy (34 literal))
+        (loop-if ((3 boolean)))
+        (((4 integer)) <- copy ((34 literal)))
       }
       (reply)
      ])))
@@ -1576,15 +1582,15 @@
 (new-trace "loop-fail")
 (add-code
   '((function main [
-      ((1 integer) <- copy (4 literal))
-      ((2 integer) <- copy (2 literal))
+      (((1 integer)) <- copy ((4 literal)))
+      (((2 integer)) <- copy ((2 literal)))
       { begin
-        ((2 integer) <- add (2 integer) (2 integer))
+        (((2 integer)) <- add ((2 integer)) ((2 integer)))
         { begin
-          ((3 boolean) <- not-equal (1 integer) (2 integer))
+          (((3 boolean)) <- not-equal ((1 integer)) ((2 integer)))
         }
-        (loop-if (3 boolean))
-        ((4 integer) <- copy (34 literal))
+        (loop-if ((3 boolean)))
+        (((4 integer)) <- copy ((34 literal)))
       }
       (reply)
      ])))
@@ -1598,17 +1604,17 @@
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("-")))
 (if (~iso (convert-braces
-            '(((1 integer) <- copy (0 literal))
+            '((((1 integer)) <- copy ((0 literal)))
               { begin
-                ((2 integer) <- copy (0 literal))
-                ((3 integer) <- copy (0 literal))
+                (((2 integer)) <- copy ((0 literal)))
+                (((3 integer)) <- copy ((0 literal)))
                 { begin
-                  (loop (2 blocks))
+                  (loop ((2 blocks)))
                 }
               }))
-          '(((1 integer) <- copy (0 literal))
-            ((2 integer) <- copy (0 literal))
-            ((3 integer) <- copy (0 literal))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((3 integer)) <- copy ((0 literal)))
             (jump (-3 offset))))
   (prn "F - 'loop' can take an extra arg with number of nested blocks to exit"))
 ;? (quit)
@@ -1623,46 +1629,46 @@
 (new-trace "convert-names")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer) <- copy (4 literal))
-              ((y integer) <- copy (2 literal))
+            '(((x integer) <- copy ((4 literal)))
+              ((y integer) <- copy ((2 literal)))
               ((z integer) <- add (x integer) (y integer))))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((3 integer) <- add (1 integer) (2 integer))))
+          '((((1 integer)) <- copy ((4 literal)))
+            (((2 integer)) <- copy ((2 literal)))
+            (((3 integer)) <- add ((1 integer)) ((2 integer)))))
   (prn "F - convert-names renames symbolic names to integer locations"))
 
 (reset)
 (new-trace "convert-names-compound")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer-boolean-pair) <- copy (4 literal))
-              ((y integer) <- copy (2 literal))))
-          '(((1 integer-boolean-pair) <- copy (4 literal))
-            ((3 integer) <- copy (2 literal))))
+            '(((x integer-boolean-pair) <- copy ((4 literal)))
+              ((y integer) <- copy ((2 literal)))))
+          '((((1 integer-boolean-pair)) <- copy ((4 literal)))
+            (((3 integer)) <- copy ((2 literal)))))
   (prn "F - convert-names increments integer locations by the size of the type of the previous var"))
 
 (reset)
 (new-trace "convert-names-nil")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer) <- copy (4 literal))
-              ((y integer) <- copy (2 literal))
+            '(((x integer) <- copy ((4 literal)))
+              ((y integer) <- copy ((2 literal)))
               ((nil integer) <- add (x integer) (y integer))))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((nil integer) <- add (1 integer) (2 integer))))
+          '((((1 integer)) <- copy ((4 literal)))
+            (((2 integer)) <- copy ((2 literal)))
+            ((nil integer) <- add ((1 integer)) ((2 integer)))))
   (prn "F - convert-names never renames nil"))
 
 (reset)
 (new-trace "convert-names-global")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer) <- copy (4 literal))
-              ((y integer global) <- copy (2 literal))
+            '(((x integer) <- copy ((4 literal)))
+              ((y integer global) <- copy ((2 literal)))
               ((default-scope integer) <- add (x integer) (y integer global))))
-          '(((1 integer) <- copy (4 literal))
-            ((y integer global) <- copy (2 literal))
-            ((default-scope integer) <- add (1 integer) (y integer global))))
+          '((((1 integer)) <- copy ((4 literal)))
+            ((y integer global) <- copy ((2 literal)))
+            ((default-scope integer) <- add ((1 integer)) (y integer global))))
   (prn "F - convert-names never renames global operands"))
 
 ; kludgy support for 'fork' below
@@ -1670,20 +1676,20 @@
 (new-trace "convert-names-functions")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer) <- copy (4 literal))
-              ((y integer) <- copy (2 literal))
+            '(((x integer) <- copy ((4 literal)))
+              ((y integer) <- copy ((2 literal)))
               ((z fn) <- add (x integer) (y integer))))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((z fn) <- add (1 integer) (2 integer))))
+          '((((1 integer)) <- copy ((4 literal)))
+            (((2 integer)) <- copy ((2 literal)))
+            ((z fn) <- add ((1 integer)) ((2 integer)))))
   (prn "F - convert-names never renames nil"))
 
 (reset)
 (new-trace "convert-names-record-fields")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer) <- get (34 integer-boolean-pair) (bool offset))))
-          '(((1 integer) <- get (34 integer-boolean-pair) (1 offset))))
+            '(((x integer) <- get ((34 integer-boolean-pair)) (bool offset))))
+          '((((1 integer)) <- get ((34 integer-boolean-pair)) ((1 offset)))))
   (prn "F - convert-names replaces record field offsets"))
 
 (reset)
@@ -1691,14 +1697,14 @@
 (= traces* (queue))
 (if (errsafe (convert-names
                '(((bool boolean) <- copy (t literal))
-                 ((x integer) <- get (34 integer-boolean-pair) (bool offset)))))
+                 ((x integer) <- get ((34 integer-boolean-pair)) (bool offset)))))
   (prn "F - convert-names doesn't allow offsets and variables with the same name in a function"))
 
 (reset)
 (new-trace "convert-names-record-fields-ambiguous-2")
 (= traces* (queue))
 (if (errsafe (convert-names
-               '(((x integer) <- get (34 integer-boolean-pair) (bool offset))
+               '(((x integer) <- get ((34 integer-boolean-pair)) (bool offset))
                  ((bool boolean) <- copy (t literal)))))
   (prn "F - convert-names doesn't allow offsets and variables with the same name in a function - 2"))
 
@@ -1707,17 +1713,17 @@
 (= traces* (queue))
 (if (~iso (convert-names
             '(((x integer) <- get (34 integer-boolean-pair-address deref) (bool offset))))
-          '(((1 integer) <- get (34 integer-boolean-pair-address deref) (1 offset))))
+          '((((1 integer)) <- get (34 integer-boolean-pair-address deref) ((1 offset)))))
   (prn "F - convert-names replaces field offsets for record addresses"))
 
 (reset)
 (new-trace "convert-names-record-fields-multiple")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((2 boolean) <- get (1 integer-boolean-pair) (bool offset))
-              ((3 boolean) <- get (1 integer-boolean-pair) (bool offset))))
-          '(((2 boolean) <- get (1 integer-boolean-pair) (1 offset))
-            ((3 boolean) <- get (1 integer-boolean-pair) (1 offset))))
+            '((((2 boolean)) <- get ((1 integer-boolean-pair)) (bool offset))
+              (((3 boolean)) <- get ((1 integer-boolean-pair)) (bool offset))))
+          '((((2 boolean)) <- get ((1 integer-boolean-pair)) ((1 offset)))
+            (((3 boolean)) <- get ((1 integer-boolean-pair)) ((1 offset)))))
   (prn "F - convert-names replaces field offsets with multiple mentions"))
 ;? (quit)
 
@@ -1725,9 +1731,9 @@
 (new-trace "convert-names-label")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((1 integer) <- copy (4 literal))
+            '((((1 integer)) <- copy ((4 literal)))
               foo))
-          '(((1 integer) <- copy (4 literal))
+          '((((1 integer)) <- copy ((4 literal)))
             foo))
   (prn "F - convert-names skips past labels"))
 ;? (quit)
@@ -1741,7 +1747,7 @@
 (new-trace "new-primitive")
 (add-code
   '((function main [
-      ((1 integer-address) <- new (integer literal))
+      (((1 integer-address)) <- new (integer literal))
      ])))
 (let routine make-routine!main
   (enq routine running-routines*)
@@ -1758,7 +1764,7 @@
 (new-trace "new-array-literal")
 (add-code
   '((function main [
-      ((1 type-array-address) <- new (type-array literal) (5 literal))
+      (((1 type-array-address)) <- new (type-array literal) ((5 literal)))
      ])))
 (let routine make-routine!main
   (enq routine running-routines*)
@@ -1774,8 +1780,8 @@
 (new-trace "new-array-direct")
 (add-code
   '((function main [
-      ((1 integer) <- copy (5 literal))
-      ((2 type-array-address) <- new (type-array literal) (1 integer))
+      (((1 integer)) <- copy ((5 literal)))
+      (((2 type-array-address)) <- new (type-array literal) ((1 integer)))
      ])))
 (let routine make-routine!main
   (enq routine running-routines*)
@@ -1804,8 +1810,8 @@
 (new-trace "set-default-scope")
 (add-code
   '((function main [
-      ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((1 integer) <- copy (23 literal))
+      ((default-scope scope-address) <- new (scope literal) ((2 literal)))
+      (((1 integer)) <- copy ((23 literal)))
      ])))
 (let routine make-routine!main
   (enq routine running-routines*)
@@ -1821,8 +1827,8 @@
 (new-trace "set-default-scope-skips-offset")
 (add-code
   '((function main [
-      ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((1 integer) <- copy (23 offset))
+      ((default-scope scope-address) <- new (scope literal) ((2 literal)))
+      (((1 integer)) <- copy ((23 offset)))
      ])))
 (let routine make-routine!main
   (enq routine running-routines*)
@@ -1838,8 +1844,8 @@
 (new-trace "default-scope-bounds-check")
 (add-code
   '((function main [
-      ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((2 integer) <- copy (23 literal))
+      ((default-scope scope-address) <- new (scope literal) ((2 literal)))
+      (((2 integer)) <- copy ((23 literal)))
      ])))
 ;? (set dump-trace*)
 (run 'main)
@@ -1852,11 +1858,11 @@
 (new-trace "default-scope-and-get-indirect")
 (add-code
   '((function main [
-      ((default-scope scope-address) <- new (scope literal) (5 literal))
-      ((1 integer-boolean-pair-address) <- new (integer-boolean-pair literal))
-      ((2 integer-address) <- get-address (1 integer-boolean-pair-address deref) (0 offset))
-      ((2 integer-address deref) <- copy (34 literal))
-      ((3 integer global) <- get (1 integer-boolean-pair-address deref) (0 offset))
+      ((default-scope scope-address) <- new (scope literal) ((5 literal)))
+      (((1 integer-boolean-pair-address)) <- new (integer-boolean-pair literal))
+      (((2 integer-address)) <- get-address (1 integer-boolean-pair-address deref) ((0 offset)))
+      ((2 integer-address deref) <- copy ((34 literal)))
+      ((3 integer global) <- get (1 integer-boolean-pair-address deref) ((0 offset)))
      ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (run 'main)
@@ -1872,11 +1878,11 @@
 (new-trace "default-scope-and-index-indirect")
 (add-code
   '((function main [
-      ((default-scope scope-address) <- new (scope literal) (5 literal))
-      ((1 integer-array-address) <- new (integer-array literal) (4 literal))
-      ((2 integer-address) <- index-address (1 integer-array-address deref) (2 offset))
-      ((2 integer-address deref) <- copy (34 literal))
-      ((3 integer global) <- index (1 integer-array-address deref) (2 offset))
+      ((default-scope scope-address) <- new (scope literal) ((5 literal)))
+      (((1 integer-array-address)) <- new (integer-array literal) ((4 literal)))
+      (((2 integer-address)) <- index-address (1 integer-array-address deref) ((2 offset)))
+      ((2 integer-address deref) <- copy ((34 literal)))
+      ((3 integer global) <- index (1 integer-array-address deref) ((2 offset)))
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "array-info")))
 (run 'main)
@@ -1892,21 +1898,21 @@
 (new-trace "convert-names-default-scope")
 (= traces* (queue))
 (if (~iso (convert-names
-            '(((x integer) <- copy (4 literal))
-              ((y integer) <- copy (2 literal))
+            '(((x integer) <- copy ((4 literal)))
+              ((y integer) <- copy ((2 literal)))
               ; unsafe in general; don't write random values to 'default-scope'
               ((default-scope integer) <- add (x integer) (y integer))))
-          '(((1 integer) <- copy (4 literal))
-            ((2 integer) <- copy (2 literal))
-            ((default-scope integer) <- add (1 integer) (2 integer))))
+          '((((1 integer)) <- copy ((4 literal)))
+            (((2 integer)) <- copy ((2 literal)))
+            ((default-scope integer) <- add ((1 integer)) ((2 integer)))))
   (prn "F - convert-names never renames default-scope"))
 
 (reset)
 (new-trace "suppress-default-scope")
 (add-code
   '((function main [
-      ((default-scope scope-address) <- new (scope literal) (2 literal))
-      ((1 integer global) <- copy (23 literal))
+      ((default-scope scope-address) <- new (scope literal) ((2 literal)))
+      ((1 integer global) <- copy ((23 literal)))
      ])))
 (let routine make-routine!main
   (enq routine running-routines*)
@@ -1923,15 +1929,15 @@
 (new-trace "array-copy-indirect-scoped")
 (add-code
   '((function main [
-      ((10 integer) <- copy (30 literal))  ; pretend allocation
-      ((default-scope scope-address) <- copy (10 literal))  ; unsafe
-      ((1 integer) <- copy (2 literal))
-      ((2 integer) <- copy (23 literal))
-      ((3 boolean) <- copy (nil literal))
-      ((4 integer) <- copy (24 literal))
-      ((5 boolean) <- copy (t literal))
-      ((6 integer-boolean-pair-array-address) <- copy (11 literal))  ; unsafe
-      ((7 integer-boolean-pair-array) <- copy (6 integer-boolean-pair-array-address deref))
+      (((10 integer)) <- copy ((30 literal)))  ; pretend allocation
+      ((default-scope scope-address) <- copy ((10 literal)))  ; unsafe
+      (((1 integer)) <- copy ((2 literal)))
+      (((2 integer)) <- copy ((23 literal)))
+      (((3 boolean)) <- copy (nil literal))
+      (((4 integer)) <- copy ((24 literal)))
+      (((5 boolean)) <- copy (t literal))
+      (((6 integer-boolean-pair-array-address)) <- copy ((11 literal)))  ; unsafe
+      (((7 integer-boolean-pair-array)) <- copy (6 integer-boolean-pair-array-address deref))
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("run" "m" "sizeof")))
@@ -1947,15 +1953,15 @@
 (new-trace "len-array-indirect-scoped")
 (add-code
   '((function main [
-      ((10 integer) <- copy (30 literal))  ; pretend allocation
-      ((default-scope scope-address) <- copy (10 literal))  ; unsafe
-      ((1 integer) <- copy (2 literal))
-      ((2 integer) <- copy (23 literal))
-      ((3 boolean) <- copy (nil literal))
-      ((4 integer) <- copy (24 literal))
-      ((5 boolean) <- copy (t literal))
-      ((6 integer-address) <- copy (11 literal))  ; unsafe
-      ((7 integer) <- length (6 integer-boolean-pair-array-address deref))
+      (((10 integer)) <- copy ((30 literal)))  ; pretend allocation
+      ((default-scope scope-address) <- copy ((10 literal)))  ; unsafe
+      (((1 integer)) <- copy ((2 literal)))
+      (((2 integer)) <- copy ((23 literal)))
+      (((3 boolean)) <- copy (nil literal))
+      (((4 integer)) <- copy ((24 literal)))
+      (((5 boolean)) <- copy (t literal))
+      (((6 integer-address)) <- copy ((11 literal)))  ; unsafe
+      (((7 integer)) <- length (6 integer-boolean-pair-array-address deref))
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "addr" "sz" "array-len")))
 (run 'main)
@@ -1964,7 +1970,7 @@
   (prn "F - 'len' accesses length of array address"))
 ;? (quit)
 
-)  ; section 20
+)  ; section 11
 
 (section 100
 
