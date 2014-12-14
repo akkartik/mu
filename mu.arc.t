@@ -1525,30 +1525,23 @@
             (((4 integer)) <- copy ((0 literal)))
             (((5 integer)) <- copy ((0 literal)))))
   (prn "F - 'break' can take an extra arg with number of nested blocks to exit"))
-(quit)
+;? (quit)
 
 (reset)
 (new-trace "loop")
 ;? (set dump-trace*)
-(add-code
-  '((function main [
-      (((1 integer)) <- copy ((4 literal)))
-      (((2 integer)) <- copy ((1 literal)))
-      { begin
-        (((2 integer)) <- add ((2 integer)) ((2 integer)))
-        (((3 boolean)) <- not-equal ((1 integer)) ((2 integer)))
-        (loop-if ((3 boolean)))
-        (((4 integer)) <- copy ((34 literal)))
-      }
-      (reply)
-     ])))
-;? (each stmt function*!main
-;?   (prn stmt))
-;? (set dump-trace*)
-(run 'main)
-;? (prn memory*)
-(if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
-  (prn "F - 'loop' correctly loops"))
+(if (~iso (convert-braces
+            '((((1 integer)) <- copy ((0 literal)))
+              (((2 integer)) <- copy ((0 literal)))
+              { begin
+                (((3 integer)) <- copy ((0 literal)))
+                (loop)
+              }))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((3 integer)) <- copy ((0 literal)))
+            (jump ((-2 offset)))))
+  (prn "F - 'loop' jumps to start of containing block"))
 ;? (quit)
 
 ; todo: fuzz-test invariant: convert-braces offsets should be robust to any
@@ -1557,47 +1550,22 @@
 (reset)
 (new-trace "loop-nested")
 ;? (set dump-trace*)
-(add-code
-  '((function main [
-      (((1 integer)) <- copy ((4 literal)))
-      (((2 integer)) <- copy ((1 literal)))
-      { begin
-        (((2 integer)) <- add ((2 integer)) ((2 integer)))
-        { begin
-          (((3 boolean)) <- not-equal ((1 integer)) ((2 integer)))
-        }
-        (loop-if ((3 boolean)))
-        (((4 integer)) <- copy ((34 literal)))
-      }
-      (reply)
-     ])))
-;? (each stmt function*!main
-;?   (prn stmt))
-(run 'main)
-;? (prn memory*)
-(if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
+(if (~iso (convert-braces
+            '((((1 integer)) <- copy ((0 literal)))
+              (((2 integer)) <- copy ((0 literal)))
+              { begin
+                (((3 integer)) <- copy ((0 literal)))
+                { begin
+                  (((4 integer)) <- copy ((0 literal)))
+                }
+                (loop)
+              }))
+          '((((1 integer)) <- copy ((0 literal)))
+            (((2 integer)) <- copy ((0 literal)))
+            (((3 integer)) <- copy ((0 literal)))
+            (((4 integer)) <- copy ((0 literal)))
+            (jump ((-3 offset)))))
   (prn "F - 'loop' correctly jumps back past nested braces"))
-
-(reset)
-(new-trace "loop-fail")
-(add-code
-  '((function main [
-      (((1 integer)) <- copy ((4 literal)))
-      (((2 integer)) <- copy ((2 literal)))
-      { begin
-        (((2 integer)) <- add ((2 integer)) ((2 integer)))
-        { begin
-          (((3 boolean)) <- not-equal ((1 integer)) ((2 integer)))
-        }
-        (loop-if ((3 boolean)))
-        (((4 integer)) <- copy ((34 literal)))
-      }
-      (reply)
-     ])))
-(run 'main)
-;? (prn memory*)
-(if (~iso memory* (obj 1 4  2 4  3 nil  4 34))
-  (prn "F - 'loop-if' might never trigger"))
 
 (reset)
 (new-trace "loop-multiple")
@@ -1615,9 +1583,9 @@
           '((((1 integer)) <- copy ((0 literal)))
             (((2 integer)) <- copy ((0 literal)))
             (((3 integer)) <- copy ((0 literal)))
-            (jump (-3 offset))))
+            (jump ((-3 offset)))))
   (prn "F - 'loop' can take an extra arg with number of nested blocks to exit"))
-;? (quit)
+(quit)
 
 ;; Variables
 ;
