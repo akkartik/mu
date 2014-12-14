@@ -288,21 +288,21 @@
 
 ;; running a single routine
 
-; routines consist of instrs
-; instrs consist of oargs, op and args
-(def parse-instr (instr)
-  (iflet delim (pos '<- instr)
-    (list (cut instr 0 delim)  ; oargs
-          (instr (+ delim 1))  ; op
-          (cut instr (+ delim 2)))  ; args
-    (list nil car.instr cdr.instr)))
-
 ; operand accessors
 (def nondummy (operand)  ; precondition for helpers below
   (~is '_ operand))
 
 (mac v (operand)  ; for value
   `((,operand 0) 0))
+
+; routines consist of instrs
+; instrs consist of oargs, op and args
+(def parse-instr (instr)
+  (iflet delim (pos '<- instr)
+    (list (cut instr 0 delim)  ; oargs
+          (v (instr (+ delim 1)))  ; op
+          (cut instr (+ delim 2)))  ; args
+    (list nil (v car.instr) cdr.instr)))
 
 (def metadata (operand)
   cdr.operand)
@@ -405,16 +405,16 @@
                 get
                   (with (operand  (canonize arg.0)
                          idx  (v arg.1))
-                    (assert (is 'offset (ty arg.1)) "record index @arg.1 must have type 'offset'")
+                    (assert (iso '(offset) (ty arg.1)) "record index @arg.1 must have type 'offset'")
                     (assert (< -1 idx (len typeinfo.operand!elems)) "@idx is out of bounds of record @operand")
-                    (m (list (apply + v.operand
-                                      (map sizeof (firstn idx typeinfo.operand!elems)))
-                             typeinfo.operand!elems.idx
-                             'global)))
+                    (m `((,(apply + v.operand
+                                    (map sizeof (firstn idx typeinfo.operand!elems)))
+                          ,typeinfo.operand!elems.idx)
+                         (global))))
                 get-address
                   (with (operand  (canonize arg.0)
                          idx  (v arg.1))
-                    (assert (is 'offset (ty arg.1)) "record index @arg.1 must have type 'offset'")
+                    (assert (iso '(offset) (ty arg.1)) "record index @arg.1 must have type 'offset'")
                     (assert (< -1 idx (len typeinfo.operand!elems)) "@idx is out of bounds of record @operand")
                     (apply + v.operand
                              (map sizeof (firstn idx typeinfo.operand!elems))))
@@ -424,11 +424,11 @@
                           idx  (m arg.1))
                     (unless (< -1 idx array-len.operand)
                       (die "@idx is out of bounds of array @operand"))
-                    (m (list (+ v.operand
-                                1  ; for array size
-                                (* idx sizeof.elemtype))
-                             elemtype
-                             'global)))
+                    (m `((,(+ v.operand
+                              1  ; for array size
+                              (* idx sizeof.elemtype))
+                           ,elemtype)
+                         (global))))
                 index-address
                   (withs (operand  (canonize arg.0)
                           elemtype  typeinfo.operand!elem
@@ -443,7 +443,7 @@
                     ; special-case: allocate space for a literal string
                     (new-string arg.0)
                     (let type (v arg.0)
-                      (assert (is 'literal (ty arg.0)) "new: second arg @arg.0 must be literal")
+                      (assert (iso '(literal) (ty arg.0)) "new: second arg @arg.0 must be literal")
                       (if (no types*.type)  (err "no such type @type"))
                       ; todo: initialize memory. currently racket does it for us
                       (if types*.type!array
@@ -478,7 +478,7 @@
                 sleep
                   (let operand arg.0
                     ; store sleep as either (<cycle number> literal) or (<location> <current value>)
-                    (if (is ty.operand 'literal)
+                    (if (is ty.operand.0 'literal)
                       (let delay v.operand
                         (trace "run" "sleeping until " (+ curr-cycle* delay))
                         (= rep.routine*!sleep `(,(+ curr-cycle* delay) literal)))
@@ -516,7 +516,7 @@
                       (list caller-args.routine*.idx t)
                       (list nil nil)))
                 input
-                  (do (assert (is 'literal (ty arg.0)))
+                  (do (assert (iso '(literal) (ty arg.0)))
                       (= caller-arg-idx.routine* (v arg.0))
                       (let idx caller-arg-idx.routine*
                         (++ caller-arg-idx.routine*)
@@ -748,6 +748,7 @@
     (let pc 0
       (loop (instrs instrs)
         (each instr instrs
+;?           (tr instr)
           (if (or atom.instr (~is 'begin instr.0))  ; label or regular instruction
                 (do
                   (trace "c{0" pc " " instr " -- " locs)
@@ -762,56 +763,57 @@
                   (recur cdr.instr)
                   (push `(close ,pc) locs))))))
     (zap rev locs)
+;?     (tr "-")
     (with (pc  0
            stack  ())  ; elems are pcs
       (accum yield
         (loop (instrs instrs)
           (each instr instrs
+;?             (tr "- " instr)
             (point continue
             (when (atom instr)  ; label
               (yield instr)
               (++ pc)
               (continue))
+            (when (is car.instr 'begin)
+              (push pc stack)
+              (recur cdr.instr)
+              (pop stack)
+              (continue))
+;?             (let (oarg op arg)  (parse-instr instr)
             (let delim (or (pos '<- instr) -1)
               (with (oarg  (if (>= delim 0)
                              (cut instr 0 delim))
-                     op  (instr (+ delim 1))
+                     op  (v (instr (+ delim 1)))
                      arg  (cut instr (+ delim 2)))
                 (trace "c{1" pc " " op " " oarg)
                 (case op
-                  begin
-                    (do
-                      (push pc stack)
-                      (assert (is oarg nil) "begin: can't take oarg in @instr")
-                      (recur arg)
-                      (pop stack)
-                      (continue))
                   break
                     (do
                       (assert (is oarg nil) "break: can't take oarg in @instr")
-                      (yield `(jump ((,(close-offset pc locs (and arg (v arg.0))) offset)))))
+                      (yield `(((jump)) ((,(close-offset pc locs (and arg (v arg.0))) offset)))))
                   break-if
                     (do
                       (assert (is oarg nil) "break-if: can't take oarg in @instr")
-                      (yield `(jump-if ,arg.0 ((,(close-offset pc locs (and cdr.arg (v arg.1))) offset)))))
+                      (yield `(((jump-if)) ,arg.0 ((,(close-offset pc locs (and cdr.arg (v arg.1))) offset)))))
                   break-unless
                     (do
                       (assert (is oarg nil) "break-unless: can't take oarg in @instr")
-                      (yield `(jump-unless ,arg.0 ((,(close-offset pc locs (and cdr.arg (v arg.1))) offset)))))
+                      (yield `(((jump-unless)) ,arg.0 ((,(close-offset pc locs (and cdr.arg (v arg.1))) offset)))))
                   loop
                     (do
                       (assert (is oarg nil) "loop: can't take oarg in @instr")
-                      (yield `(jump ((,(open-offset pc stack (and arg (v arg.0))) offset)))))
+                      (yield `(((jump)) ((,(open-offset pc stack (and arg (v arg.0))) offset)))))
                   loop-if
                     (do
                       (trace "cvt0" "loop-if: " instr " => " (- stack.0 1))
                       (assert (is oarg nil) "loop-if: can't take oarg in @instr")
-                      (yield `(jump-if ,arg.0 ((,(open-offset pc stack (and cdr.arg (v arg.1))) offset)))))
+                      (yield `(((jump-if)) ,arg.0 ((,(open-offset pc stack (and cdr.arg (v arg.1))) offset)))))
                   loop-unless
                     (do
                       (trace "cvt0" "loop-if: " instr " => " (- stack.0 1))
                       (assert (is oarg nil) "loop-unless: can't take oarg in @instr")
-                      (yield `(jump-unless ,arg.0 ((,(open-offset pc stack (and cdr.arg (v arg.1))) offset)))))
+                      (yield `(((jump-unless)) ,arg.0 ((,(open-offset pc stack (and cdr.arg (v arg.1))) offset)))))
                   ;else
                     (yield instr))))
             (++ pc))))))))
@@ -853,10 +855,11 @@
     (let pc 0
       (each instr instrs
         (when (and acons.instr
-                   (in car.instr 'jump 'jump-if 'jump-unless))
+                   (acons car.instr)
+                   (in (v car.instr) 'jump 'jump-if 'jump-unless))
           (each arg cdr.instr
 ;?             (tr "trying " arg " " ty.arg ": " v.arg " => " (labels v.arg))
-            (when (and (is ty.arg 'offset)
+            (when (and (is ty.arg.0 'offset)
                        (isa v.arg 'sym)
                        (labels v.arg))
               (= v.arg (- (labels v.arg) pc 1)))))
