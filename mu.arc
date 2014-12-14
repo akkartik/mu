@@ -1372,7 +1372,7 @@
     (= function*.name (convert-names:convert-labels:convert-braces:tokenize-args:insert-code body name))))
 
 (def tokenize-arg (arg)
-  (if (is arg '<-)
+  (if (in arg '<- '_)
     arg
     (map [map [fromstring _ (read)] _]
          (map [tokens _ #\:]

@@ -3311,6 +3311,8 @@
             (tokenize-arg 'a:b/1:d))
 (assert:iso '<-
             (tokenize-arg '<-))
+(assert:iso '_
+            (tokenize-arg '_))
 
 ; support labels
 (assert:iso '((((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
