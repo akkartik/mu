@@ -7,7 +7,7 @@
 (add-code:readfile "edit.mu")
 (add-code
   '((function test-new-screen [
-      ((1 screen-address global) <- new-screen (5 literal) (5 literal))
+      (1:screen-address/global <- new-screen 5:literal 5:literal)
      ])))
 ;? (each stmt function*!new-screen
 ;?   (prn stmt))
