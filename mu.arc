@@ -11,7 +11,7 @@
 (mac init-fn (name . body)
   `(enq (fn ()
 ;?           (prn ',name)
-          (= (function* ',name) (convert-names:convert-labels:convert-braces:insert-code ',body ',name)))
+          (= (function* ',name) (convert-names:convert-labels:convert-braces:tokenize-args:insert-code ',body ',name)))
         initialization-fns*))
 
 ;; persisting and checking traces for each test
@@ -288,10 +288,8 @@
 
 ;; running a single routine
 
-; operand accessors
-(def nondummy (operand)  ; precondition for helpers below
-  (~is '_ operand))
-
+; value of an arg or oarg, stripping away all metadata
+; wish I could have this flag an error when arg is incorrectly formed
 (mac v (operand)  ; for value
   `((,operand 0) 0))
 
@@ -313,6 +311,15 @@
 (def typeinfo (operand)
   (or (types* ty.operand.0)
       (err "unknown type @(tostring prn.operand)")))
+
+; operand accessors
+(def nondummy (operand)  ; precondition for helpers below
+  (~is '_ operand))
+
+; just for convenience, 'new' instruction sometimes takes a raw string and
+; allocates just enough space to store it
+(def not-raw-string (operand)
+  (~isa operand 'string))
 
 ($:require "charterm/main.rkt")
 
@@ -459,7 +466,7 @@
 
                 ; tagged-values require one primitive
                 save-type
-                  (annotate 'record `(,(ty arg.0) ,(m arg.0)))
+                  (annotate 'record `(,((ty arg.0) 0) ,(m arg.0)))
 
                 ; multiprocessing
                 run
@@ -477,6 +484,7 @@
                   (assert (m arg.0))
                 sleep
                   (let operand arg.0
+;?                     (tr "sleep " operand)
                     ; store sleep as either (<cycle number> literal) or (<location> <current value>)
                     (if (is ty.operand.0 'literal)
                       (let delay v.operand
@@ -744,6 +752,7 @@
 ;; desugar structured assembly based on blocks
 
 (def convert-braces (instrs)
+;?   (prn "convert-braces " instrs)
   (let locs ()  ; list of information on each brace: (open/close pc)
     (let pc 0
       (loop (instrs instrs)
@@ -874,6 +883,8 @@
           (continue))
         (trace "cn0" instr " " canon.location " " canon.isa-field)
         (let (oargs op args)  (parse-instr instr)
+;?           (tr "1")
+          ; rename args
           (if (in op 'get 'get-address)
             (with (basetype  (typeinfo args.0)
                    field  (v args.1))
@@ -895,12 +906,15 @@
                         (= location.field idx))
                     (assert nil "couldn't find field in @instr")))))
             (each arg args
-              (assert (~isa-field v.arg) "arg @arg is also a field name")
-              (when (maybe-add arg location idx)
-                (err "use before set: @arg"))))
+              (when (and nondummy.arg not-raw-string.arg)
+                (assert (~isa-field v.arg) "arg @arg is also a field name")
+                (when (maybe-add arg location idx)
+                  (err "use before set: @arg")))))
+;?           (tr "2")
+          ; rename oargs
           (each arg oargs
             (trace "cn0" "checking " arg)
-            (unless (is arg '_)
+            (when (and nondummy.arg not-raw-string.arg)
               (assert (~isa-field v.arg) "oarg @arg is also a field name")
               (when (maybe-add arg location idx)
                 (trace "cn0" "location for arg " arg ": " idx)
@@ -911,10 +925,10 @@
       (when (acons instr)
         (let (oargs op args)  (parse-instr instr)
           (each arg args
-            (when (and nondummy.arg (location v.arg))
+            (when (and nondummy.arg not-raw-string.arg (location v.arg))
               (zap location v.arg)))
           (each arg oargs
-            (when (and nondummy.arg (location v.arg))
+            (when (and nondummy.arg not-raw-string.arg (location v.arg))
               (zap location v.arg))))))
     instrs))
 
@@ -995,328 +1009,328 @@
 (section 100
 
 (init-fn maybe-coerce
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((x tagged-value-address) <- new (tagged-value literal))
-  ((x tagged-value-address deref) <- next-input)
-  ((p type) <- next-input)
-  ((xtype type) <- get (x tagged-value-address deref) (0 offset))
-  ((match? boolean) <- equal (xtype type) (p type))
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  (x:tagged-value-address <- new tagged-value:literal)
+  (x:tagged-value-address/deref <- next-input)
+  (p:type <- next-input)
+  (xtype:type <- get x:tagged-value-address/deref 0:offset)
+  (match?:boolean <- equal xtype:type p:type)
   { begin
-    (break-if (match? boolean))
-    (reply (0 literal) (nil literal))
+    (break-if match?:boolean)
+    (reply 0:literal nil:literal)
   }
-  ((xvalue location) <- get (x tagged-value-address deref) (1 offset))
-  (reply (xvalue location) (match? boolean)))
+  (xvalue:location <- get x:tagged-value-address/deref 1:offset)
+  (reply xvalue:location match?:boolean))
 
 (init-fn new-tagged-value
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ; assert (sizeof arg.0) == 1
-  ((xtype type) <- next-input)
-  ((xtypesize integer) <- sizeof (xtype type))
-  ((xcheck boolean) <- equal (xtypesize integer) (1 literal))
-  (assert (xcheck boolean))
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  ; assert sizeof:arg.0 == 1
+  (xtype:type <- next-input)
+  (xtypesize:integer <- sizeof xtype:type)
+  (xcheck:boolean <- equal xtypesize:integer 1:literal)
+  (assert xcheck:boolean)
   ; todo: check that arg 0 matches the type? or is that for the future typechecker?
-  ((result tagged-value-address) <- new (tagged-value literal))
+  (result:tagged-value-address <- new tagged-value:literal)
   ; result->type = arg 0
-  ((resulttype location) <- get-address (result tagged-value-address deref) (type offset))
-  ((resulttype location deref) <- copy (xtype type))
+  (resulttype:location <- get-address result:tagged-value-address/deref type:offset)
+  (resulttype:location/deref <- copy xtype:type)
   ; result->payload = arg 1
-  ((locaddr location) <- get-address (result tagged-value-address deref) (payload offset))
-  ((locaddr location deref) <- next-input)
-  (reply (result tagged-value-address)))
+  (locaddr:location <- get-address result:tagged-value-address/deref payload:offset)
+  (locaddr:location/deref <- next-input)
+  (reply result:tagged-value-address))
 
 (init-fn list-next  ; list-address -> list-address
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((base list-address) <- next-input)
-  ((result list-address) <- get (base list-address deref) (cdr offset))
-  (reply (result list-address)))
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  (base:list-address <- next-input)
+  (result:list-address <- get base:list-address/deref cdr:offset)
+  (reply result:list-address))
 
 (init-fn list-value-address  ; list-address -> tagged-value-address
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((base list-address) <- next-input)
-  ((result tagged-value-address) <- get-address (base list-address deref) (car offset))
-  (reply (result tagged-value-address)))
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  (base:list-address <- next-input)
+  (result:tagged-value-address <- get-address base:list-address/deref car:offset)
+  (reply result:tagged-value-address))
 
 (init-fn new-list
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  (default-scope:scope-address <- new scope:literal 30:literal)
   ; new-list = curr = new list
-  ((new-list-result list-address) <- new (list literal))
-  ((curr list-address) <- copy (new-list-result list-address))
+  (new-list-result:list-address <- new list:literal)
+  (curr:list-address <- copy new-list-result:list-address)
   { begin
     ; while read curr-value
-    ((curr-value integer) (exists? boolean) <- next-input)
-    (break-unless (exists? boolean))
+    (curr-value:integer exists?:boolean <- next-input)
+    (break-unless exists?:boolean)
     ; curr.cdr = new list
-    ((next list-address-address) <- get-address (curr list-address deref) (cdr offset))
-    ((next list-address-address deref) <- new (list literal))
+    (next:list-address-address <- get-address curr:list-address/deref cdr:offset)
+    (next:list-address-address/deref <- new list:literal)
     ; curr = curr.cdr
-    ((curr list-address) <- list-next (curr list-address))
-    ; curr.car = (type curr-value)
-    ((dest tagged-value-address) <- list-value-address (curr list-address))
-    ((dest tagged-value-address deref) <- save-type (curr-value integer))
+    (curr:list-address <- list-next curr:list-address)
+    ; curr.car = type:curr-value
+    (dest:tagged-value-address <- list-value-address curr:list-address)
+    (dest:tagged-value-address/deref <- save-type curr-value:integer)
     (loop)
   }
   ; return new-list.cdr
-  ((new-list-result list-address) <- list-next (new-list-result list-address))  ; memory leak
-  (reply (new-list-result list-address)))
+  (new-list-result:list-address <- list-next new-list-result:list-address)  ; memory leak
+  (reply new-list-result:list-address))
 
 (init-fn new-channel
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  (default-scope:scope-address <- new scope:literal 30:literal)
   ; result = new channel
-  ((result channel-address) <- new (channel literal))
+  (result:channel-address <- new channel:literal)
   ; result.first-full = 0
-  ((full integer-address) <- get-address (result channel-address deref) (first-full offset))
-  ((full integer-address deref) <- copy (0 literal))
+  (full:integer-address <- get-address result:channel-address/deref first-full:offset)
+  (full:integer-address/deref <- copy 0:literal)
   ; result.first-free = 0
-  ((free integer-address) <- get-address (result channel-address deref) (first-free offset))
-  ((free integer-address deref) <- copy (0 literal))
+  (free:integer-address <- get-address result:channel-address/deref first-free:offset)
+  (free:integer-address/deref <- copy 0:literal)
   ; result.circular-buffer = new tagged-value[arg+1]
-  ((capacity integer) <- next-input)
-  ((capacity integer) <- add (capacity integer) (1 literal))  ; unused slot for full? below
-  ((channel-buffer-address tagged-value-array-address-address) <- get-address (result channel-address deref) (circular-buffer offset))
-  ((channel-buffer-address tagged-value-array-address-address deref) <- new (tagged-value-array literal) (capacity integer))
-  (reply (result channel-address)))
+  (capacity:integer <- next-input)
+  (capacity:integer <- add capacity:integer 1:literal)  ; unused slot for full? below
+  (channel-buffer-address:tagged-value-array-address-address <- get-address result:channel-address/deref circular-buffer:offset)
+  (channel-buffer-address:tagged-value-array-address-address/deref <- new tagged-value-array:literal capacity:integer)
+  (reply result:channel-address))
 
 (init-fn capacity
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((chan channel) <- next-input)
-  ((q tagged-value-array-address) <- get (chan channel) (circular-buffer offset))
-  ((qlen integer) <- length (q tagged-value-array-address deref))
-  (reply (qlen integer)))
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  (chan:channel <- next-input)
+  (q:tagged-value-array-address <- get chan:channel circular-buffer:offset)
+  (qlen:integer <- length q:tagged-value-array-address/deref)
+  (reply qlen:integer))
 
 (init-fn write
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((chan channel-address) <- next-input)
-  ((val tagged-value) <- next-input)
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  (chan:channel-address <- next-input)
+  (val:tagged-value <- next-input)
   { begin
     ; block if chan is full
-    ((full boolean) <- full? (chan channel-address deref))
-    (break-unless (full boolean))
-    ((full-address integer-address) <- get-address (chan channel-address deref) (first-full offset))
-    (sleep (full-address integer-address deref))
+    (full:boolean <- full? chan:channel-address/deref)
+    (break-unless full:boolean)
+    (full-address:integer-address <- get-address chan:channel-address/deref first-full:offset)
+    (sleep full-address:integer-address/deref)
   }
   ; store val
-  ((q tagged-value-array-address) <- get (chan channel-address deref) (circular-buffer offset))
-  ((free integer-address) <- get-address (chan channel-address deref) (first-free offset))
-  ((dest tagged-value-address) <- index-address (q tagged-value-array-address deref) (free integer-address deref))
-  ((dest tagged-value-address deref) <- copy (val tagged-value))
+  (q:tagged-value-array-address <- get chan:channel-address/deref circular-buffer:offset)
+  (free:integer-address <- get-address chan:channel-address/deref first-free:offset)
+  (dest:tagged-value-address <- index-address q:tagged-value-array-address/deref free:integer-address/deref)
+  (dest:tagged-value-address/deref <- copy val:tagged-value)
   ; increment free
-  ((free integer-address deref) <- add (free integer-address deref) (1 literal))
+  (free:integer-address/deref <- add free:integer-address/deref 1:literal)
   { begin
     ; wrap free around to 0 if necessary
-    ((qlen integer) <- length (q tagged-value-array-address deref))
-    ((remaining? boolean) <- less-than (free integer-address deref) (qlen integer))
-    (break-if (remaining? boolean))
-    ((free integer-address deref) <- copy (0 literal))
+    (qlen:integer <- length q:tagged-value-array-address/deref)
+    (remaining?:boolean <- less-than free:integer-address/deref qlen:integer)
+    (break-if remaining?:boolean)
+    (free:integer-address/deref <- copy 0:literal)
   }
-  (reply (chan channel-address deref)))
+  reply:chan:channel-address/deref)
 
 (init-fn read
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((chan channel-address) <- next-input)
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  (chan:channel-address <- next-input)
   { begin
     ; block if chan is empty
-    ((empty boolean) <- empty? (chan channel-address deref))
-    (break-unless (empty boolean))
-    ((free-address integer-address) <- get-address (chan channel-address deref) (first-free offset))
-    (sleep (free-address integer-address deref))
+    (empty:boolean <- empty? chan:channel-address/deref)
+    (break-unless empty:boolean)
+    (free-address:integer-address <- get-address chan:channel-address/deref first-free:offset)
+    (sleep free-address:integer-address/deref)
   }
   ; read result
-  ((full integer-address) <- get-address (chan channel-address deref) (first-full offset))
-  ((q tagged-value-array-address) <- get (chan channel-address deref) (circular-buffer offset))
-  ((result tagged-value) <- index (q tagged-value-array-address deref) (full integer-address deref))
+  (full:integer-address <- get-address chan:channel-address/deref first-full:offset)
+  (q:tagged-value-array-address <- get chan:channel-address/deref circular-buffer:offset)
+  (result:tagged-value <- index q:tagged-value-array-address/deref full:integer-address/deref)
   ; increment full
-  ((full integer-address deref) <- add (full integer-address deref) (1 literal))
+  (full:integer-address/deref <- add full:integer-address/deref 1:literal)
   { begin
     ; wrap full around to 0 if necessary
-    ((qlen integer) <- length (q tagged-value-array-address deref))
-    ((remaining? boolean) <- less-than (full integer-address deref) (qlen integer))
-    (break-if (remaining? boolean))
-    ((full integer-address deref) <- copy (0 literal))
+    (qlen:integer <- length q:tagged-value-array-address/deref)
+    (remaining?:boolean <- less-than full:integer-address/deref qlen:integer)
+    (break-if remaining?:boolean)
+    (full:integer-address/deref <- copy 0:literal)
   }
-  (reply (result tagged-value) (chan channel-address deref)))
+  (reply result:tagged-value chan:channel-address/deref))
 
 ; An empty channel has first-empty and first-full both at the same value.
 (init-fn empty?
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  (default-scope:scope-address <- new scope:literal 30:literal)
   ; return arg.first-full == arg.first-free
-  ((chan channel) <- next-input)
-  ((full integer) <- get (chan channel) (first-full offset))
-  ((free integer) <- get (chan channel) (first-free offset))
-  ((result boolean) <- equal (full integer) (free integer))
-  (reply (result boolean)))
+  (chan:channel <- next-input)
+  (full:integer <- get chan:channel first-full:offset)
+  (free:integer <- get chan:channel first-free:offset)
+  (result:boolean <- equal full:integer free:integer)
+  (reply result:boolean))
 
 ; A full channel has first-empty just before first-full, wasting one slot.
 ; (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
 (init-fn full?
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
-  ((chan channel) <- next-input)
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  (chan:channel <- next-input)
   ; curr = chan.first-free + 1
-  ((curr integer) <- get (chan channel) (first-free offset))
-  ((curr integer) <- add (curr integer) (1 literal))
+  (curr:integer <- get chan:channel first-free:offset)
+  (curr:integer <- add curr:integer 1:literal)
   { begin
     ; if (curr == chan.capacity) curr = 0
-    ((qlen integer) <- capacity (chan channel))
-    ((remaining? boolean) <- less-than (curr integer) (qlen integer))
-    (break-if (remaining? boolean))
-    ((curr integer) <- copy (0 literal))
+    (qlen:integer <- capacity chan:channel)
+    (remaining?:boolean <- less-than curr:integer qlen:integer)
+    (break-if remaining?:boolean)
+    (curr:integer <- copy 0:literal)
   }
   ; return chan.first-full == curr
-  ((full integer) <- get (chan channel) (first-full offset))
-  ((result boolean) <- equal (full integer) (curr integer))
-  (reply (result boolean)))
+  (full:integer <- get chan:channel first-full:offset)
+  (result:boolean <- equal full:integer curr:integer)
+  (reply result:boolean))
 
 (init-fn strcat
-  ((default-scope scope-address) <- new (scope literal) (30 literal))
+  (default-scope:scope-address <- new scope:literal 30:literal)
   ; result = new string[a.length + b.length]
-  ((a string-address) <- next-input)
-  ((a-len integer) <- length (a string-address deref))
-  ((b string-address) <- next-input)
-  ((b-len integer) <- length (b string-address deref))
-  ((result-len integer) <- add (a-len integer) (b-len integer))
-  ((result string-address) <- new (string literal) (result-len integer))
+  (a:string-address <- next-input)
+  (a-len:integer <- length a:string-address/deref)
+  (b:string-address <- next-input)
+  (b-len:integer <- length b:string-address/deref)
+  (result-len:integer <- add a-len:integer b-len:integer)
+  (result:string-address <- new string:literal result-len:integer)
   ; copy a into result
-  ((result-idx integer) <- copy (0 literal))
-  ((i integer) <- copy (0 literal))
+  (result-idx:integer <- copy 0:literal)
+  (i:integer <- copy 0:literal)
   { begin
     ; while (i < a.length)
-    ((a-done? boolean) <- less-than (i integer) (a-len integer))
-    (break-unless (a-done? boolean))
+    (a-done?:boolean <- less-than i:integer a-len:integer)
+    (break-unless a-done?:boolean)
     ; result[result-idx] = a[i]
-    ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
-    ((in byte) <- index (a string-address deref) (i integer))
-    ((out byte-address deref) <- copy (in byte))
+    (out:byte-address <- index-address result:string-address/deref result-idx:integer)
+    (in:byte <- index a:string-address/deref i:integer)
+    (out:byte-address/deref <- copy in:byte)
     ; ++i
-    ((i integer) <- add (i integer) (1 literal))
+    (i:integer <- add i:integer 1:literal)
     ; ++result-idx
-    ((result-idx integer) <- add (result-idx integer) (1 literal))
+    (result-idx:integer <- add result-idx:integer 1:literal)
     (loop)
   }
   ; copy b into result
-  ((i integer) <- copy (0 literal))
+  (i:integer <- copy 0:literal)
   { begin
     ; while (i < b.length)
-    ((b-done? boolean) <- less-than (i integer) (b-len integer))
-    (break-unless (b-done? boolean))
+    (b-done?:boolean <- less-than i:integer b-len:integer)
+    (break-unless b-done?:boolean)
     ; result[result-idx] = a[i]
-    ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
-    ((in byte) <- index (b string-address deref) (i integer))
-    ((out byte-address deref) <- copy (in byte))
+    (out:byte-address <- index-address result:string-address/deref result-idx:integer)
+    (in:byte <- index b:string-address/deref i:integer)
+    (out:byte-address/deref <- copy in:byte)
     ; ++i
-    ((i integer) <- add (i integer) (1 literal))
+    (i:integer <- add i:integer 1:literal)
     ; ++result-idx
-    ((result-idx integer) <- add (result-idx integer) (1 literal))
+    (result-idx:integer <- add result-idx:integer 1:literal)
     (loop)
   }
-  (reply (result string-address)))
+  (reply result:string-address))
 
 ; replace underscores in first with remaining args
 (init-fn interpolate  ; string-address template, string-address a..
-  ((default-scope scope-address) <- new (scope literal) (60 literal))
-  ((template string-address) <- next-input)
+  (default-scope:scope-address <- new scope:literal 60:literal)
+  (template:string-address <- next-input)
   ; compute result-len, space to allocate for result
-  ((tem-len integer) <- length (template string-address deref))
-  ((result-len integer) <- copy (tem-len integer))
+  (tem-len:integer <- length template:string-address/deref)
+  (result-len:integer <- copy tem-len:integer)
   { begin
     ; while arg received
-    ((a string-address) (arg-received? boolean) <- next-input)
-    (break-unless (arg-received? boolean))
+    (a:string-address arg-received?:boolean <- next-input)
+    (break-unless arg-received?:boolean)
 ;?     (print-primitive ("arg now: " literal))
-;?     (print-primitive (a string-address))
-;?     (print-primitive ("@" literal))
-;?     (print-primitive (a string-address deref))  ; todo: test (m on scoped array)
-;?     (print-primitive ("\n" literal))
-;? ;?     (assert (nil literal))
+;?     (print-primitive a:string-address)
+;?     (print-primitive "@":literal)
+;?     print-primitive:a:string-address/deref  ; todo: test (m on scoped array)
+;?     (print-primitive "\n":literal)
+;? ;?     (assert nil:literal)
     ; result-len = result-len + arg.length - 1 (for the 'underscore' being replaced)
-    ((a-len integer) <- length (a string-address deref))
-    ((result-len integer) <- add (result-len integer) (a-len integer))
-    ((result-len integer) <- subtract (result-len integer) (1 literal))
+    (a-len:integer <- length a:string-address/deref)
+    (result-len:integer <- add result-len:integer a-len:integer)
+    (result-len:integer <- subtract result-len:integer 1:literal)
 ;?     (print-primitive ("result-len now: " literal))
-;?     (print-primitive (result-len integer))
-;?     (print-primitive ("\n" literal))
+;?     (print-primitive result-len:integer)
+;?     (print-primitive "\n":literal)
     (loop)
   }
   ; rewind to start of non-template args
-  (_ <- input (0 literal))
+  (_ <- input 0:literal)
   ; result = new string[result-len]
-  ((result string-address) <- new (string literal) (result-len integer))
+  (result:string-address <- new string:literal result-len:integer)
   ; repeatedly copy sections of template and 'holes' into result
-  ((result-idx integer) <- copy (0 literal))
-  ((i integer) <- copy (0 literal))
+  (result-idx:integer <- copy 0:literal)
+  (i:integer <- copy 0:literal)
   { begin
     ; while arg received
-    ((a string-address) (arg-received? boolean) <- next-input)
-    (break-unless (arg-received? boolean))
+    (a:string-address arg-received?:boolean <- next-input)
+    (break-unless arg-received?:boolean)
     ; copy template into result until '_'
     { begin
       ; while (i < template.length)
-      ((tem-done? boolean) <- less-than (i integer) (tem-len integer))
-      (break-unless (tem-done? boolean) (2 blocks))
+      (tem-done?:boolean <- less-than i:integer tem-len:integer)
+      (break-unless tem-done?:boolean 2:blocks)
       ; while template[i] != '_'
-      ((in byte) <- index (template string-address deref) (i integer))
-      ((underscore? boolean) <- equal (in byte) (#\_ literal))
-      (break-if (underscore? boolean))
+      (in:byte <- index template:string-address/deref i:integer)
+      (underscore?:boolean <- equal in:byte ((#\_ literal)))
+      (break-if underscore?:boolean)
       ; result[result-idx] = template[i]
-      ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
-      ((out byte-address deref) <- copy (in byte))
+      (out:byte-address <- index-address result:string-address/deref result-idx:integer)
+      (out:byte-address/deref <- copy in:byte)
       ; ++i
-      ((i integer) <- add (i integer) (1 literal))
+      (i:integer <- add i:integer 1:literal)
       ; ++result-idx
-      ((result-idx integer) <- add (result-idx integer) (1 literal))
+      (result-idx:integer <- add result-idx:integer 1:literal)
       (loop)
     }
 ;?     (print-primitive ("i now: " literal))
-;?     (print-primitive (i integer))
-;?     (print-primitive ("\n" literal))
+;?     (print-primitive i:integer)
+;?     (print-primitive "\n":literal)
     ; copy 'a' into result
-    ((j integer) <- copy (0 literal))
+    (j:integer <- copy 0:literal)
     { begin
       ; while (j < a.length)
-      ((arg-done? boolean) <- less-than (j integer) (a-len integer))
-      (break-unless (arg-done? boolean))
+      (arg-done?:boolean <- less-than j:integer a-len:integer)
+      (break-unless arg-done?:boolean)
       ; result[result-idx] = a[j]
-      ((in byte) <- index (a string-address deref) (j integer))
+      (in:byte <- index a:string-address/deref j:integer)
 ;?       (print-primitive ("copying: " literal))
-;?       (print-primitive (in byte))
+;?       (print-primitive in:byte)
 ;?       (print-primitive (" at: " literal))
-;?       (print-primitive (result-idx integer))
-;?       (print-primitive ("\n" literal))
-      ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
-      ((out byte-address deref) <- copy (in byte))
+;?       (print-primitive result-idx:integer)
+;?       (print-primitive "\n":literal)
+      (out:byte-address <- index-address result:string-address/deref result-idx:integer)
+      (out:byte-address/deref <- copy in:byte)
       ; ++j
-      ((j integer) <- add (j integer) (1 literal))
+      (j:integer <- add j:integer 1:literal)
       ; ++result-idx
-      ((result-idx integer) <- add (result-idx integer) (1 literal))
+      (result-idx:integer <- add result-idx:integer 1:literal)
       (loop)
     }
     ; skip '_' in template
-    ((i integer) <- add (i integer) (1 literal))
+    (i:integer <- add i:integer 1:literal)
 ;?     (print-primitive ("i now: " literal))
-;?     (print-primitive (i integer))
-;?     (print-primitive ("\n" literal))
+;?     (print-primitive i:integer)
+;?     (print-primitive "\n":literal)
     (loop)  ; interpolate next arg
   }
   ; done with holes; copy rest of template directly into result
   { begin
     ; while (i < template.length)
-    ((tem-done? boolean) <- less-than (i integer) (tem-len integer))
-    (break-unless (tem-done? boolean))
+    (tem-done?:boolean <- less-than i:integer tem-len:integer)
+    (break-unless tem-done?:boolean)
     ; result[result-idx] = template[i]
-    ((in byte) <- index (template string-address deref) (i integer))
+    (in:byte <- index template:string-address/deref i:integer)
 ;?     (print-primitive ("copying: " literal))
-;?     (print-primitive (in byte))
+;?     (print-primitive in:byte)
 ;?     (print-primitive (" at: " literal))
-;?     (print-primitive (result-idx integer))
-;?     (print-primitive ("\n" literal))
-    ((out byte-address) <- index-address (result string-address deref) (result-idx integer))
-    ((out byte-address deref) <- copy (in byte))
+;?     (print-primitive result-idx:integer)
+;?     (print-primitive "\n":literal)
+    (out:byte-address <- index-address result:string-address/deref result-idx:integer)
+    (out:byte-address/deref <- copy in:byte)
     ; ++i
-    ((i integer) <- add (i integer) (1 literal))
+    (i:integer <- add i:integer 1:literal)
     ; ++result-idx
-    ((result-idx integer) <- add (result-idx integer) (1 literal))
+    (result-idx:integer <- add result-idx:integer 1:literal)
     (loop)
   }
-  (reply (result string-address)))
+  (reply result:string-address))
 
 )  ; section 100 for system software
 
@@ -1363,6 +1377,7 @@
       )))
 
 (def freeze-functions ()
+;?   (prn "freeze")
   (each (name body)  canon.function*
 ;?     (tr name)
 ;?     (prn keys.before* " -- " keys.after*)
@@ -1382,6 +1397,7 @@
 
 (def tokenize-args (instrs)
 ;?   (tr "tokenize-args " instrs)
+;?   (prn2 "@(tostring prn.instrs) => "
   (accum yield
     (each instr instrs
       (if atom.instr
@@ -1390,6 +1406,11 @@
             (yield `{begin ,@(tokenize-args cdr.instr)})
           :else
             (yield (map tokenize-arg instr))))))
+;?   )
+
+(def prn2 (msg . args)
+  (pr msg)
+  (apply prn args))
 
 ;; test helpers
 

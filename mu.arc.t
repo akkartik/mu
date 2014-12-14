@@ -846,7 +846,7 @@
   '((function main [
       (1:integer-address <- copy 34:literal)  ; pointer to nowhere
       (2:tagged-value-address <- new-tagged-value integer-address:literal 1:integer-address)
-      (3:integer-address 4:boolean <- maybe-coerce (2 tagged-value-address deref) integer-address:literal)
+      (3:integer-address 4:boolean <- maybe-coerce 2:tagged-value-address/deref integer-address:literal)
      ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
@@ -866,20 +866,20 @@
       ; 1 points at first node: tagged-value (int 34)
       (1:list-address <- new list:literal)
       (2:tagged-value-address <- list-value-address 1:list-address)
-      (3:type-address <- get-address (2 tagged-value-address deref) 0:offset)
-      ((3 type-address deref) <- copy integer:literal)
-      (4:location <- get-address (2 tagged-value-address deref) 1:offset)
-      ((4 location deref) <- copy 34:literal)
-      (5:list-address-address <- get-address (1 list-address deref) 1:offset)
-      ((5 list-address-address deref) <- new list:literal)
+      (3:type-address <- get-address 2:tagged-value-address/deref 0:offset)
+      (3:type-address/deref <- copy integer:literal)
+      (4:location <- get-address 2:tagged-value-address/deref 1:offset)
+      (4:location/deref <- copy 34:literal)
+      (5:list-address-address <- get-address 1:list-address/deref 1:offset)
+      (5:list-address-address/deref <- new list:literal)
       ; 6 points at second node: tagged-value (boolean t)
-      (6:list-address <- copy (5 list-address-address deref))
+      (6:list-address <- copy 5:list-address-address/deref)
       (7:tagged-value-address <- list-value-address 6:list-address)
-      (8:type-address <- get-address (7 tagged-value-address deref) 0:offset)
-      ((8 type-address deref) <- copy boolean:literal)
-      (9:location <- get-address (7 tagged-value-address deref) 1:offset)
-      ((9 location deref) <- copy t:literal)
-      (10:list-address <- get (6 list-address deref) 1:offset)
+      (8:type-address <- get-address 7:tagged-value-address/deref 0:offset)
+      (8:type-address/deref <- copy boolean:literal)
+      (9:location <- get-address 7:tagged-value-address/deref 1:offset)
+      (9:location/deref <- copy t:literal)
+      (10:list-address <- get 6:list-address/deref 1:offset)
      ])))
 (let routine make-routine!main
   (enq routine running-routines*)
@@ -1648,6 +1648,14 @@
   (prn "F - convert-names never renames nil"))
 
 (reset)
+(new-trace "convert-names-string")
+;? (set dump-trace*)
+(if (~iso (convert-names
+            '((((1 integer-address)) <- ((new)) "foo")))
+          '((((1 integer-address)) <- ((new)) "foo")))
+  (prn "convert-names passes through raw strings (just a convenience arg for 'new')"))
+
+(reset)
 (new-trace "convert-names-global")
 (= traces* (queue))
 (if (~iso (convert-names
@@ -1988,21 +1996,21 @@
       ; if it's slightly too many -- memory is plentiful
       ; if it's too few -- mu will raise an error
       (default-scope:scope-address <- new scope:literal 20:literal)
-      ((first-arg-box tagged-value-address) <- next-input)
+      (first-arg-box:tagged-value-address <- next-input)
       ; if given integers, add them
       { begin
-        ((first-arg integer) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (integer literal))
-        (break-unless (match? boolean))
-        ((second-arg-box tagged-value-address) <- next-input)
-        ((second-arg integer) <- maybe-coerce (second-arg-box tagged-value-address deref) (integer literal))
-        ((result integer) <- add (first-arg integer) (second-arg integer))
-        (reply (result integer))
+        (first-arg:integer match?:boolean <- maybe-coerce first-arg-box:tagged-value-address/deref integer:literal)
+        (break-unless match?:boolean)
+        (second-arg-box:tagged-value-address <- next-input)
+        (second-arg:integer <- maybe-coerce second-arg-box:tagged-value-address/deref integer:literal)
+        (result:integer <- add first-arg:integer second-arg:integer)
+        (reply result:integer)
       }
-      (reply (nil literal))
+      (reply nil:literal)
      ])
     (function main [
-      (1:tagged-value-address <- new-tagged-value (integer literal) 34:literal)
-      (2:tagged-value-address <- new-tagged-value (integer literal) 3:literal)
+      (1:tagged-value-address <- new-tagged-value integer:literal 34:literal)
+      (2:tagged-value-address <- new-tagged-value integer:literal 3:literal)
       (3:integer <- test1 1:tagged-value-address 2:tagged-value-address)
      ])))
 (run 'main)
@@ -2019,30 +2027,30 @@
 (add-code
   '((function test1 [
       (default-scope:scope-address <- new scope:literal 20:literal)
-      ((first-arg-box tagged-value-address) <- next-input)
+      (first-arg-box:tagged-value-address <- next-input)
       ; if given integers, add them
       { begin
-        ((first-arg integer) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (integer literal))
-        (break-unless (match? boolean))
-        ((second-arg-box tagged-value-address) <- next-input)
-        ((second-arg integer) <- maybe-coerce (second-arg-box tagged-value-address deref) (integer literal))
-        ((result integer) <- add (first-arg integer) (second-arg integer))
-        (reply (result integer))
+        (first-arg:integer match?:boolean <- maybe-coerce first-arg-box:tagged-value-address/deref integer:literal)
+        (break-unless match?:boolean)
+        (second-arg-box:tagged-value-address <- next-input)
+        (second-arg:integer <- maybe-coerce second-arg-box:tagged-value-address/deref integer:literal)
+        (result:integer <- add first-arg:integer second-arg:integer)
+        (reply result:integer)
       }
       ; if given booleans, or them (it's a silly kind of generic function)
       { begin
-        ((first-arg boolean) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (boolean literal))
-        (break-unless (match? boolean))
-        ((second-arg-box tagged-value-address) <- next-input)
-        ((second-arg boolean) <- maybe-coerce (second-arg-box tagged-value-address deref) (boolean literal))
-        ((result boolean) <- or (first-arg boolean) (second-arg boolean))
-        (reply (result integer))
+        (first-arg:boolean match?:boolean <- maybe-coerce first-arg-box:tagged-value-address/deref boolean:literal)
+        (break-unless match?:boolean)
+        (second-arg-box:tagged-value-address <- next-input)
+        (second-arg:boolean <- maybe-coerce second-arg-box:tagged-value-address/deref boolean:literal)
+        (result:boolean <- or first-arg:boolean second-arg:boolean)
+        (reply result:integer)
       }
-      (reply (nil literal))
+      (reply nil:literal)
      ])
     (function main [
-      (1:tagged-value-address <- new-tagged-value (boolean literal) (t literal))
-      (2:tagged-value-address <- new-tagged-value (boolean literal) (nil literal))
+      (1:tagged-value-address <- new-tagged-value boolean:literal t:literal)
+      (2:tagged-value-address <- new-tagged-value boolean:literal nil:literal)
       (3:boolean <- test1 1:tagged-value-address 2:tagged-value-address)
      ])))
 ;? (each stmt function*!test-fn
@@ -2059,33 +2067,33 @@
 (add-code
   '((function test1 [
       (default-scope:scope-address <- new scope:literal 20:literal)
-      ((first-arg-box tagged-value-address) <- next-input)
+      (first-arg-box:tagged-value-address <- next-input)
       ; if given integers, add them
       { begin
-        ((first-arg integer) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (integer literal))
-        (break-unless (match? boolean))
-        ((second-arg-box tagged-value-address) <- next-input)
-        ((second-arg integer) <- maybe-coerce (second-arg-box tagged-value-address deref) (integer literal))
-        ((result integer) <- add (first-arg integer) (second-arg integer))
-        (reply (result integer))
+        (first-arg:integer match?:boolean <- maybe-coerce first-arg-box:tagged-value-address/deref integer:literal)
+        (break-unless match?:boolean)
+        (second-arg-box:tagged-value-address <- next-input)
+        (second-arg:integer <- maybe-coerce second-arg-box:tagged-value-address/deref integer:literal)
+        (result:integer <- add first-arg:integer second-arg:integer)
+        (reply result:integer)
       }
       ; if given booleans, or them (it's a silly kind of generic function)
       { begin
-        ((first-arg boolean) (match? boolean) <- maybe-coerce (first-arg-box tagged-value-address deref) (boolean literal))
-        (break-unless (match? boolean))
-        ((second-arg-box tagged-value-address) <- next-input)
-        ((second-arg boolean) <- maybe-coerce (second-arg-box tagged-value-address deref) (boolean literal))
-        ((result boolean) <- or (first-arg boolean) (second-arg boolean))
-        (reply (result integer))
+        (first-arg:boolean match?:boolean <- maybe-coerce first-arg-box:tagged-value-address/deref boolean:literal)
+        (break-unless match?:boolean)
+        (second-arg-box:tagged-value-address <- next-input)
+        (second-arg:boolean <- maybe-coerce second-arg-box:tagged-value-address/deref boolean:literal)
+        (result:boolean <- or first-arg:boolean second-arg:boolean)
+        (reply result:integer)
       }
-      (reply (nil literal))
+      (reply nil:literal)
      ])
     (function main [
-      (1:tagged-value-address <- new-tagged-value (boolean literal) (t literal))
-      (2:tagged-value-address <- new-tagged-value (boolean literal) (nil literal))
+      (1:tagged-value-address <- new-tagged-value boolean:literal t:literal)
+      (2:tagged-value-address <- new-tagged-value boolean:literal nil:literal)
       (3:boolean <- test1 1:tagged-value-address 2:tagged-value-address)
-      (10:tagged-value-address <- new-tagged-value (integer literal) 34:literal)
-      (11:tagged-value-address <- new-tagged-value (integer literal) 3:literal)
+      (10:tagged-value-address <- new-tagged-value integer:literal 34:literal)
+      (11:tagged-value-address <- new-tagged-value integer:literal 3:literal)
       (12:integer <- test1 10:tagged-value-address 11:tagged-value-address)
      ])))
 (run 'main)
@@ -2505,8 +2513,8 @@
 (add-code
   '((function main [
       (1:channel-address <- new-channel 3:literal)
-      (2:integer <- get (1 channel-address deref) (first-full offset))
-      (3:integer <- get (1 channel-address deref) (first-free offset))
+      (2:integer <- get 1:channel-address/deref first-full:offset)
+      (3:integer <- get 1:channel-address/deref first-free:offset)
      ])))
 ;? (set dump-trace*)
 (run 'main)
@@ -2520,12 +2528,12 @@
 (add-code
   '((function main [
       (1:channel-address <- new-channel 3:literal)
-      (2:integer-address <- new (integer literal))
-      ((2 integer-address deref) <- copy 34:literal)
+      (2:integer-address <- new integer:literal)
+      (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
-      (5:integer <- get (1 channel-address deref) (first-full offset))
-      (6:integer <- get (1 channel-address deref) (first-free offset))
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (5:integer <- get 1:channel-address/deref first-full:offset)
+      (6:integer <- get 1:channel-address/deref first-free:offset)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
@@ -2542,14 +2550,14 @@
 (add-code
   '((function main [
       (1:channel-address <- new-channel 3:literal)
-      (2:integer-address <- new (integer literal))
-      ((2 integer-address deref) <- copy 34:literal)
+      (2:integer-address <- new integer:literal)
+      (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
-      (5:tagged-value (1 channel-address deref) <- read 1:channel-address)
-      (7:integer-address <- maybe-coerce 5:tagged-value (integer-address literal))
-      (8:integer <- get (1 channel-address deref) (first-full offset))
-      (9:integer <- get (1 channel-address deref) (first-free offset))
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (5:tagged-value 1:channel-address/deref <- read 1:channel-address)
+      (7:integer-address <- maybe-coerce 5:tagged-value integer-address:literal)
+      (8:integer <- get 1:channel-address/deref first-full:offset)
+      (9:integer <- get 1:channel-address/deref first-free:offset)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
@@ -2568,17 +2576,17 @@
       ; channel with 1 slot
       (1:channel-address <- new-channel 1:literal)
       ; write a value
-      (2:integer-address <- new (integer literal))
-      ((2 integer-address deref) <- copy 34:literal)
+      (2:integer-address <- new integer:literal)
+      (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       ; first-free will now be 1
-      (5:integer <- get (1 channel-address deref) (first-free offset))
+      (5:integer <- get 1:channel-address/deref first-free:offset)
       ; read one value
-      (_ (1 channel-address deref) <- read 1:channel-address)
+      (_ 1:channel-address/deref <- read 1:channel-address)
       ; write a second value; verify that first-free wraps around to 0.
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
-      (6:integer <- get (1 channel-address deref) (first-free offset))
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (6:integer <- get 1:channel-address/deref first-free:offset)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
@@ -2595,19 +2603,19 @@
       ; channel with 1 slot
       (1:channel-address <- new-channel 1:literal)
       ; write a value
-      (2:integer-address <- new (integer literal))
-      ((2 integer-address deref) <- copy 34:literal)
+      (2:integer-address <- new integer:literal)
+      (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       ; read one value
-      (_ (1 channel-address deref) <- read 1:channel-address)
+      (_ 1:channel-address/deref <- read 1:channel-address)
       ; first-full will now be 1
-      (5:integer <- get (1 channel-address deref) (first-full offset))
+      (5:integer <- get 1:channel-address/deref first-full:offset)
       ; write a second value
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       ; read second value; verify that first-full wraps around to 0.
-      (_ (1 channel-address deref) <- read 1:channel-address)
-      (6:integer <- get (1 channel-address deref) (first-full offset))
+      (_ 1:channel-address/deref <- read 1:channel-address)
+      (6:integer <- get 1:channel-address/deref first-full:offset)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
@@ -2622,8 +2630,8 @@
 (add-code
   '((function main [
       (1:channel-address <- new-channel 3:literal)
-      (2:boolean <- empty? (1 channel-address deref))
-      (3:boolean <- full? (1 channel-address deref))
+      (2:boolean <- empty? 1:channel-address/deref)
+      (3:boolean <- full? 1:channel-address/deref)
      ])))
 ;? (set dump-trace*)
 (run 'main)
@@ -2637,12 +2645,12 @@
 (add-code
   '((function main [
       (1:channel-address <- new-channel 3:literal)
-      (2:integer-address <- new (integer literal))
-      ((2 integer-address deref) <- copy 34:literal)
+      (2:integer-address <- new integer:literal)
+      (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
-      (5:boolean <- empty? (1 channel-address deref))
-      (6:boolean <- full? (1 channel-address deref))
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (5:boolean <- empty? 1:channel-address/deref)
+      (6:boolean <- full? 1:channel-address/deref)
      ])))
 ;? (set dump-trace*)
 (run 'main)
@@ -2656,12 +2664,12 @@
 (add-code
   '((function main [
       (1:channel-address <- new-channel 1:literal)
-      (2:integer-address <- new (integer literal))
-      ((2 integer-address deref) <- copy 34:literal)
+      (2:integer-address <- new integer:literal)
+      (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
-      (5:boolean <- empty? (1 channel-address deref))
-      (6:boolean <- full? (1 channel-address deref))
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (5:boolean <- empty? 1:channel-address/deref)
+      (6:boolean <- full? 1:channel-address/deref)
      ])))
 ;? (set dump-trace*)
 (run 'main)
@@ -2675,14 +2683,14 @@
 (add-code
   '((function main [
       (1:channel-address <- new-channel 3:literal)
-      (2:integer-address <- new (integer literal))
-      ((2 integer-address deref) <- copy 34:literal)
+      (2:integer-address <- new integer:literal)
+      (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
-      (_ (1 channel-address deref) <- read 1:channel-address)
-      (5:boolean <- empty? (1 channel-address deref))
-      (6:boolean <- full? (1 channel-address deref))
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (_ 1:channel-address/deref <- read 1:channel-address)
+      (5:boolean <- empty? 1:channel-address/deref)
+      (6:boolean <- full? 1:channel-address/deref)
      ])))
 ;? (set dump-trace*)
 (run 'main)
@@ -2696,13 +2704,13 @@
 (add-code
   '((function main [
       (1:channel-address <- new-channel 3:literal)
-      (2:integer-address <- new (integer literal))
-      ((2 integer-address deref) <- copy 34:literal)
+      (2:integer-address <- new integer:literal)
+      (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
-      (_ (1 channel-address deref) <- read 1:channel-address)
-      (5:boolean <- empty? (1 channel-address deref))
-      (6:boolean <- full? (1 channel-address deref))
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (_ 1:channel-address/deref <- read 1:channel-address)
+      (5:boolean <- empty? 1:channel-address/deref)
+      (6:boolean <- full? 1:channel-address/deref)
      ])))
 ;? (set dump-trace*)
 (run 'main)
@@ -2720,10 +2728,10 @@
   '((function main [
       (1:channel-address <- new-channel 3:literal)
       ; channel is empty, but receives a read
-      (2:tagged-value (1 channel-address deref) <- read 1:channel-address)
+      (2:tagged-value 1:channel-address/deref <- read 1:channel-address)
      ])))
 ;? (set dump-trace*)
-;? (= dump-trace* (obj whitelist '("run")))
+;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (run 'main)
 ;? (prn int-canon.memory*)
 ;? (prn sleeping-routines*)
@@ -2742,12 +2750,12 @@
 (add-code
   '((function main [
       (1:channel-address <- new-channel 1:literal)
-      (2:integer-address <- new (integer literal))
-      ((2 integer-address deref) <- copy 34:literal)
+      (2:integer-address <- new integer:literal)
+      (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       ; channel has capacity 1, but receives a second write
-      ((1 channel-address deref) <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("run" "schedule" "addr")))
@@ -2770,17 +2778,17 @@
 (add-code
   '((function f1 [
       (default-scope:scope-address <- new scope:literal 30:literal)
-      ((chan channel-address) <- new-channel 3:literal)
-      (fork (f2 fn) (chan channel-address))
-      ((1 tagged-value global) <- read (chan channel-address))  ; output
+      (chan:channel-address <- new-channel 3:literal)
+      (fork f2:fn chan:channel-address)
+      (1:tagged-value/global <- read chan:channel-address)  ; output
      ])
     (function f2 [
       (default-scope:scope-address <- new scope:literal 30:literal)
-      ((n integer-address) <- new (integer literal))
-      ((n integer-address deref) <- copy 24:literal)
-      ((ochan channel-address) <- next-input)
-      ((x tagged-value) <- save-type (n integer-address))
-      ((ochan channel-address deref) <- write (ochan channel-address) (x tagged-value))
+      (n:integer-address <- new integer:literal)
+      (n:integer-address/deref <- copy 24:literal)
+      (ochan:channel-address <- next-input)
+      (x:tagged-value <- save-type n:integer-address)
+      (ochan:channel-address/deref <- write ochan:channel-address x:tagged-value)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
@@ -3203,7 +3211,7 @@
 (reset)
 (new-trace "string-new")
 (add-code '((function main [
-              (1:string-address <- new (string literal) 5:literal)
+              (1:string-address <- new string:literal 5:literal)
              ])))
 (let routine make-routine!main
   (enq routine running-routines*)
@@ -3221,6 +3229,8 @@
 (let routine make-routine!main
   (enq routine running-routines*)
   (let before rep.routine!alloc
+;?     (set dump-trace*)
+;?     (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
     (run)
     (if (~iso rep.routine!alloc (+ before 5 1))
       (prn "F - 'new' allocates arrays of bytes for string literals"))
