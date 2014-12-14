@@ -295,7 +295,7 @@
     (list (cut instr 0 delim)  ; oargs
           (instr (+ delim 1))  ; op
           (cut instr (+ delim 2)))  ; args
-    (list nil instr.0 cdr.instr)))
+    (list nil car.instr cdr.instr)))
 
 ; operand accessors
 (def nondummy (operand)  ; precondition for helpers below
