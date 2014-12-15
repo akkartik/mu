@@ -175,8 +175,10 @@
       (3:integer <- add 1:integer 2:integer)
      ])))
 (run 'main)
+;? (prn memory*)
 (if (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - 'add' operates on two addresses"))
+;? (quit)
 
 (reset)
 (new-trace "add-literal")

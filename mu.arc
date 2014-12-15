@@ -8,12 +8,6 @@
   `(enq (fn () ,@body)
         initialization-fns*))
 
-(mac init-fn (name . body)
-  `(enq (fn ()
-;?           (prn ',name)
-          (= (function* ',name) (convert-names:convert-labels:convert-braces:tokenize-args:insert-code ',body ',name)))
-        initialization-fns*))
-
 ;; persisting and checking traces for each test
 (= traces* (queue))
 (= trace-dir* ".traces/")
@@ -1004,7 +998,127 @@
                   (each instr fragment
                     (yield instr)))))))))
 
+;; loading code into the virtual machine
+
+(def add-code (forms)
+  (each (op . rest)  forms
+    (case op
+      ; syntax: function <name> [ <instructions> ]
+      ; don't apply our lightweight tools just yet
+      function!
+        (let (name (_make-br-fn body))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (= function*.name body))
+      function
+        (let (name (_make-br-fn body))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (= function*.name (join body function*.name)))
+
+      ; syntax: before <label> [ <instructions> ]
+      ;
+      ; multiple before directives => code in order
+      before
+        (let (label (_make-br-fn fragment))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (or= before*.label (queue))
+          (enq fragment before*.label))
+
+      ; syntax: after <label> [ <instructions> ]
+      ;
+      ; multiple after directives => code in *reverse* order
+      ; (if initialization order in a function is A B, corresponding
+      ; finalization order should be B A)
+      after
+        (let (label (_make-br-fn fragment))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (push fragment after*.label))
+      )))
+
+(def freeze-functions ()
+;?   (prn "freeze")
+  (each (name body)  canon.function*
+;?     (tr name)
+;?     (prn keys.before* " -- " keys.after*)
+;?     (= function*.name (convert-names:convert-labels:convert-braces:prn:insert-code body)))
+    (= function*.name (convert-names:convert-labels:convert-braces:tokenize-args:insert-code body name))))
+
+(def tokenize-arg (arg)
+;?   (tr "tokenize-arg " arg)
+  (if (in arg '<- '_)
+        arg
+      (isa arg 'sym)
+        (map [map [fromstring _ (read)] _]
+             (map [tokens _ #\:]
+                  (tokens string.arg #\/)))
+      :else
+        arg))
+
+(def tokenize-args (instrs)
+;?   (tr "tokenize-args " instrs)
+;?   (prn2 "@(tostring prn.instrs) => "
+  (accum yield
+    (each instr instrs
+      (if atom.instr
+            (yield instr)
+          (is 'begin instr.0)
+            (yield `{begin ,@(tokenize-args cdr.instr)})
+          :else
+            (yield (map tokenize-arg instr))))))
+;?   )
+
+(def prn2 (msg . args)
+  (pr msg)
+  (apply prn args))
+
+(def canon (table)
+  (sort (compare < [tostring (prn:car _)]) (as cons table)))
+
+(def int-canon (table)
+  (sort (compare < car) (as cons table)))
+
+;; test helpers
+
+(def memory-contains (addr value)
+;?   (prn "Looking for @value starting at @addr")
+  (loop (addr addr
+         idx  0)
+;?     (prn "@idx vs @addr")
+    (if (>= idx len.value)
+          t
+        (~is memory*.addr value.idx)
+          (do1 nil
+               (prn "@addr should contain @value.idx but contains @memory*.addr"))
+        :else
+          (recur (+ addr 1) (+ idx 1)))))
+
+(def memory-contains-array (addr value)
+;?   (prn "Looking for @value starting at @addr, size @memory*.addr vs @len.value")
+  (and (>= memory*.addr len.value)
+       (loop (addr (+ addr 1)
+              idx  0)
+;?          (prn "comparing @memory*.addr and @value.idx")
+         (if (>= idx len.value)
+               t
+             (~is memory*.addr value.idx)
+               (do1 nil
+                    (prn "@addr should contain @value.idx but contains @memory*.addr"))
+             :else
+               (recur (+ addr 1) (+ idx 1))))))
+
 ;; system software
+; create once, load before every test
+
+(reset)
+(= system-function* (table))
+
+(mac init-fn (name . body)
+  `(= (system-function* ',name) 
+      (convert-names:convert-labels:convert-braces:tokenize-args:insert-code ',body ',name)))
+
+(on-init
+  (each (name f) system-function*
+    (= (function* name)
+       (system-function* name))))
 
 (section 100
 
@@ -1333,113 +1447,6 @@
   (reply result:string-address))
 
 )  ; section 100 for system software
-
-(def canon (table)
-  (sort (compare < [tostring (prn:car _)]) (as cons table)))
-
-(def int-canon (table)
-  (sort (compare < car) (as cons table)))
-
-;; loading code into the virtual machine
-
-(def add-code (forms)
-  (each (op . rest)  forms
-    (case op
-      ; syntax: function <name> [ <instructions> ]
-      ; don't apply our lightweight tools just yet
-      function!
-        (let (name (_make-br-fn body))  rest
-          (assert (is 'make-br-fn _make-br-fn))
-          (= function*.name body))
-      function
-        (let (name (_make-br-fn body))  rest
-          (assert (is 'make-br-fn _make-br-fn))
-          (= function*.name (join body function*.name)))
-
-      ; syntax: before <label> [ <instructions> ]
-      ;
-      ; multiple before directives => code in order
-      before
-        (let (label (_make-br-fn fragment))  rest
-          (assert (is 'make-br-fn _make-br-fn))
-          (or= before*.label (queue))
-          (enq fragment before*.label))
-
-      ; syntax: after <label> [ <instructions> ]
-      ;
-      ; multiple after directives => code in *reverse* order
-      ; (if initialization order in a function is A B, corresponding
-      ; finalization order should be B A)
-      after
-        (let (label (_make-br-fn fragment))  rest
-          (assert (is 'make-br-fn _make-br-fn))
-          (push fragment after*.label))
-      )))
-
-(def freeze-functions ()
-;?   (prn "freeze")
-  (each (name body)  canon.function*
-;?     (tr name)
-;?     (prn keys.before* " -- " keys.after*)
-;?     (= function*.name (convert-names:convert-labels:convert-braces:prn:insert-code body)))
-    (= function*.name (convert-names:convert-labels:convert-braces:tokenize-args:insert-code body name))))
-
-(def tokenize-arg (arg)
-;?   (tr "tokenize-arg " arg)
-  (if (in arg '<- '_)
-        arg
-      (isa arg 'sym)
-        (map [map [fromstring _ (read)] _]
-             (map [tokens _ #\:]
-                  (tokens string.arg #\/)))
-      :else
-        arg))
-
-(def tokenize-args (instrs)
-;?   (tr "tokenize-args " instrs)
-;?   (prn2 "@(tostring prn.instrs) => "
-  (accum yield
-    (each instr instrs
-      (if atom.instr
-            (yield instr)
-          (is 'begin instr.0)
-            (yield `{begin ,@(tokenize-args cdr.instr)})
-          :else
-            (yield (map tokenize-arg instr))))))
-;?   )
-
-(def prn2 (msg . args)
-  (pr msg)
-  (apply prn args))
-
-;; test helpers
-
-(def memory-contains (addr value)
-;?   (prn "Looking for @value starting at @addr")
-  (loop (addr addr
-         idx  0)
-;?     (prn "@idx vs @addr")
-    (if (>= idx len.value)
-          t
-        (~is memory*.addr value.idx)
-          (do1 nil
-               (prn "@addr should contain @value.idx but contains @memory*.addr"))
-        :else
-          (recur (+ addr 1) (+ idx 1)))))
-
-(def memory-contains-array (addr value)
-;?   (prn "Looking for @value starting at @addr, size @memory*.addr vs @len.value")
-  (and (>= memory*.addr len.value)
-       (loop (addr (+ addr 1)
-              idx  0)
-;?          (prn "comparing @memory*.addr and @value.idx")
-         (if (>= idx len.value)
-               t
-             (~is memory*.addr value.idx)
-               (do1 nil
-                    (prn "@addr should contain @value.idx but contains @memory*.addr"))
-             :else
-               (recur (+ addr 1) (+ idx 1))))))
 
 ;; load all provided files and start at 'main'
 (reset)
