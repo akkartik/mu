@@ -3319,6 +3319,16 @@
 
 )  ; section 100 for string utilities
 
+(reset)
+(new-trace "parse-and-record")
+(add-code '((and-record foo [
+              x:string
+              y:integer
+              z:boolean
+             ])))
+(if (~iso type*!foo (obj size 3  and-record t  elems '((string) (integer) (boolean))  fields '(x y z)))
+  (prn "F - 'add-code' can add new and-records"))
+
 ;; unit tests for various helpers
 
 ; tokenize-args
