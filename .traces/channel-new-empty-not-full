@@ -3,15 +3,15 @@ run: -- nil
 run: 1 main 0: (((1 channel-address)) <- ((new-channel)) ((3 literal)))
 run: -- nil
 run: 2 new-channel 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
-sizeof: location
+sizeof: ((_ location))
 run: 1000 => ((default-scope scope-address))
 sizeof: ((default-scope scope-address))
 run: -- ((1000 30))
 run: 3 new-channel 1: (((1 channel-address)) <- ((new)) ((channel literal)))
-sizeof: channel
-sizeof: integer
-sizeof: integer
-sizeof: tagged-value-array-address
+sizeof: ((_ channel))
+sizeof: ((_ integer))
+sizeof: ((_ integer))
+sizeof: ((_ tagged-value-array-address))
 run: 1031 => ((1 channel-address))
 setm: ((1 channel-address)) <= 1031
 setm: size of ((1 channel-address)) is 1
@@ -30,7 +30,7 @@ setm: size of ((2 integer-address) (deref)) is 1
 setm: ((2 integer-address) (deref)): setting 1031 to 0
 run: -- ((1000 30) (1001 1031) (1002 1031) (1031 0))
 run: 6 new-channel 4: (((3 integer-address)) <- ((get-address)) ((1 channel-address) (deref)) ((1 offset)))
-sizeof: integer
+sizeof: ((_ integer))
 run: 1032 => ((3 integer-address))
 setm: ((3 integer-address)) <= 1032
 setm: size of ((3 integer-address)) is 1
@@ -61,8 +61,8 @@ setm: size of ((4 integer)) is 1
 setm: ((4 integer)): setting 1004 to 4
 run: -- ((1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1031 0) (1032 0))
 run: 10 new-channel 8: (((5 tagged-value-array-address-address)) <- ((get-address)) ((1 channel-address) (deref)) ((2 offset)))
-sizeof: integer
-sizeof: integer
+sizeof: ((_ integer))
+sizeof: ((_ integer))
 run: 1033 => ((5 tagged-value-array-address-address))
 setm: ((5 tagged-value-array-address-address)) <= 1033
 setm: size of ((5 tagged-value-array-address-address)) is 1
@@ -71,9 +71,9 @@ run: -- ((1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (103
 run: 11 new-channel 9: (((5 tagged-value-array-address-address) (deref)) <- ((new)) ((tagged-value-array literal)) ((4 integer)))
 m: ((4 integer))
 sizeof: ((4 integer))
-sizeof: tagged-value
-sizeof: type
-sizeof: location
+sizeof: ((_ tagged-value))
+sizeof: ((_ type))
+sizeof: ((_ location))
 run: 1034 => ((5 tagged-value-array-address-address) (deref))
 setm: ((5 tagged-value-array-address-address) (deref)) <= 1034
 setm: size of ((5 tagged-value-array-address-address) (deref)) is 1
@@ -91,12 +91,12 @@ run: -- ((1 1031) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1
 run: 13 main 1: (((2 boolean)) <- ((empty?)) ((1 channel-address) (deref)))
 m: ((1 channel-address) (deref))
 sizeof: ((1 channel-address) (deref))
-sizeof: integer
-sizeof: integer
-sizeof: tagged-value-array-address
+sizeof: ((_ integer))
+sizeof: ((_ integer))
+sizeof: ((_ tagged-value-array-address))
 run: -- ((1 1031) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 4))
 run: 14 empty? 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
-sizeof: location
+sizeof: ((_ location))
 run: 1043 => ((default-scope scope-address))
 sizeof: ((default-scope scope-address))
 run: -- ((1 1031) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 4) (1043 30))
@@ -106,9 +106,9 @@ run: #(tagged record (0 0 1034 . nil)) => ((1 channel))
 setm: ((1 channel)) <= #(tagged record (0 0 1034 . nil))
 setm: size of ((1 channel)) is 3
 sizeof: ((1 channel))
-sizeof: integer
-sizeof: integer
-sizeof: tagged-value-array-address
+sizeof: ((_ integer))
+sizeof: ((_ integer))
+sizeof: ((_ tagged-value-array-address))
 setm: ((1 channel)): setting 1044 to 0
 setm: ((1 channel)): setting 1045 to 0
 setm: ((1 channel)): setting 1046 to 1034
@@ -122,7 +122,7 @@ setm: size of ((4 integer)) is 1
 setm: ((4 integer)): setting 1047 to 0
 run: -- ((1 1031) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 4) (1043 30) (1044 0) (1045 0) (1046 1034) (1047 0))
 run: 17 empty? 3: (((5 integer)) <- ((get)) ((1 channel)) ((1 offset)))
-sizeof: integer
+sizeof: ((_ integer))
 m: ((1045 integer) (global))
 sizeof: ((1045 integer) (global))
 run: 0 => ((5 integer))
@@ -152,12 +152,12 @@ run: -- ((1 1031) (2 t) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (
 run: 20 main 2: (((3 boolean)) <- ((full?)) ((1 channel-address) (deref)))
 m: ((1 channel-address) (deref))
 sizeof: ((1 channel-address) (deref))
-sizeof: integer
-sizeof: integer
-sizeof: tagged-value-array-address
+sizeof: ((_ integer))
+sizeof: ((_ integer))
+sizeof: ((_ tagged-value-array-address))
 run: -- ((1 1031) (2 t) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 4) (1043 30) (1044 0) (1045 0) (1046 1034) (1047 0) (1048 0) (1049 t))
 run: 21 full? 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
-sizeof: location
+sizeof: ((_ location))
 run: 1074 => ((default-scope scope-address))
 sizeof: ((default-scope scope-address))
 run: -- ((1 1031) (2 t) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 4) (1043 30) (1044 0) (1045 0) (1046 1034) (1047 0) (1048 0) (1049 t) (1074 30))
@@ -167,15 +167,15 @@ run: #(tagged record (0 0 1034 . nil)) => ((1 channel))
 setm: ((1 channel)) <= #(tagged record (0 0 1034 . nil))
 setm: size of ((1 channel)) is 3
 sizeof: ((1 channel))
-sizeof: integer
-sizeof: integer
-sizeof: tagged-value-array-address
+sizeof: ((_ integer))
+sizeof: ((_ integer))
+sizeof: ((_ tagged-value-array-address))
 setm: ((1 channel)): setting 1075 to 0
 setm: ((1 channel)): setting 1076 to 0
 setm: ((1 channel)): setting 1077 to 1034
 run: -- ((1 1031) (2 t) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 4) (1043 30) (1044 0) (1045 0) (1046 1034) (1047 0) (1048 0) (1049 t) (1074 30) (1075 0) (1076 0) (1077 1034))
 run: 23 full? 2: (((4 integer)) <- ((get)) ((1 channel)) ((1 offset)))
-sizeof: integer
+sizeof: ((_ integer))
 m: ((1076 integer) (global))
 sizeof: ((1076 integer) (global))
 run: 0 => ((4 integer))
@@ -197,12 +197,12 @@ run: -- ((1 1031) (2 t) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (
 run: 25 full? 4: (((5 integer)) <- ((capacity)) ((1 channel)))
 m: ((1 channel))
 sizeof: ((1 channel))
-sizeof: integer
-sizeof: integer
-sizeof: tagged-value-array-address
+sizeof: ((_ integer))
+sizeof: ((_ integer))
+sizeof: ((_ tagged-value-array-address))
 run: -- ((1 1031) (2 t) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 4) (1043 30) (1044 0) (1045 0) (1046 1034) (1047 0) (1048 0) (1049 t) (1074 30) (1075 0) (1076 0) (1077 1034) (1078 1))
 run: 26 capacity 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
-sizeof: location
+sizeof: ((_ location))
 run: 1105 => ((default-scope scope-address))
 sizeof: ((default-scope scope-address))
 run: -- ((1 1031) (2 t) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 4) (1043 30) (1044 0) (1045 0) (1046 1034) (1047 0) (1048 0) (1049 t) (1074 30) (1075 0) (1076 0) (1077 1034) (1078 1) (1105 30))
@@ -212,16 +212,16 @@ run: #(tagged record (0 0 1034 . nil)) => ((1 channel))
 setm: ((1 channel)) <= #(tagged record (0 0 1034 . nil))
 setm: size of ((1 channel)) is 3
 sizeof: ((1 channel))
-sizeof: integer
-sizeof: integer
-sizeof: tagged-value-array-address
+sizeof: ((_ integer))
+sizeof: ((_ integer))
+sizeof: ((_ tagged-value-array-address))
 setm: ((1 channel)): setting 1106 to 0
 setm: ((1 channel)): setting 1107 to 0
 setm: ((1 channel)): setting 1108 to 1034
 run: -- ((1 1031) (2 t) (1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 4) (1043 30) (1044 0) (1045 0) (1046 1034) (1047 0) (1048 0) (1049 t) (1074 30) (1075 0) (1076 0) (1077 1034) (1078 1) (1105 30) (1106 0) (1107 0) (1108 1034))
 run: 28 capacity 2: (((4 tagged-value-array-address)) <- ((get)) ((1 channel)) ((2 offset)))
-sizeof: integer
-sizeof: integer
+sizeof: ((_ integer))
+sizeof: ((_ integer))
 m: ((1108 tagged-value-array-address) (global))
 sizeof: ((1108 tagged-value-array-address) (global))
 run: 1034 => ((4 tagged-value-array-address))

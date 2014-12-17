@@ -22,7 +22,7 @@
   (= traces* (queue)))
 
 (def new-trace (filename)
-;?   (prn "new-trace " filename)
+  (prn "new-trace " filename)
 ;?   )
   (= curr-trace-file* filename))
 
@@ -86,56 +86,56 @@
   (= type* (obj
               ; Each type must be scalar or array, sum or product or primitive
               type (obj size 1)  ; implicitly scalar and primitive
-              type-address (obj size 1  address t  elem 'type)
-              type-array (obj array t  elem 'type)
-              type-array-address (obj size 1  address t  elem 'type-array)
-              location (obj size 1  address t  elem 'location)  ; assume it points to an atom
+              type-address (obj size 1  address t  elem '(type))
+              type-array (obj array t  elem '(type))
+              type-array-address (obj size 1  address t  elem '(type-array))
+              location (obj size 1  address t  elem '(location))  ; assume it points to an atom
               integer (obj size 1)
               boolean (obj size 1)
-              boolean-address (obj size 1  address t  elem 'boolean)
+              boolean-address (obj size 1  address t  elem '(boolean))
               byte (obj size 1)
-              byte-address (obj  size 1  address t  elem 'byte)
-              string (obj array t  elem 'byte)  ; inspired by Go
-              string-address (obj size 1  address t  elem 'string)
+              byte-address (obj  size 1  address t  elem '(byte))
+              string (obj array t  elem '(byte))  ; inspired by Go
+              string-address (obj size 1  address t  elem '(string))
               character (obj size 1)  ; int32 like a Go rune
-              character-address (obj size 1  address t  elem 'character)
+              character-address (obj size 1  address t  elem '(character))
               ; isolating function calls
-              scope  (obj array t  elem 'location)  ; by convention index 0 points to outer scope
-              scope-address  (obj size 1  address t  elem 'scope)
+              scope  (obj array t  elem '(location))  ; by convention index 0 points to outer scope
+              scope-address  (obj size 1  address t  elem '(scope))
               ; arrays consist of an integer length followed by the right number of elems
-              integer-array (obj array t  elem 'integer)
-              integer-array-address (obj size 1  address t  elem 'integer-array)
-              integer-array-address-address (obj size 1  address t  elem 'integer-array-address)
-              integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
-              integer-address-address (obj size 1  address t  elem 'integer-address)
+              integer-array (obj array t  elem '(integer))
+              integer-array-address (obj size 1  address t  elem '(integer-array))
+              integer-array-address-address (obj size 1  address t  elem '(integer-array-address))
+              integer-address (obj size 1  address t  elem '(integer))  ; pointer to int
+              integer-address-address (obj size 1  address t  elem '(integer-address))
               ; and-records consist of a series of elems, corresponding to a list of types
-              integer-boolean-pair (obj size 2  and-record t  elems '(integer boolean)  fields '(int bool))
-              integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
-              integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
-              integer-boolean-pair-array-address (obj size 1  address t  elem 'integer-boolean-pair-array)
-              integer-integer-pair (obj size 2  and-record t  elems '(integer integer))
-              integer-point-pair (obj size 2  and-record t  elems '(integer integer-integer-pair))
-              integer-point-pair-address (obj size 1  address t  elem 'integer-point-pair)
-              integer-point-pair-address-address (obj size 1  address t  elem 'integer-point-pair-address)
+              integer-boolean-pair (obj size 2  and-record t  elems '((integer) (boolean))  fields '(int bool))
+              integer-boolean-pair-address (obj size 1  address t  elem '(integer-boolean-pair))
+              integer-boolean-pair-array (obj array t  elem '(integer-boolean-pair))
+              integer-boolean-pair-array-address (obj size 1  address t  elem '(integer-boolean-pair-array))
+              integer-integer-pair (obj size 2  and-record t  elems '((integer) (integer)))
+              integer-point-pair (obj size 2  and-record t  elems '((integer) (integer-integer-pair)))
+              integer-point-pair-address (obj size 1  address t  elem '(integer-point-pair))
+              integer-point-pair-address-address (obj size 1  address t  elem '(integer-point-pair-address))
               ; tagged-values are the foundation of dynamic types
-              tagged-value (obj size 2  and-record t  elems '(type location)  fields '(type payload))
-              tagged-value-address (obj size 1  address t  elem 'tagged-value)
-              tagged-value-array (obj array t  elem 'tagged-value)
-              tagged-value-array-address (obj size 1  address t  elem 'tagged-value-array)
-              tagged-value-array-address-address (obj size 1  address t  elem 'tagged-value-array-address)
+              tagged-value (obj size 2  and-record t  elems '((type) (location))  fields '(type payload))
+              tagged-value-address (obj size 1  address t  elem '(tagged-value))
+              tagged-value-array (obj array t  elem '(tagged-value))
+              tagged-value-array-address (obj size 1  address t  elem '(tagged-value-array))
+              tagged-value-array-address-address (obj size 1  address t  elem '(tagged-value-array-address))
               ; heterogeneous lists
-              list (obj size 2  and-record t  elems '(tagged-value list-address)  fields '(car cdr))
-              list-address (obj size 1  address t  elem 'list)
-              list-address-address (obj size 1  address t  elem 'list-address)
+              list (obj size 2  and-record t  elems '((tagged-value) (list-address))  fields '(car cdr))
+              list-address (obj size 1  address t  elem '(list))
+              list-address-address (obj size 1  address t  elem '(list-address))
               ; parallel routines use channels to synchronize
-              channel (obj size 3  and-record t  elems '(integer integer tagged-value-array-address)  fields '(first-full first-free circular-buffer))
-              channel-address (obj size 1  address t  elem 'channel)
+              channel (obj size 3  and-record t  elems '((integer) (integer) (tagged-value-array-address))  fields '(first-full first-free circular-buffer))
+              channel-address (obj size 1  address t  elem '(channel))
               ; editor
-              line (obj array t  elem 'character)
-              line-address (obj size 1  address t  elem 'line)
-              line-address-address (obj size 1  address t  elem 'line-address)
-              screen (obj array t  elem 'line-address)
-              screen-address (obj size 1  address t  elem 'screen)
+              line (obj array t  elem '(character))
+              line-address (obj size 1  address t  elem '(line))
+              line-address-address (obj size 1  address t  elem '(line-address))
+              screen (obj array t  elem '(line-address))
+              screen-address (obj size 1  address t  elem '(screen))
               )))
 
 ;; managing concurrent routines
@@ -409,8 +409,9 @@
                     (assert (iso '(offset) (ty arg.1)) "record index @arg.1 must have type 'offset'")
                     (assert (< -1 idx (len typeinfo.operand!elems)) "@idx is out of bounds of record @operand")
                     (m `((,(apply + v.operand
-                                    (map sizeof (firstn idx typeinfo.operand!elems)))
-                          ,typeinfo.operand!elems.idx)
+                                    (map (fn(x) (sizeof `((_ ,@x))))
+                                         (firstn idx typeinfo.operand!elems)))
+                          ,@typeinfo.operand!elems.idx)
                          (global))))
                 get-address
                   (with (operand  (canonize arg.0)
@@ -418,7 +419,8 @@
                     (assert (iso '(offset) (ty arg.1)) "record index @arg.1 must have type 'offset'")
                     (assert (< -1 idx (len typeinfo.operand!elems)) "@idx is out of bounds of record @operand")
                     (apply + v.operand
-                             (map sizeof (firstn idx typeinfo.operand!elems))))
+                             (map (fn(x) (sizeof `((_ ,@x))))
+                                  (firstn idx typeinfo.operand!elems))))
                 index
                   (withs (operand  (canonize arg.0)
                           elemtype  typeinfo.operand!elem
@@ -427,8 +429,8 @@
                       (die "@idx is out of bounds of array @operand"))
                     (m `((,(+ v.operand
                               1  ; for array size
-                              (* idx sizeof.elemtype))
-                           ,elemtype)
+                              (* idx (sizeof `((_ ,@elemtype)))))
+                           ,@elemtype)
                          (global))))
                 index-address
                   (withs (operand  (canonize arg.0)
@@ -438,7 +440,7 @@
                       (die "@idx is out of bounds of array @operand"))
                     (+ v.operand
                        1  ; for array size
-                       (* idx sizeof.elemtype)))
+                       (* idx (sizeof `((_ ,@elemtype))))))
                 new
                   (if (isa arg.0 'string)
                     ; special-case: allocate space for a literal string
@@ -451,7 +453,7 @@
                         (new-array type (m arg.1))
                         (new-scalar type))))
                 sizeof
-                  (sizeof (m arg.0))
+                  (sizeof `((_ ,(m arg.0))))
                 length
                   (let base arg.0
                     (if (or typeinfo.base!array typeinfo.base!address)
@@ -608,7 +610,8 @@
     (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
     (trace "setm" loc " <= " val)
     (with (n  (if (isa val 'record) (len rep.val) 1)
-           addr  addr.loc)
+           addr  addr.loc
+           typ  typeof.loc)
       (trace "setm" "size of " loc " is " n)
       (assert n "setm: can't compute type of @loc")
       (assert addr "setm: null pointer @loc")
@@ -616,11 +619,11 @@
         (do (assert (~isa val 'record) "setm: record of size 1 @(tostring prn.val)")
             (trace "setm" loc ": setting " addr " to " val)
             (= memory*.addr val))
-        (do (if ((type* typeof.loc) 'array)
+        (do (if type*.typ!array
               ; size check for arrays
               (when (~is n
                          (+ 1  ; array length
-                            (* rep.val.0 (sizeof ((type* typeof.loc) 'elem)))))
+                            (* rep.val.0 (sizeof `((_ ,@type*.typ!elem))))))
                 (die "writing invalid array @(tostring prn.val)"))
               ; size check for non-arrays
               (when (~is sizeof.loc n)
@@ -668,33 +671,28 @@
 
 (def sizeof (x)
   (trace "sizeof" x)
+  (assert acons.x)
+  (zap canonize x)
   (point return
-  (when (acons x)
-    (zap canonize x)
-;?     (tr "sizeof 1 @x")
-    (when typeinfo.x!array
-;?       (tr "sizeof 2")
-      (return (+ 1 (* array-len.x (sizeof typeinfo.x!elem))))))
-;?   (tr "sizeof 3")
-  (let type (if (and acons.x (pos '(deref) metadata.x))
-                  typeinfo.x!elem  ; deref pointer
-                acons.x
-                  ty.x.0
-                :else  ; naked type
-                  x)
-    (assert type*.type "sizeof: no such type @type")
-    (if (~or type*.type!and-record type*.type!array)
-          type*.type!size
-        type*.type!and-record
-          (sum idfn
-            (accum yield
-              (each elem type*.type!elems
-                (yield sizeof.elem))))
-        :else
-          (err "sizeof can't handle @type (arrays require a specific variable)")))))
+;?   (tr "sizeof: checking @x for array")
+  (when typeinfo.x!array
+;?     (tr "sizeof: @x is an array")
+    (assert (~is '_ v.x) "sizeof: arrays require a specific variable")
+    (return (+ 1 (* array-len.x (sizeof `((_ ,@typeinfo.x!elem)))))))
+;?   (tr "sizeof: not an array")
+  (when typeinfo.x!and-record
+;?     (tr "sizeof: @x is an and-record")
+    (return (sum idfn
+                 (accum yield
+                   (each elem typeinfo.x!elems
+                     (yield (sizeof `((_ ,@elem)))))))))
+;?   (tr "sizeof: @x is a primitive")
+  (return typeinfo.x!size)))
 
 (def absolutize (operand)
   (if (no routine*)
+        operand
+      (is '_ v.operand)
         operand
       (pos '(global) metadata.operand)
         operand
@@ -712,7 +710,7 @@
 (def deref (operand)
   (assert (pos '(deref) metadata.operand))
   (assert typeinfo.operand!address)
-  (cons `(,(memory* v.operand) ,typeinfo.operand!elem)
+  (cons `(,(memory* v.operand) ,@typeinfo.operand!elem)
         (drop-one '(deref) metadata.operand)))
 
 (def drop-one (f x)
@@ -726,12 +724,12 @@
 (def new-scalar (type)
 ;?   (tr "new scalar: @type")
   (ret result rep.routine*!alloc
-    (++ rep.routine*!alloc sizeof.type)))
+    (++ rep.routine*!alloc (sizeof `((_ ,type))))))
 
 (def new-array (type size)
 ;?   (tr "new array: @type @size")
   (ret result rep.routine*!alloc
-    (++ rep.routine*!alloc (+ 1 (* (sizeof type*.type!elem) size)))
+    (++ rep.routine*!alloc (+ 1 (* (sizeof `((_ ,@type*.type!elem))) size)))
     (= memory*.result size)))
 
 (def new-string (literal-string)
@@ -877,24 +875,21 @@
           (continue))
         (trace "cn0" instr " " canon.location " " canon.isa-field)
         (let (oargs op args)  (parse-instr instr)
-;?           (tr "1")
+;?           (tr "about to rename args")
           ; rename args
           (if (in op 'get 'get-address)
-            (with (basetype  (typeinfo args.0)
+            (with (basetype  (typeof args.0)
                    field  (v args.1))
-              (assert basetype "no such type @args.0")
-              (trace "cn0" "field-access " field)
-              ; todo: need to rename args.0 as well?
-              (when (pos '(deref) (metadata args.0))
-                (trace "cn0" "field-access deref")
-                (assert basetype!address "@args.0 requests deref, but it's not an address")
-                (= basetype (type* basetype!elem)))
+              (assert type*.basetype!and-record "get on non-record @args.0")
+              (trace "cn0" "field-access @field in @args.0 of type @basetype")
               (when (isa field 'sym)
                 (assert (or (~location field) isa-field.field) "field @args.1 is also a variable")
                 (when (~location field)
                   (trace "cn0" "new field; computing location")
-                  (assert basetype!fields "no field names available for @instr")
-                  (iflet idx (pos field basetype!fields)
+;?                   (tr "aa " type*.basetype)
+                  (assert type*.basetype!fields "no field names available for @instr")
+;?                   (tr "bb")
+                  (iflet idx (pos field type*.basetype!fields)
                     (do (set isa-field.field)
                         (trace "cn0" "field location @idx")
                         (= location.field idx))
@@ -904,7 +899,7 @@
                 (assert (~isa-field v.arg) "arg @arg is also a field name")
                 (when (maybe-add arg location idx)
                   (err "use before set: @arg")))))
-;?           (tr "2")
+;?           (tr "about to rename oargs")
           ; rename oargs
           (each arg oargs
             (trace "cn0" "checking " arg)
@@ -913,7 +908,7 @@
               (when (maybe-add arg location idx)
                 (trace "cn0" "location for arg " arg ": " idx)
                 ; todo: can't allocate arrays on the stack
-                (++ idx (sizeof ty.arg.0)))))))))
+                (++ idx (sizeof `((_ ,@ty.arg)))))))))))
     (trace "cn1" "update names " canon.location " " canon.isa-field)
     (each instr instrs
       (when (acons instr)
@@ -1021,6 +1016,7 @@
           (let fields (map tokenize-arg fields)
             (= type*.name (obj size len.fields
                                and-record t
+                               ; dump all metadata for now except field name and type
                                elems (map cdar fields)
                                fields (map caar fields)))))
 
