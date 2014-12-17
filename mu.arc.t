@@ -1693,6 +1693,7 @@
 (reset)
 (new-trace "convert-names-record-fields")
 (= traces* (queue))
+;? (= dump-trace* (obj whitelist '("cn0")))
 (if (~iso (convert-names
             '((((x integer)) <- ((get)) ((34 integer-boolean-pair)) ((bool offset)))))
           '((((1 integer)) <- ((get)) ((34 integer-boolean-pair)) ((1 offset)))))
@@ -1717,10 +1718,12 @@
 (reset)
 (new-trace "convert-names-record-fields-indirect")
 (= traces* (queue))
+;? (= dump-trace* (obj whitelist '("cn0")))
 (if (~iso (convert-names
             '((((x integer)) <- ((get)) ((34 integer-boolean-pair-address) (deref)) ((bool offset)))))
           '((((1 integer)) <- ((get)) ((34 integer-boolean-pair-address) (deref)) ((1 offset)))))
   (prn "F - convert-names replaces field offsets for record addresses"))
+;? (quit)
 
 (reset)
 (new-trace "convert-names-record-fields-multiple")
@@ -1764,11 +1767,12 @@
   (let before rep.routine!alloc
 ;?     (set dump-trace*)
     (run)
-  ;?   (prn memory*)
+;?     (prn memory*)
     (if (~iso memory*.1 before)
       (prn "F - 'new' returns current high-water mark"))
     (if (~iso rep.routine!alloc (+ before 1))
       (prn "F - 'new' on primitive types increments high-water mark by their size"))))
+;? (quit)
 
 (reset)
 (new-trace "new-array-literal")
@@ -3332,7 +3336,7 @@
 ;; unit tests for various helpers
 
 ; tokenize-args
-;? (prn "tokenize-args")
+(prn "tokenize-args")
 (assert:iso '((a b) (c d))
             (tokenize-arg 'a:b/c:d))
 (assert:iso '((a b) (1 d))
@@ -3369,7 +3373,7 @@
                 })))
 
 ; absolutize
-;? (prn "absolutize")
+(prn "absolutize")
 (reset)
 (if (~iso '((4 integer)) (absolutize '((4 integer))))
   (prn "F - 'absolutize' works without routine"))
@@ -3384,9 +3388,31 @@
 (absolutize '((5 integer)))
 (if (~posmatch "no room" rep.routine*!error)
   (prn "F - 'absolutize' checks against default-scope bounds"))
+(if (~iso '((_ integer)) (absolutize '((_ integer))))
+  (prn "F - 'absolutize' passes dummy args right through"))
+
+; deref
+(prn "deref")
+(reset)
+(= memory*.3 4)
+(if (~iso '((4 integer))
+          (deref '((3 integer-address)
+                   (deref))))
+  (prn "F - 'deref' handles simple addresses"))
+(if (~iso '((4 integer) (deref))
+          (deref '((3 integer-address)
+                   (deref)
+                   (deref))))
+  (prn "F - 'deref' deletes just one deref"))
+(= memory*.4 5)
+(if (~iso '((5 integer))
+          (deref:deref '((3 integer-address-address)
+                         (deref)
+                         (deref))))
+  (prn "F - 'deref' can be chained"))
 
 ; addr
-;? (prn "addr")
+(prn "addr")
 (reset)
 (= routine* nil)
 ;? (prn 111)
@@ -3435,28 +3461,8 @@
   (prn "F - 'addr' adds default-scope before 'deref', not after"))
 ;? (quit)
 
-; deref
-;? (prn "deref")
-(reset)
-(= memory*.3 4)
-(if (~iso '((4 integer))
-          (deref '((3 integer-address)
-                   (deref))))
-  (prn "F - 'deref' handles simple addresses"))
-(if (~iso '((4 integer) (deref))
-          (deref '((3 integer-address)
-                   (deref)
-                   (deref))))
-  (prn "F - 'deref' deletes just one deref"))
-(= memory*.4 5)
-(if (~iso '((5 integer))
-          (deref:deref '((3 integer-address-address)
-                         (deref)
-                         (deref))))
-  (prn "F - 'deref' can be chained"))
-
 ; array-len
-;? (prn "array-len")
+(prn "array-len")
 (reset)
 (= memory*.35 4)
 (if (~is 4 (array-len '((35 integer-boolean-pair-array))))
@@ -3467,16 +3473,17 @@
 ;? (quit)
 
 ; sizeof
-;? (prn "sizeof")
+(prn "sizeof")
 (reset)
+;? (set dump-trace*)
 ;? (prn 401)
-(if (~is 1 sizeof!integer)
+(if (~is 1 (sizeof '((_ integer))))
   (prn "F - 'sizeof' works on primitives"))
-(if (~is 1 sizeof!integer-address)
+(if (~is 1 (sizeof '((_ integer-address))))
   (prn "F - 'sizeof' works on addresses"))
-(if (~is 2 sizeof!integer-boolean-pair)
+(if (~is 2 (sizeof '((_ integer-boolean-pair))))
   (prn "F - 'sizeof' works on and-records"))
-(if (~is 3 sizeof!integer-point-pair)
+(if (~is 3 (sizeof '((_ integer-point-pair))))
   (prn "F - 'sizeof' works on and-records with and-record fields"))
 
 ;? (prn 410)
@@ -3521,7 +3528,7 @@
 ;? (quit)
 
 ; m
-;? (prn "m")
+(prn "m")
 (reset)
 (if (~is 4 (m '((4 literal))))
   (prn "F - 'm' avoids reading memory for literals"))
@@ -3551,7 +3558,7 @@
   (prn "F - 'm' supports indirect access to arrays"))
 
 ; setm
-;? (prn "setm")
+(prn "setm")
 (reset)
 (setm '((4 integer)) 34)
 (if (~is 34 memory*.4)
