@@ -1014,6 +1014,16 @@
           (assert (is 'make-br-fn _make-br-fn))
           (= function*.name (join body function*.name)))
 
+      ; and-record <type> [ <name:types> ]
+      and-record
+        (let (name (_make-br-fn fields))  rest
+          (assert (is 'make-br-fn _make-br-fn))
+          (let fields (map tokenize-arg fields)
+            (= type*.name (obj size len.fields
+                               and-record t
+                               elems (map cdar fields)
+                               fields (map caar fields)))))
+
       ; before <label> [ <instructions> ]
       ;
       ; multiple before directives => code in order
