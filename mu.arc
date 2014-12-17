@@ -76,14 +76,14 @@
 ; things that a future assembler will need separate memory for:
 ;   code; types; args channel
 (def clear ()
-  (= types* (table))
+  (= type* (table))
   (= memory* (table))
   (= function* (table))
   )
 (enq clear initialization-fns*)
 
 (on-init
-  (= types* (obj
+  (= type* (obj
               ; Each type must be scalar or array, sum or product or primitive
               type (obj size 1)  ; implicitly scalar and primitive
               type-address (obj size 1  address t  elem 'type)
@@ -303,7 +303,7 @@
   (cdr operand.0))
 
 (def typeinfo (operand)
-  (or (types* ty.operand.0)
+  (or (type* ty.operand.0)
       (err "unknown type @(tostring prn.operand)")))
 
 ; operand accessors
@@ -445,9 +445,9 @@
                     (new-string arg.0)
                     (let type (v arg.0)
                       (assert (iso '(literal) (ty arg.0)) "new: second arg @arg.0 must be literal")
-                      (if (no types*.type)  (err "no such type @type"))
+                      (if (no type*.type)  (err "no such type @type"))
                       ; todo: initialize memory. currently racket does it for us
-                      (if types*.type!array
+                      (if type*.type!array
                         (new-array type (m arg.1))
                         (new-scalar type))))
                 sizeof
@@ -616,11 +616,11 @@
         (do (assert (~isa val 'record) "setm: record of size 1 @(tostring prn.val)")
             (trace "setm" loc ": setting " addr " to " val)
             (= memory*.addr val))
-        (do (if ((types* typeof.loc) 'array)
+        (do (if ((type* typeof.loc) 'array)
               ; size check for arrays
               (when (~is n
                          (+ 1  ; array length
-                            (* rep.val.0 (sizeof ((types* typeof.loc) 'elem)))))
+                            (* rep.val.0 (sizeof ((type* typeof.loc) 'elem)))))
                 (die "writing invalid array @(tostring prn.val)"))
               ; size check for non-arrays
               (when (~is sizeof.loc n)
@@ -682,13 +682,13 @@
                   ty.x.0
                 :else  ; naked type
                   x)
-    (assert types*.type "sizeof: no such type @type")
-    (if (~or types*.type!and-record types*.type!array)
-          types*.type!size
-        types*.type!and-record
+    (assert type*.type "sizeof: no such type @type")
+    (if (~or type*.type!and-record type*.type!array)
+          type*.type!size
+        type*.type!and-record
           (sum idfn
             (accum yield
-              (each elem types*.type!elems
+              (each elem type*.type!elems
                 (yield sizeof.elem))))
         :else
           (err "sizeof can't handle @type (arrays require a specific variable)")))))
@@ -731,7 +731,7 @@
 (def new-array (type size)
 ;?   (tr "new array: @type @size")
   (ret result rep.routine*!alloc
-    (++ rep.routine*!alloc (+ 1 (* (sizeof types*.type!elem) size)))
+    (++ rep.routine*!alloc (+ 1 (* (sizeof type*.type!elem) size)))
     (= memory*.result size)))
 
 (def new-string (literal-string)
@@ -888,7 +888,7 @@
               (when (pos '(deref) (metadata args.0))
                 (trace "cn0" "field-access deref")
                 (assert basetype!address "@args.0 requests deref, but it's not an address")
-                (= basetype (types* basetype!elem)))
+                (= basetype (type* basetype!elem)))
               (when (isa field 'sym)
                 (assert (or (~location field) isa-field.field) "field @args.1 is also a variable")
                 (when (~location field)

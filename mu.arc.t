@@ -477,12 +477,12 @@
 ;
 ; Both operations require knowledge about the types being worked on, so all
 ; types used in mu programs are defined in a single global system-wide table
-; (see types* in mu.arc for the complete list of types; we'll add to it over
+; (see type* in mu.arc for the complete list of types; we'll add to it over
 ; time).
 
 ; first a sanity check that the table of types is consistent
 (reset)
-(each (typ typeinfo) types*
+(each (typ typeinfo) type*
   (when typeinfo!and-record
     (assert (is typeinfo!size (len typeinfo!elems)))
     (when typeinfo!fields
