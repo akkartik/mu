@@ -1003,7 +1003,7 @@
 (def add-code (forms)
   (each (op . rest)  forms
     (case op
-      ; syntax: function <name> [ <instructions> ]
+      ; function <name> [ <instructions> ]
       ; don't apply our lightweight tools just yet
       function!
         (let (name (_make-br-fn body))  rest
@@ -1014,7 +1014,7 @@
           (assert (is 'make-br-fn _make-br-fn))
           (= function*.name (join body function*.name)))
 
-      ; syntax: before <label> [ <instructions> ]
+      ; before <label> [ <instructions> ]
       ;
       ; multiple before directives => code in order
       before
@@ -1023,7 +1023,7 @@
           (or= before*.label (queue))
           (enq fragment before*.label))
 
-      ; syntax: after <label> [ <instructions> ]
+      ; after <label> [ <instructions> ]
       ;
       ; multiple after directives => code in *reverse* order
       ; (if initialization order in a function is A B, corresponding
