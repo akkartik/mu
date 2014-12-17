@@ -108,27 +108,27 @@
               integer-array-address-address (obj size 1  address t  elem 'integer-array-address)
               integer-address (obj size 1  address t  elem 'integer)  ; pointer to int
               integer-address-address (obj size 1  address t  elem 'integer-address)
-              ; records consist of a series of elems, corresponding to a list of types
-              integer-boolean-pair (obj size 2  record t  elems '(integer boolean)  fields '(int bool))
+              ; and-records consist of a series of elems, corresponding to a list of types
+              integer-boolean-pair (obj size 2  and-record t  elems '(integer boolean)  fields '(int bool))
               integer-boolean-pair-address (obj size 1  address t  elem 'integer-boolean-pair)
               integer-boolean-pair-array (obj array t  elem 'integer-boolean-pair)
               integer-boolean-pair-array-address (obj size 1  address t  elem 'integer-boolean-pair-array)
-              integer-integer-pair (obj size 2  record t  elems '(integer integer))
-              integer-point-pair (obj size 2  record t  elems '(integer integer-integer-pair))
+              integer-integer-pair (obj size 2  and-record t  elems '(integer integer))
+              integer-point-pair (obj size 2  and-record t  elems '(integer integer-integer-pair))
               integer-point-pair-address (obj size 1  address t  elem 'integer-point-pair)
               integer-point-pair-address-address (obj size 1  address t  elem 'integer-point-pair-address)
               ; tagged-values are the foundation of dynamic types
-              tagged-value (obj size 2  record t  elems '(type location)  fields '(type payload))
+              tagged-value (obj size 2  and-record t  elems '(type location)  fields '(type payload))
               tagged-value-address (obj size 1  address t  elem 'tagged-value)
               tagged-value-array (obj array t  elem 'tagged-value)
               tagged-value-array-address (obj size 1  address t  elem 'tagged-value-array)
               tagged-value-array-address-address (obj size 1  address t  elem 'tagged-value-array-address)
               ; heterogeneous lists
-              list (obj size 2  record t  elems '(tagged-value list-address)  fields '(car cdr))
+              list (obj size 2  and-record t  elems '(tagged-value list-address)  fields '(car cdr))
               list-address (obj size 1  address t  elem 'list)
               list-address-address (obj size 1  address t  elem 'list-address)
               ; parallel routines use channels to synchronize
-              channel (obj size 3  record t  elems '(integer integer tagged-value-array-address)  fields '(first-full first-free circular-buffer))
+              channel (obj size 3  and-record t  elems '(integer integer tagged-value-array-address)  fields '(first-full first-free circular-buffer))
               channel-address (obj size 1  address t  elem 'channel)
               ; editor
               line (obj array t  elem 'character)
@@ -400,7 +400,7 @@
                       (trace "jump" "jumping to " pc.routine*)
                       (continue)))
 
-                ; data management: scalars, arrays, records
+                ; data management: scalars, arrays, and-records (structs)
                 copy
                   (m arg.0)
                 get
@@ -683,9 +683,9 @@
                 :else  ; naked type
                   x)
     (assert types*.type "sizeof: no such type @type")
-    (if (~or types*.type!record types*.type!array)
+    (if (~or types*.type!and-record types*.type!array)
           types*.type!size
-        types*.type!record
+        types*.type!and-record
           (sum idfn
             (accum yield
               (each elem types*.type!elems
@@ -887,7 +887,7 @@
               ; todo: need to rename args.0 as well?
               (when (pos '(deref) (metadata args.0))
                 (trace "cn0" "field-access deref")
-                (assert basetype!address "@args.0 requests deref, but it's not an address of a record")
+                (assert basetype!address "@args.0 requests deref, but it's not an address")
                 (= basetype (types* basetype!elem)))
               (when (isa field 'sym)
                 (assert (or (~location field) isa-field.field) "field @args.1 is also a variable")
