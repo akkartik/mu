@@ -3322,7 +3322,7 @@
 ;; unit tests for various helpers
 
 ; tokenize-args
-(prn "tokenize-args")
+;? (prn "tokenize-args")
 (assert:iso '((a b) (c d))
             (tokenize-arg 'a:b/c:d))
 (assert:iso '((a b) (1 d))
@@ -3359,7 +3359,7 @@
                 })))
 
 ; absolutize
-(prn "absolutize")
+;? (prn "absolutize")
 (reset)
 (if (~iso '((4 integer)) (absolutize '((4 integer))))
   (prn "F - 'absolutize' works without routine"))
@@ -3376,7 +3376,7 @@
   (prn "F - 'absolutize' checks against default-scope bounds"))
 
 ; addr
-(prn "addr")
+;? (prn "addr")
 (reset)
 (= routine* nil)
 ;? (prn 111)
@@ -3426,7 +3426,7 @@
 ;? (quit)
 
 ; deref
-(prn "deref")
+;? (prn "deref")
 (reset)
 (= memory*.3 4)
 (if (~iso '((4 integer))
@@ -3446,7 +3446,7 @@
   (prn "F - 'deref' can be chained"))
 
 ; array-len
-(prn "array-len")
+;? (prn "array-len")
 (reset)
 (= memory*.35 4)
 (if (~is 4 (array-len '((35 integer-boolean-pair-array))))
@@ -3457,7 +3457,7 @@
 ;? (quit)
 
 ; sizeof
-(prn "sizeof")
+;? (prn "sizeof")
 (reset)
 ;? (prn 401)
 (if (~is 1 sizeof!integer)
@@ -3511,7 +3511,7 @@
 ;? (quit)
 
 ; m
-(prn "m")
+;? (prn "m")
 (reset)
 (if (~is 4 (m '((4 literal))))
   (prn "F - 'm' avoids reading memory for literals"))
@@ -3541,7 +3541,7 @@
   (prn "F - 'm' supports indirect access to arrays"))
 
 ; setm
-(prn "setm")
+;? (prn "setm")
 (reset)
 (setm '((4 integer)) 34)
 (if (~is 34 memory*.4)
