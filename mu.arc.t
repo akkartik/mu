@@ -470,9 +470,9 @@
 ;
 ; Until now we've dealt with scalar types like integers and booleans and
 ; addresses, where mu looks like other assembly languages. In addition, mu
-; provides first-class support for compound types: arrays and records.
+; provides first-class support for compound types: arrays and and-records.
 ;
-; 'get' accesses fields in records
+; 'get' accesses fields in and-records
 ; 'index' accesses indices in arrays
 ;
 ; Both operations require knowledge about the types being worked on, so all
@@ -483,7 +483,7 @@
 ; first a sanity check that the table of types is consistent
 (reset)
 (each (typ typeinfo) types*
-  (when typeinfo!record
+  (when typeinfo!and-record
     (assert (is typeinfo!size (len typeinfo!elems)))
     (when typeinfo!fields
       (assert (is typeinfo!size (len typeinfo!fields))))))
@@ -501,7 +501,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 nil  4 34))
-  (prn "F - 'get' accesses fields of records"))
+  (prn "F - 'get' accesses fields of and-records"))
 ;? (quit)
 
 (reset)
@@ -518,7 +518,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 nil  3 1  4 nil  5 34))
-  (prn "F - 'get' accesses fields of record address"))
+  (prn "F - 'get' accesses fields of and-record address"))
 
 (reset)
 (new-trace "get-indirect-repeated")
@@ -562,7 +562,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 t  3 2))
-  (prn "F - 'get-address' returns address of fields of records"))
+  (prn "F - 'get-address' returns address of fields of and-records"))
 
 (reset)
 (new-trace "get-address-indirect")
@@ -576,7 +576,7 @@
 (run 'main)
 ;? (prn memory*)
 (if (~iso memory* (obj 1 34  2 t  3 1  4 2))
-  (prn "F - 'get-address' accesses fields of record address"))
+  (prn "F - 'get-address' accesses fields of and-record address"))
 
 (reset)
 (new-trace "index-literal")
@@ -857,8 +857,8 @@
   (prn "F - 'new-tagged-value' is the converse of 'maybe-coerce'"))
 ;? (quit)
 
-; Now that we can record types for values we can construct a dynamically typed
-; list.
+; Now that we can package values together with their types, we can construct a
+; dynamically typed list.
 
 (reset)
 (new-trace "list")
@@ -3465,9 +3465,9 @@
 (if (~is 1 sizeof!integer-address)
   (prn "F - 'sizeof' works on addresses"))
 (if (~is 2 sizeof!integer-boolean-pair)
-  (prn "F - 'sizeof' works on records"))
+  (prn "F - 'sizeof' works on and-records"))
 (if (~is 3 sizeof!integer-point-pair)
-  (prn "F - 'sizeof' works on records with record fields"))
+  (prn "F - 'sizeof' works on and-records with and-record fields"))
 
 ;? (prn 410)
 (if (~is 1 (sizeof '((34 integer))))
@@ -3475,11 +3475,11 @@
 (if (~is 1 (sizeof '((34 integer-address))))
   (prn "F - 'sizeof' works on address operands"))
 (if (~is 2 (sizeof '((34 integer-boolean-pair))))
-  (prn "F - 'sizeof' works on record operands"))
+  (prn "F - 'sizeof' works on and-record operands"))
 (if (~is 3 (sizeof '((34 integer-point-pair))))
-  (prn "F - 'sizeof' works on record operands with record fields"))
+  (prn "F - 'sizeof' works on and-record operands with and-record fields"))
 (if (~is 2 (sizeof '((34 integer-boolean-pair-address) (deref))))
-  (prn "F - 'sizeof' works on pointers to records"))
+  (prn "F - 'sizeof' works on pointers to and-records"))
 (= memory*.35 4)  ; size of array
 (= memory*.34 35)
 ;? (= dump-trace* (obj whitelist '("sizeof" "array-len")))
