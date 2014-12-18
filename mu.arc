@@ -717,7 +717,7 @@
   (when acons.x  ; proper lists only
     (if (testify.f car.x)
       cdr.x
-      (cons car.x (drop-one f x)))))
+      (cons car.x (drop-one f cdr.x)))))
 
 ; memory allocation
 

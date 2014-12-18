@@ -3410,6 +3410,12 @@
                          (deref)
                          (deref))))
   (prn "F - 'deref' can be chained"))
+(if (~iso '((5 integer) (foo))
+          (deref:deref '((3 integer-address-address)
+                         (deref)
+                         (foo)
+                         (deref))))
+  (prn "F - 'deref' skips junk"))
 
 ; addr
 (prn "addr")
