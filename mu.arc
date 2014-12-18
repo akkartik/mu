@@ -928,7 +928,7 @@
              (~location v.arg)
              (isa v.arg 'sym)
              (~in v.arg 'nil 'default-scope)
-             (~assoc 'global metadata.arg))
+             (~pos '(global) metadata.arg))
     (= (location v.arg) idx)))
 
 ;; literate tangling system for reordering code
