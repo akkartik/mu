@@ -22,7 +22,7 @@
   (= traces* (queue)))
 
 (def new-trace (filename)
-  (prn "new-trace " filename)
+  (prn "== @filename")
 ;?   )
   (= curr-trace-file* filename))
 
