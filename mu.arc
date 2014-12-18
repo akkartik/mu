@@ -315,6 +315,10 @@
 (def not-raw-string (operand)
   (~isa operand 'string))
 
+(def address? (operand)
+  (or (is ty.operand.0 'location)
+      typeinfo.operand!address))
+
 ($:require "charterm/main.rkt")
 
 ; run instructions from 'routine*' for 'time-slice'
@@ -456,7 +460,7 @@
                   (sizeof `((_ ,(m arg.0))))
                 length
                   (let base arg.0
-                    (if (or typeinfo.base!array typeinfo.base!address)
+                    (if (or typeinfo.base!array address?.base)
                       array-len.base
                       -1))
 
@@ -709,7 +713,7 @@
 
 (def deref (operand)
   (assert (pos '(deref) metadata.operand))
-  (assert typeinfo.operand!address)
+  (assert address?.operand)
   (cons `(,(memory* v.operand) ,@typeinfo.operand!elem)
         (drop-one '(deref) metadata.operand)))
 
