@@ -97,6 +97,9 @@
               byte-address (obj  size 1  address t  elem '(byte))
               string (obj array t  elem '(byte))  ; inspired by Go
               string-address (obj size 1  address t  elem '(string))
+              string-address-address (obj size 1  address t  elem '(string-address))
+              string-address-array (obj array t  elem '(string-address))
+              string-address-array-address (obj size 1  address t  elem '(string-address-array))
               character (obj size 1)  ; int32 like a Go rune
               character-address (obj size 1  address t  elem '(character))
               ; isolating function calls
@@ -1471,6 +1474,75 @@
     (loop)
   }
   (reply idx:integer))
+
+(init-fn split  ; string, character -> string-address-array-address
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  (s:string-address <- next-input)
+  (delim:character <- next-input)  ; todo: unicode chars
+  ; empty string? return empty array
+  (len:integer <- length s:string-address/deref)
+  { begin
+    (empty?:boolean <- equal len:integer 0:literal)
+    (break-unless empty?:boolean)
+    (result:string-address-array-address <- new string-address-array:literal 0:literal)
+    (reply result:string-address-array-address)
+  }
+  ; count #pieces we need room for
+  (count:integer <- copy 1:literal)  ; n delimiters = n+1 pieces
+  (idx:integer <- copy 0:literal)
+  { begin
+    (idx:integer <- find-next s:string-address delim:character idx:integer)
+    (done?:boolean <- greater-or-equal idx:integer len:integer)
+    (break-if done?:boolean)
+    (idx:integer <- add idx:integer 1:literal)
+    (count:integer <- add count:integer 1:literal)
+    (loop)
+  }
+  ; allocate space
+;?   (print-primitive (("alloc: " literal)))
+;?   (print-primitive count:integer)
+;?   (print-primitive (("\n" literal)))
+  (result:string-address-array-address <- new string-address-array:literal count:integer)
+  ; repeatedly copy slices (start..end) until delimiter into result[curr-result]
+  (curr-result:integer <- copy 0:literal)
+  (start:integer <- copy 0:literal)
+  { begin
+    ; while next delim exists
+    (done?:boolean <- greater-or-equal start:integer len:integer)
+    (break-if done?:boolean)
+    (end:integer <- find-next s:string-address delim:character start:integer)
+;?     (print-primitive (("i: " literal)))
+;?     (print-primitive start:integer)
+;?     (print-primitive (("-" literal)))
+;?     (print-primitive end:integer)
+;?     (print-primitive ((" => " literal)))
+;?     (print-primitive curr-result:integer)
+;?     (print-primitive (("\n" literal)))
+    ; compute length of slice
+    (slice-len:integer <- subtract end:integer start:integer)
+    ; allocate result[curr-result]
+    (dest:string-address-address <- index-address result:string-address-array-address/deref curr-result:integer)
+    (dest:string-address-address/deref <- new string:literal slice-len:integer)
+    ; copy start..end into result[curr-result]
+    (src-idx:integer <- copy start:integer)
+    (dest-idx:integer <- copy 0:literal)
+    { begin
+      (end-copy?:boolean <- greater-or-equal src-idx:integer end:integer)
+      (break-if end-copy?:boolean)
+      (src:character <- index s:string-address/deref src-idx:integer)
+      (tmp:character-address <- index-address dest:string-address-address/deref/deref dest-idx:integer)
+      (tmp:character-address/deref <- copy src:character)
+      (src-idx:integer <- add src-idx:integer 1:literal)
+      (dest-idx:integer <- add dest-idx:integer 1:literal)
+      (loop)
+    }
+    ; slide over to next slice
+    (start:integer <- add end:integer 1:literal)
+    (curr-result:integer <- add curr-result:integer 1:literal)
+    (loop)
+  }
+  (reply result:string-address-array-address)
+)
 
 )  ; section 100 for system software
 

@@ -3409,6 +3409,92 @@
 (if (~is memory*.2 4)
   (prn "F - 'find-next' finds second of multiple options"))
 
+(reset)
+(new-trace "string-split")
+(add-code '((function main [
+              (1:string-address <- new "a/b")
+              (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
+             ])))
+;? (set dump-trace*)
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(let base memory*.2
+;?   (prn base " " memory*.base)
+  (if (or (~is memory*.base 2)
+;?           (do1 nil prn.111)
+          (~memory-contains-array (memory* (+ base 1)) "a")
+;?           (do1 nil prn.111)
+          (~memory-contains-array (memory* (+ base 2)) "b"))
+    (prn "F - 'split' cuts string at delimiter")))
+
+(reset)
+(new-trace "string-split2")
+(add-code '((function main [
+              (1:string-address <- new "a/b/c")
+              (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
+             ])))
+;? (set dump-trace*)
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(let base memory*.2
+;?   (prn base " " memory*.base)
+  (if (or (~is memory*.base 3)
+;?           (do1 nil prn.111)
+          (~memory-contains-array (memory* (+ base 1)) "a")
+;?           (do1 nil prn.111)
+          (~memory-contains-array (memory* (+ base 2)) "b")
+;?           (do1 nil prn.111)
+          (~memory-contains-array (memory* (+ base 3)) "c"))
+    (prn "F - 'split' cuts string at two delimiters")))
+
+(reset)
+(new-trace "string-split-missing")
+(add-code '((function main [
+              (1:string-address <- new "abc")
+              (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
+             ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(let base memory*.2
+  (if (or (~is memory*.base 1)
+          (~memory-contains-array (memory* (+ base 1)) "abc"))
+    (prn "F - 'split' handles missing delimiter")))
+
+(reset)
+(new-trace "string-split-empty")
+(add-code '((function main [
+              (1:string-address <- new "")
+              (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
+             ])))
+;? (= dump-trace* (obj whitelist '("run")))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(let base memory*.2
+;?   (prn base " " memory*.base)
+  (if (~is memory*.base 0)
+    (prn "F - 'split' handles empty string")))
+
+(reset)
+(new-trace "string-split-empty-piece")
+(add-code '((function main [
+              (1:string-address <- new "a/b//c")
+              (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
+             ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(let base memory*.2
+  (if (or (~is memory*.base 4)
+          (~memory-contains-array (memory* (+ base 1)) "a")
+          (~memory-contains-array (memory* (+ base 2)) "b")
+          (~memory-contains-array (memory* (+ base 3)) "")
+          (~memory-contains-array (memory* (+ base 4)) "c"))
+    (prn "F - 'split' cuts string at two delimiters")))
+
 )  ; section 100 for string utilities
 
 (reset)
