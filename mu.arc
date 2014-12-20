@@ -1456,6 +1456,22 @@
   }
   (reply result:string-address))
 
+(init-fn find-next  ; string, character, index -> next index
+  (s:string-address <- next-input)
+  (needle:character <- next-input)  ; todo: unicode chars
+  (idx:integer <- next-input)
+  (len:integer <- length s:string-address/deref)
+  { begin
+    (eof?:boolean <- greater-or-equal idx:integer len:integer)
+    (break-if eof?:boolean)
+    (curr:byte <- index s:string-address/deref idx:integer)
+    (found?:boolean <- equal curr:byte needle:character)
+    (break-if found?:boolean)
+    (idx:integer <- add idx:integer 1:literal)
+    (loop)
+  }
+  (reply idx:integer))
+
 )  ; section 100 for system software
 
 ;; load all provided files and start at 'main'

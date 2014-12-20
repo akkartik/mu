@@ -3321,6 +3321,94 @@
 (if (~memory-contains-array memory*.5 "hello, abc, def, and ghi!")
   (prn "F - 'interpolate' splices in any number of strings"))
 
+(reset)
+(new-trace "string-find-next")
+(add-code '((function main [
+              (1:string-address <- new "a/b")
+              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+             ])))
+(run 'main)
+(if (~is memory*.2 1)
+  (prn "F - 'find-next' finds first location of a character"))
+
+(reset)
+(new-trace "string-find-next-empty")
+(add-code '((function main [
+              (1:string-address <- new "")
+              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+             ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(if (~is memory*.2 0)
+  (prn "F - 'find-next' finds first location of a character"))
+
+(reset)
+(new-trace "string-find-next-initial")
+(add-code '((function main [
+              (1:string-address <- new "/abc")
+              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+             ])))
+(run 'main)
+(if (~is memory*.2 0)
+  (prn "F - 'find-next' handles prefix match"))
+
+(reset)
+(new-trace "string-find-next-final")
+(add-code '((function main [
+              (1:string-address <- new "abc/")
+              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+             ])))
+(run 'main)
+;? (prn memory*.2)
+(if (~is memory*.2 3)
+  (prn "F - 'find-next' handles suffix match"))
+
+(reset)
+(new-trace "string-find-next-missing")
+(add-code '((function main [
+              (1:string-address <- new "abc")
+              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+             ])))
+(run 'main)
+;? (prn memory*.2)
+(if (~is memory*.2 3)
+  (prn "F - 'find-next' handles no match"))
+
+(reset)
+(new-trace "string-find-next-invalid-index")
+(add-code '((function main [
+              (1:string-address <- new "abc")
+              (2:integer <- find-next 1:string-address ((#\/ literal)) 4:literal)
+             ])))
+;? (= dump-trace* (obj whitelist '("run")))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+;? (prn memory*.2)
+(if (~is memory*.2 4)
+  (prn "F - 'find-next' skips invalid index (past end of string)"))
+
+(reset)
+(new-trace "string-find-next-first")
+(add-code '((function main [
+              (1:string-address <- new "ab/c/")
+              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+             ])))
+(run 'main)
+(if (~is memory*.2 2)
+  (prn "F - 'find-next' finds first of multiple options"))
+
+(reset)
+(new-trace "string-find-next-second")
+(add-code '((function main [
+              (1:string-address <- new "ab/c/")
+              (2:integer <- find-next 1:string-address ((#\/ literal)) 3:literal)
+             ])))
+(run 'main)
+(if (~is memory*.2 4)
+  (prn "F - 'find-next' finds second of multiple options"))
+
 )  ; section 100 for string utilities
 
 (reset)
