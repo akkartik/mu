@@ -175,6 +175,10 @@
 
 (mac caller-args (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'args))
+(mac caller-operands (routine)  ; assignable
+  `((((rep ,routine) 'call-stack) 0) 'caller-operands))
+(mac caller-results (routine)  ; assignable
+  `((((rep ,routine) 'call-stack) 0) 'caller-results))
 
 (mac results (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'results))
@@ -552,6 +556,11 @@
                         (if (len> caller-args.routine* idx)
                           (list caller-args.routine*.idx t)
                           (list nil nil))))
+                ; type and otype won't always easily compile. be careful.
+                type
+                  (ty (caller-operands.routine* (v arg.0)))
+                otype
+                  (ty (caller-results.routine* (v arg.0)))
                 prepare-reply
                   (prepare-reply arg)
                 reply
@@ -574,11 +583,19 @@
                         (continue)))
                 ; else try to call as a user-defined function
                   (do (if function*.op
-                        (let callee-args (accum yield
-                                           (each a arg
-                                             (yield (m a))))
+                        (with (callee-args (accum yield
+                                             (each a arg
+                                               (yield (m a))))
+                               callee-operands (accum yield
+                                                 (each a arg
+                                                   (yield a)))
+                               callee-results (accum yield
+                                                (each a oarg
+                                                  (yield a))))
                           (push-stack routine* op)
-                          (= caller-args.routine* callee-args))
+                          (= caller-args.routine* callee-args)
+                          (= caller-operands.routine* callee-operands)
+                          (= caller-results.routine* callee-results))
                         (err "no such op @op"))
                       (continue))
                 )
