@@ -2025,8 +2025,6 @@
   (prn "F - an example function that checks that its oarg is an integer"))
 ;? (quit)
 
-; todo - test that reply increments pc for caller frame after popping current frame
-
 (reset)
 (new-trace "dispatch-multiple-clauses")
 ;? (set dump-trace*)
@@ -2105,6 +2103,100 @@
 (run 'main)
 ;? (prn memory*)
 (if (~and (is memory*.3 t) (is memory*.12 37))
+  (prn "F - different calls can exercise different clauses of the same function"))
+
+; We can also dispatch based on the type of the operands or results at the
+; caller.
+
+(reset)
+(new-trace "dispatch-otype")
+(add-code
+  '((function test1 [
+      (4:type <- otype 0:offset)
+      { begin
+        (5:boolean <- equal 4:type integer:literal)
+        (break-unless 5:boolean)
+        (6:integer <- next-input)
+        (7:integer <- next-input)
+        (8:integer <- add 6:integer 7:integer)
+      }
+      (reply 8:integer)
+     ])
+    (function main [
+      (1:integer <- test1 1:literal 3:literal)
+     ])))
+(run 'main)
+;? (prn memory*)
+(if (~iso memory*.1 4)
+  (prn "F - an example function that checks that its oarg is an integer"))
+;? (quit)
+
+; todo - test that reply increments pc for caller frame after popping current frame
+
+(reset)
+(new-trace "dispatch-otype-multiple-clauses")
+;? (set dump-trace*)
+(add-code
+  '((function test1 [
+      (4:type <- otype 0:offset)
+      { begin
+        ; integer needed? add args
+        (5:boolean <- equal 4:type integer:literal)
+        (break-unless 5:boolean)
+        (6:integer <- next-input)
+        (7:integer <- next-input)
+        (8:integer <- add 6:integer 7:integer)
+        (reply 8:integer)
+      }
+      { begin
+        ; boolean needed? 'or' args
+        (5:boolean <- equal 4:type boolean:literal)
+        (break-unless 5:boolean 4:offset)
+        (6:boolean <- next-input)
+        (7:boolean <- next-input)
+        (8:boolean <- or 6:boolean 7:boolean)
+        (reply 8:boolean)
+      }])
+    (function main [
+      (1:boolean <- test1 t:literal t:literal)
+     ])))
+;? (each stmt function*!test1
+;?   (prn "  " stmt))
+(run 'main)
+;? (wipe dump-trace*)
+;? (prn memory*)
+(if (~is memory*.1 t)
+  (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs"))
+;? (quit)
+
+(reset)
+(new-trace "dispatch-otype-multiple-calls")
+(add-code
+  '((function test1 [
+      (4:type <- otype 0:offset)
+      { begin
+        (5:boolean <- equal 4:type integer:literal)
+        (break-unless 5:boolean)
+        (6:integer <- next-input)
+        (7:integer <- next-input)
+        (8:integer <- add 6:integer 7:integer)
+        (reply 8:integer)
+      }
+      { begin
+        (5:boolean <- equal 4:type boolean:literal)
+        (break-unless 5:boolean)
+        (6:boolean <- next-input)
+        (7:boolean <- next-input)
+        (8:boolean <- or 6:boolean 7:boolean)
+        (reply 8:boolean)
+      }])
+    (function main [
+      (1:boolean <- test1 t:literal t:literal)
+      (2:integer <- test1 3:literal 4:literal)
+     ])))
+(run 'main)
+;? (prn memory*)
+(if (~and (is memory*.1 t) (is memory*.2 7))
   (prn "F - different calls can exercise different clauses of the same function"))
 
 )  ; section 100
