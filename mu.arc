@@ -323,6 +323,8 @@
       typeinfo.operand!address))
 
 ($:require "charterm/main.rkt")
+($:require graphics/graphics)
+(= Viewport nil)
 
 ; run instructions from 'routine*' for 'time-slice'
 (def run-for-time-slice (time-slice)
@@ -517,6 +519,21 @@
                   (do1 nil (if (no ($.current-charterm)) ($.open-charterm)))
                 console-off
                   (do1 nil (if ($.current-charterm) ($.close-charterm)))
+
+                ; graphics
+                graphics-on
+                  (do1 nil
+                    ($.open-graphics)
+                    (= Viewport ($.open-viewport "practice" 300 300)))
+                graphics-off
+                  (do1 nil
+                    ($.close-graphics)
+                    (= Viewport nil))
+                mouse-position
+                  (aif ($.ready-mouse-click Viewport)
+                    (let posn ($.mouse-click-posn it)
+                      (list (annotate 'record (list ($.posn-x posn) ($.posn-y posn))) t))
+                    (list nil nil))
 
                 ; user-defined functions
                 next-input
