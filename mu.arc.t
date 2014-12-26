@@ -1044,6 +1044,24 @@
 ;? (quit)
 
 (reset)
+(new-trace "reply-increments-caller-pc")
+(add-code
+  '((function callee [
+      (reply)
+     ])
+    (function caller [
+      (1:integer <- copy 0:literal)
+      (2:integer <- copy 0:literal)
+     ])))
+(freeze-functions)
+(= routine* (make-routine 'caller))
+(assert (is 0 pc.routine*))
+(push-stack routine* 'callee)  ; pretend call was at first instruction of caller
+(run-for-time-slice 1)
+(if (~is 1 pc.routine*)
+  (prn "F - 'reply' should increment pc in caller (to move past calling instruction)"))
+
+(reset)
 (new-trace "new-fn-arg-sequential")
 (add-code
   '((function test1 [
@@ -2130,8 +2148,6 @@
 (if (~iso memory*.1 4)
   (prn "F - an example function that checks that its oarg is an integer"))
 ;? (quit)
-
-; todo - test that reply increments pc for caller frame after popping current frame
 
 (reset)
 (new-trace "dispatch-otype-multiple-clauses")
