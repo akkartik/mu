@@ -335,6 +335,7 @@
   (point return
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
       (if (empty body.routine*) (err "@stack.routine*.0!fn-name not defined"))
+      ; falling out of end of function = implicit reply
       (while (>= pc.routine* (len body.routine*))
         (pop-stack routine*)
         (if empty.routine* (return ninstrs))
