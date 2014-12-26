@@ -3605,8 +3605,10 @@
 (prn "== tokenize-args")
 (assert:iso '((a b) (c d))
             (tokenize-arg 'a:b/c:d))
+; numbers are not symbols
 (assert:iso '((a b) (1 d))
             (tokenize-arg 'a:b/1:d))
+; special symbols are skipped
 (assert:iso '<-
             (tokenize-arg '<-))
 (assert:iso '_
