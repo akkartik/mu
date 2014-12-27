@@ -2002,6 +2002,33 @@
   (prn "F - 'len' accesses length of array address"))
 ;? (quit)
 
+(reset)
+(new-trace "default-scope-shared")
+(add-code
+  '((function init-counter [
+      (default-scope:scope-address <- new scope:literal 30:literal)
+      (1:integer <- copy 3:literal)  ; initialize to 3
+      (reply default-scope:scope-address)
+     ])
+    (function increment-counter [
+      (default-scope:scope-address <- next-input)
+      (1:integer <- add 1:integer 1:literal)  ; increment
+      (reply 1:integer)
+     ])
+    (function main [
+      (1:scope-address <- init-counter)
+      (2:integer <- increment-counter 1:scope-address)
+      (3:integer <- increment-counter 1:scope-address)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+;? (prn memory*)
+(if (or (~is memory*.2 4)
+        (~is memory*.3 5))
+  (prn "F - multiple calls to a function can share locals"))
+;? (quit)
+
 )  ; section 20
 
 (section 100
