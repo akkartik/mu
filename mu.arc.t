@@ -1676,14 +1676,14 @@
   (prn "convert-names passes through raw strings (just a convenience arg for 'new')"))
 
 (reset)
-(new-trace "convert-names-global")
+(new-trace "convert-names-raw")
 (= traces* (queue))
 (if (~iso (convert-names
             '((((x integer)) <- ((copy)) ((0 literal)))
-              (((y integer) (global)) <- ((copy)) ((0 literal)))))
+              (((y integer) (raw)) <- ((copy)) ((0 literal)))))
           '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((y integer) (global)) <- ((copy)) ((0 literal)))))
-  (prn "F - convert-names never renames global operands"))
+            (((y integer) (raw)) <- ((copy)) ((0 literal)))))
+  (prn "F - convert-names never renames raw operands"))
 
 (reset)
 (new-trace "convert-names-literal")
@@ -1894,7 +1894,7 @@
       (1:integer-boolean-pair-address <- new integer-boolean-pair:literal)
       (2:integer-address <- get-address 1:integer-boolean-pair-address/deref 0:offset)
       (2:integer-address/deref <- copy 34:literal)
-      (3:integer/global <- get 1:integer-boolean-pair-address/deref 0:offset)
+      (3:integer/raw <- get 1:integer-boolean-pair-address/deref 0:offset)
      ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (run 'main)
@@ -1914,7 +1914,7 @@
       (1:integer-array-address <- new integer-array:literal 4:literal)
       (2:integer-address <- index-address 1:integer-array-address/deref 2:offset)
       (2:integer-address/deref <- copy 34:literal)
-      (3:integer/global <- index 1:integer-array-address/deref 2:offset)
+      (3:integer/raw <- index 1:integer-array-address/deref 2:offset)
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "array-info")))
 (run 'main)
@@ -1944,7 +1944,7 @@
 (add-code
   '((function main [
       (default-scope:scope-address <- new scope:literal 2:literal)
-      (1:integer/global <- copy 23:literal)
+      (1:integer/raw <- copy 23:literal)
      ])))
 (let routine make-routine!main
   (enq routine running-routines*)
@@ -1954,7 +1954,7 @@
 ;?     (prn memory*)
     (if (~and (is 23 memory*.1)
               (~is 23 (memory* (+ before 1))))
-      (prn "F - default-scope skipped for locations with metadata 'global'"))))
+      (prn "F - default-scope skipped for locations with metadata 'raw'"))))
 ;? (quit)
 
 (reset)
@@ -2921,7 +2921,7 @@
       (default-scope:scope-address <- new scope:literal 30:literal)
       (chan:channel-address <- new-channel 3:literal)
       (fork f2:fn chan:channel-address)
-      (1:tagged-value/global <- read chan:channel-address)  ; output
+      (1:tagged-value/raw <- read chan:channel-address)  ; output
      ])
     (function f2 [
       (default-scope:scope-address <- new scope:literal 30:literal)
@@ -3693,7 +3693,7 @@
   (prn "F - 'absolutize' works without default-scope"))
 (= rep.routine*!call-stack.0!default-scope 10)
 (= memory*.10 5)  ; bounds check for default-scope
-(if (~iso '((14 integer) (global))
+(if (~iso '((14 integer) (raw))
           (absolutize '((4 integer))))
   (prn "F - 'absolutize' works with default-scope"))
 (absolutize '((5 integer)))

@@ -426,7 +426,7 @@
                                     (map (fn(x) (sizeof `((_ ,@x))))
                                          (firstn idx typeinfo.operand!elems)))
                           ,@typeinfo.operand!elems.idx)
-                         (global))))
+                         (raw))))
                 get-address
                   (with (operand  (canonize arg.0)
                          idx  (v arg.1))
@@ -445,7 +445,7 @@
                               1  ; for array size
                               (* idx (sizeof `((_ ,@elemtype)))))
                            ,@elemtype)
-                         (global))))
+                         (raw))))
                 index-address
                   (withs (operand  (canonize arg.0)
                           elemtype  typeinfo.operand!elem
@@ -736,7 +736,7 @@
         operand
       (is '_ v.operand)
         operand
-      (pos '(global) metadata.operand)
+      (pos '(raw) metadata.operand)
         operand
       :else
         (iflet base rep.routine*!call-stack.0!default-scope
@@ -744,7 +744,7 @@
           (if (< v.operand memory*.base)
             `((,(+ v.operand base) ,@(cdr operand.0))
               ,@metadata.operand
-              (global))
+              (raw))
             (die "no room for var @operand in routine of size @memory*.base"))
 ;?                 )
           operand)))
@@ -970,7 +970,7 @@
              (~location v.arg)
              (isa v.arg 'sym)
              (~in v.arg 'nil 'default-scope)
-             (~pos '(global) metadata.arg))
+             (~pos '(raw) metadata.arg))
     (= (location v.arg) idx)))
 
 ;; literate tangling system for reordering code
