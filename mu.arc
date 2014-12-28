@@ -103,8 +103,8 @@
               character (obj size 1)  ; int32 like a Go rune
               character-address (obj size 1  address t  elem '(character))
               ; isolating function calls
-              scope  (obj array t  elem '(location))  ; by convention index 0 points to outer scope
-              scope-address  (obj size 1  address t  elem '(scope))
+              scope (obj array t  elem '(location))  ; by convention index 0 points to outer scope
+              scope-address (obj size 1  address t  elem '(scope))
               ; arrays consist of an integer length followed by the right number of elems
               integer-array (obj array t  elem '(integer))
               integer-array-address (obj size 1  address t  elem '(integer-array))
