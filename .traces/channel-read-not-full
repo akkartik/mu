@@ -1,13 +1,13 @@
 schedule: main
 run: -- nil
-run: 1 main 0: (((1 channel-address)) <- ((new-channel)) ((3 literal)))
+run: 1 main 0: (((1 channel-address)) <- ((init-channel)) ((3 literal)))
 run: -- nil
-run: 2 new-channel 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
+run: 2 init-channel 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 1000 => ((default-scope scope-address))
 sizeof: ((default-scope scope-address))
 run: -- ((1000 30))
-run: 3 new-channel 1: (((1 channel-address)) <- ((new)) ((channel literal)))
+run: 3 init-channel 1: (((1 channel-address)) <- ((new)) ((channel literal)))
 sizeof: ((_ channel))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
@@ -17,39 +17,39 @@ setm: ((1 channel-address)) <= 1031
 setm: size of ((1 channel-address)) is 1
 setm: ((1 channel-address)): setting 1001 to 1031
 run: -- ((1000 30) (1001 1031))
-run: 4 new-channel 2: (((2 integer-address)) <- ((get-address)) ((1 channel-address) (deref)) ((0 offset)))
+run: 4 init-channel 2: (((2 integer-address)) <- ((get-address)) ((1 channel-address) (deref)) ((0 offset)))
 run: 1031 => ((2 integer-address))
 setm: ((2 integer-address)) <= 1031
 setm: size of ((2 integer-address)) is 1
 setm: ((2 integer-address)): setting 1002 to 1031
 run: -- ((1000 30) (1001 1031) (1002 1031))
-run: 5 new-channel 3: (((2 integer-address) (deref)) <- ((copy)) ((0 literal)))
+run: 5 init-channel 3: (((2 integer-address) (deref)) <- ((copy)) ((0 literal)))
 run: 0 => ((2 integer-address) (deref))
 setm: ((2 integer-address) (deref)) <= 0
 setm: size of ((2 integer-address) (deref)) is 1
 setm: ((2 integer-address) (deref)): setting 1031 to 0
 run: -- ((1000 30) (1001 1031) (1002 1031) (1031 0))
-run: 6 new-channel 4: (((3 integer-address)) <- ((get-address)) ((1 channel-address) (deref)) ((1 offset)))
+run: 6 init-channel 4: (((3 integer-address)) <- ((get-address)) ((1 channel-address) (deref)) ((1 offset)))
 sizeof: ((_ integer))
 run: 1032 => ((3 integer-address))
 setm: ((3 integer-address)) <= 1032
 setm: size of ((3 integer-address)) is 1
 setm: ((3 integer-address)): setting 1003 to 1032
 run: -- ((1000 30) (1001 1031) (1002 1031) (1003 1032) (1031 0))
-run: 7 new-channel 5: (((3 integer-address) (deref)) <- ((copy)) ((0 literal)))
+run: 7 init-channel 5: (((3 integer-address) (deref)) <- ((copy)) ((0 literal)))
 run: 0 => ((3 integer-address) (deref))
 setm: ((3 integer-address) (deref)) <= 0
 setm: size of ((3 integer-address) (deref)) is 1
 setm: ((3 integer-address) (deref)): setting 1032 to 0
 run: -- ((1000 30) (1001 1031) (1002 1031) (1003 1032) (1031 0) (1032 0))
-run: 8 new-channel 6: (((4 integer)) <- ((next-input)))
+run: 8 init-channel 6: (((4 integer)) <- ((next-input)))
 arg: nil 0 (3)
 run: 3 => ((4 integer))
 setm: ((4 integer)) <= 3
 setm: size of ((4 integer)) is 1
 setm: ((4 integer)): setting 1004 to 3
 run: -- ((1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 3) (1031 0) (1032 0))
-run: 9 new-channel 7: (((4 integer)) <- ((add)) ((4 integer)) ((1 literal)))
+run: 9 init-channel 7: (((4 integer)) <- ((add)) ((4 integer)) ((1 literal)))
 m: ((4 integer))
 sizeof: ((4 integer))
 add: 3 1
@@ -60,7 +60,7 @@ setm: ((4 integer)) <= 4
 setm: size of ((4 integer)) is 1
 setm: ((4 integer)): setting 1004 to 4
 run: -- ((1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1031 0) (1032 0))
-run: 10 new-channel 8: (((5 tagged-value-array-address-address)) <- ((get-address)) ((1 channel-address) (deref)) ((2 offset)))
+run: 10 init-channel 8: (((5 tagged-value-array-address-address)) <- ((get-address)) ((1 channel-address) (deref)) ((2 offset)))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
 run: 1033 => ((5 tagged-value-array-address-address))
@@ -68,7 +68,7 @@ setm: ((5 tagged-value-array-address-address)) <= 1033
 setm: size of ((5 tagged-value-array-address-address)) is 1
 setm: ((5 tagged-value-array-address-address)): setting 1005 to 1033
 run: -- ((1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0))
-run: 11 new-channel 9: (((5 tagged-value-array-address-address) (deref)) <- ((new)) ((tagged-value-array literal)) ((4 integer)))
+run: 11 init-channel 9: (((5 tagged-value-array-address-address) (deref)) <- ((new)) ((tagged-value-array literal)) ((4 integer)))
 m: ((4 integer))
 sizeof: ((4 integer))
 sizeof: ((_ tagged-value))
@@ -79,7 +79,7 @@ setm: ((5 tagged-value-array-address-address) (deref)) <= 1034
 setm: size of ((5 tagged-value-array-address-address) (deref)) is 1
 setm: ((5 tagged-value-array-address-address) (deref)): setting 1033 to 1034
 run: -- ((1000 30) (1001 1031) (1002 1031) (1003 1032) (1004 4) (1005 1033) (1031 0) (1032 0) (1033 1034) (1034 4))
-run: 12 new-channel 10: (((reply)) ((1 channel-address)))
+run: 12 init-channel 10: (((reply)) ((1 channel-address)))
 m: ((1 channel-address))
 sizeof: ((1 channel-address))
 reply: (((1 channel-address))) (((1 channel-address)))

@@ -1,20 +1,20 @@
 schedule: main
 run: -- nil
-run: 1 main 0: (((1 tagged-value-address)) <- ((new-tagged-value)) ((integer literal)) ((34 literal)))
+run: 1 main 0: (((1 tagged-value-address)) <- ((init-tagged-value)) ((integer literal)) ((34 literal)))
 run: -- nil
-run: 2 new-tagged-value 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
+run: 2 init-tagged-value 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 1000 => ((default-scope scope-address))
 sizeof: ((default-scope scope-address))
 run: -- ((1000 30))
-run: 3 new-tagged-value 1: (((1 type)) <- ((next-input)))
+run: 3 init-tagged-value 1: (((1 type)) <- ((next-input)))
 arg: nil 0 (integer 34)
 run: integer => ((1 type))
 setm: ((1 type)) <= integer
 setm: size of ((1 type)) is 1
 setm: ((1 type)): setting 1001 to integer
 run: -- ((1000 30) (1001 integer))
-run: 4 new-tagged-value 2: (((2 integer)) <- ((sizeof)) ((1 type)))
+run: 4 init-tagged-value 2: (((2 integer)) <- ((sizeof)) ((1 type)))
 m: ((1 type))
 sizeof: ((1 type))
 sizeof: ((_ integer))
@@ -23,7 +23,7 @@ setm: ((2 integer)) <= 1
 setm: size of ((2 integer)) is 1
 setm: ((2 integer)): setting 1002 to 1
 run: -- ((1000 30) (1001 integer) (1002 1))
-run: 5 new-tagged-value 3: (((3 boolean)) <- ((equal)) ((2 integer)) ((1 literal)))
+run: 5 init-tagged-value 3: (((3 boolean)) <- ((equal)) ((2 integer)) ((1 literal)))
 m: ((2 integer))
 sizeof: ((2 integer))
 run: t => ((3 boolean))
@@ -31,11 +31,11 @@ setm: ((3 boolean)) <= t
 setm: size of ((3 boolean)) is 1
 setm: ((3 boolean)): setting 1003 to t
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t))
-run: 6 new-tagged-value 4: (((assert)) ((3 boolean)))
+run: 6 init-tagged-value 4: (((assert)) ((3 boolean)))
 m: ((3 boolean))
 sizeof: ((3 boolean))
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t))
-run: 7 new-tagged-value 5: (((4 tagged-value-address)) <- ((new)) ((tagged-value literal)))
+run: 7 init-tagged-value 5: (((4 tagged-value-address)) <- ((new)) ((tagged-value literal)))
 sizeof: ((_ tagged-value))
 sizeof: ((_ type))
 sizeof: ((_ location))
@@ -44,13 +44,13 @@ setm: ((4 tagged-value-address)) <= 1031
 setm: size of ((4 tagged-value-address)) is 1
 setm: ((4 tagged-value-address)): setting 1004 to 1031
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031))
-run: 8 new-tagged-value 6: (((5 location)) <- ((get-address)) ((4 tagged-value-address) (deref)) ((0 offset)))
+run: 8 init-tagged-value 6: (((5 location)) <- ((get-address)) ((4 tagged-value-address) (deref)) ((0 offset)))
 run: 1031 => ((5 location))
 setm: ((5 location)) <= 1031
 setm: size of ((5 location)) is 1
 setm: ((5 location)): setting 1005 to 1031
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031))
-run: 9 new-tagged-value 7: (((5 location) (deref)) <- ((copy)) ((1 type)))
+run: 9 init-tagged-value 7: (((5 location) (deref)) <- ((copy)) ((1 type)))
 m: ((1 type))
 sizeof: ((1 type))
 run: integer => ((5 location) (deref))
@@ -58,21 +58,21 @@ setm: ((5 location) (deref)) <= integer
 setm: size of ((5 location) (deref)) is 1
 setm: ((5 location) (deref)): setting 1031 to integer
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1031 integer))
-run: 10 new-tagged-value 8: (((6 location)) <- ((get-address)) ((4 tagged-value-address) (deref)) ((1 offset)))
+run: 10 init-tagged-value 8: (((6 location)) <- ((get-address)) ((4 tagged-value-address) (deref)) ((1 offset)))
 sizeof: ((_ type))
 run: 1032 => ((6 location))
 setm: ((6 location)) <= 1032
 setm: size of ((6 location)) is 1
 setm: ((6 location)): setting 1006 to 1032
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer))
-run: 11 new-tagged-value 9: (((6 location) (deref)) <- ((next-input)))
+run: 11 init-tagged-value 9: (((6 location) (deref)) <- ((next-input)))
 arg: nil 1 (integer 34)
 run: 34 => ((6 location) (deref))
 setm: ((6 location) (deref)) <= 34
 setm: size of ((6 location) (deref)) is 1
 setm: ((6 location) (deref)): setting 1032 to 34
 run: -- ((1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34))
-run: 12 new-tagged-value 10: (((reply)) ((4 tagged-value-address)))
+run: 12 init-tagged-value 10: (((reply)) ((4 tagged-value-address)))
 m: ((4 tagged-value-address))
 sizeof: ((4 tagged-value-address))
 reply: (((4 tagged-value-address))) (((1 tagged-value-address)))
@@ -81,21 +81,21 @@ setm: ((1 tagged-value-address)) <= 1031
 setm: size of ((1 tagged-value-address)) is 1
 setm: ((1 tagged-value-address)): setting 1 to 1031
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34))
-run: 13 main 1: (((2 tagged-value-address)) <- ((new-tagged-value)) ((integer literal)) ((3 literal)))
+run: 13 main 1: (((2 tagged-value-address)) <- ((init-tagged-value)) ((integer literal)) ((3 literal)))
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34))
-run: 14 new-tagged-value 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
+run: 14 init-tagged-value 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 1033 => ((default-scope scope-address))
 sizeof: ((default-scope scope-address))
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30))
-run: 15 new-tagged-value 1: (((1 type)) <- ((next-input)))
+run: 15 init-tagged-value 1: (((1 type)) <- ((next-input)))
 arg: nil 0 (integer 3)
 run: integer => ((1 type))
 setm: ((1 type)) <= integer
 setm: size of ((1 type)) is 1
 setm: ((1 type)): setting 1034 to integer
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer))
-run: 16 new-tagged-value 2: (((2 integer)) <- ((sizeof)) ((1 type)))
+run: 16 init-tagged-value 2: (((2 integer)) <- ((sizeof)) ((1 type)))
 m: ((1 type))
 sizeof: ((1 type))
 sizeof: ((_ integer))
@@ -104,7 +104,7 @@ setm: ((2 integer)) <= 1
 setm: size of ((2 integer)) is 1
 setm: ((2 integer)): setting 1035 to 1
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1))
-run: 17 new-tagged-value 3: (((3 boolean)) <- ((equal)) ((2 integer)) ((1 literal)))
+run: 17 init-tagged-value 3: (((3 boolean)) <- ((equal)) ((2 integer)) ((1 literal)))
 m: ((2 integer))
 sizeof: ((2 integer))
 run: t => ((3 boolean))
@@ -112,11 +112,11 @@ setm: ((3 boolean)) <= t
 setm: size of ((3 boolean)) is 1
 setm: ((3 boolean)): setting 1036 to t
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t))
-run: 18 new-tagged-value 4: (((assert)) ((3 boolean)))
+run: 18 init-tagged-value 4: (((assert)) ((3 boolean)))
 m: ((3 boolean))
 sizeof: ((3 boolean))
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t))
-run: 19 new-tagged-value 5: (((4 tagged-value-address)) <- ((new)) ((tagged-value literal)))
+run: 19 init-tagged-value 5: (((4 tagged-value-address)) <- ((new)) ((tagged-value literal)))
 sizeof: ((_ tagged-value))
 sizeof: ((_ type))
 sizeof: ((_ location))
@@ -125,13 +125,13 @@ setm: ((4 tagged-value-address)) <= 1064
 setm: size of ((4 tagged-value-address)) is 1
 setm: ((4 tagged-value-address)): setting 1037 to 1064
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064))
-run: 20 new-tagged-value 6: (((5 location)) <- ((get-address)) ((4 tagged-value-address) (deref)) ((0 offset)))
+run: 20 init-tagged-value 6: (((5 location)) <- ((get-address)) ((4 tagged-value-address) (deref)) ((0 offset)))
 run: 1064 => ((5 location))
 setm: ((5 location)) <= 1064
 setm: size of ((5 location)) is 1
 setm: ((5 location)): setting 1038 to 1064
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064))
-run: 21 new-tagged-value 7: (((5 location) (deref)) <- ((copy)) ((1 type)))
+run: 21 init-tagged-value 7: (((5 location) (deref)) <- ((copy)) ((1 type)))
 m: ((1 type))
 sizeof: ((1 type))
 run: integer => ((5 location) (deref))
@@ -139,21 +139,21 @@ setm: ((5 location) (deref)) <= integer
 setm: size of ((5 location) (deref)) is 1
 setm: ((5 location) (deref)): setting 1064 to integer
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1064 integer))
-run: 22 new-tagged-value 8: (((6 location)) <- ((get-address)) ((4 tagged-value-address) (deref)) ((1 offset)))
+run: 22 init-tagged-value 8: (((6 location)) <- ((get-address)) ((4 tagged-value-address) (deref)) ((1 offset)))
 sizeof: ((_ type))
 run: 1065 => ((6 location))
 setm: ((6 location)) <= 1065
 setm: size of ((6 location)) is 1
 setm: ((6 location)): setting 1039 to 1065
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer))
-run: 23 new-tagged-value 9: (((6 location) (deref)) <- ((next-input)))
+run: 23 init-tagged-value 9: (((6 location) (deref)) <- ((next-input)))
 arg: nil 1 (integer 3)
 run: 3 => ((6 location) (deref))
 setm: ((6 location) (deref)) <= 3
 setm: size of ((6 location) (deref)) is 1
 setm: ((6 location) (deref)): setting 1065 to 3
 run: -- ((1 1031) (1000 30) (1001 integer) (1002 1) (1003 t) (1004 1031) (1005 1031) (1006 1032) (1031 integer) (1032 34) (1033 30) (1034 integer) (1035 1) (1036 t) (1037 1064) (1038 1064) (1039 1065) (1064 integer) (1065 3))
-run: 24 new-tagged-value 10: (((reply)) ((4 tagged-value-address)))
+run: 24 init-tagged-value 10: (((reply)) ((4 tagged-value-address)))
 m: ((4 tagged-value-address))
 sizeof: ((4 tagged-value-address))
 reply: (((4 tagged-value-address))) (((2 tagged-value-address)))

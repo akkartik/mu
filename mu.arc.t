@@ -843,18 +843,18 @@
   (prn "F - 'save-type' saves the type of a value at runtime, turning it into a tagged-value"))
 
 (reset)
-(new-trace "new-tagged-value")
+(new-trace "init-tagged-value")
 (add-code
   '((function main [
       (1:integer-address <- copy 34:literal)  ; pointer to nowhere
-      (2:tagged-value-address <- new-tagged-value integer-address:literal 1:integer-address)
+      (2:tagged-value-address <- init-tagged-value integer-address:literal 1:integer-address)
       (3:integer-address 4:boolean <- maybe-coerce 2:tagged-value-address/deref integer-address:literal)
      ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
 ;? (prn memory*)
 (if (~memory-contains 3 '(34 t))
-  (prn "F - 'new-tagged-value' is the converse of 'maybe-coerce'"))
+  (prn "F - 'init-tagged-value' is the converse of 'maybe-coerce'"))
 ;? (quit)
 
 ; Now that we can package values together with their types, we can construct a
@@ -911,14 +911,14 @@
 (if (~is memory*.10 memory*.6)
   (prn "F - 'list-next can move a list pointer to the next node"))
 
-; 'new-list' takes a variable number of args and constructs a list containing
+; 'init-list' takes a variable number of args and constructs a list containing
 ; them.
 
 (reset)
-(new-trace "new-list")
+(new-trace "init-list")
 (add-code
   '((function main [
-      (1:integer <- new-list 3:literal 4:literal 5:literal)
+      (1:integer <- init-list 3:literal 4:literal 5:literal)
      ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
@@ -936,7 +936,7 @@
                   (or (~is memory*.third 'integer)
                       (~is (memory* (+ third 1)) 5)
                       (~is (memory* (+ third 2) nil)))))))
-    (prn "F - 'new-list' can construct a list of integers")))
+    (prn "F - 'init-list' can construct a list of integers")))
 
 )  ; section 100
 
@@ -2060,8 +2060,8 @@
       (reply nil:literal)
      ])
     (function main [
-      (1:tagged-value-address <- new-tagged-value integer:literal 34:literal)
-      (2:tagged-value-address <- new-tagged-value integer:literal 3:literal)
+      (1:tagged-value-address <- init-tagged-value integer:literal 34:literal)
+      (2:tagged-value-address <- init-tagged-value integer:literal 3:literal)
       (3:integer <- test1 1:tagged-value-address 2:tagged-value-address)
      ])))
 (run 'main)
@@ -2098,8 +2098,8 @@
       (reply nil:literal)
      ])
     (function main [
-      (1:tagged-value-address <- new-tagged-value boolean:literal t:literal)
-      (2:tagged-value-address <- new-tagged-value boolean:literal nil:literal)
+      (1:tagged-value-address <- init-tagged-value boolean:literal t:literal)
+      (2:tagged-value-address <- init-tagged-value boolean:literal nil:literal)
       (3:boolean <- test1 1:tagged-value-address 2:tagged-value-address)
      ])))
 ;? (each stmt function*!test-fn
@@ -2138,11 +2138,11 @@
       (reply nil:literal)
      ])
     (function main [
-      (1:tagged-value-address <- new-tagged-value boolean:literal t:literal)
-      (2:tagged-value-address <- new-tagged-value boolean:literal nil:literal)
+      (1:tagged-value-address <- init-tagged-value boolean:literal t:literal)
+      (2:tagged-value-address <- init-tagged-value boolean:literal nil:literal)
       (3:boolean <- test1 1:tagged-value-address 2:tagged-value-address)
-      (10:tagged-value-address <- new-tagged-value integer:literal 34:literal)
-      (11:tagged-value-address <- new-tagged-value integer:literal 3:literal)
+      (10:tagged-value-address <- init-tagged-value integer:literal 34:literal)
+      (11:tagged-value-address <- init-tagged-value integer:literal 3:literal)
       (12:integer <- test1 10:tagged-value-address 11:tagged-value-address)
      ])))
 (run 'main)
@@ -2653,7 +2653,7 @@
 (new-trace "channel-new")
 (add-code
   '((function main [
-      (1:channel-address <- new-channel 3:literal)
+      (1:channel-address <- init-channel 3:literal)
       (2:integer <- get 1:channel-address/deref first-full:offset)
       (3:integer <- get 1:channel-address/deref first-free:offset)
      ])))
@@ -2662,13 +2662,13 @@
 ;? (prn memory*)
 (if (or (~is 0 memory*.2)
         (~is 0 memory*.3))
-  (prn "F - 'new-channel' initializes 'first-full and 'first-free to 0"))
+  (prn "F - 'init-channel' initializes 'first-full and 'first-free to 0"))
 
 (reset)
 (new-trace "channel-write")
 (add-code
   '((function main [
-      (1:channel-address <- new-channel 3:literal)
+      (1:channel-address <- init-channel 3:literal)
       (2:integer-address <- new integer:literal)
       (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
@@ -2690,7 +2690,7 @@
 (new-trace "channel-read")
 (add-code
   '((function main [
-      (1:channel-address <- new-channel 3:literal)
+      (1:channel-address <- init-channel 3:literal)
       (2:integer-address <- new integer:literal)
       (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
@@ -2715,7 +2715,7 @@
 (add-code
   '((function main [
       ; channel with 1 slot
-      (1:channel-address <- new-channel 1:literal)
+      (1:channel-address <- init-channel 1:literal)
       ; write a value
       (2:integer-address <- new integer:literal)
       (2:integer-address/deref <- copy 34:literal)
@@ -2742,7 +2742,7 @@
 (add-code
   '((function main [
       ; channel with 1 slot
-      (1:channel-address <- new-channel 1:literal)
+      (1:channel-address <- init-channel 1:literal)
       ; write a value
       (2:integer-address <- new integer:literal)
       (2:integer-address/deref <- copy 34:literal)
@@ -2770,7 +2770,7 @@
 (new-trace "channel-new-empty-not-full")
 (add-code
   '((function main [
-      (1:channel-address <- new-channel 3:literal)
+      (1:channel-address <- init-channel 3:literal)
       (2:boolean <- empty? 1:channel-address/deref)
       (3:boolean <- full? 1:channel-address/deref)
      ])))
@@ -2785,7 +2785,7 @@
 (new-trace "channel-write-not-empty")
 (add-code
   '((function main [
-      (1:channel-address <- new-channel 3:literal)
+      (1:channel-address <- init-channel 3:literal)
       (2:integer-address <- new integer:literal)
       (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
@@ -2804,7 +2804,7 @@
 (new-trace "channel-write-full")
 (add-code
   '((function main [
-      (1:channel-address <- new-channel 1:literal)
+      (1:channel-address <- init-channel 1:literal)
       (2:integer-address <- new integer:literal)
       (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
@@ -2823,7 +2823,7 @@
 (new-trace "channel-read-not-full")
 (add-code
   '((function main [
-      (1:channel-address <- new-channel 3:literal)
+      (1:channel-address <- init-channel 3:literal)
       (2:integer-address <- new integer:literal)
       (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
@@ -2844,7 +2844,7 @@
 (new-trace "channel-read-empty")
 (add-code
   '((function main [
-      (1:channel-address <- new-channel 3:literal)
+      (1:channel-address <- init-channel 3:literal)
       (2:integer-address <- new integer:literal)
       (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
@@ -2867,7 +2867,7 @@
 (new-trace "channel-read-block")
 (add-code
   '((function main [
-      (1:channel-address <- new-channel 3:literal)
+      (1:channel-address <- init-channel 3:literal)
       ; channel is empty, but receives a read
       (2:tagged-value 1:channel-address/deref <- read 1:channel-address)
      ])))
@@ -2890,7 +2890,7 @@
 (new-trace "channel-write-block")
 (add-code
   '((function main [
-      (1:channel-address <- new-channel 1:literal)
+      (1:channel-address <- init-channel 1:literal)
       (2:integer-address <- new integer:literal)
       (2:integer-address/deref <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer-address)
@@ -2919,7 +2919,7 @@
 (add-code
   '((function f1 [
       (default-scope:scope-address <- new scope:literal 30:literal)
-      (chan:channel-address <- new-channel 3:literal)
+      (chan:channel-address <- init-channel 3:literal)
       (fork f2:fn chan:channel-address)
       (1:tagged-value/raw <- read chan:channel-address)  ; output
      ])
