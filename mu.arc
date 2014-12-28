@@ -134,7 +134,10 @@
               list-address-address (obj size 1  address t  elem '(list-address))
               ; parallel routines use channels to synchronize
               channel (obj size 3  and-record t  elems '((integer) (integer) (tagged-value-array-address))  fields '(first-full first-free circular-buffer))
+              ; be careful of accidental copies to channels
               channel-address (obj size 1  address t  elem '(channel))
+              channel-address-array (obj array t  elem '(channel-address))
+              channel-address-array-address (obj size 1  address t  elem '(channel-address-array))
               ; editor
               line (obj array t  elem '(character))
               line-address (obj size 1  address t  elem '(line))
@@ -235,7 +238,8 @@
 ;
 ; responsibilities:
 ;   add routine* to either running-routines* or sleeping-routines* or completed-routines*
-;   wake up any necessary sleeping routines (either by time or on a location)
+;   wake up any necessary sleeping routines (which might be waiting for a
+;     particular time or for a particular memory location to change)
 ;   detect deadlock: kill all sleeping routines when none can be woken
 (def update-scheduler-state ()
 ;?   (trace "schedule" curr-cycle*)
@@ -487,11 +491,12 @@
                 run
                   (run (v arg.0))
                 fork
-                  (let routine (apply make-routine (v car.arg) (map m cdr.arg))
-;?                     (tr "before: " rep.routine*!alloc)
+                  ; args: fn channels globals
+                  (let routine  (apply make-routine (m arg.0) (map m (nthcdr 3 arg)))
                     (= rep.routine!alloc rep.routine*!alloc)
-                    (++ rep.routine*!alloc 1000)
-;?                     (tr "after: " rep.routine*!alloc " " rep.routine!alloc)
+                    (++ rep.routine*!alloc 1000)  ; todo: allow routines to expand past initial allocation, or to spawn multiple routines at once
+                    (= rep.routine!globals (when (len> arg 1) (m arg.1)))
+                    (= rep.routine!channels (when (len> arg 2) (m arg.2)))
                     (enq routine running-routines*))
                 assert
                   (unless (m arg.0)

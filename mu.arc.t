@@ -2581,7 +2581,7 @@
 (new-trace "fork-with-args")
 (add-code
   '((function f1 [
-      (fork f2:fn 4:literal)
+      (fork f2:fn nil:literal nil:literal 4:literal)
      ])
     (function f2 [
       (2:integer <- next-input)
@@ -2596,7 +2596,7 @@
   '((function f1 [
       (default-scope:scope-address <- new scope:literal 5:literal)
       (x:integer <- copy 4:literal)
-      (fork f2:fn x:integer)
+      (fork f2:fn nil:literal nil:literal x:integer)
       (x:integer <- copy 0:literal)  ; should be ignored
      ])
     (function f2 [
@@ -2605,6 +2605,23 @@
 (run 'f1)
 (if (~iso memory*.2 4)
   (prn "F - fork passes args by value"))
+
+(reset)
+(new-trace "fork-global")
+(add-code
+  '((function f1 [
+      (1:integer/raw <- copy 2:integer/space:global)
+     ])
+    (function main [
+      (default-scope:scope-address <- new scope:literal 5:literal)
+      (2:integer <- copy 4:literal)
+      (fork f1:fn default-scope:scope-address)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error (prn "error - " it)))
+(if (~iso memory*.1 4)
+  (prn "F - fork can take a space of global variables to access"))
 
 ; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
@@ -2920,7 +2937,7 @@
   '((function f1 [
       (default-scope:scope-address <- new scope:literal 30:literal)
       (chan:channel-address <- init-channel 3:literal)
-      (fork f2:fn chan:channel-address)
+      (fork f2:fn nil:literal nil:literal chan:channel-address)
       (1:tagged-value/raw <- read chan:channel-address)  ; output
      ])
     (function f2 [
