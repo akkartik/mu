@@ -96,6 +96,7 @@
               byte (obj size 1)
               byte-address (obj  size 1  address t  elem '(byte))
               string (obj array t  elem '(byte))  ; inspired by Go
+              ; an address contains the location of a specific type
               string-address (obj size 1  address t  elem '(string))
               string-address-address (obj size 1  address t  elem '(string-address))
               string-address-array (obj array t  elem '(string-address))
@@ -105,13 +106,14 @@
               ; isolating function calls
               scope (obj array t  elem '(location))  ; by convention index 0 points to outer scope
               scope-address (obj size 1  address t  elem '(scope))
-              ; arrays consist of an integer length followed by the right number of elems
+              ; arrays consist of an integer length followed by that many
+              ; elements, all of the same type
               integer-array (obj array t  elem '(integer))
               integer-array-address (obj size 1  address t  elem '(integer-array))
               integer-array-address-address (obj size 1  address t  elem '(integer-array-address))
               integer-address (obj size 1  address t  elem '(integer))  ; pointer to int
               integer-address-address (obj size 1  address t  elem '(integer-address))
-              ; and-records consist of a series of elems, corresponding to a list of types
+              ; and-records consist of a multiple fields of different types
               integer-boolean-pair (obj size 2  and-record t  elems '((integer) (boolean))  fields '(int bool))
               integer-boolean-pair-address (obj size 1  address t  elem '(integer-boolean-pair))
               integer-boolean-pair-array (obj array t  elem '(integer-boolean-pair))
