@@ -311,6 +311,9 @@
 (def ty (operand)
   (cdr operand.0))
 
+(def literal? (operand)
+  (in ty.operand.0 'literal 'offset 'fn))
+
 (def typeinfo (operand)
   (or (type* ty.operand.0)
       (err "unknown type @(tostring prn.operand)")))
@@ -630,7 +633,7 @@
 
 (def m (loc)  ; read memory, respecting metadata
   (point return
-    (if (in ty.loc.0 'literal 'offset)
+    (when (literal? loc)
       (return v.loc))
     (when (is v.loc 'default-scope)
       (return rep.routine*!call-stack.0!default-scope))
@@ -971,7 +974,7 @@
 (def maybe-add (arg location idx)
   (trace "maybe-add" arg)
   (when (and nondummy.arg
-             (~in ty.arg.0 'literal 'offset 'fn)
+             (~literal? arg)
              (~location v.arg)
              (isa v.arg 'sym)
              (~in v.arg 'nil 'default-scope)
