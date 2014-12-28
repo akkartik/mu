@@ -3683,6 +3683,16 @@
                   (a:b <- op c:d e:f)
                 })))
 
+; space
+(prn "== space")
+(reset)
+(if (~iso 0 (space '((4 integer))))
+  (prn "F - 'space' is 0 by default"))
+(if (~iso 1 (space '((4 integer) (space 1))))
+  (prn "F - 'space' picks up space when available"))
+(if (~iso 'global (space '((4 integer) (space global))))
+  (prn "F - 'space' understands routine-global space"))
+
 ; absolutize
 (prn "== absolutize")
 (reset)
@@ -3701,6 +3711,12 @@
   (prn "F - 'absolutize' checks against default-scope bounds"))
 (if (~iso '((_ integer)) (absolutize '((_ integer))))
   (prn "F - 'absolutize' passes dummy args right through"))
+
+(= memory*.20 5)  ; pretend array
+(= rep.routine*!globals 20)  ; provide it to routine global
+(if (~iso '((21 integer) (raw))
+          (absolutize '((1 integer) (space global))))
+  (prn "F - 'absolutize' handles variables in the global space"))
 
 ; deref
 (prn "== deref")
@@ -3873,6 +3889,13 @@
   (prn "F - 'm' supports access to arrays"))
 (if (~iso (annotate 'record '(2 35 36)) (m '((3 integer-array-address) (deref))))
   (prn "F - 'm' supports indirect access to arrays"))
+
+(= routine* make-routine!foo)
+(= memory*.10 5)  ; fake array
+(= memory*.11 34)
+(= rep.routine*!globals 10)
+(if (~iso 34 (m '((1 integer) (space global))))
+  (prn "F - 'm' supports access to per-routine globals"))
 
 ; setm
 (prn "== setm")
