@@ -682,14 +682,7 @@
     ty.loc.0))
 
 (def addr (operand)
-;?   (prn 211 " " operand)
-  (let loc absolutize.operand
-;?     (prn 212 " " loc)
-    (while (pos '(deref) metadata.loc)
-;?       (prn 213 " " loc)
-      (zap deref loc))
-;?     (prn 214 " " loc)
-    v.loc))
+  (v canonize.operand))
 
 (def addrs (n sz)
   (accum yield
