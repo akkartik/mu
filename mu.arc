@@ -493,10 +493,9 @@
                     (++ rep.routine*!alloc 1000)
 ;?                     (tr "after: " rep.routine*!alloc " " rep.routine!alloc)
                     (enq routine running-routines*))
-                ; todo: errors should stall a process and let its parent
-                ; inspect it
                 assert
-                  (assert (m arg.0))
+                  (unless (m arg.0)
+                    (die (v arg.1)))
                 sleep
                   (let operand arg.0
 ;?                     (tr "sleep " operand)
