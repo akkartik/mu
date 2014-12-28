@@ -1189,7 +1189,7 @@
   (xvalue:location <- get x:tagged-value-address/deref 1:offset)
   (reply xvalue:location match?:boolean))
 
-(init-fn new-tagged-value
+(init-fn init-tagged-value
   (default-scope:scope-address <- new scope:literal 30:literal)
   ; assert sizeof:arg.0 == 1
   (xtype:type <- next-input)
@@ -1218,11 +1218,11 @@
   (result:tagged-value-address <- get-address base:list-address/deref car:offset)
   (reply result:tagged-value-address))
 
-(init-fn new-list
+(init-fn init-list
   (default-scope:scope-address <- new scope:literal 30:literal)
   ; new-list = curr = new list
-  (new-list-result:list-address <- new list:literal)
-  (curr:list-address <- copy new-list-result:list-address)
+  (result:list-address <- new list:literal)
+  (curr:list-address <- copy result:list-address)
   { begin
     ; while read curr-value
     (curr-value:integer exists?:boolean <- next-input)
@@ -1238,10 +1238,10 @@
     (loop)
   }
   ; return new-list.cdr
-  (new-list-result:list-address <- list-next new-list-result:list-address)  ; memory leak
-  (reply new-list-result:list-address))
+  (result:list-address <- list-next result:list-address)  ; memory leak
+  (reply result:list-address))
 
-(init-fn new-channel
+(init-fn init-channel
   (default-scope:scope-address <- new scope:literal 30:literal)
   ; result = new channel
   (result:channel-address <- new channel:literal)
