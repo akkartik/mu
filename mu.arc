@@ -742,7 +742,7 @@
         operand
       (pos '(raw) metadata.operand)
         operand
-      (is 'global (alref operand 'space))
+      (is 'global space.operand)
         (aif rep.routine*!globals
           `((,(+ it 1 v.operand) ,@(cdr operand.0))
             ,@(rem [caris _ 'space] metadata.operand)
