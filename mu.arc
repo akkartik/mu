@@ -154,6 +154,8 @@
   (do1
     (annotate 'routine (obj alloc Memory-allocated-until call-stack (list
         (obj fn-name fn-name  pc 0  args args  caller-arg-idx 0))))
+    ; todo: allow routines to expand past initial allocation
+    ; todo: do memory management in mu
     (++ Memory-allocated-until 1000)))
 
 (defextend empty (x)  (isa x 'routine)
@@ -496,8 +498,6 @@
                 fork
                   ; args: fn globals-table args ...
                   (let routine  (apply make-routine (m arg.0) (map m (nthcdr 2 arg)))
-                    (= rep.routine!alloc rep.routine*!alloc)
-                    (++ rep.routine*!alloc 1000)  ; todo: allow routines to expand past initial allocation, or to spawn multiple routines at once
                     (= rep.routine!globals (when (len> arg 1) (m arg.1)))
                     (enq routine running-routines*))
                 assert
