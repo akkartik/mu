@@ -15,7 +15,7 @@
     ; channels take
     (n2:integer-address <- new integer:literal)
     (n2:integer-address/deref <- copy n:integer)
-    (n3:tagged-value-address <- new-tagged-value integer-address:literal n2:integer-address)
+    (n3:tagged-value-address <- init-tagged-value integer-address:literal n2:integer-address)
     (chan:channel-address/deref <- write chan:channel-address n3:tagged-value-address/deref)
     (n:integer <- add n:integer 1:literal)
     (loop)
@@ -40,9 +40,9 @@
 ])
 
 (function main [
-  (chan:channel-address <- new-channel 3:literal)
+  (chan:channel-address <- init-channel 3:literal)
   ; create two background 'routines' that communicate by a channel
-  (fork consumer:fn chan:channel-address)
-  (fork producer:fn chan:channel-address)
+  (fork consumer:fn nil:literal chan:channel-address)
+  (fork producer:fn nil:literal chan:channel-address)
   (sleep 2000:literal)  ; wait for forked routines to effect the transfer
 ])
