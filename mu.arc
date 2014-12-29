@@ -146,10 +146,15 @@
 
 ;; managing concurrent routines
 
+(on-init
+  (= Memory-allocated-until 1000))
+
 ; routine = runtime state for a serial thread of execution
 (def make-routine (fn-name . args)
-  (annotate 'routine (obj alloc 1000  call-stack (list
-      (obj fn-name fn-name  pc 0  args args  caller-arg-idx 0)))))
+  (do1
+    (annotate 'routine (obj alloc Memory-allocated-until call-stack (list
+        (obj fn-name fn-name  pc 0  args args  caller-arg-idx 0))))
+    (++ Memory-allocated-until 1000)))
 
 (defextend empty (x)  (isa x 'routine)
   (no rep.x!call-stack))
