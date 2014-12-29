@@ -2581,7 +2581,7 @@
 (new-trace "fork-with-args")
 (add-code
   '((function f1 [
-      (fork f2:fn nil:literal nil:literal 4:literal)
+      (fork f2:fn nil:literal 4:literal)
      ])
     (function f2 [
       (2:integer <- next-input)
@@ -2596,7 +2596,7 @@
   '((function f1 [
       (default-scope:scope-address <- new scope:literal 5:literal)
       (x:integer <- copy 4:literal)
-      (fork f2:fn nil:literal nil:literal x:integer)
+      (fork f2:fn nil:literal x:integer)
       (x:integer <- copy 0:literal)  ; should be ignored
      ])
     (function f2 [
@@ -2934,13 +2934,13 @@
 (reset)
 (new-trace "channel-handoff")
 (add-code
-  '((function f1 [
+  '((function consumer [
       (default-scope:scope-address <- new scope:literal 30:literal)
-      (chan:channel-address <- init-channel 3:literal)
-      (fork f2:fn nil:literal nil:literal chan:channel-address)
-      (1:tagged-value/raw <- read chan:channel-address)  ; output
+      (chan:channel-address <- init-channel 3:literal)  ; create a channel
+      (fork producer:fn nil:literal chan:channel-address)  ; fork a routine to produce a value in it
+      (1:tagged-value/raw <- read chan:channel-address)  ; wait for input on channel
      ])
-    (function f2 [
+    (function producer [
       (default-scope:scope-address <- new scope:literal 30:literal)
       (n:integer-address <- new integer:literal)
       (n:integer-address/deref <- copy 24:literal)
@@ -2951,13 +2951,35 @@
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
 ;? (= dump-trace* (obj whitelist '("-")))
-(run 'f1)
+(run 'consumer)
 ;? (prn memory*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 (if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
   (prn "F - channels are meant to be shared between routines"))
 ;? (quit)
+
+(reset)
+(new-trace "channel-handoff-routine")
+(add-code
+  '((function consumer [
+      (default-scope:scope-address <- new scope:literal 30:literal)
+      (1:channel-address <- init-channel 3:literal)  ; create a channel
+      (fork producer:fn default-scope:address)  ; pass it as a global to another routine
+      (1:tagged-value/raw <- read 1:channel-address)  ; wait for input on channel
+     ])
+    (function producer [
+      (default-scope:scope-address <- new scope:literal 30:literal)
+      (n:integer-address <- new integer:literal)
+      (n:integer-address/deref <- copy 24:literal)
+      (x:tagged-value <- save-type n:integer-address)
+      (1:channel-address/space:global/deref <- write 1:channel-address/space:global x:tagged-value)
+     ])))
+(run 'consumer)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
+  (prn "F - channels are meant to be shared between routines"))
 
 )  ; section 100
 
