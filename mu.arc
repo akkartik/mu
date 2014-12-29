@@ -744,7 +744,7 @@
         operand
       (is 'global (alref operand 'space))
         (aif rep.routine*!globals
-          `((,(+ v.operand it) ,@(cdr operand.0))
+          `((,(+ it 1 v.operand) ,@(cdr operand.0))
             ,@(rem [caris _ 'space] metadata.operand)
             (raw))
           (die "routine has no globals: @operand"))
@@ -752,7 +752,7 @@
         (iflet base rep.routine*!call-stack.0!default-scope
 ;?                (do (prn 313 " " operand " " base)
           (if (< v.operand memory*.base)
-            `((,(+ v.operand base) ,@(cdr operand.0))
+            `((,(+ base 1 v.operand) ,@(cdr operand.0))
               ,@metadata.operand
               (raw))
             (die "no room for var @operand in routine of size @memory*.base"))
