@@ -136,8 +136,6 @@
               channel (obj size 3  and-record t  elems '((integer) (integer) (tagged-value-array-address))  fields '(first-full first-free circular-buffer))
               ; be careful of accidental copies to channels
               channel-address (obj size 1  address t  elem '(channel))
-              channel-address-array (obj array t  elem '(channel-address))
-              channel-address-array-address (obj size 1  address t  elem '(channel-address-array))
               ; editor
               line (obj array t  elem '(character))
               line-address (obj size 1  address t  elem '(line))
@@ -491,12 +489,11 @@
                 run
                   (run (v arg.0))
                 fork
-                  ; args: fn channels globals
-                  (let routine  (apply make-routine (m arg.0) (map m (nthcdr 3 arg)))
+                  ; args: fn globals-table args ...
+                  (let routine  (apply make-routine (m arg.0) (map m (nthcdr 2 arg)))
                     (= rep.routine!alloc rep.routine*!alloc)
                     (++ rep.routine*!alloc 1000)  ; todo: allow routines to expand past initial allocation, or to spawn multiple routines at once
                     (= rep.routine!globals (when (len> arg 1) (m arg.1)))
-                    (= rep.routine!channels (when (len> arg 2) (m arg.2)))
                     (enq routine running-routines*))
                 assert
                   (unless (m arg.0)

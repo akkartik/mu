@@ -1,11 +1,11 @@
-schedule: f1
+schedule: consumer
 run: -- nil
-run: 1 f1 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
+run: 1 consumer 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 1000 => ((default-scope scope-address))
 sizeof: ((default-scope scope-address))
 run: -- ((1000 30))
-run: 2 f1 1: (((1 channel-address)) <- ((init-channel)) ((3 literal)))
+run: 2 consumer 1: (((1 channel-address)) <- ((init-channel)) ((3 literal)))
 run: -- ((1000 30))
 run: 3 init-channel 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
 sizeof: ((_ location))
@@ -93,11 +93,11 @@ setm: ((1 channel-address)) <= 1062
 setm: size of ((1 channel-address)) is 1
 setm: ((1 channel-address)): setting 1001 to 1062
 run: -- ((1000 30) (1001 1062) (1031 30) (1032 1062) (1033 1062) (1034 1063) (1035 4) (1036 1064) (1062 0) (1063 0) (1064 1065) (1065 4))
-run: 14 f1 2: (((fork)) ((f2 fn)) ((nil literal)) ((nil literal)) ((1 channel-address)))
+run: 14 consumer 2: (((fork)) ((producer fn)) ((nil literal)) ((1 channel-address)))
 m: ((1 channel-address))
 sizeof: ((1 channel-address))
 run: -- ((1000 30) (1001 1062) (1031 30) (1032 1062) (1033 1062) (1034 1063) (1035 4) (1036 1064) (1062 0) (1063 0) (1064 1065) (1065 4))
-run: 15 f1 3: (((1 tagged-value) (raw)) <- ((read)) ((1 channel-address)))
+run: 15 consumer 3: (((1 tagged-value) (raw)) <- ((read)) ((1 channel-address)))
 m: ((1 channel-address))
 sizeof: ((1 channel-address))
 run: -- ((1000 30) (1001 1062) (1031 30) (1032 1062) (1033 1062) (1034 1063) (1035 4) (1036 1064) (1062 0) (1063 0) (1064 1065) (1065 4))
@@ -190,34 +190,34 @@ run: 27 read 5: (((sleep)) ((3 integer-address) (deref)))
 m: ((3 integer-address) (deref))
 sizeof: ((3 integer-address) (deref))
 schedule: pushing read to sleep queue
-schedule: f2
+schedule: producer
 run: -- ((1000 30) (1001 1062) (1031 30) (1032 1062) (1033 1062) (1034 1063) (1035 4) (1036 1064) (1062 0) (1063 0) (1064 1065) (1065 4) (2074 30) (2075 1062) (2076 t) (2077 1063) (2105 30) (2106 0) (2107 0) (2108 1065) (2109 0) (2110 0) (2111 t))
-run: 28 f2 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
+run: 28 producer 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 1074 => ((default-scope scope-address))
 sizeof: ((default-scope scope-address))
 run: -- ((1000 30) (1001 1062) (1031 30) (1032 1062) (1033 1062) (1034 1063) (1035 4) (1036 1064) (1062 0) (1063 0) (1064 1065) (1065 4) (1074 30) (2074 30) (2075 1062) (2076 t) (2077 1063) (2105 30) (2106 0) (2107 0) (2108 1065) (2109 0) (2110 0) (2111 t))
-run: 29 f2 1: (((1 integer-address)) <- ((new)) ((integer literal)))
+run: 29 producer 1: (((1 integer-address)) <- ((new)) ((integer literal)))
 sizeof: ((_ integer))
 run: 1105 => ((1 integer-address))
 setm: ((1 integer-address)) <= 1105
 setm: size of ((1 integer-address)) is 1
 setm: ((1 integer-address)): setting 1075 to 1105
 run: -- ((1000 30) (1001 1062) (1031 30) (1032 1062) (1033 1062) (1034 1063) (1035 4) (1036 1064) (1062 0) (1063 0) (1064 1065) (1065 4) (1074 30) (1075 1105) (2074 30) (2075 1062) (2076 t) (2077 1063) (2105 30) (2106 0) (2107 0) (2108 1065) (2109 0) (2110 0) (2111 t))
-run: 30 f2 2: (((1 integer-address) (deref)) <- ((copy)) ((24 literal)))
+run: 30 producer 2: (((1 integer-address) (deref)) <- ((copy)) ((24 literal)))
 run: 24 => ((1 integer-address) (deref))
 setm: ((1 integer-address) (deref)) <= 24
 setm: size of ((1 integer-address) (deref)) is 1
 setm: ((1 integer-address) (deref)): setting 1105 to 24
 run: -- ((1000 30) (1001 1062) (1031 30) (1032 1062) (1033 1062) (1034 1063) (1035 4) (1036 1064) (1062 0) (1063 0) (1064 1065) (1065 4) (1074 30) (1075 1105) (1105 24) (2074 30) (2075 1062) (2076 t) (2077 1063) (2105 30) (2106 0) (2107 0) (2108 1065) (2109 0) (2110 0) (2111 t))
-run: 31 f2 3: (((2 channel-address)) <- ((next-input)))
+run: 31 producer 3: (((2 channel-address)) <- ((next-input)))
 arg: nil 0 (1062)
 run: 1062 => ((2 channel-address))
 setm: ((2 channel-address)) <= 1062
 setm: size of ((2 channel-address)) is 1
 setm: ((2 channel-address)): setting 1076 to 1062
 run: -- ((1000 30) (1001 1062) (1031 30) (1032 1062) (1033 1062) (1034 1063) (1035 4) (1036 1064) (1062 0) (1063 0) (1064 1065) (1065 4) (1074 30) (1075 1105) (1076 1062) (1105 24) (2074 30) (2075 1062) (2076 t) (2077 1063) (2105 30) (2106 0) (2107 0) (2108 1065) (2109 0) (2110 0) (2111 t))
-run: 32 f2 4: (((3 tagged-value)) <- ((save-type)) ((1 integer-address)))
+run: 32 producer 4: (((3 tagged-value)) <- ((save-type)) ((1 integer-address)))
 m: ((1 integer-address))
 sizeof: ((1 integer-address))
 run: #(tagged record (integer-address 1105)) => ((3 tagged-value))
@@ -229,7 +229,7 @@ sizeof: ((_ location))
 setm: ((3 tagged-value)): setting 1077 to integer-address
 setm: ((3 tagged-value)): setting 1078 to 1105
 run: -- ((1000 30) (1001 1062) (1031 30) (1032 1062) (1033 1062) (1034 1063) (1035 4) (1036 1064) (1062 0) (1063 0) (1064 1065) (1065 4) (1074 30) (1075 1105) (1076 1062) (1077 integer-address) (1078 1105) (1105 24) (2074 30) (2075 1062) (2076 t) (2077 1063) (2105 30) (2106 0) (2107 0) (2108 1065) (2109 0) (2110 0) (2111 t))
-run: 33 f2 5: (((2 channel-address) (deref)) <- ((write)) ((2 channel-address)) ((3 tagged-value)))
+run: 33 producer 5: (((2 channel-address) (deref)) <- ((write)) ((2 channel-address)) ((3 tagged-value)))
 m: ((2 channel-address))
 sizeof: ((2 channel-address))
 m: ((3 tagged-value))
