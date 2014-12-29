@@ -886,8 +886,12 @@
 (let routine make-routine!main
   (enq routine running-routines*)
   (let first rep.routine!alloc
+;?     (= dump-trace* (obj whitelist '("run")))
+;?     (set dump-trace*)
     (run)
 ;?     (prn memory*)
+    (each routine completed-routines*
+      (aif rep.routine!error (prn "error - " it)))
     (if (or (~all first (map memory* '(1 2 3)))
             (~is memory*.first  'integer)
             (~is memory*.4 (+ first 1))
@@ -906,10 +910,14 @@
   '((function test2 [
       (10:list-address <- list-next 1:list-address)
      ])))
+;? (set dump-trace*)
 (run 'test2)
 ;? (prn memory*)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
 (if (~is memory*.10 memory*.6)
   (prn "F - 'list-next can move a list pointer to the next node"))
+;? (quit)
 
 ; 'init-list' takes a variable number of args and constructs a list containing
 ; them.
@@ -1852,8 +1860,9 @@
     (run)
 ;?     (prn memory*)
     (if (~and (~is 23 memory*.1)
-              (is 23 (memory* (+ before 1))))
+              (is 23 (memory* (+ before 2))))
       (prn "F - default-scope implicitly modifies variable locations"))))
+;? (quit)
 
 (reset)
 (new-trace "set-default-scope-skips-offset")
@@ -1869,7 +1878,7 @@
     (run)
 ;?     (prn memory*)
     (if (~and (~is 23 memory*.1)
-              (is 23 (memory* (+ before 1))))
+              (is 23 (memory* (+ before 2))))
       (prn "F - default-scope skips 'offset' types just like literals"))))
 
 (reset)
@@ -1963,12 +1972,12 @@
   '((function main [
       (10:integer <- copy 30:literal)  ; pretend allocation
       (default-scope:scope-address <- copy 10:literal)  ; unsafe
-      (1:integer <- copy 2:literal)
+      (1:integer <- copy 2:literal)  ; raw location 12
       (2:integer <- copy 23:literal)
       (3:boolean <- copy nil:literal)
       (4:integer <- copy 24:literal)
       (5:boolean <- copy t:literal)
-      (6:integer-boolean-pair-array-address <- copy 11:literal)  ; unsafe
+      (6:integer-boolean-pair-array-address <- copy 12:literal)  ; unsafe
       (7:integer-boolean-pair-array <- copy 6:integer-boolean-pair-array-address/deref)
      ])))
 ;? (set dump-trace*)
@@ -1977,7 +1986,7 @@
 ;? (prn memory*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~iso memory*.17 2)
+(if (~iso memory*.18 2)  ; variable 7
   (prn "F - indirect array copy in the presence of 'default-scope'"))
 ;? (quit)
 
@@ -1987,18 +1996,18 @@
   '((function main [
       (10:integer <- copy 30:literal)  ; pretend allocation
       (default-scope:scope-address <- copy 10:literal)  ; unsafe
-      (1:integer <- copy 2:literal)
+      (1:integer <- copy 2:literal)  ; raw location 12
       (2:integer <- copy 23:literal)
       (3:boolean <- copy nil:literal)
       (4:integer <- copy 24:literal)
       (5:boolean <- copy t:literal)
-      (6:integer-address <- copy 11:literal)  ; unsafe
+      (6:integer-address <- copy 12:literal)  ; unsafe
       (7:integer <- length 6:integer-boolean-pair-array-address/deref)
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "addr" "sz" "array-len")))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory*.17 2)
+(if (~iso memory*.18 2)
   (prn "F - 'len' accesses length of array address"))
 ;? (quit)
 
@@ -2550,17 +2559,17 @@
       ; waits for memory location 1 to be changed, before computing its successor
       (10:integer <- copy 5:literal)  ; array of locals
       (default-scope:scope-address <- copy 10:literal)
-      (1:integer <- copy 23:literal)  ; really location 11
+      (1:integer <- copy 23:literal)  ; really location 12
       (sleep 1:integer)
       (2:integer <- add 1:integer 1:literal)
      ])
     (function f2 [
       (sleep 30:literal)
-      (11:integer <- copy 3:literal)  ; set to value
+      (12:integer <- copy 3:literal)  ; set to value
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (run 'f1 'f2)
-(if (~is memory*.12 4)  ; successor of value
+(if (~is memory*.13 4)  ; successor of value
   (prn "F - sleep can block on a scoped memory location"))
 ;? (quit)
 
@@ -3742,7 +3751,7 @@
   (prn "F - 'absolutize' works without default-scope"))
 (= rep.routine*!call-stack.0!default-scope 10)
 (= memory*.10 5)  ; bounds check for default-scope
-(if (~iso '((14 integer) (raw))
+(if (~iso '((15 integer) (raw))
           (absolutize '((4 integer))))
   (prn "F - 'absolutize' works with default-scope"))
 (absolutize '((5 integer)))
@@ -3753,7 +3762,7 @@
 
 (= memory*.20 5)  ; pretend array
 (= rep.routine*!globals 20)  ; provide it to routine global
-(if (~iso '((21 integer) (raw))
+(if (~iso '((22 integer) (raw))
           (absolutize '((1 integer) (space global))))
   (prn "F - 'absolutize' handles variables in the global space"))
 
@@ -3821,14 +3830,14 @@
 ;? (prn 302)
 (= memory*.10 5)  ; bounds check for default-scope
 ;? (prn 303)
-(if (~is 14 (addr '((4 integer))))
+(if (~is 15 (addr '((4 integer))))
   (prn "F - directly addressed operands in routines add default-scope"))
 ;? (quit)
-(if (~is 14 (addr '((4 integer-address))))
+(if (~is 15 (addr '((4 integer-address))))
   (prn "F - directly addressed operands in routines add default-scope - 2"))
-(if (~is 14 (addr '((4 literal))))
+(if (~is 15 (addr '((4 literal))))
   (prn "F - 'addr' doesn't understand literals"))
-(= memory*.14 23)
+(= memory*.15 23)
 (if (~is 23 (addr '((4 integer-address) (deref))))
   (prn "F - 'addr' adds default-scope before 'deref', not after"))
 ;? (quit)
@@ -3883,7 +3892,7 @@
 (= memory*.3 4)
 (if (~is 24 (sizeof '((3 integer-array-address) (deref))))
   (prn "F - 'sizeof' handles pointers to arrays"))
-(= memory*.14 34)
+(= memory*.15 34)
 (= routine* make-routine!foo)
 (if (~is 24 (sizeof '((4 integer-array))))
   (prn "F - 'sizeof' reads array lengths from memory inside routines"))
@@ -3892,7 +3901,7 @@
 (if (~is 35 (sizeof '((4 integer-array))))
   (prn "F - 'sizeof' reads array lengths from memory using default-scope"))
 (= memory*.35 4)  ; size of array
-(= memory*.14 35)
+(= memory*.15 35)
 ;? (= dump-trace* (obj whitelist '("sizeof")))
 (aif rep.routine*!error (prn "error - " it))
 (if (~is 9 (sizeof '((4 integer-boolean-pair-array-address) (deref))))
@@ -3931,7 +3940,7 @@
 
 (= routine* make-routine!foo)
 (= memory*.10 5)  ; fake array
-(= memory*.11 34)
+(= memory*.12 34)
 (= rep.routine*!globals 10)
 (if (~iso 34 (m '((1 integer) (space global))))
   (prn "F - 'm' supports access to per-routine globals"))
