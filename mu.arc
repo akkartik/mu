@@ -1307,7 +1307,7 @@
     (break-if remaining?:boolean)
     (free:integer-address/deref <- copy 0:literal)
   }
-  reply:chan:channel-address/deref)
+  (reply chan:channel-address/deref))
 
 (init-fn read
   (default-scope:scope-address <- new scope:literal 30:literal)
