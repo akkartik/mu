@@ -76,9 +76,9 @@
 ; things that a future assembler will need separate memory for:
 ;   code; types; args channel
 (def clear ()
-  (= type* (table))
-  (= memory* (table))
-  (= function* (table))
+  (= type* (table))  ; name -> type info
+  (= memory* (table))  ; address -> value
+  (= function* (table))  ; name -> [instructions]
   )
 (enq clear initialization-fns*)
 
@@ -940,8 +940,8 @@
         (trace "cn0" instr " " canon.location " " canon.isa-field)
         (let (oargs op args)  (parse-instr instr)
 ;?           (tr "about to rename args")
-          ; rename args
           (if (in op 'get 'get-address)
+            ; special case: map field offset by looking up type table
             (with (basetype  (typeof args.0)
                    field  (v args.1))
               (assert type*.basetype!and-record "get on non-record @args.0")
@@ -958,13 +958,14 @@
                         (trace "cn0" "field location @idx")
                         (= location.field idx))
                     (assert nil "couldn't find field in @instr")))))
+            ; map args to location indices
             (each arg args
               (when (and nondummy.arg not-raw-string.arg)
                 (assert (~isa-field v.arg) "arg @arg is also a field name")
                 (when (maybe-add arg location idx)
                   (err "use before set: @arg")))))
 ;?           (tr "about to rename oargs")
-          ; rename oargs
+          ; map oargs to location indices
           (each arg oargs
             (trace "cn0" "checking " arg)
             (when (and nondummy.arg not-raw-string.arg)
