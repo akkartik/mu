@@ -974,7 +974,6 @@
                 (trace "cn0" "location for arg " arg ": " idx)
                 ; todo: can't allocate arrays on the stack
                 (++ idx (sizeof `((_ ,@ty.arg)))))))))))
-    (trace "cn1" "update names " canon.location " " canon.isa-field)
     (each instr instrs
       (when (acons instr)
         (let (oargs op args)  (parse-instr instr)
