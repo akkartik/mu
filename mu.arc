@@ -81,7 +81,7 @@
   (= memory* (table))  ; address -> value
   (= function* (table))  ; name -> [instructions]
   (= location* (table))  ; function -> {name -> index into default-scope}
-  (= parent* (table))  ; function -> name of function generating scope for the scope passed into it
+  (= closure-generator* (table))  ; function -> name of function generating scope for the scope passed into it
   )
 (enq clear initialization-fns*)
 
@@ -225,7 +225,8 @@
               ,@body)))))
 
 (def run fn-names
-  (freeze-functions)
+  (freeze function*)
+  (load-system-functions)
   (= traces* (queue))
   (each it fn-names
     (enq make-routine.it running-routines*))
@@ -931,7 +932,7 @@
 
 ;; convert symbolic names to raw memory locations
 
-(def add-parent-closure (instrs name)
+(def add-closure-generator (instrs name)
 ;?   (prn "== @name")
   (each instr instrs
     (when acons.instr
@@ -940,9 +941,9 @@
           (when (and (nondummy oarg)
                      (is v.oarg 0)
                      (iso ty.oarg '(scope-address)))
-            (assert (no parent*.name) "function can have only one parent environment")
-            (tr "parent of @name is @(alref oarg 'names)")
-            (= parent*.name (alref oarg 'names))))))))
+            (assert (no closure-generator*.name) "function can have only one closure-generator environment")
+            (tr "closure-generator of @name is @(alref oarg 'names)")
+            (= closure-generator*.name (alref oarg 'names))))))))
 
 ; just a helper for testing; in practice we unbundle assign-names-to-location
 ; and replace-names-with-location.
@@ -1042,7 +1043,7 @@
   (ret name default-name
     (when (~is space.arg 'global)
       (repeat space.arg
-        (zap parent* name)))))
+        (zap closure-generator* name)))))
 
 ;; literate tangling system for reordering code
 
@@ -1153,17 +1154,16 @@
           (push fragment after*.label))
       )))
 
-(def freeze-functions ()
-;?   (prn "freeze")
-  (each (name body)  canon.function*
-;?     (tr name)
-    (= function*.name (convert-labels:convert-braces:tokenize-args:insert-code body name)))
-  (each (name body)  canon.function*
-    (add-parent-closure body name))
-  (each (name body)  canon.function*
+(def freeze (function-table)
+  (each (name body)  canon.function-table
+;?     (prn "freeze " name)
+    (= function-table.name (convert-labels:convert-braces:tokenize-args:insert-code body name)))
+  (each (name body)  canon.function-table
+    (add-closure-generator body name))
+  (each (name body)  canon.function-table
     (= location*.name (assign-names-to-location body name)))
-  (each (name body)  canon.function*
-    (= function*.name (replace-names-with-location body name)))
+  (each (name body)  canon.function-table
+    (= function-table.name (replace-names-with-location body name)))
   ; we could clear location* at this point, but maybe we'll find a use for it
   )
 
@@ -1237,10 +1237,9 @@
 (= system-function* (table))
 
 (mac init-fn (name . body)
-  `(= (system-function* ',name) 
-      (convert-names (convert-labels:convert-braces:tokenize-args:insert-code ',body ',name) ',name)))
+  `(= (system-function* ',name) ',body))
 
-(on-init
+(def load-system-functions ()
   (each (name f) system-function*
     (= (function* name)
        (system-function* name))))
@@ -1656,6 +1655,8 @@
   (reply result:string-address-array-address)
 )
 
+; after all system software is loaded:
+(freeze system-function*)
 )  ; section 100 for system software
 
 ;; load all provided files and start at 'main'
@@ -1663,7 +1664,7 @@
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run" "schedule" "add")))
-;?   (freeze-functions)
+;?   (freeze function*)
 ;?   (prn function*!factorial)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
