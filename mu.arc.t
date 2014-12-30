@@ -1061,7 +1061,7 @@
       (1:integer <- copy 0:literal)
       (2:integer <- copy 0:literal)
      ])))
-(freeze-functions)
+(freeze function*)
 (= routine* (make-routine 'caller))
 (assert (is 0 pc.routine*))
 (push-stack routine* 'callee)  ; pretend call was at first instruction of caller
@@ -3400,7 +3400,7 @@
               }
              ])))
 ;? (= dump-trace* (obj whitelist '("cn0")))
-(freeze-functions)
+(freeze function*)
 (if (~iso function*!f1
           '(label1
             (((1 integer)) <- ((copy)) ((0 literal)))))
@@ -3418,7 +3418,7 @@
             (after label1 [
                (1:integer <- copy 0:literal)
              ])))
-(freeze-functions)
+(freeze function*)
 (if (~iso function*!f1
           '(label1
             (((1 integer)) <- ((copy)) ((0 literal)))))
@@ -3435,7 +3435,7 @@
             (function f1 [
               (2:integer <- copy 0:literal)
              ])))
-(freeze-functions)
+(freeze function*)
 (if (~iso function*!f1
           '((((2 integer)) <- ((copy)) ((0 literal)))
             (((1 integer)) <- ((copy)) ((0 literal)))))
@@ -3451,7 +3451,7 @@
             (function! f1 [
               (2:integer <- copy 0:literal)
              ])))
-(freeze-functions)
+(freeze function*)
 (if (~iso function*!f1
           '((((2 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - 'def!' clears all previous clauses"))
