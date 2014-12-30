@@ -2038,6 +2038,35 @@
   (prn "F - multiple calls to a function can share locals"))
 ;? (quit)
 
+(reset)
+(new-trace "default-scope-closure")
+(add-code
+  '((function init-counter [
+      (default-scope:scope-address <- new scope:literal 30:literal)
+      (1:integer <- copy 3:literal)  ; initialize to 3
+      (reply default-scope:scope-address)
+     ])
+    (function increment-counter [
+      (default-scope:scope-address <- new scope:literal 30:literal)
+      (0:scope-address <- next-input)  ; share outer scope
+      (1:integer/space:1 <- add 1:integer/space:1 1:literal)  ; increment
+      (1:integer <- copy 34:literal)  ; dummy
+      (reply 1:integer/space:1)
+     ])
+    (function main [
+      (1:scope-address <- init-counter)
+      (2:integer <- increment-counter 1:scope-address)
+      (3:integer <- increment-counter 1:scope-address)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+;? (prn memory*)
+(if (or (~is memory*.2 4)
+        (~is memory*.3 5))
+  (prn "F - multiple calls to a function can share locals"))
+;? (quit)
+
 )  ; section 20
 
 (section 100
