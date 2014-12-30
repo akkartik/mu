@@ -75,10 +75,13 @@
 
 ; things that a future assembler will need separate memory for:
 ;   code; types; args channel
+;   at compile time: name mapping
 (def clear ()
   (= type* (table))  ; name -> type info
   (= memory* (table))  ; address -> value
   (= function* (table))  ; name -> [instructions]
+  (= location* (table))  ; function -> {name -> index into default-scope}
+  (= parent* (table))  ; function -> name of function generating scope for the scope passed into it
   )
 (enq clear initialization-fns*)
 
@@ -928,11 +931,33 @@
 
 ;; convert symbolic names to raw memory locations
 
-(def convert-names (instrs)
+(def add-parent-closure (instrs name)
+;?   (prn "== @name")
+  (each instr instrs
+    (when acons.instr
+      (let (oargs op args)  (parse-instr instr)
+        (each oarg oargs
+          (when (and (nondummy oarg)
+                     (is v.oarg 0)
+                     (iso ty.oarg '(scope-address)))
+            (assert (no parent*.name) "function can have only one parent environment")
+            (tr "parent of @name is @(alref oarg 'names)")
+            (= parent*.name (alref oarg 'names))))))))
+
+; just a helper for testing; in practice we unbundle assign-names-to-location
+; and replace-names-with-location.
+(def convert-names (instrs (o name))
 ;?   (tr "convert-names " instrs)
-  (with (location  (table)
-         isa-field  (table))
-    (let idx 1
+  (let location (table)
+    (= location*.name (assign-names-to-location instrs name))
+;?     (tr "save names for function @name: @(tostring:pr location*.name)")
+    )
+  (replace-names-with-location instrs name))
+
+(def assign-names-to-location (instrs name)
+  (ret location (table)
+    (with (isa-field  (table)
+           idx  1)  ; 0 always reserved for parent scope
       (each instr instrs
         (point continue
         (when atom.instr
@@ -973,27 +998,51 @@
               (when (maybe-add arg location idx)
                 (trace "cn0" "location for arg " arg ": " idx)
                 ; todo: can't allocate arrays on the stack
-                (++ idx (sizeof `((_ ,@ty.arg)))))))))))
-    (each instr instrs
-      (when (acons instr)
-        (let (oargs op args)  (parse-instr instr)
-          (each arg args
-            (when (and nondummy.arg not-raw-string.arg (location v.arg))
-              (zap location v.arg)))
-          (each arg oargs
-            (when (and nondummy.arg not-raw-string.arg (location v.arg))
-              (zap location v.arg))))))
-    instrs))
+                (++ idx (sizeof `((_ ,@ty.arg)))))))))))))
 
+(def replace-names-with-location (instrs name)
+  (each instr instrs
+    (when (acons instr)
+      (let (oargs op args)  (parse-instr instr)
+        (each arg args
+          (convert-name arg name))
+        (each arg oargs
+          (convert-name arg name)))))
+  instrs)
+
+; assign an index to an arg
 (def maybe-add (arg location idx)
   (trace "maybe-add" arg)
   (when (and nondummy.arg
+;?              (prn arg " " (assoc 'space arg))
+             (~assoc 'space arg)
              (~literal? arg)
              (~location v.arg)
              (isa v.arg 'sym)
              (~in v.arg 'nil 'default-scope)
              (~pos '(raw) metadata.arg))
     (= (location v.arg) idx)))
+
+; convert the arg to corresponding index
+(def convert-name (arg default-name)
+;?   (prn "111 @arg @default-name")
+  (when (and nondummy.arg not-raw-string.arg)
+;?     (prn "112 @arg")
+    (let name (space-to-name arg default-name)
+;?       (prn "113 @arg @name @keys.location* @(tostring:pr location*.name)")
+;?       (when (is arg '((y integer) (space 1)))
+;?         (prn "@arg => @name"))
+      (when (aand location*.name (it v.arg))
+;?         (prn 114)
+        (zap location*.name v.arg))
+;?       (prn 115)
+      )))
+
+(def space-to-name (arg default-name)
+  (ret name default-name
+    (when (~is space.arg 'global)
+      (repeat space.arg
+        (zap parent* name)))))
 
 ;; literate tangling system for reordering code
 
@@ -1108,9 +1157,15 @@
 ;?   (prn "freeze")
   (each (name body)  canon.function*
 ;?     (tr name)
-;?     (prn keys.before* " -- " keys.after*)
-;?     (= function*.name (convert-names:convert-labels:convert-braces:prn:insert-code body)))
-    (= function*.name (convert-names:convert-labels:convert-braces:tokenize-args:insert-code body name))))
+    (= function*.name (convert-labels:convert-braces:tokenize-args:insert-code body name)))
+  (each (name body)  canon.function*
+    (add-parent-closure body name))
+  (each (name body)  canon.function*
+    (= location*.name (assign-names-to-location body name)))
+  (each (name body)  canon.function*
+    (= function*.name (replace-names-with-location body name)))
+  ; we could clear location* at this point, but maybe we'll find a use for it
+  )
 
 (def tokenize-arg (arg)
 ;?   (tr "tokenize-arg " arg)
@@ -1183,7 +1238,7 @@
 
 (mac init-fn (name . body)
   `(= (system-function* ',name) 
-      (convert-names:convert-labels:convert-braces:tokenize-args:insert-code ',body ',name)))
+      (convert-names (convert-labels:convert-braces:tokenize-args:insert-code ',body ',name) ',name)))
 
 (on-init
   (each (name f) system-function*
