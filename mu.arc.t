@@ -2058,6 +2058,38 @@
       (2:integer <- increment-counter 1:scope-address)
       (3:integer <- increment-counter 1:scope-address)
      ])))
+;? (set dump-trace*)
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+;? (prn memory*)
+(if (or (~is memory*.2 4)
+        (~is memory*.3 5))
+  (prn "F - multiple calls to a function can share locals"))
+;? (quit)
+
+(reset)
+(new-trace "default-scope-closure-with-names")
+(add-code
+  '((function init-counter [
+      (default-scope:scope-address <- new scope:literal 30:literal)
+      (x:integer <- copy 23:literal)
+      (y:integer <- copy 3:literal)  ; correct copy of y
+      (reply default-scope:scope-address)
+     ])
+    (function increment-counter [
+      (default-scope:scope-address <- new scope:literal 30:literal)
+      (0:scope-address/names:init-counter <- next-input)  ; outer scope must be created by 'init-counter' above
+      (y:integer/space:1 <- add y:integer/space:1 1:literal)  ; increment
+      (y:integer <- copy 34:literal)  ; dummy
+      (reply y:integer/space:1)
+     ])
+    (function main [
+      (1:scope-address/names:init-counter <- init-counter)
+      (2:integer <- increment-counter 1:scope-address/names:init-counter)
+      (3:integer <- increment-counter 1:scope-address/names:init-counter)
+     ])))
+;? (set dump-trace*)
 (run 'main)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
