@@ -1,13 +1,13 @@
 (function read-board [
   (default-scope:scope-address <- new scope:literal 30:literal)
-  (initial-position:list-address <- init-list R:literal N:literal B:literal Q:literal K:literal B:literal N:literal R:literal
-                                              P:literal P:literal P:literal P:literal P:literal P:literal P:literal P:literal
-                                              _:literal _:literal _:literal _:literal _:literal _:literal _:literal _:literal
-                                              _:literal _:literal _:literal _:literal _:literal _:literal _:literal _:literal
-                                              _:literal _:literal _:literal _:literal _:literal _:literal _:literal _:literal
-                                              _:literal _:literal _:literal _:literal _:literal _:literal _:literal _:literal
-                                              p:literal p:literal p:literal p:literal p:literal p:literal p:literal p:literal
-                                              r:literal n:literal b:literal q:literal k:literal b:literal n:literal r:literal)
+  (initial-position:list-address <- init-list R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal
+                                              N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
+                                              B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
+                                              Q:literal P:literal _:literal _:literal _:literal _:literal p:literal q:literal
+                                              K:literal P:literal _:literal _:literal _:literal _:literal p:literal k:literal
+                                              B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
+                                              N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
+                                              R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal)
   ; assert(length(initial-position) == 64)
 ;?   (print-primitive (("list-length\n" literal)))
   (len:integer <- list-length initial-position:list-address)
@@ -51,10 +51,33 @@
 ])
 
 (function print-board [
-  (reply)
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  (b:board-address <- next-input)
+  (row:integer <- copy 7:literal)
+  ; print each row
+  { begin
+    (done?:boolean <- less-than row:integer 0:literal)
+    (break-if done?:boolean)
+    ; print each square in the row
+    (col:integer <- copy 0:literal)
+    { begin
+      (done?:boolean <- equal col:integer 8:literal)
+      (break-if done?:boolean)
+      (f:file-address <- index b:board-address/deref col:integer)
+      (s:square <- index f:file-address/deref row:integer)
+      (print-primitive s:square)
+      (print-primitive ((" " literal)))
+      (col:integer <- add col:integer 1:literal)
+      (loop)
+    }
+    (print-primitive (("\n" literal)))
+    (row:integer <- subtract row:integer 1:literal)
+    (loop)
+  }
 ])
 
 (function main [
+;?   (print-primitive (("\u2654 \u265a" literal)))
   (b:board-address <- read-board)
   (print-board b:board-address)
 ])
