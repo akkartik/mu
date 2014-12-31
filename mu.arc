@@ -75,7 +75,7 @@
 
 ; things that a future assembler will need separate memory for:
 ;   code; types; args channel
-;   at compile time: name mapping
+;   at compile time: mapping names to locations
 (def clear ()
   (= type* (table))  ; name -> type info
   (= memory* (table))  ; address -> value
