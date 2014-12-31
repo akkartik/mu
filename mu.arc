@@ -357,6 +357,8 @@
       (while (>= pc.routine* (len body.routine*))
         (pop-stack routine*)
         (if empty.routine* (return ninstrs))
+        (when (pos '<- (body.routine* pc.routine*))
+          (die "No results returned: @(body.routine* pc.routine*)"))
         (++ pc.routine*))
       (++ curr-cycle*)
       (trace "run" "-- " int-canon.memory*)
