@@ -145,6 +145,11 @@
               line-address-address (obj size 1  address t  elem '(line-address))
               screen (obj array t  elem '(line-address))
               screen-address (obj size 1  address t  elem '(screen))
+              ; chessboard
+              square (obj size 1)
+              file (obj array t  elem '(square))
+              file-address (obj address t  elem '(file))
+              board (obj array t  elem '(file-address))
               )))
 
 ;; managing concurrent routines
@@ -1314,6 +1319,40 @@
   (result:list-address <- list-next result:list-address)  ; memory leak
   (reply result:list-address))
 
+(init-fn list-length
+  (default-scope:scope-address <- new scope:literal 30:literal)
+  (curr:list-address <- next-input)
+;?   ; recursive
+;?   { begin
+;?     ; if empty list return 0
+;?     (t1:tagged-value-address <- list-value-address curr:list-address)
+;?     (empty?:boolean <- equal t1:tagged-value-address nil:literal)
+;?     (break-unless empty?:boolean)
+;?     (reply 0:literal)
+;?   }
+;?   ; else return 1+length(curr.cdr)
+;?   (print-primitive (("recurse\n" literal)))
+;?   (next:list-address <- list-next curr:list-address)
+;?   (sub:integer <- list-length next:list-address)
+;?   (result:integer <- add sub:integer 1:literal)
+;?   (reply result:integer))
+  ; iterative solution
+  (result:integer <- copy 0:literal)
+  { begin
+    ; while curr
+    (t1:tagged-value-address <- list-value-address curr:list-address)
+    (empty?:boolean <- equal t1:tagged-value-address nil:literal)
+    (break-if empty?:boolean)
+    ; ++result
+    (result:integer <- add result:integer 1:literal)
+;?     (print-primitive result:integer)
+;?     (print-primitive (("\n" literal)))
+    ; curr = curr.cdr
+    (curr:list-address <- list-next curr:list-address)
+    (loop)
+  }
+  (reply result:integer))
+
 (init-fn init-channel
   (default-scope:scope-address <- new scope:literal 30:literal)
   ; result = new channel
@@ -1666,6 +1705,7 @@
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run" "schedule" "add")))
+;?   (set dump-trace*)
 ;?   (freeze function*)
 ;?   (prn function*!factorial)
   (run 'main)
