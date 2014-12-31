@@ -147,9 +147,12 @@
               screen-address (obj size 1  address t  elem '(screen))
               ; chessboard
               square (obj size 1)
-              file (obj array t  elem '(square))
-              file-address (obj address t  elem '(file))
+              square-address (obj size 1  address t  elem '(square))
+              file (obj array t  elem '(square))  ; todo: include array dimensions in type table
+              file-address (obj size 1  address t  elem '(file))
+              file-address-address (obj size 1  address t  elem '(file-address))
               board (obj array t  elem '(file-address))
+              board-address (obj size 1  address t  elem '(board))
               )))
 
 ;; managing concurrent routines
@@ -317,6 +320,7 @@
 ; routines consist of instrs
 ; instrs consist of oargs, op and args
 (def parse-instr (instr)
+;?   (prn instr)
   (iflet delim (pos '<- instr)
     (list (cut instr 0 delim)  ; oargs
           (v (instr (+ delim 1)))  ; op
@@ -1258,13 +1262,13 @@
   (x:tagged-value-address <- new tagged-value:literal)
   (x:tagged-value-address/deref <- next-input)
   (p:type <- next-input)
-  (xtype:type <- get x:tagged-value-address/deref 0:offset)
+  (xtype:type <- get x:tagged-value-address/deref type:offset)
   (match?:boolean <- equal xtype:type p:type)
   { begin
     (break-if match?:boolean)
     (reply 0:literal nil:literal)
   }
-  (xvalue:location <- get x:tagged-value-address/deref 1:offset)
+  (xvalue:location <- get x:tagged-value-address/deref payload:offset)
   (reply xvalue:location match?:boolean))
 
 (init-fn init-tagged-value
@@ -1705,6 +1709,7 @@
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run" "schedule" "add")))
+;?   (= dump-trace* (obj whitelist '("cn0")))
 ;?   (set dump-trace*)
 ;?   (freeze function*)
 ;?   (prn function*!factorial)
