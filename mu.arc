@@ -1038,7 +1038,8 @@
 ; convert the arg to corresponding index
 (def convert-name (arg default-name)
 ;?   (prn "111 @arg @default-name")
-  (when (and nondummy.arg not-raw-string.arg)
+  (when (and nondummy.arg not-raw-string.arg
+             (~is ty.arg.0 'literal))  ; can't use 'literal?' because we want to rename offsets
 ;?     (prn "112 @arg")
     (let name (space-to-name arg default-name)
 ;?       (prn "113 @arg @name @keys.location* @(tostring:pr location*.name)")
