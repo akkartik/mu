@@ -997,6 +997,7 @@
                     (assert nil "couldn't find field in @instr")))))
             ; map args to location indices
             (each arg args
+              (trace "cn0" "checking arg " arg)
               (when (and nondummy.arg not-raw-string.arg)
                 (assert (~isa-field v.arg) "arg @arg is also a field name")
                 (when (maybe-add arg location idx)
@@ -1004,11 +1005,11 @@
 ;?           (tr "about to rename oargs")
           ; map oargs to location indices
           (each arg oargs
-            (trace "cn0" "checking " arg)
+            (trace "cn0" "checking oarg " arg)
             (when (and nondummy.arg not-raw-string.arg)
               (assert (~isa-field v.arg) "oarg @arg is also a field name")
               (when (maybe-add arg location idx)
-                (trace "cn0" "location for arg " arg ": " idx)
+                (trace "cn0" "location for oarg " arg ": " idx)
                 ; todo: can't allocate arrays on the stack
                 (++ idx (sizeof `((_ ,@ty.arg)))))))))))))
 
