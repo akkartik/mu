@@ -1702,6 +1702,14 @@
           '((((x literal)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-names never renames literals"))
 
+(reset)
+(new-trace "convert-names-literal-2")
+(= traces* (queue))
+(if (~iso (convert-names
+            '((((x boolean)) <- ((copy)) ((x literal)))))
+          '((((1 boolean)) <- ((copy)) ((x literal)))))
+  (prn "F - convert-names never renames literals, even when the name matches a variable"))
+
 ; kludgy support for 'fork' below
 (reset)
 (new-trace "convert-names-functions")
