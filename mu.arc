@@ -236,6 +236,8 @@
 (def run fn-names
   (freeze function*)
   (load-system-functions)
+;?   (write function*)
+;?   (quit)
   (= traces* (queue))
   (each it fn-names
     (enq make-routine.it running-routines*))
@@ -368,7 +370,7 @@
         (pop-stack routine*)
         (if empty.routine* (return ninstrs))
         (when (pos '<- (body.routine* pc.routine*))
-          (die "No results returned: @(body.routine* pc.routine*)"))
+          (die "No results returned: @(tostring:prn (body.routine* pc.routine*))"))
         (++ pc.routine*))
       (++ curr-cycle*)
       (trace "run" "-- " int-canon.memory*)
@@ -469,6 +471,10 @@
                   (withs (operand  (canonize arg.0)
                           elemtype  typeinfo.operand!elem
                           idx  (m arg.1))
+;?                     (write arg.0)
+;?                     (pr " => ")
+;?                     (write operand)
+;?                     (prn)
                     (unless (< -1 idx array-len.operand)
                       (die "@idx is out of bounds of array @operand"))
                     (m `((,(+ v.operand
@@ -724,10 +730,16 @@
       (++ n))))
 
 (def canonize (operand)
+;?   (tr "0: @operand")
   (ret operand
+;?     (prn "1: " operand)
+;?     (tr "1: " operand)  ; todo: why does this die?
     (zap absolutize operand)
+;?     (tr "2: @(tostring write.operand)")
     (while (pos '(deref) metadata.operand)
-      (zap deref operand))))
+      (zap deref operand)
+;?       (tr "3: @(tostring write.operand)")
+      )))
 
 (def array-len (operand)
   (trace "array-len" operand)
@@ -1545,7 +1557,7 @@
 ;?     (print-primitive ("arg now: " literal))
 ;?     (print-primitive a:string-address)
 ;?     (print-primitive "@":literal)
-;?     print-primitive:a:string-address/deref  ; todo: test (m on scoped array)
+;?     (print-primitive a:string-address/deref)  ; todo: test (m on scoped array)
 ;?     (print-primitive "\n":literal)
 ;? ;?     (assert nil:literal)
     ; result-len = result-len + arg.length - 1 (for the 'underscore' being replaced)
@@ -1730,6 +1742,7 @@
 
 ;; load all provided files and start at 'main'
 (reset)
+(new-trace "chessboard")
 ;? (set dump-trace*)
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
@@ -1741,6 +1754,7 @@
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
   (prn "\nmemory: " int-canon.memory*)
-;?   (prn completed-routines*)
+  (each routine completed-routines*
+    (aif rep.routine!error (prn "error - " it)))
 )
 (reset)
