@@ -122,6 +122,7 @@
               integer-boolean-pair-array (obj array t  elem '(integer-boolean-pair))
               integer-boolean-pair-array-address (obj size 1  address t  elem '(integer-boolean-pair-array))
               integer-integer-pair (obj size 2  and-record t  elems '((integer) (integer)))
+              integer-integer-pair-address (obj size 1  address t  elem '(integer-integer-pair))
               integer-point-pair (obj size 2  and-record t  elems '((integer) (integer-integer-pair)))
               integer-point-pair-address (obj size 1  address t  elem '(integer-point-pair))
               integer-point-pair-address-address (obj size 1  address t  elem '(integer-point-pair-address))
@@ -507,6 +508,10 @@
                 save-type
                   (annotate 'record `(,((ty arg.0) 0) ,(m arg.0)))
 
+                ; code points for characters
+                character-to-integer
+                  ($.char->integer (m arg.0))
+
                 ; multiprocessing
                 run
                   (run (v arg.0))
@@ -542,6 +547,8 @@
                   (do1 nil ((if ($.current-charterm) $.charterm-display pr) (m arg.0)))
                 read-key
                   (and ($.charterm-byte-ready?) ($.charterm-read-key))
+                wait-for-key
+                  ($.charterm-read-key)
                 bold-mode
                   (do1 nil ($.charterm-bold))
                 non-bold-mode
@@ -976,12 +983,14 @@
           (continue))
         (trace "cn0" instr " " canon.location " " canon.isa-field)
         (let (oargs op args)  (parse-instr instr)
-;?           (tr "about to rename args")
+;?           (tr "about to rename args: @op")
           (if (in op 'get 'get-address)
             ; special case: map field offset by looking up type table
             (with (basetype  (typeof args.0)
                    field  (v args.1))
+;?               (tr 111 " " args.0 " " basetype)
               (assert type*.basetype!and-record "get on non-record @args.0")
+;?               (tr 112)
               (trace "cn0" "field-access @field in @args.0 of type @basetype")
               (when (isa field 'sym)
                 (assert (or (~location field) isa-field.field) "field @args.1 is also a variable")
@@ -1146,6 +1155,19 @@
                                ; dump all metadata for now except field name and type
                                elems (map cdar fields)
                                fields (map caar fields)))))
+
+      ; address <type> <elem-type>
+      address
+        (let (name types)  rest
+          (= type*.name (obj size 1
+                             address t
+                             elem types)))
+
+      ; array <type> <elem-type>
+      array
+        (let (name types)  rest
+          (= type*.name (obj array t
+                             elem types)))
 
       ; before <label> [ <instructions> ]
       ;
@@ -1708,6 +1730,7 @@
 
 ;; load all provided files and start at 'main'
 (reset)
+;? (set dump-trace*)
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run" "schedule" "add")))
@@ -1717,6 +1740,7 @@
 ;?   (prn function*!factorial)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
-  (prn "\nmemory: " memory*)
+  (prn "\nmemory: " int-canon.memory*)
 ;?   (prn completed-routines*)
 )
+(reset)
