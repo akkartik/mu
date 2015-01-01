@@ -78,11 +78,91 @@
   }
 ])
 
+(and-record move [
+  from:integer-integer-pair
+  to:integer-integer-pair
+])
+
+(address move-address (move))
+
+(function read-move [
+  (a:character <- copy ((#\a literal)))
+  (file-base:integer <- character-to-integer a:character)
+  (file-base:integer <- subtract file-base:integer 1:literal)
+  (one:character <- copy ((#\1 literal)))
+  (rank-base:integer <- character-to-integer one:character)
+  (rank-base:integer <- subtract rank-base:integer 1:literal)
+  ; get from-file
+  (c:character <- wait-for-key)
+  (print-primitive c:character)
+  (from-file:integer <- character-to-integer c:character)
+  (from-file:integer <- subtract from-file:integer file-base:integer)
+  ; assert('a' <= from-file <= 'h')
+  (above-min:boolean <- greater-or-equal from-file:integer 1:literal)
+  (assert above-min:boolean (("from-file too low" literal)))
+  (below-max:boolean <- lesser-or-equal from-file:integer 8:literal)
+  (assert below-max:boolean (("from-file too high" literal)))
+  ; get from-rank
+  (c:character <- wait-for-key)
+  (print-primitive c:character)
+  (from-rank:integer <- character-to-integer c:character)
+  (from-rank:integer <- subtract from-rank:integer rank-base:integer)
+  ; assert(1 <= from-rank <= 8)
+  (above-min:boolean <- greater-or-equal from-rank:integer 1:literal)
+  (assert above-min:boolean (("from-rank too low" literal)))
+  (below-max:boolean <- lesser-or-equal from-rank:integer 8:literal)
+  (assert below-max:boolean (("from-rank too high" literal)))
+  ; slurp hyphen
+  (c:character <- wait-for-key)
+  (print-primitive c:character)
+  (hyphen?:boolean <- equal c:character ((#\- literal)))
+  (assert hyphen?:boolean (("expected hyphen" literal)))
+  ; get to-file
+  (c:character <- wait-for-key)
+  (print-primitive c:character)
+  (to-file:integer <- character-to-integer c:character)
+  (to-file:integer <- subtract to-file:integer file-base:integer)
+  ; assert('a' <= to-file <= 'h')
+  (above-min:boolean <- greater-or-equal to-file:integer 1:literal)
+  (assert above-min:boolean (("to-file too low" literal)))
+  (below-max:boolean <- lesser-or-equal to-file:integer 8:literal)
+  (assert below-max:boolean (("to-file too high" literal)))
+  ; get to-rank
+  (c:character <- wait-for-key)
+  (print-primitive c:character)
+  (to-rank:integer <- character-to-integer c:character)
+  (to-rank:integer <- subtract to-rank:integer rank-base:integer)
+  ; assert(1 <= to-rank <= 8)
+  (above-min:boolean <- greater-or-equal to-rank:integer 1:literal)
+  (assert above-min:boolean (("to-rank too low" literal)))
+  (below-max:boolean <- lesser-or-equal to-rank:integer 8:literal)
+  (assert below-max:boolean (("to-rank too high" literal)))
+  ; construct the move object
+  (result:move-address <- new move:literal)
+  (f:integer-integer-pair-address <- get-address result:move-address/deref from:offset)
+  (dest:integer-address <- get-address f:integer-integer-pair-address/deref 0:offset)
+  (dest:integer-address/deref <- copy from-file:integer)
+  (dest:integer-address <- get-address f:integer-integer-pair-address/deref 1:offset)
+  (dest:integer-address/deref <- copy from-rank:integer)
+  (t0:integer-integer-pair-address <- get-address result:move-address/deref to:offset)
+  (dest:integer-address <- get-address t0:integer-integer-pair-address/deref 0:offset)
+  (dest:integer-address/deref <- copy to-file:integer)
+  (dest:integer-address <- get-address t0:integer-integer-pair-address/deref 1:offset)
+  (dest:integer-address/deref <- copy to-rank:integer)
+  (reply result:move-address)
+])
+
 (function main [
 ;?   (print-primitive (("\u2654 \u265a" literal)))
+  (default-scope:scope-address <- new scope:literal 30:literal)
   (b:board-address <- read-board)
   (console-on)
-  (clear-screen)
-  (print-board b:board-address)
+  { begin
+    (clear-screen)
+    (print-board b:board-address)
+    (print-primitive (("? " literal)))
+    (m:move-address <- read-move)
+    (loop)
+  }
   (console-off)
 ])
