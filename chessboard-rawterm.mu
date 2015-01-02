@@ -94,6 +94,11 @@
   ; get from-file
   (c:character <- wait-for-key)
   (print-primitive c:character)
+  { begin
+    (quit:boolean <- equal c:character ((#\q literal)))
+    (break-unless quit:boolean)
+    (reply)
+  }
   (from-file:integer <- character-to-integer c:character)
   (from-file:integer <- subtract from-file:integer file-base:integer)
   ; assert('a' <= from-file <= 'h')
@@ -183,10 +188,11 @@
     (cursor-to-next-line)
     (print-primitive (("Type in your move as <from square>-<to square>. For example: a2-a4. Lowercase only. Currently very unforgiving of typos." literal)))
     (cursor-to-next-line)
-    (print-primitive (("Hit ctrl-c to exit, and then use the 'reset' command to clean up your terminal :/" literal)))
+    (print-primitive (("Hit 'q' to exit." literal)))
     (cursor-to-next-line)
     (print-primitive (("move: " literal)))
     (m:move-address <- read-move)
+    (break-unless m:move-address)
     (b:board-address <- make-move b:board-address m:move-address)
     (loop)
   }
