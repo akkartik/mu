@@ -1,28 +1,23 @@
 schedule: main
-run: -- nil
 run: 1 main 0: (((1 type)) <- ((copy)) ((integer-address literal)))
 run: integer-address => ((1 type))
 setm: ((1 type)) <= integer-address
 setm: size of ((1 type)) is 1
 setm: ((1 type)): setting 1 to integer-address
-run: -- ((1 integer-address))
 run: 2 main 1: (((2 integer-address)) <- ((copy)) ((34 literal)))
 run: 34 => ((2 integer-address))
 setm: ((2 integer-address)) <= 34
 setm: size of ((2 integer-address)) is 1
 setm: ((2 integer-address)): setting 2 to 34
-run: -- ((1 integer-address) (2 34))
 run: 3 main 2: (((3 integer-address)) ((4 boolean)) <- ((maybe-coerce)) ((1 tagged-value)) ((integer-address literal)))
 m: ((1 tagged-value))
 sizeof: ((1 tagged-value))
 sizeof: ((_ type))
 sizeof: ((_ location))
-run: -- ((1 integer-address) (2 34))
 run: 4 maybe-coerce 0: (((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 1000 => ((default-scope scope-address))
 sizeof: ((default-scope scope-address))
-run: -- ((1 integer-address) (2 34) (1000 30))
 run: 5 maybe-coerce 1: (((1 tagged-value-address)) <- ((new)) ((tagged-value literal)))
 sizeof: ((_ tagged-value))
 sizeof: ((_ type))
@@ -31,7 +26,6 @@ run: 1031 => ((1 tagged-value-address))
 setm: ((1 tagged-value-address)) <= 1031
 setm: size of ((1 tagged-value-address)) is 1
 setm: ((1 tagged-value-address)): setting 1002 to 1031
-run: -- ((1 integer-address) (2 34) (1000 30) (1002 1031))
 run: 6 maybe-coerce 2: (((1 tagged-value-address) (deref)) <- ((next-input)))
 arg: nil 0 (#(tagged record (integer-address 34 . nil)) integer-address)
 run: #(tagged record (integer-address 34 . nil)) => ((1 tagged-value-address) (deref))
@@ -42,14 +36,12 @@ sizeof: ((_ type))
 sizeof: ((_ location))
 setm: ((1 tagged-value-address) (deref)): setting 1031 to integer-address
 setm: ((1 tagged-value-address) (deref)): setting 1032 to 34
-run: -- ((1 integer-address) (2 34) (1000 30) (1002 1031) (1031 integer-address) (1032 34))
 run: 7 maybe-coerce 3: (((2 type)) <- ((next-input)))
 arg: nil 1 (#(tagged record (integer-address 34 . nil)) integer-address)
 run: integer-address => ((2 type))
 setm: ((2 type)) <= integer-address
 setm: size of ((2 type)) is 1
 setm: ((2 type)): setting 1003 to integer-address
-run: -- ((1 integer-address) (2 34) (1000 30) (1002 1031) (1003 integer-address) (1031 integer-address) (1032 34))
 run: 8 maybe-coerce 4: (((3 type)) <- ((get)) ((1 tagged-value-address) (deref)) ((0 offset)))
 m: ((1031 type) (raw))
 sizeof: ((1031 type) (raw))
@@ -57,7 +49,6 @@ run: integer-address => ((3 type))
 setm: ((3 type)) <= integer-address
 setm: size of ((3 type)) is 1
 setm: ((3 type)): setting 1004 to integer-address
-run: -- ((1 integer-address) (2 34) (1000 30) (1002 1031) (1003 integer-address) (1004 integer-address) (1031 integer-address) (1032 34))
 run: 9 maybe-coerce 5: (((4 boolean)) <- ((equal)) ((3 type)) ((2 type)))
 m: ((3 type))
 sizeof: ((3 type))
@@ -67,13 +58,11 @@ run: t => ((4 boolean))
 setm: ((4 boolean)) <= t
 setm: size of ((4 boolean)) is 1
 setm: ((4 boolean)): setting 1005 to t
-run: -- ((1 integer-address) (2 34) (1000 30) (1002 1031) (1003 integer-address) (1004 integer-address) (1005 t) (1031 integer-address) (1032 34))
 run: 10 maybe-coerce 6: (((jump-if)) ((4 boolean)) ((1 offset)))
 m: ((4 boolean))
 sizeof: ((4 boolean))
 jump: checking that t is t
 jump: jumping to 8
-run: -- ((1 integer-address) (2 34) (1000 30) (1002 1031) (1003 integer-address) (1004 integer-address) (1005 t) (1031 integer-address) (1032 34))
 run: 11 maybe-coerce 8: (((5 location)) <- ((get)) ((1 tagged-value-address) (deref)) ((1 offset)))
 sizeof: ((_ type))
 m: ((1032 location) (raw))
@@ -82,7 +71,6 @@ run: 34 => ((5 location))
 setm: ((5 location)) <= 34
 setm: size of ((5 location)) is 1
 setm: ((5 location)): setting 1006 to 34
-run: -- ((1 integer-address) (2 34) (1000 30) (1002 1031) (1003 integer-address) (1004 integer-address) (1005 t) (1006 34) (1031 integer-address) (1032 34))
 run: 12 maybe-coerce 9: (((reply)) ((5 location)) ((4 boolean)))
 m: ((5 location))
 sizeof: ((5 location))
