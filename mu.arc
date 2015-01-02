@@ -580,6 +580,8 @@
                   (do1 nil ($.charterm-clear-line))
                 cursor
                   (do1 nil ($.charterm-cursor (m arg.0) (m arg.1)))
+                cursor-to-next-line
+                  (do1 nil ($.charterm-newline))
                 print-primitive
                   (do1 nil ((if ($.current-charterm) $.charterm-display pr) (m arg.0)))
                 read-key
