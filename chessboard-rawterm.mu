@@ -52,6 +52,10 @@
   { begin
     (done?:boolean <- less-than row:integer 0:literal)
     (break-if done?:boolean)
+    ; print rank number as a legend
+    (rank:integer <- add row:integer 1:literal)
+    (print-primitive rank:integer)
+    (print-primitive ((" | " literal)))
     ; print each square in the row
     (col:integer <- copy 0:literal)
     { begin
@@ -68,6 +72,11 @@
     (cursor-to-next-line)
     (loop)
   }
+  ; print file letters as legend
+  (print-primitive (("  +----------------" literal)))
+  (cursor-to-next-line)
+  (print-primitive (("    a b c d e f g h" literal)))
+  (cursor-to-next-line)
 ])
 
 (and-record move [
@@ -167,8 +176,16 @@
   (console-on)
   { begin
     (clear-screen)
+    (print-primitive (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
+    (cursor-to-next-line)
+    (cursor-to-next-line)
     (print-board b:board-address)
-    (print-primitive (("? " literal)))
+    (cursor-to-next-line)
+    (print-primitive (("Type in your move as <from square>-<to square>. For example: a2-a4. Lowercase only. Currently very unforgiving of typos." literal)))
+    (cursor-to-next-line)
+    (print-primitive (("Hit ctrl-c to exit, and then use the 'reset' command to clean up your terminal :/" literal)))
+    (cursor-to-next-line)
+    (print-primitive (("move: " literal)))
     (m:move-address <- read-move)
     (b:board-address <- make-move b:board-address m:move-address)
     (loop)
