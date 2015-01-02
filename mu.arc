@@ -464,14 +464,14 @@
                       (continue))
                 jump-if
                   (let flag (m arg.0)
-                    (trace "jump" "checking that " flag " is t")
+                    (trace "jump" "checking " flag)
                     (when (is t flag)
                       (= pc.routine* (+ 1 pc.routine* (v arg.1)))
                       (trace "jump" "jumping to " pc.routine*)
                       (continue)))
                 jump-unless  ; convenient helper
                   (let flag (m arg.0)
-                    (trace "jump" "checking " flag)
+                    (trace "jump" "checking ~" flag)
                     (when (no flag)
                       (= pc.routine* (+ 1 pc.routine* (v arg.1)))
                       (trace "jump" "jumping to " pc.routine*)
