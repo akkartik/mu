@@ -1,6 +1,35 @@
+;; profiler (http://arclanguage.org/item?id=11556)
+(mac proc (name params . body)
+  `(def ,name ,params ,@body nil))
+
+(= times* (table))
+
+(mac deftimed(name args . body)
+  `(do
+     (def ,(sym (string name "_core")) ,args
+        ,@body)
+     (def ,name ,args
+      (let t0 (msec)
+        (ret ans ,(cons (sym (string name "_core")) args)
+          (update-time ,(string name) t0))))))
+
+(proc update-time(name t0) ; call directly in recursive functions
+  (or= times*.name (list 0 0))
+  (with ((a b)  times*.name
+         timing (- (msec) t0))
+    (= times*.name
+       (list
+         (+ a timing)
+         (+ b 1)))))
+
+(def print-times()
+  (prn "gc " (current-gc-milliseconds))
+  (each (name time) (tablist times*)
+    (prn name " " time)))
+
 ;; what happens when our virtual machine starts up
 (= initialization-fns* (queue))
-(def reset ()
+(deftimed reset ()
   (each f (as cons initialization-fns*)
     (f)))
 
@@ -21,36 +50,37 @@
   (= curr-trace-file* nil)
   (= traces* (queue)))
 
-(def new-trace (filename)
+(deftimed new-trace (filename)
   (prn "== @filename")
 ;?   )
   (= curr-trace-file* filename))
 
 (= dump-trace* nil)
 (def trace (label . args)
-  (when (or (is dump-trace* t)
-            (and dump-trace* (is label "-"))
-            (and dump-trace* (pos label dump-trace*!whitelist))
-            (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
-    (apply prn label ": " args))
-  (enq (list label (apply tostring:prn args))
-       traces*))
+  nil)
+;?   (when (or (is dump-trace* t)
+;?             (and dump-trace* (is label "-"))
+;?             (and dump-trace* (pos label dump-trace*!whitelist))
+;?             (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
+;?     (apply prn label ": " args))
+;?   (enq (list label (apply tostring:prn args))
+;?        traces*))
 
 (redef tr args  ; why am I still returning to prn when debugging? Will this help?
   (do1 nil
        (apply trace "-" args)))
 
-(def tr2 (msg arg)
+(deftimed tr2 (msg arg)
   (tr msg arg)
   arg)
 
-(def check-trace-contents (msg expected-contents)
+(deftimed check-trace-contents (msg expected-contents)
   (unless (trace-contents-match expected-contents)
     (prn "F - " msg)
     (prn "  trace contents")
     (print-trace-contents-mismatch expected-contents)))
 
-(def trace-contents-match (expected-contents)
+(deftimed trace-contents-match (expected-contents)
   (each (label msg) (as cons traces*)
     (when (and expected-contents
                (is label expected-contents.0.0)
@@ -58,7 +88,7 @@
       (pop expected-contents)))
   (no expected-contents))
 
-(def print-trace-contents-mismatch (expected-contents)
+(deftimed print-trace-contents-mismatch (expected-contents)
   (each (label msg) (as cons traces*)
     (whenlet (expected-label expected-msg)  expected-contents.0
       (if (and (is label expected-label)
@@ -76,7 +106,7 @@
 ; things that a future assembler will need separate memory for:
 ;   code; types; args channel
 ;   at compile time: mapping names to locations
-(def clear ()
+(deftimed clear ()
   (= type* (table))  ; name -> type info
   (= memory* (table))  ; address -> value
   (= function* (table))  ; name -> [instructions]
@@ -173,7 +203,7 @@
 (defextend empty (x)  (isa x 'routine)
   (no rep.x!call-stack))
 
-(def stack (routine)
+(deftimed stack (routine)
   ((rep routine) 'call-stack))
 
 (mac push-stack (routine op)
@@ -183,11 +213,11 @@
 (mac pop-stack (routine)
   `(pop ((rep ,routine) 'call-stack)))
 
-(def top (routine)
+(deftimed top (routine)
   stack.routine.0)
 
-(def body (routine (o idx 0))
-  (function* stack.routine.idx!fn-name))
+(deftimed body (routine)
+  (function* stack.routine.0!fn-name))
 
 (mac pc (routine (o idx 0))  ; assignable
   `((((rep ,routine) 'call-stack) ,idx) 'pc))
@@ -205,10 +235,10 @@
 (mac results (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'results))
 
-(def waiting-for-exact-cycle? (routine)
+(deftimed waiting-for-exact-cycle? (routine)
   (is 'literal rep.routine!sleep.1))
 
-(def ready-to-wake-up (routine)
+(deftimed ready-to-wake-up (routine)
   (assert no.routine*)
   (if (is 'literal rep.routine!sleep.1)
     (> curr-cycle* rep.routine!sleep.0)
@@ -261,7 +291,7 @@
 ;   wake up any necessary sleeping routines (which might be waiting for a
 ;     particular time or for a particular memory location to change)
 ;   detect deadlock: kill all sleeping routines when none can be woken
-(def update-scheduler-state ()
+(deftimed update-scheduler-state ()
 ;?   (trace "schedule" curr-cycle*)
   (when routine*
     (if
@@ -295,7 +325,7 @@
 ;?   (tr 114)
   )
 
-(def detect-deadlock ()
+(deftimed detect-deadlock ()
   (when (and (empty running-routines*)
              (~empty sleeping-routines*)
              (~some 'literal (map (fn(_) rep._!sleep.1)
@@ -305,7 +335,7 @@
       (= rep.routine!error "deadlock detected")
       (push routine completed-routines*))))
 
-(def die (msg)
+(deftimed die (msg)
   (tr "die: " msg)
   (= rep.routine*!error msg)
   (= rep.routine*!stack-trace rep.routine*!call-stack)
@@ -322,7 +352,7 @@
 
 ; routines consist of instrs
 ; instrs consist of oargs, op and args
-(def parse-instr (instr)
+(deftimed parse-instr (instr)
 ;?   (prn instr)
   (iflet delim (pos '<- instr)
     (list (cut instr 0 delim)  ; oargs
@@ -330,29 +360,29 @@
           (cut instr (+ delim 2)))  ; args
     (list nil (v car.instr) cdr.instr)))
 
-(def metadata (operand)
+(deftimed metadata (operand)
   cdr.operand)
 
-(def ty (operand)
+(deftimed ty (operand)
   (cdr operand.0))
 
-(def literal? (operand)
+(deftimed literal? (operand)
   (in ty.operand.0 'literal 'offset 'fn))
 
-(def typeinfo (operand)
+(deftimed typeinfo (operand)
   (or (type* ty.operand.0)
       (err "unknown type @(tostring prn.operand)")))
 
 ; operand accessors
-(def nondummy (operand)  ; precondition for helpers below
+(deftimed nondummy (operand)  ; precondition for helpers below
   (~is '_ operand))
 
 ; just for convenience, 'new' instruction sometimes takes a raw string and
 ; allocates just enough space to store it
-(def not-raw-string (operand)
+(deftimed not-raw-string (operand)
   (~isa operand 'string))
 
-(def address? (operand)
+(deftimed address? (operand)
   (or (is ty.operand.0 'location)
       typeinfo.operand!address))
 
@@ -361,7 +391,7 @@
 (= Viewport nil)
 
 ; run instructions from 'routine*' for 'time-slice'
-(def run-for-time-slice (time-slice)
+(deftimed run-for-time-slice (time-slice)
   (point return
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
       (if (empty body.routine*) (err "@stack.routine*.0!fn-name not defined"))
@@ -373,7 +403,7 @@
           (die "No results returned: @(tostring:prn (body.routine* pc.routine*))"))
         (++ pc.routine*))
       (++ curr-cycle*)
-      (trace "run" "-- " int-canon.memory*)
+;?       (trace "run" "-- " int-canon.memory*)
       (trace "run" curr-cycle* " " top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
       (when (atom (body.routine* pc.routine*))  ; label
@@ -653,7 +683,7 @@
         (++ pc.routine*)))
     (return time-slice)))
 
-(def prepare-reply (args)
+(deftimed prepare-reply (args)
   (= results.routine*
      (accum yield
        (each a args
@@ -665,7 +695,7 @@
 ;   indirect addressing - 'deref'
 ;   relative addressing - if routine* has 'default-scope'
 
-(def m (loc)  ; read memory, respecting metadata
+(deftimed m (loc)  ; read memory, respecting metadata
   (point return
     (when (literal? loc)
       (return v.loc))
@@ -682,7 +712,7 @@
             (annotate 'record
                       (map memory* (addrs addr n)))))))
 
-(def setm (loc val)  ; set memory, respecting metadata
+(deftimed setm (loc val)  ; set memory, respecting metadata
   (point return
     (when (is v.loc 'default-scope)
       (assert (is 1 sizeof.loc) "can't store compounds in default-scope @loc")
@@ -714,22 +744,22 @@
                 (trace "setm" loc ": setting " dest " to " src)
                 (= memory*.dest src))))))))
 
-(def typeof (operand)
+(deftimed typeof (operand)
   (let loc absolutize.operand
     (while (pos '(deref) metadata.loc)
       (zap deref loc))
     ty.loc.0))
 
-(def addr (operand)
+(deftimed addr (operand)
   (v canonize.operand))
 
-(def addrs (n sz)
+(deftimed addrs (n sz)
   (accum yield
     (repeat sz
       (yield n)
       (++ n))))
 
-(def canonize (operand)
+(deftimed canonize (operand)
 ;?   (tr "0: @operand")
   (ret operand
 ;?     (prn "1: " operand)
@@ -741,7 +771,7 @@
 ;?       (tr "3: @(tostring write.operand)")
       )))
 
-(def array-len (operand)
+(deftimed array-len (operand)
   (trace "array-len" operand)
   (zap canonize operand)
   (if typeinfo.operand!array
@@ -749,7 +779,7 @@
       :else
         (err "can't take len of non-array @operand")))
 
-(def sizeof (x)
+(deftimed sizeof (x)
   (trace "sizeof" x)
   (assert acons.x)
   (zap canonize x)
@@ -769,7 +799,7 @@
 ;?   (tr "sizeof: @x is a primitive")
   (return typeinfo.x!size)))
 
-(def absolutize (operand)
+(deftimed absolutize (operand)
   (if (no routine*)
         operand
       (is '_ v.operand)
@@ -789,7 +819,7 @@
                         space.operand)
           operand)))
 
-(def lookup-space (operand base space)
+(deftimed lookup-space (operand base space)
   (if (is 0 space)
     ; base case
     (if (< v.operand memory*.base)
@@ -801,17 +831,17 @@
     (lookup-space operand (memory* (+ base 1))  ; location 0 points to parent space
                   (- space 1))))
 
-(def space (operand)
+(deftimed space (operand)
   (or (alref operand 'space)
       0))
 
-(def deref (operand)
+(deftimed deref (operand)
   (assert (pos '(deref) metadata.operand))
   (assert address?.operand)
   (cons `(,(memory* v.operand) ,@typeinfo.operand!elem)
         (drop-one '(deref) metadata.operand)))
 
-(def drop-one (f x)
+(deftimed drop-one (f x)
   (when acons.x  ; proper lists only
     (if (testify.f car.x)
       cdr.x
@@ -819,18 +849,18 @@
 
 ; memory allocation
 
-(def new-scalar (type)
+(deftimed new-scalar (type)
 ;?   (tr "new scalar: @type")
   (ret result rep.routine*!alloc
     (++ rep.routine*!alloc (sizeof `((_ ,type))))))
 
-(def new-array (type size)
+(deftimed new-array (type size)
 ;?   (tr "new array: @type @size")
   (ret result rep.routine*!alloc
     (++ rep.routine*!alloc (+ 1 (* (sizeof `((_ ,@type*.type!elem))) size)))
     (= memory*.result size)))
 
-(def new-string (literal-string)
+(deftimed new-string (literal-string)
 ;?   (tr "new string: @literal-string")
   (ret result rep.routine*!alloc
     (= (memory* rep.routine*!alloc) len.literal-string)
@@ -841,7 +871,7 @@
 
 ;; desugar structured assembly based on blocks
 
-(def convert-braces (instrs)
+(deftimed convert-braces (instrs)
 ;?   (prn "convert-braces " instrs)
   (let locs ()  ; list of information on each brace: (open/close pc)
     (let pc 0
@@ -912,7 +942,7 @@
                   (yield instr)))
             (++ pc))))))))
 
-(def close-offset (pc locs nblocks)
+(deftimed close-offset (pc locs nblocks)
   (or= nblocks 1)
 ;?   (tr nblocks)
   (point return
@@ -931,13 +961,13 @@
 ;?         (tr "close now " loc)
         (return (- loc pc 1))))))))
 
-(def open-offset (pc stack nblocks)
+(deftimed open-offset (pc stack nblocks)
   (or= nblocks 1)
   (- (stack (- nblocks 1)) 1 pc))
 
 ;; convert jump targets to offsets
 
-(def convert-labels (instrs)
+(deftimed convert-labels (instrs)
 ;?   (tr "convert-labels " instrs)
   (let labels (table)
     (let pc 0
@@ -962,7 +992,7 @@
 
 ;; convert symbolic names to raw memory locations
 
-(def add-closure-generator (instrs name)
+(deftimed add-closure-generator (instrs name)
 ;?   (prn "== @name")
   (each instr instrs
     (when acons.instr
@@ -985,7 +1015,7 @@
     )
   (replace-names-with-location instrs name))
 
-(def assign-names-to-location (instrs name)
+(deftimed assign-names-to-location (instrs name)
   (ret location (table)
     (with (isa-field  (table)
            idx  1)  ; 0 always reserved for parent scope
@@ -1034,7 +1064,7 @@
                 ; todo: can't allocate arrays on the stack
                 (++ idx (sizeof `((_ ,@ty.arg)))))))))))))
 
-(def replace-names-with-location (instrs name)
+(deftimed replace-names-with-location (instrs name)
   (each instr instrs
     (when (acons instr)
       (let (oargs op args)  (parse-instr instr)
@@ -1045,7 +1075,7 @@
   instrs)
 
 ; assign an index to an arg
-(def maybe-add (arg location idx)
+(deftimed maybe-add (arg location idx)
   (trace "maybe-add" arg)
   (when (and nondummy.arg
 ;?              (prn arg " " (assoc 'space arg))
@@ -1058,7 +1088,7 @@
     (= (location v.arg) idx)))
 
 ; convert the arg to corresponding index
-(def convert-name (arg default-name)
+(deftimed convert-name (arg default-name)
 ;?   (prn "111 @arg @default-name")
   (when (and nondummy.arg not-raw-string.arg
              (~is ty.arg.0 'literal))  ; can't use 'literal?' because we want to rename offsets
@@ -1073,7 +1103,7 @@
 ;?       (prn 115)
       )))
 
-(def space-to-name (arg default-name)
+(deftimed space-to-name (arg default-name)
   (ret name default-name
     (when (~is space.arg 'global)
       (repeat space.arg
@@ -1081,7 +1111,7 @@
 
 ;; literate tangling system for reordering code
 
-(def convert-quotes (instrs)
+(deftimed convert-quotes (instrs)
   (let deferred (queue)
     (each instr instrs
       (when (acons instr)
@@ -1143,7 +1173,7 @@
 
 ;; loading code into the virtual machine
 
-(def add-code (forms)
+(deftimed add-code (forms)
   (each (op . rest)  forms
     (case op
       ; function <name> [ <instructions> ]
@@ -1201,7 +1231,7 @@
           (push fragment after*.label))
       )))
 
-(def freeze (function-table)
+(deftimed freeze (function-table)
   (each (name body)  canon.function-table
 ;?     (prn "freeze " name)
     (= function-table.name (convert-labels:convert-braces:tokenize-args:insert-code body name)))
@@ -1214,7 +1244,7 @@
   ; we could clear location* at this point, but maybe we'll find a use for it
   )
 
-(def tokenize-arg (arg)
+(deftimed tokenize-arg (arg)
 ;?   (tr "tokenize-arg " arg)
   (if (in arg '<- '_)
         arg
@@ -1225,7 +1255,7 @@
       :else
         arg))
 
-(def tokenize-args (instrs)
+(deftimed tokenize-args (instrs)
 ;?   (tr "tokenize-args " instrs)
 ;?   (prn2 "@(tostring prn.instrs) => "
   (accum yield
@@ -1242,15 +1272,15 @@
   (pr msg)
   (apply prn args))
 
-(def canon (table)
+(deftimed canon (table)
   (sort (compare < [tostring (prn:car _)]) (as cons table)))
 
-(def int-canon (table)
+(deftimed int-canon (table)
   (sort (compare < car) (as cons table)))
 
 ;; test helpers
 
-(def memory-contains (addr value)
+(deftimed memory-contains (addr value)
 ;?   (prn "Looking for @value starting at @addr")
   (loop (addr addr
          idx  0)
@@ -1263,7 +1293,7 @@
         :else
           (recur (+ addr 1) (+ idx 1)))))
 
-(def memory-contains-array (addr value)
+(deftimed memory-contains-array (addr value)
 ;?   (prn "Looking for @value starting at @addr, size @memory*.addr vs @len.value")
   (and (>= memory*.addr len.value)
        (loop (addr (+ addr 1)
@@ -1286,7 +1316,7 @@
 (mac init-fn (name . body)
   `(= (system-function* ',name) ',body))
 
-(def load-system-functions ()
+(deftimed load-system-functions ()
   (each (name f) system-function*
     (= (function* name)
        (system-function* name))))
@@ -1740,8 +1770,6 @@
 (freeze system-function*)
 )  ; section 100 for system software
 
-(load "profiler.arc")
-
 ;; load all provided files and start at 'main'
 (reset)
 ;? (new-trace "main")
@@ -1754,34 +1782,6 @@
 ;?   (set dump-trace*)
 ;?   (freeze function*)
 ;?   (prn function*!factorial)
-;? (profile run)
-;? (profile run-for-time-slice)
-;? (profile make-routine)
-;? (profile empty)
-;? (profile stack)
-;? (profile top)
-;? (profile body)
-;? (profile parse-instr)
-;? (profile metadata)
-;? (profile ty)
-;? (profile literal?)
-;? (profile typeinfo)
-;? (profile m)
-;? (profile setm)
-;? (profile addr)
-;? (profile addrs)
-;? (profile canonize)
-;? (profile array-len)
-;? (profile sizeof)
-;? (profile absolutize)
-;? (profile lookup-space)
-;? (profile deref)
-;? (profile drop-one)
-;? (profile new-scalar)
-;? (profile new-array)
-;? (profile new-string)
-;? (profile convert-braces)
-;? (profile convert-names)
   (run 'main)
 ;?   (if ($.current-charterm) ($.close-charterm))
 ;?   (prn "\nmemory: " int-canon.memory*)
@@ -1789,4 +1789,4 @@
     (aif rep.routine!error (prn "error - " it)))
 )
 ;? (reset)
-(profiles)
+(print-times)

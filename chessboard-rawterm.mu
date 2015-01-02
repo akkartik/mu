@@ -5,11 +5,11 @@
                                               N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
                                               B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
                                               Q:literal P:literal _:literal _:literal _:literal _:literal p:literal q:literal
-                                              )
-;?                                               K:literal P:literal _:literal _:literal _:literal _:literal p:literal k:literal
-;?                                               B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
-;?                                               N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
-;?                                               R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal)
+;?                                               )
+                                              K:literal P:literal _:literal _:literal _:literal _:literal p:literal k:literal
+                                              B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
+                                              N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
+                                              R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal)
   ; assert(length(initial-position) == 64)
 ;?   (print-primitive (("list-length\n" literal)))
   (len:integer <- list-length initial-position:list-address)
