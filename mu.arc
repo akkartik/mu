@@ -177,14 +177,6 @@
               line-address-address (obj size 1  address t  elem '(line-address))
               screen (obj array t  elem '(line-address))
               screen-address (obj size 1  address t  elem '(screen))
-              ; chessboard
-              square (obj size 1)
-              square-address (obj size 1  address t  elem '(square))
-              file (obj array t  elem '(square))  ; todo: include array dimensions in type table
-              file-address (obj size 1  address t  elem '(file))
-              file-address-address (obj size 1  address t  elem '(file-address))
-              board (obj array t  elem '(file-address))
-              board-address (obj size 1  address t  elem '(board))
               )))
 
 ;; managing concurrent routines
@@ -1200,6 +1192,11 @@
                                ; dump all metadata for now except field name and type
                                elems (map cdar fields)
                                fields (map caar fields)))))
+
+      ; primitive <type>
+      primitive
+        (let (name) rest
+          (= type*.name (obj size 1)))
 
       ; address <type> <elem-type>
       address
