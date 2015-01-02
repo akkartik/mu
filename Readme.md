@@ -207,6 +207,8 @@ Yet another example forks two 'routines' that communicate over a channel:
 
   # The exact order above might shift over time, but you'll never see a number
   # consumed before it's produced.
+
+  error - deadlock detected
 ```
 
 Channels are the unit of synchronization in mu. Blocking on channels are the
@@ -219,6 +221,9 @@ space. However, idiomatic mu will make it hard to accidentally read or clobber
 random memory locations. Bounds checking is baked deeply into the semantics,
 and pointer arithmetic will be mostly forbidden (except inside the memory
 allocator and a few other places).
+
+Notice also the error at the end. Mu can detect deadlock when running tests:
+routines waiting on channels that nobody will ever write to.
 
 ---
 
