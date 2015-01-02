@@ -5,32 +5,33 @@
                                               N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
                                               B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
                                               Q:literal P:literal _:literal _:literal _:literal _:literal p:literal q:literal
-                                              K:literal P:literal _:literal _:literal _:literal _:literal p:literal k:literal
-                                              B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
-                                              N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
-                                              R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal)
+                                              )
+;?                                               K:literal P:literal _:literal _:literal _:literal _:literal p:literal k:literal
+;?                                               B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
+;?                                               N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
+;?                                               R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal)
   ; assert(length(initial-position) == 64)
 ;?   (print-primitive (("list-length\n" literal)))
   (len:integer <- list-length initial-position:list-address)
-  (correct-length?:boolean <- equal len:integer 64:literal)
-;?   (correct-length?:boolean <- equal len:integer 4:literal)
-  (assert correct-length?:boolean (("chessboard had incorrect size" literal)))
-  (b:board-address <- new board:literal 8:literal)
-;?   (b:board-address <- new board:literal 2:literal)
-  (col:integer <- copy 0:literal)
-  (curr:list-address <- copy initial-position:list-address)
-  { begin
-    (done?:boolean <- equal col:integer 8:literal)
-;?     (done?:boolean <- equal col:integer 2:literal)
-    (break-if done?:boolean)
-;?     (print-primitive col:integer)
-;?     (print-primitive (("\n" literal)))
-    (file:file-address-address <- index-address b:board-address/deref col:integer)
-    (file:file-address-address/deref curr:list-address <- read-file curr:list-address)
-    (col:integer <- add col:integer 1:literal)
-    (loop)
-  }
-  (reply b:board-address)
+;?   (correct-length?:boolean <- equal len:integer 64:literal)
+;? ;?   (correct-length?:boolean <- equal len:integer 4:literal)
+;?   (assert correct-length?:boolean (("chessboard had incorrect size" literal)))
+;?   (b:board-address <- new board:literal 8:literal)
+;? ;?   (b:board-address <- new board:literal 2:literal)
+;?   (col:integer <- copy 0:literal)
+;?   (curr:list-address <- copy initial-position:list-address)
+;?   { begin
+;?     (done?:boolean <- equal col:integer 8:literal)
+;? ;?     (done?:boolean <- equal col:integer 2:literal)
+;?     (break-if done?:boolean)
+;? ;?     (print-primitive col:integer)
+;? ;?     (print-primitive (("\n" literal)))
+;?     (file:file-address-address <- index-address b:board-address/deref col:integer)
+;?     (file:file-address-address/deref curr:list-address <- read-file curr:list-address)
+;?     (col:integer <- add col:integer 1:literal)
+;?     (loop)
+;?   }
+;?   (reply b:board-address)
 ])
 
 (function read-file [
@@ -194,14 +195,14 @@
 ;?   (print-primitive (("\u2654 \u265a" literal)))
   (default-scope:scope-address <- new scope:literal 30:literal)
   (b:board-address <- read-board)
-  (console-on)
-  { begin
-    (clear-screen)
-    (print-board b:board-address)
-    (print-primitive (("? " literal)))
-    (m:move-address <- read-move)
-    (b:board-address <- make-move b:board-address m:move-address)
-    (loop)
-  }
-  (console-off)
+;?   (console-on)
+;?   { begin
+;?     (clear-screen)
+;?     (print-board b:board-address)
+;?     (print-primitive (("? " literal)))
+;?     (m:move-address <- read-move)
+;?     (b:board-address <- make-move b:board-address m:move-address)
+;?     (loop)
+;?   }
+;?   (console-off)
 ])
