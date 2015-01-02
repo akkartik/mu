@@ -48,10 +48,8 @@
   (default-scope:scope-address <- new scope:literal 30:literal)
   (b:board-address <- next-input)
   (row:integer <- copy 7:literal)
-  (screen-y:integer <- copy 1:literal)
   ; print each row
   { begin
-    (cursor 1:literal screen-y:integer)
     (done?:boolean <- less-than row:integer 0:literal)
     (break-if done?:boolean)
     ; print each square in the row
@@ -67,7 +65,7 @@
       (loop)
     }
     (row:integer <- subtract row:integer 1:literal)
-    (screen-y:integer <- add screen-y:integer 1:literal)
+    (cursor-to-next-line)
     (loop)
   }
 ])
