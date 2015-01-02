@@ -1742,7 +1742,7 @@
 
 ;; load all provided files and start at 'main'
 (reset)
-(new-trace "chessboard")
+;? (new-trace "main")
 ;? (set dump-trace*)
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
