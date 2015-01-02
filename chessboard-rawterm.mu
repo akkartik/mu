@@ -196,7 +196,7 @@
     (cursor-to-next-line)
     (print-board b:board-address)
     (cursor-to-next-line)
-    (print-primitive (("Type in your move as <from square>-<to square>. For example: a2-a4. Lowercase only. Currently very unforgiving of typos." literal)))
+    (print-primitive (("Type in your move as <from square>-<to square>. For example: 'a2-a4'. Currently very unforgiving of typos; exactly five letters, no <Enter>, no uppercase." literal)))
     (cursor-to-next-line)
     (print-primitive (("Hit 'q' to exit." literal)))
     (cursor-to-next-line)
@@ -208,3 +208,15 @@
   }
   (console-off)
 ])
+
+; tests todo:
+;   print board
+;   accept move
+;   print move
+;   board updates on move
+;   die on invalid move
+;   'q' exits
+;   'q' exits anywhere in move
+;   'q' exits on second move  -- FAIL
+;
+;   backspace, ctrl-u
