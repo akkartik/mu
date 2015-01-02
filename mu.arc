@@ -463,6 +463,9 @@
                       (continue)))
                 jump-unless  ; convenient helper
                   (let flag (m arg.0)
+;?                     (when ($.current-charterm)
+;?                       (prn flag)
+;?                       ($.charterm-read-key))
                     (trace "jump" "checking ~" flag)
                     (when (no flag)
                       (= pc.routine* (+ 1 pc.routine* (v arg.1)))
