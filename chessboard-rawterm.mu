@@ -107,7 +107,7 @@
   { begin
     (quit:boolean <- equal c:character ((#\q literal)))
     (break-unless quit:boolean)
-    (reply)
+    (reply nil:literal)
   }
   (from-file:integer <- character-to-integer c:character)
   (from-file:integer <- subtract from-file:integer file-base:integer)
@@ -206,6 +206,7 @@
     (b:board-address <- make-move b:board-address m:move-address)
     (loop)
   }
+  (cursor-to-next-line)
   (console-off)
 ])
 
