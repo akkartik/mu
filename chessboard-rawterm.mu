@@ -1,31 +1,23 @@
 (function read-board [
   (default-scope:scope-address <- new scope:literal 30:literal)
-;?   (initial-position:list-address <- init-list R:literal P:literal _:literal _:literal)
   (initial-position:list-address <- init-list R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal
                                               N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
                                               B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
                                               Q:literal P:literal _:literal _:literal _:literal _:literal p:literal q:literal
-;?                                               )
                                               K:literal P:literal _:literal _:literal _:literal _:literal p:literal k:literal
                                               B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
                                               N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
                                               R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal)
   ; assert(length(initial-position) == 64)
-;?   (print-primitive (("list-length\n" literal)))
   (len:integer <- list-length initial-position:list-address)
   (correct-length?:boolean <- equal len:integer 64:literal)
-;?   (correct-length?:boolean <- equal len:integer 4:literal)
   (assert correct-length?:boolean (("chessboard had incorrect size" literal)))
   (b:board-address <- new board:literal 8:literal)
-;?   (b:board-address <- new board:literal 2:literal)
   (col:integer <- copy 0:literal)
   (curr:list-address <- copy initial-position:list-address)
   { begin
     (done?:boolean <- equal col:integer 8:literal)
-;?     (done?:boolean <- equal col:integer 2:literal)
     (break-if done?:boolean)
-;?     (print-primitive col:integer)
-;?     (print-primitive (("\n" literal)))
     (file:file-address-address <- index-address b:board-address/deref col:integer)
     (file:file-address-address/deref curr:list-address <- read-file curr:list-address)
     (col:integer <- add col:integer 1:literal)
@@ -38,15 +30,10 @@
   (default-scope:scope-address <- new scope:literal 30:literal)
   (cursor:list-address <- next-input)
   (result:file-address <- new file:literal 8:literal)
-;?   (result:file-address <- new file:literal 2:literal)
   (row:integer <- copy 0:literal)
   { begin
     (done?:boolean <- equal row:integer 8:literal)
-;?     (done?:boolean <- equal row:integer 2:literal)
     (break-if done?:boolean)
-;?     (print-primitive (("  " literal)))
-;?     (print-primitive row:integer)
-;?     (print-primitive (("\n" literal)))
     (src:tagged-value-address <- list-value-address cursor:list-address)
     (dest:square-address <- index-address result:file-address/deref row:integer)
     (dest:square-address/deref <- get src:tagged-value-address/deref payload:offset)  ; unsafe typecast
@@ -61,7 +48,6 @@
   (default-scope:scope-address <- new scope:literal 30:literal)
   (b:board-address <- next-input)
   (row:integer <- copy 7:literal)
-;?   (row:integer <- copy 1:literal)
   (screen-y:integer <- copy 1:literal)
   ; print each row
   { begin
@@ -72,7 +58,6 @@
     (col:integer <- copy 0:literal)
     { begin
       (done?:boolean <- equal col:integer 8:literal)
-;?       (done?:boolean <- equal col:integer 2:literal)
       (break-if done?:boolean)
       (f:file-address <- index b:board-address/deref col:integer)
       (s:square <- index f:file-address/deref row:integer)
@@ -97,10 +82,8 @@
 (function read-move [
   (a:character <- copy ((#\a literal)))
   (file-base:integer <- character-to-integer a:character)
-;?   (file-base:integer <- subtract file-base:integer 1:literal)
   (one:character <- copy ((#\1 literal)))
   (rank-base:integer <- character-to-integer one:character)
-;?   (rank-base:integer <- subtract rank-base:integer 1:literal)
   ; get from-file
   (c:character <- wait-for-key)
   (print-primitive c:character)
@@ -110,7 +93,6 @@
   (above-min:boolean <- greater-or-equal from-file:integer 0:literal)
   (assert above-min:boolean (("from-file too low" literal)))
   (below-max:boolean <- lesser-or-equal from-file:integer 7:literal)
-;?   (below-max:boolean <- lesser-or-equal from-file:integer 1:literal)
   (assert below-max:boolean (("from-file too high" literal)))
   ; get from-rank
   (c:character <- wait-for-key)
@@ -121,7 +103,6 @@
   (above-min:boolean <- greater-or-equal from-rank:integer 0:literal)
   (assert above-min:boolean (("from-rank too low" literal)))
   (below-max:boolean <- lesser-or-equal from-rank:integer 7:literal)
-;?   (below-max:boolean <- lesser-or-equal from-rank:integer 1:literal)
   (assert below-max:boolean (("from-rank too high" literal)))
   ; slurp hyphen
   (c:character <- wait-for-key)
@@ -169,21 +150,12 @@
   (m:move-address <- next-input)
   (x:integer-integer-pair <- get m:move-address/deref from:offset)
   (from-file:integer <- get x:integer-integer-pair 0:offset)
-;?   (print-primitive (("\n" literal)))
-;?   (print-primitive from-file:integer)
-;?   (print-primitive (("\n" literal)))
   (from-rank:integer <- get x:integer-integer-pair 1:offset)
-;?   (print-primitive from-rank:integer)
-;?   (print-primitive (("\n" literal)))
   (f:file-address <- index b:board-address/deref from-file:integer)
   (src:square-address <- index-address f:file-address/deref from-rank:integer)
   (x:integer-integer-pair <- get m:move-address/deref to:offset)
   (to-file:integer <- get x:integer-integer-pair 0:offset)
-;?   (print-primitive to-file:integer)
-;?   (print-primitive (("\n" literal)))
   (to-rank:integer <- get x:integer-integer-pair 1:offset)
-;?   (print-primitive to-rank:integer)
-;?   (print-primitive (("\n" literal)))
   (f:file-address <- index b:board-address/deref to-file:integer)
   (dest:square-address <- index-address f:file-address/deref to-rank:integer)
   (dest:square-address/deref <- copy src:square-address/deref)
@@ -192,7 +164,6 @@
 ])
 
 (function main [
-;?   (print-primitive (("\u2654 \u265a" literal)))
   (default-scope:scope-address <- new scope:literal 30:literal)
   (b:board-address <- read-board)
   (console-on)
