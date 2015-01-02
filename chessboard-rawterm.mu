@@ -1,3 +1,12 @@
+;; data structure: board
+(primitive square)
+(address square-address (square))  ; pointer. verbose but sadly necessary for now
+(array file (square))  ; ranks and files are arrays of squares
+(address file-address (file))
+(address file-address-address (file-address))  ; pointer to a pointer
+(array board (file-address))
+(address board-address (board))
+
 (function read-board [
   (default-scope:scope-address <- new scope:literal 30:literal)
   (initial-position:list-address <- init-list R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal
@@ -79,6 +88,7 @@
   (cursor-to-next-line)
 ])
 
+;; data structure: move
 (and-record move [
   from:integer-integer-pair
   to:integer-integer-pair
@@ -97,7 +107,7 @@
   { begin
     (quit:boolean <- equal c:character ((#\q literal)))
     (break-unless quit:boolean)
-    (reply nil:literal)
+    (reply)
   }
   (from-file:integer <- character-to-integer c:character)
   (from-file:integer <- subtract from-file:integer file-base:integer)
@@ -196,6 +206,5 @@
     (b:board-address <- make-move b:board-address m:move-address)
     (loop)
   }
-  (cursor-to-next-line)
   (console-off)
 ])
