@@ -1,4 +1,6 @@
 ;; profiler (http://arclanguage.org/item?id=11556)
+; Keeping this right on top as a reminder to profile before guessing at why my
+; program is slow.
 (mac proc (name params . body)
   `(def ,name ,params ,@body nil))
 
