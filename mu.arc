@@ -540,6 +540,8 @@
                 ; code points for characters
                 character-to-integer
                   ($.char->integer (m arg.0))
+                integer-to-character
+                  ($.integer->char (m arg.0))
 
                 ; multiprocessing
                 run
