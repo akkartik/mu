@@ -127,7 +127,7 @@ syntax above. We'll drop them when we build a real parser.)
 
 The name of a value is for humans, but what the computer needs to access it is
 its address. Mu maps names to addresses for you like in other languages, but
-in a more deconstructed, decentralized, programmable manner. This instruction:
+in a more transparent, lightweight, hackable manner. This instruction:
 
 ```lisp
   z:integer <- add x:integer, y:integer
