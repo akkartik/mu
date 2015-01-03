@@ -218,6 +218,6 @@
 ;   die on invalid move
 ;   'q' exits
 ;   'q' exits anywhere in move
-;   'q' exits on second move  -- FAIL
+;   'q' exits on second move
 ;
 ;   backspace, ctrl-u
