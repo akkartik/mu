@@ -1,6 +1,6 @@
 (function producer [
   ; produce numbers 1 to 5 on a channel
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (chan:channel-address <- next-input)
   ; n = 0
   (n:integer <- copy 0:literal)
@@ -24,7 +24,7 @@
 
 (function consumer [
   ; consume and print integers from a channel
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (chan:channel-address <- next-input)
   { begin
     ; read a tagged value from the channel
