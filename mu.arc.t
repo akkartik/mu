@@ -3047,7 +3047,7 @@
   '((function consumer [
       (default-space:space-address <- new space:literal 30:literal)
       (1:channel-address <- init-channel 3:literal)  ; create a channel
-      (fork producer:fn default-space:address)  ; pass it as a global to another routine
+      (fork producer:fn default-space:space-address)  ; pass it as a global to another routine
       (1:tagged-value/raw <- read 1:channel-address)  ; wait for input on channel
      ])
     (function producer [
