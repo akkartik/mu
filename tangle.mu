@@ -4,7 +4,7 @@
 ; possibilities.
 
 (function factorial [
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (n:integer <- next-input)
   { begin
     base-case

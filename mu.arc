@@ -111,8 +111,9 @@
   (= type* (table))  ; name -> type info
   (= memory* (table))  ; address -> value
   (= function* (table))  ; name -> [instructions]
-  (= location* (table))  ; function -> {name -> index into default-scope}
-  (= closure-generator* (table))  ; function -> name of function generating scope for the scope passed into it
+  (= location* (table))  ; function -> {name -> index into default-space}
+  (= next-space-generator* (table))  ; function -> name of function generating next space
+  ; each function's next space will usually always come from a single function
   )
 (enq clear initialization-fns*)
 
@@ -138,8 +139,8 @@
               character (obj size 1)  ; int32 like a Go rune
               character-address (obj size 1  address t  elem '(character))
               ; isolating function calls
-              scope (obj array t  elem '(location))  ; by convention index 0 points to outer scope
-              scope-address (obj size 1  address t  elem '(scope))
+              space (obj array t  elem '(location))  ; by convention index 0 points to outer space
+              space-address (obj size 1  address t  elem '(space))
               ; arrays consist of an integer length followed by that many
               ; elements, all of the same type
               integer-array (obj array t  elem '(integer))
@@ -693,14 +694,14 @@
 ;   immediate addressing - 'literal' and 'offset'
 ;   direct addressing - default
 ;   indirect addressing - 'deref'
-;   relative addressing - if routine* has 'default-scope'
+;   relative addressing - if routine* has 'default-space'
 
 (def m (loc)  ; read memory, respecting metadata
   (point return
     (when (literal? loc)
       (return v.loc))
-    (when (is v.loc 'default-scope)
-      (return rep.routine*!call-stack.0!default-scope))
+    (when (is v.loc 'default-space)
+      (return rep.routine*!call-stack.0!default-space))
     (trace "m" loc)
     (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?) @loc")
     (with (n  sizeof.loc
@@ -714,9 +715,9 @@
 
 (def setm (loc val)  ; set memory, respecting metadata
   (point return
-    (when (is v.loc 'default-scope)
-      (assert (is 1 sizeof.loc) "can't store compounds in default-scope @loc")
-      (= rep.routine*!call-stack.0!default-scope val)
+    (when (is v.loc 'default-space)
+      (assert (is 1 sizeof.loc) "can't store compounds in default-space @loc")
+      (= rep.routine*!call-stack.0!default-space val)
       (return))
     (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
     (trace "setm" loc " <= " val)
@@ -813,7 +814,7 @@
             (raw))
           (die "routine has no globals: @operand"))
       :else
-        (iflet base rep.routine*!call-stack.0!default-scope
+        (iflet base rep.routine*!call-stack.0!default-space
           (lookup-space (rem [caris _ 'space] operand)
                         base
                         space.operand)
@@ -828,7 +829,7 @@
         (raw))
       (die "no room for var @operand in routine of size @memory*.base"))
     ; recursive case
-    (lookup-space operand (memory* (+ base 1))  ; location 0 points to parent space
+    (lookup-space operand (memory* (+ base 1))  ; location 0 points to next space
                   (- space 1))))
 
 (def space (operand)
@@ -992,7 +993,7 @@
 
 ;; convert symbolic names to raw memory locations
 
-(def add-closure-generator (instrs name)
+(def add-next-space-generator (instrs name)
 ;?   (prn "== @name")
   (each instr instrs
     (when acons.instr
@@ -1000,10 +1001,10 @@
         (each oarg oargs
           (when (and (nondummy oarg)
                      (is v.oarg 0)
-                     (iso ty.oarg '(scope-address)))
-            (assert (no closure-generator*.name) "function can have only one closure-generator environment")
-            (tr "closure-generator of @name is @(alref oarg 'names)")
-            (= closure-generator*.name (alref oarg 'names))))))))
+                     (iso ty.oarg '(space-address)))
+            (assert (no next-space-generator*.name) "function can have only one next-space-generator environment")
+            (tr "next-space-generator of @name is @(alref oarg 'names)")
+            (= next-space-generator*.name (alref oarg 'names))))))))
 
 ; just a helper for testing; in practice we unbundle assign-names-to-location
 ; and replace-names-with-location.
@@ -1018,7 +1019,7 @@
 (def assign-names-to-location (instrs name)
   (ret location (table)
     (with (isa-field  (table)
-           idx  1)  ; 0 always reserved for parent scope
+           idx  1)  ; 0 always reserved for next space
       (each instr instrs
         (point continue
         (when atom.instr
@@ -1083,7 +1084,7 @@
              (~literal? arg)
              (~location v.arg)
              (isa v.arg 'sym)
-             (~in v.arg 'nil 'default-scope)
+             (~in v.arg 'nil 'default-space)
              (~pos '(raw) metadata.arg))
     (= (location v.arg) idx)))
 
@@ -1107,7 +1108,7 @@
   (ret name default-name
     (when (~is space.arg 'global)
       (repeat space.arg
-        (zap closure-generator* name)))))
+        (zap next-space-generator* name)))))
 
 ;; literate tangling system for reordering code
 
@@ -1241,7 +1242,7 @@
 ;?     (prn "freeze " name)
     (= function-table.name (convert-labels:convert-braces:tokenize-args:insert-code body name)))
   (each (name body)  canon.function-table
-    (add-closure-generator body name))
+    (add-next-space-generator body name))
   (each (name body)  canon.function-table
     (= location*.name (assign-names-to-location body name)))
   (each (name body)  canon.function-table
@@ -1329,7 +1330,7 @@
 (section 100
 
 (init-fn maybe-coerce
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (x:tagged-value-address <- new tagged-value:literal)
   (x:tagged-value-address/deref <- next-input)
   (p:type <- next-input)
@@ -1343,7 +1344,7 @@
   (reply xvalue:location match?:boolean))
 
 (init-fn init-tagged-value
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   ; assert sizeof:arg.0 == 1
   (xtype:type <- next-input)
   (xtypesize:integer <- sizeof xtype:type)
@@ -1360,19 +1361,19 @@
   (reply result:tagged-value-address))
 
 (init-fn list-next  ; list-address -> list-address
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (base:list-address <- next-input)
   (result:list-address <- get base:list-address/deref cdr:offset)
   (reply result:list-address))
 
 (init-fn list-value-address  ; list-address -> tagged-value-address
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (base:list-address <- next-input)
   (result:tagged-value-address <- get-address base:list-address/deref car:offset)
   (reply result:tagged-value-address))
 
 (init-fn init-list
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   ; new-list = curr = new list
   (result:list-address <- new list:literal)
   (curr:list-address <- copy result:list-address)
@@ -1395,7 +1396,7 @@
   (reply result:list-address))
 
 (init-fn list-length
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (curr:list-address <- next-input)
 ;?   ; recursive
 ;?   { begin
@@ -1429,7 +1430,7 @@
   (reply result:integer))
 
 (init-fn init-channel
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   ; result = new channel
   (result:channel-address <- new channel:literal)
   ; result.first-full = 0
@@ -1446,14 +1447,14 @@
   (reply result:channel-address))
 
 (init-fn capacity
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (chan:channel <- next-input)
   (q:tagged-value-array-address <- get chan:channel circular-buffer:offset)
   (qlen:integer <- length q:tagged-value-array-address/deref)
   (reply qlen:integer))
 
 (init-fn write
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (chan:channel-address <- next-input)
   (val:tagged-value <- next-input)
   { begin
@@ -1480,7 +1481,7 @@
   (reply chan:channel-address/deref))
 
 (init-fn read
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (chan:channel-address <- next-input)
   { begin
     ; block if chan is empty
@@ -1506,7 +1507,7 @@
 
 ; An empty channel has first-empty and first-full both at the same value.
 (init-fn empty?
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   ; return arg.first-full == arg.first-free
   (chan:channel <- next-input)
   (full:integer <- get chan:channel first-full:offset)
@@ -1517,7 +1518,7 @@
 ; A full channel has first-empty just before first-full, wasting one slot.
 ; (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
 (init-fn full?
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (chan:channel <- next-input)
   ; curr = chan.first-free + 1
   (curr:integer <- get chan:channel first-free:offset)
@@ -1535,7 +1536,7 @@
   (reply result:boolean))
 
 (init-fn strcat
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   ; result = new string[a.length + b.length]
   (a:string-address <- next-input)
   (a-len:integer <- length a:string-address/deref)
@@ -1580,7 +1581,7 @@
 
 ; replace underscores in first with remaining args
 (init-fn interpolate  ; string-address template, string-address a..
-  (default-scope:scope-address <- new scope:literal 60:literal)
+  (default-space:space-address <- new space:literal 60:literal)
   (template:string-address <- next-input)
   ; compute result-len, space to allocate for result
   (tem-len:integer <- length template:string-address/deref)
@@ -1703,7 +1704,7 @@
   (reply idx:integer))
 
 (init-fn split  ; string, character -> string-address-array-address
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (s:string-address <- next-input)
   (delim:character <- next-input)  ; todo: unicode chars
   ; empty string? return empty array

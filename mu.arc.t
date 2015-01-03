@@ -1844,21 +1844,21 @@
 ; Even though our memory locations can now have names, the names are all
 ; globals, accessible from any function. To isolate functions from their
 ; callers we need local variables, and mu provides them using a special
-; variable called default-scope. When you initialize such a variable (likely
+; variable called default-space. When you initialize such a variable (likely
 ; with a call to our just-defined memory allocator) mu interprets memory
-; locations as offsets from its value. If default-scope is set to 1000, for
+; locations as offsets from its value. If default-space is set to 1000, for
 ; example, reads and writes to memory location 1 will really go to 1001.
 ;
-; 'default-scope' is itself hard-coded to be function-local; it's nil in a new
+; 'default-space' is itself hard-coded to be function-local; it's nil in a new
 ; function, and it's restored when functions return to their callers. But the
-; actual scope allocation is independent. So you can define closures, or do
+; actual space allocation is independent. So you can define closures, or do
 ; even more funky things like share locals between two coroutines.
 
 (reset)
-(new-trace "set-default-scope")
+(new-trace "set-default-space")
 (add-code
   '((function main [
-      (default-scope:scope-address <- new scope:literal 2:literal)
+      (default-space:space-address <- new space:literal 2:literal)
       (1:integer <- copy 23:literal)
      ])))
 (let routine make-routine!main
@@ -1869,14 +1869,14 @@
 ;?     (prn memory*)
     (if (~and (~is 23 memory*.1)
               (is 23 (memory* (+ before 2))))
-      (prn "F - default-scope implicitly modifies variable locations"))))
+      (prn "F - default-space implicitly modifies variable locations"))))
 ;? (quit)
 
 (reset)
-(new-trace "set-default-scope-skips-offset")
+(new-trace "set-default-space-skips-offset")
 (add-code
   '((function main [
-      (default-scope:scope-address <- new scope:literal 2:literal)
+      (default-space:space-address <- new space:literal 2:literal)
       (1:integer <- copy 23:offset)
      ])))
 (let routine make-routine!main
@@ -1887,13 +1887,13 @@
 ;?     (prn memory*)
     (if (~and (~is 23 memory*.1)
               (is 23 (memory* (+ before 2))))
-      (prn "F - default-scope skips 'offset' types just like literals"))))
+      (prn "F - default-space skips 'offset' types just like literals"))))
 
 (reset)
-(new-trace "default-scope-bounds-check")
+(new-trace "default-space-bounds-check")
 (add-code
   '((function main [
-      (default-scope:scope-address <- new scope:literal 2:literal)
+      (default-space:space-address <- new space:literal 2:literal)
       (2:integer <- copy 23:literal)
      ])))
 ;? (set dump-trace*)
@@ -1901,13 +1901,13 @@
 ;? (prn memory*)
 (let routine (car completed-routines*)
   (if (no rep.routine!error)
-    (prn "F - default-scope checks bounds")))
+    (prn "F - default-space checks bounds")))
 
 (reset)
-(new-trace "default-scope-and-get-indirect")
+(new-trace "default-space-and-get-indirect")
 (add-code
   '((function main [
-      (default-scope:scope-address <- new scope:literal 5:literal)
+      (default-space:space-address <- new space:literal 5:literal)
       (1:integer-boolean-pair-address <- new integer-boolean-pair:literal)
       (2:integer-address <- get-address 1:integer-boolean-pair-address/deref 0:offset)
       (2:integer-address/deref <- copy 34:literal)
@@ -1920,14 +1920,14 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 (if (~is 34 memory*.3)
-  (prn "F - indirect 'get' works in the presence of default-scope"))
+  (prn "F - indirect 'get' works in the presence of default-space"))
 ;? (quit)
 
 (reset)
-(new-trace "default-scope-and-index-indirect")
+(new-trace "default-space-and-index-indirect")
 (add-code
   '((function main [
-      (default-scope:scope-address <- new scope:literal 5:literal)
+      (default-space:space-address <- new space:literal 5:literal)
       (1:integer-array-address <- new integer-array:literal 4:literal)
       (2:integer-address <- index-address 1:integer-array-address/deref 2:offset)
       (2:integer-address/deref <- copy 34:literal)
@@ -1940,27 +1940,27 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 (if (~is 34 memory*.3)
-  (prn "F - indirect 'index' works in the presence of default-scope"))
+  (prn "F - indirect 'index' works in the presence of default-space"))
 ;? (quit)
 
 (reset)
-(new-trace "convert-names-default-scope")
+(new-trace "convert-names-default-space")
 (= traces* (queue))
 (if (~iso (convert-names
             '((((x integer)) <- ((copy)) ((4 literal)))
               (((y integer)) <- ((copy)) ((2 literal)))
-              ; unsafe in general; don't write random values to 'default-scope'
-              (((default-scope integer)) <- ((add)) ((x integer)) ((y integer)))))
+              ; unsafe in general; don't write random values to 'default-space'
+              (((default-space integer)) <- ((add)) ((x integer)) ((y integer)))))
           '((((1 integer)) <- ((copy)) ((4 literal)))
             (((2 integer)) <- ((copy)) ((2 literal)))
-            (((default-scope integer)) <- ((add)) ((1 integer)) ((2 integer)))))
-  (prn "F - convert-names never renames default-scope"))
+            (((default-space integer)) <- ((add)) ((1 integer)) ((2 integer)))))
+  (prn "F - convert-names never renames default-space"))
 
 (reset)
-(new-trace "suppress-default-scope")
+(new-trace "suppress-default-space")
 (add-code
   '((function main [
-      (default-scope:scope-address <- new scope:literal 2:literal)
+      (default-space:space-address <- new space:literal 2:literal)
       (1:integer/raw <- copy 23:literal)
      ])))
 (let routine make-routine!main
@@ -1971,7 +1971,7 @@
 ;?     (prn memory*)
     (if (~and (is 23 memory*.1)
               (~is 23 (memory* (+ before 1))))
-      (prn "F - default-scope skipped for locations with metadata 'raw'"))))
+      (prn "F - default-space skipped for locations with metadata 'raw'"))))
 ;? (quit)
 
 (reset)
@@ -1979,7 +1979,7 @@
 (add-code
   '((function main [
       (10:integer <- copy 30:literal)  ; pretend allocation
-      (default-scope:scope-address <- copy 10:literal)  ; unsafe
+      (default-space:space-address <- copy 10:literal)  ; unsafe
       (1:integer <- copy 2:literal)  ; raw location 12
       (2:integer <- copy 23:literal)
       (3:boolean <- copy nil:literal)
@@ -1995,7 +1995,7 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 (if (~iso memory*.18 2)  ; variable 7
-  (prn "F - indirect array copy in the presence of 'default-scope'"))
+  (prn "F - indirect array copy in the presence of 'default-space'"))
 ;? (quit)
 
 (reset)
@@ -2003,7 +2003,7 @@
 (add-code
   '((function main [
       (10:integer <- copy 30:literal)  ; pretend allocation
-      (default-scope:scope-address <- copy 10:literal)  ; unsafe
+      (default-space:space-address <- copy 10:literal)  ; unsafe
       (1:integer <- copy 2:literal)  ; raw location 12
       (2:integer <- copy 23:literal)
       (3:boolean <- copy nil:literal)
@@ -2020,22 +2020,22 @@
 ;? (quit)
 
 (reset)
-(new-trace "default-scope-shared")
+(new-trace "default-space-shared")
 (add-code
   '((function init-counter [
-      (default-scope:scope-address <- new scope:literal 30:literal)
+      (default-space:space-address <- new space:literal 30:literal)
       (1:integer <- copy 3:literal)  ; initialize to 3
-      (reply default-scope:scope-address)
+      (reply default-space:space-address)
      ])
     (function increment-counter [
-      (default-scope:scope-address <- next-input)
+      (default-space:space-address <- next-input)
       (1:integer <- add 1:integer 1:literal)  ; increment
       (reply 1:integer)
      ])
     (function main [
-      (1:scope-address <- init-counter)
-      (2:integer <- increment-counter 1:scope-address)
-      (3:integer <- increment-counter 1:scope-address)
+      (1:space-address <- init-counter)
+      (2:integer <- increment-counter 1:space-address)
+      (3:integer <- increment-counter 1:space-address)
      ])))
 (run 'main)
 (each routine completed-routines*
@@ -2047,24 +2047,24 @@
 ;? (quit)
 
 (reset)
-(new-trace "default-scope-closure")
+(new-trace "default-space-closure")
 (add-code
   '((function init-counter [
-      (default-scope:scope-address <- new scope:literal 30:literal)
+      (default-space:space-address <- new space:literal 30:literal)
       (1:integer <- copy 3:literal)  ; initialize to 3
-      (reply default-scope:scope-address)
+      (reply default-space:space-address)
      ])
     (function increment-counter [
-      (default-scope:scope-address <- new scope:literal 30:literal)
-      (0:scope-address <- next-input)  ; share outer scope
+      (default-space:space-address <- new space:literal 30:literal)
+      (0:space-address <- next-input)  ; share outer space
       (1:integer/space:1 <- add 1:integer/space:1 1:literal)  ; increment
       (1:integer <- copy 34:literal)  ; dummy
       (reply 1:integer/space:1)
      ])
     (function main [
-      (1:scope-address <- init-counter)
-      (2:integer <- increment-counter 1:scope-address)
-      (3:integer <- increment-counter 1:scope-address)
+      (1:space-address <- init-counter)
+      (2:integer <- increment-counter 1:space-address)
+      (3:integer <- increment-counter 1:space-address)
      ])))
 ;? (set dump-trace*)
 (run 'main)
@@ -2077,25 +2077,25 @@
 ;? (quit)
 
 (reset)
-(new-trace "default-scope-closure-with-names")
+(new-trace "default-space-closure-with-names")
 (add-code
   '((function init-counter [
-      (default-scope:scope-address <- new scope:literal 30:literal)
+      (default-space:space-address <- new space:literal 30:literal)
       (x:integer <- copy 23:literal)
       (y:integer <- copy 3:literal)  ; correct copy of y
-      (reply default-scope:scope-address)
+      (reply default-space:space-address)
      ])
     (function increment-counter [
-      (default-scope:scope-address <- new scope:literal 30:literal)
-      (0:scope-address/names:init-counter <- next-input)  ; outer scope must be created by 'init-counter' above
+      (default-space:space-address <- new space:literal 30:literal)
+      (0:space-address/names:init-counter <- next-input)  ; outer space must be created by 'init-counter' above
       (y:integer/space:1 <- add y:integer/space:1 1:literal)  ; increment
       (y:integer <- copy 34:literal)  ; dummy
       (reply y:integer/space:1)
      ])
     (function main [
-      (1:scope-address/names:init-counter <- init-counter)
-      (2:integer <- increment-counter 1:scope-address/names:init-counter)
-      (3:integer <- increment-counter 1:scope-address/names:init-counter)
+      (1:space-address/names:init-counter <- init-counter)
+      (2:integer <- increment-counter 1:space-address/names:init-counter)
+      (3:integer <- increment-counter 1:space-address/names:init-counter)
      ])))
 ;? (set dump-trace*)
 (run 'main)
@@ -2124,7 +2124,7 @@
       ; doesn't matter too much how many locals you allocate space for (here 20)
       ; if it's slightly too many -- memory is plentiful
       ; if it's too few -- mu will raise an error
-      (default-scope:scope-address <- new scope:literal 20:literal)
+      (default-space:space-address <- new space:literal 20:literal)
       (first-arg-box:tagged-value-address <- next-input)
       ; if given integers, add them
       { begin
@@ -2153,7 +2153,7 @@
 ;? (set dump-trace*)
 (add-code
   '((function test1 [
-      (default-scope:scope-address <- new scope:literal 20:literal)
+      (default-space:space-address <- new space:literal 20:literal)
       (first-arg-box:tagged-value-address <- next-input)
       ; if given integers, add them
       { begin
@@ -2193,7 +2193,7 @@
 (new-trace "dispatch-multiple-calls")
 (add-code
   '((function test1 [
-      (default-scope:scope-address <- new scope:literal 20:literal)
+      (default-space:space-address <- new space:literal 20:literal)
       (first-arg-box:tagged-value-address <- next-input)
       ; if given integers, add them
       { begin
@@ -2627,7 +2627,7 @@
   '((function f1 [
       ; waits for memory location 1 to be changed, before computing its successor
       (10:integer <- copy 5:literal)  ; array of locals
-      (default-scope:scope-address <- copy 10:literal)
+      (default-space:space-address <- copy 10:literal)
       (1:integer <- copy 23:literal)  ; really location 12
       (sleep 1:integer)
       (2:integer <- add 1:integer 1:literal)
@@ -2672,7 +2672,7 @@
 (new-trace "fork-copies-args")
 (add-code
   '((function f1 [
-      (default-scope:scope-address <- new scope:literal 5:literal)
+      (default-space:space-address <- new space:literal 5:literal)
       (x:integer <- copy 4:literal)
       (fork f2:fn nil:literal x:integer)
       (x:integer <- copy 0:literal)  ; should be ignored
@@ -2691,9 +2691,9 @@
       (1:integer/raw <- copy 2:integer/space:global)
      ])
     (function main [
-      (default-scope:scope-address <- new scope:literal 5:literal)
+      (default-space:space-address <- new space:literal 5:literal)
       (2:integer <- copy 4:literal)
-      (fork f1:fn default-scope:scope-address)
+      (fork f1:fn default-space:space-address)
      ])))
 (run 'main)
 (each routine completed-routines*
@@ -3017,13 +3017,13 @@
 (new-trace "channel-handoff")
 (add-code
   '((function consumer [
-      (default-scope:scope-address <- new scope:literal 30:literal)
+      (default-space:space-address <- new space:literal 30:literal)
       (chan:channel-address <- init-channel 3:literal)  ; create a channel
       (fork producer:fn nil:literal chan:channel-address)  ; fork a routine to produce a value in it
       (1:tagged-value/raw <- read chan:channel-address)  ; wait for input on channel
      ])
     (function producer [
-      (default-scope:scope-address <- new scope:literal 30:literal)
+      (default-space:space-address <- new space:literal 30:literal)
       (n:integer-address <- new integer:literal)
       (n:integer-address/deref <- copy 24:literal)
       (ochan:channel-address <- next-input)
@@ -3045,13 +3045,13 @@
 (new-trace "channel-handoff-routine")
 (add-code
   '((function consumer [
-      (default-scope:scope-address <- new scope:literal 30:literal)
+      (default-space:space-address <- new space:literal 30:literal)
       (1:channel-address <- init-channel 3:literal)  ; create a channel
-      (fork producer:fn default-scope:address)  ; pass it as a global to another routine
+      (fork producer:fn default-space:address)  ; pass it as a global to another routine
       (1:tagged-value/raw <- read 1:channel-address)  ; wait for input on channel
      ])
     (function producer [
-      (default-scope:scope-address <- new scope:literal 30:literal)
+      (default-space:space-address <- new space:literal 30:literal)
       (n:integer-address <- new integer:literal)
       (n:integer-address/deref <- copy 24:literal)
       (x:tagged-value <- save-type n:integer-address)
@@ -3783,21 +3783,21 @@
             (tokenize-arg              'a:b/c:d))
 
 ; support labels
-(assert:iso '((((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
+(assert:iso '((((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
               foo)
             (tokenize-args
-              '((default-scope:scope-address <- new scope:literal 30:literal)
+              '((default-space:space-address <- new space:literal 30:literal)
                 foo)))
 
 ; support braces
-(assert:iso '((((default-scope scope-address)) <- ((new)) ((scope literal)) ((30 literal)))
+(assert:iso '((((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
               foo
               { begin
                 bar
                 (((a b)) <- ((op)) ((c d)) ((e f)))
               })
             (tokenize-args
-              '((default-scope:scope-address <- new scope:literal 30:literal)
+              '((default-space:space-address <- new space:literal 30:literal)
                 foo
                 { begin
                   bar
@@ -3821,15 +3821,15 @@
   (prn "F - 'absolutize' works without routine"))
 (= routine* make-routine!foo)
 (if (~iso '((4 integer)) (absolutize '((4 integer))))
-  (prn "F - 'absolutize' works without default-scope"))
-(= rep.routine*!call-stack.0!default-scope 10)
-(= memory*.10 5)  ; bounds check for default-scope
+  (prn "F - 'absolutize' works without default-space"))
+(= rep.routine*!call-stack.0!default-space 10)
+(= memory*.10 5)  ; bounds check for default-space
 (if (~iso '((15 integer) (raw))
           (absolutize '((4 integer))))
-  (prn "F - 'absolutize' works with default-scope"))
+  (prn "F - 'absolutize' works with default-space"))
 (absolutize '((5 integer)))
 (if (~posmatch "no room" rep.routine*!error)
-  (prn "F - 'absolutize' checks against default-scope bounds"))
+  (prn "F - 'absolutize' checks against default-space bounds"))
 (if (~iso '((_ integer)) (absolutize '((_ integer))))
   (prn "F - 'absolutize' passes dummy args right through"))
 
@@ -3899,20 +3899,20 @@
   (prn "F - 'addr' works with indirectly-addressed 'deref' inside routines"))
 
 ;? (prn 301)
-(= rep.routine*!call-stack.0!default-scope 10)
+(= rep.routine*!call-stack.0!default-space 10)
 ;? (prn 302)
-(= memory*.10 5)  ; bounds check for default-scope
+(= memory*.10 5)  ; bounds check for default-space
 ;? (prn 303)
 (if (~is 15 (addr '((4 integer))))
-  (prn "F - directly addressed operands in routines add default-scope"))
+  (prn "F - directly addressed operands in routines add default-space"))
 ;? (quit)
 (if (~is 15 (addr '((4 integer-address))))
-  (prn "F - directly addressed operands in routines add default-scope - 2"))
+  (prn "F - directly addressed operands in routines add default-space - 2"))
 (if (~is 15 (addr '((4 literal))))
   (prn "F - 'addr' doesn't understand literals"))
 (= memory*.15 23)
 (if (~is 23 (addr '((4 integer-address) (deref))))
-  (prn "F - 'addr' adds default-scope before 'deref', not after"))
+  (prn "F - 'addr' adds default-space before 'deref', not after"))
 ;? (quit)
 
 ; array-len
@@ -3969,16 +3969,16 @@
 (= routine* make-routine!foo)
 (if (~is 24 (sizeof '((4 integer-array))))
   (prn "F - 'sizeof' reads array lengths from memory inside routines"))
-(= rep.routine*!call-stack.0!default-scope 10)
-(= memory*.10 5)  ; bounds check for default-scope
+(= rep.routine*!call-stack.0!default-space 10)
+(= memory*.10 5)  ; bounds check for default-space
 (if (~is 35 (sizeof '((4 integer-array))))
-  (prn "F - 'sizeof' reads array lengths from memory using default-scope"))
+  (prn "F - 'sizeof' reads array lengths from memory using default-space"))
 (= memory*.35 4)  ; size of array
 (= memory*.15 35)
 ;? (= dump-trace* (obj whitelist '("sizeof")))
 (aif rep.routine*!error (prn "error - " it))
 (if (~is 9 (sizeof '((4 integer-boolean-pair-array-address) (deref))))
-  (prn "F - 'sizeof' works on pointers to arrays using default-scope"))
+  (prn "F - 'sizeof' works on pointers to arrays using default-space"))
 ;? (quit)
 
 ; m

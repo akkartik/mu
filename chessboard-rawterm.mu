@@ -8,7 +8,7 @@
 (address board-address (board))
 
 (function read-board [
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (initial-position:list-address <- init-list R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal
                                               N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
                                               B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
@@ -36,7 +36,7 @@
 ])
 
 (function read-file [
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (cursor:list-address <- next-input)
   (result:file-address <- new file:literal 8:literal)
   (row:integer <- copy 0:literal)
@@ -54,7 +54,7 @@
 ])
 
 (function print-board [
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (b:board-address <- next-input)
   (row:integer <- copy 7:literal)
   ; print each row
@@ -167,7 +167,7 @@
 ])
 
 (function make-move [
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (b:board-address <- next-input)
   (m:move-address <- next-input)
   (x:integer-integer-pair <- get m:move-address/deref from:offset)
@@ -186,7 +186,7 @@
 ])
 
 (function main [
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (b:board-address <- read-board)
   (console-on)
   { begin

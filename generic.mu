@@ -3,7 +3,7 @@
 
 ; factorial n = n*factorial(n-1)
 (function factorial [
-  (default-scope:scope-address <- new scope:literal 30:literal)
+  (default-space:space-address <- new space:literal 30:literal)
   (n:integer <- input 0:literal)
   more-clauses
   (x:integer <- subtract n:integer 1:literal)
