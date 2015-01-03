@@ -71,7 +71,7 @@ As a sneak peek, here's how you compute factorial in mu:
 
 ```lisp
   function factorial [
-    ; create some space for the variables below
+    ; allocate local variables
     default-space:space-address <- new space:literal, 30:literal
     ; receive inputs in a queue
     n:integer <- next-input
