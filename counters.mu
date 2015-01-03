@@ -6,7 +6,7 @@
 
 (function increment-counter [
   (default-space:space-address <- new space:literal 30:literal)
-  (0:space-address/names:init-counter <- next-input)  ; setup outer space
+  (0:space-address/names:init-counter <- next-input)  ; setup outer space; it *must* come from 'init-counter'
   (x:integer <- next-input)
   (n:integer/space:1 <- add n:integer/space:1 x:integer)
   (reply n:integer/space:1)

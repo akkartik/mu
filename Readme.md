@@ -72,7 +72,7 @@ As a sneak peek, here's how you compute factorial in mu:
 ```lisp
   function factorial [
     ; create some space for the variables below
-    default-scope:scope-address <- new scope:literal, 30:literal
+    default-space:space-address <- new space:literal, 30:literal
     ; receive inputs in a queue
     n:integer <- next-input
     {
@@ -104,36 +104,13 @@ results. For example, you can perform integer division as follows:
   quotient:integer, remainder:integer <- divide-with-remainder 11:literal, 3:literal
 ```
 
-Each value provides its data as well as its type separated by a colon. Types
+Each value provides its name as well as its type separated by a colon. Types
 can be multiple words, like:
 
 ```lisp
   x:integer-array:3  ; x is an array of 3 integers
   y:list:integer  ; y is a list of integers
 ```
-
-In addition you can store other properties in values, separated by slashes.
-
-```lisp
-  x:integer-array:3/uninitialized
-  y:string/tainted:yes
-  z:list:integer/assign-once:true/assigned:false
-```
-
-These properties don't mean anything to mu, and it'll silently skip them when
-running, but they'll allow you to write *meta-programs* to check or modify
-your programs, a task other languages typically hide from their programmers.
-For example, where other programmers are restricted to the checks their type
-system permits and forces them to use, you'll learn to create new checks that
-make sense for your specific program. If it makes sense to perform different
-checks in different parts of your program, you'll be able to do that.
-
-To summarize: instructions have multiple operand and result values, values can
-have multiple rows separated by slashes, and rows can have multiple columns
-separated by colons. Only the very first column of the first row in each
-value's table is required to run mu programs, but the rest of the value table
-helps *manage* them over time. Management over time is why programming has
-traditionally been hard.
 
 Try out the factorial program now:
 
@@ -148,12 +125,102 @@ syntax above. We'll drop them when we build a real parser.)
 
 ---
 
-An alternative way to define factorial is by including *labels*, and later
+The name of a value is for humans, but what the computer needs to access it is
+its address. Mu maps names to addresses for you like in other languages, but
+in a more deconstructed, decentralized, programmable manner. This instruction:
+
+```lisp
+  z:integer <- add x:integer, y:integer
+```
+
+might turn into this:
+
+```lisp
+  3:integer <- add 1:integer, 2:integer
+```
+
+You shouldn't rely on the specific address mu chooses for a variable, but it
+will be unique (other variables won't clobber it) and consistent (all mentions
+of the name will map to the same address inside a function).
+
+Things get more complicated when your functions call other functions. Mu
+doesn't preserve uniqueness of names across functions, so you need to organize
+your names into spaces. At the start of each function (like `factorial`
+above), set its *default space*:
+
+  ```lisp
+    default-space:space-address <- new space:literal, 30:literal
+  ```
+
+Without this line, all variables in the function will be *global*, something
+you rarely want. (Luckily, this is also the sort of mistake that will be
+easily caught by tests. Later we'll automatically generate this boilerplate.)
+*With* this line, all addresses in your function will by default refer to one
+of the 30 slots inside this local space.
+
+Spaces can do more than just implement local variables. You can string them
+together, pass them around, return them from functions, share them between
+parallel routines, and much else. However, any function receiving a space has
+to know the names and types of variables in it, so any instruction should
+always receive spaces created by the same function, no matter how many times
+it's run. (If you're familiar with lexical scope, this constraint is
+identical to it.)
+
+To string two spaces together, write one into slot 0 of the other. This
+instruction chains a space received from its caller:
+
+```lisp
+  0:space-address <- next-input
+```
+
+Once you've chained spaces together, you can access variables in them by
+adding a 'space' property to values:
+
+```lisp
+  3:integer/space:1
+```
+
+This value is the integer in slot 3 of the space chained in slot 0 of the
+default space. We usually call it slot 3 in the 'next space'. `/space:2` would
+be the next space of the next space, and so on.
+
+See `counters.mu` for an example of managing multiple accumulators at once
+without allowing them to clobber each other. This is a classic example of the
+sorts of things closures and objects are useful for in other languages. Spaces
+in mu provide the same functionality.
+
+---
+
+You can append arbitrary properties to values besides types and spaces. Just
+separate them with slashes.
+
+```lisp
+  x:integer-array:3/uninitialized
+  y:string/tainted:yes
+  z:list:integer/assign-once:true/assigned:false
+```
+
+Most properties are meaningless to mu, and it'll silently skip them when
+running, but they are fodder for *meta-programs* to check or modify your
+programs, a task other languages typically hide from their programmers. For
+example, where other programmers are restricted to the checks their type
+system permits and forces them to use, you'll learn to create new checks that
+make sense for your specific program. If it makes sense to perform different
+checks in different parts of your program, you'll be able to do that.
+
+To summarize: mu instructions have multiple operand and result values. Values
+can have multiple rows separated by slashes, and rows can have multiple
+columns separated by colons. The address of a value is always in the very
+first column of the first row of its 'table'.
+
+---
+
+An alternative way to define factorial is by inserting *labels* and later
 inserting code at them.
 
 ```lisp
   function factorial [
-    default-scope:scope-address <- new scope:literal, 30:literal
+    default-space:space-address <- new space:literal, 30:literal
     n:integer <- next-operand
     {
       base-case:
