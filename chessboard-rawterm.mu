@@ -97,6 +97,7 @@
 (address move-address (move))
 
 (function read-move [
+  (default-space:space-address <- new space:literal 30:literal)
   (a:character <- copy ((#\a literal)))
   (file-base:integer <- character-to-integer a:character)
   (one:character <- copy ((#\1 literal)))
