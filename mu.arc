@@ -571,9 +571,13 @@
                         (= rep.routine*!sleep `(,addr.operand ,m.operand))))
                     ((abort-routine*)))
 
-                ; text interaction
+                ; cursor-based (text mode) interaction
                 clear-screen
-                  (do1 nil ($.charterm-clear-screen))
+                  (do1 nil
+                    (if ($.current-charterm)
+                          ($.charterm-clear-screen)
+                        ($.graphics-open?)
+                          ($.clear-viewport Viewport)))
                 clear-line
                   (do1 nil ($.charterm-clear-line))
                 cursor
@@ -583,9 +587,17 @@
                 print-primitive
                   (do1 nil ((if ($.current-charterm) $.charterm-display pr) (m arg.0)))
                 read-key
-                  (and ($.charterm-byte-ready?) ($.charterm-read-key))
+                  (do1 nil
+                    (if ($.current-charterm)
+                          (and ($.charterm-byte-ready?) ($.charterm-read-key))
+                        ($.graphics-open?)
+                          ($.ready-key-press Viewport)))
                 wait-for-key
-                  ($.charterm-read-key)
+                  (do1 nil
+                    (if ($.current-charterm)
+                          ($.charterm-read-key)
+                        ($.graphics-open?)
+                          ($.get-key-press Viewport)))
                 bold-mode
                   (do1 nil ($.charterm-bold))
                 non-bold-mode
@@ -599,9 +611,10 @@
                 graphics-on
                   (do1 nil
                     ($.open-graphics)
-                    (= Viewport ($.open-viewport "practice" 300 300)))
+                    (= Viewport ($.open-viewport "screen" 320 320)))
                 graphics-off
                   (do1 nil
+                    ($.close-viewport Viewport)  ; why doesn't this close the window? works in naked racket. not racket vs arc.
                     ($.close-graphics)
                     (= Viewport nil))
                 mouse-position
@@ -609,6 +622,16 @@
                     (let posn ($.mouse-click-posn it)
                       (list (annotate 'record (list ($.posn-x posn) ($.posn-y posn))) t))
                     (list nil nil))
+                wait-for-mouse
+                  (let posn ($.mouse-click-posn ($.get-mouse-click Viewport))
+                    (list (annotate 'record (list ($.posn-x posn) ($.posn-y posn))) t))
+                ; clear-screen in cursor mode above
+                rectangle
+                  (do1 nil
+                    (($.draw-solid-rectangle Viewport)
+                        ($.make-posn (m arg.0) (m arg.1))  ; origin
+                        (m arg.2)  (m arg.3)  ; width height
+                        (m arg.4)))  ; color
 
                 ; user-defined functions
                 next-input
