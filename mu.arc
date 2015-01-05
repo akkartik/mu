@@ -25,6 +25,7 @@
          (+ b 1)))))
 
 (def print-times()
+  (prn (current-process-milliseconds))
   (prn "gc " (current-gc-milliseconds))
   (each (name time) (tablist times*)
     (prn name " " time)))
@@ -58,14 +59,16 @@
   (= curr-trace-file* filename))
 
 (= dump-trace* nil)
-(def trace (label . args)
-  (when (or (is dump-trace* t)
-            (and dump-trace* (is label "-"))
-            (and dump-trace* (pos label dump-trace*!whitelist))
-            (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
-    (apply prn label ": " args))
-  (enq (list label (apply tostring:prn args))
-       traces*))
+(mac trace (label . args)
+     nil)
+;? (def trace (label . args)
+;?   (when (or (is dump-trace* t)
+;?             (and dump-trace* (is label "-"))
+;?             (and dump-trace* (pos label dump-trace*!whitelist))
+;?             (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
+;?     (apply prn label ": " args))
+;?   (enq (list label (apply tostring:prn args))
+;?        traces*))
 
 (redef tr args  ; why am I still returning to prn when debugging? Will this help?
   (do1 nil
@@ -385,7 +388,7 @@
 (= Viewport nil)
 
 ; run instructions from 'routine*' for 'time-slice'
-(def run-for-time-slice (time-slice)
+(deftimed run-for-time-slice (time-slice)
   (point return
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
       (if (empty body.routine*) (err "@stack.routine*.0!fn-name not defined"))
@@ -611,7 +614,8 @@
                 graphics-on
                   (do1 nil
                     ($.open-graphics)
-                    (= Viewport ($.open-viewport "screen" 320 320)))
+                    (= Viewport ($.open-viewport (m arg.0)  ; name
+                                                 (m arg.1) (m arg.2))))  ; width height
                 graphics-off
                   (do1 nil
                     ($.close-viewport Viewport)  ; why doesn't this close the window? works in naked racket. not racket vs arc.
@@ -632,6 +636,25 @@
                         ($.make-posn (m arg.0) (m arg.1))  ; origin
                         (m arg.2)  (m arg.3)  ; width height
                         (m arg.4)))  ; color
+                point
+                  (do1 nil
+;?                     (let t0 (msec)
+                    (($.draw-pixel Viewport) ($.make-posn (m arg.0) (m arg.1))
+                                             (m arg.2))
+;?                     (update-time "point" t0)
+                    )  ; color
+;?                     )
+
+                image
+                  (do1 nil
+                    (($.draw-pixmap Viewport) (m arg.0)  ; filename
+                                              ($.make-posn (m arg.1) (m arg.2))))
+                color-at
+                  (let pixel (($.get-color-pixel Viewport) ($.make-posn (m arg.0) (m arg.1)))
+                    (prn ($.rgb-red pixel) " " ($.rgb-blue pixel) " " ($.rgb-green pixel))
+                    ($:rgb-red pixel))
+                foo
+                  (= times* (table))
 
                 ; user-defined functions
                 next-input
@@ -1813,9 +1836,9 @@
 ;?   (prn function*!factorial)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
-  (prn "\nmemory: " int-canon.memory*)
+;?   (prn "\nmemory: " int-canon.memory*)
   (each routine completed-routines*
     (aif rep.routine!error (prn "error - " it)))
 )
 (reset)
-;? (print-times)
+(print-times)
