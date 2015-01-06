@@ -59,16 +59,14 @@
   (= curr-trace-file* filename))
 
 (= dump-trace* nil)
-(mac trace (label . args)
-     nil)
-;? (def trace (label . args)
-;?   (when (or (is dump-trace* t)
-;?             (and dump-trace* (is label "-"))
-;?             (and dump-trace* (pos label dump-trace*!whitelist))
-;?             (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
-;?     (apply prn label ": " args))
-;?   (enq (list label (apply tostring:prn args))
-;?        traces*))
+(def trace (label . args)
+  (when (or (is dump-trace* t)
+            (and dump-trace* (is label "-"))
+            (and dump-trace* (pos label dump-trace*!whitelist))
+            (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
+    (apply prn label ": " args))
+  (enq (list label (apply tostring:prn args))
+       traces*))
 
 (redef tr args  ; why am I still returning to prn when debugging? Will this help?
   (do1 nil
@@ -388,7 +386,7 @@
 (= Viewport nil)
 
 ; run instructions from 'routine*' for 'time-slice'
-(deftimed run-for-time-slice (time-slice)
+(def run-for-time-slice (time-slice)
   (point return
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
       (if (empty body.routine*) (err "@stack.routine*.0!fn-name not defined"))
@@ -590,17 +588,15 @@
                 print-primitive
                   (do1 nil ((if ($.current-charterm) $.charterm-display pr) (m arg.0)))
                 read-key
-                  (do1 nil
-                    (if ($.current-charterm)
-                          (and ($.charterm-byte-ready?) ($.charterm-read-key))
-                        ($.graphics-open?)
-                          ($.ready-key-press Viewport)))
+                  (if ($.current-charterm)
+                        (and ($.charterm-byte-ready?) ($.charterm-read-key))
+                      ($.graphics-open?)
+                        ($.ready-key-press Viewport))
                 wait-for-key
-                  (do1 nil
-                    (if ($.current-charterm)
-                          ($.charterm-read-key)
-                        ($.graphics-open?)
-                          ($.get-key-press Viewport)))
+                  (if ($.current-charterm)
+                        ($.charterm-read-key)
+                      ($.graphics-open?)
+                        ($.get-key-press Viewport))
                 bold-mode
                   (do1 nil ($.charterm-bold))
                 non-bold-mode
@@ -638,12 +634,8 @@
                         (m arg.4)))  ; color
                 point
                   (do1 nil
-;?                     (let t0 (msec)
                     (($.draw-pixel Viewport) ($.make-posn (m arg.0) (m arg.1))
-                                             (m arg.2))
-;?                     (update-time "point" t0)
-                    )  ; color
-;?                     )
+                                             (m arg.2)))  ; color
 
                 image
                   (do1 nil
@@ -1836,9 +1828,9 @@
 ;?   (prn function*!factorial)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
-;?   (prn "\nmemory: " int-canon.memory*)
+  (prn "\nmemory: " int-canon.memory*)
   (each routine completed-routines*
     (aif rep.routine!error (prn "error - " it)))
 )
 (reset)
-(print-times)
+;? (print-times)
