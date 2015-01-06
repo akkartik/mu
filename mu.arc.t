@@ -2764,9 +2764,8 @@
 (add-code
   '((function main [
       (1:channel-address <- init-channel 3:literal)
-      (2:integer-address <- new integer:literal)
-      (2:integer-address/deref <- copy 34:literal)
-      (3:tagged-value <- save-type 2:integer-address)
+      (2:integer <- copy 34:literal)
+      (3:tagged-value <- save-type 2:integer)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       (5:integer <- get 1:channel-address/deref first-full:offset)
       (6:integer <- get 1:channel-address/deref first-free:offset)
@@ -2790,12 +2789,11 @@
 (add-code
   '((function main [
       (1:channel-address <- init-channel 3:literal)
-      (2:integer-address <- new integer:literal)
-      (2:integer-address/deref <- copy 34:literal)
-      (3:tagged-value <- save-type 2:integer-address)
+      (2:integer <- copy 34:literal)
+      (3:tagged-value <- save-type 2:integer)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       (5:tagged-value 1:channel-address/deref <- read 1:channel-address)
-      (7:integer-address <- maybe-coerce 5:tagged-value integer-address:literal)
+      (7:integer <- maybe-coerce 5:tagged-value integer:literal)
       (8:integer <- get 1:channel-address/deref first-full:offset)
       (9:integer <- get 1:channel-address/deref first-free:offset)
      ])))
@@ -2803,7 +2801,7 @@
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn int-canon.memory*)
-(if (~is memory*.7 memory*.2)
+(if (~is memory*.7 34)
   (prn "F - 'read' returns written value"))
 (if (or (~is 1 memory*.8)
         (~is 1 memory*.9))
@@ -2816,9 +2814,8 @@
       ; channel with 1 slot
       (1:channel-address <- init-channel 1:literal)
       ; write a value
-      (2:integer-address <- new integer:literal)
-      (2:integer-address/deref <- copy 34:literal)
-      (3:tagged-value <- save-type 2:integer-address)
+      (2:integer <- copy 34:literal)
+      (3:tagged-value <- save-type 2:integer)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       ; first-free will now be 1
       (5:integer <- get 1:channel-address/deref first-free:offset)
@@ -2843,9 +2840,8 @@
       ; channel with 1 slot
       (1:channel-address <- init-channel 1:literal)
       ; write a value
-      (2:integer-address <- new integer:literal)
-      (2:integer-address/deref <- copy 34:literal)
-      (3:tagged-value <- save-type 2:integer-address)
+      (2:integer <- copy 34:literal)
+      (3:tagged-value <- save-type 2:integer)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       ; read one value
       (_ 1:channel-address/deref <- read 1:channel-address)
@@ -2885,9 +2881,8 @@
 (add-code
   '((function main [
       (1:channel-address <- init-channel 3:literal)
-      (2:integer-address <- new integer:literal)
-      (2:integer-address/deref <- copy 34:literal)
-      (3:tagged-value <- save-type 2:integer-address)
+      (2:integer <- copy 34:literal)
+      (3:tagged-value <- save-type 2:integer)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       (5:boolean <- empty? 1:channel-address/deref)
       (6:boolean <- full? 1:channel-address/deref)
@@ -2904,9 +2899,8 @@
 (add-code
   '((function main [
       (1:channel-address <- init-channel 1:literal)
-      (2:integer-address <- new integer:literal)
-      (2:integer-address/deref <- copy 34:literal)
-      (3:tagged-value <- save-type 2:integer-address)
+      (2:integer <- copy 34:literal)
+      (3:tagged-value <- save-type 2:integer)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       (5:boolean <- empty? 1:channel-address/deref)
       (6:boolean <- full? 1:channel-address/deref)
@@ -2923,9 +2917,8 @@
 (add-code
   '((function main [
       (1:channel-address <- init-channel 3:literal)
-      (2:integer-address <- new integer:literal)
-      (2:integer-address/deref <- copy 34:literal)
-      (3:tagged-value <- save-type 2:integer-address)
+      (2:integer <- copy 34:literal)
+      (3:tagged-value <- save-type 2:integer)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       (_ 1:channel-address/deref <- read 1:channel-address)
@@ -2944,9 +2937,8 @@
 (add-code
   '((function main [
       (1:channel-address <- init-channel 3:literal)
-      (2:integer-address <- new integer:literal)
-      (2:integer-address/deref <- copy 34:literal)
-      (3:tagged-value <- save-type 2:integer-address)
+      (2:integer <- copy 34:literal)
+      (3:tagged-value <- save-type 2:integer)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       (_ 1:channel-address/deref <- read 1:channel-address)
       (5:boolean <- empty? 1:channel-address/deref)
@@ -2990,9 +2982,8 @@
 (add-code
   '((function main [
       (1:channel-address <- init-channel 1:literal)
-      (2:integer-address <- new integer:literal)
-      (2:integer-address/deref <- copy 34:literal)
-      (3:tagged-value <- save-type 2:integer-address)
+      (2:integer <- copy 34:literal)
+      (3:tagged-value <- save-type 2:integer)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
       ; channel has capacity 1, but receives a second write
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
@@ -3024,10 +3015,9 @@
      ])
     (function producer [
       (default-space:space-address <- new space:literal 30:literal)
-      (n:integer-address <- new integer:literal)
-      (n:integer-address/deref <- copy 24:literal)
+      (n:integer <- copy 24:literal)
       (ochan:channel-address <- next-input)
-      (x:tagged-value <- save-type n:integer-address)
+      (x:tagged-value <- save-type n:integer)
       (ochan:channel-address/deref <- write ochan:channel-address x:tagged-value)
      ])))
 ;? (set dump-trace*)
@@ -3037,7 +3027,7 @@
 ;? (prn memory*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
+(if (~is 24 memory*.2)  ; location 1 contains tagged-value x above
   (prn "F - channels are meant to be shared between routines"))
 ;? (quit)
 
@@ -3052,15 +3042,14 @@
      ])
     (function producer [
       (default-space:space-address <- new space:literal 30:literal)
-      (n:integer-address <- new integer:literal)
-      (n:integer-address/deref <- copy 24:literal)
-      (x:tagged-value <- save-type n:integer-address)
+      (n:integer <- copy 24:literal)
+      (x:tagged-value <- save-type n:integer)
       (1:channel-address/space:global/deref <- write 1:channel-address/space:global x:tagged-value)
      ])))
 (run 'consumer)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~is 24 (memory* memory*.2))  ; location 1 contains tagged-value *x above
+(if (~is 24 memory*.2)  ; location 1 contains tagged-value x above
   (prn "F - channels are meant to be shared between routines"))
 
 )  ; section 100
