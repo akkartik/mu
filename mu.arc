@@ -1410,6 +1410,8 @@
   (result:tagged-value-address <- get-address base:list-address/deref car:offset)
   (reply result:tagged-value-address))
 
+; create a list out of a list of args
+; only integers for now
 (init-fn init-list
   (default-space:space-address <- new space:literal 30:literal)
   ; new-list = curr = new list
