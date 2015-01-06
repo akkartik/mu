@@ -796,23 +796,27 @@
 ;
 ;   'save-type' - turns a regular value into a tagged-value of the appropriate type
 ;   'maybe-coerce' - turns a tagged value into a regular value if the type matches
+;
+; The payload of a tagged value must occupy just one location. Save pointers
+; to records.
 
 (reset)
 (new-trace "tagged-value")
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (add-code
   '((function main [
-      (1:type <- copy integer-address:literal)
-      (2:integer-address <- copy 34:literal)  ; pointer to nowhere
-      (3:integer-address 4:boolean <- maybe-coerce 1:tagged-value integer-address:literal)
+      (1:type <- copy integer:literal)
+      (2:integer <- copy 34:literal)
+      (3:integer 4:boolean <- maybe-coerce 1:tagged-value integer:literal)
      ])))
 ;? (set dump-trace*)
 (run 'main)
-;? (prn memory*)
 ;? (prn completed-routines*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~memory-contains 3 '(34 t))
+;? (prn memory*)
+(if (or (~is memory*.3 34)
+        (~is memory*.4 t))
   (prn "F - 'maybe-coerce' copies value only if type tag matches"))
 ;? (quit)
 
@@ -822,38 +826,40 @@
 (add-code
   '((function main [
       (1:type <- copy integer-address:literal)
-      (2:integer-address <- copy 34:literal)  ; pointer to nowhere
-      (3:integer-address 4:boolean <- maybe-coerce 1:tagged-value boolean-address:literal)
+      (2:integer <- copy 34:literal)
+      (3:boolean 4:boolean <- maybe-coerce 1:tagged-value boolean:literal)
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~memory-contains 3 '(0 nil))
+(if (or (~is memory*.3 0)
+        (~is memory*.4 nil))
   (prn "F - 'maybe-coerce' doesn't copy value when type tag doesn't match"))
 
 (reset)
 (new-trace "save-type")
 (add-code
   '((function main [
-      (1:integer-address <- copy 34:literal)  ; pointer to nowhere
-      (2:tagged-value <- save-type 1:integer-address)
+      (1:integer <- copy 34:literal)
+      (2:tagged-value <- save-type 1:integer)
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj  1 34  2 'integer-address  3 34))
+(if (~iso memory* (obj  1 34  2 'integer  3 34))
   (prn "F - 'save-type' saves the type of a value at runtime, turning it into a tagged-value"))
 
 (reset)
 (new-trace "init-tagged-value")
 (add-code
   '((function main [
-      (1:integer-address <- copy 34:literal)  ; pointer to nowhere
-      (2:tagged-value-address <- init-tagged-value integer-address:literal 1:integer-address)
-      (3:integer-address 4:boolean <- maybe-coerce 2:tagged-value-address/deref integer-address:literal)
+      (1:integer <- copy 34:literal)
+      (2:tagged-value-address <- init-tagged-value integer:literal 1:integer)
+      (3:integer 4:boolean <- maybe-coerce 2:tagged-value-address/deref integer:literal)
      ])))
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
 ;? (prn memory*)
-(if (~memory-contains 3 '(34 t))
+(if (or (~is memory*.3 34)
+        (~is memory*.4 t))
   (prn "F - 'init-tagged-value' is the converse of 'maybe-coerce'"))
 ;? (quit)
 
@@ -868,18 +874,18 @@
       ; 1 points at first node: tagged-value (int 34)
       (1:list-address <- new list:literal)
       (2:tagged-value-address <- list-value-address 1:list-address)
-      (3:type-address <- get-address 2:tagged-value-address/deref 0:offset)
+      (3:type-address <- get-address 2:tagged-value-address/deref type:offset)
       (3:type-address/deref <- copy integer:literal)
-      (4:location <- get-address 2:tagged-value-address/deref 1:offset)
+      (4:location <- get-address 2:tagged-value-address/deref payload:offset)
       (4:location/deref <- copy 34:literal)
-      (5:list-address-address <- get-address 1:list-address/deref 1:offset)
+      (5:list-address-address <- get-address 1:list-address/deref cdr:offset)
       (5:list-address-address/deref <- new list:literal)
       ; 6 points at second node: tagged-value (boolean t)
       (6:list-address <- copy 5:list-address-address/deref)
       (7:tagged-value-address <- list-value-address 6:list-address)
-      (8:type-address <- get-address 7:tagged-value-address/deref 0:offset)
+      (8:type-address <- get-address 7:tagged-value-address/deref type:offset)
       (8:type-address/deref <- copy boolean:literal)
-      (9:location <- get-address 7:tagged-value-address/deref 1:offset)
+      (9:location <- get-address 7:tagged-value-address/deref payload:offset)
       (9:location/deref <- copy t:literal)
       (10:list-address <- get 6:list-address/deref 1:offset)
      ])))
@@ -920,7 +926,7 @@
 ;? (quit)
 
 ; 'init-list' takes a variable number of args and constructs a list containing
-; them.
+; them. Just integers for now.
 
 (reset)
 (new-trace "init-list")
