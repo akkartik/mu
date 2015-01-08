@@ -211,7 +211,14 @@ checks in different parts of your program, you'll be able to do that.
 To summarize: mu instructions have multiple operand and result values. Values
 can have multiple rows separated by slashes, and rows can have multiple
 columns separated by colons. The address of a value is always in the very
-first column of the first row of its 'table'.
+first column of the first row of its 'table'. You can visualize the last
+example above as:
+
+```
+  z           : list : integer  /
+  assign-once : true            /
+  assigned    : false
+```
 
 ---
 
