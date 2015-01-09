@@ -231,13 +231,16 @@
   `((((rep ,routine) 'call-stack) 0) 'results))
 
 (def waiting-for-exact-cycle? (routine)
-  (is 'literal rep.routine!sleep.1))
+  (is 'for-some-cycles rep.routine!sleep.0))
 
 (def ready-to-wake-up (routine)
   (assert no.routine*)
-  (if (is 'literal rep.routine!sleep.1)
-    (> curr-cycle* rep.routine!sleep.0)
-    (~is rep.routine!sleep.1 (memory* rep.routine!sleep.0))))
+  (case rep.routine!sleep.0
+    for-some-cycles
+      (> curr-cycle* rep.routine!sleep.1)
+    until-location-changes
+      (~is rep.routine!sleep.2 (memory* rep.routine!sleep.1))
+      ))
 
 (on-init
   (= running-routines* (queue))  ; simple round-robin scheduler
@@ -311,7 +314,7 @@
 ;?   (tr 112)
   (when (empty running-routines*)
     (whenlet exact-sleeping-routines (keep waiting-for-exact-cycle? keys.sleeping-routines*)
-      (let next-wakeup-cycle (apply min (map [rep._!sleep 0] exact-sleeping-routines))
+      (let next-wakeup-cycle (apply min (map [rep._!sleep 1] exact-sleeping-routines))
         (= curr-cycle* (+ 1 next-wakeup-cycle))
         (trace "schedule" "skipping to cycle " curr-cycle*)
         (update-scheduler-state))))
@@ -560,16 +563,15 @@
                   (unless (m arg.0)
                     (die (v arg.1)))
                 sleep
-                  (let operand arg.0
-;?                     (tr "sleep " operand)
-                    ; store sleep as either (<cycle number> literal) or (<location> <current value>)
-                    (if (is ty.operand.0 'literal)
-                      (let delay v.operand
-                        (trace "run" "sleeping until " (+ curr-cycle* delay))
-                        (= rep.routine*!sleep `(,(+ curr-cycle* delay) literal)))
-                      (do
-;?                         (tr "blocking on " operand " -> " (addr operand))
-                        (= rep.routine*!sleep `(,addr.operand ,m.operand))))
+                  (do
+                    (case (v arg.0)
+                      for-some-cycles
+                        (let wakeup-time (+ curr-cycle* (v arg.1))
+                          (trace "run" "sleeping until " wakeup-time)
+                          (= rep.routine*!sleep `(for-some-cycles ,wakeup-time)))
+                      until-location-changes
+                        (= rep.routine*!sleep `(until-location-changes ,(addr arg.1) ,(m arg.1)))
+                        )
                     ((abort-routine*)))
 
                 ; cursor-based (text mode) interaction
@@ -1502,7 +1504,7 @@
     (full:boolean <- full? chan:channel-address/deref)
     (break-unless full:boolean)
     (full-address:integer-address <- get-address chan:channel-address/deref first-full:offset)
-    (sleep full-address:integer-address/deref)
+    (sleep until-location-changes:literal full-address:integer-address/deref)
   }
   ; store val
   (q:tagged-value-array-address <- get chan:channel-address/deref circular-buffer:offset)
@@ -1528,7 +1530,7 @@
     (empty:boolean <- empty? chan:channel-address/deref)
     (break-unless empty:boolean)
     (free-address:integer-address <- get-address chan:channel-address/deref first-free:offset)
-    (sleep free-address:integer-address/deref)
+    (sleep until-location-changes:literal free-address:integer-address/deref)
   }
   ; read result
   (full:integer-address <- get-address chan:channel-address/deref first-full:offset)
