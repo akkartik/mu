@@ -2503,12 +2503,12 @@
 (assert (empty running-routines*))
 ; sleeping routine
 (let routine make-routine!f1
-  (= rep.routine!sleep '(23 literal))
+  (= rep.routine!sleep '(34 literal))
   (set sleeping-routines*.routine))
 ; long time left for it to wake up
 (= curr-cycle* 0)
 (update-scheduler-state)
-(assert (is curr-cycle* 24))
+(assert (is curr-cycle* 35))
 (if (~is 1 len.running-routines*)
   (prn "F - scheduler skips ahead to earliest sleeping routines when nothing to run"))
 
