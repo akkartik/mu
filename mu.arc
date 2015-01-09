@@ -240,7 +240,7 @@
       (> curr-cycle* rep.routine!sleep.1)
     until-location-changes
       (~is rep.routine!sleep.2 (memory* rep.routine!sleep.1))
-      ))
+    ))
 
 (on-init
   (= running-routines* (queue))  ; simple round-robin scheduler
@@ -571,7 +571,7 @@
                           (= rep.routine*!sleep `(for-some-cycles ,wakeup-time)))
                       until-location-changes
                         (= rep.routine*!sleep `(until-location-changes ,(addr arg.1) ,(m arg.1)))
-                        )
+                      )
                     ((abort-routine*)))
 
                 ; cursor-based (text mode) interaction
