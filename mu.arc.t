@@ -2372,12 +2372,12 @@
 (= traces* (queue))
 (add-code
   '((function f1 [
-      (1:integer <- copy 3:literal)
-      (1:integer <- copy 3:literal)
+      (1:integer <- copy 0:literal)
+      (1:integer <- copy 0:literal)
      ])
     (function f2 [
-      (2:integer <- copy 4:literal)
-      (2:integer <- copy 4:literal)
+      (2:integer <- copy 0:literal)
+      (2:integer <- copy 0:literal)
      ])))
 (= scheduling-interval* 1)
 (run 'f1 'f2)
@@ -2393,10 +2393,10 @@
 (= traces* (queue))
 (add-code
   '((function f1 [
-      (1:integer <- copy 3:literal)
+      (1:integer <- copy 0:literal)
      ])
     (function f2 [
-      (2:integer <- copy 4:literal)
+      (2:integer <- copy 0:literal)
      ])))
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
@@ -2418,10 +2418,10 @@
 (= traces* (queue))
 (add-code
   '((function f1 [
-      (1:integer <- copy 3:literal)
+      (1:integer <- copy 0:literal)
      ])
     (function f2 [
-      (2:integer <- copy 4:literal)
+      (2:integer <- copy 0:literal)
      ])))
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
@@ -2441,10 +2441,10 @@
 (= traces* (queue))
 (add-code
   '((function f1 [
-      (1:integer <- copy 3:literal)
+      (1:integer <- copy 0:literal)
      ])
     (function f2 [
-      (2:integer <- copy 4:literal)
+      (2:integer <- copy 0:literal)
      ])))
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
@@ -2473,10 +2473,10 @@
 (= traces* (queue))
 (add-code
   '((function f1 [
-      (1:integer <- copy 3:literal)
+      (1:integer <- copy 0:literal)
      ])
     (function f2 [
-      (2:integer <- copy 4:literal)
+      (2:integer <- copy 0:literal)
      ])))
 ; add one baseline routine to run (empty running-routines* handled below)
 (enq make-routine!f1 running-routines*)
@@ -2497,7 +2497,7 @@
 (= traces* (queue))
 (add-code
   '((function f1 [
-      (1:integer <- copy 3:literal)
+      (1:integer <- copy 0:literal)
      ])))
 ; running-routines* is empty
 (assert (empty running-routines*))
@@ -2517,7 +2517,7 @@
 (= traces* (queue))
 (add-code
   '((function f1 [
-      (1:integer <- copy 3:literal)
+      (1:integer <- copy 0:literal)
      ])))
 (assert (empty running-routines*))
 (assert (empty completed-routines*))
@@ -2540,7 +2540,7 @@
 (= traces* (queue))
 (add-code
   '((function f1 [
-      (1:integer <- copy 3:literal)
+      (1:integer <- copy 0:literal)
      ])))
 ; running-routines* is empty
 (assert (empty running-routines*))
@@ -2559,12 +2559,12 @@
 (add-code
   '((function f1 [
       (sleep 1:literal)
-      (1:integer <- copy 3:literal)
-      (1:integer <- copy 3:literal)
+      (1:integer <- copy 0:literal)
+      (1:integer <- copy 0:literal)
      ])
     (function f2 [
-      (2:integer <- copy 4:literal)
-      (2:integer <- copy 4:literal)
+      (2:integer <- copy 0:literal)
+      (2:integer <- copy 0:literal)
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (run 'f1 'f2)
@@ -2584,12 +2584,12 @@
 (add-code
   '((function f1 [
       (sleep 20:literal)
-      (1:integer <- copy 3:literal)
-      (1:integer <- copy 3:literal)
+      (1:integer <- copy 0:literal)
+      (1:integer <- copy 0:literal)
      ])
     (function f2 [
-      (2:integer <- copy 4:literal)
-      (2:integer <- copy 4:literal)
+      (2:integer <- copy 0:literal)
+      (2:integer <- copy 0:literal)
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (run 'f1 'f2)
