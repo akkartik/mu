@@ -2403,7 +2403,7 @@
 (assert (is 1 len.running-routines*))
 ; sleeping routine
 (let routine make-routine!f2
-  (= rep.routine!sleep '(23 literal))
+  (= rep.routine!sleep '(for-some-cycles 23))
   (set sleeping-routines*.routine))
 ; not yet time for it to wake up
 (= curr-cycle* 23)
@@ -2428,7 +2428,7 @@
 (assert (is 1 len.running-routines*))
 ; sleeping routine
 (let routine make-routine!f2
-  (= rep.routine!sleep '(23 literal))
+  (= rep.routine!sleep '(for-some-cycles 23))
   (set sleeping-routines*.routine))
 ; time for it to wake up
 (= curr-cycle* 24)
@@ -2451,7 +2451,7 @@
 (assert (is 1 len.running-routines*))
 ; blocked routine waiting for location 23 to change
 (let routine make-routine!f2
-  (= rep.routine!sleep '(23 0))
+  (= rep.routine!sleep '(until-location-changes 23 0))
   (set sleeping-routines*.routine))
 ; leave memory location 23 unchanged
 (= memory*.23 0)
@@ -2483,7 +2483,7 @@
 (assert (is 1 len.running-routines*))
 ; blocked routine waiting for location 23 to change
 (let routine make-routine!f2
-  (= rep.routine!sleep '(23 0))
+  (= rep.routine!sleep '(until-location-changes 23 0))
   (set sleeping-routines*.routine))
 ; change memory location 23
 (= memory*.23 1)
@@ -2503,7 +2503,7 @@
 (assert (empty running-routines*))
 ; sleeping routine
 (let routine make-routine!f1
-  (= rep.routine!sleep '(34 literal))
+  (= rep.routine!sleep '(for-some-cycles 34))
   (set sleeping-routines*.routine))
 ; long time left for it to wake up
 (= curr-cycle* 0)
@@ -2523,7 +2523,7 @@
 (assert (empty completed-routines*))
 ; blocked routine
 (let routine make-routine!f1
-  (= rep.routine!sleep '(23 0))
+  (= rep.routine!sleep '(until-location-changes 23 0))
   (set sleeping-routines*.routine))
 ; location it's waiting on is 'unchanged'
 (= memory*.23 0)
@@ -2546,7 +2546,7 @@
 (assert (empty running-routines*))
 ; blocked routine
 (let routine make-routine!f1
-  (= rep.routine!sleep '(23 0))
+  (= rep.routine!sleep '(until-location-changes 23 0))
   (set sleeping-routines*.routine))
 ; but is about to become ready
 (= memory*.23 1)
@@ -2558,7 +2558,7 @@
 (new-trace "sleep")
 (add-code
   '((function f1 [
-      (sleep 1:literal)
+      (sleep for-some-cycles:literal 1:literal)
       (1:integer <- copy 0:literal)
       (1:integer <- copy 0:literal)
      ])
@@ -2583,7 +2583,7 @@
 (new-trace "sleep-long")
 (add-code
   '((function f1 [
-      (sleep 20:literal)
+      (sleep for-some-cycles:literal 20:literal)
       (1:integer <- copy 0:literal)
       (1:integer <- copy 0:literal)
      ])
@@ -2610,11 +2610,11 @@
   '((function f1 [
       ; waits for memory location 1 to be set, before computing its successor
       (1:integer <- copy 0:literal)
-      (sleep 1:integer)
+      (sleep until-location-changes:literal 1:integer)
       (2:integer <- add 1:integer 1:literal)
      ])
     (function f2 [
-      (sleep 30:literal)
+      (sleep for-some-cycles:literal 30:literal)
       (1:integer <- copy 3:literal)  ; set to value
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
@@ -2635,11 +2635,11 @@
       (10:integer <- copy 5:literal)  ; array of locals
       (default-space:space-address <- copy 10:literal)
       (1:integer <- copy 23:literal)  ; really location 12
-      (sleep 1:integer)
+      (sleep until-location-changes:literal 1:integer)
       (2:integer <- add 1:integer 1:literal)
      ])
     (function f2 [
-      (sleep 30:literal)
+      (sleep for-some-cycles:literal 30:literal)
       (12:integer <- copy 3:literal)  ; set to value
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
