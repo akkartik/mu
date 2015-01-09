@@ -2,13 +2,29 @@
 
 TOhtml
 %s,<.*&lt;-.*,<span class="Mu">&</span>,gc
-%s,&lt;-,<span class="Op">&</span>,g
-%s/Constant[^>]*>[^>]*> literal/Mu&/gc
-%s/Constant[^>]*>[^>]*> offset/Mu&/gc
+%s/Special">&lt;/Op">\&lt;/g
+%s, &lt;-, <span class="Op">&</span>,gc
+%s/Constant[^>]*>[^>]*>[: ]literal/Mu&/gc
+%s/Constant[^>]*>[^>]*>[: ]offset/Mu&/gc
 %s,\<nil literal,<span class="MuConstant">t</span> literal,gc
 %s,\<t literal,<span class="MuConstant">t</span> literal,gc
+%s,\<nil:literal\>,<span class="MuConstant">nil</span>:literal,gc
+%s,\<t:literal\>,<span class="MuConstant">t</span>:literal,gc
 
-map ` :s,[{}<].*,<span class="Mu">&</span>,<CR>
+map ` :s,[^ ].*,<span class="Mu">&</span>,<CR>
+/function.*[
+"b = `/<Up><Up><Enter>n
+map ; @b
+/jump
+/break
+/reply
+/loop
+/sleep
+/fork
+/defer
+/label1
+/before.*[
+/after.*[
 
   " supercedes
   %s,<.*break.*,<span class="Mu">&</span>,gc
