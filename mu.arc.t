@@ -129,25 +129,27 @@
 ; of them.
 ;
 ; Since we're building on lisp, our code samples won't look quite like the
-; idealized syntax above. For now they will be lists of lists:
+; idealized syntax above. For now they will look like this:
 ;
-;   (function-name
-;     ((oarg1 oarg2 ... <- op arg1 arg2 ...)
-;      ...
-;      ...))
+;   (function f [
+;     (oarg1 oarg2 ... <- op arg1 arg2 ...)
+;     ...
+;     ...
+;    ])
 ;
-; Each arg/oarg is itself a list, with the payload value at the head, and
-; various metadata in the rest. In this first example the only metadata is types:
-; 'integer' for a memory location containing an integer, and 'literal' for a
-; value included directly in code. (Assembly languages traditionally call them
-; 'immediate' operands.) In the future a simple tool will check that the types
-; line up as expected in each op. A different tool might add types where they
-; aren't provided. Instead of a monolithic compiler I want to build simple,
-; lightweight tools that can be combined in various ways, say for using
-; different typecheckers in different subsystems.
+; Each arg/oarg can contain metadata separated by slashes and colons. In this
+; first example below, the only metadata is types: 'integer' for a memory
+; location containing an integer, and 'literal' for a value included directly
+; in code. (Assembly languages traditionally call them 'immediate' operands.)
+; In the future a simple tool will check that the types line up as expected in
+; each op. A different tool might add types where they aren't provided.
+; Instead of a monolithic compiler I want to build simple, lightweight tools
+; that can be combined in various ways, say for using different typecheckers
+; in different subsystems.
 ;
 ; In our tests we'll define such mu functions using a call to 'add-code', so
-; look for it. Everything outside 'add-code' is just test-harness details.
+; look for it when reading the code examples. Everything outside 'add-code' is
+; just test-harness details that can be skipped at first.
 
 (reset)
 ;? (set dump-trace*)
@@ -433,7 +435,7 @@
   (prn "F - 'copy' performs direct addressing"))
 
 ; 'Indirect' addressing refers to an address stored in a memory location.
-; Indicated by the metadata 'deref'. Usually requires an address type.
+; Indicated by the metadata '/deref'. Usually requires an address type.
 ; In the test below, the memory location 1 contains '2', so an indirect read
 ; of location 1 returns the value of location 2.
 
