@@ -3148,9 +3148,10 @@
 (reset)
 (new-trace "before")
 (= traces* (queue))
-(add-code '((before label1 [
-               (2:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((before label1 [
+     (2:integer <- copy 0:literal)
+    ])))
 (if (~iso (as cons before*!label1)
           '(; fragment
             (
@@ -3170,12 +3171,13 @@
 (reset)
 (new-trace "before-multiple")
 (= traces* (queue))
-(add-code '((before label1 [
-               (2:integer <- copy 0:literal)
-             ])
-            (before label1 [
-              (3:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((before label1 [
+      (2:integer <- copy 0:literal)
+     ])
+    (before label1 [
+      (3:integer <- copy 0:literal)
+     ])))
 (if (~iso (as cons before*!label1)
           '(; fragment
             (
@@ -3198,9 +3200,10 @@
 (reset)
 (new-trace "before-scoped")
 (= traces* (queue))
-(add-code '((before f/label1 [  ; label1 only inside function f
-               (2:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((before f/label1 [  ; label1 only inside function f
+     (2:integer <- copy 0:literal)
+    ])))
 (if (~iso (insert-code
             '((1:integer <- copy 0:literal)
               label1
@@ -3215,9 +3218,10 @@
 (reset)
 (new-trace "before-scoped2")
 (= traces* (queue))
-(add-code '((before f/label1 [  ; label1 only inside function f
-               (2:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((before f/label1 [  ; label1 only inside function f
+      (2:integer <- copy 0:literal)
+     ])))
 (if (~iso (insert-code
             '((1:integer <- copy 0:literal)
               label1
@@ -3230,9 +3234,10 @@
 (reset)
 (new-trace "after")
 (= traces* (queue))
-(add-code '((after label1 [
-               (2:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((after label1 [
+      (2:integer <- copy 0:literal)
+     ])))
 (if (~iso (as cons after*!label1)
           '(; fragment
             (
@@ -3252,12 +3257,13 @@
 (reset)
 (new-trace "after-multiple")
 (= traces* (queue))
-(add-code '((after label1 [
-               (2:integer <- copy 0:literal)
-             ])
-            (after label1 [
-              (3:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((after label1 [
+      (2:integer <- copy 0:literal)
+     ])
+    (after label1 [
+      (3:integer <- copy 0:literal)
+     ])))
 (if (~iso (as cons after*!label1)
           '(; fragment
             (
@@ -3280,12 +3286,13 @@
 (reset)
 (new-trace "before-after")
 (= traces* (queue))
-(add-code '((before label1 [
-               (2:integer <- copy 0:literal)
-             ])
-            (after label1 [
-              (3:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((before label1 [
+      (2:integer <- copy 0:literal)
+     ])
+    (after label1 [
+      (3:integer <- copy 0:literal)
+     ])))
 (if (and (~iso (as cons before*!label1)
                '(; fragment
                  (
@@ -3310,20 +3317,21 @@
 (reset)
 (new-trace "before-after-multiple")
 (= traces* (queue))
-(add-code '((before label1 [
-               (2:integer <- copy 0:literal)
-               (3:integer <- copy 0:literal)
-             ])
-            (after label1 [
-              (4:integer <- copy 0:literal)
-             ])
-            (before label1 [
-              (5:integer <- copy 0:literal)
-             ])
-            (after label1 [
-              (6:integer <- copy 0:literal)
-              (7:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((before label1 [
+      (2:integer <- copy 0:literal)
+      (3:integer <- copy 0:literal)
+     ])
+    (after label1 [
+      (4:integer <- copy 0:literal)
+     ])
+    (before label1 [
+      (5:integer <- copy 0:literal)
+     ])
+    (after label1 [
+      (6:integer <- copy 0:literal)
+      (7:integer <- copy 0:literal)
+     ])))
 (if (or (~iso (as cons before*!label1)
               '(; fragment
                 (
@@ -3360,33 +3368,35 @@
 (= traces* (queue))
 (if (~iso (do
             (reset)
-            (add-code '((before label1 [
-                           (2:integer <- copy 0:literal)
-                         ])
-                        (after label1 [
-                          (3:integer <- copy 0:literal)
-                         ])
-                        (before label1 [
-                          (4:integer <- copy 0:literal)
-                         ])
-                        (after label1 [
-                          (5:integer <- copy 0:literal)
-                         ])))
+            (add-code
+              '((before label1 [
+                  (2:integer <- copy 0:literal)
+                 ])
+                (after label1 [
+                  (3:integer <- copy 0:literal)
+                 ])
+                (before label1 [
+                  (4:integer <- copy 0:literal)
+                 ])
+                (after label1 [
+                  (5:integer <- copy 0:literal)
+                 ])))
             (list before*!label1 after*!label1))
           (do
             (reset)
-            (add-code '((before label1 [
-                           (2:integer <- copy 0:literal)
-                         ])
-                        (before label1 [
-                          (4:integer <- copy 0:literal)
-                         ])
-                        (after label1 [
-                          (3:integer <- copy 0:literal)
-                         ])
-                        (after label1 [
-                          (5:integer <- copy 0:literal)
-                         ])))
+            (add-code
+              '((before label1 [
+                  (2:integer <- copy 0:literal)
+                 ])
+                (before label1 [
+                  (4:integer <- copy 0:literal)
+                 ])
+                (after label1 [
+                  (3:integer <- copy 0:literal)
+                 ])
+                (after label1 [
+                  (5:integer <- copy 0:literal)
+                 ])))
             (list before*!label1 after*!label1)))
   (prn "F - order matters between 'before' and between 'after' fragments, but not *across* 'before' and 'after' fragments"))
 
@@ -3394,14 +3404,15 @@
 (new-trace "before-after-braces")
 (= traces* (queue))
 (= function* (table))
-(add-code '((after label1 [
-               (1:integer <- copy 0:literal)
-             ])
-            (function f1 [
-              { begin
-                label1
-              }
-             ])))
+(add-code
+  '((after label1 [
+      (1:integer <- copy 0:literal)
+     ])
+    (function f1 [
+      { begin
+        label1
+      }
+     ])))
 ;? (= dump-trace* (obj whitelist '("cn0")))
 (freeze function*)
 (if (~iso function*!f1
@@ -3413,14 +3424,15 @@
 (new-trace "before-after-any-order")
 (= traces* (queue))
 (= function* (table))
-(add-code '((function f1 [
-              { begin
-                label1
-              }
-             ])
-            (after label1 [
-               (1:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((function f1 [
+      { begin
+        label1
+      }
+     ])
+    (after label1 [
+       (1:integer <- copy 0:literal)
+     ])))
 (freeze function*)
 (if (~iso function*!f1
           '(label1
@@ -3432,12 +3444,13 @@
 (new-trace "multiple-defs")
 (= traces* (queue))
 (= function* (table))
-(add-code '((function f1 [
-              (1:integer <- copy 0:literal)
-             ])
-            (function f1 [
-              (2:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((function f1 [
+      (1:integer <- copy 0:literal)
+     ])
+    (function f1 [
+      (2:integer <- copy 0:literal)
+     ])))
 (freeze function*)
 (if (~iso function*!f1
           '((((2 integer)) <- ((copy)) ((0 literal)))
@@ -3448,12 +3461,13 @@
 (new-trace "def!")
 (= traces* (queue))
 (= function* (table))
-(add-code '((function f1 [
-              (1:integer <- copy 0:literal)
-             ])
-            (function! f1 [
-              (2:integer <- copy 0:literal)
-             ])))
+(add-code
+  '((function f1 [
+      (1:integer <- copy 0:literal)
+     ])
+    (function! f1 [
+      (2:integer <- copy 0:literal)
+     ])))
 (freeze function*)
 (if (~iso function*!f1
           '((((2 integer)) <- ((copy)) ((0 literal)))))
@@ -3467,9 +3481,10 @@
 
 (reset)
 (new-trace "string-new")
-(add-code '((function main [
-              (1:string-address <- new string:literal 5:literal)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new string:literal 5:literal)
+     ])))
 (let routine make-routine!main
   (enq routine running-routines*)
   (let before rep.routine!alloc
@@ -3480,9 +3495,10 @@
 ; Convenience: initialize strings using string literals
 (reset)
 (new-trace "string-literal")
-(add-code '((function main [
-              (1:string-address <- new "hello")
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "hello")
+     ])))
 (let routine make-routine!main
   (enq routine running-routines*)
   (let before rep.routine!alloc
@@ -3496,22 +3512,24 @@
 
 (reset)
 (new-trace "strcat")
-(add-code '((function main [
-              (1:string-address <- new "hello,")
-              (2:string-address <- new " world!")
-              (3:string-address <- strcat 1:string-address 2:string-address)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "hello,")
+      (2:string-address <- new " world!")
+      (3:string-address <- strcat 1:string-address 2:string-address)
+     ])))
 (run 'main)
 (if (~memory-contains-array memory*.3 "hello, world!")
   (prn "F - 'strcat' concatenates strings"))
 
 (reset)
 (new-trace "interpolate")
-(add-code '((function main [
-              (1:string-address <- new "hello, _!")
-              (2:string-address <- new "abc")
-              (3:string-address <- interpolate 1:string-address 2:string-address)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "hello, _!")
+      (2:string-address <- new "abc")
+      (3:string-address <- interpolate 1:string-address 2:string-address)
+     ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
 (if (~memory-contains-array memory*.3 "hello, abc!")
@@ -3519,11 +3537,12 @@
 
 (reset)
 (new-trace "interpolate-empty")
-(add-code '((function main [
-              (1:string-address <- new "hello!")
-              (2:string-address <- new "abc")
-              (3:string-address <- interpolate 1:string-address 2:string-address)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "hello!")
+      (2:string-address <- new "abc")
+      (3:string-address <- interpolate 1:string-address 2:string-address)
+     ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
 (if (~memory-contains-array memory*.3 "hello!")
@@ -3531,11 +3550,12 @@
 
 (reset)
 (new-trace "interpolate-at-start")
-(add-code '((function main [
-              (1:string-address <- new "_, hello!")
-              (2:string-address <- new "abc")
-              (3:string-address <- interpolate 1:string-address 2:string-address)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "_, hello!")
+      (2:string-address <- new "abc")
+      (3:string-address <- interpolate 1:string-address 2:string-address)
+     ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
 (if (~memory-contains-array memory*.3 "abc, hello")
@@ -3543,11 +3563,12 @@
 
 (reset)
 (new-trace "interpolate-at-end")
-(add-code '((function main [
-              (1:string-address <- new "hello, _")
-              (2:string-address <- new "abc")
-              (3:string-address <- interpolate 1:string-address 2:string-address)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "hello, _")
+      (2:string-address <- new "abc")
+      (3:string-address <- interpolate 1:string-address 2:string-address)
+     ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
 (if (~memory-contains-array memory*.3 "hello, abc")
@@ -3555,13 +3576,14 @@
 
 (reset)
 (new-trace "interpolate-varargs")
-(add-code '((function main [
-              (1:string-address <- new "hello, _, _, and _!")
-              (2:string-address <- new "abc")
-              (3:string-address <- new "def")
-              (4:string-address <- new "ghi")
-              (5:string-address <- interpolate 1:string-address 2:string-address 3:string-address 4:string-address)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "hello, _, _, and _!")
+      (2:string-address <- new "abc")
+      (3:string-address <- new "def")
+      (4:string-address <- new "ghi")
+      (5:string-address <- interpolate 1:string-address 2:string-address 3:string-address 4:string-address)
+     ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 ;? (= dump-trace* (obj whitelist '("run" "array-info")))
 ;? (set dump-trace*)
@@ -3574,20 +3596,22 @@
 
 (reset)
 (new-trace "string-find-next")
-(add-code '((function main [
-              (1:string-address <- new "a/b")
-              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "a/b")
+      (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+     ])))
 (run 'main)
 (if (~is memory*.2 1)
   (prn "F - 'find-next' finds first location of a character"))
 
 (reset)
 (new-trace "string-find-next-empty")
-(add-code '((function main [
-              (1:string-address <- new "")
-              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "")
+      (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+     ])))
 (run 'main)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
@@ -3596,20 +3620,22 @@
 
 (reset)
 (new-trace "string-find-next-initial")
-(add-code '((function main [
-              (1:string-address <- new "/abc")
-              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "/abc")
+      (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+     ])))
 (run 'main)
 (if (~is memory*.2 0)
   (prn "F - 'find-next' handles prefix match"))
 
 (reset)
 (new-trace "string-find-next-final")
-(add-code '((function main [
-              (1:string-address <- new "abc/")
-              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "abc/")
+      (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+     ])))
 (run 'main)
 ;? (prn memory*.2)
 (if (~is memory*.2 3)
@@ -3617,10 +3643,11 @@
 
 (reset)
 (new-trace "string-find-next-missing")
-(add-code '((function main [
-              (1:string-address <- new "abc")
-              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+     ])))
 (run 'main)
 ;? (prn memory*.2)
 (if (~is memory*.2 3)
@@ -3628,10 +3655,11 @@
 
 (reset)
 (new-trace "string-find-next-invalid-index")
-(add-code '((function main [
-              (1:string-address <- new "abc")
-              (2:integer <- find-next 1:string-address ((#\/ literal)) 4:literal)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:integer <- find-next 1:string-address ((#\/ literal)) 4:literal)
+     ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
 (each routine completed-routines*
@@ -3642,30 +3670,33 @@
 
 (reset)
 (new-trace "string-find-next-first")
-(add-code '((function main [
-              (1:string-address <- new "ab/c/")
-              (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "ab/c/")
+      (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
+     ])))
 (run 'main)
 (if (~is memory*.2 2)
   (prn "F - 'find-next' finds first of multiple options"))
 
 (reset)
 (new-trace "string-find-next-second")
-(add-code '((function main [
-              (1:string-address <- new "ab/c/")
-              (2:integer <- find-next 1:string-address ((#\/ literal)) 3:literal)
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "ab/c/")
+      (2:integer <- find-next 1:string-address ((#\/ literal)) 3:literal)
+     ])))
 (run 'main)
 (if (~is memory*.2 4)
   (prn "F - 'find-next' finds second of multiple options"))
 
 (reset)
 (new-trace "string-split")
-(add-code '((function main [
-              (1:string-address <- new "a/b")
-              (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "a/b")
+      (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 (each routine completed-routines*
@@ -3681,10 +3712,11 @@
 
 (reset)
 (new-trace "string-split2")
-(add-code '((function main [
-              (1:string-address <- new "a/b/c")
-              (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "a/b/c")
+      (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
+     ])))
 ;? (set dump-trace*)
 (run 'main)
 (each routine completed-routines*
@@ -3702,10 +3734,11 @@
 
 (reset)
 (new-trace "string-split-missing")
-(add-code '((function main [
-              (1:string-address <- new "abc")
-              (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
+     ])))
 (run 'main)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
@@ -3716,10 +3749,11 @@
 
 (reset)
 (new-trace "string-split-empty")
-(add-code '((function main [
-              (1:string-address <- new "")
-              (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "")
+      (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
+     ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
 (each routine completed-routines*
@@ -3731,10 +3765,11 @@
 
 (reset)
 (new-trace "string-split-empty-piece")
-(add-code '((function main [
-              (1:string-address <- new "a/b//c")
-              (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
-             ])))
+(add-code
+  '((function main [
+      (1:string-address <- new "a/b//c")
+      (2:string-address-array-address <- split 1:string-address ((#\/ literal)))
+     ])))
 (run 'main)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
@@ -3750,11 +3785,12 @@
 
 (reset)
 (new-trace "parse-and-record")
-(add-code '((and-record foo [
-              x:string
-              y:integer
-              z:boolean
-             ])))
+(add-code
+  '((and-record foo [
+      x:string
+      y:integer
+      z:boolean
+     ])))
 (if (~iso type*!foo (obj size 3  and-record t  elems '((string) (integer) (boolean))  fields '(x y z)))
   (prn "F - 'add-code' can add new and-records"))
 
