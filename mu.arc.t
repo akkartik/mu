@@ -2778,25 +2778,25 @@
 (new-trace "fork")
 (add-code
   '((function f1 [
-      (fork f2:fn)
+      (1:integer <- copy 4:literal)
      ])
-    (function f2 [
-      (2:integer <- copy 4:literal)
+    (function main [
+      (fork f1:fn)
      ])))
-(run 'f1)
-(if (~iso memory*.2 4)
+(run 'main)
+(if (~iso memory*.1 4)
   (prn "F - fork works"))
 
 (reset)
 (new-trace "fork-with-args")
 (add-code
   '((function f1 [
-      (fork f2:fn nil:literal/globals nil:literal/limit 4:literal)
-     ])
-    (function f2 [
       (2:integer <- next-input)
+     ])
+    (function main [
+      (fork f1:fn nil:literal/globals nil:literal/limit 4:literal)
      ])))
-(run 'f1)
+(run 'main)
 (if (~iso memory*.2 4)
   (prn "F - fork can pass args"))
 
@@ -2804,15 +2804,15 @@
 (new-trace "fork-copies-args")
 (add-code
   '((function f1 [
+      (2:integer <- next-input)
+     ])
+    (function main [
       (default-space:space-address <- new space:literal 5:literal)
       (x:integer <- copy 4:literal)
-      (fork f2:fn nil:literal/globals nil:literal/limit x:integer)
+      (fork f1:fn nil:literal/globals nil:literal/limit x:integer)
       (x:integer <- copy 0:literal)  ; should be ignored
-     ])
-    (function f2 [
-      (2:integer <- next-input)
      ])))
-(run 'f1)
+(run 'main)
 (if (~iso memory*.2 4)
   (prn "F - fork passes args by value"))
 
