@@ -578,9 +578,6 @@
                     (= rep.routine!limit (when (len> arg 2) (m arg.2)))
                     (enq routine running-routines*)
                     rep.routine!id)
-                assert
-                  (unless (m arg.0)
-                    (die (v arg.1)))
                 sleep
                   (do
                     (case (v arg.0)
@@ -594,6 +591,9 @@
                         (die "badly formed 'sleep' call @(tostring:prn (body.routine* pc.routine*))")
                       )
                     ((abort-routine*)))
+                assert
+                  (unless (m arg.0)
+                    (die (v arg.1)))  ; other routines will be able to look at the error status
 
                 ; cursor-based (text mode) interaction
                 clear-screen
