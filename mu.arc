@@ -66,7 +66,8 @@
             (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
     (apply prn label ": " args))
   (enq (list label (apply tostring:prn args))
-       traces*))
+       traces*)
+  (car args))
 
 (redef tr args  ; why am I still returning to prn when debugging? Will this help?
   (do1 nil
@@ -581,7 +582,7 @@
                     (case (v arg.0)
                       for-some-cycles
                         (let wakeup-time (+ curr-cycle* (v arg.1))
-                          (trace "run" "sleeping until " wakeup-time)
+                          (trace "run" "sleeping until " wakeup-time)  ; TODO
                           (= rep.routine*!sleep `(for-some-cycles ,wakeup-time)))
                       until-location-changes
                         (= rep.routine*!sleep `(until-location-changes ,(addr arg.1) ,(m arg.1)))
@@ -964,37 +965,30 @@
               (recur cdr.instr)
               (pop stack)
               (continue))
-            (let (oarg op arg)  (parse-instr instr)
-              (trace "c{1" pc " " op " " oarg)
+            (with ((oarg op arg)  (parse-instr instr)
+                   yield-new-instr  (fn (new-instr)
+                                      (trace "c{1" "@pc X " instr " => " new-instr)
+                                      (yield new-instr))
+                   yield-unchanged  (fn ()
+                                      (trace "c{1}" "@pc ✓ " instr)
+                                      (yield instr)))
+              (when (in op 'break 'break-if 'break-unless 'loop 'loop-if 'loop-unless)
+                (assert (is oarg nil) "@op: can't take oarg in @instr"))
               (case op
                 break
-                  (do
-                    (assert (is oarg nil) "break: can't take oarg in @instr")
-                    (yield `(((jump)) ((,(close-offset pc locs (and arg (v arg.0))) offset)))))
+                  (yield-new-instr `(((jump)) ((,(close-offset pc locs (and arg (v arg.0))) offset))))
                 break-if
-                  (do
-                    (assert (is oarg nil) "break-if: can't take oarg in @instr")
-                    (yield `(((jump-if)) ,arg.0 ((,(close-offset pc locs (and cdr.arg (v arg.1))) offset)))))
+                  (yield-new-instr `(((jump-if)) ,arg.0 ((,(close-offset pc locs (and cdr.arg (v arg.1))) offset))))
                 break-unless
-                  (do
-                    (assert (is oarg nil) "break-unless: can't take oarg in @instr")
-                    (yield `(((jump-unless)) ,arg.0 ((,(close-offset pc locs (and cdr.arg (v arg.1))) offset)))))
+                  (yield-new-instr `(((jump-unless)) ,arg.0 ((,(close-offset pc locs (and cdr.arg (v arg.1))) offset))))
                 loop
-                  (do
-                    (assert (is oarg nil) "loop: can't take oarg in @instr")
-                    (yield `(((jump)) ((,(open-offset pc stack (and arg (v arg.0))) offset)))))
+                  (yield-new-instr `(((jump)) ((,(open-offset pc stack (and arg (v arg.0))) offset))))
                 loop-if
-                  (do
-                    (trace "cvt0" "loop-if: " instr " => " (- stack.0 1))
-                    (assert (is oarg nil) "loop-if: can't take oarg in @instr")
-                    (yield `(((jump-if)) ,arg.0 ((,(open-offset pc stack (and cdr.arg (v arg.1))) offset)))))
+                  (yield-new-instr `(((jump-if)) ,arg.0 ((,(open-offset pc stack (and cdr.arg (v arg.1))) offset))))
                 loop-unless
-                  (do
-                    (trace "cvt0" "loop-if: " instr " => " (- stack.0 1))
-                    (assert (is oarg nil) "loop-unless: can't take oarg in @instr")
-                    (yield `(((jump-unless)) ,arg.0 ((,(open-offset pc stack (and cdr.arg (v arg.1))) offset)))))
+                  (yield-new-instr `(((jump-unless)) ,arg.0 ((,(open-offset pc stack (and cdr.arg (v arg.1))) offset))))
                 ;else
-                  (yield instr)))
+                  (yield-unchanged)))
             (++ pc))))))))
 
 (def close-offset (pc locs nblocks)
