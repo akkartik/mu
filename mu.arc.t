@@ -2791,7 +2791,7 @@
 (new-trace "fork-with-args")
 (add-code
   '((function f1 [
-      (fork f2:fn nil:literal 4:literal)
+      (fork f2:fn nil:literal/globals 4:literal)
      ])
     (function f2 [
       (2:integer <- next-input)
@@ -2806,7 +2806,7 @@
   '((function f1 [
       (default-space:space-address <- new space:literal 5:literal)
       (x:integer <- copy 4:literal)
-      (fork f2:fn nil:literal x:integer)
+      (fork f2:fn nil:literal/globals x:integer)
       (x:integer <- copy 0:literal)  ; should be ignored
      ])
     (function f2 [
@@ -2825,7 +2825,7 @@
     (function main [
       (default-space:space-address <- new space:literal 5:literal)
       (2:integer <- copy 4:literal)
-      (fork f1:fn default-space:space-address)
+      (fork f1:fn default-space:space-address/globals)
      ])))
 (run 'main)
 (each routine completed-routines*
@@ -3142,7 +3142,7 @@
   '((function consumer [
       (default-space:space-address <- new space:literal 30:literal)
       (chan:channel-address <- init-channel 3:literal)  ; create a channel
-      (fork producer:fn nil:literal chan:channel-address)  ; fork a routine to produce a value in it
+      (fork producer:fn nil:literal/globals chan:channel-address)  ; fork a routine to produce a value in it
       (1:tagged-value/raw <- read chan:channel-address)  ; wait for input on channel
      ])
     (function producer [
@@ -3169,7 +3169,7 @@
   '((function consumer [
       (default-space:space-address <- new space:literal 30:literal)
       (1:channel-address <- init-channel 3:literal)  ; create a channel
-      (fork producer:fn default-space:space-address)  ; pass it as a global to another routine
+      (fork producer:fn default-space:space-address/globals)  ; pass it as a global to another routine
       (1:tagged-value/raw <- read 1:channel-address)  ; wait for input on channel
      ])
     (function producer [
