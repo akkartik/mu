@@ -43,5 +43,5 @@
   ; create two background 'routines' that communicate by a channel
   (fork consumer:fn nil:literal/globals chan:channel-address)
   (fork producer:fn nil:literal/globals chan:channel-address)
-  (sleep 2000:literal)  ; wait for forked routines to effect the transfer
+  (sleep for-some-cycles:literal 2000:literal)  ; wait for forked routines to effect the transfer
 ])
