@@ -241,12 +241,12 @@
   `((((rep ,routine) 'call-stack) 0) 'results))
 
 (def waiting-for-exact-cycle? (routine)
-  (is 'for-some-cycles rep.routine!sleep.0))
+  (is 'until rep.routine!sleep.0))
 
 (def ready-to-wake-up (routine)
   (assert no.routine*)
   (case rep.routine!sleep.0
-    for-some-cycles
+    until
       (> curr-cycle* rep.routine!sleep.1)
     until-location-changes
       (~is rep.routine!sleep.2 (memory* rep.routine!sleep.1))
@@ -584,7 +584,7 @@
                       for-some-cycles
                         (let wakeup-time (+ curr-cycle* (v arg.1))
                           (trace "run" "sleeping until " wakeup-time)  ; TODO
-                          (= rep.routine*!sleep `(for-some-cycles ,wakeup-time)))
+                          (= rep.routine*!sleep `(until ,wakeup-time)))
                       until-location-changes
                         (= rep.routine*!sleep `(until-location-changes ,(addr arg.1) ,(m arg.1)))
                       ; else
