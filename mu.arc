@@ -586,6 +586,8 @@
                           (= rep.routine*!sleep `(for-some-cycles ,wakeup-time)))
                       until-location-changes
                         (= rep.routine*!sleep `(until-location-changes ,(addr arg.1) ,(m arg.1)))
+                      ; else
+                        (die "badly formed 'sleep' call @(tostring:prn (body.routine* pc.routine*))")
                       )
                     ((abort-routine*)))
 
