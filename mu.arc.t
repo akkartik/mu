@@ -2791,7 +2791,7 @@
 (new-trace "fork-with-args")
 (add-code
   '((function f1 [
-      (fork f2:fn nil:literal/globals 4:literal)
+      (fork f2:fn nil:literal/globals nil:literal/limit 4:literal)
      ])
     (function f2 [
       (2:integer <- next-input)
@@ -2806,7 +2806,7 @@
   '((function f1 [
       (default-space:space-address <- new space:literal 5:literal)
       (x:integer <- copy 4:literal)
-      (fork f2:fn nil:literal/globals x:integer)
+      (fork f2:fn nil:literal/globals nil:literal/limit x:integer)
       (x:integer <- copy 0:literal)  ; should be ignored
      ])
     (function f2 [
@@ -2825,13 +2825,31 @@
     (function main [
       (default-space:space-address <- new space:literal 5:literal)
       (2:integer <- copy 4:literal)
-      (fork f1:fn default-space:space-address/globals)
+      (fork f1:fn default-space:space-address/globals nil:literal/limit)
      ])))
 (run 'main)
 (each routine completed-routines*
   (awhen rep.routine!error (prn "error - " it)))
 (if (~iso memory*.1 4)
   (prn "F - fork can take a space of global variables to access"))
+
+(reset)
+(new-trace "fork-limit")
+(add-code
+  '((function f1 [
+      { begin
+        (loop)
+      }
+     ])
+    (function main [
+      (fork f1:fn nil:literal/globals 30:literal/limit)
+     ])))
+(= scheduling-interval* 5)
+(run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error (prn "error - " it)))
+(when (ran-to-completion 'f1)
+  (prn "F - fork can specify a maximum cycle limit"))
 
 ; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
@@ -3142,7 +3160,7 @@
   '((function consumer [
       (default-space:space-address <- new space:literal 30:literal)
       (chan:channel-address <- init-channel 3:literal)  ; create a channel
-      (fork producer:fn nil:literal/globals chan:channel-address)  ; fork a routine to produce a value in it
+      (fork producer:fn nil:literal/globals nil:literal/limit chan:channel-address)  ; fork a routine to produce a value in it
       (1:tagged-value/raw <- read chan:channel-address)  ; wait for input on channel
      ])
     (function producer [
@@ -3169,7 +3187,7 @@
   '((function consumer [
       (default-space:space-address <- new space:literal 30:literal)
       (1:channel-address <- init-channel 3:literal)  ; create a channel
-      (fork producer:fn default-space:space-address/globals)  ; pass it as a global to another routine
+      (fork producer:fn default-space:space-address/globals nil:literal/limit)  ; pass it as a global to another routine
       (1:tagged-value/raw <- read 1:channel-address)  ; wait for input on channel
      ])
     (function producer [
