@@ -981,7 +981,7 @@
                                       (trace "c{1" "@pc X " instr " => " new-instr)
                                       (yield new-instr))
                    yield-unchanged  (fn ()
-                                      (trace "c{1}" "@pc ✓ " instr)
+                                      (trace "c{1" "@pc ✓ " instr)
                                       (yield instr)))
               (when (in op 'break 'break-if 'break-unless 'loop 'loop-if 'loop-unless)
                 (assert (is oarg nil) "@op: can't take oarg in @instr"))
