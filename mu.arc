@@ -571,8 +571,9 @@
                   (run (v arg.0))
                 fork
                   ; args: fn globals-table args ...
-                  (let routine  (apply make-routine (m arg.0) (map m (nthcdr 2 arg)))
+                  (let routine  (apply make-routine (m arg.0) (map m (nthcdr 3 arg)))
                     (= rep.routine!globals (when (len> arg 1) (m arg.1)))
+                    (= rep.routine!limit (when (len> arg 2) (m arg.2)))
                     (enq routine running-routines*))
                 assert
                   (unless (m arg.0)

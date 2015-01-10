@@ -41,7 +41,7 @@
 (function main [
   (chan:channel-address <- init-channel 3:literal)
   ; create two background 'routines' that communicate by a channel
-  (fork consumer:fn nil:literal/globals chan:channel-address)
-  (fork producer:fn nil:literal/globals chan:channel-address)
+  (fork consumer:fn nil:literal/globals nil:literal/limit chan:channel-address)
+  (fork producer:fn nil:literal/globals nil:literal/limit chan:channel-address)
   (sleep for-some-cycles:literal 2000:literal)  ; wait for forked routines to effect the transfer
 ])
