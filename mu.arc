@@ -445,9 +445,7 @@
               (case op
                 ; arithmetic
                 add
-                  (do (trace "add" (m arg.0) " " (m arg.1))
                   (+ (m arg.0) (m arg.1))
-                  )
                 subtract
                   (- (m arg.0) (m arg.1))
                 multiply
@@ -470,9 +468,7 @@
                 equal
                   (is (m arg.0) (m arg.1))
                 not-equal
-                  (do (trace "neq" (m arg.0) " " (m arg.1))
                   (~is (m arg.0) (m arg.1))
-                  )
                 less-than
                   (< (m arg.0) (m arg.1))
                 greater-than
@@ -485,25 +481,15 @@
                 ; control flow
                 jump
                   (do (= pc.routine* (+ 1 pc.routine* (v arg.0)))
-                      (trace "jump" "jumping to " pc.routine*)
                       (continue))
                 jump-if
-                  (let flag (m arg.0)
-                    (trace "jump" "checking " flag)
-                    (when (is t flag)
-                      (= pc.routine* (+ 1 pc.routine* (v arg.1)))
-                      (trace "jump" "jumping to " pc.routine*)
-                      (continue)))
+                  (when (m arg.0)
+                    (= pc.routine* (+ 1 pc.routine* (v arg.1)))
+                    (continue))
                 jump-unless  ; convenient helper
-                  (let flag (m arg.0)
-;?                     (when ($.current-charterm)
-;?                       (prn flag)
-;?                       ($.charterm-read-key))
-                    (trace "jump" "checking ~" flag)
-                    (when (no flag)
-                      (= pc.routine* (+ 1 pc.routine* (v arg.1)))
-                      (trace "jump" "jumping to " pc.routine*)
-                      (continue)))
+                  (unless (m arg.0)
+                    (= pc.routine* (+ 1 pc.routine* (v arg.1)))
+                    (continue))
 
                 ; data management: scalars, arrays, and-records (structs)
                 copy
