@@ -69,6 +69,9 @@
        traces*)
   (car args))
 
+(on-init
+  (wipe dump-trace*))
+
 (redef tr args  ; why am I still returning to prn when debugging? Will this help?
   (do1 nil
        (apply trace "-" args)))
