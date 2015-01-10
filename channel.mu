@@ -39,6 +39,7 @@
 ])
 
 (function main [
+  (default-space:space-address <- new space:literal 30:literal)
   (chan:channel-address <- init-channel 3:literal)
   ; create two background 'routines' that communicate by a channel
   (routine1:integer <- fork consumer:fn nil:literal/globals nil:literal/limit chan:channel-address)

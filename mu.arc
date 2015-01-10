@@ -1132,6 +1132,8 @@
           (convert-name arg name))
         (each arg oargs
           (convert-name arg name)))))
+  (each instr instrs
+    (trace "cn1" instr))
   instrs)
 
 ; assign an index to an arg
@@ -1853,7 +1855,7 @@
   (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run")))
 ;?   (= dump-trace* (obj whitelist '("schedule")))
-;?   (= dump-trace* (obj whitelist '("cn0")))
+;?   (= dump-trace* (obj whitelist '("cn0" "cn1")))
 ;?   (set dump-trace*)
 ;?   (freeze function*)
 ;?   (prn function*!factorial)
