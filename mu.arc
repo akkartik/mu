@@ -112,15 +112,15 @@
 ; things that a future assembler will need separate memory for:
 ;   code; types; args channel
 ;   at compile time: mapping names to locations
-(def clear ()
+(on-init
   (= type* (table))  ; name -> type info
   (= memory* (table))  ; address -> value
   (= function* (table))  ; name -> [instructions]
   (= location* (table))  ; function -> {name -> index into default-space}
   (= next-space-generator* (table))  ; function -> name of function generating next space
   ; each function's next space will usually always come from a single function
+  (= next-routine-id* 0)
   )
-(enq clear initialization-fns*)
 
 (on-init
   (= type* (obj
@@ -575,9 +575,11 @@
                 fork
                   ; args: fn globals-table args ...
                   (let routine  (apply make-routine (m arg.0) (map m (nthcdr 3 arg)))
+                    (= rep.routine!id ++.next-routine-id*)
                     (= rep.routine!globals (when (len> arg 1) (m arg.1)))
                     (= rep.routine!limit (when (len> arg 2) (m arg.2)))
-                    (enq routine running-routines*))
+                    (enq routine running-routines*)
+                    rep.routine!id)
                 assert
                   (unless (m arg.0)
                     (die (v arg.1)))

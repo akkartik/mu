@@ -2788,6 +2788,36 @@
   (prn "F - fork works"))
 
 (reset)
+(new-trace "fork-returns-id")
+(add-code
+  '((function f1 [
+      (1:integer <- copy 4:literal)
+     ])
+    (function main [
+      (2:integer <- fork f1:fn)
+     ])))
+(run 'main)
+;? (prn memory*)
+(if (no memory*.2)
+  (prn "F - fork returns a pid for the new routine"))
+
+(reset)
+(new-trace "fork-returns-unique-id")
+(add-code
+  '((function f1 [
+      (1:integer <- copy 4:literal)
+     ])
+    (function main [
+      (2:integer <- fork f1:fn)
+      (3:integer <- fork f1:fn)
+     ])))
+(run 'main)
+(if (or (no memory*.2)
+        (no memory*.3)
+        (is memory*.2 memory*.3))
+  (prn "F - fork returns a unique pid everytime"))
+
+(reset)
 (new-trace "fork-with-args")
 (add-code
   '((function f1 [
