@@ -2381,6 +2381,7 @@
       (2:integer <- copy 0:literal)
       (2:integer <- copy 0:literal)
      ])))
+;? (= dump-trace* (obj whitelist '("schedule")))
 (= scheduling-interval* 1)
 (run 'f1 'f2)
 (check-trace-contents "scheduler alternates between routines"
@@ -2555,6 +2556,129 @@
 (update-scheduler-state)
 (when (~empty completed-routines*)
   (prn "F - scheduler ignores sleeping but ready threads when detecting deadlock"))
+
+(reset)
+(new-trace "scheduler-account-slice")
+; function running an infinite loop
+(add-code
+  '((function f1 [
+      { begin
+        (1:integer <- copy 0:literal)
+        (loop)
+      }
+     ])))
+(let routine make-routine!f1
+  (= rep.routine!limit 10)
+  (enq routine running-routines*))
+(= scheduling-interval* 20)
+(run)
+(when (or (empty completed-routines*)
+          (~is -10 ((rep completed-routines*.0) 'limit)))
+  (prn "F - when given a low cycle limit, a routine runs to end of time slice"))
+
+(reset)
+(new-trace "scheduler-account-slice-multiple")
+; function running an infinite loop
+(add-code
+  '((function f1 [
+      { begin
+        (1:integer <- copy 0:literal)
+        (loop)
+      }
+     ])))
+(let routine make-routine!f1
+  (= rep.routine!limit 100)
+  (enq routine running-routines*))
+(= scheduling-interval* 20)
+(run)
+(when (or (empty completed-routines*)
+          (~is -0 ((rep completed-routines*.0) 'limit)))
+  (prn "F - when given a high limit, a routine successfully stops after multiple time slices"))
+
+(reset)
+(new-trace "scheduler-account-run-while-asleep")
+(add-code
+    ; f1 needs 4 cycles of sleep time, 4 cycles of work
+  '((function f1 [
+      (sleep for-some-cycles:literal 4:literal)
+      (i:integer <- copy 0:literal)
+      (i:integer <- copy 0:literal)
+      (i:integer <- copy 0:literal)
+      (i:integer <- copy 0:literal)
+     ])))
+(let routine make-routine!f1
+  (= rep.routine!limit 6)  ; enough time excluding sleep
+  (enq routine running-routines*))
+(= scheduling-interval* 1)
+;? (= dump-trace* (obj whitelist '("schedule")))
+(run)
+; if time slept counts against limit, routine doesn't have time to complete
+(when (ran-to-completion 'f1)
+  (prn "F - time slept counts against a routine's cycle limit"))
+;? (quit)
+
+(reset)
+(new-trace "scheduler-account-stop-on-preempt")
+(add-code
+  '((function baseline [
+      (i:integer <- copy 0:literal)
+      { begin
+        (done?:boolean <- greater-or-equal i:integer 10:literal)
+        (break-if done?:boolean)
+        (1:integer <- add i:integer 1:literal)
+        (loop)
+      }
+     ])
+    (function f1 [
+      (i:integer <- copy 0:literal)
+      { begin
+        (done?:boolean <- greater-or-equal i:integer 6:literal)
+        (break-if done?:boolean)
+        (1:integer <- add i:integer 1:literal)
+        (loop)
+      }
+     ])))
+(let routine make-routine!baseline
+  (enq routine running-routines*))
+; now add the routine we care about
+(let routine make-routine!f1
+  (= rep.routine!limit 40)  ; less than 2x time f1 needs to complete
+  (enq routine running-routines*))
+(= scheduling-interval* 1)
+; if baseline's time were to count against f1's limit, it wouldn't be able to
+; complete.
+(when (~ran-to-completion 'f1)
+  (prn "F - preempted time doesn't count against a routine's limit"))
+;? (quit)
+
+(reset)
+(new-trace "scheduler-sleep-timeout")
+(add-code
+  '((function baseline [
+      (i:integer <- copy 0:literal)
+      { begin
+        (done?:boolean <- greater-or-equal i:integer 10:literal)
+        (break-if done?:boolean)
+        (1:integer <- add i:integer 1:literal)
+        (loop)
+      }
+     ])
+    (function f1 [
+      (sleep for-some-cycles:literal 10:literal)  ; less time than baseline would take to run
+     ])))
+; add baseline routine to prevent cycle-skipping
+(let routine make-routine!baseline
+  (enq routine running-routines*))
+; now add the routine we care about
+(let routine make-routine!f1
+  (= rep.routine!limit 4)  ; less time than f1 would take to run
+  (enq routine running-routines*))
+(= scheduling-interval* 1)
+;? (= dump-trace* (obj whitelist '("schedule")))
+(run)
+(when (ran-to-completion 'f1)
+  (prn "F - sleeping routines can time out"))
+;? (quit)
 
 (reset)
 (new-trace "sleep")

@@ -189,8 +189,14 @@
 ; routine = runtime state for a serial thread of execution
 (def make-routine (fn-name . args)
   (do1
-    (annotate 'routine (obj alloc Memory-allocated-until call-stack (list
-        (obj fn-name fn-name  pc 0  args args  caller-arg-idx 0))))
+    (annotate 'routine (obj alloc Memory-allocated-until
+        call-stack
+          (list (obj fn-name fn-name  pc 0  args args  caller-arg-idx 0))))
+        ; other fields we use in routine:
+        ;   sleep: conditions
+        ;   limit: number of cycles this routine can use
+        ;   running-since: start of the clock for counting cycles this routine has used
+
     ; todo: allow routines to expand past initial allocation
     ; todo: do memory management in mu
     (++ Memory-allocated-until 1000)))
@@ -271,6 +277,9 @@
     (enq make-routine.it running-routines*))
   (while (~empty running-routines*)
     (= routine* deq.running-routines*)
+    (when rep.routine*!limit
+      ; start the clock if it wasn't already running
+      (or= rep.routine*!running-since curr-cycle*))
     (trace "schedule" top.routine*!fn-name)
     (routine-mark
       (run-for-time-slice scheduling-interval*))
@@ -290,20 +299,38 @@
 ;     particular time or for a particular memory location to change)
 ;   detect deadlock: kill all sleeping routines when none can be woken
 (def update-scheduler-state ()
-;?   (trace "schedule" curr-cycle*)
+;?   (tr curr-cycle*)
   (when routine*
     (if
         rep.routine*!sleep
           (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
+              ; keep the clock ticking at rep.routine*!running-since
               (set sleeping-routines*.routine*))
-        (~empty routine*)
+        (and (~empty routine*) (no rep.routine*!limit))
           (do (trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
               (enq routine* running-routines*))
+        (and (~empty routine*) (> rep.routine*!limit 0))
+          (do (trace "schedule" "scheduling " top.routine*!fn-name " for further processing (limit)")
+              ; stop the clock and debit the time on it from the routine
+              (-- rep.routine*!limit (- curr-cycle* rep.routine*!running-since))
+              (wipe rep.routine*!running-since)
+              (if (<= rep.routine*!limit 0)
+                (do (trace "schedule" "routine ran out of time")
+                    (push routine* completed-routines*))
+                (enq routine* running-routines*)))
         :else
           (do (trace "schedule" "done with routine")
               (push routine* completed-routines*)))
     (= routine* nil))
 ;?   (tr 111)
+  (each (routine _) canon.sleeping-routines*
+;?     (tr routine)
+    (when (aand rep.routine!limit (<= it (- curr-cycle* rep.routine!running-since)))
+      (trace "schedule" "routine timed out")
+      (wipe sleeping-routines*.routine)
+      (push routine completed-routines*)
+;?       (tr completed-routines*)
+      ))
   (each (routine _) canon.sleeping-routines*
     (when (ready-to-wake-up routine)
       (trace "schedule" "waking up " top.routine!fn-name)
@@ -312,6 +339,7 @@
       (++ pc.routine)
       (enq routine running-routines*)))
 ;?   (tr 112)
+  ; optimization for simulated time
   (when (empty running-routines*)
     (whenlet exact-sleeping-routines (keep waiting-for-exact-cycle? keys.sleeping-routines*)
       (let next-wakeup-cycle (apply min (map [rep._!sleep 1] exact-sleeping-routines))
@@ -1352,6 +1380,14 @@
                     (prn "@addr should contain @value.idx but contains @memory*.addr"))
              :else
                (recur (+ addr 1) (+ idx 1))))))
+
+(def ran-to-completion (f)
+  ; if a routine calling f ran to completion there'll be no sign of it in any
+  ; completed call-stacks.
+  ; hack: only checks top call in each call stack
+  (no (find [aand stack._
+                  (is f top._!fn-name)]
+            completed-routines*)))
 
 ;; system software
 ; create once, load before every test
