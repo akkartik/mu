@@ -2882,6 +2882,32 @@
 (when (ran-to-completion 'f1)
   (prn "F - fork can specify a maximum cycle limit"))
 
+(reset)
+(new-trace "fork-then-wait")
+(add-code
+  '((function f1 [
+      { begin
+        (loop)
+      }
+     ])
+    (function main [
+      (1:integer/routine-id <- fork f1:fn nil:literal/globals 30:literal/limit)
+      (sleep until-routine-done:literal 1:integer/routine-id)
+      (2:integer <- copy 34:literal)
+     ])))
+(= scheduling-interval* 5)
+;? (= dump-trace* (obj whitelist '("schedule")))
+(run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error (prn "error - " it)))
+(check-trace-contents "scheduler orders functions correctly"
+  '(("schedule" "pushing main to sleep queue")
+    ("schedule" "scheduling f1")
+    ("schedule" "ran out of time")
+    ("schedule" "waking up main")
+  ))
+;? (quit)
+
 ; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
 ; along with the types array, the magic buffers for args and oargs, and so on.

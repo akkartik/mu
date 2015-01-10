@@ -250,6 +250,9 @@
       (> curr-cycle* rep.routine!sleep.1)
     until-location-changes
       (~is rep.routine!sleep.2 (memory* rep.routine!sleep.1))
+    until-routine-done
+      (find [and _ (is rep._!id rep.routine!sleep.1)]
+            completed-routines*)
     ))
 
 (on-init
@@ -587,6 +590,8 @@
                           (= rep.routine*!sleep `(until ,wakeup-time)))
                       until-location-changes
                         (= rep.routine*!sleep `(until-location-changes ,(addr arg.1) ,(m arg.1)))
+                      until-routine-done
+                        (= rep.routine*!sleep `(until-routine-done ,(m arg.1)))
                       ; else
                         (die "badly formed 'sleep' call @(tostring:prn (body.routine* pc.routine*))")
                       )
