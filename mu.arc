@@ -570,8 +570,6 @@
                   ($.integer->char (m arg.0))
 
                 ; multiprocessing
-                run
-                  (run (v arg.0))
                 fork
                   ; args: fn globals-table args ...
                   (let routine  (apply make-routine (m arg.0) (map m (nthcdr 3 arg)))
