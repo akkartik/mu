@@ -359,6 +359,12 @@
         (= curr-cycle* (+ 1 next-wakeup-cycle))
         (trace "schedule" "skipping to cycle " curr-cycle*)
         (update-scheduler-state))))
+  (when (and (all [rep._ 'helper] (as cons running-routines*))
+             (all [rep._ 'helper] keys.sleeping-routines*))
+    (until (empty running-routines*)
+      (push (deq running-routines*) completed-routines*))
+    (until sleeping-routines*
+      (push (pop sleeping-routines*) completed-routines*)))
 ;?   (tr 113)
   (detect-deadlock)
 ;?   (tr 114)
@@ -584,6 +590,15 @@
                   ; args: fn globals-table args ...
                   (let routine  (apply make-routine (m arg.0) (map m (nthcdr 3 arg)))
                     (= rep.routine!id ++.next-routine-id*)
+                    (= rep.routine!globals (when (len> arg 1) (m arg.1)))
+                    (= rep.routine!limit (when (len> arg 2) (m arg.2)))
+                    (enq routine running-routines*)
+                    rep.routine!id)
+                fork-helper
+                  ; args: fn globals-table args ...
+                  (let routine  (apply make-routine (m arg.0) (map m (nthcdr 3 arg)))
+                    (= rep.routine!id ++.next-routine-id*)
+                    (set rep.routine!helper)
                     (= rep.routine!globals (when (len> arg 1) (m arg.1)))
                     (= rep.routine!limit (when (len> arg 2) (m arg.2)))
                     (enq routine running-routines*)
@@ -1871,7 +1886,7 @@
 
 ;; load all provided files and start at 'main'
 (reset)
-(new-trace "main")
+;? (new-trace "main")
 ;? (set dump-trace*)
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))

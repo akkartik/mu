@@ -7,7 +7,7 @@
 ;?   (print-primitive (("main: stdin is " literal)))
 ;?   (print-primitive stdin:channel-address)
 ;?   (print-primitive (("\n" literal)))
-  (fork send-keys-to-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address)
+  (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address)
   ; now read characters from stdin
   (print-primitive (("? " literal)))
   { begin
