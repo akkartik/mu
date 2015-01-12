@@ -315,7 +315,7 @@
               (set sleeping-routines*.routine*))
         rep.routine*!error
           (do (trace "schedule" "done with dead routine " top.routine*!fn-name)
-;?               (prn rep.routine*)
+;?               (tr rep.routine*)
               (push routine* completed-routines*))
         empty.routine*
           (do (trace "schedule" "done with routine")
