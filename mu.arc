@@ -1869,13 +1869,8 @@
   { begin
     (c:character <- read-key)
     (loop-unless c:character)
-;?     (print-primitive (("AAA " literal)))
-;?     (print-primitive c:character)
     (curr:tagged-value <- save-type c:character)
     (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value)
-;?     (print-primitive (("keyboard: stdin is " literal)))
-;?     (print-primitive stdin:channel-address)
-;?     (print-primitive (("\n" literal)))
     (loop)
   }
 )
