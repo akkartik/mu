@@ -189,7 +189,7 @@
 (function main [
   (default-space:space-address <- new space:literal 30:literal)
   (b:board-address <- read-board)
-  (console-on)
+  (cursor-mode)
   { begin
     (clear-screen)
     (print-primitive (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
@@ -208,7 +208,6 @@
     (loop)
   }
   (cursor-to-next-line)
-  (console-off)
 ])
 
 ; tests todo:
