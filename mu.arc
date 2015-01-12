@@ -1868,7 +1868,12 @@
   (stdin:channel-address <- next-input)
   { begin
     (c:character <- read-key)
-    (loop-unless c:character)
+    { begin
+      (break-if c:character)
+      ; no key; end this time slice
+      (sleep for-some-cycles:literal 1:literal)
+      (loop 2:blocks)
+    }
     (curr:tagged-value <- save-type c:character)
     (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value)
     (loop)
