@@ -1381,10 +1381,8 @@
 (def ran-to-completion (f)
   ; if a routine calling f ran to completion there'll be no sign of it in any
   ; completed call-stacks.
-  ; hack: only checks top call in each call stack
-  (no (find [aand stack._
-                  (is f top._!fn-name)]
-            completed-routines*)))
+  (~find [some [is f _!fn-name] stack._]
+         completed-routines*))
 
 ;; system software
 ; create once, load before every test
