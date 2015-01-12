@@ -2559,6 +2559,58 @@
   (prn "F - scheduler ignores sleeping but ready threads when detecting deadlock"))
 
 (reset)
+(new-trace "scheduler-helper")
+(= traces* (queue))
+(add-code
+  '((function f1 [
+      (1:integer <- copy 0:literal)
+     ])))
+; just a helper routine
+(= routine* make-routine!f1)
+(set rep.routine*!helper)
+;? (= dump-trace* (obj whitelist '("schedule")))
+(update-scheduler-state)
+(when (or (~empty running-routines*) (~empty sleeping-routines*))
+  (prn "F - scheduler stops when there's only helper routines left"))
+
+(reset)
+(new-trace "scheduler-helper-sleeping")
+(= traces* (queue))
+(add-code
+  '((function f1 [
+      (1:integer <- copy 0:literal)
+     ])))
+; just a helper routine
+(let routine make-routine!f1
+  (set rep.routine!helper)
+  (= rep.routine!sleep '(until-location-changes 23 nil))
+  (set sleeping-routines*.routine))
+;? (= dump-trace* (obj whitelist '("schedule")))
+;? (prn "1 " running-routines*)
+;? (prn sleeping-routines*)
+(update-scheduler-state)
+;? (prn "2 " running-routines*)
+;? (prn sleeping-routines*)
+(when (or (~empty running-routines*) (~empty sleeping-routines*))
+  (prn "F - scheduler stops when there's only sleeping helper routines left"))
+
+(reset)
+(new-trace "scheduler-termination")
+(= traces* (queue))
+(add-code
+  '((function f1 [
+      (1:integer <- copy 0:literal)
+     ])))
+; all routines done
+(update-scheduler-state)
+(check-trace-doesnt-contain "scheduler helper check shouldn't trigger unless necessary"
+  '(("schedule" "just helpers left")))
+
+; both running and sleeping helpers
+; running helper and sleeping non-helper
+; sleeping helper and running non-helper
+
+(reset)
 (new-trace "scheduler-account-slice")
 ; function running an infinite loop
 (add-code
