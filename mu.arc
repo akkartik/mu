@@ -315,6 +315,7 @@
               (set sleeping-routines*.routine*))
         rep.routine*!error
           (do (trace "schedule" "done with dead routine " top.routine*!fn-name)
+;?               (prn rep.routine*)
               (push routine* completed-routines*))
         empty.routine*
           (do (trace "schedule" "done with routine")
@@ -477,7 +478,9 @@
 
                 ; comparison
                 equal
+;?                   (do (prn (m arg.0) " vs " (m arg.1))
                   (is (m arg.0) (m arg.1))
+;?                   )
                 not-equal
                   (~is (m arg.0) (m arg.1))
                 less-than
@@ -809,7 +812,7 @@
                 (die "writing invalid array @(tostring prn.val)"))
               ; size check for non-arrays
               (when (~is sizeof.loc n)
-                (die "writing to incorrect size @(tostring prn.val) => @loc")))
+                (die "writing to incorrect size @(tostring pr.val) => @loc")))
             (let addrs (addrs addr n)
               (each (dest src) (zip addrs rep.val)
                 (trace "setm" loc ": setting " dest " to " src)
@@ -1845,13 +1848,30 @@
   (reply result:string-address-array-address)
 )
 
+(init-fn send-keys-to-stdin
+  (default-space:space-address <- new space:literal 30:literal)
+  (stdin:channel-address <- next-input)
+  { begin
+    (c:character <- read-key)
+    (loop-unless c:character)
+;?     (print-primitive (("AAA " literal)))
+;?     (print-primitive c:character)
+    (curr:tagged-value <- save-type c:character)
+    (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value)
+;?     (print-primitive (("keyboard: stdin is " literal)))
+;?     (print-primitive stdin:channel-address)
+;?     (print-primitive (("\n" literal)))
+    (loop)
+  }
+)
+
 ; after all system software is loaded:
 (freeze system-function*)
 )  ; section 100 for system software
 
 ;; load all provided files and start at 'main'
 (reset)
-;? (new-trace "main")
+(new-trace "main")
 ;? (set dump-trace*)
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
@@ -1863,6 +1883,7 @@
 ;?   (prn function*!factorial)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
+  (when ($.graphics-open?) ($.close-viewport Viewport) ($.close-graphics))
   (prn "\nmemory: " int-canon.memory*)
   (each routine completed-routines*
     (aif rep.routine!error (prn "error - " it)))
