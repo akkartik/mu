@@ -107,6 +107,19 @@
   (each (expected-label expected-msg)  expected-contents
     (prn "  ! " expected-label ": " expected-msg)))
 
+(def check-trace-doesnt-contain (msg (label unexpected-contents))
+  (when (some (fn ((l s))
+                (and (is l label)  (posmatch unexpected-contents msg)))
+              (as cons traces*))
+    (prn "F - " msg)
+    (prn "  trace contents")
+    (each (l msg) (as cons traces*)
+      (if (and (is l label)
+               (posmatch unexpected-contents msg))
+        (pr "  X ")
+        (pr "    "))
+      (pr label ": " msg))))
+
 ;; virtual machine state
 
 ; things that a future assembler will need separate memory for:
@@ -304,6 +317,7 @@
 ;   add routine* to either running-routines* or sleeping-routines* or completed-routines*
 ;   wake up any necessary sleeping routines (which might be waiting for a
 ;     particular time or for a particular memory location to change)
+;   detect termination: all non-helper routines completed
 ;   detect deadlock: kill all sleeping routines when none can be woken
 (def update-scheduler-state ()
 ;?   (tr curr-cycle*)
@@ -359,12 +373,18 @@
         (= curr-cycle* (+ 1 next-wakeup-cycle)))
       (trace "schedule" "skipping to cycle " curr-cycle*)
       (update-scheduler-state)))
-  (when (and (all [rep._ 'helper] (as cons running-routines*))
+;?   (prn running-routines*)
+;?   (prn sleeping-routines*)
+  (when (and (or (~empty running-routines*)
+                 (~empty sleeping-routines*))
+             (all [rep._ 'helper] (as cons running-routines*))
              (all [rep._ 'helper] keys.sleeping-routines*))
+    (trace "schedule" "just helpers left; stopping everything")
     (until (empty running-routines*)
       (push (deq running-routines*) completed-routines*))
-    (until sleeping-routines*
-      (push (pop sleeping-routines*) completed-routines*)))
+    (each (routine _) sleeping-routines*
+      (wipe sleeping-routines*.routine)
+      (push routine completed-routines*)))
 ;?   (tr 113)
   (detect-deadlock)
 ;?   (tr 114)
