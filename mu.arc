@@ -313,6 +313,9 @@
           (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
               ; keep the clock ticking at rep.routine*!running-since
               (set sleeping-routines*.routine*))
+        rep.routine*!error
+          (do (trace "schedule" "done with dead routine " top.routine*!fn-name)
+              (push routine* completed-routines*))
         empty.routine*
           (do (trace "schedule" "done with routine")
               (push routine* completed-routines*))
@@ -374,7 +377,6 @@
   (tr "die: " msg)
   (= rep.routine*!error msg)
   (= rep.routine*!stack-trace rep.routine*!call-stack)
-  (wipe rep.routine*!call-stack)
   (iflet abort-continuation (abort-routine*)
     (abort-continuation)))
 
