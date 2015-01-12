@@ -8,7 +8,7 @@
 ;?   (print-primitive stdin:channel-address)
 ;?   (print-primitive (("\n" literal)))
   (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address)
-  ; now read characters from stdin
+  ; now read characters from stdin until a 'q' is typed
   (print-primitive (("? " literal)))
   { begin
     (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
