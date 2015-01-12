@@ -313,10 +313,13 @@
           (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
               ; keep the clock ticking at rep.routine*!running-since
               (set sleeping-routines*.routine*))
-        (and (~empty routine*) (no rep.routine*!limit))
+        empty.routine*
+          (do (trace "schedule" "done with routine")
+              (push routine* completed-routines*))
+        (no rep.routine*!limit)
           (do (trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
               (enq routine* running-routines*))
-        (and (~empty routine*) (> rep.routine*!limit 0))
+        (> rep.routine*!limit 0)
           (do (trace "schedule" "scheduling " top.routine*!fn-name " for further processing (limit)")
               ; stop the clock and debit the time on it from the routine
               (-- rep.routine*!limit (- curr-cycle* rep.routine*!running-since))
@@ -326,8 +329,7 @@
                     (push routine* completed-routines*))
                 (enq routine* running-routines*)))
         :else
-          (do (trace "schedule" "done with routine")
-              (push routine* completed-routines*)))
+          (err "illegal scheduler state"))
     (= routine* nil))
 ;?   (tr 111)
   (each (routine _) canon.sleeping-routines*
