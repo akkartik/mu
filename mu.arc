@@ -677,12 +677,12 @@
                   (do1 nil (if ($.current-charterm) ($.close-charterm)))
 
                 ; graphics
-                graphics-on
+                window-on
                   (do1 nil
                     ($.open-graphics)
                     (= Viewport ($.open-viewport (m arg.0)  ; name
                                                  (m arg.1) (m arg.2))))  ; width height
-                graphics-off
+                window-off
                   (do1 nil
                     ($.close-viewport Viewport)  ; why doesn't this close the window? works in naked racket. not racket vs arc.
                     ($.close-graphics)
