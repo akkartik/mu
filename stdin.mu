@@ -1,6 +1,6 @@
 (function main [
   (default-space:space-address <- new space:literal 30:literal)
-  (console-on)
+  (cursor-mode)
   (clear-screen)
   ; hook up stdin
   (stdin:channel-address <- init-channel 1:literal)

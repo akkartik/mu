@@ -671,9 +671,9 @@
                   (do1 nil ($.charterm-bold))
                 non-bold-mode
                   (do1 nil ($.charterm-normal))
-                console-on
+                cursor-mode
                   (do1 nil (if (no ($.current-charterm)) ($.open-charterm)))
-                console-off
+                retro-mode
                   (do1 nil (if ($.current-charterm) ($.close-charterm)))
 
                 ; graphics
