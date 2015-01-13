@@ -103,7 +103,8 @@
   (one:character <- copy ((#\1 literal)))
   (rank-base:integer <- character-to-integer one:character)
   ; get from-file
-  (c:character <- wait-for-key)
+  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (c:character <- maybe-coerce x:tagged-value character:literal)
   (print-primitive c:character)
   { begin
     (quit:boolean <- equal c:character ((#\q literal)))
@@ -118,7 +119,8 @@
   (below-max:boolean <- lesser-or-equal from-file:integer 7:literal)
   (assert below-max:boolean (("from-file too high" literal)))
   ; get from-rank
-  (c:character <- wait-for-key)
+  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (c:character <- maybe-coerce x:tagged-value character:literal)
   (print-primitive c:character)
   (from-rank:integer <- character-to-integer c:character)
   (from-rank:integer <- subtract from-rank:integer rank-base:integer)
@@ -128,12 +130,14 @@
   (below-max:boolean <- lesser-or-equal from-rank:integer 7:literal)
   (assert below-max:boolean (("from-rank too high" literal)))
   ; slurp hyphen
-  (c:character <- wait-for-key)
+  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (c:character <- maybe-coerce x:tagged-value character:literal)
   (print-primitive c:character)
   (hyphen?:boolean <- equal c:character ((#\- literal)))
   (assert hyphen?:boolean (("expected hyphen" literal)))
   ; get to-file
-  (c:character <- wait-for-key)
+  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (c:character <- maybe-coerce x:tagged-value character:literal)
   (print-primitive c:character)
   (to-file:integer <- character-to-integer c:character)
   (to-file:integer <- subtract to-file:integer file-base:integer)
@@ -143,7 +147,8 @@
   (below-max:boolean <- lesser-or-equal to-file:integer 7:literal)
   (assert below-max:boolean (("to-file too high" literal)))
   ; get to-rank
-  (c:character <- wait-for-key)
+  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (c:character <- maybe-coerce x:tagged-value character:literal)
   (print-primitive c:character)
   (to-rank:integer <- character-to-integer c:character)
   (to-rank:integer <- subtract to-rank:integer rank-base:integer)
@@ -190,6 +195,9 @@
   (default-space:space-address <- new space:literal 30:literal)
   (b:board-address <- read-board)
   (cursor-mode)
+  ; hook up stdin
+  (1:channel-address/raw <- init-channel 1:literal)
+  (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit 1:channel-address/raw)
   { begin
     (clear-screen)
     (print-primitive (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
