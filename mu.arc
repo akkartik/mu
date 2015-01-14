@@ -1908,6 +1908,10 @@
   }
 )
 
+(init-fn flush-stdout
+  (sleep for-some-cycles:literal 1:literal)
+)
+
 ; after all system software is loaded:
 (freeze system-function*)
 )  ; section 100 for system software
