@@ -7,7 +7,7 @@
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (1:channel-address/raw <- init-channel 3:literal)
-      (r:integer/routine <- fork read-move:fn nil:literal/globals 100:literal/limit)
+      (r:integer/routine <- fork read-move:fn nil:literal/globals 200:literal/limit)
       (c:character <- copy ((#\a literal)))
       (x:tagged-value <- save-type c:character)
       (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
@@ -26,13 +26,15 @@
       (sleep until-routine-done:literal r:integer/routine)
      ])))
 ;? (set dump-trace*)
-;? (= dump-trace* (obj whitelist '("schedule" "run")))
+;? (= dump-trace* (obj whitelist '("schedule")))
 (run 'main)
 (each routine completed-routines*
   (awhen rep.routine!error
+;?     (prn "  " r)
     (prn "error - " it)))
-(if (~ran-to-completion 'main)
+(if (~ran-to-completion 'read-move)
   (prn "F - chessboard accepts legal moves (<rank><file>-<rank><file>)"))
+;? (quit)
 
 (reset)
 (new-trace "read-move-quit")
@@ -48,7 +50,7 @@
       (sleep until-routine-done:literal r:integer/routine)
      ])))
 (run 'main)
-(if (~ran-to-completion 'main)
+(if (~ran-to-completion 'read-move)
   (prn "F - chessboard quits on move starting with 'q'"))
 
 (reset)
