@@ -403,7 +403,6 @@
 (def die (msg)
   (tr "die: " msg)
   (= rep.routine*!error msg)
-  (= rep.routine*!stack-trace rep.routine*!call-stack)
   (iflet abort-continuation (abort-routine*)
     (abort-continuation)))
 
