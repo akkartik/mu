@@ -26,7 +26,11 @@
       (sleep until-routine-done:literal r:integer/routine)
      ])))
 ;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("schedule" "run")))
 (run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 (if (~ran-to-completion 'main)
   (prn "F - chessboard accepts legal moves (<rank><file>-<rank><file>)"))
 

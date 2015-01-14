@@ -178,6 +178,7 @@
   (assert above-min:boolean (("rank too low" literal)))
   (below-max:boolean <- lesser-or-equal rank:integer 7:literal)
   (assert below-max:boolean (("rank too high" literal)))
+  (reply rank:integer)
 ])
 
 (function expect-stdin [
