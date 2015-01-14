@@ -1897,6 +1897,17 @@
   }
 )
 
+(init-fn send-prints-to-stdout
+  (default-space:space-address <- new space:literal 30:literal)
+  (stdout:channel-address <- next-input)
+  { begin
+    (x:tagged-value stdout:channel-address/deref <- read stdout:channel-address)
+    (c:character <- maybe-coerce x:tagged-value character:literal)
+    (print-primitive c:character)
+    (loop)
+  }
+)
+
 ; after all system software is loaded:
 (freeze system-function*)
 )  ; section 100 for system software
@@ -1904,7 +1915,6 @@
 ;; load all provided files and start at 'main'
 (reset)
 ;? (new-trace "main")
-;? (set dump-trace*)
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run")))

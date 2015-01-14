@@ -25,6 +25,7 @@
       (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
       (sleep until-routine-done:literal r:integer/routine)
      ])))
+;? (set dump-trace*)
 (run 'main)
 (if (~ran-to-completion 'main)
   (prn "F - chessboard accepts legal move a2-a4"))

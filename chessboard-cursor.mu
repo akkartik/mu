@@ -96,6 +96,19 @@
 
 (address move-address (move))
 
+(function print [
+  (default-space:space-address <- new space:literal 30:literal)
+  { begin
+    ; stdout not initialized? skip all prints.
+    (break-if 2:channel-address/raw)
+    (reply)
+  }
+  ; base case prints characters
+  (c:character <- next-input)
+  (x:tagged-value <- save-type c:character)
+  (2:channel-address/raw/deref <- write 2:channel-address/raw x:tagged-value)
+])
+
 (function read-move [
   (default-space:space-address <- new space:literal 30:literal)
   (a:character <- copy ((#\a literal)))
@@ -105,7 +118,7 @@
   ; get from-file
   (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
   (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print-primitive c:character)
+  (print c:character)
   { begin
     (quit:boolean <- equal c:character ((#\q literal)))
     (break-unless quit:boolean)
@@ -121,7 +134,7 @@
   ; get from-rank
   (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
   (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print-primitive c:character)
+  (print c:character)
   (from-rank:integer <- character-to-integer c:character)
   (from-rank:integer <- subtract from-rank:integer rank-base:integer)
   ; assert('1' <= from-rank <= '8')
@@ -132,13 +145,13 @@
   ; slurp hyphen
   (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
   (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print-primitive c:character)
+  (print c:character)
   (hyphen?:boolean <- equal c:character ((#\- literal)))
   (assert hyphen?:boolean (("expected hyphen" literal)))
   ; get to-file
   (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
   (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print-primitive c:character)
+  (print c:character)
   (to-file:integer <- character-to-integer c:character)
   (to-file:integer <- subtract to-file:integer file-base:integer)
   ; assert('a' <= to-file <= 'h')
@@ -149,7 +162,7 @@
   ; get to-rank
   (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
   (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print-primitive c:character)
+  (print c:character)
   (to-rank:integer <- character-to-integer c:character)
   (to-rank:integer <- subtract to-rank:integer rank-base:integer)
   ; assert('1' <= to-rank <= '8')
@@ -198,6 +211,9 @@
   ; hook up stdin
   (1:channel-address/raw <- init-channel 1:literal)
   (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit 1:channel-address/raw)
+  ; hook up stdout
+  (2:channel-address/raw <- init-channel 1:literal)
+  (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit 2:channel-address/raw)
   { begin
     (clear-screen)
     (print-primitive (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
