@@ -245,11 +245,8 @@
 
 ; tests todo:
 ;   print board
-;   accept move
 ;   print move
 ;   board updates on move
-;   die on invalid move
-;   'q' exits
 ;   'q' exits anywhere in move
 ;   'q' exits on second move
 ;   flush stdout after printing out move and before clearing screen
