@@ -10,10 +10,13 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-if exists("b:syntax")
-  finish
-endif
-let b:syntax = "mu"
+" todo: why does this periodically lose syntax, like on file reload?
+"   $ vim x.mu
+"   :e
+"? if exists("b:syntax")
+"?   finish
+"? endif
+"? let b:syntax = "mu"
 
 setlocal iskeyword=@,48-57,?,!,_,$,-
 
