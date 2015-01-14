@@ -29,8 +29,8 @@
 ;? (= dump-trace* (obj whitelist '("schedule")))
 (run 'main)
 (each routine completed-routines*
+;?   (prn "  " routine)
   (awhen rep.routine!error
-;?     (prn "  " r)
     (prn "error - " it)))
 (if (~ran-to-completion 'read-move)
   (prn "F - chessboard accepts legal moves (<rank><file>-<rank><file>)"))
@@ -78,5 +78,42 @@
 (run 'main)
 (if (~ran-to-completion 'read-move)
   (prn "F - chessboard quits on move starting with 'q'"))
+
+(reset)
+(new-trace "read-illegal-file")
+(add-code:readfile "chessboard-cursor.mu")
+(add-code
+  '((function! main [
+      (default-space:space-address <- new space:literal 30:literal/capacity)
+      (1:channel-address/raw <- init-channel 3:literal)
+      (r:integer/routine <- fork-helper read-file:fn nil:literal/globals nil:literal/limit)
+      (c:character <- copy ((#\i literal)))
+      (x:tagged-value <- save-type c:character)
+      (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
+      (sleep until-routine-done:literal r:integer/routine)
+     ])))
+;? (= dump-trace* (obj whitelist '("schedule")))
+(run 'main)
+;? (each routine completed-routines*
+;?   (prn "  " routine))
+(if (ran-to-completion 'read-file)
+  (prn "F - 'read-file' checks that file lies between 'a' and 'h'"))
+
+(reset)
+(new-trace "read-illegal-rank")
+(add-code:readfile "chessboard-cursor.mu")
+(add-code
+  '((function! main [
+      (default-space:space-address <- new space:literal 30:literal/capacity)
+      (1:channel-address/raw <- init-channel 3:literal)
+      (r:integer/routine <- fork-helper read-rank:fn nil:literal/globals nil:literal/limit)
+      (c:character <- copy ((#\9 literal)))
+      (x:tagged-value <- save-type c:character)
+      (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
+      (sleep until-routine-done:literal r:integer/routine)
+     ])))
+(run 'main)
+(if (ran-to-completion 'read-rank)
+  (prn "F - 'read-rank' checks that rank lies between '1' and '8'"))
 
 (reset)
