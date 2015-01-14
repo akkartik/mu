@@ -10,7 +10,7 @@
     (function main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (1:channel-address <- init-channel 3:literal)
-      (2:integer/routine <- fork reader:fn default-space:space-address/globals 50:literal/limit)
+      (2:integer/routine <- fork-helper reader:fn default-space:space-address/globals 50:literal/limit)
       ; write nothing to the channel
 ;?       (sleep until-routine-done:literal 2:integer/routine)
      ])))
