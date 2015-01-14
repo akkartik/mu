@@ -96,6 +96,7 @@
 
 (address move-address (move))
 
+; todo: assumes stdout is always at raw address 2
 (function print [
   (default-space:space-address <- new space:literal 30:literal)
   { begin
@@ -111,65 +112,15 @@
 
 (function read-move [
   (default-space:space-address <- new space:literal 30:literal)
-  (a:character <- copy ((#\a literal)))
-  (file-base:integer <- character-to-integer a:character)
-  (one:character <- copy ((#\1 literal)))
-  (rank-base:integer <- character-to-integer one:character)
-  ; get from-file
-  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
-  (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print c:character)
+  (from-file:integer <- read-file)
   { begin
-    (quit:boolean <- equal c:character ((#\q literal)))
-    (break-unless quit:boolean)
+    (break-if from-file:integer)
     (reply nil:literal)
   }
-  (from-file:integer <- character-to-integer c:character)
-  (from-file:integer <- subtract from-file:integer file-base:integer)
-  ; assert('a' <= from-file <= 'h')
-  (above-min:boolean <- greater-or-equal from-file:integer 0:literal)
-  (assert above-min:boolean (("from-file too low" literal)))
-  (below-max:boolean <- lesser-or-equal from-file:integer 7:literal)
-  (assert below-max:boolean (("from-file too high" literal)))
-  ; get from-rank
-  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
-  (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print c:character)
-  (from-rank:integer <- character-to-integer c:character)
-  (from-rank:integer <- subtract from-rank:integer rank-base:integer)
-  ; assert('1' <= from-rank <= '8')
-  (above-min:boolean <- greater-or-equal from-rank:integer 0:literal)
-  (assert above-min:boolean (("from-rank too low" literal)))
-  (below-max:boolean <- lesser-or-equal from-rank:integer 7:literal)
-  (assert below-max:boolean (("from-rank too high" literal)))
-  ; slurp hyphen
-  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
-  (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print c:character)
-  (hyphen?:boolean <- equal c:character ((#\- literal)))
-  (assert hyphen?:boolean (("expected hyphen" literal)))
-  ; get to-file
-  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
-  (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print c:character)
-  (to-file:integer <- character-to-integer c:character)
-  (to-file:integer <- subtract to-file:integer file-base:integer)
-  ; assert('a' <= to-file <= 'h')
-  (above-min:boolean <- greater-or-equal to-file:integer 0:literal)
-  (assert above-min:boolean (("to-file too low" literal)))
-  (below-max:boolean <- lesser-or-equal to-file:integer 7:literal)
-  (assert below-max:boolean (("to-file too high" literal)))
-  ; get to-rank
-  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
-  (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print c:character)
-  (to-rank:integer <- character-to-integer c:character)
-  (to-rank:integer <- subtract to-rank:integer rank-base:integer)
-  ; assert('1' <= to-rank <= '8')
-  (above-min:boolean <- greater-or-equal to-rank:integer 0:literal)
-  (assert above-min:boolean (("to-rank too low" literal)))
-  (below-max:boolean <- lesser-or-equal to-rank:integer 7:literal)
-  (assert below-max:boolean (("to-rank too high" literal)))
+  (from-rank:integer <- read-rank)
+  (expect-stdin ((#\- literal)))
+  (to-file:integer <- read-file)
+  (to-rank:integer <- read-rank)
   ; construct the move object
   (result:move-address <- new move:literal)
   (f:integer-integer-pair-address <- get-address result:move-address/deref from:offset)
@@ -183,6 +134,61 @@
   (dest:integer-address <- get-address t0:integer-integer-pair-address/deref 1:offset)
   (dest:integer-address/deref <- copy to-rank:integer)
   (reply result:move-address)
+])
+
+; todo: assumes stdin is always at raw address 1
+(function read-file [
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (a:character <- copy ((#\a literal)))
+  (file-base:integer <- character-to-integer a:character)
+  (c:character <- maybe-coerce x:tagged-value character:literal)
+  (print c:character)
+  { begin
+    (quit:boolean <- equal c:character ((#\q literal)))
+    (break-unless quit:boolean)
+    (reply nil:literal)
+  }
+  (file:integer <- character-to-integer c:character)
+  (file:integer <- subtract file:integer file-base:integer)
+  ; assert('a' <= from-file <= 'h')
+  (above-min:boolean <- greater-or-equal file:integer 0:literal)
+  (assert above-min:boolean (("file too low" literal)))
+  (below-max:boolean <- lesser-or-equal file:integer 7:literal)
+  (assert below-max:boolean (("file too high" literal)))
+  (reply file:integer)
+])
+
+(function read-rank [
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (c:character <- maybe-coerce x:tagged-value character:literal)
+  (print c:character)
+  { begin
+    (quit:boolean <- equal c:character ((#\q literal)))
+    (break-unless quit:boolean)
+    (reply nil:literal)
+  }
+  (rank:integer <- character-to-integer c:character)
+  (one:character <- copy ((#\1 literal)))
+  (rank-base:integer <- character-to-integer one:character)
+  (rank:integer <- subtract rank:integer rank-base:integer)
+  ; assert('1' <= rank <= '8')
+  (above-min:boolean <- greater-or-equal rank:integer 0:literal)
+  (assert above-min:boolean (("rank too low" literal)))
+  (below-max:boolean <- lesser-or-equal rank:integer 7:literal)
+  (assert below-max:boolean (("rank too high" literal)))
+])
+
+(function expect-stdin [
+  (default-space:space-address <- new space:literal 30:literal)
+  ; slurp hyphen
+  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (c:character <- maybe-coerce x:tagged-value character:literal)
+  (print c:character)
+  (expected:character <- next-input)
+  (match?:boolean <- equal c:character expected:character)
+  (assert match?:boolean (("expected character not found" literal)))
 ])
 
 (function make-move [
