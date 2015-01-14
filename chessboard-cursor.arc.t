@@ -7,7 +7,7 @@
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (1:channel-address/raw <- init-channel 3:literal)
-      (r:integer/routine <- fork-helper read-move:fn nil:literal/globals 100:literal/limit)
+      (r:integer/routine <- fork read-move:fn nil:literal/globals 100:literal/limit)
       (c:character <- copy ((#\a literal)))
       (x:tagged-value <- save-type c:character)
       (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
