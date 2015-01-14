@@ -464,7 +464,7 @@
         (pop-stack routine*)
         (if empty.routine* (return ninstrs))
         (when (pos '<- (body.routine* pc.routine*))
-          (die "No results returned: @(tostring:prn (body.routine* pc.routine*))"))
+          (die "No results returned: @(tostring:pr (body.routine* pc.routine*))"))
         (++ pc.routine*))
       (++ curr-cycle*)
 ;?       (trace "run" "-- " int-canon.memory*)
