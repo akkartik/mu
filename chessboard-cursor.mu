@@ -215,6 +215,8 @@
   (2:channel-address/raw <- init-channel 1:literal)
   (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit 2:channel-address/raw)
   { begin
+    ; print any stray characters from keyboard *before* clearing screen
+    (flush-stdout)
     (clear-screen)
     (print-primitive (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
     (cursor-to-next-line)
@@ -243,5 +245,6 @@
 ;   'q' exits
 ;   'q' exits anywhere in move
 ;   'q' exits on second move
+;   flush stdout after printing out move and before clearing screen
 ;
 ;   backspace, ctrl-u
