@@ -28,7 +28,7 @@
 ;? (set dump-trace*)
 (run 'main)
 (if (~ran-to-completion 'main)
-  (prn "F - chessboard accepts legal move a2-a4"))
+  (prn "F - chessboard accepts legal moves (<rank><file>-<rank><file>)"))
 
 (reset)
 (new-trace "read-move-quit")
