@@ -18,7 +18,7 @@
                                               N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
                                               R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal)
   ; assert(length(initial-position) == 64)
-;?   (print-primitive (("list-length\n" literal)))
+;?   (print-primitive nil:literal/terminal (("list-length\n" literal)))
   (len:integer <- list-length initial-position:list-address)
   (correct-length?:boolean <- equal len:integer 64:literal)
   (assert correct-length?:boolean "chessboard had incorrect size")
@@ -28,8 +28,8 @@
   { begin
     (done?:boolean <- equal col:integer 8:literal)
     (break-if done?:boolean)
-;?     (print-primitive col:integer)
-;?     (print-primitive (("\n" literal)))
+;?     (print-primitive nil:literal/terminal col:integer)
+;?     (print-primitive nil:literal/terminal (("\n" literal)))
     (file:file-address-address <- index-address b:board-address/deref col:integer)
     (file:file-address-address/deref curr:list-address <- read-file curr:list-address)
     (col:integer <- add col:integer 1:literal)
@@ -74,12 +74,12 @@
       (break-if done?:boolean)
       (f:file-address <- index b:board-address/deref col:integer)
       (s:square <- index f:file-address/deref row:integer)
-      (print-primitive s:square)
-      (print-primitive ((" " literal)))
+      (print-primitive nil:literal/terminal s:square)
+      (print-primitive nil:literal/terminal ((" " literal)))
       (col:integer <- add col:integer 1:literal)
       (loop)
     }
-    (print-primitive (("\n" literal)))
+    (print-primitive nil:literal/terminal (("\n" literal)))
     (row:integer <- subtract row:integer 1:literal)
     (loop)
   }

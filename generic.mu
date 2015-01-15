@@ -24,7 +24,7 @@
 
 (function main [
   (1:integer <- factorial 5:literal)
-  (print-primitive (("result: " literal)))
-  (print-primitive 1:integer)
-  (print-primitive (("\n" literal)))
+  (print-primitive nil:literal/terminal (("result: " literal)))
+  (print-primitive nil:literal/terminal 1:integer)
+  (print-primitive nil:literal/terminal (("\n" literal)))
 ])

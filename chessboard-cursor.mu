@@ -63,8 +63,8 @@
     (break-if done?:boolean)
     ; print rank number as a legend
     (rank:integer <- add row:integer 1:literal)
-    (print-primitive rank:integer)
-    (print-primitive ((" | " literal)))
+    (print-primitive nil:literal/terminal rank:integer)
+    (print-primitive nil:literal/terminal ((" | " literal)))
     ; print each square in the row
     (col:integer <- copy 0:literal)
     { begin
@@ -72,20 +72,20 @@
       (break-if done?:boolean)
       (f:file-address <- index b:board-address/deref col:integer)
       (s:square <- index f:file-address/deref row:integer)
-      (print-primitive s:square)
-      (print-primitive ((" " literal)))
+      (print-primitive nil:literal/terminal s:square)
+      (print-primitive nil:literal/terminal ((" " literal)))
       (col:integer <- add col:integer 1:literal)
       (loop)
     }
     (row:integer <- subtract row:integer 1:literal)
-    (cursor-to-next-line)
+    (cursor-to-next-line nil:literal/terminal)
     (loop)
   }
   ; print file letters as legend
-  (print-primitive (("  +----------------" literal)))
-  (cursor-to-next-line)
-  (print-primitive (("    a b c d e f g h" literal)))
-  (cursor-to-next-line)
+  (print-primitive nil:literal/terminal (("  +----------------" literal)))
+  (cursor-to-next-line nil:literal/terminal)
+  (print-primitive nil:literal/terminal (("    a b c d e f g h" literal)))
+  (cursor-to-next-line nil:literal/terminal)
 ])
 
 ;; data structure: move
@@ -224,17 +224,17 @@
   { begin
     ; print any stray characters from keyboard *before* clearing screen
     (flush-stdout)
-    (clear-screen)
-    (print-primitive (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
-    (cursor-to-next-line)
-    (cursor-to-next-line)
+    (clear-screen nil:literal/terminal)
+    (print-primitive nil:literal/terminal (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
+    (cursor-to-next-line nil:literal/terminal)
+    (cursor-to-next-line nil:literal/terminal)
     (print-board b:board-address)
-    (cursor-to-next-line)
-    (print-primitive (("Type in your move as <from square>-<to square>. For example: 'a2-a4'. Currently very unforgiving of typos; exactly five letters, no <Enter>, no uppercase." literal)))
-    (cursor-to-next-line)
-    (print-primitive (("Hit 'q' to exit." literal)))
-    (cursor-to-next-line)
-    (print-primitive (("move: " literal)))
+    (cursor-to-next-line nil:literal/terminal)
+    (print-primitive nil:literal/terminal (("Type in your move as <from square>-<to square>. For example: 'a2-a4'. Currently very unforgiving of typos; exactly five letters, no <Enter>, no uppercase." literal)))
+    (cursor-to-next-line nil:literal/terminal)
+    (print-primitive nil:literal/terminal (("Hit 'q' to exit." literal)))
+    (cursor-to-next-line nil:literal/terminal)
+    (print-primitive nil:literal/terminal (("move: " literal)))
     (m:move-address <- read-move)
     (break-unless m:move-address)
     (b:board-address <- make-move b:board-address m:move-address)
