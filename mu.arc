@@ -646,17 +646,17 @@
                   (do1 nil (if (no ($.current-charterm)) ($.open-charterm)))
                 retro-mode
                   (do1 nil (if ($.current-charterm) ($.close-charterm)))
-                clear-screen
+                clear-host-screen
                   (do1 nil
                     (if ($.current-charterm)
                           ($.charterm-clear-screen)
                         ($.graphics-open?)
                           ($.clear-viewport Viewport)))
-                cursor
+                cursor-on-host
                   (do1 nil ($.charterm-cursor (m arg.0) (m arg.1)))
-                cursor-to-next-line
+                cursor-on-host-to-next-line
                   (do1 nil ($.charterm-newline))
-                print-primitive
+                print-primitive-to-host
                   (do1 nil ((if ($.current-charterm) $.charterm-display pr) (m arg.0)))
                 read-key
                   (if ($.current-charterm)
@@ -1891,6 +1891,27 @@
     (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value)
     (loop)
   }
+)
+
+(init-fn clear-screen
+  (clear-host-screen)
+)
+
+(init-fn cursor
+  (default-space:space-address <- new space:literal 30:literal)
+  (row:integer <- next-input)
+  (col:integer <- next-input)
+  (cursor-on-host row:integer col:integer)
+)
+
+(init-fn cursor-to-next-line
+  (cursor-on-host-to-next-line)
+)
+
+(init-fn print-primitive
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:location <- next-input)
+  (print-primitive-to-host x:location)
 )
 
 (init-fn send-prints-to-stdout
