@@ -1285,6 +1285,8 @@
       function
         (let (name (_make-br-fn body))  rest
           (assert (is 'make-br-fn _make-br-fn))
+          (when function*.name
+            (prn "adding new clause to @name"))
           (= function*.name (join body function*.name)))
 
       ; and-record <type> [ <name:types> ]
