@@ -3,7 +3,7 @@
   (default-space:space-address <- new space:literal 2:literal)
   (x:integer <- copy 34:literal)
   { begin
-    (print-primitive x:integer)
+    (print-primitive nil:literal/terminal x:integer)
     (loop)
   }
 ])
@@ -12,7 +12,7 @@
   (default-space:space-address <- new space:literal 2:literal)
   (y:integer <- copy 35:literal)
   { begin
-    (print-primitive y:integer)
+    (print-primitive nil:literal/terminal y:integer)
     (loop)
   }
 ])
