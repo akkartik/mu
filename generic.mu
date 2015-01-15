@@ -5,7 +5,6 @@
 (function factorial [
   (default-space:space-address <- new space:literal 30:literal)
   (n:integer <- input 0:literal)
-  more-clauses
   (x:integer <- subtract n:integer 1:literal)
   (subresult:integer <- factorial x:integer)
   (result:integer <- multiply subresult:integer n:integer)
@@ -13,7 +12,9 @@
 ])
 
 ; factorial 0 = 1
-(after factorial/more-clauses [
+(function factorial [
+  (default-space:space-address <- new space:literal 30:literal)
+  (n:integer <- input 0:literal)
   { begin
     (zero?:boolean <- equal n:integer 0:literal)
     (break-unless zero?:boolean)

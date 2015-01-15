@@ -4116,6 +4116,8 @@
   (prn "F - 'absolutize' checks against default-space bounds"))
 (when (~iso '((_ integer)) (absolutize '((_ integer))))
   (prn "F - 'absolutize' passes dummy args right through"))
+(when (~iso '((default-space integer)) (absolutize '((default-space integer))))
+  (prn "F - 'absolutize' passes 'default-space' right through"))
 
 (= memory*.20 5)  ; pretend array
 (= rep.routine*!globals 20)  ; provide it to routine global

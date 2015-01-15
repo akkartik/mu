@@ -815,11 +815,14 @@
                       (map memory* (addrs addr n)))))))
 
 (def setm (loc val)  ; set memory, respecting metadata
+;?   (tr 111)
   (point return
+;?   (tr 112)
     (when (is v.loc 'default-space)
       (assert (is 1 sizeof.loc) "can't store compounds in default-space @loc")
       (= rep.routine*!call-stack.0!default-space val)
       (return))
+;?   (tr 120)
     (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
     (trace "setm" loc " <= " val)
     (with (n  (if (isa val 'record) (len rep.val) 1)
@@ -904,7 +907,7 @@
 (def absolutize (operand)
   (if (no routine*)
         operand
-      (is '_ v.operand)
+      (in v.operand '_ 'default-space)
         operand
       (pos '(raw) metadata.operand)
         operand
