@@ -32,7 +32,7 @@
 ;?   (prn "  " routine)
   (awhen rep.routine!error
     (prn "error - " it)))
-(if (~ran-to-completion 'read-move)
+(when (~ran-to-completion 'read-move)
   (prn "F - chessboard accepts legal moves (<rank><file>-<rank><file>)"))
 ;? (quit)
 
@@ -59,7 +59,7 @@
       (sleep until-routine-done:literal r:integer/routine)
      ])))
 (run 'main)
-(if (ran-to-completion 'read-move)
+(when (ran-to-completion 'read-move)
   (prn "F - chessboard hangs until 5 characters are entered"))
 
 (reset)
@@ -76,7 +76,7 @@
       (sleep until-routine-done:literal r:integer/routine)
      ])))
 (run 'main)
-(if (~ran-to-completion 'read-move)
+(when (~ran-to-completion 'read-move)
   (prn "F - chessboard quits on move starting with 'q'"))
 
 (reset)
@@ -96,9 +96,9 @@
 (run 'main)
 ;? (each routine completed-routines*
 ;?   (prn "  " routine))
-(if (or (ran-to-completion 'read-file)
-        (let routine routine-running!read-file
-          (~posmatch "file too high" rep.routine!error)))
+(when (or (ran-to-completion 'read-file)
+          (let routine routine-running!read-file
+            (~posmatch "file too high" rep.routine!error)))
   (prn "F - 'read-file' checks that file lies between 'a' and 'h'"))
 
 (reset)
@@ -115,9 +115,9 @@
       (sleep until-routine-done:literal r:integer/routine)
      ])))
 (run 'main)
-(if (or (ran-to-completion 'read-rank)
-        (let routine routine-running!read-rank
-          (~posmatch "rank too high" rep.routine!error)))
+(when (or (ran-to-completion 'read-rank)
+          (let routine routine-running!read-rank
+            (~posmatch "rank too high" rep.routine!error)))
   (prn "F - 'read-rank' checks that rank lies between '1' and '8'"))
 
 (reset)
