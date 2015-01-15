@@ -96,7 +96,9 @@
 (run 'main)
 ;? (each routine completed-routines*
 ;?   (prn "  " routine))
-(if (ran-to-completion 'read-file)
+(if (or (ran-to-completion 'read-file)
+        (let routine routine-running!read-file
+          (~posmatch "file too high" rep.routine!error)))
   (prn "F - 'read-file' checks that file lies between 'a' and 'h'"))
 
 (reset)
@@ -113,7 +115,9 @@
       (sleep until-routine-done:literal r:integer/routine)
      ])))
 (run 'main)
-(if (ran-to-completion 'read-rank)
+(if (or (ran-to-completion 'read-rank)
+        (let routine routine-running!read-rank
+          (~posmatch "rank too high" rep.routine!error)))
   (prn "F - 'read-rank' checks that rank lies between '1' and '8'"))
 
 (reset)

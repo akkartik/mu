@@ -1415,11 +1415,14 @@
              :else
                (recur (+ addr 1) (+ idx 1))))))
 
+(def routine-running (f)
+  (find [some [is f _!fn-name] stack._]
+        completed-routines*))
+
 (def ran-to-completion (f)
   ; if a routine calling f ran to completion there'll be no sign of it in any
   ; completed call-stacks.
-  (~find [some [is f _!fn-name] stack._]
-         completed-routines*))
+  (~routine-running f))
 
 ;; system software
 ; create once, load before every test
