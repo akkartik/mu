@@ -247,7 +247,6 @@
 ;   print board
 ;   print move
 ;   board updates on move
-;   'q' exits anywhere in move
 ;   'q' exits on second move
 ;   flush stdout after printing out move and before clearing screen
 ;
