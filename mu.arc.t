@@ -161,7 +161,7 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 23)
+(when (~is memory*.1 23)
   (prn "F - 'copy' writes its lone 'arg' after the instruction name to its lone 'oarg' or output arg before the arrow. After this test, the value 23 is stored in memory address 1."))
 ;? (quit)
 
@@ -178,7 +178,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3  3 4))
+(when (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - 'add' operates on two addresses"))
 ;? (quit)
 
@@ -189,7 +189,7 @@
       (1:integer <- add 2:literal 3:literal)
      ])))
 (run 'main)
-(if (~is memory*.1 5)
+(when (~is memory*.1 5)
   (prn "F - ops can take 'literal' operands (but not return them)"))
 
 (reset)
@@ -200,7 +200,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 -2)
+(when (~is memory*.1 -2)
   (prn "F - 'subtract'"))
 
 (reset)
@@ -211,7 +211,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 6)
+(when (~is memory*.1 6)
   (prn "F - 'multiply'"))
 
 (reset)
@@ -222,7 +222,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 (/ real.8 3))
+(when (~is memory*.1 (/ real.8 3))
   (prn "F - 'divide'"))
 
 (reset)
@@ -233,7 +233,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 3  2 5))
+(when (~iso memory* (obj 1 3  2 5))
   (prn "F - 'divide-with-remainder' performs integer division"))
 
 (reset)
@@ -244,7 +244,7 @@
       (_ 2:integer <- divide-with-remainder 23:literal 6:literal)
      ])))
 (run 'main)
-(if (~iso memory* (obj 2 5))
+(when (~iso memory* (obj 2 5))
   (prn "F - '_' oarg can ignore some results"))
 ;? (quit)
 
@@ -261,7 +261,7 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 nil)
+(when (~is memory*.1 nil)
   (prn "F - logical 'and' for booleans"))
 
 ; Basic comparison operations
@@ -274,7 +274,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 nil)
+(when (~is memory*.1 nil)
   (prn "F - 'less-than' inequality operator"))
 
 (reset)
@@ -285,7 +285,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 nil)
+(when (~is memory*.1 nil)
   (prn "F - 'lesser-or-equal'"))
 
 (reset)
@@ -296,7 +296,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 t)
+(when (~is memory*.1 t)
   (prn "F - 'lesser-or-equal' returns true for equal operands"))
 
 (reset)
@@ -307,7 +307,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 t)
+(when (~is memory*.1 t)
   (prn "F - 'lesser-or-equal' - 2"))
 
 ; Control flow operations: jump, jump-if, jump-unless
@@ -326,7 +326,7 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 8))
+(when (~iso memory* (obj 1 8))
   (prn "F - 'jump' skips some instructions"))
 ;? (quit)
 
@@ -342,7 +342,7 @@
      ])))  ; never reached
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 8))
+(when (~iso memory* (obj 1 8))
   (prn "F - 'jump' doesn't skip too many instructions"))
 ;? (quit)
 
@@ -359,7 +359,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 t  2 1))
+(when (~iso memory* (obj 1 t  2 1))
   (prn "F - 'jump-if' is a conditional 'jump'"))
 
 (reset)
@@ -374,7 +374,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 nil  2 3))
+(when (~iso memory* (obj 1 nil  2 3))
   (prn "F - if 'jump-if's first arg is false, it doesn't skip any instructions"))
 
 (reset)
@@ -393,7 +393,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
+(when (~iso memory* (obj 1 2  2 4  3 nil  4 3))
   (prn "F - 'jump-if' can take a negative offset to make backward jumps"))
 
 (reset)
@@ -414,7 +414,7 @@
 ;? (= dump-trace* (obj whitelist '("-")))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 4  3 nil  4 3))
+(when (~iso memory* (obj 1 2  2 4  3 nil  4 3))
   (prn "F - 'jump-if' can take a negative offset to make backward jumps"))
 ;? (quit)
 
@@ -431,7 +431,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 34  2 34))
+(when (~iso memory* (obj 1 34  2 34))
   (prn "F - 'copy' performs direct addressing"))
 
 ; 'Indirect' addressing refers to an address stored in a memory location.
@@ -449,7 +449,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 34  3 34))
+(when (~iso memory* (obj 1 2  2 34  3 34))
   (prn "F - 'copy' performs indirect addressing"))
 
 ; Output args can use indirect addressing. In the test below the value is
@@ -465,7 +465,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 36))
+(when (~iso memory* (obj 1 2  2 36))
   (prn "F - instructions can perform indirect addressing on output arg"))
 
 ;; Compound data types
@@ -502,7 +502,7 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 34  2 nil  3 nil  4 34))
+(when (~iso memory* (obj 1 34  2 nil  3 nil  4 34))
   (prn "F - 'get' accesses fields of and-records"))
 ;? (quit)
 
@@ -519,7 +519,7 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 34  2 nil  3 1  4 nil  5 34))
+(when (~iso memory* (obj 1 34  2 nil  3 1  4 nil  5 34))
   (prn "F - 'get' accesses fields of and-record address"))
 
 (reset)
@@ -535,7 +535,7 @@
       (8:integer <- get 5:integer-point-pair-address-address/deref/deref 0:offset)
      ])))
 (run 'main)
-(if (~memory-contains 6 '(35 36 34))
+(when (~memory-contains 6 '(35 36 34))
   (prn "F - 'get' can deref multiple times"))
 ;? (quit)
 
@@ -550,7 +550,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 34  2 35  3 36  4 35  5 36))
+(when (~iso memory* (obj 1 34  2 35  3 36  4 35  5 36))
   (prn "F - 'get' accesses fields spanning multiple locations"))
 
 (reset)
@@ -563,7 +563,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 34  2 t  3 2))
+(when (~iso memory* (obj 1 34  2 t  3 2))
   (prn "F - 'get-address' returns address of fields of and-records"))
 
 (reset)
@@ -577,7 +577,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 34  2 t  3 1  4 2))
+(when (~iso memory* (obj 1 34  2 t  3 1  4 2))
   (prn "F - 'get-address' accesses fields of and-record address"))
 
 (reset)
@@ -593,7 +593,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 24 7 t))
+(when (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 24 7 t))
   (prn "F - 'index' accesses indices of arrays"))
 ;? (quit)
 
@@ -611,7 +611,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 24 8 t))
+(when (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 24 8 t))
   (prn "F - 'index' accesses indices of arrays"))
 ;? (quit)
 
@@ -632,7 +632,7 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 1  8 24 9 t))
+(when (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 1  8 24 9 t))
   (prn "F - 'index' accesses indices of array address"))
 ;? (quit)
 
@@ -650,7 +650,7 @@
       (8:integer <- index 7:integer-array-address-address/deref/deref 1:literal)
      ])))
 (run 'main)
-(if (~is memory*.8 24)
+(when (~is memory*.8 24)
   (prn "F - 'index' can deref multiple times"))
 
 (reset)
@@ -667,7 +667,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 4))
+(when (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 4))
   (prn "F - 'index-address' returns addresses of indices of arrays"))
 
 (reset)
@@ -685,7 +685,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 1  8 4))
+(when (~iso memory* (obj 1 2  2 23 3 nil  4 24 5 t  6 1  7 1  8 4))
   (prn "F - 'index-address' returns addresses of indices of array addresses"))
 
 ; Array values know their length. Record lengths are saved in the types table.
@@ -703,7 +703,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.6 2)
+(when (~is memory*.6 2)
   (prn "F - 'length' of array"))
 
 (reset)
@@ -722,7 +722,7 @@
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.7 2)
+(when (~is memory*.7 2)
   (prn "F - 'length' of array address"))
 
 ; 'sizeof' is a helper to determine the amount of memory required by a type.
@@ -736,7 +736,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.1 2)
+(when (~is memory*.1 2)
   (prn "F - 'sizeof' returns space required by arg"))
 
 (reset)
@@ -747,7 +747,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (is memory*.1 2)
+(when (is memory*.1 2)
   (prn "F - 'sizeof' is different from number of elems"))
 
 ; Regardless of a type's length, you can move it around just like a primitive.
@@ -763,7 +763,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 34  2 nil  3 34  4 nil))
+(when (~iso memory* (obj 1 34  2 nil  3 34  4 nil))
   (prn "F - ops can operate on records spanning multiple locations"))
 
 (reset)
@@ -781,9 +781,9 @@
 ;? (= dump-trace* (obj whitelist '("run" "sizeof")))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 34  2 35  3 36
-                       ; result
-                       4 34  5 35  6 36))
+(when (~iso memory* (obj 1 34  2 35  3 36
+                         ; result
+                         4 34  5 35  6 36))
   (prn "F - ops can operate on records with fields spanning multiple locations"))
 
 )  ; section 20
@@ -817,8 +817,8 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 ;? (prn memory*)
-(if (or (~is memory*.3 34)
-        (~is memory*.4 t))
+(when (or (~is memory*.3 34)
+          (~is memory*.4 t))
   (prn "F - 'maybe-coerce' copies value only if type tag matches"))
 ;? (quit)
 
@@ -833,8 +833,8 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (or (~is memory*.3 0)
-        (~is memory*.4 nil))
+(when (or (~is memory*.3 0)
+          (~is memory*.4 nil))
   (prn "F - 'maybe-coerce' doesn't copy value when type tag doesn't match"))
 
 (reset)
@@ -846,7 +846,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj  1 34  2 'integer  3 34))
+(when (~iso memory* (obj  1 34  2 'integer  3 34))
   (prn "F - 'save-type' saves the type of a value at runtime, turning it into a tagged-value"))
 
 (reset)
@@ -860,8 +860,8 @@
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
 ;? (prn memory*)
-(if (or (~is memory*.3 34)
-        (~is memory*.4 t))
+(when (or (~is memory*.3 34)
+          (~is memory*.4 t))
   (prn "F - 'init-tagged-value' is the converse of 'maybe-coerce'"))
 ;? (quit)
 
@@ -900,19 +900,19 @@
 ;?     (prn memory*)
     (each routine completed-routines*
       (aif rep.routine!error (prn "error - " it)))
-    (if (or (~all first (map memory* '(1 2 3)))
-            (~is memory*.first  'integer)
-            (~is memory*.4 (+ first 1))
-            (~is (memory* (+ first 1))  34)
-            (~is memory*.5 (+ first 2))
-            (let second memory*.6
-              (or
-                (~is (memory* (+ first 2)) second)
-                (~all second (map memory* '(6 7 8)))
-                (~is memory*.second 'boolean)
-                (~is memory*.9 (+ second 1))
-                (~is (memory* (+ second 1)) t)
-                (~is memory*.10 nil))))
+    (when (or (~all first (map memory* '(1 2 3)))
+              (~is memory*.first  'integer)
+              (~is memory*.4 (+ first 1))
+              (~is (memory* (+ first 1))  34)
+              (~is memory*.5 (+ first 2))
+              (let second memory*.6
+                (or
+                  (~is (memory* (+ first 2)) second)
+                  (~all second (map memory* '(6 7 8)))
+                  (~is memory*.second 'boolean)
+                  (~is memory*.9 (+ second 1))
+                  (~is (memory* (+ second 1)) t)
+                  (~is memory*.10 nil))))
       (prn "F - lists can contain elements of different types"))))
 (add-code
   '((function test2 [
@@ -923,7 +923,7 @@
 ;? (prn memory*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~is memory*.10 memory*.6)
+(when (~is memory*.10 memory*.6)
   (prn "F - 'list-next can move a list pointer to the next node"))
 ;? (quit)
 
@@ -941,17 +941,17 @@
 ;? (prn memory*)
 (let first memory*.1
 ;?   (prn first)
-  (if (or (~is memory*.first  'integer)
-          (~is (memory* (+ first 1))  3)
-          (let second (memory* (+ first 2))
-;?             (prn second)
-            (or (~is memory*.second 'integer)
-                (~is (memory* (+ second 1)) 4)
-                (let third (memory* (+ second 2))
-;?                   (prn third)
-                  (or (~is memory*.third 'integer)
-                      (~is (memory* (+ third 1)) 5)
-                      (~is (memory* (+ third 2) nil)))))))
+  (when (or (~is memory*.first  'integer)
+            (~is (memory* (+ first 1))  3)
+            (let second (memory* (+ first 2))
+;?               (prn second)
+              (or (~is memory*.second 'integer)
+                  (~is (memory* (+ second 1)) 4)
+                  (let third (memory* (+ second 2))
+;?                     (prn third)
+                    (or (~is memory*.third 'integer)
+                        (~is (memory* (+ third 1)) 5)
+                        (~is (memory* (+ third 2) nil)))))))
     (prn "F - 'init-list' can construct a list of integers")))
 
 )  ; section 100
@@ -977,7 +977,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3  3 4))
+(when (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - calling a user-defined function runs its instructions"))
 ;? (quit)
 
@@ -992,7 +992,7 @@
      ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
-(if (~is 2 curr-cycle*)
+(when (~is 2 curr-cycle*)
   (prn "F - calling a user-defined function runs its instructions exactly once " curr-cycle*))
 ;? (quit)
 
@@ -1017,7 +1017,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3  3 4))
+(when (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - 'reply' stops executing the current function"))
 ;? (quit)
 
@@ -1036,7 +1036,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 2 34  3 34))
+(when (~iso memory* (obj 2 34  3 34))
   (prn "F - 'reply' stops executing any callers as necessary"))
 ;? (quit)
 
@@ -1055,7 +1055,7 @@
      ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
-(if (~is 5 curr-cycle*)
+(when (~is 5 curr-cycle*)
   (prn "F - 'reply' executes instructions exactly once " curr-cycle*))
 ;? (quit)
 
@@ -1074,7 +1074,7 @@
 (assert (is 0 pc.routine*))
 (push-stack routine* 'callee)  ; pretend call was at first instruction of caller
 (run-for-time-slice 1)
-(if (~is 1 pc.routine*)
+(when (~is 1 pc.routine*)
   (prn "F - 'reply' should increment pc in caller (to move past calling instruction)"))
 
 (reset)
@@ -1094,9 +1094,9 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3  3 4
-                       ; test1's temporaries
-                       4 1  5 3))
+(when (~iso memory* (obj 1 1  2 3  3 4
+                         ; test1's temporaries
+                         4 1  5 3))
   (prn "F - 'arg' accesses in order the operands of the most recent function call (the caller)"))
 ;? (quit)
 
@@ -1118,9 +1118,9 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3  3 4
-                       ; test's temporaries
-                       4 1  5 3))
+(when (~iso memory* (obj 1 1  2 3  3 4
+                         ; test's temporaries
+                         4 1  5 3))
   (prn "F - 'arg' with index can access function call arguments out of order"))
 ;? (quit)
 
@@ -1137,7 +1137,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 3))
+(when (~iso memory* (obj 1 3))
   (prn "F - 'arg' with index resets index for later calls"))
 ;? (quit)
 
@@ -1152,7 +1152,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 4 1  5 t))
+(when (~iso memory* (obj 4 1  5 t))
   (prn "F - 'arg' sets a second oarg when arg exists"))
 ;? (quit)
 
@@ -1168,7 +1168,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 4 1))
+(when (~iso memory* (obj 4 1))
   (prn "F - missing 'arg' doesn't cause error"))
 ;? (quit)
 
@@ -1184,7 +1184,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 4 1  6 nil))
+(when (~iso memory* (obj 4 1  6 nil))
   (prn "F - missing 'arg' wipes second oarg when provided"))
 ;? (quit)
 
@@ -1201,7 +1201,7 @@
     ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 4 1  6 nil))
+(when (~iso memory* (obj 4 1  6 nil))
   (prn "F - missing 'arg' consistently wipes its oarg"))
 ;? (quit)
 
@@ -1224,7 +1224,7 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 4 34  5 1  6 nil  7 35))
+(when (~iso memory* (obj 4 34  5 1  6 nil  7 35))
   (prn "F - function with optional second arg"))
 ;? (quit)
 
@@ -1241,7 +1241,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 0  2 34))
+(when (~iso memory* (obj 1 0  2 34))
   (prn "F - 'arg' passes by value"))
 
 (reset)
@@ -1256,7 +1256,7 @@
       (test1 1:integer-boolean-pair)
      ])))
 (run 'main)
-(if (~iso memory* (obj 1 34  2 nil  4 34  5 nil))
+(when (~iso memory* (obj 1 34  2 nil  4 34  5 nil))
   (prn "F - 'arg' can copy records spanning multiple locations"))
 
 (reset)
@@ -1274,7 +1274,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 34  2 nil  3 1  4 34  5 nil))
+(when (~iso memory* (obj 1 34  2 nil  3 1  4 34  5 nil))
   (prn "F - 'arg' can copy records spanning multiple locations in indirect mode"))
 
 (reset)
@@ -1294,9 +1294,9 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3  3 4
-                       ; test1's temporaries
-                       4 1  5 3  6 4))
+(when (~iso memory* (obj 1 1  2 3  3 4
+                         ; test1's temporaries
+                         4 1  5 3  6 4))
   (prn "F - 'reply' can take aguments that are returned, or written back into output args of caller"))
 
 (reset)
@@ -1316,7 +1316,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3  3 4    7 3
+(when (~iso memory* (obj 1 1  2 3  3 4    7 3
                          ; test1's temporaries
                          4 1  5 3  6 4))
   (prn "F - 'reply' permits a function to return multiple values at once"))
@@ -1339,7 +1339,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory* (obj 1 1  2 3  3 4    7 3
+(when (~iso memory* (obj 1 1  2 3  3 4    7 3
                          ; test1's temporaries
                          4 1  5 3  6 4))
   (prn "F - without args, 'reply' returns values from previous 'prepare-reply'."))
@@ -1377,23 +1377,23 @@
 (new-trace "convert-braces")
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
-(if (~iso (convert-braces
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                (((2 integer)) <- ((copy)) ((0 literal)))
+                (((3 integer)) <- ((copy)) ((0 literal)))
+                { begin  ; 'begin' is just a hack because racket turns braces into parens
+                  (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
+                  (((break-if)) ((4 boolean)))
+                  (((5 integer)) <- ((copy)) ((0 literal)))
+                }
+                (((reply)))))
             '((((1 integer)) <- ((copy)) ((0 literal)))
               (((2 integer)) <- ((copy)) ((0 literal)))
               (((3 integer)) <- ((copy)) ((0 literal)))
-              { begin  ; 'begin' is just a hack because racket turns braces into parens
-                (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
-                (((break-if)) ((4 boolean)))
-                (((5 integer)) <- ((copy)) ((0 literal)))
-              }
+              (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
+              (((jump-if)) ((4 boolean)) ((1 offset)))
+              (((5 integer)) <- ((copy)) ((0 literal)))
               (((reply)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((3 integer)) <- ((copy)) ((0 literal)))
-            (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
-            (((jump-if)) ((4 boolean)) ((1 offset)))
-            (((5 integer)) <- ((copy)) ((0 literal)))
-            (((reply)))))
   (prn "F - convert-braces replaces break-if with a jump-if to after the next close-brace"))
 ;? (quit)
 
@@ -1401,121 +1401,121 @@
 (new-trace "convert-braces-empty-block")
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
-(if (~iso (convert-braces
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                (((2 integer)) <- ((copy)) ((0 literal)))
+                (((3 integer)) <- ((copy)) ((0 literal)))
+                { begin
+                  (((break)))
+                }
+                (((reply)))))
             '((((1 integer)) <- ((copy)) ((0 literal)))
               (((2 integer)) <- ((copy)) ((0 literal)))
               (((3 integer)) <- ((copy)) ((0 literal)))
-              { begin
-                (((break)))
-              }
+              (((jump)) ((0 offset)))
               (((reply)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((3 integer)) <- ((copy)) ((0 literal)))
-            (((jump)) ((0 offset)))
-            (((reply)))))
   (prn "F - convert-braces works for degenerate blocks"))
 ;? (quit)
 
 (reset)
 (new-trace "convert-braces-nested-break")
 (= traces* (queue))
-(if (~iso (convert-braces
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                (((2 integer)) <- ((copy)) ((0 literal)))
+                (((3 integer)) <- ((copy)) ((0 literal)))
+                { begin
+                  (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
+                  (((break-if)) ((4 boolean)))
+                  { begin
+                    (((5 integer)) <- ((copy)) ((0 literal)))
+                  }
+                }
+                (((reply)))))
             '((((1 integer)) <- ((copy)) ((0 literal)))
               (((2 integer)) <- ((copy)) ((0 literal)))
               (((3 integer)) <- ((copy)) ((0 literal)))
-              { begin
-                (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
-                (((break-if)) ((4 boolean)))
-                { begin
-                  (((5 integer)) <- ((copy)) ((0 literal)))
-                }
-              }
+              (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
+              (((jump-if)) ((4 boolean)) ((1 offset)))
+              (((5 integer)) <- ((copy)) ((0 literal)))
               (((reply)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((3 integer)) <- ((copy)) ((0 literal)))
-            (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
-            (((jump-if)) ((4 boolean)) ((1 offset)))
-            (((5 integer)) <- ((copy)) ((0 literal)))
-            (((reply)))))
   (prn "F - convert-braces balances braces when converting break"))
 
 (reset)
 (new-trace "convert-braces-repeated-jump")
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
-(if (~iso (convert-braces
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                { begin
+                  (((break)))
+                  (((2 integer)) <- ((copy)) ((0 literal)))
+                }
+                { begin
+                  (((break)))
+                  (((3 integer)) <- ((copy)) ((0 literal)))
+                }
+                (((4 integer)) <- ((copy)) ((0 literal)))))
             '((((1 integer)) <- ((copy)) ((0 literal)))
-              { begin
-                (((break)))
-                (((2 integer)) <- ((copy)) ((0 literal)))
-              }
-              { begin
-                (((break)))
-                (((3 integer)) <- ((copy)) ((0 literal)))
-              }
+              (((jump)) ((1 offset)))
+              (((2 integer)) <- ((copy)) ((0 literal)))
+              (((jump)) ((1 offset)))
+              (((3 integer)) <- ((copy)) ((0 literal)))
               (((4 integer)) <- ((copy)) ((0 literal)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((jump)) ((1 offset)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((jump)) ((1 offset)))
-            (((3 integer)) <- ((copy)) ((0 literal)))
-            (((4 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-braces handles jumps on jumps"))
 ;? (quit)
 
 (reset)
 (new-trace "convert-braces-nested-loop")
 (= traces* (queue))
-(if (~iso (convert-braces
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                (((2 integer)) <- ((copy)) ((0 literal)))
+                { begin
+                  (((3 integer)) <- ((copy)) ((0 literal)))
+                  { begin
+                    (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
+                  }
+                  (((loop-if)) ((4 boolean)))
+                  (((5 integer)) <- ((copy)) ((0 literal)))
+                }
+                (((reply)))))
             '((((1 integer)) <- ((copy)) ((0 literal)))
               (((2 integer)) <- ((copy)) ((0 literal)))
-              { begin
-                (((3 integer)) <- ((copy)) ((0 literal)))
-                { begin
-                  (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
-                }
-                (((loop-if)) ((4 boolean)))
-                (((5 integer)) <- ((copy)) ((0 literal)))
-              }
+              (((3 integer)) <- ((copy)) ((0 literal)))
+              (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
+              (((jump-if)) ((4 boolean)) ((-3 offset)))
+              (((5 integer)) <- ((copy)) ((0 literal)))
               (((reply)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((3 integer)) <- ((copy)) ((0 literal)))
-            (((4 boolean)) <- ((not-equal)) ((1 integer)) ((3 integer)))
-            (((jump-if)) ((4 boolean)) ((-3 offset)))
-            (((5 integer)) <- ((copy)) ((0 literal)))
-            (((reply)))))
   (prn "F - convert-braces balances braces when converting 'loop'"))
 
 (reset)
 (new-trace "convert-braces-label")
 (= traces* (queue))
-(if (~iso (convert-braces
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                foo
+                (((2 integer)) <- ((copy)) ((0 literal)))))
             '((((1 integer)) <- ((copy)) ((0 literal)))
               foo
               (((2 integer)) <- ((copy)) ((0 literal)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            foo
-            (((2 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-braces skips past labels"))
 ;? (quit)
 
 (reset)
 (new-trace "convert-braces-label-increments-offset")
 (= traces* (queue))
-(if (~iso (convert-braces
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                { begin
+                  (((break)))
+                  foo
+                }
+                (((2 integer)) <- ((copy)) ((0 literal)))))
             '((((1 integer)) <- ((copy)) ((0 literal)))
-              { begin
-                (((break)))
-                foo
-              }
+              (((jump)) ((1 offset)))
+              foo
               (((2 integer)) <- ((copy)) ((0 literal)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((jump)) ((1 offset)))
-            foo
-            (((2 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-braces treats labels as instructions"))
 ;? (quit)
 
@@ -1523,25 +1523,25 @@
 (new-trace "convert-braces-label-increments-offset2")
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("c{0" "c{1")))
-(if (~iso (convert-braces
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                { begin
+                  (((break)))
+                  foo
+                }
+                (((2 integer)) <- ((copy)) ((0 literal)))
+                { begin
+                  (((break)))
+                  (((3 integer)) <- ((copy)) ((0 literal)))
+                }
+                (((4 integer)) <- ((copy)) ((0 literal)))))
             '((((1 integer)) <- ((copy)) ((0 literal)))
-              { begin
-                (((break)))
-                foo
-              }
+              (((jump)) ((1 offset)))
+              foo
               (((2 integer)) <- ((copy)) ((0 literal)))
-              { begin
-                (((break)))
-                (((3 integer)) <- ((copy)) ((0 literal)))
-              }
+              (((jump)) ((1 offset)))
+              (((3 integer)) <- ((copy)) ((0 literal)))
               (((4 integer)) <- ((copy)) ((0 literal)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((jump)) ((1 offset)))
-            foo
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((jump)) ((1 offset)))
-            (((3 integer)) <- ((copy)) ((0 literal)))
-            (((4 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-braces treats labels as instructions - 2"))
 ;? (quit)
 
@@ -1549,40 +1549,40 @@
 (new-trace "break-multiple")
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("-")))
-(if (~iso (convert-braces
-            '((((1 integer)) <- ((copy)) ((0 literal)))
-              { begin
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
                 { begin
-                  (((break)) ((2 blocks)))
-                }
-                (((2 integer)) <- ((copy)) ((0 literal)))
-                (((3 integer)) <- ((copy)) ((0 literal)))
-                (((4 integer)) <- ((copy)) ((0 literal)))
-                (((5 integer)) <- ((copy)) ((0 literal)))
-              }))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((jump)) ((4 offset)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((3 integer)) <- ((copy)) ((0 literal)))
-            (((4 integer)) <- ((copy)) ((0 literal)))
-            (((5 integer)) <- ((copy)) ((0 literal)))))
+                  { begin
+                    (((break)) ((2 blocks)))
+                  }
+                  (((2 integer)) <- ((copy)) ((0 literal)))
+                  (((3 integer)) <- ((copy)) ((0 literal)))
+                  (((4 integer)) <- ((copy)) ((0 literal)))
+                  (((5 integer)) <- ((copy)) ((0 literal)))
+                }))
+            '((((1 integer)) <- ((copy)) ((0 literal)))
+              (((jump)) ((4 offset)))
+              (((2 integer)) <- ((copy)) ((0 literal)))
+              (((3 integer)) <- ((copy)) ((0 literal)))
+              (((4 integer)) <- ((copy)) ((0 literal)))
+              (((5 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - 'break' can take an extra arg with number of nested blocks to exit"))
 ;? (quit)
 
 (reset)
 (new-trace "loop")
 ;? (set dump-trace*)
-(if (~iso (convert-braces
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                (((2 integer)) <- ((copy)) ((0 literal)))
+                { begin
+                  (((3 integer)) <- ((copy)) ((0 literal)))
+                  (((loop)))
+                }))
             '((((1 integer)) <- ((copy)) ((0 literal)))
               (((2 integer)) <- ((copy)) ((0 literal)))
-              { begin
-                (((3 integer)) <- ((copy)) ((0 literal)))
-                (((loop)))
-              }))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((3 integer)) <- ((copy)) ((0 literal)))
-            (((jump)) ((-2 offset)))))
+              (((3 integer)) <- ((copy)) ((0 literal)))
+              (((jump)) ((-2 offset)))))
   (prn "F - 'loop' jumps to start of containing block"))
 ;? (quit)
 
@@ -1592,51 +1592,51 @@
 (reset)
 (new-trace "loop-nested")
 ;? (set dump-trace*)
-(if (~iso (convert-braces
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                (((2 integer)) <- ((copy)) ((0 literal)))
+                { begin
+                  (((3 integer)) <- ((copy)) ((0 literal)))
+                  { begin
+                    (((4 integer)) <- ((copy)) ((0 literal)))
+                  }
+                  (((loop)))
+                }))
             '((((1 integer)) <- ((copy)) ((0 literal)))
               (((2 integer)) <- ((copy)) ((0 literal)))
-              { begin
-                (((3 integer)) <- ((copy)) ((0 literal)))
-                { begin
-                  (((4 integer)) <- ((copy)) ((0 literal)))
-                }
-                (((loop)))
-              }))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((3 integer)) <- ((copy)) ((0 literal)))
-            (((4 integer)) <- ((copy)) ((0 literal)))
-            (((jump)) ((-3 offset)))))
+              (((3 integer)) <- ((copy)) ((0 literal)))
+              (((4 integer)) <- ((copy)) ((0 literal)))
+              (((jump)) ((-3 offset)))))
   (prn "F - 'loop' correctly jumps back past nested braces"))
 
 (reset)
 (new-trace "loop-multiple")
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("-")))
-(if (~iso (convert-braces
-            '((((1 integer)) <- ((copy)) ((0 literal)))
-              { begin
-                (((2 integer)) <- ((copy)) ((0 literal)))
-                (((3 integer)) <- ((copy)) ((0 literal)))
+(when (~iso (convert-braces
+              '((((1 integer)) <- ((copy)) ((0 literal)))
                 { begin
-                  (((loop)) ((2 blocks)))
-                }
-              }))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((3 integer)) <- ((copy)) ((0 literal)))
-            (((jump)) ((-3 offset)))))
+                  (((2 integer)) <- ((copy)) ((0 literal)))
+                  (((3 integer)) <- ((copy)) ((0 literal)))
+                  { begin
+                    (((loop)) ((2 blocks)))
+                  }
+                }))
+            '((((1 integer)) <- ((copy)) ((0 literal)))
+              (((2 integer)) <- ((copy)) ((0 literal)))
+              (((3 integer)) <- ((copy)) ((0 literal)))
+              (((jump)) ((-3 offset)))))
   (prn "F - 'loop' can take an extra arg with number of nested blocks to exit"))
 ;? (quit)
 
 (reset)
 (new-trace "convert-labels")
 (= traces* (queue))
-(if (~iso (convert-labels
+(when (~iso (convert-labels
+              '(loop
+                (((jump)) ((loop offset)))))
             '(loop
-              (((jump)) ((loop offset)))))
-          '(loop
-            (((jump)) ((-2 offset)))))
+              (((jump)) ((-2 offset)))))
   (prn "F - 'convert-labels' rewrites jumps to labels"))
 
 ;; Variables
@@ -1649,143 +1649,143 @@
 (new-trace "convert-names")
 (= traces* (queue))
 ;? (set dump-trace*)
-(if (~iso (convert-names
-            '((((x integer)) <- ((copy)) ((0 literal)))
-              (((y integer)) <- ((copy)) ((0 literal)))
-              (((z integer)) <- ((copy)) ((0 literal)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((3 integer)) <- ((copy)) ((0 literal)))))
+(when (~iso (convert-names
+              '((((x integer)) <- ((copy)) ((0 literal)))
+                (((y integer)) <- ((copy)) ((0 literal)))
+                (((z integer)) <- ((copy)) ((0 literal)))))
+            '((((1 integer)) <- ((copy)) ((0 literal)))
+              (((2 integer)) <- ((copy)) ((0 literal)))
+              (((3 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-names renames symbolic names to integer locations"))
 
 (reset)
 (new-trace "convert-names-compound")
 (= traces* (queue))
-(if (~iso (convert-names
-            ; copying 0 into pair is meaningless; just for testing
-            '((((x integer-boolean-pair)) <- ((copy)) ((0 literal)))
-              (((y integer)) <- ((copy)) ((0 literal)))))
-          '((((1 integer-boolean-pair)) <- ((copy)) ((0 literal)))
-            (((3 integer)) <- ((copy)) ((0 literal)))))
+(when (~iso (convert-names
+              ; copying 0 into pair is meaningless; just for testing
+              '((((x integer-boolean-pair)) <- ((copy)) ((0 literal)))
+                (((y integer)) <- ((copy)) ((0 literal)))))
+            '((((1 integer-boolean-pair)) <- ((copy)) ((0 literal)))
+              (((3 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-names increments integer locations by the size of the type of the previous var"))
 
 (reset)
 (new-trace "convert-names-nil")
 (= traces* (queue))
 ;? (set dump-trace*)
-(if (~iso (convert-names
-            '((((x integer)) <- ((copy)) ((0 literal)))
-              (((y integer)) <- ((copy)) ((0 literal)))
-              ; nil location is meaningless; just for testing
+(when (~iso (convert-names
+              '((((x integer)) <- ((copy)) ((0 literal)))
+                (((y integer)) <- ((copy)) ((0 literal)))
+                ; nil location is meaningless; just for testing
+                (((nil integer)) <- ((copy)) ((0 literal)))))
+            '((((1 integer)) <- ((copy)) ((0 literal)))
+              (((2 integer)) <- ((copy)) ((0 literal)))
               (((nil integer)) <- ((copy)) ((0 literal)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((nil integer)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-names never renames nil"))
 
 (reset)
 (new-trace "convert-names-string")
 ;? (set dump-trace*)
-(if (~iso (convert-names
+(when (~iso (convert-names
+              '((((1 integer-address)) <- ((new)) "foo")))
             '((((1 integer-address)) <- ((new)) "foo")))
-          '((((1 integer-address)) <- ((new)) "foo")))
   (prn "convert-names passes through raw strings (just a convenience arg for 'new')"))
 
 (reset)
 (new-trace "convert-names-raw")
 (= traces* (queue))
-(if (~iso (convert-names
-            '((((x integer)) <- ((copy)) ((0 literal)))
+(when (~iso (convert-names
+              '((((x integer)) <- ((copy)) ((0 literal)))
+                (((y integer) (raw)) <- ((copy)) ((0 literal)))))
+            '((((1 integer)) <- ((copy)) ((0 literal)))
               (((y integer) (raw)) <- ((copy)) ((0 literal)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((y integer) (raw)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-names never renames raw operands"))
 
 (reset)
 (new-trace "convert-names-literal")
 (= traces* (queue))
-(if (~iso (convert-names
-            ; meaningless; just for testing
+(when (~iso (convert-names
+              ; meaningless; just for testing
+              '((((x literal)) <- ((copy)) ((0 literal)))))
             '((((x literal)) <- ((copy)) ((0 literal)))))
-          '((((x literal)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-names never renames literals"))
 
 (reset)
 (new-trace "convert-names-literal-2")
 (= traces* (queue))
-(if (~iso (convert-names
-            '((((x boolean)) <- ((copy)) ((x literal)))))
-          '((((1 boolean)) <- ((copy)) ((x literal)))))
+(when (~iso (convert-names
+              '((((x boolean)) <- ((copy)) ((x literal)))))
+            '((((1 boolean)) <- ((copy)) ((x literal)))))
   (prn "F - convert-names never renames literals, even when the name matches a variable"))
 
 ; kludgy support for 'fork' below
 (reset)
 (new-trace "convert-names-functions")
 (= traces* (queue))
-(if (~iso (convert-names
-            '((((x integer)) <- ((copy)) ((0 literal)))
-              (((y integer)) <- ((copy)) ((0 literal)))
-              ; meaningless; just for testing
+(when (~iso (convert-names
+              '((((x integer)) <- ((copy)) ((0 literal)))
+                (((y integer)) <- ((copy)) ((0 literal)))
+                ; meaningless; just for testing
+                (((z fn)) <- ((copy)) ((0 literal)))))
+            '((((1 integer)) <- ((copy)) ((0 literal)))
+              (((2 integer)) <- ((copy)) ((0 literal)))
               (((z fn)) <- ((copy)) ((0 literal)))))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            (((2 integer)) <- ((copy)) ((0 literal)))
-            (((z fn)) <- ((copy)) ((0 literal)))))
   (prn "F - convert-names never renames fns"))
 
 (reset)
 (new-trace "convert-names-record-fields")
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("cn0")))
-(if (~iso (convert-names
-            '((((x integer)) <- ((get)) ((34 integer-boolean-pair)) ((bool offset)))))
-          '((((1 integer)) <- ((get)) ((34 integer-boolean-pair)) ((1 offset)))))
+(when (~iso (convert-names
+              '((((x integer)) <- ((get)) ((34 integer-boolean-pair)) ((bool offset)))))
+            '((((1 integer)) <- ((get)) ((34 integer-boolean-pair)) ((1 offset)))))
   (prn "F - convert-names replaces record field offsets"))
 
 (reset)
 (new-trace "convert-names-record-fields-ambiguous")
 (= traces* (queue))
-(if (errsafe (convert-names
-               '((((bool boolean)) <- ((copy)) ((t literal)))
-                 (((x integer)) <- ((get)) ((34 integer-boolean-pair)) ((bool offset))))))
+(when (errsafe (convert-names
+                 '((((bool boolean)) <- ((copy)) ((t literal)))
+                   (((x integer)) <- ((get)) ((34 integer-boolean-pair)) ((bool offset))))))
   (prn "F - convert-names doesn't allow offsets and variables with the same name in a function"))
 
 (reset)
 (new-trace "convert-names-record-fields-ambiguous-2")
 (= traces* (queue))
-(if (errsafe (convert-names
-               '((((x integer)) <- ((get)) ((34 integer-boolean-pair)) ((bool offset)))
-                 (((bool boolean)) <- ((copy)) ((t literal))))))
+(when (errsafe (convert-names
+                 '((((x integer)) <- ((get)) ((34 integer-boolean-pair)) ((bool offset)))
+                   (((bool boolean)) <- ((copy)) ((t literal))))))
   (prn "F - convert-names doesn't allow offsets and variables with the same name in a function - 2"))
 
 (reset)
 (new-trace "convert-names-record-fields-indirect")
 (= traces* (queue))
 ;? (= dump-trace* (obj whitelist '("cn0")))
-(if (~iso (convert-names
-            '((((x integer)) <- ((get)) ((34 integer-boolean-pair-address) (deref)) ((bool offset)))))
-          '((((1 integer)) <- ((get)) ((34 integer-boolean-pair-address) (deref)) ((1 offset)))))
+(when (~iso (convert-names
+              '((((x integer)) <- ((get)) ((34 integer-boolean-pair-address) (deref)) ((bool offset)))))
+            '((((1 integer)) <- ((get)) ((34 integer-boolean-pair-address) (deref)) ((1 offset)))))
   (prn "F - convert-names replaces field offsets for record addresses"))
 ;? (quit)
 
 (reset)
 (new-trace "convert-names-record-fields-multiple")
 (= traces* (queue))
-(if (~iso (convert-names
-            '((((2 boolean)) <- ((get)) ((1 integer-boolean-pair)) ((bool offset)))
-              (((3 boolean)) <- ((get)) ((1 integer-boolean-pair)) ((bool offset)))))
-          '((((2 boolean)) <- ((get)) ((1 integer-boolean-pair)) ((1 offset)))
-            (((3 boolean)) <- ((get)) ((1 integer-boolean-pair)) ((1 offset)))))
+(when (~iso (convert-names
+              '((((2 boolean)) <- ((get)) ((1 integer-boolean-pair)) ((bool offset)))
+                (((3 boolean)) <- ((get)) ((1 integer-boolean-pair)) ((bool offset)))))
+            '((((2 boolean)) <- ((get)) ((1 integer-boolean-pair)) ((1 offset)))
+              (((3 boolean)) <- ((get)) ((1 integer-boolean-pair)) ((1 offset)))))
   (prn "F - convert-names replaces field offsets with multiple mentions"))
 ;? (quit)
 
 (reset)
 (new-trace "convert-names-label")
 (= traces* (queue))
-(if (~iso (convert-names
+(when (~iso (convert-names
+              '((((1 integer)) <- ((copy)) ((0 literal)))
+                foo))
             '((((1 integer)) <- ((copy)) ((0 literal)))
               foo))
-          '((((1 integer)) <- ((copy)) ((0 literal)))
-            foo))
   (prn "F - convert-names skips past labels"))
 ;? (quit)
 
@@ -1810,9 +1810,9 @@
 ;?     (set dump-trace*)
     (run)
 ;?     (prn memory*)
-    (if (~iso memory*.1 before)
+    (when (~iso memory*.1 before)
       (prn "F - 'new' returns current high-water mark"))
-    (if (~iso rep.routine!alloc (+ before 1))
+    (when (~iso rep.routine!alloc (+ before 1))
       (prn "F - 'new' on primitive types increments high-water mark by their size"))))
 ;? (quit)
 
@@ -1827,9 +1827,9 @@
   (let before rep.routine!alloc
     (run)
 ;?     (prn memory*)
-    (if (~iso memory*.1 before)
+    (when (~iso memory*.1 before)
       (prn "F - 'new' on array with literal size returns current high-water mark"))
-    (if (~iso rep.routine!alloc (+ before 6))
+    (when (~iso rep.routine!alloc (+ before 6))
       (prn "F - 'new' on primitive arrays increments high-water mark by their size"))))
 
 (reset)
@@ -1844,9 +1844,9 @@
   (let before rep.routine!alloc
     (run)
 ;?     (prn memory*)
-    (if (~iso memory*.2 before)
+    (when (~iso memory*.2 before)
       (prn "F - 'new' on array with variable size returns current high-water mark"))
-    (if (~iso rep.routine!alloc (+ before 6))
+    (when (~iso rep.routine!alloc (+ before 6))
       (prn "F - 'new' on primitive arrays increments high-water mark by their (variable) size"))))
 
 ; Even though our memory locations can now have names, the names are all
@@ -1875,8 +1875,8 @@
 ;?     (set dump-trace*)
     (run)
 ;?     (prn memory*)
-    (if (~and (~is 23 memory*.1)
-              (is 23 (memory* (+ before 2))))
+    (when (~and (~is 23 memory*.1)
+                (is 23 (memory* (+ before 2))))
       (prn "F - default-space implicitly modifies variable locations"))))
 ;? (quit)
 
@@ -1893,8 +1893,8 @@
 ;?     (set dump-trace*)
     (run)
 ;?     (prn memory*)
-    (if (~and (~is 23 memory*.1)
-              (is 23 (memory* (+ before 2))))
+    (when (~and (~is 23 memory*.1)
+                (is 23 (memory* (+ before 2))))
       (prn "F - default-space skips 'offset' types just like literals"))))
 
 (reset)
@@ -1908,7 +1908,7 @@
 (run 'main)
 ;? (prn memory*)
 (let routine (car completed-routines*)
-  (if (no rep.routine!error)
+  (when (no rep.routine!error)
     (prn "F - default-space checks bounds")))
 
 (reset)
@@ -1927,7 +1927,7 @@
 ;? (prn completed-routines*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~is 34 memory*.3)
+(when (~is 34 memory*.3)
   (prn "F - indirect 'get' works in the presence of default-space"))
 ;? (quit)
 
@@ -1947,21 +1947,21 @@
 ;? (prn completed-routines*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~is 34 memory*.3)
+(when (~is 34 memory*.3)
   (prn "F - indirect 'index' works in the presence of default-space"))
 ;? (quit)
 
 (reset)
 (new-trace "convert-names-default-space")
 (= traces* (queue))
-(if (~iso (convert-names
-            '((((x integer)) <- ((copy)) ((4 literal)))
-              (((y integer)) <- ((copy)) ((2 literal)))
-              ; unsafe in general; don't write random values to 'default-space'
-              (((default-space integer)) <- ((add)) ((x integer)) ((y integer)))))
-          '((((1 integer)) <- ((copy)) ((4 literal)))
-            (((2 integer)) <- ((copy)) ((2 literal)))
-            (((default-space integer)) <- ((add)) ((1 integer)) ((2 integer)))))
+(when (~iso (convert-names
+              '((((x integer)) <- ((copy)) ((4 literal)))
+                (((y integer)) <- ((copy)) ((2 literal)))
+                ; unsafe in general; don't write random values to 'default-space'
+                (((default-space integer)) <- ((add)) ((x integer)) ((y integer)))))
+            '((((1 integer)) <- ((copy)) ((4 literal)))
+              (((2 integer)) <- ((copy)) ((2 literal)))
+              (((default-space integer)) <- ((add)) ((1 integer)) ((2 integer)))))
   (prn "F - convert-names never renames default-space"))
 
 (reset)
@@ -1977,8 +1977,8 @@
 ;?     (set dump-trace*)
     (run)
 ;?     (prn memory*)
-    (if (~and (is 23 memory*.1)
-              (~is 23 (memory* (+ before 1))))
+    (when (~and (is 23 memory*.1)
+                (~is 23 (memory* (+ before 1))))
       (prn "F - default-space skipped for locations with metadata 'raw'"))))
 ;? (quit)
 
@@ -2002,7 +2002,7 @@
 ;? (prn memory*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~iso memory*.18 2)  ; variable 7
+(when (~iso memory*.18 2)  ; variable 7
   (prn "F - indirect array copy in the presence of 'default-space'"))
 ;? (quit)
 
@@ -2023,7 +2023,7 @@
 ;? (= dump-trace* (obj whitelist '("run" "addr" "sz" "array-len")))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory*.18 2)
+(when (~iso memory*.18 2)
   (prn "F - 'len' accesses length of array address"))
 ;? (quit)
 
@@ -2049,8 +2049,8 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 ;? (prn memory*)
-(if (or (~is memory*.2 4)
-        (~is memory*.3 5))
+(when (or (~is memory*.2 4)
+          (~is memory*.3 5))
   (prn "F - multiple calls to a function can share locals"))
 ;? (quit)
 
@@ -2079,8 +2079,8 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 ;? (prn memory*)
-(if (or (~is memory*.2 4)
-        (~is memory*.3 5))
+(when (or (~is memory*.2 4)
+          (~is memory*.3 5))
   (prn "F - multiple calls to a function can share locals"))
 ;? (quit)
 
@@ -2110,8 +2110,8 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 ;? (prn memory*)
-(if (or (~is memory*.2 4)
-        (~is memory*.3 5))
+(when (or (~is memory*.2 4)
+          (~is memory*.3 5))
   (prn "F - multiple calls to a function can share locals"))
 ;? (quit)
 
@@ -2152,7 +2152,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~is memory*.3 37)
+(when (~is memory*.3 37)
   (prn "F - an example function that checks that its oarg is an integer"))
 ;? (quit)
 
@@ -2193,7 +2193,7 @@
 (run 'main)
 ;? (wipe dump-trace*)
 ;? (prn memory*)
-(if (~is memory*.3 t)
+(when (~is memory*.3 t)
   (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs"))
 ;? (quit)
 
@@ -2233,7 +2233,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~and (is memory*.3 t) (is memory*.12 37))
+(when (~and (is memory*.3 t) (is memory*.12 37))
   (prn "F - different calls can exercise different clauses of the same function"))
 
 ; We can also dispatch based on the type of the operands or results at the
@@ -2258,7 +2258,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~iso memory*.1 4)
+(when (~iso memory*.1 4)
   (prn "F - an example function that checks that its oarg is an integer"))
 ;? (quit)
 
@@ -2294,7 +2294,7 @@
 (run 'main)
 ;? (wipe dump-trace*)
 ;? (prn memory*)
-(if (~is memory*.1 t)
+(when (~is memory*.1 t)
   (prn "F - an example function that can do different things (dispatch) based on the type of its args or oargs"))
 ;? (quit)
 
@@ -2325,7 +2325,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (~and (is memory*.1 t) (is memory*.2 7))
+(when (~and (is memory*.1 t) (is memory*.2 7))
   (prn "F - different calls can exercise different clauses of the same function"))
 
 )  ; section 100
@@ -2356,7 +2356,7 @@
 (run 'f1 'f2)
 (when (~iso 2 curr-cycle*)
   (prn "F - scheduler didn't run the right number of instructions: " curr-cycle*))
-(if (~iso memory* (obj 1 3  2 4))
+(when (~iso memory* (obj 1 3  2 4))
   (prn "F - scheduler runs multiple functions: " memory*))
 (check-trace-contents "scheduler orders functions correctly"
   '(("schedule" "f1")
@@ -2413,7 +2413,7 @@
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (update-scheduler-state)
-(if (~is 1 len.running-routines*)
+(when (~is 1 len.running-routines*)
   (prn "F - scheduler lets routines sleep"))
 
 (reset)
@@ -2436,7 +2436,7 @@
 ; time for it to wake up
 (= curr-cycle* 24)
 (update-scheduler-state)
-(if (~is 2 len.running-routines*)
+(when (~is 2 len.running-routines*)
   (prn "F - scheduler wakes up sleeping routines at the right time"))
 
 (reset)
@@ -2467,7 +2467,7 @@
 ;? (prn running-routines*)
 ;? (prn sleeping-routines*)
 ; routine remains blocked
-(if (~is 1 len.running-routines*)
+(when (~is 1 len.running-routines*)
   (prn "F - scheduler lets routines block on locations"))
 ;? (quit)
 
@@ -2492,7 +2492,7 @@
 (= memory*.23 1)
 (update-scheduler-state)
 ; routine unblocked
-(if (~is 2 len.running-routines*)
+(when (~is 2 len.running-routines*)
   (prn "F - scheduler unblocks routines blocked on locations"))
 
 (reset)
@@ -2513,7 +2513,7 @@
 (update-scheduler-state)
 ;? (prn curr-cycle*)
 (assert (is curr-cycle* 35))
-(if (~is 1 len.running-routines*)
+(when (~is 1 len.running-routines*)
   (prn "F - scheduler skips ahead to earliest sleeping routines when nothing to run"))
 
 (reset)
@@ -2802,7 +2802,7 @@
 ;? (prn int-canon.memory*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~is memory*.2 4)  ; successor of value
+(when (~is memory*.2 4)  ; successor of value
   (prn "F - sleep can block on a memory location"))
 ;? (quit)
 
@@ -2823,7 +2823,7 @@
      ])))
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
 (run 'f1 'f2)
-(if (~is memory*.13 4)  ; successor of value
+(when (~is memory*.13 4)  ; successor of value
   (prn "F - sleep can block on a scoped memory location"))
 ;? (quit)
 
@@ -2837,7 +2837,7 @@
       (fork f1:fn)
      ])))
 (run 'main)
-(if (~iso memory*.1 4)
+(when (~iso memory*.1 4)
   (prn "F - fork works"))
 
 (reset)
@@ -2851,7 +2851,7 @@
      ])))
 (run 'main)
 ;? (prn memory*)
-(if (no memory*.2)
+(when (no memory*.2)
   (prn "F - fork returns a pid for the new routine"))
 
 (reset)
@@ -2865,9 +2865,9 @@
       (3:integer <- fork f1:fn)
      ])))
 (run 'main)
-(if (or (no memory*.2)
-        (no memory*.3)
-        (is memory*.2 memory*.3))
+(when (or (no memory*.2)
+          (no memory*.3)
+          (is memory*.2 memory*.3))
   (prn "F - fork returns a unique pid everytime"))
 
 (reset)
@@ -2880,7 +2880,7 @@
       (fork f1:fn nil:literal/globals nil:literal/limit 4:literal)
      ])))
 (run 'main)
-(if (~iso memory*.2 4)
+(when (~iso memory*.2 4)
   (prn "F - fork can pass args"))
 
 (reset)
@@ -2896,7 +2896,7 @@
       (x:integer <- copy 0:literal)  ; should be ignored
      ])))
 (run 'main)
-(if (~iso memory*.2 4)
+(when (~iso memory*.2 4)
   (prn "F - fork passes args by value"))
 
 (reset)
@@ -2913,7 +2913,7 @@
 (run 'main)
 (each routine completed-routines*
   (awhen rep.routine!error (prn "error - " it)))
-(if (~iso memory*.1 4)
+(when (~iso memory*.1 4)
   (prn "F - fork can take a space of global variables to access"))
 
 (reset)
@@ -2981,7 +2981,7 @@
 (run 'main)
 ;? (prn memory*)
 (let routine (car completed-routines*)
-  (if (no rep.routine!error)
+  (when (no rep.routine!error)
     (prn "F - 'index' throws an error if out of bounds")))
 
 )  ; section 20
@@ -3014,8 +3014,8 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (or (~is 0 memory*.2)
-        (~is 0 memory*.3))
+(when (or (~is 0 memory*.2)
+          (~is 0 memory*.3))
   (prn "F - 'init-channel' initializes 'first-full and 'first-free to 0"))
 
 (reset)
@@ -3038,8 +3038,8 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 ;? (prn canon.memory*)
-(if (or (~is 0 memory*.5)
-        (~is 1 memory*.6))
+(when (or (~is 0 memory*.5)
+          (~is 1 memory*.6))
   (prn "F - 'write' enqueues item to channel"))
 ;? (quit)
 
@@ -3060,10 +3060,10 @@
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn int-canon.memory*)
-(if (~is memory*.7 34)
+(when (~is memory*.7 34)
   (prn "F - 'read' returns written value"))
-(if (or (~is 1 memory*.8)
-        (~is 1 memory*.9))
+(when (or (~is 1 memory*.8)
+          (~is 1 memory*.9))
   (prn "F - 'read' dequeues item from channel"))
 
 (reset)
@@ -3088,8 +3088,8 @@
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn canon.memory*)
-(if (or (~is 1 memory*.5)
-        (~is 0 memory*.6))
+(when (or (~is 1 memory*.5)
+          (~is 0 memory*.6))
   (prn "F - 'write' can wrap pointer back to start"))
 
 (reset)
@@ -3116,8 +3116,8 @@
 ;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn canon.memory*)
-(if (or (~is 1 memory*.5)
-        (~is 0 memory*.6))
+(when (or (~is 1 memory*.5)
+          (~is 0 memory*.6))
   (prn "F - 'read' can wrap pointer back to start"))
 
 (reset)
@@ -3131,8 +3131,8 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (or (~is t memory*.2)
-        (~is nil memory*.3))
+(when (or (~is t memory*.2)
+          (~is nil memory*.3))
   (prn "F - a new channel is always empty, never full"))
 
 (reset)
@@ -3149,8 +3149,8 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (or (~is nil memory*.5)
-        (~is nil memory*.6))
+(when (or (~is nil memory*.5)
+          (~is nil memory*.6))
   (prn "F - a channel after writing is never empty"))
 
 (reset)
@@ -3167,8 +3167,8 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (or (~is nil memory*.5)
-        (~is t memory*.6))
+(when (or (~is nil memory*.5)
+          (~is t memory*.6))
   (prn "F - a channel after writing may be full"))
 
 (reset)
@@ -3187,8 +3187,8 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (or (~is nil memory*.5)
-        (~is nil memory*.6))
+(when (or (~is nil memory*.5)
+          (~is nil memory*.6))
   (prn "F - a channel after reading is never full"))
 
 (reset)
@@ -3206,8 +3206,8 @@
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
-(if (or (~is t memory*.5)
-        (~is nil memory*.6))
+(when (or (~is t memory*.5)
+          (~is nil memory*.6))
   (prn "F - a channel after reading may be empty"))
 
 ; The key property of channels; writing to a full channel blocks the current
@@ -3286,7 +3286,7 @@
 ;? (prn memory*)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~is 24 memory*.2)  ; location 1 contains tagged-value x above
+(when (~is 24 memory*.2)  ; location 1 contains tagged-value x above
   (prn "F - channels are meant to be shared between routines"))
 ;? (quit)
 
@@ -3308,7 +3308,7 @@
 (run 'consumer)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~is 24 memory*.2)  ; location 1 contains tagged-value x above
+(when (~is 24 memory*.2)  ; location 1 contains tagged-value x above
   (prn "F - channels are meant to be shared between routines"))
 
 )  ; section 100
@@ -3332,70 +3332,70 @@
 (reset)
 (new-trace "convert-quotes-defer")
 (= traces* (queue))
-(if (~iso (convert-quotes
+(when (~iso (convert-quotes
+              '((1:integer <- copy 4:literal)
+                (defer [
+                         (3:integer <- copy 6:literal)
+                       ])
+                (2:integer <- copy 5:literal)))
             '((1:integer <- copy 4:literal)
-              (defer [
-                       (3:integer <- copy 6:literal)
-                     ])
-              (2:integer <- copy 5:literal)))
-          '((1:integer <- copy 4:literal)
-            (2:integer <- copy 5:literal)
-            (3:integer <- copy 6:literal)))
+              (2:integer <- copy 5:literal)
+              (3:integer <- copy 6:literal)))
   (prn "F - convert-quotes can handle 'defer'"))
 
 (reset)
 (new-trace "convert-quotes-defer-reply")
 (= traces* (queue))
-(if (~iso (convert-quotes
+(when (~iso (convert-quotes
+              '((1:integer <- copy 0:literal)
+                (defer [
+                         (5:integer <- copy 0:literal)
+                       ])
+                (2:integer <- copy 0:literal)
+                (reply)
+                (3:integer <- copy 0:literal)
+                (4:integer <- copy 0:literal)))
             '((1:integer <- copy 0:literal)
-              (defer [
-                       (5:integer <- copy 0:literal)
-                     ])
               (2:integer <- copy 0:literal)
+              (5:integer <- copy 0:literal)
               (reply)
               (3:integer <- copy 0:literal)
-              (4:integer <- copy 0:literal)))
-          '((1:integer <- copy 0:literal)
-            (2:integer <- copy 0:literal)
-            (5:integer <- copy 0:literal)
-            (reply)
-            (3:integer <- copy 0:literal)
-            (4:integer <- copy 0:literal)
-            (5:integer <- copy 0:literal)))
+              (4:integer <- copy 0:literal)
+              (5:integer <- copy 0:literal)))
   (prn "F - convert-quotes inserts code at early exits"))
 
 (reset)
 (new-trace "convert-quotes-defer-reply-arg")
 (= traces* (queue))
-(if (~iso (convert-quotes
+(when (~iso (convert-quotes
+              '((1:integer <- copy 0:literal)
+                (defer [
+                         (5:integer <- copy 0:literal)
+                       ])
+                (2:integer <- copy 0:literal)
+                (reply 2:literal)
+                (3:integer <- copy 0:literal)
+                (4:integer <- copy 0:literal)))
             '((1:integer <- copy 0:literal)
-              (defer [
-                       (5:integer <- copy 0:literal)
-                     ])
               (2:integer <- copy 0:literal)
-              (reply 2:literal)
+              (prepare-reply 2:literal)
+              (5:integer <- copy 0:literal)
+              (reply)
               (3:integer <- copy 0:literal)
-              (4:integer <- copy 0:literal)))
-          '((1:integer <- copy 0:literal)
-            (2:integer <- copy 0:literal)
-            (prepare-reply 2:literal)
-            (5:integer <- copy 0:literal)
-            (reply)
-            (3:integer <- copy 0:literal)
-            (4:integer <- copy 0:literal)
-            (5:integer <- copy 0:literal)))
+              (4:integer <- copy 0:literal)
+              (5:integer <- copy 0:literal)))
   (prn "F - convert-quotes inserts code at early exits"))
 
 (reset)
 (new-trace "convert-quotes-label")
 (= traces* (queue))
-(if (~iso (convert-quotes
+(when (~iso (convert-quotes
+              '((1:integer <- copy 4:literal)
+                foo
+                (2:integer <- copy 5:literal)))
             '((1:integer <- copy 4:literal)
               foo
               (2:integer <- copy 5:literal)))
-          '((1:integer <- copy 4:literal)
-            foo
-            (2:integer <- copy 5:literal)))
   (prn "F - convert-quotes can handle labels"))
 
 (reset)
@@ -3405,20 +3405,20 @@
   '((before label1 [
      (2:integer <- copy 0:literal)
     ])))
-(if (~iso (as cons before*!label1)
-          '(; fragment
-            (
-              (2:integer <- copy 0:literal))))
+(when (~iso (as cons before*!label1)
+            '(; fragment
+              (
+                (2:integer <- copy 0:literal))))
   (prn "F - 'before' records fragments of code to insert before labels"))
 
-(if (~iso (insert-code
+(when (~iso (insert-code
+              '((1:integer <- copy 0:literal)
+                label1
+                (3:integer <- copy 0:literal)))
             '((1:integer <- copy 0:literal)
+              (2:integer <- copy 0:literal)
               label1
               (3:integer <- copy 0:literal)))
-          '((1:integer <- copy 0:literal)
-            (2:integer <- copy 0:literal)
-            label1
-            (3:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert fragments before labels"))
 
 (reset)
@@ -3431,23 +3431,23 @@
     (before label1 [
       (3:integer <- copy 0:literal)
      ])))
-(if (~iso (as cons before*!label1)
-          '(; fragment
-            (
-              (2:integer <- copy 0:literal))
-            (
-              (3:integer <- copy 0:literal))))
+(when (~iso (as cons before*!label1)
+            '(; fragment
+              (
+                (2:integer <- copy 0:literal))
+              (
+                (3:integer <- copy 0:literal))))
   (prn "F - 'before' records fragments in order"))
 
-(if (~iso (insert-code
+(when (~iso (insert-code
+              '((1:integer <- copy 0:literal)
+                label1
+                (4:integer <- copy 0:literal)))
             '((1:integer <- copy 0:literal)
+              (2:integer <- copy 0:literal)
+              (3:integer <- copy 0:literal)
               label1
               (4:integer <- copy 0:literal)))
-          '((1:integer <- copy 0:literal)
-            (2:integer <- copy 0:literal)
-            (3:integer <- copy 0:literal)
-            label1
-            (4:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert multiple fragments in order before label"))
 
 (reset)
@@ -3457,15 +3457,15 @@
   '((before f/label1 [  ; label1 only inside function f
      (2:integer <- copy 0:literal)
     ])))
-(if (~iso (insert-code
+(when (~iso (insert-code
+              '((1:integer <- copy 0:literal)
+                label1
+                (3:integer <- copy 0:literal))
+              'f)
             '((1:integer <- copy 0:literal)
+              (2:integer <- copy 0:literal)
               label1
-              (3:integer <- copy 0:literal))
-            'f)
-          '((1:integer <- copy 0:literal)
-            (2:integer <- copy 0:literal)
-            label1
-            (3:integer <- copy 0:literal)))
+              (3:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert fragments before labels just in specified functions"))
 
 (reset)
@@ -3475,13 +3475,13 @@
   '((before f/label1 [  ; label1 only inside function f
       (2:integer <- copy 0:literal)
      ])))
-(if (~iso (insert-code
+(when (~iso (insert-code
+              '((1:integer <- copy 0:literal)
+                label1
+                (3:integer <- copy 0:literal)))
             '((1:integer <- copy 0:literal)
               label1
               (3:integer <- copy 0:literal)))
-          '((1:integer <- copy 0:literal)
-            label1
-            (3:integer <- copy 0:literal)))
   (prn "F - 'insert-code' ignores labels not in specified functions"))
 
 (reset)
@@ -3491,20 +3491,20 @@
   '((after label1 [
       (2:integer <- copy 0:literal)
      ])))
-(if (~iso (as cons after*!label1)
-          '(; fragment
-            (
-              (2:integer <- copy 0:literal))))
+(when (~iso (as cons after*!label1)
+            '(; fragment
+              (
+                (2:integer <- copy 0:literal))))
   (prn "F - 'after' records fragments of code to insert after labels"))
 
-(if (~iso (insert-code
+(when (~iso (insert-code
+              '((1:integer <- copy 0:literal)
+                label1
+                (3:integer <- copy 0:literal)))
             '((1:integer <- copy 0:literal)
               label1
+              (2:integer <- copy 0:literal)
               (3:integer <- copy 0:literal)))
-          '((1:integer <- copy 0:literal)
-            label1
-            (2:integer <- copy 0:literal)
-            (3:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert fragments after labels"))
 
 (reset)
@@ -3517,23 +3517,23 @@
     (after label1 [
       (3:integer <- copy 0:literal)
      ])))
-(if (~iso (as cons after*!label1)
-          '(; fragment
-            (
-              (3:integer <- copy 0:literal))
-            (
-              (2:integer <- copy 0:literal))))
+(when (~iso (as cons after*!label1)
+            '(; fragment
+              (
+                (3:integer <- copy 0:literal))
+              (
+                (2:integer <- copy 0:literal))))
   (prn "F - 'after' records fragments in *reverse* order"))
 
-(if (~iso (insert-code
+(when (~iso (insert-code
+              '((1:integer <- copy 0:literal)
+                label1
+                (4:integer <- copy 0:literal)))
             '((1:integer <- copy 0:literal)
               label1
+              (3:integer <- copy 0:literal)
+              (2:integer <- copy 0:literal)
               (4:integer <- copy 0:literal)))
-          '((1:integer <- copy 0:literal)
-            label1
-            (3:integer <- copy 0:literal)
-            (2:integer <- copy 0:literal)
-            (4:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert multiple fragments in order after label"))
 
 (reset)
@@ -3546,25 +3546,25 @@
     (after label1 [
       (3:integer <- copy 0:literal)
      ])))
-(if (and (~iso (as cons before*!label1)
-               '(; fragment
-                 (
-                   (2:integer <- copy 0:literal))))
-         (~iso (as cons after*!label1)
-               '(; fragment
-                 (
-                   (3:integer <- copy 0:literal)))))
+(when (and (~iso (as cons before*!label1)
+                 '(; fragment
+                   (
+                     (2:integer <- copy 0:literal))))
+           (~iso (as cons after*!label1)
+                 '(; fragment
+                   (
+                     (3:integer <- copy 0:literal)))))
   (prn "F - 'before' and 'after' fragments work together"))
 
-(if (~iso (insert-code
+(when (~iso (insert-code
+              '((1:integer <- copy 0:literal)
+                label1
+                (4:integer <- copy 0:literal)))
             '((1:integer <- copy 0:literal)
+              (2:integer <- copy 0:literal)
               label1
+              (3:integer <- copy 0:literal)
               (4:integer <- copy 0:literal)))
-          '((1:integer <- copy 0:literal)
-            (2:integer <- copy 0:literal)
-            label1
-            (3:integer <- copy 0:literal)
-            (4:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert multiple fragments around label"))
 
 (reset)
@@ -3585,72 +3585,72 @@
       (6:integer <- copy 0:literal)
       (7:integer <- copy 0:literal)
      ])))
-(if (or (~iso (as cons before*!label1)
-              '(; fragment
-                (
-                  (2:integer <- copy 0:literal)
-                  (3:integer <- copy 0:literal))
-                (
-                  (5:integer <- copy 0:literal))))
-        (~iso (as cons after*!label1)
-              '(; fragment
-                (
-                  (6:integer <- copy 0:literal)
-                  (7:integer <- copy 0:literal))
-                (
-                  (4:integer <- copy 0:literal)))))
+(when (or (~iso (as cons before*!label1)
+                '(; fragment
+                  (
+                    (2:integer <- copy 0:literal)
+                    (3:integer <- copy 0:literal))
+                  (
+                    (5:integer <- copy 0:literal))))
+          (~iso (as cons after*!label1)
+                '(; fragment
+                  (
+                    (6:integer <- copy 0:literal)
+                    (7:integer <- copy 0:literal))
+                  (
+                    (4:integer <- copy 0:literal)))))
   (prn "F - multiple 'before' and 'after' fragments at once"))
 
-(if (~iso (insert-code
+(when (~iso (insert-code
+              '((1:integer <- copy 0:literal)
+                label1
+                (8:integer <- copy 0:literal)))
             '((1:integer <- copy 0:literal)
+              (2:integer <- copy 0:literal)
+              (3:integer <- copy 0:literal)
+              (5:integer <- copy 0:literal)
               label1
+              (6:integer <- copy 0:literal)
+              (7:integer <- copy 0:literal)
+              (4:integer <- copy 0:literal)
               (8:integer <- copy 0:literal)))
-          '((1:integer <- copy 0:literal)
-            (2:integer <- copy 0:literal)
-            (3:integer <- copy 0:literal)
-            (5:integer <- copy 0:literal)
-            label1
-            (6:integer <- copy 0:literal)
-            (7:integer <- copy 0:literal)
-            (4:integer <- copy 0:literal)
-            (8:integer <- copy 0:literal)))
   (prn "F - 'insert-code' can insert multiple fragments around label - 2"))
 
 (reset)
 (new-trace "before-after-independent")
 (= traces* (queue))
-(if (~iso (do
-            (reset)
-            (add-code
-              '((before label1 [
-                  (2:integer <- copy 0:literal)
-                 ])
-                (after label1 [
-                  (3:integer <- copy 0:literal)
-                 ])
-                (before label1 [
-                  (4:integer <- copy 0:literal)
-                 ])
-                (after label1 [
-                  (5:integer <- copy 0:literal)
-                 ])))
-            (list before*!label1 after*!label1))
-          (do
-            (reset)
-            (add-code
-              '((before label1 [
-                  (2:integer <- copy 0:literal)
-                 ])
-                (before label1 [
-                  (4:integer <- copy 0:literal)
-                 ])
-                (after label1 [
-                  (3:integer <- copy 0:literal)
-                 ])
-                (after label1 [
-                  (5:integer <- copy 0:literal)
-                 ])))
-            (list before*!label1 after*!label1)))
+(when (~iso (do
+              (reset)
+              (add-code
+                '((before label1 [
+                    (2:integer <- copy 0:literal)
+                   ])
+                  (after label1 [
+                    (3:integer <- copy 0:literal)
+                   ])
+                  (before label1 [
+                    (4:integer <- copy 0:literal)
+                   ])
+                  (after label1 [
+                    (5:integer <- copy 0:literal)
+                   ])))
+              (list before*!label1 after*!label1))
+            (do
+              (reset)
+              (add-code
+                '((before label1 [
+                    (2:integer <- copy 0:literal)
+                   ])
+                  (before label1 [
+                    (4:integer <- copy 0:literal)
+                   ])
+                  (after label1 [
+                    (3:integer <- copy 0:literal)
+                   ])
+                  (after label1 [
+                    (5:integer <- copy 0:literal)
+                   ])))
+              (list before*!label1 after*!label1)))
   (prn "F - order matters between 'before' and between 'after' fragments, but not *across* 'before' and 'after' fragments"))
 
 (reset)
@@ -3668,9 +3668,9 @@
      ])))
 ;? (= dump-trace* (obj whitelist '("cn0")))
 (freeze function*)
-(if (~iso function*!f1
-          '(label1
-            (((1 integer)) <- ((copy)) ((0 literal)))))
+(when (~iso function*!f1
+            '(label1
+              (((1 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - before/after works inside blocks"))
 
 (reset)
@@ -3687,9 +3687,9 @@
        (1:integer <- copy 0:literal)
      ])))
 (freeze function*)
-(if (~iso function*!f1
-          '(label1
-            (((1 integer)) <- ((copy)) ((0 literal)))))
+(when (~iso function*!f1
+            '(label1
+              (((1 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - before/after can come after the function they need to modify"))
 ;? (quit)
 
@@ -3705,9 +3705,9 @@
       (2:integer <- copy 0:literal)
      ])))
 (freeze function*)
-(if (~iso function*!f1
-          '((((2 integer)) <- ((copy)) ((0 literal)))
-            (((1 integer)) <- ((copy)) ((0 literal)))))
+(when (~iso function*!f1
+            '((((2 integer)) <- ((copy)) ((0 literal)))
+              (((1 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - multiple 'def' of the same function add clauses"))
 
 (reset)
@@ -3722,8 +3722,8 @@
       (2:integer <- copy 0:literal)
      ])))
 (freeze function*)
-(if (~iso function*!f1
-          '((((2 integer)) <- ((copy)) ((0 literal)))))
+(when (~iso function*!f1
+            '((((2 integer)) <- ((copy)) ((0 literal)))))
   (prn "F - 'def!' clears all previous clauses"))
 
 )  ; section 10
@@ -3742,7 +3742,7 @@
   (enq routine running-routines*)
   (let before rep.routine!alloc
     (run)
-    (if (~iso rep.routine!alloc (+ before 5 1))
+    (when (~iso rep.routine!alloc (+ before 5 1))
       (prn "F - 'new' allocates arrays of bytes for strings"))))
 
 ; Convenience: initialize strings using string literals
@@ -3758,9 +3758,9 @@
 ;?     (set dump-trace*)
 ;?     (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
     (run)
-    (if (~iso rep.routine!alloc (+ before 5 1))
+    (when (~iso rep.routine!alloc (+ before 5 1))
       (prn "F - 'new' allocates arrays of bytes for string literals"))
-    (if (~memory-contains-array before "hello")
+    (when (~memory-contains-array before "hello")
       (prn "F - 'new' initializes allocated memory to string literal"))))
 
 (reset)
@@ -3772,7 +3772,7 @@
       (3:string-address <- strcat 1:string-address 2:string-address)
      ])))
 (run 'main)
-(if (~memory-contains-array memory*.3 "hello, world!")
+(when (~memory-contains-array memory*.3 "hello, world!")
   (prn "F - 'strcat' concatenates strings"))
 
 (reset)
@@ -3785,7 +3785,7 @@
      ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
-(if (~memory-contains-array memory*.3 "hello, abc!")
+(when (~memory-contains-array memory*.3 "hello, abc!")
   (prn "F - 'interpolate' splices strings"))
 
 (reset)
@@ -3798,7 +3798,7 @@
      ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
-(if (~memory-contains-array memory*.3 "hello!")
+(when (~memory-contains-array memory*.3 "hello!")
   (prn "F - 'interpolate' without underscore returns template"))
 
 (reset)
@@ -3811,7 +3811,7 @@
      ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
-(if (~memory-contains-array memory*.3 "abc, hello")
+(when (~memory-contains-array memory*.3 "abc, hello")
   (prn "F - 'interpolate' splices strings at start"))
 
 (reset)
@@ -3824,7 +3824,7 @@
      ])))
 ;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
-(if (~memory-contains-array memory*.3 "hello, abc")
+(when (~memory-contains-array memory*.3 "hello, abc")
   (prn "F - 'interpolate' splices strings at start"))
 
 (reset)
@@ -3844,7 +3844,7 @@
 ;? (quit)
 ;? (up i 1 (+ 1 (memory* memory*.5))
 ;?   (prn (memory* (+ memory*.5 i))))
-(if (~memory-contains-array memory*.5 "hello, abc, def, and ghi!")
+(when (~memory-contains-array memory*.5 "hello, abc, def, and ghi!")
   (prn "F - 'interpolate' splices in any number of strings"))
 
 (reset)
@@ -3855,7 +3855,7 @@
       (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
      ])))
 (run 'main)
-(if (~is memory*.2 1)
+(when (~is memory*.2 1)
   (prn "F - 'find-next' finds first location of a character"))
 
 (reset)
@@ -3868,7 +3868,7 @@
 (run 'main)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
-(if (~is memory*.2 0)
+(when (~is memory*.2 0)
   (prn "F - 'find-next' finds first location of a character"))
 
 (reset)
@@ -3879,7 +3879,7 @@
       (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
      ])))
 (run 'main)
-(if (~is memory*.2 0)
+(when (~is memory*.2 0)
   (prn "F - 'find-next' handles prefix match"))
 
 (reset)
@@ -3891,7 +3891,7 @@
      ])))
 (run 'main)
 ;? (prn memory*.2)
-(if (~is memory*.2 3)
+(when (~is memory*.2 3)
   (prn "F - 'find-next' handles suffix match"))
 
 (reset)
@@ -3903,7 +3903,7 @@
      ])))
 (run 'main)
 ;? (prn memory*.2)
-(if (~is memory*.2 3)
+(when (~is memory*.2 3)
   (prn "F - 'find-next' handles no match"))
 
 (reset)
@@ -3918,7 +3918,7 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 ;? (prn memory*.2)
-(if (~is memory*.2 4)
+(when (~is memory*.2 4)
   (prn "F - 'find-next' skips invalid index (past end of string)"))
 
 (reset)
@@ -3929,7 +3929,7 @@
       (2:integer <- find-next 1:string-address ((#\/ literal)) 0:literal)
      ])))
 (run 'main)
-(if (~is memory*.2 2)
+(when (~is memory*.2 2)
   (prn "F - 'find-next' finds first of multiple options"))
 
 (reset)
@@ -3940,7 +3940,7 @@
       (2:integer <- find-next 1:string-address ((#\/ literal)) 3:literal)
      ])))
 (run 'main)
-(if (~is memory*.2 4)
+(when (~is memory*.2 4)
   (prn "F - 'find-next' finds second of multiple options"))
 
 (reset)
@@ -3956,11 +3956,11 @@
   (aif rep.routine!error (prn "error - " it)))
 (let base memory*.2
 ;?   (prn base " " memory*.base)
-  (if (or (~is memory*.base 2)
-;?           (do1 nil prn.111)
-          (~memory-contains-array (memory* (+ base 1)) "a")
-;?           (do1 nil prn.111)
-          (~memory-contains-array (memory* (+ base 2)) "b"))
+  (when (or (~is memory*.base 2)
+;?             (do1 nil prn.111)
+            (~memory-contains-array (memory* (+ base 1)) "a")
+;?             (do1 nil prn.111)
+            (~memory-contains-array (memory* (+ base 2)) "b"))
     (prn "F - 'split' cuts string at delimiter")))
 
 (reset)
@@ -3976,13 +3976,13 @@
   (aif rep.routine!error (prn "error - " it)))
 (let base memory*.2
 ;?   (prn base " " memory*.base)
-  (if (or (~is memory*.base 3)
-;?           (do1 nil prn.111)
-          (~memory-contains-array (memory* (+ base 1)) "a")
-;?           (do1 nil prn.111)
-          (~memory-contains-array (memory* (+ base 2)) "b")
-;?           (do1 nil prn.111)
-          (~memory-contains-array (memory* (+ base 3)) "c"))
+  (when (or (~is memory*.base 3)
+;?             (do1 nil prn.111)
+            (~memory-contains-array (memory* (+ base 1)) "a")
+;?             (do1 nil prn.111)
+            (~memory-contains-array (memory* (+ base 2)) "b")
+;?             (do1 nil prn.111)
+            (~memory-contains-array (memory* (+ base 3)) "c"))
     (prn "F - 'split' cuts string at two delimiters")))
 
 (reset)
@@ -3996,8 +3996,8 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 (let base memory*.2
-  (if (or (~is memory*.base 1)
-          (~memory-contains-array (memory* (+ base 1)) "abc"))
+  (when (or (~is memory*.base 1)
+            (~memory-contains-array (memory* (+ base 1)) "abc"))
     (prn "F - 'split' handles missing delimiter")))
 
 (reset)
@@ -4013,7 +4013,7 @@
   (aif rep.routine!error (prn "error - " it)))
 (let base memory*.2
 ;?   (prn base " " memory*.base)
-  (if (~is memory*.base 0)
+  (when (~is memory*.base 0)
     (prn "F - 'split' handles empty string")))
 
 (reset)
@@ -4027,11 +4027,11 @@
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 (let base memory*.2
-  (if (or (~is memory*.base 4)
-          (~memory-contains-array (memory* (+ base 1)) "a")
-          (~memory-contains-array (memory* (+ base 2)) "b")
-          (~memory-contains-array (memory* (+ base 3)) "")
-          (~memory-contains-array (memory* (+ base 4)) "c"))
+  (when (or (~is memory*.base 4)
+            (~memory-contains-array (memory* (+ base 1)) "a")
+            (~memory-contains-array (memory* (+ base 2)) "b")
+            (~memory-contains-array (memory* (+ base 3)) "")
+            (~memory-contains-array (memory* (+ base 4)) "c"))
     (prn "F - 'split' cuts string at two delimiters")))
 
 )  ; section 100 for string utilities
@@ -4044,7 +4044,7 @@
       y:integer
       z:boolean
      ])))
-(if (~iso type*!foo (obj size 3  and-record t  elems '((string) (integer) (boolean))  fields '(x y z)))
+(when (~iso type*!foo (obj size 3  and-record t  elems '((string) (integer) (boolean))  fields '(x y z)))
   (prn "F - 'add-code' can add new and-records"))
 
 ;; unit tests for various helpers
@@ -4091,62 +4091,62 @@
 ; space
 (prn "== space")
 (reset)
-(if (~iso 0 (space '((4 integer))))
+(when (~iso 0 (space '((4 integer))))
   (prn "F - 'space' is 0 by default"))
-(if (~iso 1 (space '((4 integer) (space 1))))
+(when (~iso 1 (space '((4 integer) (space 1))))
   (prn "F - 'space' picks up space when available"))
-(if (~iso 'global (space '((4 integer) (space global))))
+(when (~iso 'global (space '((4 integer) (space global))))
   (prn "F - 'space' understands routine-global space"))
 
 ; absolutize
 (prn "== absolutize")
 (reset)
-(if (~iso '((4 integer)) (absolutize '((4 integer))))
+(when (~iso '((4 integer)) (absolutize '((4 integer))))
   (prn "F - 'absolutize' works without routine"))
 (= routine* make-routine!foo)
-(if (~iso '((4 integer)) (absolutize '((4 integer))))
+(when (~iso '((4 integer)) (absolutize '((4 integer))))
   (prn "F - 'absolutize' works without default-space"))
 (= rep.routine*!call-stack.0!default-space 10)
 (= memory*.10 5)  ; bounds check for default-space
-(if (~iso '((15 integer) (raw))
-          (absolutize '((4 integer))))
+(when (~iso '((15 integer) (raw))
+            (absolutize '((4 integer))))
   (prn "F - 'absolutize' works with default-space"))
 (absolutize '((5 integer)))
-(if (~posmatch "no room" rep.routine*!error)
+(when (~posmatch "no room" rep.routine*!error)
   (prn "F - 'absolutize' checks against default-space bounds"))
-(if (~iso '((_ integer)) (absolutize '((_ integer))))
+(when (~iso '((_ integer)) (absolutize '((_ integer))))
   (prn "F - 'absolutize' passes dummy args right through"))
 
 (= memory*.20 5)  ; pretend array
 (= rep.routine*!globals 20)  ; provide it to routine global
-(if (~iso '((22 integer) (raw))
-          (absolutize '((1 integer) (space global))))
+(when (~iso '((22 integer) (raw))
+            (absolutize '((1 integer) (space global))))
   (prn "F - 'absolutize' handles variables in the global space"))
 
 ; deref
 (prn "== deref")
 (reset)
 (= memory*.3 4)
-(if (~iso '((4 integer))
-          (deref '((3 integer-address)
-                   (deref))))
+(when (~iso '((4 integer))
+            (deref '((3 integer-address)
+                     (deref))))
   (prn "F - 'deref' handles simple addresses"))
-(if (~iso '((4 integer) (deref))
-          (deref '((3 integer-address)
-                   (deref)
-                   (deref))))
+(when (~iso '((4 integer) (deref))
+            (deref '((3 integer-address)
+                     (deref)
+                     (deref))))
   (prn "F - 'deref' deletes just one deref"))
 (= memory*.4 5)
-(if (~iso '((5 integer))
-          (deref:deref '((3 integer-address-address)
-                         (deref)
-                         (deref))))
+(when (~iso '((5 integer))
+            (deref:deref '((3 integer-address-address)
+                           (deref)
+                           (deref))))
   (prn "F - 'deref' can be chained"))
-(if (~iso '((5 integer) (foo))
-          (deref:deref '((3 integer-address-address)
-                         (deref)
-                         (foo)
-                         (deref))))
+(when (~iso '((5 integer) (foo))
+            (deref:deref '((3 integer-address-address)
+                           (deref)
+                           (foo)
+                           (deref))))
   (prn "F - 'deref' skips junk"))
 
 ; addr
@@ -4154,32 +4154,32 @@
 (reset)
 (= routine* nil)
 ;? (prn 111)
-(if (~is 4 (addr '((4 integer))))
+(when (~is 4 (addr '((4 integer))))
   (prn "F - directly addressed operands are their own address"))
 ;? (quit)
-(if (~is 4 (addr '((4 integer-address))))
+(when (~is 4 (addr '((4 integer-address))))
   (prn "F - directly addressed operands are their own address - 2"))
-(if (~is 4 (addr '((4 literal))))
+(when (~is 4 (addr '((4 literal))))
   (prn "F - 'addr' doesn't understand literals"))
 ;? (prn 201)
 (= memory*.4 23)
 ;? (prn 202)
-(if (~is 23 (addr '((4 integer-address) (deref))))
+(when (~is 23 (addr '((4 integer-address) (deref))))
   (prn "F - 'addr' works with indirectly-addressed 'deref'"))
 ;? (quit)
 (= memory*.3 4)
-(if (~is 23 (addr '((3 integer-address-address) (deref) (deref))))
+(when (~is 23 (addr '((3 integer-address-address) (deref) (deref))))
   (prn "F - 'addr' works with multiple 'deref'"))
 
 (= routine* make-routine!foo)
-(if (~is 4 (addr '((4 integer))))
+(when (~is 4 (addr '((4 integer))))
   (prn "F - directly addressed operands are their own address inside routines"))
-(if (~is 4 (addr '((4 integer-address))))
+(when (~is 4 (addr '((4 integer-address))))
   (prn "F - directly addressed operands are their own address inside routines - 2"))
-(if (~is 4 (addr '((4 literal))))
+(when (~is 4 (addr '((4 literal))))
   (prn "F - 'addr' doesn't understand literals inside routines"))
 (= memory*.4 23)
-(if (~is 23 (addr '((4 integer-address) (deref))))
+(when (~is 23 (addr '((4 integer-address) (deref))))
   (prn "F - 'addr' works with indirectly-addressed 'deref' inside routines"))
 
 ;? (prn 301)
@@ -4187,15 +4187,15 @@
 ;? (prn 302)
 (= memory*.10 5)  ; bounds check for default-space
 ;? (prn 303)
-(if (~is 15 (addr '((4 integer))))
+(when (~is 15 (addr '((4 integer))))
   (prn "F - directly addressed operands in routines add default-space"))
 ;? (quit)
-(if (~is 15 (addr '((4 integer-address))))
+(when (~is 15 (addr '((4 integer-address))))
   (prn "F - directly addressed operands in routines add default-space - 2"))
-(if (~is 15 (addr '((4 literal))))
+(when (~is 15 (addr '((4 literal))))
   (prn "F - 'addr' doesn't understand literals"))
 (= memory*.15 23)
-(if (~is 23 (addr '((4 integer-address) (deref))))
+(when (~is 23 (addr '((4 integer-address) (deref))))
   (prn "F - 'addr' adds default-space before 'deref', not after"))
 ;? (quit)
 
@@ -4203,10 +4203,10 @@
 (prn "== array-len")
 (reset)
 (= memory*.35 4)
-(if (~is 4 (array-len '((35 integer-boolean-pair-array))))
+(when (~is 4 (array-len '((35 integer-boolean-pair-array))))
   (prn "F - 'array-len'"))
 (= memory*.34 35)
-(if (~is 4 (array-len '((34 integer-boolean-pair-array-address) (deref))))
+(when (~is 4 (array-len '((34 integer-boolean-pair-array-address) (deref))))
   (prn "F - 'array-len'"))
 ;? (quit)
 
@@ -4215,149 +4215,149 @@
 (reset)
 ;? (set dump-trace*)
 ;? (prn 401)
-(if (~is 1 (sizeof '((_ integer))))
+(when (~is 1 (sizeof '((_ integer))))
   (prn "F - 'sizeof' works on primitives"))
-(if (~is 1 (sizeof '((_ integer-address))))
+(when (~is 1 (sizeof '((_ integer-address))))
   (prn "F - 'sizeof' works on addresses"))
-(if (~is 2 (sizeof '((_ integer-boolean-pair))))
+(when (~is 2 (sizeof '((_ integer-boolean-pair))))
   (prn "F - 'sizeof' works on and-records"))
-(if (~is 3 (sizeof '((_ integer-point-pair))))
+(when (~is 3 (sizeof '((_ integer-point-pair))))
   (prn "F - 'sizeof' works on and-records with and-record fields"))
 
 ;? (prn 410)
-(if (~is 1 (sizeof '((34 integer))))
+(when (~is 1 (sizeof '((34 integer))))
   (prn "F - 'sizeof' works on primitive operands"))
-(if (~is 1 (sizeof '((34 integer-address))))
+(when (~is 1 (sizeof '((34 integer-address))))
   (prn "F - 'sizeof' works on address operands"))
-(if (~is 2 (sizeof '((34 integer-boolean-pair))))
+(when (~is 2 (sizeof '((34 integer-boolean-pair))))
   (prn "F - 'sizeof' works on and-record operands"))
-(if (~is 3 (sizeof '((34 integer-point-pair))))
+(when (~is 3 (sizeof '((34 integer-point-pair))))
   (prn "F - 'sizeof' works on and-record operands with and-record fields"))
-(if (~is 2 (sizeof '((34 integer-boolean-pair-address) (deref))))
+(when (~is 2 (sizeof '((34 integer-boolean-pair-address) (deref))))
   (prn "F - 'sizeof' works on pointers to and-records"))
 (= memory*.35 4)  ; size of array
 (= memory*.34 35)
 ;? (= dump-trace* (obj whitelist '("sizeof" "array-len")))
-(if (~is 9 (sizeof '((34 integer-boolean-pair-array-address) (deref))))
+(when (~is 9 (sizeof '((34 integer-boolean-pair-array-address) (deref))))
   (prn "F - 'sizeof' works on pointers to arrays"))
 ;? (quit)
 
 ;? (prn 420)
 (= memory*.4 23)
-(if (~is 24 (sizeof '((4 integer-array))))
+(when (~is 24 (sizeof '((4 integer-array))))
   (prn "F - 'sizeof' reads array lengths from memory"))
 (= memory*.3 4)
-(if (~is 24 (sizeof '((3 integer-array-address) (deref))))
+(when (~is 24 (sizeof '((3 integer-array-address) (deref))))
   (prn "F - 'sizeof' handles pointers to arrays"))
 (= memory*.15 34)
 (= routine* make-routine!foo)
-(if (~is 24 (sizeof '((4 integer-array))))
+(when (~is 24 (sizeof '((4 integer-array))))
   (prn "F - 'sizeof' reads array lengths from memory inside routines"))
 (= rep.routine*!call-stack.0!default-space 10)
 (= memory*.10 5)  ; bounds check for default-space
-(if (~is 35 (sizeof '((4 integer-array))))
+(when (~is 35 (sizeof '((4 integer-array))))
   (prn "F - 'sizeof' reads array lengths from memory using default-space"))
 (= memory*.35 4)  ; size of array
 (= memory*.15 35)
 ;? (= dump-trace* (obj whitelist '("sizeof")))
 (aif rep.routine*!error (prn "error - " it))
-(if (~is 9 (sizeof '((4 integer-boolean-pair-array-address) (deref))))
+(when (~is 9 (sizeof '((4 integer-boolean-pair-array-address) (deref))))
   (prn "F - 'sizeof' works on pointers to arrays using default-space"))
 ;? (quit)
 
 ; m
 (prn "== m")
 (reset)
-(if (~is 4 (m '((4 literal))))
+(when (~is 4 (m '((4 literal))))
   (prn "F - 'm' avoids reading memory for literals"))
-(if (~is 4 (m '((4 offset))))
+(when (~is 4 (m '((4 offset))))
   (prn "F - 'm' avoids reading memory for offsets"))
 (= memory*.4 34)
-(if (~is 34 (m '((4 integer))))
+(when (~is 34 (m '((4 integer))))
   (prn "F - 'm' reads memory for simple types"))
 (= memory*.3 4)
-(if (~is 34 (m '((3 integer-address) (deref))))
+(when (~is 34 (m '((3 integer-address) (deref))))
   (prn "F - 'm' redirects addresses"))
 (= memory*.2 3)
-(if (~is 34 (m '((2 integer-address-address) (deref) (deref))))
+(when (~is 34 (m '((2 integer-address-address) (deref) (deref))))
   (prn "F - 'm' multiply redirects addresses"))
-(if (~iso (annotate 'record '(34 nil)) (m '((4 integer-boolean-pair))))
+(when (~iso (annotate 'record '(34 nil)) (m '((4 integer-boolean-pair))))
   (prn "F - 'm' supports compound records"))
 (= memory*.5 35)
 (= memory*.6 36)
-(if (~iso (annotate 'record '(34 35 36)) (m '((4 integer-point-pair))))
+(when (~iso (annotate 'record '(34 35 36)) (m '((4 integer-point-pair))))
   (prn "F - 'm' supports records with compound fields"))
-(if (~iso (annotate 'record '(34 35 36)) (m '((3 integer-point-pair-address) (deref))))
+(when (~iso (annotate 'record '(34 35 36)) (m '((3 integer-point-pair-address) (deref))))
   (prn "F - 'm' supports indirect access to records"))
 (= memory*.4 2)
-(if (~iso (annotate 'record '(2 35 36)) (m '((4 integer-array))))
+(when (~iso (annotate 'record '(2 35 36)) (m '((4 integer-array))))
   (prn "F - 'm' supports access to arrays"))
-(if (~iso (annotate 'record '(2 35 36)) (m '((3 integer-array-address) (deref))))
+(when (~iso (annotate 'record '(2 35 36)) (m '((3 integer-array-address) (deref))))
   (prn "F - 'm' supports indirect access to arrays"))
 
 (= routine* make-routine!foo)
 (= memory*.10 5)  ; fake array
 (= memory*.12 34)
 (= rep.routine*!globals 10)
-(if (~iso 34 (m '((1 integer) (space global))))
+(when (~iso 34 (m '((1 integer) (space global))))
   (prn "F - 'm' supports access to per-routine globals"))
 
 ; setm
 (prn "== setm")
 (reset)
 (setm '((4 integer)) 34)
-(if (~is 34 memory*.4)
+(when (~is 34 memory*.4)
   (prn "F - 'setm' writes primitives to memory"))
 (setm '((3 integer-address)) 4)
-(if (~is 4 memory*.3)
+(when (~is 4 memory*.3)
   (prn "F - 'setm' writes addresses to memory"))
 (setm '((3 integer-address) (deref)) 35)
-(if (~is 35 memory*.4)
+(when (~is 35 memory*.4)
   (prn "F - 'setm' redirects writes"))
 (= memory*.2 3)
 (setm '((2 integer-address-address) (deref) (deref)) 36)
-(if (~is 36 memory*.4)
+(when (~is 36 memory*.4)
   (prn "F - 'setm' multiply redirects writes"))
 ;? (prn 505)
 (setm '((4 integer-integer-pair)) (annotate 'record '(23 24)))
-(if (~memory-contains 4 '(23 24))
+(when (~memory-contains 4 '(23 24))
   (prn "F - 'setm' writes compound records"))
 (assert (is memory*.7 nil))
 ;? (prn 506)
 (setm '((7 integer-point-pair)) (annotate 'record '(23 24 25)))
-(if (~memory-contains 7 '(23 24 25))
+(when (~memory-contains 7 '(23 24 25))
   (prn "F - 'setm' writes records with compound fields"))
 (= routine* make-routine!foo)
 (setm '((4 integer-point-pair)) (annotate 'record '(33 34)))
-(if (~posmatch "incorrect size" rep.routine*!error)
+(when (~posmatch "incorrect size" rep.routine*!error)
   (prn "F - 'setm' checks size of target"))
 (wipe routine*)
 (setm '((3 integer-point-pair-address) (deref)) (annotate 'record '(43 44 45)))
-(if (~memory-contains 4 '(43 44 45))
+(when (~memory-contains 4 '(43 44 45))
   (prn "F - 'setm' supports indirect writes to records"))
 (setm '((2 integer-point-pair-address-address) (deref) (deref)) (annotate 'record '(53 54 55)))
-(if (~memory-contains 4 '(53 54 55))
+(when (~memory-contains 4 '(53 54 55))
   (prn "F - 'setm' supports multiply indirect writes to records"))
 (setm '((4 integer-array)) (annotate 'record '(2 31 32)))
-(if (~memory-contains 4 '(2 31 32))
+(when (~memory-contains 4 '(2 31 32))
   (prn "F - 'setm' writes arrays"))
 (setm '((3 integer-array-address) (deref)) (annotate 'record '(2 41 42)))
-(if (~memory-contains 4 '(2 41 42))
+(when (~memory-contains 4 '(2 41 42))
   (prn "F - 'setm' supports indirect writes to arrays"))
 (= routine* make-routine!foo)
 (setm '((4 integer-array)) (annotate 'record '(2 31 32 33)))
-(if (~posmatch "invalid array" rep.routine*!error)
+(when (~posmatch "invalid array" rep.routine*!error)
   (prn "F - 'setm' checks that array written is well-formed"))
 (= routine* make-routine!foo)
 ;? (prn 111)
 ;? (= dump-trace* (obj whitelist '("sizeof" "setm")))
 (setm '((4 integer-boolean-pair-array)) (annotate 'record '(2 31 nil 32 nil 33)))
-(if (~posmatch "invalid array" rep.routine*!error)
+(when (~posmatch "invalid array" rep.routine*!error)
   (prn "F - 'setm' checks that array of records is well-formed"))
 (= routine* make-routine!foo)
 ;? (prn 222)
 (setm '((4 integer-boolean-pair-array)) (annotate 'record '(2 31 nil 32 nil)))
-(if (posmatch "invalid array" rep.routine*!error)
+(when (posmatch "invalid array" rep.routine*!error)
   (prn "F - 'setm' checks that array of records is well-formed - 2"))
 (wipe routine*)
 

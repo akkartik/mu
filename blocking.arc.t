@@ -19,7 +19,7 @@
 ;? (prn "completed:")
 ;? (each r completed-routines*
 ;?   (prn " " r))
-(if (ran-to-completion 'reader)
+(when (ran-to-completion 'reader)
   (prn "F - reader waits for input"))
 
 (reset)
