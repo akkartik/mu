@@ -1331,6 +1331,9 @@
         (let (label (_make-br-fn fragment))  rest
           (assert (is 'make-br-fn _make-br-fn))
           (push fragment after*.label))
+
+      ;else
+        (prn "unrecognized top-level " (cons op rest))
       )))
 
 (def freeze (function-table)
