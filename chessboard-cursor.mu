@@ -7,7 +7,7 @@
 (array board (file-address))
 (address board-address (board))
 
-(function read-board [
+(function init-board [
   (default-space:space-address <- new space:literal 30:literal)
   (initial-position:list-address <- init-list R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal
                                               N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
@@ -28,14 +28,14 @@
     (done?:boolean <- equal col:integer 8:literal)
     (break-if done?:boolean)
     (file:file-address-address <- index-address b:board-address/deref col:integer)
-    (file:file-address-address/deref curr:list-address <- read-file curr:list-address)
+    (file:file-address-address/deref curr:list-address <- init-file curr:list-address)
     (col:integer <- add col:integer 1:literal)
     (loop)
   }
   (reply b:board-address)
 ])
 
-(function read-file [
+(function init-file [
   (default-space:space-address <- new space:literal 30:literal)
   (cursor:list-address <- next-input)
   (result:file-address <- new file:literal 8:literal)
@@ -213,7 +213,7 @@
 
 (function main [
   (default-space:space-address <- new space:literal 30:literal)
-  (b:board-address <- read-board)
+  (b:board-address <- init-board)
   (cursor-mode)
   ; hook up stdin
   (1:channel-address/raw <- init-channel 1:literal)
