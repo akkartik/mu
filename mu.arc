@@ -642,14 +642,16 @@
                     (die (v arg.1)))  ; other routines will be able to look at the error status
 
                 ; cursor-based (text mode) interaction
+                cursor-mode
+                  (do1 nil (if (no ($.current-charterm)) ($.open-charterm)))
+                retro-mode
+                  (do1 nil (if ($.current-charterm) ($.close-charterm)))
                 clear-screen
                   (do1 nil
                     (if ($.current-charterm)
                           ($.charterm-clear-screen)
                         ($.graphics-open?)
                           ($.clear-viewport Viewport)))
-                clear-line
-                  (do1 nil ($.charterm-clear-line))
                 cursor
                   (do1 nil ($.charterm-cursor (m arg.0) (m arg.1)))
                 cursor-to-next-line
@@ -666,14 +668,6 @@
                         ($.charterm-read-key)
                       ($.graphics-open?)
                         ($.get-key-press Viewport))
-                bold-mode
-                  (do1 nil ($.charterm-bold))
-                non-bold-mode
-                  (do1 nil ($.charterm-normal))
-                cursor-mode
-                  (do1 nil (if (no ($.current-charterm)) ($.open-charterm)))
-                retro-mode
-                  (do1 nil (if ($.current-charterm) ($.close-charterm)))
 
                 ; graphics
                 window-on
