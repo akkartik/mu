@@ -9,14 +9,7 @@
 
 (function init-board [
   (default-space:space-address <- new space:literal 30:literal)
-  (initial-position:list-address <- init-list R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal
-                                              N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
-                                              B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
-                                              Q:literal P:literal _:literal _:literal _:literal _:literal p:literal q:literal
-                                              K:literal P:literal _:literal _:literal _:literal _:literal p:literal k:literal
-                                              B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
-                                              N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
-                                              R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal)
+  (initial-position:list-address <- next-input)
   ; assert(length(initial-position) == 64)
   (len:integer <- list-length initial-position:list-address)
   (correct-length?:boolean <- equal len:integer 64:literal)
@@ -213,7 +206,15 @@
 
 (function main [
   (default-space:space-address <- new space:literal 30:literal)
-  (b:board-address <- init-board)
+  (initial-position:list-address <- init-list R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal
+                                              N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
+                                              B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
+                                              Q:literal P:literal _:literal _:literal _:literal _:literal p:literal q:literal
+                                              K:literal P:literal _:literal _:literal _:literal _:literal p:literal k:literal
+                                              B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
+                                              N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
+                                              R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal)
+  (b:board-address <- init-board initial-position:list-address)
   (cursor-mode)
   ; hook up stdin
   (1:channel-address/raw <- init-channel 1:literal)
