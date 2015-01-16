@@ -48,6 +48,7 @@
 
 (function print-board [
   (default-space:space-address <- new space:literal 30:literal)
+  (screen:terminal-address <- next-input)
   (b:board-address <- next-input)
   (row:integer <- copy 7:literal)
   ; print each row
@@ -56,8 +57,8 @@
     (break-if done?:boolean)
     ; print rank number as a legend
     (rank:integer <- add row:integer 1:literal)
-    (print-primitive nil:literal/terminal rank:integer)
-    (print-primitive nil:literal/terminal ((" | " literal)))
+    (print-primitive screen:terminal-address rank:integer)
+    (print-primitive screen:terminal-address ((" | " literal)))
     ; print each square in the row
     (col:integer <- copy 0:literal)
     { begin
@@ -65,20 +66,20 @@
       (break-if done?:boolean)
       (f:file-address <- index b:board-address/deref col:integer)
       (s:square <- index f:file-address/deref row:integer)
-      (print-primitive nil:literal/terminal s:square)
-      (print-primitive nil:literal/terminal ((" " literal)))
+      (print-primitive screen:terminal-address s:square)
+      (print-primitive screen:terminal-address ((" " literal)))
       (col:integer <- add col:integer 1:literal)
       (loop)
     }
     (row:integer <- subtract row:integer 1:literal)
-    (cursor-to-next-line nil:literal/terminal)
+    (cursor-to-next-line screen:terminal-address)
     (loop)
   }
   ; print file letters as legend
-  (print-primitive nil:literal/terminal (("  +----------------" literal)))
-  (cursor-to-next-line nil:literal/terminal)
-  (print-primitive nil:literal/terminal (("    a b c d e f g h" literal)))
-  (cursor-to-next-line nil:literal/terminal)
+  (print-primitive screen:terminal-address (("  +----------------" literal)))
+  (cursor-to-next-line screen:terminal-address)
+  (print-primitive screen:terminal-address (("    a b c d e f g h" literal)))
+  (cursor-to-next-line screen:terminal-address)
 ])
 
 ;; data structure: move
@@ -229,7 +230,7 @@
     (print-primitive nil:literal/terminal (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
     (cursor-to-next-line nil:literal/terminal)
     (cursor-to-next-line nil:literal/terminal)
-    (print-board b:board-address)
+    (print-board nil:literal/terminal b:board-address)
     (cursor-to-next-line nil:literal/terminal)
     (print-primitive nil:literal/terminal (("Type in your move as <from square>-<to square>. For example: 'a2-a4'. Currently very unforgiving of typos; exactly five letters, no <Enter>, no uppercase." literal)))
     (cursor-to-next-line nil:literal/terminal)
