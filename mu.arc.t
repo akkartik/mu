@@ -4034,6 +4034,41 @@
             (~memory-contains-array (memory* (+ base 4)) "c"))
     (prn "F - 'split' cuts string at two delimiters")))
 
+(reset)
+(new-trace "integer-to-decimal-string")
+(add-code
+  '((function main [
+      (1:string-address/raw <- integer-to-decimal-string 34:literal)
+    ])))
+;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("run")))
+(run 'main)
+(let base memory*.1
+  (when (~memory-contains-array base "34")
+    (prn "F - converting integer to decimal string")))
+
+(reset)
+(new-trace "integer-to-decimal-string-zero")
+(add-code
+  '((function main [
+      (1:string-address/raw <- integer-to-decimal-string 0:literal)
+    ])))
+(run 'main)
+(let base memory*.1
+  (when (~memory-contains-array base "0")
+    (prn "F - converting zero to decimal string")))
+
+(reset)
+(new-trace "integer-to-decimal-string-negative")
+(add-code
+  '((function main [
+      (1:string-address/raw <- integer-to-decimal-string -237:literal)
+    ])))
+(run 'main)
+(let base memory*.1
+  (when (~memory-contains-array base "-237")
+    (prn "F - converting negative integer to decimal string")))
+
 )  ; section 100 for string utilities
 
 (reset)

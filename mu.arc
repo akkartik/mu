@@ -156,6 +156,9 @@
               string-address-array-address (obj size 1  address t  elem '(string-address-array))
               character (obj size 1)  ; int32 like a Go rune
               character-address (obj size 1  address t  elem '(character))
+              ; a buffer makes it easy to append to a string
+              buffer (obj size 2  and-record t  elems '((integer) (string-address))  fields '(length data))
+              buffer-address (obj size 1  address t  elem '(buffer))
               ; isolating function calls
               space (obj array t  elem '(location))  ; by convention index 0 points to outer space
               space-address (obj size 1  address t  elem '(space))
@@ -1116,6 +1119,7 @@
   (replace-names-with-location instrs name))
 
 (def assign-names-to-location (instrs name)
+;?   (tr name)
   (ret location (table)
     (with (isa-field  (table)
            idx  1)  ; 0 always reserved for next space
@@ -1944,6 +1948,126 @@
   (print-primitive-to-host c:location)
 )
 
+(init-fn init-buffer
+  (default-space:space-address <- new space:literal 30:literal)
+  (result:buffer-address <- new buffer:literal)
+  (len:integer-address <- get-address result:buffer-address/deref length:offset)
+  (len:integer-address/deref <- copy 0:literal)
+  (s:string-address-address <- get-address result:buffer-address/deref data:offset)
+  (capacity:integer <- next-input)
+  (s:string-address-address/deref <- new string:literal capacity:integer)
+  (reply result:buffer-address)
+)
+
+(init-fn grow-buffer
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:buffer-address <- next-input)
+  ; double buffer size
+  (x:string-address-address <- get-address in:buffer-address/deref data:offset)
+  (oldlen:integer <- length x:string-address-address/deref/deref)
+  (newlen:integer <- multiply oldlen:integer 2:literal)
+  (olddata:string-address <- copy x:string-address-address/deref)
+  (x:string-address-address/deref <- new string:literal newlen:integer)
+  ; copy old contents
+  (i:integer <- copy 0:literal)
+  { begin
+    (done?:boolean <- greater-or-equal i:integer oldlen:integer)
+    (break-if done?:boolean)
+    (src:byte <- index olddata:string-address/deref i:integer)
+    (dest:byte-address <- index-address x:string-address-address/deref/deref i:integer)
+    (dest:byte-address <- copy src:byte)
+    (loop)
+  }
+  (reply in:buffer-address)
+)
+
+(init-fn buffer-full?
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:buffer-address <- next-input)
+  (len:integer <- get in:buffer-address/deref length:offset)
+  (s:string-address <- get in:buffer-address/deref data:offset)
+  (capacity:integer <- length s:string-address/deref)
+  (result:boolean <- greater-or-equal len:integer capacity:integer)
+  (reply result:boolean)
+)
+
+(init-fn append
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:buffer-address <- next-input)
+  (c:character <- next-input)
+  { begin
+    ; grow buffer if necessary
+    (full?:boolean <- buffer-full? in:buffer-address)
+    (break-unless full?:boolean)
+    (in:buffer-address <- grow-buffer in:buffer-address)
+  }
+  (len:integer-address <- get-address in:buffer-address/deref length:offset)
+  (s:string-address <- get in:buffer-address/deref data:offset)
+  (dest:byte-address <- index-address s:string-address/deref len:integer-address/deref)
+  (dest:byte-address/deref <- copy c:character)  ; todo: unicode
+  (len:integer-address/deref <- add len:integer-address/deref 1:literal)
+  (reply in:buffer-address)
+)
+
+(init-fn integer-to-decimal-string
+  (n:integer <- next-input)
+  ; is it zero?
+  { begin
+    (zero?:boolean <- equal n:integer 0:literal)
+    (break-unless zero?:boolean)
+    (s:string-address <- new "0")
+    (reply s:string-address)
+  }
+  ; save sign
+  (negate-result:boolean <- copy nil:literal)
+  { begin
+    (negative?:boolean <- less-than n:integer 0:literal)
+    (break-unless negative?:boolean)
+;?     (print-primitive-to-host (("is negative " literal)))
+    (negate-result:boolean <- copy t:literal)
+    (n:integer <- multiply n:integer -1:literal)
+  }
+  ; add digits from right to left into intermediate buffer
+  (tmp:buffer-address <- init-buffer 30:literal)
+  (zero:character <- copy ((#\0 literal)))
+  (digit-base:integer <- character-to-integer zero:character)
+  { begin
+    (done?:boolean <- equal n:integer 0:literal)
+    (break-if done?:boolean)
+    (n:integer digit:integer <- divide-with-remainder n:integer 10:literal)
+    (digit-codepoint:integer <- add digit-base:integer digit:integer)
+    (c:character <- integer-to-character digit-codepoint:integer)
+    (tmp:buffer-address <- append tmp:buffer-address c:character)
+    (loop)
+  }
+  ; add sign
+  { begin
+    (break-unless negate-result:boolean)
+    (tmp:buffer-address <- append tmp:buffer-address ((#\- literal)))
+  }
+  ; reverse buffer into string result
+  (len:integer <- get tmp:buffer-address/deref length:offset)
+  (buf:string-address <- get tmp:buffer-address/deref data:offset)
+  (result:string-address <- new string:literal len:integer)
+  (i:integer <- subtract len:integer 1:literal)
+  (j:integer <- copy 0:literal)
+  { begin
+    ; while (i >= 0)
+    (done?:boolean <- less-than i:integer 0:literal)
+    (break-if done?:boolean)
+    ; result[j] = tmp[i]
+    (src:byte <- index buf:string-address/deref i:integer)
+    (dest:byte-address <- index-address result:string-address/deref j:integer)
+    (dest:byte-address/deref <- copy src:byte)
+    ; ++i
+    (i:integer <- subtract i:integer 1:literal)
+    ; --j
+    (j:integer <- add j:integer 1:literal)
+    (loop)
+  }
+  (reply result:string-address)
+)
+
 (init-fn send-prints-to-stdout
   (default-space:space-address <- new space:literal 30:literal)
   (stdout:channel-address <- next-input)
@@ -1960,6 +2084,7 @@
 )
 
 ; after all system software is loaded:
+;? (= dump-trace* (obj whitelist '("cn0" "cn1")))
 (freeze system-function*)
 )  ; section 100 for system software
 
