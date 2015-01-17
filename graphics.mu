@@ -8,9 +8,9 @@
     (x:integer <- get pos:integer-integer-pair 0:offset)
     (y:integer <- get pos:integer-integer-pair 1:offset)
     (print-primitive nil:literal/terminal x:integer)
-    (print-primitive nil:literal/terminal ((", " literal)))
+    (print-primitive-to-host ((", " literal)))
     (print-primitive nil:literal/terminal y:integer)
-    (print-primitive nil:literal/terminal (("\n" literal)))
+    (print-primitive-to-host (("\n" literal)))
     (loop)
   }
   (window-off)

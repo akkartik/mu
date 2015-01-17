@@ -23,11 +23,11 @@
   (bres:integer <- increment-counter b:space-address 2:literal)
   (ares:integer <- increment-counter a:space-address 1:literal)
   ; check results
-  (print-primitive nil:literal/terminal (("Contents of counters a: " literal)))
+  (print-primitive-to-host (("Contents of counters a: " literal)))
   (print-primitive nil:literal/terminal ares:integer)
-  (print-primitive nil:literal/terminal ((" b: " literal)))
+  (print-primitive-to-host ((" b: " literal)))
   (print-primitive nil:literal/terminal bres:integer)
-  (print-primitive nil:literal/terminal (("\n" literal)))
+  (print-primitive-to-host (("\n" literal)))
  ])
 
 ; compare http://www.paulgraham.com/accgen.html
