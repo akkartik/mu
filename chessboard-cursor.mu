@@ -58,7 +58,7 @@
     ; print rank number as a legend
     (rank:integer <- add row:integer 1:literal)
     (print-primitive screen:terminal-address rank:integer)
-    (print-primitive screen:terminal-address ((" | " literal)))
+    (print-primitive-to-host ((" | " literal)))
     ; print each square in the row
     (col:integer <- copy 0:literal)
     { begin
@@ -67,7 +67,7 @@
       (f:file-address <- index b:board-address/deref col:integer)
       (s:square <- index f:file-address/deref row:integer)
       (print-primitive screen:terminal-address s:square)
-      (print-primitive screen:terminal-address ((" " literal)))
+      (print-primitive-to-host ((" " literal)))
       (col:integer <- add col:integer 1:literal)
       (loop)
     }
@@ -76,9 +76,9 @@
     (loop)
   }
   ; print file letters as legend
-  (print-primitive screen:terminal-address (("  +----------------" literal)))
+  (print-primitive-to-host (("  +----------------" literal)))
   (cursor-to-next-line screen:terminal-address)
-  (print-primitive screen:terminal-address (("    a b c d e f g h" literal)))
+  (print-primitive-to-host (("    a b c d e f g h" literal)))
   (cursor-to-next-line screen:terminal-address)
 ])
 
@@ -227,16 +227,16 @@
     ; print any stray characters from keyboard *before* clearing screen
     (flush-stdout)
     (clear-screen nil:literal/terminal)
-    (print-primitive nil:literal/terminal (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
+    (print-primitive-to-host (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
     (cursor-to-next-line nil:literal/terminal)
     (cursor-to-next-line nil:literal/terminal)
     (print-board nil:literal/terminal b:board-address)
     (cursor-to-next-line nil:literal/terminal)
-    (print-primitive nil:literal/terminal (("Type in your move as <from square>-<to square>. For example: 'a2-a4'. Currently very unforgiving of typos; exactly five letters, no <Enter>, no uppercase." literal)))
+    (print-primitive-to-host (("Type in your move as <from square>-<to square>. For example: 'a2-a4'. Currently very unforgiving of typos; exactly five letters, no <Enter>, no uppercase." literal)))
     (cursor-to-next-line nil:literal/terminal)
-    (print-primitive nil:literal/terminal (("Hit 'q' to exit." literal)))
+    (print-primitive-to-host (("Hit 'q' to exit." literal)))
     (cursor-to-next-line nil:literal/terminal)
-    (print-primitive nil:literal/terminal (("move: " literal)))
+    (print-primitive-to-host (("move: " literal)))
     (m:move-address <- read-move)
     (break-unless m:move-address)
     (b:board-address <- make-move b:board-address m:move-address)
