@@ -1519,8 +1519,7 @@
 ;?   { begin
 ;?     ; if empty list return 0
 ;?     (t1:tagged-value-address <- list-value-address curr:list-address)
-;?     (empty?:boolean <- equal t1:tagged-value-address nil:literal)
-;?     (break-unless empty?:boolean)
+;?     (break-if t1:tagged-value-address)
 ;?     (reply 0:literal)
 ;?   }
 ;?   ; else return 1+length(curr.cdr)
@@ -1534,8 +1533,7 @@
   { begin
     ; while curr
     (t1:tagged-value-address <- list-value-address curr:list-address)
-    (empty?:boolean <- equal t1:tagged-value-address nil:literal)
-    (break-if empty?:boolean)
+    (break-unless t1:tagged-value-address)
     ; ++result
     (result:integer <- add result:integer 1:literal)
 ;?     (print-primitive nil:literal/terminal result:integer)
@@ -1666,8 +1664,8 @@
   (i:integer <- copy 0:literal)
   { begin
     ; while (i < a.length)
-    (a-done?:boolean <- less-than i:integer a-len:integer)
-    (break-unless a-done?:boolean)
+    (a-done?:boolean <- greater-or-equal i:integer a-len:integer)
+    (break-if a-done?:boolean)
     ; result[result-idx] = a[i]
     (out:byte-address <- index-address result:string-address/deref result-idx:integer)
     (in:byte <- index a:string-address/deref i:integer)
@@ -1682,8 +1680,8 @@
   (i:integer <- copy 0:literal)
   { begin
     ; while (i < b.length)
-    (b-done?:boolean <- less-than i:integer b-len:integer)
-    (break-unless b-done?:boolean)
+    (b-done?:boolean <- greater-or-equal i:integer b-len:integer)
+    (break-if b-done?:boolean)
     ; result[result-idx] = a[i]
     (out:byte-address <- index-address result:string-address/deref result-idx:integer)
     (in:byte <- index b:string-address/deref i:integer)
@@ -1736,8 +1734,8 @@
     ; copy template into result until '_'
     { begin
       ; while (i < template.length)
-      (tem-done?:boolean <- less-than i:integer tem-len:integer)
-      (break-unless tem-done?:boolean 2:blocks)
+      (tem-done?:boolean <- greater-or-equal i:integer tem-len:integer)
+      (break-if tem-done?:boolean 2:blocks)
       ; while template[i] != '_'
       (in:byte <- index template:string-address/deref i:integer)
       (underscore?:boolean <- equal in:byte ((#\_ literal)))
@@ -1758,8 +1756,8 @@
     (j:integer <- copy 0:literal)
     { begin
       ; while (j < a.length)
-      (arg-done?:boolean <- less-than j:integer a-len:integer)
-      (break-unless arg-done?:boolean)
+      (arg-done?:boolean <- greater-or-equal j:integer a-len:integer)
+      (break-if arg-done?:boolean)
       ; result[result-idx] = a[j]
       (in:byte <- index a:string-address/deref j:integer)
 ;?       (print-primitive-to-host nil:literal/terminal ("copying: " literal))
@@ -1785,8 +1783,8 @@
   ; done with holes; copy rest of template directly into result
   { begin
     ; while (i < template.length)
-    (tem-done?:boolean <- less-than i:integer tem-len:integer)
-    (break-unless tem-done?:boolean)
+    (tem-done?:boolean <- greater-or-equal i:integer tem-len:integer)
+    (break-if tem-done?:boolean)
     ; result[result-idx] = template[i]
     (in:byte <- index template:string-address/deref i:integer)
 ;?     (print-primitive-to-host nil:literal/terminal ("copying: " literal))
