@@ -97,16 +97,17 @@
 
 (function read-move [
   (default-space:space-address <- new space:literal 30:literal)
+  (stdin:channel-address <- next-input)
   (screen:terminal-address <- next-input)
-  (from-file:integer <- read-file screen:terminal-address)
+  (from-file:integer <- read-file stdin:channel-address screen:terminal-address)
   { begin
     (break-if from-file:integer)
     (reply nil:literal)
   }
-  (from-rank:integer <- read-rank screen:terminal-address)
-  (expect-stdin screen:terminal-address ((#\- literal)))
-  (to-file:integer <- read-file screen:terminal-address)
-  (to-rank:integer <- read-rank screen:terminal-address)
+  (from-rank:integer <- read-rank stdin:channel-address screen:terminal-address)
+  (expect-stdin stdin:channel-address screen:terminal-address ((#\- literal)))
+  (to-file:integer <- read-file stdin:channel-address screen:terminal-address)
+  (to-rank:integer <- read-rank stdin:channel-address screen:terminal-address)
   ; construct the move object
   (result:move-address <- new move:literal)
   (f:integer-integer-pair-address <- get-address result:move-address/deref from:offset)
@@ -125,8 +126,9 @@
 ; todo: assumes stdin is always at raw address 1
 (function read-file [
   (default-space:space-address <- new space:literal 30:literal)
+  (stdin:channel-address <- next-input)
   (screen:terminal-address <- next-input)
-  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
   (a:character <- copy ((#\a literal)))
   (file-base:integer <- character-to-integer a:character)
   (c:character <- maybe-coerce x:tagged-value character:literal)
@@ -148,8 +150,9 @@
 
 (function read-rank [
   (default-space:space-address <- new space:literal 30:literal)
+  (stdin:channel-address <- next-input)
   (screen:terminal-address <- next-input)
-  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
   (c:character <- maybe-coerce x:tagged-value character:literal)
   (print-character screen:terminal-address c:character)
   { begin
@@ -171,9 +174,10 @@
 
 (function expect-stdin [
   (default-space:space-address <- new space:literal 30:literal)
+  (stdin:channel-address <- next-input)
   (screen:terminal-address <- next-input)
   ; slurp hyphen
-  (x:tagged-value 1:channel-address/raw/deref <- read 1:channel-address/raw)
+  (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
   (c:character <- maybe-coerce x:tagged-value character:literal)
   (print-character screen:terminal-address c:character)
   (expected:character <- next-input)
@@ -213,8 +217,8 @@
   (b:board-address <- init-board initial-position:list-address)
   (cursor-mode)
   ; hook up stdin
-  (1:channel-address/raw <- init-channel 1:literal)
-  (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit 1:channel-address/raw)
+  (stdin:channel-address <- init-channel 1:literal)
+  (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address)
   { begin
     ; print any stray characters from keyboard *before* clearing screen
     (clear-screen nil:literal/terminal)
@@ -228,7 +232,7 @@
     (print-primitive-to-host (("Hit 'q' to exit." literal)))
     (cursor-to-next-line nil:literal/terminal)
     (print-primitive-to-host (("move: " literal)))
-    (m:move-address <- read-move nil:literal/terminal)
+    (m:move-address <- read-move stdin:channel-address nil:literal/terminal)
     (break-unless m:move-address)
     (b:board-address <- make-move b:board-address m:move-address)
     (loop)
