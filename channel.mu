@@ -9,7 +9,7 @@
     (break-unless done?:boolean)
     ; other threads might get between these prints
     (print-primitive-to-host (("produce: " literal)))
-    (print-primitive nil:literal/terminal n:integer)
+    (print-integer nil:literal/terminal n:integer)
     (print-primitive-to-host (("\n" literal)))
     ; 'box' n into a dynamically typed 'tagged value' because that's what
     ; channels take
@@ -32,7 +32,7 @@
     (n2:integer <- maybe-coerce x:tagged-value integer:literal)
     ; other threads might get between these prints
     (print-primitive-to-host (("consume: " literal)))
-    (print-primitive nil:literal/terminal n2:integer)
+    (print-integer nil:literal/terminal n2:integer)
     (print-primitive-to-host (("\n" literal)))
     (loop)
   }

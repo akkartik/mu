@@ -57,7 +57,7 @@
     (break-if done?:boolean)
     ; print rank number as a legend
     (rank:integer <- add row:integer 1:literal)
-    (print-primitive screen:terminal-address rank:integer)
+    (print-integer screen:terminal-address rank:integer)
     (print-primitive-to-host ((" | " literal)))
     ; print each square in the row
     (col:integer <- copy 0:literal)
@@ -66,7 +66,7 @@
       (break-if done?:boolean)
       (f:file-address <- index b:board-address/deref col:integer)
       (s:square <- index f:file-address/deref row:integer)
-      (print-primitive screen:terminal-address s:square)
+      (print-primitive-to-host s:square)
       (print-primitive-to-host ((" " literal)))
       (col:integer <- add col:integer 1:literal)
       (loop)

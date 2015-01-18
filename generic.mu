@@ -25,6 +25,6 @@
 (function main [
   (1:integer <- factorial 5:literal)
   (print-primitive-to-host (("result: " literal)))
-  (print-primitive nil:literal/terminal 1:integer)
+  (print-integer nil:literal/terminal 1:integer)
   (print-primitive-to-host (("\n" literal)))
 ])

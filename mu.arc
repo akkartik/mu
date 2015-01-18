@@ -1537,7 +1537,7 @@
 ;?     (reply 0:literal)
 ;?   }
 ;?   ; else return 1+length(curr.cdr)
-;?   (print-primitive-to-host nil:literal/terminal (("recurse\n" literal)))
+;?   (print-primitive-to-host (("recurse\n" literal)))
 ;?   (next:list-address <- list-next curr:list-address)
 ;?   (sub:integer <- list-length next:list-address)
 ;?   (result:integer <- add sub:integer 1:literal)
@@ -1550,8 +1550,8 @@
     (break-unless t1:tagged-value-address)
     ; ++result
     (result:integer <- add result:integer 1:literal)
-;?     (print-primitive nil:literal/terminal result:integer)
-;?     (print-primitive-to-host nil:literal/terminal (("\n" literal)))
+;?     (print-primitive-to-host result:integer)
+;?     (print-primitive-to-host (("\n" literal)))
     ; curr = curr.cdr
     (curr:list-address <- list-next curr:list-address)
     (loop)
@@ -1719,19 +1719,19 @@
     ; while arg received
     (a:string-address arg-received?:boolean <- next-input)
     (break-unless arg-received?:boolean)
-;?     (print-primitive-to-host nil:literal/terminal ("arg now: " literal))
-;?     (print-primitive nil:literal/terminal a:string-address)
-;?     (print-primitive-to-host nil:literal/terminal "@":literal)
-;?     (print-primitive nil:literal/terminal a:string-address/deref)  ; todo: test (m on scoped array)
-;?     (print-primitive-to-host nil:literal/terminal "\n":literal)
+;?     (print-primitive-to-host ("arg now: " literal))
+;?     (print-primitive-to-host a:string-address)
+;?     (print-primitive-to-host "@":literal)
+;?     (print-primitive-to-host a:string-address/deref)  ; todo: test (m on scoped array)
+;?     (print-primitive-to-host "\n":literal)
 ;? ;?     (assert nil:literal)
     ; result-len = result-len + arg.length - 1 (for the 'underscore' being replaced)
     (a-len:integer <- length a:string-address/deref)
     (result-len:integer <- add result-len:integer a-len:integer)
     (result-len:integer <- subtract result-len:integer 1:literal)
-;?     (print-primitive-to-host nil:literal/terminal ("result-len now: " literal))
-;?     (print-primitive nil:literal/terminal result-len:integer)
-;?     (print-primitive-to-host nil:literal/terminal "\n":literal)
+;?     (print-primitive-to-host ("result-len now: " literal))
+;?     (print-primitive-to-host result-len:integer)
+;?     (print-primitive-to-host "\n":literal)
     (loop)
   }
   ; rewind to start of non-template args
@@ -1763,9 +1763,9 @@
       (result-idx:integer <- add result-idx:integer 1:literal)
       (loop)
     }
-;?     (print-primitive-to-host nil:literal/terminal ("i now: " literal))
-;?     (print-primitive nil:literal/terminal i:integer)
-;?     (print-primitive-to-host nil:literal/terminal "\n":literal)
+;?     (print-primitive-to-host ("i now: " literal))
+;?     (print-primitive-to-host i:integer)
+;?     (print-primitive-to-host "\n":literal)
     ; copy 'a' into result
     (j:integer <- copy 0:literal)
     { begin
@@ -1774,11 +1774,11 @@
       (break-if arg-done?:boolean)
       ; result[result-idx] = a[j]
       (in:byte <- index a:string-address/deref j:integer)
-;?       (print-primitive-to-host nil:literal/terminal ("copying: " literal))
-;?       (print-primitive nil:literal/terminal in:byte)
-;?       (print-primitive-to-host nil:literal/terminal (" at: " literal))
-;?       (print-primitive nil:literal/terminal result-idx:integer)
-;?       (print-primitive-to-host nil:literal/terminal "\n":literal)
+;?       (print-primitive-to-host ("copying: " literal))
+;?       (print-primitive-to-host in:byte)
+;?       (print-primitive-to-host (" at: " literal))
+;?       (print-primitive-to-host result-idx:integer)
+;?       (print-primitive-to-host "\n":literal)
       (out:byte-address <- index-address result:string-address/deref result-idx:integer)
       (out:byte-address/deref <- copy in:byte)
       ; ++j
@@ -1789,9 +1789,9 @@
     }
     ; skip '_' in template
     (i:integer <- add i:integer 1:literal)
-;?     (print-primitive-to-host nil:literal/terminal ("i now: " literal))
-;?     (print-primitive nil:literal/terminal i:integer)
-;?     (print-primitive-to-host nil:literal/terminal "\n":literal)
+;?     (print-primitive-to-host ("i now: " literal))
+;?     (print-primitive-to-host i:integer)
+;?     (print-primitive-to-host "\n":literal)
     (loop)  ; interpolate next arg
   }
   ; done with holes; copy rest of template directly into result
@@ -1801,11 +1801,11 @@
     (break-if tem-done?:boolean)
     ; result[result-idx] = template[i]
     (in:byte <- index template:string-address/deref i:integer)
-;?     (print-primitive-to-host nil:literal/terminal ("copying: " literal))
-;?     (print-primitive nil:literal/terminal in:byte)
-;?     (print-primitive-to-host nil:literal/terminal (" at: " literal))
-;?     (print-primitive nil:literal/terminal result-idx:integer)
-;?     (print-primitive-to-host nil:literal/terminal "\n":literal)
+;?     (print-primitive-to-host ("copying: " literal))
+;?     (print-primitive-to-host in:byte)
+;?     (print-primitive-to-host (" at: " literal))
+;?     (print-primitive-to-host result-idx:integer)
+;?     (print-primitive-to-host "\n":literal)
     (out:byte-address <- index-address result:string-address/deref result-idx:integer)
     (out:byte-address/deref <- copy in:byte)
     ; ++i
@@ -1856,9 +1856,9 @@
     (loop)
   }
   ; allocate space
-;?   (print-primitive-to-host nil:literal/terminal (("alloc: " literal)))
-;?   (print-primitive nil:literal/terminal count:integer)
-;?   (print-primitive-to-host nil:literal/terminal (("\n" literal)))
+;?   (print-primitive-to-host (("alloc: " literal)))
+;?   (print-primitive-to-host count:integer)
+;?   (print-primitive-to-host (("\n" literal)))
   (result:string-address-array-address <- new string-address-array:literal count:integer)
   ; repeatedly copy slices (start..end) until delimiter into result[curr-result]
   (curr-result:integer <- copy 0:literal)
@@ -1868,13 +1868,13 @@
     (done?:boolean <- greater-or-equal start:integer len:integer)
     (break-if done?:boolean)
     (end:integer <- find-next s:string-address delim:character start:integer)
-;?     (print-primitive-to-host nil:literal/terminal (("i: " literal)))
-;?     (print-primitive nil:literal/terminal start:integer)
-;?     (print-primitive-to-host nil:literal/terminal (("-" literal)))
-;?     (print-primitive nil:literal/terminal end:integer)
-;?     (print-primitive-to-host nil:literal/terminal ((" => " literal)))
-;?     (print-primitive nil:literal/terminal curr-result:integer)
-;?     (print-primitive-to-host nil:literal/terminal (("\n" literal)))
+;?     (print-primitive-to-host (("i: " literal)))
+;?     (print-primitive-to-host start:integer)
+;?     (print-primitive-to-host (("-" literal)))
+;?     (print-primitive-to-host end:integer)
+;?     (print-primitive-to-host ((" => " literal)))
+;?     (print-primitive-to-host curr-result:integer)
+;?     (print-primitive-to-host (("\n" literal)))
     ; compute length of slice
     (slice-len:integer <- subtract end:integer start:integer)
     ; allocate result[curr-result]
@@ -1947,15 +1947,46 @@
   (cursor-on-host-to-next-line)
 )
 
-(init-fn print-primitive
+(init-fn print-character
   (default-space:space-address <- new space:literal 30:literal)
   (x:terminal-address <- next-input)
-  (c:location <- next-input)
+  (c:character <- next-input)
   { begin
     (break-unless x:terminal-address)
     (reply)
   }
-  (print-primitive-to-host c:location)
+  (print-primitive-to-host c:character)
+)
+
+(init-fn print-string
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:terminal-address <- next-input)
+  (s:string-address <- next-input)
+  (len:integer <- length s:string-address/deref)
+;?   (print-primitive-to-host (("print/string: len: " literal)))
+;?   (print-primitive-to-host len:integer)
+;?   (print-primitive-to-host (("\n" literal)))
+  (i:integer <- copy 0:literal)
+  { begin
+    (done?:boolean <- greater-or-equal i:integer len:integer)
+    (break-if done?:boolean)
+    (c:character <- index s:string-address/deref i:integer)  ; todo: unicode
+    (print-character x:terminal-address c:character)
+    (i:integer <- add i:integer 1:literal)
+    (loop)
+  }
+)
+
+(init-fn print-integer
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:terminal-address <- next-input)
+  (n:integer <- next-input)
+  ; todo: other bases besides decimal
+;?   (print-primitive-to-host (("AAA " literal)))
+;?   (print-primitive-to-host n:integer)
+  (s:string-address <- integer-to-decimal-string n:integer)
+;?   (print-primitive-to-host s:string-address)
+  (print-string x:terminal-address s:string-address)
 )
 
 (init-fn init-buffer
@@ -2020,6 +2051,7 @@
 )
 
 (init-fn integer-to-decimal-string
+  (default-space:space-address <- new space:literal 30:literal)
   (n:integer <- next-input)
   ; is it zero?
   { begin
@@ -2084,7 +2116,7 @@
   { begin
     (x:tagged-value stdout:channel-address/deref <- read stdout:channel-address)
     (c:character <- maybe-coerce x:tagged-value character:literal)
-    (print-primitive nil:literal/terminal c:character)
+    (print-character nil:literal/terminal c:character)
     (loop)
   }
 )
@@ -2112,11 +2144,14 @@
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
   (when ($.graphics-open?) ($.close-viewport Viewport) ($.close-graphics))
-  (prn "\nmemory: " int-canon.memory*)
+  (pr "\nmemory: ")
+  (write int-canon.memory*)
+  (prn)
   (each routine completed-routines*
     (awhen rep.routine!error
       (prn "error - " it)
-      (prn routine)))
+;?       (prn routine)
+      ))
 )
 (reset)
 ;? (print-times)

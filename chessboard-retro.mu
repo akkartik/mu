@@ -28,7 +28,7 @@
   { begin
     (done?:boolean <- equal col:integer 8:literal)
     (break-if done?:boolean)
-;?     (print-primitive nil:literal/terminal col:integer)
+;?     (print-primitive-to-host col:integer)
 ;?     (print-primitive-to-host (("\n" literal)))
     (file:file-address-address <- index-address b:board-address/deref col:integer)
     (file:file-address-address/deref curr:list-address <- read-file curr:list-address)
@@ -47,7 +47,7 @@
     (done?:boolean <- equal row:integer 8:literal)
     (break-if done?:boolean)
 ;?     (print-primitive-to-host (("  " literal)))
-;?     (print-primitive row:integer)
+;?     (print-primitive-to-host row:integer)
 ;?     (print-primitive-to-host (("\n" literal)))
     (src:tagged-value-address <- list-value-address cursor:list-address)
     (dest:square-address <- index-address result:file-address/deref row:integer)
@@ -74,7 +74,7 @@
       (break-if done?:boolean)
       (f:file-address <- index b:board-address/deref col:integer)
       (s:square <- index f:file-address/deref row:integer)
-      (print-primitive nil:literal/terminal s:square)
+      (print-primitive-to-host s:square)
       (print-primitive-to-host ((" " literal)))
       (col:integer <- add col:integer 1:literal)
       (loop)
@@ -86,7 +86,6 @@
 ])
 
 (function main [
-;?   (print-primitive-to-host (("\u2654 \u265a" literal)))
   (default-space:space-address <- new space:literal 30:literal)
   (b:board-address <- read-board)
   (print-board b:board-address)

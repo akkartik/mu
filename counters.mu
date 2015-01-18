@@ -24,9 +24,9 @@
   (ares:integer <- increment-counter a:space-address 1:literal)
   ; check results
   (print-primitive-to-host (("Contents of counters a: " literal)))
-  (print-primitive nil:literal/terminal ares:integer)
+  (print-integer nil:literal/terminal ares:integer)
   (print-primitive-to-host ((" b: " literal)))
-  (print-primitive nil:literal/terminal bres:integer)
+  (print-integer nil:literal/terminal bres:integer)
   (print-primitive-to-host (("\n" literal)))
  ])
 
