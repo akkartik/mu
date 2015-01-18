@@ -1537,7 +1537,7 @@
 ;?     (reply 0:literal)
 ;?   }
 ;?   ; else return 1+length(curr.cdr)
-;?   (print-primitive-to-host (("recurse\n" literal)))
+;? ;?   (print-primitive-to-host (("recurse\n" literal)))
 ;?   (next:list-address <- list-next curr:list-address)
 ;?   (sub:integer <- list-length next:list-address)
 ;?   (result:integer <- add sub:integer 1:literal)
