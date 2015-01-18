@@ -7,7 +7,8 @@
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (1:channel-address/raw <- init-channel 1:literal)
-      (r:integer/routine <- fork read-move:fn nil:literal/globals 2000:literal/limit)
+      (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (r:integer/routine <- fork read-move:fn nil:literal/globals 2000:literal/limit dummy:terminal-address)
       (c:character <- copy ((#\a literal)))
       (x:tagged-value <- save-type c:character)
       (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
@@ -43,7 +44,8 @@
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (1:channel-address/raw <- init-channel 1:literal)
-      (r:integer/routine <- fork-helper read-move:fn nil:literal/globals 2000:literal/limit)
+      (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (r:integer/routine <- fork-helper read-move:fn nil:literal/globals 2000:literal/limit dummy:terminal-address)
       (c:character <- copy ((#\a literal)))
       (x:tagged-value <- save-type c:character)
       (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
@@ -69,7 +71,8 @@
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (1:channel-address/raw <- init-channel 1:literal)
-      (r:integer/routine <- fork-helper read-move:fn nil:literal/globals nil:literal/limit)
+      (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (r:integer/routine <- fork-helper read-move:fn nil:literal/globals nil:literal/limit dummy:terminal-address)
       (c:character <- copy ((#\q literal)))
       (x:tagged-value <- save-type c:character)
       (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
@@ -86,7 +89,8 @@
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (1:channel-address/raw <- init-channel 1:literal)
-      (r:integer/routine <- fork-helper read-file:fn nil:literal/globals nil:literal/limit)
+      (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (r:integer/routine <- fork-helper read-file:fn nil:literal/globals nil:literal/limit dummy:terminal-address)
       (c:character <- copy ((#\i literal)))
       (x:tagged-value <- save-type c:character)
       (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
@@ -108,7 +112,8 @@
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (1:channel-address/raw <- init-channel 1:literal)
-      (r:integer/routine <- fork-helper read-rank:fn nil:literal/globals nil:literal/limit)
+      (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (r:integer/routine <- fork-helper read-rank:fn nil:literal/globals nil:literal/limit dummy:terminal-address)
       (c:character <- copy ((#\9 literal)))
       (x:tagged-value <- save-type c:character)
       (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
