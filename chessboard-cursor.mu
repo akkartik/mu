@@ -239,7 +239,6 @@
 ])
 
 ; tests todo:
-;   print move
 ;   board updates on move
 ;   'q' exits on second move
 ;   flush stdout after printing out move and before clearing screen
