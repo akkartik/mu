@@ -3,7 +3,7 @@ run: 1 main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((3
 sizeof: ((_ location))
 run: 1000 => ((default-space space-address))
 sizeof: ((default-space space-address))
-run: 2 main 1: (((1 channel-address) (raw)) <- ((init-channel)) ((1 literal)))
+run: 2 main 1: (((1 channel-address)) <- ((init-channel)) ((1 literal)))
 run: 3 init-channel 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 1031 => ((default-space space-address))
@@ -71,12 +71,12 @@ setm: ((5 tagged-value-array-address-address) (deref)): setting 1064 to 1065
 run: 13 init-channel 10: (((reply)) ((1 channel-address)))
 m: ((1 channel-address))
 sizeof: ((1 channel-address))
-reply: (((1 channel-address))) (((1 channel-address) (raw)))
-reply: 1062 => ((1 channel-address) (raw))
-setm: ((1 channel-address) (raw)) <= 1062
-setm: size of ((1 channel-address) (raw)) is 1
-setm: ((1 channel-address) (raw)): setting 1 to 1062
-run: 14 main 2: (((1 terminal-address)) <- ((init-fake-terminal)) ((20 literal)) ((10 literal)))
+reply: (((1 channel-address))) (((1 channel-address)))
+reply: 1062 => ((1 channel-address))
+setm: ((1 channel-address)) <= 1062
+setm: size of ((1 channel-address)) is 1
+setm: ((1 channel-address)): setting 1002 to 1062
+run: 14 main 2: (((2 terminal-address)) <- ((init-fake-terminal)) ((20 literal)) ((10 literal)))
 run: 15 init-fake-terminal 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal) (capacity)))
 sizeof: ((_ location))
 run: 1070 => ((default-space space-address))
@@ -7427,39 +7427,41 @@ reply: nil nil
 run: 1238 init-fake-terminal 14: (((reply)) ((1 terminal-address)))
 m: ((1 terminal-address))
 sizeof: ((1 terminal-address))
-reply: (((1 terminal-address))) (((1 terminal-address)))
-reply: 1101 => ((1 terminal-address))
-setm: ((1 terminal-address)) <= 1101
-setm: size of ((1 terminal-address)) is 1
-setm: ((1 terminal-address)): setting 1002 to 1101
-run: 1239 main 3: (((2 integer) (routine)) <- ((fork-helper)) ((read-file fn)) ((nil literal) (globals)) ((nil literal) (limit)) ((1 terminal-address)))
-m: ((1 terminal-address))
-sizeof: ((1 terminal-address))
-run: 1 => ((2 integer) (routine))
-setm: ((2 integer) (routine)) <= 1
-setm: size of ((2 integer) (routine)) is 1
-setm: ((2 integer) (routine)): setting 1003 to 1
-run: 1240 main 4: (((3 character)) <- ((copy)) ((i literal)))
-run: i => ((3 character))
-setm: ((3 character)) <= i
-setm: size of ((3 character)) is 1
-setm: ((3 character)): setting 1004 to i
-run: 1241 main 5: (((4 tagged-value)) <- ((save-type)) ((3 character)))
-m: ((3 character))
-sizeof: ((3 character))
-run: #(tagged record (character i)) => ((4 tagged-value))
-setm: ((4 tagged-value)) <= #(tagged record (character i))
-setm: size of ((4 tagged-value)) is 2
-sizeof: ((4 tagged-value))
+reply: (((1 terminal-address))) (((2 terminal-address)))
+reply: 1101 => ((2 terminal-address))
+setm: ((2 terminal-address)) <= 1101
+setm: size of ((2 terminal-address)) is 1
+setm: ((2 terminal-address)): setting 1003 to 1101
+run: 1239 main 3: (((3 integer) (routine)) <- ((fork-helper)) ((read-file fn)) ((nil literal) (globals)) ((2000 literal) (limit)) ((1 channel-address)) ((2 terminal-address)))
+m: ((1 channel-address))
+sizeof: ((1 channel-address))
+m: ((2 terminal-address))
+sizeof: ((2 terminal-address))
+run: 1 => ((3 integer) (routine))
+setm: ((3 integer) (routine)) <= 1
+setm: size of ((3 integer) (routine)) is 1
+setm: ((3 integer) (routine)): setting 1004 to 1
+run: 1240 main 4: (((4 character)) <- ((copy)) ((i literal)))
+run: i => ((4 character))
+setm: ((4 character)) <= i
+setm: size of ((4 character)) is 1
+setm: ((4 character)): setting 1005 to i
+run: 1241 main 5: (((5 tagged-value)) <- ((save-type)) ((4 character)))
+m: ((4 character))
+sizeof: ((4 character))
+run: #(tagged record (character i)) => ((5 tagged-value))
+setm: ((5 tagged-value)) <= #(tagged record (character i))
+setm: size of ((5 tagged-value)) is 2
+sizeof: ((5 tagged-value))
 sizeof: ((_ type))
 sizeof: ((_ location))
-setm: ((4 tagged-value)): setting 1005 to character
-setm: ((4 tagged-value)): setting 1006 to i
-run: 1242 main 6: (((1 channel-address) (raw) (deref)) <- ((write)) ((1 channel-address) (raw)) ((4 tagged-value)))
-m: ((1 channel-address) (raw))
-sizeof: ((1 channel-address) (raw))
-m: ((4 tagged-value))
-sizeof: ((4 tagged-value))
+setm: ((5 tagged-value)): setting 1006 to character
+setm: ((5 tagged-value)): setting 1007 to i
+run: 1242 main 6: (((1 channel-address) (deref)) <- ((write)) ((1 channel-address)) ((5 tagged-value)))
+m: ((1 channel-address))
+sizeof: ((1 channel-address))
+m: ((5 tagged-value))
+sizeof: ((5 tagged-value))
 sizeof: ((_ type))
 sizeof: ((_ location))
 run: 1243 write 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
@@ -7679,56 +7681,62 @@ sizeof: ((1 channel-address) (deref))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
 sizeof: ((_ tagged-value-array-address))
-reply: (((1 channel-address) (deref))) (((1 channel-address) (raw) (deref)))
-reply: #(tagged record (0 1 1065 . nil)) => ((1 channel-address) (raw) (deref))
-setm: ((1 channel-address) (raw) (deref)) <= #(tagged record (0 1 1065 . nil))
-setm: size of ((1 channel-address) (raw) (deref)) is 3
-sizeof: ((1 channel-address) (raw) (deref))
+reply: (((1 channel-address) (deref))) (((1 channel-address) (deref)))
+reply: #(tagged record (0 1 1065 . nil)) => ((1 channel-address) (deref))
+setm: ((1 channel-address) (deref)) <= #(tagged record (0 1 1065 . nil))
+setm: size of ((1 channel-address) (deref)) is 3
+sizeof: ((1 channel-address) (deref))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
 sizeof: ((_ tagged-value-array-address))
-setm: ((1 channel-address) (raw) (deref)): setting 1062 to 0
-setm: ((1 channel-address) (raw) (deref)): setting 1063 to 1
-setm: ((1 channel-address) (raw) (deref)): setting 1064 to 1065
-run: 1272 main 7: (((sleep)) ((until-routine-done literal)) ((2 integer) (routine)))
-m: ((2 integer) (routine))
-sizeof: ((2 integer) (routine))
+setm: ((1 channel-address) (deref)): setting 1062 to 0
+setm: ((1 channel-address) (deref)): setting 1063 to 1
+setm: ((1 channel-address) (deref)): setting 1064 to 1065
+run: 1272 main 7: (((sleep)) ((until-routine-done literal)) ((3 integer) (routine)))
+m: ((3 integer) (routine))
+sizeof: ((3 integer) (routine))
 schedule: pushing main to sleep queue
 schedule: read-file
 run: 1273 read-file 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 101000 => ((default-space space-address))
 sizeof: ((default-space space-address))
-run: 1274 read-file 1: (((1 terminal-address)) <- ((next-input)))
-arg: nil 0 (1101)
-run: 1101 => ((1 terminal-address))
-setm: ((1 terminal-address)) <= 1101
-setm: size of ((1 terminal-address)) is 1
-setm: ((1 terminal-address)): setting 101002 to 1101
-run: 1275 read-file 2: (((2 tagged-value)) ((1 channel-address) (raw) (deref)) <- ((read)) ((1 channel-address) (raw)))
-m: ((1 channel-address) (raw))
-sizeof: ((1 channel-address) (raw))
-run: 1276 read 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: 1274 read-file 1: (((1 channel-address)) <- ((next-input)))
+arg: nil 0 (1062 1101)
+run: 1062 => ((1 channel-address))
+setm: ((1 channel-address)) <= 1062
+setm: size of ((1 channel-address)) is 1
+setm: ((1 channel-address)): setting 101002 to 1062
+run: 1275 read-file 2: (((2 terminal-address)) <- ((next-input)))
+arg: nil 1 (1062 1101)
+run: 1101 => ((2 terminal-address))
+setm: ((2 terminal-address)) <= 1101
+setm: size of ((2 terminal-address)) is 1
+setm: ((2 terminal-address)): setting 101003 to 1101
+run: 1276 read-file 3: (((3 tagged-value)) ((1 channel-address) (deref)) <- ((read)) ((1 channel-address)))
+m: ((1 channel-address))
+sizeof: ((1 channel-address))
+run: 1277 read 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 101031 => ((default-space space-address))
 sizeof: ((default-space space-address))
-run: 1277 read 1: (((1 channel-address)) <- ((next-input)))
+run: 1278 read 1: (((1 channel-address)) <- ((next-input)))
 arg: nil 0 (1062)
 run: 1062 => ((1 channel-address))
 setm: ((1 channel-address)) <= 1062
 setm: size of ((1 channel-address)) is 1
 setm: ((1 channel-address)): setting 101033 to 1062
-run: 1278 read 2: (((2 boolean)) <- ((empty?)) ((1 channel-address) (deref)))
+run: 1279 read 2: (((2 boolean)) <- ((empty?)) ((1 channel-address) (deref)))
 m: ((1 channel-address) (deref))
 sizeof: ((1 channel-address) (deref))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
 sizeof: ((_ tagged-value-array-address))
-run: 1279 empty? 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: 1280 empty? 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 101062 => ((default-space space-address))
 sizeof: ((default-space space-address))
-run: 1280 empty? 1: (((1 channel)) <- ((next-input)))
+run: 1281 empty? 1: (((1 channel)) <- ((next-input)))
 arg: nil 0 (#(tagged record (0 1 1065 . nil)))
 run: #(tagged record (0 1 1065 . nil)) => ((1 channel))
 setm: ((1 channel)) <= #(tagged record (0 1 1065 . nil))
@@ -7740,14 +7748,14 @@ sizeof: ((_ tagged-value-array-address))
 setm: ((1 channel)): setting 101064 to 0
 setm: ((1 channel)): setting 101065 to 1
 setm: ((1 channel)): setting 101066 to 1065
-run: 1281 empty? 2: (((4 integer)) <- ((get)) ((1 channel)) ((0 offset)))
+run: 1282 empty? 2: (((4 integer)) <- ((get)) ((1 channel)) ((0 offset)))
 m: ((101064 integer) (raw))
 sizeof: ((101064 integer) (raw))
 run: 0 => ((4 integer))
 setm: ((4 integer)) <= 0
 setm: size of ((4 integer)) is 1
 setm: ((4 integer)): setting 101067 to 0
-run: 1282 empty? 3: (((5 integer)) <- ((get)) ((1 channel)) ((1 offset)))
+run: 1283 empty? 3: (((5 integer)) <- ((get)) ((1 channel)) ((1 offset)))
 sizeof: ((_ integer))
 m: ((101065 integer) (raw))
 sizeof: ((101065 integer) (raw))
@@ -7755,7 +7763,7 @@ run: 1 => ((5 integer))
 setm: ((5 integer)) <= 1
 setm: size of ((5 integer)) is 1
 setm: ((5 integer)): setting 101068 to 1
-run: 1283 empty? 4: (((6 boolean)) <- ((equal)) ((4 integer)) ((5 integer)))
+run: 1284 empty? 4: (((6 boolean)) <- ((equal)) ((4 integer)) ((5 integer)))
 m: ((4 integer))
 sizeof: ((4 integer))
 m: ((5 integer))
@@ -7764,7 +7772,7 @@ run: nil => ((6 boolean))
 setm: ((6 boolean)) <= nil
 setm: size of ((6 boolean)) is 1
 setm: ((6 boolean)): setting 101069 to nil
-run: 1284 empty? 5: (((reply)) ((6 boolean)))
+run: 1285 empty? 5: (((reply)) ((6 boolean)))
 m: ((6 boolean))
 sizeof: ((6 boolean))
 reply: (((6 boolean))) (((2 boolean)))
@@ -7772,15 +7780,15 @@ reply: nil => ((2 boolean))
 setm: ((2 boolean)) <= nil
 setm: size of ((2 boolean)) is 1
 setm: ((2 boolean)): setting 101034 to nil
-run: 1285 read 3: (((jump-unless)) ((2 boolean)) ((2 offset)))
+run: 1286 read 3: (((jump-unless)) ((2 boolean)) ((2 offset)))
 m: ((2 boolean))
 sizeof: ((2 boolean))
-run: 1286 read 6: (((4 integer-address)) <- ((get-address)) ((1 channel-address) (deref)) ((0 offset)))
+run: 1287 read 6: (((4 integer-address)) <- ((get-address)) ((1 channel-address) (deref)) ((0 offset)))
 run: 1062 => ((4 integer-address))
 setm: ((4 integer-address)) <= 1062
 setm: size of ((4 integer-address)) is 1
 setm: ((4 integer-address)): setting 101036 to 1062
-run: 1287 read 7: (((5 tagged-value-array-address)) <- ((get)) ((1 channel-address) (deref)) ((2 offset)))
+run: 1288 read 7: (((5 tagged-value-array-address)) <- ((get)) ((1 channel-address) (deref)) ((2 offset)))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
 m: ((1064 tagged-value-array-address) (raw))
@@ -7789,7 +7797,7 @@ run: 1065 => ((5 tagged-value-array-address))
 setm: ((5 tagged-value-array-address)) <= 1065
 setm: size of ((5 tagged-value-array-address)) is 1
 setm: ((5 tagged-value-array-address)): setting 101037 to 1065
-run: 1288 read 8: (((6 tagged-value)) <- ((index)) ((5 tagged-value-array-address) (deref)) ((4 integer-address) (deref)))
+run: 1289 read 8: (((6 tagged-value)) <- ((index)) ((5 tagged-value-array-address) (deref)) ((4 integer-address) (deref)))
 m: ((4 integer-address) (deref))
 sizeof: ((4 integer-address) (deref))
 array-len: ((1065 tagged-value-array) (raw))
@@ -7810,14 +7818,14 @@ sizeof: ((_ type))
 sizeof: ((_ location))
 setm: ((6 tagged-value)): setting 101038 to character
 setm: ((6 tagged-value)): setting 101039 to i
-run: 1289 read 9: (((4 integer-address) (deref)) <- ((add)) ((4 integer-address) (deref)) ((1 literal)))
+run: 1290 read 9: (((4 integer-address) (deref)) <- ((add)) ((4 integer-address) (deref)) ((1 literal)))
 m: ((4 integer-address) (deref))
 sizeof: ((4 integer-address) (deref))
 run: 1 => ((4 integer-address) (deref))
 setm: ((4 integer-address) (deref)) <= 1
 setm: size of ((4 integer-address) (deref)) is 1
 setm: ((4 integer-address) (deref)): setting 1062 to 1
-run: 1290 read 10: (((8 integer)) <- ((length)) ((5 tagged-value-array-address) (deref)))
+run: 1291 read 10: (((8 integer)) <- ((length)) ((5 tagged-value-array-address) (deref)))
 array-len: ((5 tagged-value-array-address) (deref))
 m: ((1065 integer) (raw))
 sizeof: ((1065 integer) (raw))
@@ -7825,7 +7833,7 @@ run: 2 => ((8 integer))
 setm: ((8 integer)) <= 2
 setm: size of ((8 integer)) is 1
 setm: ((8 integer)): setting 101040 to 2
-run: 1291 read 11: (((9 boolean)) <- ((less-than)) ((4 integer-address) (deref)) ((8 integer)))
+run: 1292 read 11: (((9 boolean)) <- ((less-than)) ((4 integer-address) (deref)) ((8 integer)))
 m: ((4 integer-address) (deref))
 sizeof: ((4 integer-address) (deref))
 m: ((8 integer))
@@ -7834,10 +7842,10 @@ run: t => ((9 boolean))
 setm: ((9 boolean)) <= t
 setm: size of ((9 boolean)) is 1
 setm: ((9 boolean)): setting 101041 to t
-run: 1292 read 12: (((jump-if)) ((9 boolean)) ((1 offset)))
+run: 1293 read 12: (((jump-if)) ((9 boolean)) ((1 offset)))
 m: ((9 boolean))
 sizeof: ((9 boolean))
-run: 1293 read 14: (((reply)) ((6 tagged-value)) ((1 channel-address) (deref)))
+run: 1294 read 14: (((reply)) ((6 tagged-value)) ((1 channel-address) (deref)))
 m: ((6 tagged-value))
 sizeof: ((6 tagged-value))
 sizeof: ((_ type))
@@ -7847,47 +7855,47 @@ sizeof: ((1 channel-address) (deref))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
 sizeof: ((_ tagged-value-array-address))
-reply: (((6 tagged-value)) ((1 channel-address) (deref))) (((2 tagged-value)) ((1 channel-address) (raw) (deref)))
-reply: #(tagged record (character i . nil)) => ((2 tagged-value))
-setm: ((2 tagged-value)) <= #(tagged record (character i . nil))
-setm: size of ((2 tagged-value)) is 2
-sizeof: ((2 tagged-value))
+reply: (((6 tagged-value)) ((1 channel-address) (deref))) (((3 tagged-value)) ((1 channel-address) (deref)))
+reply: #(tagged record (character i . nil)) => ((3 tagged-value))
+setm: ((3 tagged-value)) <= #(tagged record (character i . nil))
+setm: size of ((3 tagged-value)) is 2
+sizeof: ((3 tagged-value))
 sizeof: ((_ type))
 sizeof: ((_ location))
-setm: ((2 tagged-value)): setting 101003 to character
-setm: ((2 tagged-value)): setting 101004 to i
-reply: #(tagged record (1 1 1065 . nil)) => ((1 channel-address) (raw) (deref))
-setm: ((1 channel-address) (raw) (deref)) <= #(tagged record (1 1 1065 . nil))
-setm: size of ((1 channel-address) (raw) (deref)) is 3
-sizeof: ((1 channel-address) (raw) (deref))
+setm: ((3 tagged-value)): setting 101004 to character
+setm: ((3 tagged-value)): setting 101005 to i
+reply: #(tagged record (1 1 1065 . nil)) => ((1 channel-address) (deref))
+setm: ((1 channel-address) (deref)) <= #(tagged record (1 1 1065 . nil))
+setm: size of ((1 channel-address) (deref)) is 3
+sizeof: ((1 channel-address) (deref))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
 sizeof: ((_ tagged-value-array-address))
-setm: ((1 channel-address) (raw) (deref)): setting 1062 to 1
-setm: ((1 channel-address) (raw) (deref)): setting 1063 to 1
-setm: ((1 channel-address) (raw) (deref)): setting 1064 to 1065
-run: 1294 read-file 3: (((4 character)) <- ((copy)) ((a literal)))
-run: a => ((4 character))
-setm: ((4 character)) <= a
-setm: size of ((4 character)) is 1
-setm: ((4 character)): setting 101005 to a
-run: 1295 read-file 4: (((5 integer)) <- ((character-to-integer)) ((4 character)))
-m: ((4 character))
-sizeof: ((4 character))
-run: 97 => ((5 integer))
-setm: ((5 integer)) <= 97
-setm: size of ((5 integer)) is 1
-setm: ((5 integer)): setting 101006 to 97
-run: 1296 read-file 5: (((6 character)) <- ((maybe-coerce)) ((2 tagged-value)) ((character literal)))
-m: ((2 tagged-value))
-sizeof: ((2 tagged-value))
+setm: ((1 channel-address) (deref)): setting 1062 to 1
+setm: ((1 channel-address) (deref)): setting 1063 to 1
+setm: ((1 channel-address) (deref)): setting 1064 to 1065
+run: 1295 read-file 4: (((5 character)) <- ((copy)) ((a literal)))
+run: a => ((5 character))
+setm: ((5 character)) <= a
+setm: size of ((5 character)) is 1
+setm: ((5 character)): setting 101006 to a
+run: 1296 read-file 5: (((6 integer)) <- ((character-to-integer)) ((5 character)))
+m: ((5 character))
+sizeof: ((5 character))
+run: 97 => ((6 integer))
+setm: ((6 integer)) <= 97
+setm: size of ((6 integer)) is 1
+setm: ((6 integer)): setting 101007 to 97
+run: 1297 read-file 6: (((7 character)) <- ((maybe-coerce)) ((3 tagged-value)) ((character literal)))
+m: ((3 tagged-value))
+sizeof: ((3 tagged-value))
 sizeof: ((_ type))
 sizeof: ((_ location))
-run: 1297 maybe-coerce 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: 1298 maybe-coerce 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 101093 => ((default-space space-address))
 sizeof: ((default-space space-address))
-run: 1298 maybe-coerce 1: (((1 tagged-value-address)) <- ((new)) ((tagged-value literal)))
+run: 1299 maybe-coerce 1: (((1 tagged-value-address)) <- ((new)) ((tagged-value literal)))
 sizeof: ((_ tagged-value))
 sizeof: ((_ type))
 sizeof: ((_ location))
@@ -7895,7 +7903,7 @@ run: 101124 => ((1 tagged-value-address))
 setm: ((1 tagged-value-address)) <= 101124
 setm: size of ((1 tagged-value-address)) is 1
 setm: ((1 tagged-value-address)): setting 101095 to 101124
-run: 1299 maybe-coerce 2: (((1 tagged-value-address) (deref)) <- ((next-input)))
+run: 1300 maybe-coerce 2: (((1 tagged-value-address) (deref)) <- ((next-input)))
 arg: nil 0 (#(tagged record (character i . nil)) character)
 run: #(tagged record (character i . nil)) => ((1 tagged-value-address) (deref))
 setm: ((1 tagged-value-address) (deref)) <= #(tagged record (character i . nil))
@@ -7905,20 +7913,20 @@ sizeof: ((_ type))
 sizeof: ((_ location))
 setm: ((1 tagged-value-address) (deref)): setting 101124 to character
 setm: ((1 tagged-value-address) (deref)): setting 101125 to i
-run: 1300 maybe-coerce 3: (((2 type)) <- ((next-input)))
+run: 1301 maybe-coerce 3: (((2 type)) <- ((next-input)))
 arg: nil 1 (#(tagged record (character i . nil)) character)
 run: character => ((2 type))
 setm: ((2 type)) <= character
 setm: size of ((2 type)) is 1
 setm: ((2 type)): setting 101096 to character
-run: 1301 maybe-coerce 4: (((3 type)) <- ((get)) ((1 tagged-value-address) (deref)) ((0 offset)))
+run: 1302 maybe-coerce 4: (((3 type)) <- ((get)) ((1 tagged-value-address) (deref)) ((0 offset)))
 m: ((101124 type) (raw))
 sizeof: ((101124 type) (raw))
 run: character => ((3 type))
 setm: ((3 type)) <= character
 setm: size of ((3 type)) is 1
 setm: ((3 type)): setting 101097 to character
-run: 1302 maybe-coerce 5: (((4 boolean)) <- ((equal)) ((3 type)) ((2 type)))
+run: 1303 maybe-coerce 5: (((4 boolean)) <- ((equal)) ((3 type)) ((2 type)))
 m: ((3 type))
 sizeof: ((3 type))
 m: ((2 type))
@@ -7927,10 +7935,10 @@ run: t => ((4 boolean))
 setm: ((4 boolean)) <= t
 setm: size of ((4 boolean)) is 1
 setm: ((4 boolean)): setting 101098 to t
-run: 1303 maybe-coerce 6: (((jump-if)) ((4 boolean)) ((1 offset)))
+run: 1304 maybe-coerce 6: (((jump-if)) ((4 boolean)) ((1 offset)))
 m: ((4 boolean))
 sizeof: ((4 boolean))
-run: 1304 maybe-coerce 8: (((5 location)) <- ((get)) ((1 tagged-value-address) (deref)) ((1 offset)))
+run: 1305 maybe-coerce 8: (((5 location)) <- ((get)) ((1 tagged-value-address) (deref)) ((1 offset)))
 sizeof: ((_ type))
 m: ((101125 location) (raw))
 sizeof: ((101125 location) (raw))
@@ -7938,48 +7946,48 @@ run: i => ((5 location))
 setm: ((5 location)) <= i
 setm: size of ((5 location)) is 1
 setm: ((5 location)): setting 101099 to i
-run: 1305 maybe-coerce 9: (((reply)) ((5 location)) ((4 boolean)))
+run: 1306 maybe-coerce 9: (((reply)) ((5 location)) ((4 boolean)))
 m: ((5 location))
 sizeof: ((5 location))
 m: ((4 boolean))
 sizeof: ((4 boolean))
-reply: (((5 location)) ((4 boolean))) (((6 character)))
-reply: i => ((6 character))
-setm: ((6 character)) <= i
-setm: size of ((6 character)) is 1
-setm: ((6 character)): setting 101007 to i
-run: 1306 read-file 6: (((print-character)) ((1 terminal-address)) ((6 character)))
-m: ((1 terminal-address))
-sizeof: ((1 terminal-address))
-m: ((6 character))
-sizeof: ((6 character))
-run: 1307 print-character 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+reply: (((5 location)) ((4 boolean))) (((7 character)))
+reply: i => ((7 character))
+setm: ((7 character)) <= i
+setm: size of ((7 character)) is 1
+setm: ((7 character)): setting 101008 to i
+run: 1307 read-file 7: (((print-character)) ((2 terminal-address)) ((7 character)))
+m: ((2 terminal-address))
+sizeof: ((2 terminal-address))
+m: ((7 character))
+sizeof: ((7 character))
+run: 1308 print-character 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
 sizeof: ((_ location))
 run: 101126 => ((default-space space-address))
 sizeof: ((default-space space-address))
-run: 1308 print-character 1: (((1 terminal-address)) <- ((next-input)))
+run: 1309 print-character 1: (((1 terminal-address)) <- ((next-input)))
 arg: nil 0 (1101 i)
 run: 1101 => ((1 terminal-address))
 setm: ((1 terminal-address)) <= 1101
 setm: size of ((1 terminal-address)) is 1
 setm: ((1 terminal-address)): setting 101128 to 1101
-run: 1309 print-character 2: (((2 character)) <- ((next-input)))
+run: 1310 print-character 2: (((2 character)) <- ((next-input)))
 arg: nil 1 (1101 i)
 run: i => ((2 character))
 setm: ((2 character)) <= i
 setm: size of ((2 character)) is 1
 setm: ((2 character)): setting 101129 to i
-run: 1310 print-character 3: (((jump-unless)) ((1 terminal-address)) ((10 offset)))
+run: 1311 print-character 3: (((jump-unless)) ((1 terminal-address)) ((10 offset)))
 m: ((1 terminal-address))
 sizeof: ((1 terminal-address))
-run: 1311 print-character 4: (((3 integer-address)) <- ((get-address)) ((1 terminal-address) (deref)) ((2 offset)))
+run: 1312 print-character 4: (((3 integer-address)) <- ((get-address)) ((1 terminal-address) (deref)) ((2 offset)))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
 run: 1103 => ((3 integer-address))
 setm: ((3 integer-address)) <= 1103
 setm: size of ((3 integer-address)) is 1
 setm: ((3 integer-address)): setting 101130 to 1103
-run: 1312 print-character 5: (((4 integer-address)) <- ((get-address)) ((1 terminal-address) (deref)) ((3 offset)))
+run: 1313 print-character 5: (((4 integer-address)) <- ((get-address)) ((1 terminal-address) (deref)) ((3 offset)))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
@@ -7987,7 +7995,7 @@ run: 1104 => ((4 integer-address))
 setm: ((4 integer-address)) <= 1104
 setm: size of ((4 integer-address)) is 1
 setm: ((4 integer-address)): setting 101131 to 1104
-run: 1313 print-character 6: (((5 integer)) <- ((get)) ((1 terminal-address) (deref)) ((1 offset)))
+run: 1314 print-character 6: (((5 integer)) <- ((get)) ((1 terminal-address) (deref)) ((1 offset)))
 sizeof: ((_ integer))
 m: ((1102 integer) (raw))
 sizeof: ((1102 integer) (raw))
@@ -7995,7 +8003,7 @@ run: 20 => ((5 integer))
 setm: ((5 integer)) <= 20
 setm: size of ((5 integer)) is 1
 setm: ((5 integer)): setting 101132 to 20
-run: 1314 print-character 7: (((6 integer)) <- ((multiply)) ((3 integer-address) (deref)) ((5 integer)))
+run: 1315 print-character 7: (((6 integer)) <- ((multiply)) ((3 integer-address) (deref)) ((5 integer)))
 m: ((3 integer-address) (deref))
 sizeof: ((3 integer-address) (deref))
 m: ((5 integer))
@@ -8004,7 +8012,7 @@ run: 0 => ((6 integer))
 setm: ((6 integer)) <= 0
 setm: size of ((6 integer)) is 1
 setm: ((6 integer)): setting 101133 to 0
-run: 1315 print-character 8: (((7 integer)) <- ((add)) ((6 integer)) ((4 integer-address) (deref)))
+run: 1316 print-character 8: (((7 integer)) <- ((add)) ((6 integer)) ((4 integer-address) (deref)))
 m: ((6 integer))
 sizeof: ((6 integer))
 m: ((4 integer-address) (deref))
@@ -8013,7 +8021,7 @@ run: 0 => ((7 integer))
 setm: ((7 integer)) <= 0
 setm: size of ((7 integer)) is 1
 setm: ((7 integer)): setting 101134 to 0
-run: 1316 print-character 9: (((8 string-address)) <- ((get)) ((1 terminal-address) (deref)) ((4 offset)))
+run: 1317 print-character 9: (((8 string-address)) <- ((get)) ((1 terminal-address) (deref)) ((4 offset)))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
 sizeof: ((_ integer))
@@ -8024,7 +8032,7 @@ run: 1106 => ((8 string-address))
 setm: ((8 string-address)) <= 1106
 setm: size of ((8 string-address)) is 1
 setm: ((8 string-address)): setting 101135 to 1106
-run: 1317 print-character 10: (((9 byte-address)) <- ((index-address)) ((8 string-address) (deref)) ((7 integer)))
+run: 1318 print-character 10: (((9 byte-address)) <- ((index-address)) ((8 string-address) (deref)) ((7 integer)))
 m: ((7 integer))
 sizeof: ((7 integer))
 array-len: ((1106 string) (raw))
@@ -8035,68 +8043,68 @@ run: 1107 => ((9 byte-address))
 setm: ((9 byte-address)) <= 1107
 setm: size of ((9 byte-address)) is 1
 setm: ((9 byte-address)): setting 101136 to 1107
-run: 1318 print-character 11: (((9 byte-address) (deref)) <- ((copy)) ((2 character)))
+run: 1319 print-character 11: (((9 byte-address) (deref)) <- ((copy)) ((2 character)))
 m: ((2 character))
 sizeof: ((2 character))
 run: i => ((9 byte-address) (deref))
 setm: ((9 byte-address) (deref)) <= i
 setm: size of ((9 byte-address) (deref)) is 1
 setm: ((9 byte-address) (deref)): setting 1107 to i
-run: 1319 print-character 12: (((4 integer-address) (deref)) <- ((add)) ((4 integer-address) (deref)) ((1 literal)))
+run: 1320 print-character 12: (((4 integer-address) (deref)) <- ((add)) ((4 integer-address) (deref)) ((1 literal)))
 m: ((4 integer-address) (deref))
 sizeof: ((4 integer-address) (deref))
 run: 1 => ((4 integer-address) (deref))
 setm: ((4 integer-address) (deref)) <= 1
 setm: size of ((4 integer-address) (deref)) is 1
 setm: ((4 integer-address) (deref)): setting 1104 to 1
-run: 1320 print-character 13: (((reply)))
+run: 1321 print-character 13: (((reply)))
 reply: nil nil
-run: 1321 read-file 7: (((7 boolean)) <- ((equal)) ((6 character)) ((q literal)))
-m: ((6 character))
-sizeof: ((6 character))
-run: nil => ((7 boolean))
-setm: ((7 boolean)) <= nil
-setm: size of ((7 boolean)) is 1
-setm: ((7 boolean)): setting 101008 to nil
-run: 1322 read-file 8: (((jump-unless)) ((7 boolean)) ((1 offset)))
-m: ((7 boolean))
-sizeof: ((7 boolean))
-run: 1323 read-file 10: (((8 integer)) <- ((character-to-integer)) ((6 character)))
-m: ((6 character))
-sizeof: ((6 character))
-run: 105 => ((8 integer))
-setm: ((8 integer)) <= 105
-setm: size of ((8 integer)) is 1
-setm: ((8 integer)): setting 101009 to 105
-run: 1324 read-file 11: (((8 integer)) <- ((subtract)) ((8 integer)) ((5 integer)))
-m: ((8 integer))
-sizeof: ((8 integer))
-m: ((5 integer))
-sizeof: ((5 integer))
-run: 8 => ((8 integer))
-setm: ((8 integer)) <= 8
-setm: size of ((8 integer)) is 1
-setm: ((8 integer)): setting 101009 to 8
-run: 1325 read-file 12: (((9 boolean)) <- ((greater-or-equal)) ((8 integer)) ((0 literal)))
-m: ((8 integer))
-sizeof: ((8 integer))
-run: t => ((9 boolean))
-setm: ((9 boolean)) <= t
-setm: size of ((9 boolean)) is 1
-setm: ((9 boolean)): setting 101010 to t
-run: 1326 read-file 13: (((assert)) ((9 boolean)) ((file too low literal)))
-m: ((9 boolean))
-sizeof: ((9 boolean))
-run: 1327 read-file 14: (((10 boolean)) <- ((lesser-or-equal)) ((8 integer)) ((7 literal)))
-m: ((8 integer))
-sizeof: ((8 integer))
-run: nil => ((10 boolean))
-setm: ((10 boolean)) <= nil
+run: 1322 read-file 8: (((8 boolean)) <- ((equal)) ((7 character)) ((q literal)))
+m: ((7 character))
+sizeof: ((7 character))
+run: nil => ((8 boolean))
+setm: ((8 boolean)) <= nil
+setm: size of ((8 boolean)) is 1
+setm: ((8 boolean)): setting 101009 to nil
+run: 1323 read-file 9: (((jump-unless)) ((8 boolean)) ((1 offset)))
+m: ((8 boolean))
+sizeof: ((8 boolean))
+run: 1324 read-file 11: (((9 integer)) <- ((character-to-integer)) ((7 character)))
+m: ((7 character))
+sizeof: ((7 character))
+run: 105 => ((9 integer))
+setm: ((9 integer)) <= 105
+setm: size of ((9 integer)) is 1
+setm: ((9 integer)): setting 101010 to 105
+run: 1325 read-file 12: (((9 integer)) <- ((subtract)) ((9 integer)) ((6 integer)))
+m: ((9 integer))
+sizeof: ((9 integer))
+m: ((6 integer))
+sizeof: ((6 integer))
+run: 8 => ((9 integer))
+setm: ((9 integer)) <= 8
+setm: size of ((9 integer)) is 1
+setm: ((9 integer)): setting 101010 to 8
+run: 1326 read-file 13: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((0 literal)))
+m: ((9 integer))
+sizeof: ((9 integer))
+run: t => ((10 boolean))
+setm: ((10 boolean)) <= t
 setm: size of ((10 boolean)) is 1
-setm: ((10 boolean)): setting 101011 to nil
-run: 1328 read-file 15: (((assert)) ((10 boolean)) ((file too high literal)))
+setm: ((10 boolean)): setting 101011 to t
+run: 1327 read-file 14: (((assert)) ((10 boolean)) ((file too low literal)))
 m: ((10 boolean))
 sizeof: ((10 boolean))
+run: 1328 read-file 15: (((11 boolean)) <- ((lesser-or-equal)) ((9 integer)) ((7 literal)))
+m: ((9 integer))
+sizeof: ((9 integer))
+run: nil => ((11 boolean))
+setm: ((11 boolean)) <= nil
+setm: size of ((11 boolean)) is 1
+setm: ((11 boolean)): setting 101012 to nil
+run: 1329 read-file 16: (((assert)) ((11 boolean)) ((file too high literal)))
+m: ((11 boolean))
+sizeof: ((11 boolean))
 -: die: file too high
 schedule: done with dead routine read-file
 schedule: waking up main
