@@ -7,8 +7,9 @@
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (1:channel-address/raw <- init-channel 1:literal)
-      (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
-      (r:integer/routine <- fork read-move:fn nil:literal/globals 2000:literal/limit dummy:terminal-address)
+      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (2:string-address/raw <- get screen:terminal-address/deref data:offset)
+      (r:integer/routine <- fork read-move:fn nil:literal/globals 2000:literal/limit screen:terminal-address)
       (c:character <- copy ((#\a literal)))
       (x:tagged-value <- save-type c:character)
       (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
@@ -35,6 +36,8 @@
     (prn "error - " it)))
 (when (~ran-to-completion 'read-move)
   (prn "F - chessboard accepts legal moves (<rank><file>-<rank><file>)"))
+(when (~memory-contains-array memory*.2 "a2-a4")
+  (prn "F - chessboard prints moves read from keyboard"))
 ;? (quit)
 
 (reset)
@@ -44,8 +47,9 @@
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (1:channel-address/raw <- init-channel 1:literal)
-      (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
-      (r:integer/routine <- fork-helper read-move:fn nil:literal/globals 2000:literal/limit dummy:terminal-address)
+      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (2:string-address/raw <- get screen:terminal-address/deref data:offset)
+      (r:integer/routine <- fork-helper read-move:fn nil:literal/globals 2000:literal/limit screen:terminal-address)
       (c:character <- copy ((#\a literal)))
       (x:tagged-value <- save-type c:character)
       (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
@@ -63,6 +67,8 @@
 (run 'main)
 (when (ran-to-completion 'read-move)
   (prn "F - chessboard hangs until 5 characters are entered"))
+(when (~memory-contains-array memory*.2 "a2-a")
+  (prn "F - chessboard prints keys from keyboard before entire move is read"))
 
 (reset)
 (new-trace "read-move-quit")
