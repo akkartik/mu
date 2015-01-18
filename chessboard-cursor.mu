@@ -249,7 +249,6 @@
 ])
 
 ; tests todo:
-;   print board
 ;   print move
 ;   board updates on move
 ;   'q' exits on second move
