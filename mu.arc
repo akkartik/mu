@@ -2165,6 +2165,8 @@
   }
 )
 
+; remember to call this before you clear the screen or at any other milestone
+; in an interactive program
 (init-fn flush-stdout
   (sleep for-some-cycles:literal 1:literal)
 )
