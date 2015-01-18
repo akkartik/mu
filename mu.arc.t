@@ -3730,7 +3730,9 @@
 
 ;; ---
 
-(section 100  ; string utilities
+(section 100
+
+; String utilities
 
 (reset)
 (new-trace "string-new")
@@ -4069,6 +4071,7 @@
   (when (~memory-contains-array base "-237")
     (prn "F - converting negative integer to decimal string")))
 
+; fake screen for tests; prints go to a string
 (reset)
 (new-trace "fake-screen-initial")
 (add-code:readfile "chessboard-cursor.mu")
@@ -4095,7 +4098,7 @@
              "                    "))
   (prn "F - fake screen starts out with all spaces"))
 
-)  ; section 100 for string utilities
+)  ; section 100
 
 (reset)
 (new-trace "parse-and-record")
