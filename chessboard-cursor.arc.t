@@ -168,6 +168,63 @@
              "1 | R N B Q K B N R "
              "  +---------------- "
              "    a b c d e f g h "))
-  (prn "F - print-board doesn't work; chessboard begins at @memory*.5"))
+  (prn "F - print-board works; chessboard begins at @memory*.5"))
+
+; todo: how to fold this more elegantly with the previous test?
+(reset)
+(new-trace "make-move")
+(add-code:readfile "chessboard-cursor.mu")
+(add-code
+  '((function! main [
+      (default-space:space-address <- new space:literal 30:literal/capacity)
+      ; hook up stdin
+      (1:channel-address/raw <- init-channel 1:literal)
+      ; fake screen
+      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      ; initial position
+      (initial-position:list-address <- init-list ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal))
+                                                  ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                                  ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                                  ((#\Q literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\q literal))
+                                                  ((#\K literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\k literal))
+                                                  ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                                  ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                                  ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal)))
+      (b:board-address <- init-board initial-position:list-address)
+      ; move: a2-a4
+      (m:move-address <- new move:literal)
+      (f:integer-integer-pair-address <- get-address m:move-address/deref from:offset)
+      (dest:integer-address <- get-address f:integer-integer-pair-address/deref 0:offset)
+      (dest:integer-address/deref <- copy 0:literal)  ; from-file: a
+      (dest:integer-address <- get-address f:integer-integer-pair-address/deref 1:offset)
+      (dest:integer-address/deref <- copy 1:literal)  ; from-rank: 2
+      (t0:integer-integer-pair-address <- get-address m:move-address/deref to:offset)
+      (dest:integer-address <- get-address t0:integer-integer-pair-address/deref 0:offset)
+      (dest:integer-address/deref <- copy 0:literal)  ; to-file: a
+      (dest:integer-address <- get-address t0:integer-integer-pair-address/deref 1:offset)
+      (dest:integer-address/deref <- copy 3:literal)  ; to-rank: 4
+      (b:board-address <- make-move b:board-address m:move-address)
+      (print-board screen:terminal-address b:board-address)
+      (5:string-address/raw <- get screen:terminal-address/deref data:offset)
+     ])))
+;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("run")))
+(run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+;? (prn memory*.5)
+(when (~memory-contains-array memory*.5
+          (+ "8 | r n b q k b n r "
+             "7 | p p p p p p p p "
+             "6 | _ _ _ _ _ _ _ _ "
+             "5 | _ _ _ _ _ _ _ _ "
+             "4 | P _ _ _ _ _ _ _ "
+             "3 | _ _ _ _ _ _ _ _ "
+             "2 | _ P P P P P P P "
+             "1 | R N B Q K B N R "
+             "  +---------------- "
+             "    a b c d e f g h "))
+  (prn "F - make-move works; chessboard begins at @memory*.5"))
 
 (reset)
