@@ -58,7 +58,8 @@
     ; print rank number as a legend
     (rank:integer <- add row:integer 1:literal)
     (print-integer screen:terminal-address rank:integer)
-    (print-primitive-to-host ((" | " literal)))
+    (s:string-address <- new " | ")
+    (print-string screen:terminal-address s:string-address)
     ; print each square in the row
     (col:integer <- copy 0:literal)
     { begin
@@ -66,8 +67,8 @@
       (break-if done?:boolean)
       (f:file-address <- index b:board-address/deref col:integer)
       (s:square <- index f:file-address/deref row:integer)
-      (print-primitive-to-host s:square)
-      (print-primitive-to-host ((" " literal)))
+      (print-character screen:terminal-address s:square)
+      (print-character screen:terminal-address ((#\space literal)))
       (col:integer <- add col:integer 1:literal)
       (loop)
     }
@@ -76,9 +77,11 @@
     (loop)
   }
   ; print file letters as legend
-  (print-primitive-to-host (("  +----------------" literal)))
+  (s:string-address <- new "  +----------------")
+  (print-string screen:terminal-address s:string-address)
   (cursor-to-next-line screen:terminal-address)
-  (print-primitive-to-host (("    a b c d e f g h" literal)))
+  (s:string-address <- new "    a b c d e f g h")
+  (print-string screen:terminal-address s:string-address)
   (cursor-to-next-line screen:terminal-address)
 ])
 
@@ -207,14 +210,14 @@
 
 (function main [
   (default-space:space-address <- new space:literal 30:literal)
-  (initial-position:list-address <- init-list R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal
-                                              N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
-                                              B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
-                                              Q:literal P:literal _:literal _:literal _:literal _:literal p:literal q:literal
-                                              K:literal P:literal _:literal _:literal _:literal _:literal p:literal k:literal
-                                              B:literal P:literal _:literal _:literal _:literal _:literal p:literal b:literal
-                                              N:literal P:literal _:literal _:literal _:literal _:literal p:literal n:literal
-                                              R:literal P:literal _:literal _:literal _:literal _:literal p:literal r:literal)
+  (initial-position:list-address <- init-list ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal))
+                                              ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                              ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                              ((#\Q literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\q literal))
+                                              ((#\K literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\k literal))
+                                              ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                              ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                              ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal)))
   (b:board-address <- init-board initial-position:list-address)
   (cursor-mode)
   ; hook up stdin

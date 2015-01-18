@@ -121,3 +121,60 @@
   (prn "F - 'read-rank' checks that rank lies between '1' and '8'"))
 
 (reset)
+(new-trace "print-board")
+(add-code:readfile "chessboard-cursor.mu")
+(add-code
+  '((function! main [
+      (default-space:space-address <- new space:literal 30:literal/capacity)
+      (initial-position:list-address <- init-list ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal))
+                                                  ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                                  ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                                  ((#\Q literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\q literal))
+                                                  ((#\K literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\k literal))
+                                                  ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                                  ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                                  ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal)))
+      (b:board-address <- init-board initial-position:list-address)
+      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (print-board screen:terminal-address b:board-address)
+      (5:string-address/raw <- get screen:terminal-address/deref data:offset)
+     ])))
+;? (set dump-trace*)
+;? (= dump-trace* (obj whitelist '("run")))
+(run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+;? (prn memory*.5)
+;? (prn (memory* memory*.5))
+;? (write (memory* (+ memory*.5 1))) (prn)
+;? (write (memory* (+ memory*.5 4))) (prn)
+;? (write (memory* (+ memory*.5 5))) (prn)
+;? (prn:type (memory* (+ memory*.5 5)))
+;? (write (memory* (+ memory*.5 6))) (prn)
+;? (prn int-canon.memory*)
+;? (prn:len
+;?                         (+ "8 | r n b q k b n r "
+;?                            "7 | p p p p p p p p "
+;?                            "6 | _ _ _ _ _ _ _ _ "
+;?                            "5 | _ _ _ _ _ _ _ _ "
+;?                            "4 | _ _ _ _ _ _ _ _ "
+;?                            "3 | _ _ _ _ _ _ _ _ "
+;?                            "2 | P P P P P P P P "
+;?                            "1 | R N B Q K B N R "
+;?                            "  +---------------- "
+;?                            "    a b c d e f g h "))
+(when (~memory-contains-array memory*.5
+          (+ "8 | r n b q k b n r "
+             "7 | p p p p p p p p "
+             "6 | _ _ _ _ _ _ _ _ "
+             "5 | _ _ _ _ _ _ _ _ "
+             "4 | _ _ _ _ _ _ _ _ "
+             "3 | _ _ _ _ _ _ _ _ "
+             "2 | P P P P P P P P "
+             "1 | R N B Q K B N R "
+             "  +---------------- "
+             "    a b c d e f g h "))
+  (prn "F - print-board doesn't work; chessboard begins at @memory*.5"))
+
+(reset)
