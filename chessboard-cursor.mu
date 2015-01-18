@@ -196,7 +196,7 @@
   (f:file-address <- index b:board-address/deref to-file:integer)
   (dest:square-address <- index-address f:file-address/deref to-rank:integer)
   (dest:square-address/deref <- copy src:square-address/deref)
-  (src:square-address/deref <- copy _:literal)
+  (src:square-address/deref <- copy ((#\_ literal)))
   (reply b:board-address)
 ])
 
@@ -236,8 +236,5 @@
   (cursor-to-next-line)
 ])
 
-; tests todo:
-;   board updates on move
-;   'q' exits on second move
-;
+; todo:
 ;   backspace, ctrl-u
