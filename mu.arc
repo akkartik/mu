@@ -210,8 +210,9 @@
 
 ; routine = runtime state for a serial thread of execution
 (def make-routine (fn-name . args)
-  (do1
-    (annotate 'routine (obj alloc Memory-allocated-until
+  (let curr-alloc Memory-allocated-until
+    (++ Memory-allocated-until 100000)
+    (annotate 'routine (obj alloc curr-alloc  alloc-max Memory-allocated-until
         call-stack
           (list (obj fn-name fn-name  pc 0  args args  caller-arg-idx 0))))
         ; other fields we use in routine:
@@ -221,7 +222,7 @@
 
     ; todo: allow routines to expand past initial allocation
     ; todo: do memory management in mu
-    (++ Memory-allocated-until 1000)))
+    ))
 
 (defextend empty (x)  (isa x 'routine)
   (no rep.x!call-stack))
@@ -962,13 +963,19 @@
 (def new-scalar (type)
 ;?   (tr "new scalar: @type")
   (ret result rep.routine*!alloc
-    (++ rep.routine*!alloc (sizeof `((_ ,type))))))
+    (++ rep.routine*!alloc (sizeof `((_ ,type))))
+;?     (tr "new-scalar: @result => @rep.routine*!alloc")
+    (assert (< rep.routine*!alloc rep.routine*!alloc-max) "allocation overflowed routine space @rep.routine*!alloc - @rep.routine*!alloc-max")
+    ))
 
 (def new-array (type size)
 ;?   (tr "new array: @type @size")
   (ret result rep.routine*!alloc
     (++ rep.routine*!alloc (+ 1 (* (sizeof `((_ ,@type*.type!elem))) size)))
-    (= memory*.result size)))
+;?     (tr "new-array: @result => @rep.routine*!alloc")
+    (= memory*.result size)
+    (assert (< rep.routine*!alloc rep.routine*!alloc-max) "allocation overflowed routine space @rep.routine*!alloc - @rep.routine*!alloc-max")
+    ))
 
 (def new-string (literal-string)
 ;?   (tr "new string: @literal-string")
@@ -977,7 +984,10 @@
     (++ rep.routine*!alloc)
     (each c literal-string
       (= (memory* rep.routine*!alloc) c)
-      (++ rep.routine*!alloc))))
+      (++ rep.routine*!alloc))
+;?     (tr "new-string: @result => @rep.routine*!alloc")
+    (assert (< rep.routine*!alloc rep.routine*!alloc-max) "allocation overflowed routine space @rep.routine*!alloc - @rep.routine*!alloc-max")
+    ))
 
 ;; desugar structured assembly based on blocks
 
@@ -2104,7 +2114,9 @@
   (when ($.graphics-open?) ($.close-viewport Viewport) ($.close-graphics))
   (prn "\nmemory: " int-canon.memory*)
   (each routine completed-routines*
-    (aif rep.routine!error (prn "error - " it)))
+    (awhen rep.routine!error
+      (prn "error - " it)
+      (prn routine)))
 )
 (reset)
 ;? (print-times)
