@@ -199,7 +199,7 @@
               line-address-address (obj size 1  address t  elem '(line-address))
               screen (obj array t  elem '(line-address))
               screen-address (obj size 1  address t  elem '(screen))
-              terminal (obj size 3  and-record t  elems '((integer) (integer) (string-address))  fields '(rows cols data))
+              terminal (obj size 5  and-record t  elems '((integer) (integer) (integer) (integer) (string-address))  fields '(num-rows num-cols cursor-row cursor-col data))
               terminal-address (obj size 1  address t  elem '(terminal))
               )))
 
@@ -663,7 +663,10 @@
                 cursor-on-host-to-next-line
                   (do1 nil ($.charterm-newline))
                 print-primitive-to-host
-                  (do1 nil ((if ($.current-charterm) $.charterm-display pr) (m arg.0)))
+                  (do1 nil
+;?                        (prn (m arg.0) " => " (type (m arg.0)))
+                       ((if ($.current-charterm) $.charterm-display pr) (m arg.0))
+                       )
                 read-key
                   (if ($.current-charterm)
                         (and ($.charterm-byte-ready?) ($.charterm-read-key))
@@ -1424,12 +1427,14 @@
   (and (>= memory*.addr len.value)
        (loop (addr (+ addr 1)
               idx  0)
-;?          (prn "comparing @memory*.addr and @value.idx")
+;?          (prn "comparing @idx: @memory*.addr and @value.idx")
          (if (>= idx len.value)
                t
              (~is memory*.addr value.idx)
                (do1 nil
-                    (prn "@addr should contain @value.idx but contains @memory*.addr"))
+                    (prn "@addr should contain @(tostring (write value.idx)) but contains @(tostring (write memory*.addr))")
+;?                     (recur (+ addr 1) (+ idx 1))
+                    )
              :else
                (recur (+ addr 1) (+ idx 1))))))
 
@@ -1920,6 +1925,18 @@
   (x:terminal-address <- next-input)
   { begin
     (break-unless x:terminal-address)
+;?     (print-primitive-to-host (("AAA" literal)))
+    (buf:string-address <- get x:terminal-address/deref data:offset)
+    (max:integer <- length buf:string-address/deref)
+    (i:integer <- copy 0:literal)
+    { begin
+      (done?:boolean <- greater-or-equal i:integer max:integer)
+      (break-if done?:boolean)
+      (x:byte-address <- index-address buf:string-address/deref i:integer)
+      (x:byte-address/deref <- copy ((#\space literal)))
+      (i:integer <- add i:integer 1:literal)
+      (loop)
+    }
     (reply)
   }
   (clear-host-screen)
@@ -1928,10 +1945,14 @@
 (init-fn cursor
   (default-space:space-address <- new space:literal 30:literal)
   (x:terminal-address <- next-input)
-  (row:integer <- next-input)
-  (col:integer <- next-input)
+  (newrow:integer <- next-input)
+  (newcol:integer <- next-input)
   { begin
     (break-unless x:terminal-address)
+    (row:integer-address <- get-address x:terminal-address/deref cursor-row:offset)
+    (row:integer-address/deref <- copy newrow:integer)
+    (col:integer-address <- get-address x:terminal-address/deref cursor-col:offset)
+    (col:integer-address/deref <- copy newcol:integer)
     (reply)
   }
   (cursor-on-host row:integer col:integer)
@@ -1942,6 +1963,14 @@
   (x:terminal-address <- next-input)
   { begin
     (break-unless x:terminal-address)
+    (row:integer-address <- get-address x:terminal-address/deref cursor-row:offset)
+;?     (print-primitive-to-host row:integer-address/deref)
+;?     (print-primitive-to-host (("\n" literal)))
+    (row:integer-address/deref <- add row:integer-address/deref 1:literal)
+    (col:integer-address <- get-address x:terminal-address/deref cursor-col:offset)
+;?     (print-primitive-to-host col:integer-address/deref)
+;?     (print-primitive-to-host (("\n" literal)))
+    (col:integer-address/deref <- copy 0:literal)
     (reply)
   }
   (cursor-on-host-to-next-line)
@@ -1951,8 +1980,23 @@
   (default-space:space-address <- new space:literal 30:literal)
   (x:terminal-address <- next-input)
   (c:character <- next-input)
+;?   (print-primitive-to-host (("printing character to screen " literal)))
+;?   (print-primitive-to-host c:character)
+;?   (reply)
+;?   (print-primitive-to-host (("\n" literal)))
   { begin
     (break-unless x:terminal-address)
+    (row:integer-address <- get-address x:terminal-address/deref cursor-row:offset)
+    (col:integer-address <- get-address x:terminal-address/deref cursor-col:offset)
+    (width:integer <- get x:terminal-address/deref num-cols:offset)
+    (t1:integer <- multiply row:integer-address/deref width:integer)
+    (idx:integer <- add t1:integer col:integer-address/deref)
+    (buf:string-address <- get x:terminal-address/deref data:offset)
+    (cursor:byte-address <- index-address buf:string-address/deref idx:integer)
+    (cursor:byte-address/deref <- copy c:character)
+    (col:integer-address/deref <- add col:integer-address/deref 1:literal)
+    ; we don't rely on any auto-wrap functionality
+    ; maybe die if we go out of screen bounds?
     (reply)
   }
   (print-primitive-to-host c:character)
@@ -2123,6 +2167,24 @@
 
 (init-fn flush-stdout
   (sleep for-some-cycles:literal 1:literal)
+)
+
+(init-fn init-fake-terminal
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (result:terminal-address <- new terminal:literal)
+  (width:integer-address <- get-address result:terminal-address/deref num-cols:offset)
+  (width:integer-address/deref <- next-input)
+  (height:integer-address <- get-address result:terminal-address/deref num-rows:offset)
+  (height:integer-address/deref <- next-input)
+  (row:integer-address <- get-address result:terminal-address/deref cursor-row:offset)
+  (row:integer-address/deref <- copy 0:literal)
+  (col:integer-address <- get-address result:terminal-address/deref cursor-col:offset)
+  (col:integer-address/deref <- copy 0:literal)
+  (bufsize:integer <- multiply width:integer-address/deref height:integer-address/deref)
+  (buf:string-address-address <- get-address result:terminal-address/deref data:offset)
+  (buf:string-address-address/deref <- new string:literal bufsize:integer)
+  (clear-screen result:terminal-address)
+  (reply result:terminal-address)
 )
 
 ; after all system software is loaded:

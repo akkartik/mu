@@ -4069,6 +4069,32 @@
   (when (~memory-contains-array base "-237")
     (prn "F - converting negative integer to decimal string")))
 
+(reset)
+(new-trace "fake-screen-initial")
+(add-code:readfile "chessboard-cursor.mu")
+(add-code
+  '((function! main [
+      (default-space:space-address <- new space:literal 30:literal/capacity)
+      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (5:string-address/raw <- get screen:terminal-address/deref data:offset)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~memory-contains-array memory*.5
+          (+ "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "))
+  (prn "F - fake screen starts out with all spaces"))
+
 )  ; section 100 for string utilities
 
 (reset)
