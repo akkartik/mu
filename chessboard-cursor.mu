@@ -213,9 +213,6 @@
   ; hook up stdin
   (1:channel-address/raw <- init-channel 1:literal)
   (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit 1:channel-address/raw)
-  ; hook up stdout
-  (2:channel-address/raw <- init-channel 1:literal)
-  (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit 2:channel-address/raw)
   { begin
     ; print any stray characters from keyboard *before* clearing screen
     (clear-screen nil:literal/terminal)
