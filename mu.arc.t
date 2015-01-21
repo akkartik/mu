@@ -2972,7 +2972,6 @@
 ;     when it timed out
 ;     when it completed
 ;   running multiple routines in tandem
-;   sleeping routine without a stack? how is that possible?
 ; first example using these features: read-move-incomplete in chessboard-cursor.arc.t
 
 ; The scheduler needs to keep track of the call stack for each routine.
