@@ -329,11 +329,8 @@
 ;   detect deadlock: kill all sleeping routines when none can be woken
 (def update-scheduler-state ()
   (when routine*
-;?     (prn routine*)
+;?     (prn "update scheduler state: " routine*)
     (if
-        empty.routine*
-          (do (trace "schedule" "done with routine")
-              (push routine* completed-routines*))
         rep.routine*!sleep
           (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
               ; keep the clock ticking at rep.routine*!running-since
@@ -341,6 +338,9 @@
         rep.routine*!error
           (do (trace "schedule" "done with dead routine " top.routine*!fn-name)
 ;?               (tr rep.routine*)
+              (push routine* completed-routines*))
+        empty.routine*
+          (do (trace "schedule" "done with routine")
               (push routine* completed-routines*))
         (no rep.routine*!limit)
           (do (trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
@@ -1461,6 +1461,7 @@
   (while (in top.routine!fn-name 'read 'write)
     (pop-stack routine))
   (wipe rep.routine!sleep)
+  (wipe rep.routine!error)
   (enq routine running-routines*))
 
 (def dump (msg routine)

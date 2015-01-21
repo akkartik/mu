@@ -45,6 +45,7 @@
 (new-trace "read-move-incomplete")
 (add-code:readfile "chessboard-cursor.mu")
 ; initialize some variables at specific raw locations
+;? (prn "== init")
 (run-code test-init
   (1:channel-address/raw <- init-channel 1:literal)
   (2:terminal-address/raw <- init-fake-terminal 20:literal 10:literal)
@@ -52,6 +53,7 @@
 (wipe completed-routines*)
 ; the component under test; we'll be running this repeatedly
 (let read-move-routine (make-routine 'read-move memory*.1 memory*.2)
+;?   (prn "== first key")
   (run-code send-first-key
     (default-space:space-address <- new space:literal 30:literal/capacity)
     (c:character <- copy ((#\a literal)))
@@ -65,6 +67,7 @@
     (prn "F - chessboard waits after first letter of move"))
   (wipe completed-routines*)
   ; send in a few more letters
+;?   (prn "== more keys")
   (restart read-move-routine)
   (run-code send-more-keys
     (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -82,7 +85,9 @@
     (prn "F - chessboard waits after each subsequent letter of move until the last"))
   (wipe completed-routines*)
   ; send final key
+;?   (prn "== final key")
   (restart read-move-routine)
+;?   (set dump-trace*)
   (run-code send-final-key
     (default-space:space-address <- new space:literal 30:literal/capacity)
     (c:character <- copy ((#\4 literal)))
