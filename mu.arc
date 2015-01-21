@@ -205,14 +205,6 @@
 
 ;; managing concurrent routines
 
-; todo: test that restarting a routine works
-;   when it died
-;   when it timed out
-;   when it completed
-; test that run checks status of sleep
-; run multiple routines in tandem
-; drop helper bit in component under test -- comment
-
 (on-init
 ;?   (prn "-- resetting memory allocation")
   (= Memory-allocated-until 1000))

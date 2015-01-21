@@ -2558,6 +2558,12 @@
 (when (~empty completed-routines*)
   (prn "F - scheduler ignores sleeping but ready threads when detecting deadlock"))
 
+; Helper routines are just to sidestep the deadlock test; they stop running
+; when there's no non-helper routines left to run.
+;
+; Be careful not to overuse them. In particular, the component under test
+; should never run in a helper routine; that'll make interrupting and
+; restarting it very brittle.
 (reset)
 (new-trace "scheduler-helper")
 (= traces* (queue))
@@ -2959,6 +2965,14 @@
     ("schedule" "waking up main")
   ))
 ;? (quit)
+
+; todo: Haven't yet written several tests
+;   that restarting a routine works
+;     when it died
+;     when it timed out
+;     when it completed
+;   running multiple routines in tandem
+; first example using these features: read-move-incomplete in chessboard-cursor.arc.t
 
 ; The scheduler needs to keep track of the call stack for each routine.
 ; Eventually we'll want to save this information in mu's address space itself,
