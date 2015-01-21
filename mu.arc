@@ -205,6 +205,14 @@
 
 ;; managing concurrent routines
 
+; todo: test that restarting a routine works
+;   when it died
+;   when it timed out
+;   when it completed
+; test that run checks status of sleep
+; run multiple routines in tandem
+; drop helper bit in component under test -- comment
+
 (on-init
 ;?   (prn "-- resetting memory allocation")
   (= Memory-allocated-until 1000))
@@ -303,29 +311,17 @@
   (= traces* (queue))
   (each it fn-names
     (enq make-routine.it running-routines*))
-  (keep-running))
-
-(def keep-running ()
-;?   (prn "---")
   (while (~empty running-routines*)
-    (when foo-routine*
-      (prn "AAA keep-running0 " (is foo-routine* (routine-running2 'read-move))))
     (= routine* deq.running-routines*)
     (when rep.routine*!limit
       ; start the clock if it wasn't already running
       (or= rep.routine*!running-since curr-cycle*))
     (trace "schedule" top.routine*!fn-name)
-    (when foo-routine*
-      (prn "AAA keep-running1 " (is foo-routine* (routine-running2 'read-move))))
     (routine-mark
       (run-for-time-slice scheduling-interval*))
-    (when foo-routine*
-      (prn "AAA keep-running2 " (is foo-routine* (routine-running2 'read-move))))
     (update-scheduler-state)
 ;?     (tr "after run iter " running-routines*)
 ;?     (tr "after run iter " empty.running-routines*)
-    (when foo-routine*
-      (prn "AAA keep-running3 " (is foo-routine* (routine-running2 'read-move))))
     ))
 
 ; prepare next iteration of round-robin scheduler
@@ -341,22 +337,18 @@
 ;   detect deadlock: kill all sleeping routines when none can be woken
 (def update-scheduler-state ()
   (when routine*
+;?     (prn routine*)
     (if
+        empty.routine*
+          (do (trace "schedule" "done with routine")
+              (push routine* completed-routines*))
         rep.routine*!sleep
           (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
-              (when foo-routine*
-                (prn "AAA update1 " (is foo-routine* (routine-running2 'read-move))))
               ; keep the clock ticking at rep.routine*!running-since
-              (set sleeping-routines*.routine*)
-              (when foo-routine*
-                (prn "AAA update2 " (is foo-routine* (routine-running2 'read-move))))
-              )
+              (set sleeping-routines*.routine*))
         rep.routine*!error
           (do (trace "schedule" "done with dead routine " top.routine*!fn-name)
 ;?               (tr rep.routine*)
-              (push routine* completed-routines*))
-        empty.routine*
-          (do (trace "schedule" "done with routine")
               (push routine* completed-routines*))
         (no rep.routine*!limit)
           (do (trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
@@ -372,11 +364,7 @@
                 (enq routine* running-routines*)))
         :else
           (err "illegal scheduler state"))
-    (when foo-routine*
-      (prn "AAA update3 " (is foo-routine* (routine-running2 'read-move))))
     (= routine* nil))
-  (when foo-routine*
-    (prn "AAA update4 " (is foo-routine* (routine-running2 'read-move))))
   (each (routine _) canon.sleeping-routines*
     (when (aand rep.routine!limit (<= it (- curr-cycle* rep.routine!running-since)))
       (trace "schedule" "routine timed out")
@@ -384,26 +372,13 @@
       (push routine completed-routines*)
 ;?       (tr completed-routines*)
       ))
-  (when foo-routine*
-    (prn "AAA update5 " (is foo-routine* (routine-running2 'read-move))))
   (each (routine _) canon.sleeping-routines*
-    (when foo-routine*
-      (prn "AAA update5.1 " (is foo-routine* (routine-running2 'read-move))))
     (when (ready-to-wake-up routine)
       (trace "schedule" "waking up " top.routine!fn-name)
-      (when foo-routine*
-        (prn "AAA update5.3 " (is foo-routine* (prn:routine-running2 'read-move)))
-        (prn "AAA update5.3.2 " (is foo-routine* routine)))
       (wipe sleeping-routines*.routine)  ; do this before modifying routine
-      (when foo-routine*
-        (prn "AAA update5.4 " (is foo-routine* (routine-running2 'read-move))))
       (wipe rep.routine!sleep)
-      (when foo-routine*
-        (prn "AAA update5.5 " (is foo-routine* (routine-running2 'read-move))))
       (++ pc.routine)
       (enq routine running-routines*)))
-  (when foo-routine*
-    (prn "AAA update6 " (is foo-routine* (routine-running2 'read-move))))
   ; optimization for simulated time
   (when (empty running-routines*)
     (whenlet exact-sleeping-routines (keep waiting-for-exact-cycle? keys.sleeping-routines*)
@@ -411,29 +386,17 @@
         (= curr-cycle* (+ 1 next-wakeup-cycle)))
       (trace "schedule" "skipping to cycle " curr-cycle*)
       (update-scheduler-state)))
-  (when foo-routine*
-    (prn "AAA update7 " (is foo-routine* (routine-running2 'read-move))))
   (when (and (or (~empty running-routines*)
                  (~empty sleeping-routines*))
              (all [rep._ 'helper] (as cons running-routines*))
              (all [rep._ 'helper] keys.sleeping-routines*))
     (trace "schedule" "just helpers left; stopping everything")
     (until (empty running-routines*)
-      (= routine* (deq running-routines*))
-;?       (routine-mark
-;?         (run-for-time-slice scheduling-interval*))
-      (push routine* completed-routines*))
+      (push (deq running-routines*) completed-routines*))
     (each (routine _) sleeping-routines*
       (wipe sleeping-routines*.routine)
-      (= routine* routine)
-;?       (routine-mark
-;?         (run-for-time-slice scheduling-interval*))
       (push routine completed-routines*)))
-  (when foo-routine*
-    (prn "AAA update8 " (is foo-routine* (routine-running2 'read-move))))
   (detect-deadlock)
-  (when foo-routine*
-    (prn "AAA update9 " (is foo-routine* (routine-running2 'read-move))))
   )
 
 (def detect-deadlock ()
@@ -498,8 +461,6 @@
 ($:require "charterm/main.rkt")
 ($:require graphics/graphics)
 (= Viewport nil)
-
-(= foo-routine* nil)
 
 ; run instructions from 'routine*' for 'time-slice'
 (def run-for-time-slice (time-slice)
@@ -685,12 +646,6 @@
                         (die "badly formed 'sleep' call @(tostring:prn (body.routine* pc.routine*))")
                       )
                     ((abort-routine*)))
-                foo
-                  (when foo-routine*
-                    (prn "AAAA " (is routine* foo-routine*))
-;?                     (dump (m arg.0) foo-routine*)
-;?                     (dump "routine*" routine*)
-                    )
                 assert
                   (unless (m arg.0)
                     (die (v arg.1)))  ; other routines will be able to look at the error status
@@ -1484,11 +1439,16 @@
              :else
                (recur (+ addr 1) (+ idx 1))))))
 
-(def routine-running (f)
+(mac run-code (name . body)
+  `(do
+     (add-code '((function ,name [ ,@body ])))
+     (run ',name)))
+
+(def routine-that-ran (f)
   (find [some [is f _!fn-name] stack._]
         completed-routines*))
 
-(def routine-running2 (f)
+(def routine-running (f)
   (or
     (find [some [is f _!fn-name] stack._]
           completed-routines*)
@@ -1503,7 +1463,22 @@
 (def ran-to-completion (f)
   ; if a routine calling f ran to completion there'll be no sign of it in any
   ; completed call-stacks.
-  (~routine-running f))
+  (~routine-that-ran f))
+
+(def restart (routine)
+  (while (in top.routine!fn-name 'read 'write)
+    (pop-stack routine))
+  (wipe rep.routine!sleep)
+  (enq routine running-routines*))
+
+(def dump (msg routine)
+  (prn "= @msg " rep.routine!sleep)
+  (prn:rem [in car._ 'sleep 'call-stack] (as cons rep.routine))
+  (each frame rep.routine!call-stack
+    (prn " @frame!fn-name")
+    (each (key val) frame
+      (unless (is key 'fn-name)
+        (prn "  " key " " val)))))
 
 ;; system software
 ; create once, load before every test
@@ -1654,12 +1629,8 @@
     (full:boolean <- full? chan:channel-address/deref)
     (break-unless full:boolean)
     (full-address:integer-address <- get-address chan:channel-address/deref first-full:offset)
-;?     (print-primitive-to-host (("write sleep: " literal)))
-;?     (print-primitive-to-host full-address:integer-address/deref)
-;?     (print-primitive-to-host (("\n" literal)))
     (sleep until-location-changes:literal full-address:integer-address/deref)
   }
-;?   (print-primitive-to-host (("continuing write" literal)))
   ; store val
   (q:tagged-value-array-address <- get chan:channel-address/deref circular-buffer:offset)
   (free:integer-address <- get-address chan:channel-address/deref first-free:offset)
@@ -1684,13 +1655,8 @@
     (empty:boolean <- empty? chan:channel-address/deref)
     (break-unless empty:boolean)
     (free-address:integer-address <- get-address chan:channel-address/deref first-free:offset)
-;?     (foo (("blocking read" literal)))
-;?     (print-primitive-to-host (("read sleep: " literal)))
-;?     (print-primitive-to-host free-address:integer-address/deref)
-;?     (print-primitive-to-host (("\n" literal)))
     (sleep until-location-changes:literal free-address:integer-address/deref)
   }
-;?   (foo (("continuing read" literal)))
   ; read result
   (full:integer-address <- get-address chan:channel-address/deref first-full:offset)
   (q:tagged-value-array-address <- get chan:channel-address/deref circular-buffer:offset)

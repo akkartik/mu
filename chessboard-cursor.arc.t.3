@@ -1,116 +1,52 @@
 (selective-load "mu.arc" section-level)
 
-(def restart (routine)
-  (dump "before restart" routine)
-  (while (in top.routine!fn-name 'read 'write)
-    (pop-stack routine))
-  (wipe rep.routine!sleep)
-  (dump "after restart" routine)
-  (when foo-routine*
-    (prn "AAA " (is routine foo-routine*)))
-  (enq routine running-routines*))
-
-(def dump (msg r)
-  (prn "= @msg " rep.r!sleep)
-  (prn:rem [in car._ 'sleep 'call-stack] (as cons rep.r))
-  (each frame rep.r!call-stack
-    (prn " @frame!fn-name")
-    (each (key val) frame
-      (unless (is key 'fn-name)
-        (prn "  " key " " val)))))
-
 (reset)
 (add-code:readfile "chessboard-cursor.mu")
-; initialize location 1 to stdin; location 2 to screen fake; 3 to the contents
-; of the fake
-(add-code 
-  '((function test-init [
-      (1:channel-address/raw <- init-channel 1:literal)
-      (2:terminal-address/raw <- init-fake-terminal 20:literal 10:literal)
-      (3:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
-     ])))
-;? (= dump-trace* (obj whitelist '("schedule")))
-(run 'test-init)
+; initialize some variables at specific raw locations
+(run-code test-init
+  (1:channel-address/raw <- init-channel 1:literal)
+  (2:terminal-address/raw <- init-fake-terminal 20:literal 10:literal)
+  (3:string-address/raw <- get 2:terminal-address/raw/deref data:offset))
+(wipe completed-routines*)
 ; the component under test; we'll be running this repeatedly
 (let read-move-routine (make-routine 'read-move memory*.1 memory*.2)
-  (= foo-routine* read-move-routine)
-;?   (set rep.read-move-routine!helper)
-  ; send in first letter
-  (add-code
-    '((function test-send-first-key [
-        (default-space:space-address <- new space:literal 30:literal/capacity)
-        (c:character <- copy ((#\a literal)))
-        (x:tagged-value <- save-type c:character)
-        (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
-       ])))
-  (run 'test-send-first-key)
-  ; check that read-move consumes it and then goes to sleep
-  (prn "AAA routine: " (routine-running 'read-move))
-  (prn "AAA routine changed? " (is read-move-routine (routine-running 'read-move)))
-  (enq read-move-routine running-routines*)
+  (run-code send-first-key
+    (default-space:space-address <- new space:literal 30:literal/capacity)
+    (c:character <- copy ((#\a literal)))
+    (x:tagged-value <- save-type c:character)
+    (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value))
   (wipe completed-routines*)
-  (keep-running)
-  (prn "AAA routine: " (routine-running 'read-move))
-  (prn "AAA routine changed? " (is read-move-routine (routine-running 'read-move)))
-  (prn "=======================")
+  ; check that read-move consumes it and then goes to sleep
+  (enq read-move-routine running-routines*)
+  (run)
   (when (ran-to-completion 'read-move)
     (prn "F - chessboard waits after first letter of move"))
-  ; send in a few more letters
-  (add-code
-    '((function test-send-next-keys [
-        (default-space:space-address <- new space:literal 30:literal/capacity)
-        (c:character <- copy ((#\2 literal)))
-        (x:tagged-value <- save-type c:character)
-        (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
-        (c:character <- copy ((#\- literal)))
-        (x:tagged-value <- save-type c:character)
-        (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
-        (c:character <- copy ((#\a literal)))
-        (x:tagged-value <- save-type c:character)
-        (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
-       ])))
-  (prn "== restart: read-move")
-  (prn "AAA routine3: " (routine-running 'read-move))
-  (prn "AAA routine changed? " (is read-move-routine (routine-running 'read-move)))
   (wipe completed-routines*)
+  ; send in a few more letters
   (restart read-move-routine)
-;?   (= dump-trace* (obj blacklist '("c{0" "c{1" "cn0" "cn1" "maybe-add")))
-  (= dump-trace* (obj whitelist '("schedule")))
-  (prn "AAA routine4: " (routine-running 'read-move))
-  (prn "AAA routine changed? " (is read-move-routine (routine-running 'read-move)))
-  (run 'test-send-next-keys)
-  (prn "AAA routine5: " (routine-running 'read-move))
-  (prn "AAA routine changed? " (is read-move-routine (routine-running 'read-move)))
-  (dump "Final" read-move-routine)
-  (quit)
-  ; check that read-move consumes it and then goes to sleep
+  (run-code send-more-keys
+    (default-space:space-address <- new space:literal 30:literal/capacity)
+    (c:character <- copy ((#\2 literal)))
+    (x:tagged-value <- save-type c:character)
+    (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
+    (c:character <- copy ((#\- literal)))
+    (x:tagged-value <- save-type c:character)
+    (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
+    (c:character <- copy ((#\a literal)))
+    (x:tagged-value <- save-type c:character)
+    (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value))
+  ; check that read-move consumes them and then goes to sleep
   (when (ran-to-completion 'read-move)
     (prn "F - chessboard waits after each subsequent letter of move until the last"))
+  (wipe completed-routines*)
   ; send final key
-  (add-code
-    '((function test-send-final-key [
-        (default-space:space-address <- new space:literal 30:literal/capacity)
-        (c:character <- copy ((#\4 literal)))
-        (x:tagged-value <- save-type c:character)
-        (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
-       ])))
-  (run 'test-send-final-key)
-  ; check that read-move consumes it and -- this time -- returns
-  (prn "== restart: read-move")
   (restart read-move-routine)
-  (keep-running)
-  (dump "5" read-move-routine)
+  (run-code send-final-key
+    (default-space:space-address <- new space:literal 30:literal/capacity)
+    (c:character <- copy ((#\4 literal)))
+    (x:tagged-value <- save-type c:character)
+    (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value))
+  ; check that read-move consumes it and -- this time -- returns
   (when (~ran-to-completion 'read-move)
     (prn "F - 'read-move' completes after final letter of move"))
 )
-
-; log
-;   drop helper bit in component under test
-;   canon messing up 'is' over table contents
-;   mergesort not preserving pointers of list members!!!
-;     (should have chased down why canon was breaking things a whole day ago)
-;   bad commit in anarki:
-;     commit 4a5bad8a4fa3c60a6e270285c5a98af9d0faf17f
-;     Date:   Sun Nov 11 17:40:58 2012 -0800
-;
-;         make copy work with nested lists and tables
