@@ -4087,10 +4087,9 @@
 
 ; fake screen for tests; prints go to a string
 (reset)
-(new-trace "fake-screen-initial")
-(add-code:readfile "chessboard-cursor.mu")
+(new-trace "fake-screen-empty")
 (add-code
-  '((function! main [
+  '((function main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
       (5:string-address/raw <- get screen:terminal-address/deref data:offset)
@@ -4111,6 +4110,35 @@
              "                    "
              "                    "))
   (prn "F - fake screen starts out with all spaces"))
+
+; fake keyboard for tests; must initialize keys in advance
+(reset)
+(new-trace "fake-keyboard")
+(add-code
+  '((function main [
+      (default-space:space-address <- new space:literal 30:literal)
+      (s:string-address <- new "foo")
+      (x:keyboard-address <- init-keyboard s:string-address)
+      (1:character-address/raw <- read-key x:keyboard-address)
+     ])))
+(run 'main)
+(when (~is memory*.1 #\f)
+  (prn "F - 'read-key' reads character from provided 'fake keyboard' string"))
+
+; fake keyboard for tests; must initialize keys in advance
+(reset)
+(new-trace "fake-keyboard2")
+(add-code
+  '((function main [
+      (default-space:space-address <- new space:literal 30:literal)
+      (s:string-address <- new "foo")
+      (x:keyboard-address <- init-keyboard s:string-address)
+      (1:character-address/raw <- read-key x:keyboard-address)
+      (1:character-address/raw <- read-key x:keyboard-address)
+     ])))
+(run 'main)
+(when (~is memory*.1 #\o)
+  (prn "F - 'read-key' advances cursor in provided string"))
 
 )  ; section 100
 
