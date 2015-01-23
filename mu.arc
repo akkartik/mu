@@ -199,8 +199,12 @@
               line-address-address (obj size 1  address t  elem '(line-address))
               screen (obj array t  elem '(line-address))
               screen-address (obj size 1  address t  elem '(screen))
+              ; fake screen
               terminal (obj size 5  and-record t  elems '((integer) (integer) (integer) (integer) (string-address))  fields '(num-rows num-cols cursor-row cursor-col data))
               terminal-address (obj size 1  address t  elem '(terminal))
+              ; fake keyboard
+              keyboard (obj size 2  and-record t  elems '((integer) (string-address))  fields '(index data))
+              keyboard-address (obj size 1  address t  elem '(keyboard))
               )))
 
 ;; managing concurrent routines
@@ -662,16 +666,11 @@
 ;?                        (write (m arg.0))  (pr " => ")  (prn (type (m arg.0)))
                        ((if ($.current-charterm) $.charterm-display pr) (m arg.0))
                        )
-                read-key
+                read-key-from-host
                   (if ($.current-charterm)
                         (and ($.charterm-byte-ready?) ($.charterm-read-key))
                       ($.graphics-open?)
                         ($.ready-key-press Viewport))
-                wait-for-key
-                  (if ($.current-charterm)
-                        ($.charterm-read-key)
-                      ($.graphics-open?)
-                        ($.get-key-press Viewport))
 
                 ; graphics
                 window-on
@@ -1930,6 +1929,31 @@
     (loop)
   }
   (reply result:string-address-array-address)
+)
+
+(init-fn init-keyboard
+  (default-space:space-address <- new space:literal 30:literal)
+  (result:keyboard-address <- new keyboard:literal)
+  (buf:string-address-address <- get-address result:keyboard-address/deref data:offset)
+  (buf:string-address-address/deref <- next-input)
+  (idx:integer-address <- get-address result:keyboard-address/deref index:offset)
+  (idx:integer-address/deref <- copy 0:literal)
+  (reply result:keyboard-address)
+)
+
+(init-fn read-key
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:keyboard-address <- next-input)
+  { begin
+    (break-unless x:keyboard-address)
+    (idx:integer-address <- get-address x:keyboard-address/deref index:offset)
+    (buf:string-address <- get x:keyboard-address/deref data:offset)
+    (c:character <- index buf:string-address/deref idx:integer-address/deref)
+    (idx:integer-address/deref <- add idx:integer-address/deref 1:literal)
+    (reply c:character)
+  }
+  (c:character <- read-key-from-host)
+  (reply c:character)
 )
 
 (init-fn send-keys-to-stdin
