@@ -218,7 +218,7 @@
   (cursor-mode)
   ; hook up stdin
   (stdin:channel-address <- init-channel 1:literal)
-  (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address)
+  (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit nil:literal/keyboard stdin:channel-address)
   { begin
     ; print any stray characters from keyboard *before* clearing screen
     (clear-screen nil:literal/terminal)
