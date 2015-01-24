@@ -246,6 +246,9 @@
 (def top (routine)
   stack.routine.0)
 
+(def label (routine)
+  (string:intersperse "/" (map [_ 'fn-name] stack.routine)))
+
 (def body (routine)
   (function* stack.routine.0!fn-name))
 
@@ -336,21 +339,21 @@
 ;?     (prn "update scheduler state: " routine*)
     (if
         rep.routine*!sleep
-          (do (trace "schedule" "pushing " top.routine*!fn-name " to sleep queue")
+          (do (trace "schedule" "pushing " label.routine* " to sleep queue")
               ; keep the clock ticking at rep.routine*!running-since
               (set sleeping-routines*.routine*))
         rep.routine*!error
-          (do (trace "schedule" "done with dead routine " top.routine*!fn-name)
+          (do (trace "schedule" "done with dead routine " label.routine*)
 ;?               (tr rep.routine*)
               (push routine* completed-routines*))
         empty.routine*
-          (do (trace "schedule" "done with routine")
+          (do (trace "schedule" "done with routine " label.routine*)
               (push routine* completed-routines*))
         (no rep.routine*!limit)
-          (do (trace "schedule" "scheduling " top.routine*!fn-name " for further processing")
+          (do (trace "schedule" "scheduling " label.routine* " for further processing")
               (enq routine* running-routines*))
         (> rep.routine*!limit 0)
-          (do (trace "schedule" "scheduling " top.routine*!fn-name " for further processing (limit)")
+          (do (trace "schedule" "scheduling " label.routine* " for further processing (limit)")
               ; stop the clock and debit the time on it from the routine
               (-- rep.routine*!limit (- curr-cycle* rep.routine*!running-since))
               (wipe rep.routine*!running-since)
@@ -370,7 +373,7 @@
       ))
   (each (routine _) canon.sleeping-routines*
     (when (ready-to-wake-up routine)
-      (trace "schedule" "waking up " top.routine!fn-name)
+      (trace "schedule" "waking up " label.routine)
       (wipe sleeping-routines*.routine)  ; do this before modifying routine
       (wipe rep.routine!sleep)
       (++ pc.routine)
