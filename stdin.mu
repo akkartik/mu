@@ -7,7 +7,7 @@
 ;?   (print-primitive-to-host (("main: stdin is " literal)))
 ;?   (print-primitive-to-host stdin:channel-address)
 ;?   (print-primitive-to-host (("\n" literal)))
-  (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address)
+  (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit nil:literal/keyboard stdin:channel-address)
   ; now read characters from stdin until a 'q' is typed
   (print-primitive-to-host (("? " literal)))
   { begin

@@ -1958,11 +1958,12 @@
 
 (init-fn send-keys-to-stdin
   (default-space:space-address <- new space:literal 30:literal)
+  (k:keyboard-address <- next-input)
   (stdin:channel-address <- next-input)
   { begin
     ; keyboard input is infrequent; sleep at the start of each iteration
     (sleep for-some-cycles:literal 1:literal)
-    (c:character <- read-key)
+    (c:character <- read-key k:keyboard-address)
     (loop-unless c:character)
     (curr:tagged-value <- save-type c:character)
     (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value)
