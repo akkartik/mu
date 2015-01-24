@@ -719,7 +719,7 @@
                 next-input
                   (let idx caller-arg-idx.routine*
                     (++ caller-arg-idx.routine*)
-                    (trace "arg" arg " " idx " " caller-args.routine*)
+                    (trace "arg" repr.arg " " idx " " (repr caller-args.routine*))
                     (if (len> caller-args.routine* idx)
                       (list caller-args.routine*.idx t)
                       (list nil nil)))
@@ -728,7 +728,7 @@
                       (= caller-arg-idx.routine* (v arg.0))
                       (let idx caller-arg-idx.routine*
                         (++ caller-arg-idx.routine*)
-                        (trace "arg" arg " " idx " " caller-args.routine*)
+                        (trace "arg" repr.arg " " idx " " (repr caller-args.routine*))
                         (if (len> caller-args.routine* idx)
                           (list caller-args.routine*.idx t)
                           (list nil nil))))
@@ -746,10 +746,10 @@
                         (pop-stack routine*)
                         (if empty.routine* (return ninstrs))
                         (let (caller-oargs _ _)  (parse-instr (body.routine* pc.routine*))
-                          (trace "reply" arg " " caller-oargs)
+                          (trace "reply" repr.arg " " repr.caller-oargs)
                           (each (dest val)  (zip caller-oargs results)
                             (when nondummy.dest
-                              (trace "reply" val " => " dest)
+                              (trace "reply" repr.val " => " dest)
                               (setm dest val))))
                         (++ pc.routine*)
                         (while (>= pc.routine* (len body.routine*))
@@ -780,10 +780,10 @@
               (if (acons results)
                 (each (dest val) (zip oarg results)
                   (unless (is dest '_)
-                    (trace "run" val " => " dest)
+                    (trace "run" repr.val " => " dest)
                     (setm dest val)))
                 (when oarg  ; must be a list
-                  (trace "run" results " => " oarg.0)
+                  (trace "run" repr.results " => " oarg.0)
                   (setm oarg.0 results)))
               )
         (++ pc.routine*)))
@@ -828,7 +828,7 @@
       (return))
 ;?   (tr 120)
     (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
-    (trace "setm" loc " <= " val)
+    (trace "setm" loc " <= " repr.val)
     (with (n  (if (isa val 'record) (len rep.val) 1)
            addr  addr.loc
            typ  typeof.loc)
@@ -837,7 +837,7 @@
       (assert addr "setm: null pointer @loc")
       (if (is 1 n)
         (do (assert (~isa val 'record) "setm: record of size 1 @(tostring prn.val)")
-            (trace "setm" loc ": setting " addr " to " val)
+            (trace "setm" loc ": setting " addr " to " repr.val)
             (= memory*.addr val))
         (do (if type*.typ!array
               ; size check for arrays
@@ -850,7 +850,7 @@
                 (die "writing to incorrect size @(tostring pr.val) => @loc")))
             (let addrs (addrs addr n)
               (each (dest src) (zip addrs rep.val)
-                (trace "setm" loc ": setting " dest " to " src)
+                (trace "setm" loc ": setting " dest " to " repr.src)
                 (= memory*.dest src))))))))
 
 (def typeof (operand)
@@ -1401,6 +1401,9 @@
 
 (def int-canon (table)
   (sort (compare < car) (as cons table)))
+
+(def repr (val)
+  (tostring write.val))
 
 ;; test helpers
 
