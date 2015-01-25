@@ -678,6 +678,9 @@
                              (do ($.charterm-display #\backspace)
                                  ($.charterm-display #\space)
                                  ($.charterm-display #\backspace))
+                           ctrl-c
+                             (do ($.close-charterm)
+                                 (die "interrupted"))
                            ;else
                              ($.charterm-display x)))
                        )
