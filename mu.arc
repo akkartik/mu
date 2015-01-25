@@ -673,6 +673,11 @@
                          (caselet x (m arg.0)
                            #\newline
                              ($.charterm-newline)
+                           #\backspace
+                             ; backspace doesn't clear after moving the cursor
+                             (do ($.charterm-display #\backspace)
+                                 ($.charterm-display #\space)
+                                 ($.charterm-display #\backspace))
                            ;else
                              ($.charterm-display x)))
                        )
@@ -684,6 +689,8 @@
                                  ; charterm exceptions
                                  return
                                    (= result #\newline)
+                                 backspace
+                                   (= result #\backspace)
                                  )))
                       ($.graphics-open?)
                         ($.ready-key-press Viewport))
