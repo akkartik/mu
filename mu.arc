@@ -668,7 +668,14 @@
                 print-primitive-to-host
                   (do1 nil
 ;?                        (write (m arg.0))  (pr " => ")  (prn (type (m arg.0)))
-                       ((if ($.current-charterm) $.charterm-display pr) (m arg.0))
+                       (when (no ($.current-charterm))
+                         (pr (m arg.0)))
+                       (when ($.current-charterm)
+                         (caselet x (m arg.0)
+                           #\newline
+                             ($.charterm-newline)
+                           ;else
+                             ($.charterm-display x)))
                        )
                 read-key-from-host
                   (if ($.current-charterm)
@@ -1974,8 +1981,7 @@
   { begin
     (newline?:boolean <- equal c:character ((return literal)))
     (break-unless newline?:character)
-    (cursor-to-next-line)
-    (reply ((#\newline literal)))
+    (c:character <- copy ((#\newline literal)))
   }
   { begin
     (break-unless c:character)
