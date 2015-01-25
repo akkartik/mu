@@ -212,6 +212,9 @@
   ; hook up stdin
   (stdin:channel-address <- init-channel 1:literal)
   (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit nil:literal/keyboard stdin:channel-address)
+  ; buffer stdin
+  (buffered-stdin:channel-address <- init-channel 1:literal)
+  (fork-helper buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
   { begin
     ; print any stray characters from keyboard *before* clearing screen
     (clear-screen nil:literal/terminal)
@@ -225,7 +228,7 @@
     (print-primitive-to-host (("Hit 'q' to exit." literal)))
     (cursor-to-next-line nil:literal/terminal)
     (print-primitive-to-host (("move: " literal)))
-    (m:move-address <- read-move stdin:channel-address)
+    (m:move-address <- read-move buffered-stdin:channel-address)
     (break-unless m:move-address)
     (b:board-address <- make-move b:board-address m:move-address)
     (loop)

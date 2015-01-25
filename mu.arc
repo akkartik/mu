@@ -2030,6 +2030,13 @@
       (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
       (c:character <- maybe-coerce x:tagged-value character:literal)
       (assert c:character)
+      { begin
+        (backspace?:boolean <- equal c:character ((#\backspace literal)))
+        (break-unless backspace?:boolean)
+        (len:integer-address <- get-address line:buffer-address/deref length:offset)
+        (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
+        (loop 2:blocks)
+      }
       (line:buffer-address <- append line:buffer-address c:character)
       (line-contents:string-address <- get line:buffer-address/deref data:offset)
 ;?       (print-primitive-to-host c:character) ;? 0
