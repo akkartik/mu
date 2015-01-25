@@ -364,14 +364,14 @@
         :else
           (err "illegal scheduler state"))
     (= routine* nil))
-  (each (routine _) canon.sleeping-routines*
+  (each (routine _) routine-canon.sleeping-routines*
     (when (aand rep.routine!limit (<= it (- curr-cycle* rep.routine!running-since)))
       (trace "schedule" "routine timed out")
       (wipe sleeping-routines*.routine)
       (push routine completed-routines*)
 ;?       (tr completed-routines*)
       ))
-  (each (routine _) canon.sleeping-routines*
+  (each (routine _) routine-canon.sleeping-routines*
     (when (ready-to-wake-up routine)
       (trace "schedule" "waking up " label.routine)
       (wipe sleeping-routines*.routine)  ; do this before modifying routine
@@ -1425,6 +1425,9 @@
 
 (def int-canon (table)
   (sort (compare < car) (as cons table)))
+
+(def routine-canon (routine-table)
+  (sort (compare < label:car) (as cons routine-table)))
 
 (def repr (val)
   (tostring write.val))
