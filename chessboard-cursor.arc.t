@@ -7,9 +7,7 @@
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
       (stdin:channel-address <- init-channel 1:literal)
-      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
-      (2:string-address/raw <- get screen:terminal-address/deref data:offset)
-      (r:integer/routine <- fork read-move:fn nil:literal/globals 2000:literal/limit stdin:channel-address screen:terminal-address)
+      (r:integer/routine <- fork read-move:fn nil:literal/globals 2000:literal/limit stdin:channel-address)
       (c:character <- copy ((#\a literal)))
       (x:tagged-value <- save-type c:character)
       (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
@@ -37,8 +35,8 @@
     (prn "error - " it)))
 (when (~ran-to-completion 'read-move)
   (prn "F - chessboard accepts legal moves (<rank><file>-<rank><file>)"))
-(when (~memory-contains-array memory*.2 "a2-a4")
-  (prn "F - chessboard prints moves read from keyboard"))
+; todo: we can't test that keys pressed are printed to screen
+; but that's at a lower level
 ;? (quit)
 
 (reset)
