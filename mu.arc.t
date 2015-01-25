@@ -4140,6 +4140,78 @@
 (when (~is memory*.1 #\o)
   (prn "F - 'read-key' advances cursor in provided string"))
 
+; to receive input line by line, run send-keys-buffered-to-stdin
+(reset)
+(new-trace "buffer-stdin-until-newline")
+(add-code
+  '((function main [
+      (default-space:space-address <- new space:literal 30:literal)
+      (s:string-address <- new "foo")
+      (k:keyboard-address <- init-keyboard s:string-address)
+      (stdin:channel-address <- init-channel 1:literal)
+      (fork send-keys-to-stdin:fn nil:literal/globals nil:literal/limit k:keyboard-address stdin:channel-address)
+      (buffered-stdin:channel-address <- init-channel 1:literal)
+      (r:integer/routine <- fork buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
+      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (5:string-address/raw <- get screen:terminal-address/deref data:offset)
+      (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit screen:terminal-address buffered-stdin:channel-address)
+      (sleep until-routine-done:literal r:integer/routine)
+    ])))
+;? (set dump-trace*) ;? 3
+;? (= dump-trace* (obj whitelist '("schedule" "run"))) ;? 0
+(run 'main)
+;? (prn int-canon.memory*) ;? 0
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~memory-contains-array memory*.5
+          (+ "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "))
+  (prn "F - 'buffer-stdin' prints nothing until newline is encountered"))
+;? (quit) ;? 3
+
+(reset)
+(new-trace "print-buffered-contents-on-newline")
+(add-code
+  '((function main [
+      (default-space:space-address <- new space:literal 30:literal)
+      (s:string-address <- new "foo\nline2")
+      (k:keyboard-address <- init-keyboard s:string-address)
+      (stdin:channel-address <- init-channel 1:literal)
+      (fork send-keys-to-stdin:fn nil:literal/globals nil:literal/limit k:keyboard-address stdin:channel-address)
+      (buffered-stdin:channel-address <- init-channel 1:literal)
+      (r:integer/routine <- fork buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
+      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (5:string-address/raw <- get screen:terminal-address/deref data:offset)
+      (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit screen:terminal-address buffered-stdin:channel-address)
+      (sleep until-routine-done:literal r:integer/routine)
+    ])))
+;? (= dump-trace* (obj whitelist '("schedule" "run"))) ;? 1
+(run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~memory-contains-array memory*.5
+          (+ "foo\n                "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "))
+  (prn "F - 'buffer-stdin' prints lines to screen"))
+
 )  ; section 100
 
 (reset)
