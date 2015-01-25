@@ -739,6 +739,11 @@
                     (prn ($.rgb-red pixel) " " ($.rgb-blue pixel) " " ($.rgb-green pixel))
                     ($:rgb-red pixel))
 
+                ; debugging aide
+                dump-memory
+                  (do1 nil
+                    (prn:repr int-canon.memory*))
+
                 ; user-defined functions
                 next-input
                   (let idx caller-arg-idx.routine*
@@ -2022,14 +2027,18 @@
   (default-space:space-address <- new space:literal 30:literal)
   (stdin:channel-address <- next-input)
   (buffered-stdin:channel-address <- next-input)
-  (line:buffer-address <- init-buffer 30:literal)
   ; repeat forever
   { begin
+    (line:buffer-address <- init-buffer 30:literal)
     ; read characters from stdin until newline, copy into line
     { begin
       (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
       (c:character <- maybe-coerce x:tagged-value character:literal)
       (assert c:character)
+;?       (print-primitive-to-host line:buffer-address) ;? 1
+;?       (print-primitive-to-host (("\n" literal))) ;? 1
+;?       (print-primitive-to-host c:character) ;? 1
+;?       (print-primitive-to-host (("\n" literal))) ;? 1
       { begin
         (backspace?:boolean <- equal c:character ((#\backspace literal)))
         (break-unless backspace?:boolean)
@@ -2039,8 +2048,6 @@
       }
       (line:buffer-address <- append line:buffer-address c:character)
       (line-contents:string-address <- get line:buffer-address/deref data:offset)
-;?       (print-primitive-to-host c:character) ;? 0
-;?       (print-primitive-to-host (("\n" literal))) ;? 2
       (line-done?:boolean <- equal c:character ((#\newline literal)))
       (break-if line-done?:boolean)
       (eof?:boolean <- equal c:character ((#\null literal)))
