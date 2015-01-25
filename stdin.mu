@@ -1,3 +1,6 @@
+; reads and prints keys until you hit 'q'
+; no need to hit 'enter', and 'enter' has no special meaning
+; dies if you wait a while, because so far we never free memory
 (function main [
   (default-space:space-address <- new space:literal 30:literal)
   (cursor-mode)
