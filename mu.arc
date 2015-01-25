@@ -671,6 +671,7 @@
                        (if (no ($.current-charterm))
                          (pr (m arg.0))
                          (caselet x (m arg.0)
+                           ; todo: test these exceptions
                            #\newline
                              ($.charterm-newline)
                            #\backspace
