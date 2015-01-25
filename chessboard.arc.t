@@ -2,7 +2,7 @@
 
 (reset)
 (new-trace "read-move-legal")
-(add-code:readfile "chessboard-cursor.mu")
+(add-code:readfile "chessboard.mu")
 (add-code
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -23,6 +23,9 @@
       (c:character <- copy ((#\4 literal)))
       (x:tagged-value <- save-type c:character)
       (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
+      (c:character <- copy ((#\newline literal)))
+      (x:tagged-value <- save-type c:character)
+      (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
       (sleep until-routine-done:literal r:integer/routine)
      ])))
 ;? (set dump-trace*)
@@ -41,7 +44,7 @@
 
 (reset)
 (new-trace "read-move-incomplete")
-(add-code:readfile "chessboard-cursor.mu")
+(add-code:readfile "chessboard.mu")
 ; initialize some variables at specific raw locations
 ;? (prn "== init")
 (run-code test-init
@@ -77,6 +80,9 @@
     (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
     (c:character <- copy ((#\a literal)))
     (x:tagged-value <- save-type c:character)
+    (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value)
+    (c:character <- copy ((#\4 literal)))
+    (x:tagged-value <- save-type c:character)
     (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value))
   ; check that read-move consumes them and then goes to sleep
   (when (ran-to-completion 'read-move)
@@ -88,7 +94,7 @@
 ;?   (set dump-trace*)
   (run-code send-final-key
     (default-space:space-address <- new space:literal 30:literal/capacity)
-    (c:character <- copy ((#\4 literal)))
+    (c:character <- copy ((#\newline literal)))
     (x:tagged-value <- save-type c:character)
     (1:channel-address/raw/deref <- write 1:channel-address/raw x:tagged-value))
   ; check that read-move consumes it and -- this time -- returns
@@ -98,7 +104,7 @@
 
 (reset)
 (new-trace "read-move-quit")
-(add-code:readfile "chessboard-cursor.mu")
+(add-code:readfile "chessboard.mu")
 (add-code
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -116,7 +122,7 @@
 
 (reset)
 (new-trace "read-illegal-file")
-(add-code:readfile "chessboard-cursor.mu")
+(add-code:readfile "chessboard.mu")
 (add-code
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -139,7 +145,7 @@
 
 (reset)
 (new-trace "read-illegal-rank")
-(add-code:readfile "chessboard-cursor.mu")
+(add-code:readfile "chessboard.mu")
 (add-code
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -159,7 +165,7 @@
 
 (reset)
 (new-trace "print-board")
-(add-code:readfile "chessboard-cursor.mu")
+(add-code:readfile "chessboard.mu")
 (add-code
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -199,7 +205,7 @@
 ; todo: how to fold this more elegantly with the previous test?
 (reset)
 (new-trace "make-move")
-(add-code:readfile "chessboard-cursor.mu")
+(add-code:readfile "chessboard.mu")
 (add-code
   '((function! main [
       (default-space:space-address <- new space:literal 30:literal/capacity)

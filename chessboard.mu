@@ -243,7 +243,7 @@
 ;?     (print-primitive-to-host (("\n" literal))) ;? 1
 ;?     (print-primitive-to-host buffered-stdin:channel-address) ;? 1
 ;?     (print-primitive-to-host (("\n" literal))) ;? 1
-;?     (dump-memory) ;? 1
+;?     ($dump-memory) ;? 1
 ;?     (cursor-mode) ;? 1
     (break-unless m:move-address)
     (b:board-address <- make-move b:board-address m:move-address)
