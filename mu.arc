@@ -739,10 +739,32 @@
                     (prn ($.rgb-red pixel) " " ($.rgb-blue pixel) " " ($.rgb-green pixel))
                     ($:rgb-red pixel))
 
-                ; debugging aide
-                dump-memory
+                ; debugging aides
+                $dump-memory
                   (do1 nil
                     (prn:repr int-canon.memory*))
+                $start-tracing
+                  (do1 nil
+                    (set dump-trace*))
+                $stop-tracing
+                  (do1 nil
+                    (wipe dump-trace*))
+                $dump-channel
+                  (do1 nil
+                    ($.close-charterm)
+                    (withs (x (m arg.0)
+                            y (memory* (+ x 2)))
+                      (prn label.routine* " -- " x " -- " (list (memory* x)
+                                                                (memory* (+ x 1))
+                                                                (memory* (+ x 2)))
+                                                   " -- " (list (memory* y)
+                                                                (memory* (+ y 1))
+                                                                (repr:memory* (+ y 2))
+                                                                (memory* (+ y 3))
+                                                                (repr:memory* (+ y 4)))))
+                    ($.open-charterm))
+                $quit
+                  (quit)
 
                 ; user-defined functions
                 next-input
@@ -1680,6 +1702,7 @@
 (init-fn read
   (default-space:space-address <- new space:literal 30:literal)
   (chan:channel-address <- next-input)
+;?   ($dump-channel chan:channel-address) ;? 1
   { begin
     ; block if chan is empty
     (empty:boolean <- empty? chan:channel-address/deref)
@@ -2030,6 +2053,9 @@
   ; repeat forever
   { begin
     (line:buffer-address <- init-buffer 30:literal)
+    ; todo: why do we need this?
+    (sleep for-some-cycles:literal 1:literal)
+;?     ($dump-channel 1093:literal) ;? 1
     ; read characters from stdin until newline, copy into line
     { begin
       (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
@@ -2047,15 +2073,13 @@
         (loop 2:blocks)
       }
       (line:buffer-address <- append line:buffer-address c:character)
-      (line-contents:string-address <- get line:buffer-address/deref data:offset)
       (line-done?:boolean <- equal c:character ((#\newline literal)))
       (break-if line-done?:boolean)
       (eof?:boolean <- equal c:character ((#\null literal)))
-      (break-if eof?:boolean)
+      (break-if eof?:boolean 2:blocks)
       (loop)
     }
     ; copy line into buffered-stdout
-    (break-if eof?:boolean)
     (i:integer <- copy 0:literal)
     (line-contents:string-address <- get line:buffer-address/deref data:offset)
     (max:integer <- get line:buffer-address/deref length:offset)
@@ -2064,7 +2088,12 @@
       (break-if done?:boolean)
       (c:character <- index line-contents:string-address/deref i:integer)
       (curr:tagged-value <- save-type c:character)
+;?       ($dump-channel 1093:literal) ;? 1
+;?       ($start-tracing) ;? 1
       (buffered-stdin:channel-address/deref <- write buffered-stdin:channel-address curr:tagged-value)
+;?       ($stop-tracing) ;? 1
+;?       ($dump-channel 1093:literal) ;? 1
+;?       ($quit) ;? 1
       (i:integer <- add i:integer 1:literal)
       (loop)
     }
