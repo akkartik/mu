@@ -1968,6 +1968,19 @@
   ; real keyboard input is infrequent; avoid polling it too much
   (sleep for-some-cycles:literal 1:literal)
   (c:character <- read-key-from-host)
+  ; when we read from a real keyboard we print to screen as well
+  ; later we'll need ways to suppress this
+  ; exceptions for the charterm library
+  { begin
+    (newline?:boolean <- equal c:character ((return literal)))
+    (break-unless newline?:character)
+    (cursor-to-next-line)
+    (reply ((#\newline literal)))
+  }
+  { begin
+    (break-unless c:character)
+    (print-primitive-to-host c:character)
+  }
   (reply c:character)
 )
 
@@ -2001,7 +2014,7 @@
       (line:buffer-address <- append line:buffer-address c:character)
       (line-contents:string-address <- get line:buffer-address/deref data:offset)
 ;?       (print-primitive-to-host c:character) ;? 0
-;?       (print-primitive-to-host (("\n" literal))) ;? 0
+;?       (print-primitive-to-host (("\n" literal))) ;? 2
       (line-done?:boolean <- equal c:character ((#\newline literal)))
       (break-if line-done?:boolean)
       (eof?:boolean <- equal c:character ((#\null literal)))
@@ -2305,7 +2318,7 @@
 
 ;; load all provided files and start at 'main'
 (reset)
-;? (new-trace "main")
+;? (new-trace "main") ;? 3
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run")))
