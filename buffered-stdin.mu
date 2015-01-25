@@ -2,8 +2,8 @@
 ; dies if you wait a while, because so far we never free memory
 (function main [
   (default-space:space-address <- new space:literal 30:literal)
-  (cursor-mode)
-  (clear-screen)
+  (cursor-mode) ;? 1
+  (clear-screen) ;? 1
   ; hook up stdin
   (stdin:channel-address <- init-channel 1:literal)
   (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit nil:literal/keyboard stdin:channel-address)
@@ -15,7 +15,7 @@
     (s:string-address <- new "? ")
     (print-string nil:literal/terminal s:string-address)
     { begin
-      (x:tagged-value stdin:channel-address/deref <- read buffered-stdin:channel-address)
+      (x:tagged-value buffered-stdin:channel-address/deref <- read buffered-stdin:channel-address)
       (c:character <- maybe-coerce x:tagged-value character:literal)
 ;?       (print-primitive-to-host (("AAA " literal))) ;? 1
 ;?       (print-primitive-to-host c:character) ;? 1
