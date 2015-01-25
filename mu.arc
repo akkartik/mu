@@ -475,7 +475,7 @@
           (die "No results returned: @(tostring:pr (body.routine* pc.routine*))"))
         (++ pc.routine*))
       (++ curr-cycle*)
-;?       (trace "run" "-- " int-canon.memory*)
+;?       (trace "run" "-- " int-canon.memory*) ;? 1
       (trace "run" curr-cycle* " " top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
       (when (atom (body.routine* pc.routine*))  ; label
@@ -751,7 +751,7 @@
                     (wipe dump-trace*))
                 $dump-channel
                   (do1 nil
-                    ($.close-charterm)
+                    ($.close-charterm) ;? 1
                     (withs (x (m arg.0)
                             y (memory* (+ x 2)))
                       (prn label.routine* " -- " x " -- " (list (memory* x)
@@ -762,7 +762,8 @@
                                                                 (repr:memory* (+ y 2))
                                                                 (memory* (+ y 3))
                                                                 (repr:memory* (+ y 4)))))
-                    ($.open-charterm))
+                    ($.open-charterm) ;? 1
+                    )
                 $quit
                   (quit)
 
@@ -1702,7 +1703,7 @@
 (init-fn read
   (default-space:space-address <- new space:literal 30:literal)
   (chan:channel-address <- next-input)
-;?   ($dump-channel chan:channel-address) ;? 1
+;?   ($dump-channel chan:channel-address) ;? 2
   { begin
     ; block if chan is empty
     (empty:boolean <- empty? chan:channel-address/deref)
@@ -2035,15 +2036,21 @@
   (default-space:space-address <- new space:literal 30:literal)
   (k:keyboard-address <- next-input)
   (stdin:channel-address <- next-input)
-  { begin
-    (c:character <- read-key k:keyboard-address)
-    (loop-unless c:character)
-    (curr:tagged-value <- save-type c:character)
-    (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value)
-    (eof?:boolean <- equal c:character ((#\null literal)))
-    (break-if eof?:boolean)
-    (loop)
-  }
+;?   (c:character <- copy ((#\a literal))) ;? 1
+;?   (curr:tagged-value <- save-type c:character) ;? 1
+;?   (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value) ;? 1
+;?   (c:character <- copy ((#\newline literal))) ;? 1
+;?   (curr:tagged-value <- save-type c:character) ;? 1
+;?   (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value) ;? 1
+  { begin ;? 1
+    (c:character <- read-key k:keyboard-address) ;? 1
+    (loop-unless c:character) ;? 1
+    (curr:tagged-value <- save-type c:character) ;? 1
+    (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value) ;? 1
+    (eof?:boolean <- equal c:character ((#\null literal))) ;? 1
+    (break-if eof?:boolean) ;? 1
+    (loop) ;? 1
+  } ;? 1
 )
 
 (init-fn buffer-stdin
@@ -2053,8 +2060,6 @@
   ; repeat forever
   { begin
     (line:buffer-address <- init-buffer 30:literal)
-    ; todo: why do we need this?
-    (sleep for-some-cycles:literal 1:literal)
 ;?     ($dump-channel 1093:literal) ;? 1
     ; read characters from stdin until newline, copy into line
     { begin
@@ -2386,7 +2391,7 @@
 ;?   (= dump-trace* (obj whitelist '("run")))
 ;?   (= dump-trace* (obj whitelist '("schedule")))
 ;?   (= dump-trace* (obj whitelist '("cn0" "cn1")))
-;?   (set dump-trace*) ;? 0
+;?   (set dump-trace*) ;? 1
 ;?   (freeze function*)
 ;?   (prn function*!factorial)
   (run 'main)
