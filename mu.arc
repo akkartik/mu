@@ -669,12 +669,12 @@
                   (do1 nil
 ;?                        (write (m arg.0))  (pr " => ")  (prn (type (m arg.0)))
                        (if (no ($.current-charterm))
-                         (pr (m arg.0)))
+                         (pr (m arg.0))
                          (caselet x (m arg.0)
                            #\newline
                              ($.charterm-newline)
                            ;else
-                             ($.charterm-display x))
+                             ($.charterm-display x)))
                        )
                 read-key-from-host
                   (if ($.current-charterm)
@@ -2329,7 +2329,7 @@
 ;?   (= dump-trace* (obj whitelist '("run")))
 ;?   (= dump-trace* (obj whitelist '("schedule")))
 ;?   (= dump-trace* (obj whitelist '("cn0" "cn1")))
-;?   (set dump-trace*)
+;?   (set dump-trace*) ;? 0
 ;?   (freeze function*)
 ;?   (prn function*!factorial)
   (run 'main)

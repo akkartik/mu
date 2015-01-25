@@ -23,7 +23,6 @@
 ;?     (print-primitive-to-host c:character)
     (done?:boolean <- equal c:character ((#\q literal)))
     (break-if done?:boolean)
-    (print-character nil:literal/terminal c:character)
     (loop)
   }
 ])

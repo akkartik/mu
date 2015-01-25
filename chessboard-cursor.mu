@@ -132,7 +132,6 @@
   (a:character <- copy ((#\a literal)))
   (file-base:integer <- character-to-integer a:character)
   (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print-character screen:terminal-address c:character)
   { begin
     (quit:boolean <- equal c:character ((#\q literal)))
     (break-unless quit:boolean)
@@ -154,7 +153,6 @@
   (screen:terminal-address <- next-input)
   (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
   (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print-character screen:terminal-address c:character)
   { begin
     (quit:boolean <- equal c:character ((#\q literal)))
     (break-unless quit:boolean)
@@ -179,7 +177,6 @@
   ; slurp hyphen
   (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
   (c:character <- maybe-coerce x:tagged-value character:literal)
-  (print-character screen:terminal-address c:character)
   (expected:character <- next-input)
   (match?:boolean <- equal c:character expected:character)
   (assert match?:boolean (("expected character not found" literal)))
