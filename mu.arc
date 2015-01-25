@@ -315,7 +315,7 @@
     (when rep.routine*!limit
       ; start the clock if it wasn't already running
       (or= rep.routine*!running-since curr-cycle*))
-    (trace "schedule" top.routine*!fn-name)
+    (trace "schedule" label.routine*)
     (routine-mark
       (run-for-time-slice scheduling-interval*))
     (update-scheduler-state)
@@ -393,6 +393,7 @@
     (until (empty running-routines*)
       (push (deq running-routines*) completed-routines*))
     (each (routine _) sleeping-routines*
+;?       (prn " " label.routine) ;? 0
       (wipe sleeping-routines*.routine)
       (push routine completed-routines*)))
   (detect-deadlock)
@@ -1954,10 +1955,18 @@
     (break-unless x:keyboard-address)
     (idx:integer-address <- get-address x:keyboard-address/deref index:offset)
     (buf:string-address <- get x:keyboard-address/deref data:offset)
+    (max:integer <- length buf:string-address/deref)
+    { begin
+      (done?:boolean <- greater-or-equal idx:integer-address/deref max:integer)
+      (break-unless done?:boolean)
+      (reply ((#\null literal)))
+    }
     (c:character <- index buf:string-address/deref idx:integer-address/deref)
     (idx:integer-address/deref <- add idx:integer-address/deref 1:literal)
     (reply c:character)
   }
+  ; real keyboard input is infrequent; avoid polling it too much
+  (sleep for-some-cycles:literal 1:literal)
   (c:character <- read-key-from-host)
   (reply c:character)
 )
@@ -1967,12 +1976,52 @@
   (k:keyboard-address <- next-input)
   (stdin:channel-address <- next-input)
   { begin
-    ; keyboard input is infrequent; sleep at the start of each iteration
-    (sleep for-some-cycles:literal 1:literal)
     (c:character <- read-key k:keyboard-address)
     (loop-unless c:character)
     (curr:tagged-value <- save-type c:character)
     (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value)
+    (eof?:boolean <- equal c:character ((#\null literal)))
+    (break-if eof?:boolean)
+    (loop)
+  }
+)
+
+(init-fn buffer-stdin
+  (default-space:space-address <- new space:literal 30:literal)
+  (stdin:channel-address <- next-input)
+  (buffered-stdin:channel-address <- next-input)
+  (line:buffer-address <- init-buffer 30:literal)
+  ; repeat forever
+  { begin
+    ; read characters from stdin until newline, copy into line
+    { begin
+      (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
+      (c:character <- maybe-coerce x:tagged-value character:literal)
+      (assert c:character)
+      (line:buffer-address <- append line:buffer-address c:character)
+      (line-contents:string-address <- get line:buffer-address/deref data:offset)
+;?       (print-primitive-to-host c:character) ;? 0
+;?       (print-primitive-to-host (("\n" literal))) ;? 0
+      (line-done?:boolean <- equal c:character ((#\newline literal)))
+      (break-if line-done?:boolean)
+      (eof?:boolean <- equal c:character ((#\null literal)))
+      (break-if eof?:boolean)
+      (loop)
+    }
+    ; copy line into buffered-stdout
+    (break-if eof?:boolean)
+    (i:integer <- copy 0:literal)
+    (line-contents:string-address <- get line:buffer-address/deref data:offset)
+    (max:integer <- get line:buffer-address/deref length:offset)
+    { begin
+      (done?:boolean <- greater-or-equal i:integer max:integer)
+      (break-if done?:boolean)
+      (c:character <- index line-contents:string-address/deref i:integer)
+      (curr:tagged-value <- save-type c:character)
+      (buffered-stdin:channel-address/deref <- write buffered-stdin:channel-address curr:tagged-value)
+      (i:integer <- add i:integer 1:literal)
+      (loop)
+    }
     (loop)
   }
 )
@@ -2050,7 +2099,7 @@
     (idx:integer <- add t1:integer col:integer-address/deref)
     (buf:string-address <- get x:terminal-address/deref data:offset)
     (cursor:byte-address <- index-address buf:string-address/deref idx:integer)
-    (cursor:byte-address/deref <- copy c:character)
+    (cursor:byte-address/deref <- copy c:character)  ; todo: newline, etc.
     (col:integer-address/deref <- add col:integer-address/deref 1:literal)
     ; we don't rely on any auto-wrap functionality
     ; maybe die if we go out of screen bounds?
@@ -2213,11 +2262,14 @@
 
 (init-fn send-prints-to-stdout
   (default-space:space-address <- new space:literal 30:literal)
+  (screen:terminal-address <- next-input)
   (stdout:channel-address <- next-input)
   { begin
     (x:tagged-value stdout:channel-address/deref <- read stdout:channel-address)
     (c:character <- maybe-coerce x:tagged-value character:literal)
-    (print-character nil:literal/terminal c:character)
+    (done?:boolean <- equal c:character ((#\null literal)))
+    (break-if done?:boolean)
+    (print-character screen:terminal-address c:character)
     (loop)
   }
 )
