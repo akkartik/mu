@@ -678,7 +678,13 @@
                        )
                 read-key-from-host
                   (if ($.current-charterm)
-                        (and ($.charterm-byte-ready?) ($.charterm-read-key))
+                        (and ($.charterm-byte-ready?)
+                             (ret result ($.charterm-read-key)
+                               (case result
+                                 ; charterm exceptions
+                                 return
+                                   (= result #\newline)
+                                 )))
                       ($.graphics-open?)
                         ($.ready-key-press Viewport))
 
@@ -1976,12 +1982,6 @@
   (c:character <- read-key-from-host)
   ; when we read from a real keyboard we print to screen as well
   ; later we'll need ways to suppress this
-  ; exceptions for the charterm library
-  { begin
-    (newline?:boolean <- equal c:character ((return literal)))
-    (break-unless newline?:character)
-    (c:character <- copy ((#\newline literal)))
-  }
   { begin
     (break-unless c:character)
     (print-primitive-to-host c:character)
