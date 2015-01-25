@@ -668,14 +668,13 @@
                 print-primitive-to-host
                   (do1 nil
 ;?                        (write (m arg.0))  (pr " => ")  (prn (type (m arg.0)))
-                       (when (no ($.current-charterm))
+                       (if (no ($.current-charterm))
                          (pr (m arg.0)))
-                       (when ($.current-charterm)
                          (caselet x (m arg.0)
                            #\newline
                              ($.charterm-newline)
                            ;else
-                             ($.charterm-display x)))
+                             ($.charterm-display x))
                        )
                 read-key-from-host
                   (if ($.current-charterm)
