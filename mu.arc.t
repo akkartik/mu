@@ -1952,7 +1952,39 @@
             (~is rep.routine!alloc 92)
             (~is rep.routine!alloc-max 100)
             (~is Memory-allocated-until 100))
-    (prn "F - 'new' skips allocates a new chunk if insufficient space")))
+    (prn "F - 'new' allocates a new chunk if insufficient space")))
+
+(reset)
+(new-trace "new-array-skip-noncontiguous")
+(add-code
+  '((function main [
+      (1:integer-array-address <- new integer-array:literal 4:literal)
+     ])))
+; start allocating from address 30, in chunks of 10 locations each
+(= Memory-allocated-until 30
+   Allocation-chunk 10)
+(let routine make-routine!main
+  (assert:is rep.routine!alloc 30)
+  (assert:is rep.routine!alloc-max 40)
+  ; pretend the current chunk has just one location left
+  (= rep.routine!alloc 39)
+  ; pretend we allocated more memory since we created the routine
+  (= Memory-allocated-until 90)
+  (enq routine running-routines*)
+  ; request 4 locations
+  (run)
+  (each routine completed-routines*
+    (aif rep.routine!error (prn "error - " it)))
+;?   (prn memory*.1) ;? 1
+;?   (prn rep.routine) ;? 1
+;?   (prn Memory-allocated-until) ;? 1
+  (when (or (~is memory*.1 90)
+            (~is rep.routine!alloc 95)
+            (~is rep.routine!alloc-max 100)
+            (~is Memory-allocated-until 100))
+    (prn "F - 'new-array' allocates a new chunk if insufficient space")))
+
+;? (quit) ;? 1
 
 ; Even though our memory locations can now have names, the names are all
 ; globals, accessible from any function. To isolate functions from their

@@ -1017,25 +1017,23 @@
 
 ; memory allocation
 
+(def alloc (sz)
+  (when (> sz (- rep.routine*!alloc-max rep.routine*!alloc))
+    (let curr-alloc Memory-allocated-until
+      (= rep.routine*!alloc curr-alloc)
+      (++ Memory-allocated-until Allocation-chunk)
+      (= rep.routine*!alloc-max Memory-allocated-until)))
+  (ret result rep.routine*!alloc
+    (++ rep.routine*!alloc sz)))
+
 (def new-scalar (type)
 ;?   (tr "new scalar: @type")
-  (let sz (sizeof `((_ ,type)))
-    (when (> sz (- rep.routine*!alloc-max rep.routine*!alloc))
-      (let curr-alloc Memory-allocated-until
-        (= rep.routine*!alloc curr-alloc)
-        (++ Memory-allocated-until Allocation-chunk)
-        (= rep.routine*!alloc-max Memory-allocated-until)))
-    (ret result rep.routine*!alloc
-      (++ rep.routine*!alloc sz))))
+  (alloc (sizeof `((_ ,type)))))
 
 (def new-array (type size)
 ;?   (tr "new array: @type @size")
-  (ret result rep.routine*!alloc
-    (++ rep.routine*!alloc (+ 1 (* (sizeof `((_ ,@type*.type!elem))) size)))
-;?     (tr "new-array: @result => @rep.routine*!alloc")
-    (= memory*.result size)
-    (assert (< rep.routine*!alloc rep.routine*!alloc-max) "allocation overflowed routine space @rep.routine*!alloc - @rep.routine*!alloc-max")
-    ))
+  (ret result (alloc (+ 1 (* (sizeof `((_ ,@type*.type!elem))) size)))
+    (= memory*.result size)))
 
 (def new-string (literal-string)
 ;?   (tr "new string: @literal-string")
