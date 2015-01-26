@@ -3924,9 +3924,11 @@
       (2:string-address <- new " world!")
       (3:string-address <- strcat 1:string-address 2:string-address)
      ])))
+;? (= dump-trace* (obj whitelist '("run"))) ;? 1
 (run 'main)
 (when (~memory-contains-array memory*.3 "hello, world!")
   (prn "F - 'strcat' concatenates strings"))
+;? (quit) ;? 1
 
 (reset)
 (new-trace "interpolate")

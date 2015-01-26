@@ -933,10 +933,10 @@
 ;?     (prn "1: " operand)
 ;?     (tr "1: " operand)  ; todo: why does this die?
     (zap absolutize operand)
-;?     (tr "2: @(tostring write.operand)")
+;?     (tr "2: @repr.operand")
     (while (pos '(deref) metadata.operand)
       (zap deref operand)
-;?       (tr "3: @(tostring write.operand)")
+;?       (tr "3: @repr.operand")
       )))
 
 (def array-len (operand)
@@ -1037,15 +1037,11 @@
 
 (def new-string (literal-string)
 ;?   (tr "new string: @literal-string")
-  (ret result rep.routine*!alloc
-    (= (memory* rep.routine*!alloc) len.literal-string)
-    (++ rep.routine*!alloc)
-    (each c literal-string
-      (= (memory* rep.routine*!alloc) c)
-      (++ rep.routine*!alloc))
-;?     (tr "new-string: @result => @rep.routine*!alloc")
-    (assert (< rep.routine*!alloc rep.routine*!alloc-max) "allocation overflowed routine space @rep.routine*!alloc - @rep.routine*!alloc-max")
-    ))
+  (ret result (alloc (+ 1 len.literal-string))
+    (= memory*.result len.literal-string)
+    (on c literal-string
+;?       (prn index " " repr.c) ;? 1
+      (= (memory* (+ result 1 index)) c))))
 
 ;; desugar structured assembly based on blocks
 
@@ -1493,8 +1489,8 @@
                t
              (~is memory*.addr value.idx)
                (do1 nil
-                    (prn "@addr should contain @(tostring (write value.idx)) but contains @(tostring (write memory*.addr))")
-;?                     (recur (+ addr 1) (+ idx 1))
+                    (prn "@addr should contain @(repr value.idx) but contains @(repr memory*.addr)")
+;?                     (recur (+ addr 1) (+ idx 1)) ;? 1
                     )
              :else
                (recur (+ addr 1) (+ idx 1))))))
