@@ -1321,6 +1321,7 @@
                          4 1  5 3  6 4))
   (prn "F - 'reply' permits a function to return multiple values at once"))
 
+; 'prepare-reply' is useful for doing cleanup before exiting a function
 (reset)
 (new-trace "new-fn-prepare-reply")
 (add-code
@@ -1343,6 +1344,35 @@
                          ; test1's temporaries
                          4 1  5 3  6 4))
   (prn "F - without args, 'reply' returns values from previous 'prepare-reply'."))
+
+; When you have arguments that are both read from and written to, include them
+; redundantly in both ingredients and results. That'll help tools track what
+; changed.
+
+; To enforce that the result and ingredient must always match, use the
+; 'same-as-arg' property. Results with 'same-as-arg' properties should only be
+; copied to a caller output arg identical to the specified caller arg.
+(reset)
+(new-trace "new-fn-same-as-arg")
+(add-code
+  '((function test1 [
+      ; increment the contents of an address
+      (default-space:space-address <- new space:literal 2:literal)
+      (x:integer-address <- next-input)
+      (x:integer-address/deref <- add x:integer-address/deref 1:literal)
+      (reply x:integer-address/same-as-arg:0)
+    ])
+    (function main [
+      (2:integer-address <- new integer:literal)
+      (2:integer-address/deref <- copy 0:literal)
+      (3:integer-address <- test1 2:integer-address)
+    ])))
+(run 'main)
+(let routine (car completed-routines*)
+;?   (prn rep.routine!error) ;? 1
+  (when (no rep.routine!error)
+    (prn "F - 'same-as-arg' results must be identical to a given input")))
+;? (quit) ;? 2
 
 )  ; section 20
 
