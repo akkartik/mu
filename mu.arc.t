@@ -1879,6 +1879,29 @@
     (when (~iso rep.routine!alloc (+ before 6))
       (prn "F - 'new' on primitive arrays increments high-water mark by their (variable) size"))))
 
+(reset)
+(new-trace "new-allocation-chunk")
+(add-code
+  '((function main [
+      (1:integer-address <- new integer:literal)
+     ])))
+; start allocating from address 30, in chunks of 10 locations each
+(= Memory-allocated-until 30
+   Allocation-chunk 10)
+(let routine make-routine!main
+  (assert:is rep.routine!alloc 30)
+  (assert:is rep.routine!alloc-max 40)
+  ; pretend the current chunk is full
+  (= rep.routine!alloc 40)
+  (enq routine running-routines*)
+  (run)
+  (each routine completed-routines*
+    (aif rep.routine!error (prn "error - " it)))
+  (when (~is rep.routine!alloc 41)
+    (prn "F - 'new' can allocate past initial routine memory"))
+  (when (~is rep.routine!alloc-max 50)
+    (prn "F - 'new' updates upper bound for routine memory @rep.routine!alloc-max")))
+
 ; Even though our memory locations can now have names, the names are all
 ; globals, accessible from any function. To isolate functions from their
 ; callers we need local variables, and mu provides them using a special

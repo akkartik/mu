@@ -211,13 +211,14 @@
 
 (on-init
 ;?   (prn "-- resetting memory allocation")
-  (= Memory-allocated-until 1000))
+  (= Memory-allocated-until 1000)
+  (= Allocation-chunk 100000))
 
 ; routine = runtime state for a serial thread of execution
 (def make-routine (fn-name . args)
   (let curr-alloc Memory-allocated-until
 ;?     (prn "-- allocating routine: @curr-alloc")
-    (++ Memory-allocated-until 100000)
+    (++ Memory-allocated-until Allocation-chunk)
     (annotate 'routine (obj alloc curr-alloc  alloc-max Memory-allocated-until
         call-stack
           (list (obj fn-name fn-name  pc 0  args args  caller-arg-idx 0))))
@@ -226,7 +227,6 @@
         ;   limit: number of cycles this routine can use
         ;   running-since: start of the clock for counting cycles this routine has used
 
-    ; todo: allow routines to expand past initial allocation
     ; todo: do memory management in mu
     ))
 
@@ -1020,9 +1020,12 @@
 (def new-scalar (type)
 ;?   (tr "new scalar: @type")
   (ret result rep.routine*!alloc
+    (when (>= rep.routine*!alloc rep.routine*!alloc-max)
+      (let curr-alloc Memory-allocated-until
+        (= rep.routine*!alloc curr-alloc)
+        (++ Memory-allocated-until Allocation-chunk)
+        (= rep.routine*!alloc-max Memory-allocated-until)))
     (++ rep.routine*!alloc (sizeof `((_ ,type))))
-;?     (tr "new-scalar: @result => @rep.routine*!alloc")
-    (assert (< rep.routine*!alloc rep.routine*!alloc-max) "allocation overflowed routine space @rep.routine*!alloc - @rep.routine*!alloc-max")
     ))
 
 (def new-array (type size)
