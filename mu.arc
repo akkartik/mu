@@ -1019,14 +1019,14 @@
 
 (def new-scalar (type)
 ;?   (tr "new scalar: @type")
-  (ret result rep.routine*!alloc
-    (when (>= rep.routine*!alloc rep.routine*!alloc-max)
+  (let sz (sizeof `((_ ,type)))
+    (when (> sz (- rep.routine*!alloc-max rep.routine*!alloc))
       (let curr-alloc Memory-allocated-until
         (= rep.routine*!alloc curr-alloc)
         (++ Memory-allocated-until Allocation-chunk)
         (= rep.routine*!alloc-max Memory-allocated-until)))
-    (++ rep.routine*!alloc (sizeof `((_ ,type))))
-    ))
+    (ret result rep.routine*!alloc
+      (++ rep.routine*!alloc sz))))
 
 (def new-array (type size)
 ;?   (tr "new array: @type @size")
