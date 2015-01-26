@@ -5,7 +5,7 @@
 (add-code
   '((function reader [
       (default-space:space-address <- new space:literal 30:literal/capacity)
-      (x:tagged-value 1:channel-address/space:global <- read 1:channel-address/space:global)
+      (x:tagged-value 1:channel-address/space:global/nochange <- read 1:channel-address/space:global)
      ])
     (function main [
       (default-space:space-address <- new space:literal 30:literal/capacity)

@@ -1321,6 +1321,7 @@
                          4 1  5 3  6 4))
   (prn "F - 'reply' permits a function to return multiple values at once"))
 
+; 'prepare-reply' is useful for doing cleanup before exiting a function
 (reset)
 (new-trace "new-fn-prepare-reply")
 (add-code
@@ -1343,6 +1344,35 @@
                          ; test1's temporaries
                          4 1  5 3  6 4))
   (prn "F - without args, 'reply' returns values from previous 'prepare-reply'."))
+
+; When you have arguments that are both read from and written to, include them
+; redundantly in both ingredients and results. That'll help tools track what
+; changed.
+
+; To enforce that the result and ingredient must always match, use the
+; 'nochange' property. Results with 'nochange' properties should only be
+; copied to themselves.
+(reset)
+(new-trace "new-fn-nochange")
+(add-code
+  '((function test1 [
+      ; increment the contents of an address
+      (default-space:space-address <- new space:literal 2:literal)
+      (x:integer-address <- next-input)
+      (x:integer-address/deref <- add x:integer-address/deref 1:literal)
+      (reply x:integer-address/nochange)
+    ])
+    (function main [
+      (1:integer-address <- new integer:literal)
+      (1:integer-address/deref <- copy 0:literal)
+      (2:integer-address <- test1 1:integer-address)
+    ])))
+(run 'main)
+(let routine (car completed-routines*)
+;?   (prn rep.routine!error) ;? 1
+  (when (no rep.routine!error)
+    (prn "F - 'nochange' results are never copied to other locations")))
+;? (quit) ;? 1
 
 )  ; section 20
 
@@ -3039,7 +3069,7 @@
       (1:channel-address <- init-channel 3:literal)
       (2:integer <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer)
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
       (5:integer <- get 1:channel-address/deref first-full:offset)
       (6:integer <- get 1:channel-address/deref first-free:offset)
      ])))
@@ -3064,8 +3094,8 @@
       (1:channel-address <- init-channel 3:literal)
       (2:integer <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer)
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
-      (5:tagged-value 1:channel-address/deref <- read 1:channel-address)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
+      (5:tagged-value 1:channel-address/deref/nochange <- read 1:channel-address)
       (7:integer <- maybe-coerce 5:tagged-value integer:literal)
       (8:integer <- get 1:channel-address/deref first-full:offset)
       (9:integer <- get 1:channel-address/deref first-free:offset)
@@ -3089,13 +3119,13 @@
       ; write a value
       (2:integer <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer)
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
       ; first-free will now be 1
       (5:integer <- get 1:channel-address/deref first-free:offset)
       ; read one value
-      (_ 1:channel-address/deref <- read 1:channel-address)
+      (_ 1:channel-address/deref/nochange <- read 1:channel-address)
       ; write a second value; verify that first-free wraps around to 0.
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
       (6:integer <- get 1:channel-address/deref first-free:offset)
      ])))
 ;? (set dump-trace*)
@@ -3115,15 +3145,15 @@
       ; write a value
       (2:integer <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer)
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
       ; read one value
-      (_ 1:channel-address/deref <- read 1:channel-address)
+      (_ 1:channel-address/deref/nochange <- read 1:channel-address)
       ; first-full will now be 1
       (5:integer <- get 1:channel-address/deref first-full:offset)
       ; write a second value
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
       ; read second value; verify that first-full wraps around to 0.
-      (_ 1:channel-address/deref <- read 1:channel-address)
+      (_ 1:channel-address/deref/nochange <- read 1:channel-address)
       (6:integer <- get 1:channel-address/deref first-full:offset)
      ])))
 ;? (set dump-trace*)
@@ -3156,7 +3186,7 @@
       (1:channel-address <- init-channel 3:literal)
       (2:integer <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer)
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
       (5:boolean <- empty? 1:channel-address/deref)
       (6:boolean <- full? 1:channel-address/deref)
      ])))
@@ -3174,7 +3204,7 @@
       (1:channel-address <- init-channel 1:literal)
       (2:integer <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer)
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
       (5:boolean <- empty? 1:channel-address/deref)
       (6:boolean <- full? 1:channel-address/deref)
      ])))
@@ -3192,9 +3222,9 @@
       (1:channel-address <- init-channel 3:literal)
       (2:integer <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer)
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
-      (_ 1:channel-address/deref <- read 1:channel-address)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
+      (_ 1:channel-address/deref/nochange <- read 1:channel-address)
       (5:boolean <- empty? 1:channel-address/deref)
       (6:boolean <- full? 1:channel-address/deref)
      ])))
@@ -3213,7 +3243,7 @@
       (2:integer <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer)
       (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
-      (_ 1:channel-address/deref <- read 1:channel-address)
+      (_ 1:channel-address/deref/nochange <- read 1:channel-address)
       (5:boolean <- empty? 1:channel-address/deref)
       (6:boolean <- full? 1:channel-address/deref)
      ])))
@@ -3233,7 +3263,7 @@
   '((function main [
       (1:channel-address <- init-channel 3:literal)
       ; channel is empty, but receives a read
-      (2:tagged-value 1:channel-address/deref <- read 1:channel-address)
+      (2:tagged-value 1:channel-address/deref/nochange <- read 1:channel-address)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("run" "schedule")))
@@ -3257,9 +3287,9 @@
       (1:channel-address <- init-channel 1:literal)
       (2:integer <- copy 34:literal)
       (3:tagged-value <- save-type 2:integer)
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
       ; channel has capacity 1, but receives a second write
-      (1:channel-address/deref <- write 1:channel-address 3:tagged-value)
+      (1:channel-address/deref/nochange <- write 1:channel-address 3:tagged-value)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("run" "schedule" "addr")))
@@ -3284,14 +3314,14 @@
       (default-space:space-address <- new space:literal 30:literal)
       (chan:channel-address <- init-channel 3:literal)  ; create a channel
       (fork producer:fn nil:literal/globals nil:literal/limit chan:channel-address)  ; fork a routine to produce a value in it
-      (1:tagged-value/raw <- read chan:channel-address)  ; wait for input on channel
+      (1:tagged-value/raw/nochange <- read chan:channel-address)  ; wait for input on channel
      ])
     (function producer [
       (default-space:space-address <- new space:literal 30:literal)
       (n:integer <- copy 24:literal)
       (ochan:channel-address <- next-input)
       (x:tagged-value <- save-type n:integer)
-      (ochan:channel-address/deref <- write ochan:channel-address x:tagged-value)
+      (ochan:channel-address/deref/nochange <- write ochan:channel-address x:tagged-value)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("schedule" "run" "addr")))
@@ -3311,13 +3341,13 @@
       (default-space:space-address <- new space:literal 30:literal)
       (1:channel-address <- init-channel 3:literal)  ; create a channel
       (fork producer:fn default-space:space-address/globals nil:literal/limit)  ; pass it as a global to another routine
-      (1:tagged-value/raw <- read 1:channel-address)  ; wait for input on channel
+      (1:tagged-value/raw/nochange <- read 1:channel-address)  ; wait for input on channel
      ])
     (function producer [
       (default-space:space-address <- new space:literal 30:literal)
       (n:integer <- copy 24:literal)
       (x:tagged-value <- save-type n:integer)
-      (1:channel-address/space:global/deref <- write 1:channel-address/space:global x:tagged-value)
+      (1:channel-address/space:global/deref/nochange <- write 1:channel-address/space:global x:tagged-value)
      ])))
 (run 'consumer)
 (each routine completed-routines*

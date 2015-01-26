@@ -127,7 +127,7 @@
 (function read-file [
   (default-space:space-address <- new space:literal 30:literal)
   (stdin:channel-address <- next-input)
-  (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
+  (x:tagged-value stdin:channel-address/deref/nochange <- read stdin:channel-address)
 ;?   (print-primitive-to-host x:tagged-value) ;? 1
 ;?   (print-primitive-to-host (("\n" literal))) ;? 1
   (a:character <- copy ((#\a literal)))
@@ -154,7 +154,7 @@
 (function read-rank [
   (default-space:space-address <- new space:literal 30:literal)
   (stdin:channel-address <- next-input)
-  (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
+  (x:tagged-value stdin:channel-address/deref/nochange <- read stdin:channel-address)
   (c:character <- maybe-coerce x:tagged-value character:literal)
 ;?   (print-primitive-to-host (("BBB " literal))) ;? 1
 ;?   (print-primitive-to-host c:character) ;? 1
@@ -180,7 +180,7 @@
 (function expect-stdin [
   (default-space:space-address <- new space:literal 30:literal)
   (stdin:channel-address <- next-input)
-  (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
+  (x:tagged-value stdin:channel-address/deref/nochange <- read stdin:channel-address)
   (c:character <- maybe-coerce x:tagged-value character:literal)
   (expected:character <- next-input)
   (match?:boolean <- equal c:character expected:character)
