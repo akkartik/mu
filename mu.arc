@@ -267,7 +267,7 @@
 
 (mac results (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'results))
-(mac reply-args(routine)  ; assignable
+(mac reply-args (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'reply-args))
 
 (def waiting-for-exact-cycle? (routine)
@@ -800,14 +800,13 @@
                              reply-args reply-args.routine*)
                         (pop-stack routine*)
                         (if empty.routine* (return ninstrs))
-                        (let (caller-oargs _ _)  (parse-instr (body.routine* pc.routine*))
-                          (trace "reply" repr.arg " " repr.caller-oargs)
-                          (each (dest reply-arg val)  (zip caller-oargs reply-args results)
-;?                             (prn dest " / " reply-arg " => " val) ;? 1
+                        (let (call-oargs _ call-args)  (parse-instr (body.routine* pc.routine*))
+                          (trace "reply" repr.arg " " repr.call-oargs)
+                          (each (dest reply-arg val)  (zip call-oargs reply-args results)
                             (when nondummy.dest
-                              (when (pos '(nochange) metadata.reply-arg)
-                                (unless (is dest (m reply-arg))
-                                  (die "'nochange' arg in @repr.reply-args can't bind to @repr.caller-oargs")))
+                              (whenlet argidx (alref metadata.reply-arg 'same-as-arg)
+                                (unless (is v.dest (v call-args.argidx))
+                                  (die "'same-as-arg' output arg in @repr.reply-args can't bind to @repr.call-oargs")))
                               (trace "reply" repr.val " => " dest)
                               (setm dest val))))
                         (++ pc.routine*)
@@ -1706,7 +1705,7 @@
     (break-if remaining?:boolean)
     (free:integer-address/deref <- copy 0:literal)
   }
-  (reply chan:channel-address/deref))
+  (reply chan:channel-address/deref/same-as-arg:0))
 
 (init-fn read
   (default-space:space-address <- new space:literal 30:literal)
@@ -1732,7 +1731,7 @@
     (break-if remaining?:boolean)
     (full:integer-address/deref <- copy 0:literal)
   }
-  (reply result:tagged-value chan:channel-address/deref))
+  (reply result:tagged-value chan:channel-address/deref/same-as-arg:0))
 
 ; An empty channel has first-empty and first-full both at the same value.
 (init-fn empty?
@@ -2046,15 +2045,15 @@
   (stdin:channel-address <- next-input)
 ;?   (c:character <- copy ((#\a literal))) ;? 1
 ;?   (curr:tagged-value <- save-type c:character) ;? 1
-;?   (stdin:channel-address/deref/nochange <- write stdin:channel-address curr:tagged-value) ;? 1
+;?   (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value) ;? 1
 ;?   (c:character <- copy ((#\newline literal))) ;? 1
 ;?   (curr:tagged-value <- save-type c:character) ;? 1
-;?   (stdin:channel-address/deref/nochange <- write stdin:channel-address curr:tagged-value) ;? 1
+;?   (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value) ;? 1
   { begin ;? 1
     (c:character <- read-key k:keyboard-address) ;? 1
     (loop-unless c:character) ;? 1
     (curr:tagged-value <- save-type c:character) ;? 1
-    (stdin:channel-address/deref/nochange <- write stdin:channel-address curr:tagged-value) ;? 1
+    (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value) ;? 1
     (eof?:boolean <- equal c:character ((#\null literal))) ;? 1
     (break-if eof?:boolean) ;? 1
     (loop) ;? 1
@@ -2071,7 +2070,7 @@
 ;?     ($dump-channel 1093:literal) ;? 1
     ; read characters from stdin until newline, copy into line
     { begin
-      (x:tagged-value stdin:channel-address/deref/nochange <- read stdin:channel-address)
+      (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
       (c:character <- maybe-coerce x:tagged-value character:literal)
       (assert c:character)
 ;?       (print-primitive-to-host line:buffer-address) ;? 1
@@ -2103,7 +2102,7 @@
       (curr:tagged-value <- save-type c:character)
 ;?       ($dump-channel 1093:literal) ;? 1
 ;?       ($start-tracing) ;? 1
-      (buffered-stdin:channel-address/deref/nochange <- write buffered-stdin:channel-address curr:tagged-value)
+      (buffered-stdin:channel-address/deref <- write buffered-stdin:channel-address curr:tagged-value)
 ;?       ($stop-tracing) ;? 1
 ;?       ($dump-channel 1093:literal) ;? 1
 ;?       ($quit) ;? 1
@@ -2353,7 +2352,7 @@
   (screen:terminal-address <- next-input)
   (stdout:channel-address <- next-input)
   { begin
-    (x:tagged-value stdout:channel-address/deref/nochange <- read stdout:channel-address)
+    (x:tagged-value stdout:channel-address/deref <- read stdout:channel-address)
     (c:character <- maybe-coerce x:tagged-value character:literal)
     (done?:boolean <- equal c:character ((#\null literal)))
     (break-if done?:boolean)
