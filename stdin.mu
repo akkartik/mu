@@ -14,7 +14,7 @@
   ; now read characters from stdin until a 'q' is typed
   (print-primitive-to-host (("? " literal)))
   { begin
-    (x:tagged-value stdin:channel-address/deref/nochange <- read stdin:channel-address)
+    (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
     (c:character <- maybe-coerce x:tagged-value character:literal)
 ;?     (print-primitive-to-host (("main: stdin is " literal)))
 ;?     (print-primitive-to-host stdin:channel-address)
