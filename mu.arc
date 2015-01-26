@@ -768,6 +768,13 @@
                     )
                 $quit
                   (quit)
+                $wait-for-key-from-host
+                  (if ($.current-charterm)
+                        ($.charterm-read-key)
+                      ($.graphics-open?)
+                        ($.get-key-press Viewport))
+                $eval
+                  (new-string:repr:eval:read:to-arc-string (m arg.0))
 
                 ; user-defined functions
                 next-input
@@ -1042,6 +1049,11 @@
     (on c literal-string
 ;?       (prn index " " repr.c) ;? 1
       (= (memory* (+ result 1 index)) c))))
+
+(def to-arc-string (string-address)
+  (let len (memory* string-address)
+    (string:map memory* (range (+ string-address 1)
+                               (+ string-address len)))))
 
 ;; desugar structured assembly based on blocks
 
