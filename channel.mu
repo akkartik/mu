@@ -15,7 +15,7 @@
     ; channels take
     (n2:integer <- copy n:integer)
     (n3:tagged-value-address <- init-tagged-value integer:literal n2:integer)
-    (chan:channel-address/deref/nochange <- write chan:channel-address n3:tagged-value-address/deref)
+    (chan:channel-address/deref <- write chan:channel-address n3:tagged-value-address/deref)
     (n:integer <- add n:integer 1:literal)
     (loop)
   }
@@ -27,7 +27,7 @@
   (chan:channel-address <- next-input)
   { begin
     ; read a tagged value from the channel
-    (x:tagged-value chan:channel-address/deref/nochange <- read chan:channel-address)
+    (x:tagged-value chan:channel-address/deref <- read chan:channel-address)
     ; unbox the tagged value into an integer
     (n2:integer <- maybe-coerce x:tagged-value integer:literal)
     ; other threads might get between these prints
