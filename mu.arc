@@ -462,7 +462,13 @@
 
 ($:require "charterm/main.rkt")
 ($:require graphics/graphics)
+;? ($:require "terminal-color/terminal-color/main.rkt") ;? 1
 (= Viewport nil)
+; http://rosettacode.org/wiki/Terminal_control/Coloured_text#Racket
+($:define (tput . xs) (system (apply ~a 'tput " " (add-between xs " "))) (void))
+($:define (foreground color) (tput 'setaf color))
+($:define (background color) (tput 'setab color))
+($:define (reset) (tput 'sgr0))
 
 ; run instructions from 'routine*' for 'time-slice'
 (def run-for-time-slice (time-slice)
@@ -769,10 +775,48 @@
                 $quit
                   (quit)
                 $wait-for-key-from-host
-                  (if ($.current-charterm)
-                        ($.charterm-read-key)
-                      ($.graphics-open?)
-                        ($.get-key-press Viewport))
+                  (when ($.current-charterm)
+                    (ret result ($.charterm-read-key)
+                      (case result
+                        ; charterm exceptions
+                        return
+                          (= result #\newline)
+                        backspace
+                          (= result #\backspace)
+                        )))
+                $print-key-to-host
+                  (do1 nil
+;?                        (write (m arg.0))  (pr " => ")  (prn (type (m arg.0)))
+                       (if (no ($.current-charterm))
+                         (pr (m arg.0))
+                         (caselet x (m arg.0)
+                           ; todo: test these exceptions
+                           #\newline
+                             ($.charterm-newline)
+                           #\backspace
+                             ; backspace doesn't clear after moving the cursor
+                             (do ($.charterm-display #\backspace)
+                                 ($.charterm-display #\space)
+                                 ($.charterm-display #\backspace))
+                           ctrl-c
+                             (do ($.close-charterm)
+                                 (die "interrupted"))
+                           ;else
+                             (if (len> arg 2)
+                                   (do
+                                     ($.foreground (m arg.1))
+                                     ($.background (m arg.2))
+                                     (pr x)
+                                     ($.reset))
+                                 (len> arg 1)
+                                   (do
+                                     ($.foreground (m arg.1))
+                                     (pr x)
+                                     ($.reset))
+;?                                    (print-with-fg x (m arg.1)) ;? 1
+                                 :else
+                                   ($.charterm-display x))))
+                       )
                 $eval
                   (new-string:repr:eval:read:to-arc-string (m arg.0))
 
