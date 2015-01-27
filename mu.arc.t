@@ -4385,6 +4385,41 @@
              "                    "))
   (prn "F - 'buffer-stdin' handles backspace"))
 
+(reset)
+(new-trace "buffered-contents-ignore-excess-backspace")
+(add-code
+  '((function main [
+      (default-space:space-address <- new space:literal 30:literal)
+      (s:string-address <- new "a\b\bfoo\nbar")
+      (k:keyboard-address <- init-keyboard s:string-address)
+      (stdin:channel-address <- init-channel 1:literal)
+      (fork send-keys-to-stdin:fn nil:literal/globals nil:literal/limit k:keyboard-address stdin:channel-address)
+      (buffered-stdin:channel-address <- init-channel 1:literal)
+      (r:integer/routine <- fork buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
+      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
+      (5:string-address/raw <- get screen:terminal-address/deref data:offset)
+      (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit screen:terminal-address buffered-stdin:channel-address)
+      (sleep until-routine-done:literal r:integer/routine)
+    ])))
+;? (= dump-trace* (obj whitelist '("schedule" "run"))) ;? 1
+(run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+;? (prn memory*.5) ;? 1
+(when (~memory-contains-array memory*.5
+          (+ "foo\n                "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "
+             "                    "))
+  (prn "F - 'buffer-stdin' ignores backspace when there's nothing to backspace over"))
+
 )  ; section 100
 
 (reset)

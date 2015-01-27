@@ -1502,7 +1502,7 @@
              (~is memory*.addr value.idx)
                (do1 nil
                     (prn "@addr should contain @(repr value.idx) but contains @(repr memory*.addr)")
-;?                     (recur (+ addr 1) (+ idx 1)) ;? 1
+;?                     (recur (+ addr 1) (+ idx 1)) ;? 2
                     )
              :else
                (recur (+ addr 1) (+ idx 1))))))
@@ -2082,15 +2082,24 @@
       (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
       (c:character <- maybe-coerce x:tagged-value character:literal)
       (assert c:character)
-;?       (print-primitive-to-host line:buffer-address) ;? 1
-;?       (print-primitive-to-host (("\n" literal))) ;? 1
-;?       (print-primitive-to-host c:character) ;? 1
-;?       (print-primitive-to-host (("\n" literal))) ;? 1
+;?       (print-primitive-to-host line:buffer-address) ;? 2
+;?       (print-primitive-to-host (("\n" literal))) ;? 2
+;?       (print-primitive-to-host c:character) ;? 2
+;?       (print-primitive-to-host (("\n" literal))) ;? 2
+      ; handle backspace
       { begin
         (backspace?:boolean <- equal c:character ((#\backspace literal)))
         (break-unless backspace?:boolean)
         (len:integer-address <- get-address line:buffer-address/deref length:offset)
-        (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
+        ; but only if we need to
+        { begin
+;?           (print-primitive-to-host (("backspace: " literal))) ;? 1
+;?           (print-primitive-to-host len:integer-address/deref) ;? 1
+;?           (print-primitive-to-host (("\n" literal))) ;? 1
+          (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
+          (break-if zero?:boolean)
+          (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
+        }
         (loop 2:blocks)
       }
       (line:buffer-address <- append line:buffer-address c:character)
@@ -2111,6 +2120,9 @@
       (curr:tagged-value <- save-type c:character)
 ;?       ($dump-channel 1093:literal) ;? 1
 ;?       ($start-tracing) ;? 1
+;?       (print-primitive-to-host (("print: " literal))) ;? 1
+;?       (print-primitive-to-host c:character) ;? 1
+;?       (print-primitive-to-host (("\n" literal))) ;? 1
       (buffered-stdin:channel-address/deref <- write buffered-stdin:channel-address curr:tagged-value)
 ;?       ($stop-tracing) ;? 1
 ;?       ($dump-channel 1093:literal) ;? 1
