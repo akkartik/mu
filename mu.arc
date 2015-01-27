@@ -2113,6 +2113,9 @@
     (i:integer <- copy 0:literal)
     (line-contents:string-address <- get line:buffer-address/deref data:offset)
     (max:integer <- get line:buffer-address/deref length:offset)
+;?     (print-primitive-to-host (("len: " literal))) ;? 1
+;?     (print-primitive-to-host max:integer) ;? 1
+;?     (print-primitive-to-host (("\n" literal))) ;? 1
     { begin
       (done?:boolean <- greater-or-equal i:integer max:integer)
       (break-if done?:boolean)
@@ -2120,9 +2123,11 @@
       (curr:tagged-value <- save-type c:character)
 ;?       ($dump-channel 1093:literal) ;? 1
 ;?       ($start-tracing) ;? 1
-;?       (print-primitive-to-host (("print: " literal))) ;? 1
+;?       (print-primitive-to-host (("bufferout: " literal))) ;? 2
 ;?       (print-primitive-to-host c:character) ;? 1
-;?       (print-primitive-to-host (("\n" literal))) ;? 1
+;?       (x:integer <- character-to-integer c:character) ;? 1
+;?       (print-primitive-to-host x:integer) ;? 1
+;?       (print-primitive-to-host (("\n" literal))) ;? 2
       (buffered-stdin:channel-address/deref <- write buffered-stdin:channel-address curr:tagged-value)
 ;?       ($stop-tracing) ;? 1
 ;?       ($dump-channel 1093:literal) ;? 1
@@ -2372,11 +2377,19 @@
   (default-space:space-address <- new space:literal 30:literal)
   (screen:terminal-address <- next-input)
   (stdout:channel-address <- next-input)
+;?   (i:integer <- copy 0:literal) ;? 1
   { begin
     (x:tagged-value stdout:channel-address/deref <- read stdout:channel-address)
     (c:character <- maybe-coerce x:tagged-value character:literal)
     (done?:boolean <- equal c:character ((#\null literal)))
     (break-if done?:boolean)
+;?     (print-primitive-to-host (("printing " literal))) ;? 1
+;?     (print-primitive-to-host i:integer) ;? 1
+;?     (print-primitive-to-host ((" -- " literal))) ;? 1
+;?     (x:integer <- character-to-integer c:character) ;? 1
+;?     (print-primitive-to-host x:integer) ;? 1
+;?     (print-primitive-to-host (("\n" literal))) ;? 1
+;?     (i:integer <- add i:integer 1:literal) ;? 1
     (print-character screen:terminal-address c:character)
     (loop)
   }
