@@ -2293,7 +2293,7 @@
   (dest:byte-address <- index-address s:string-address/deref len:integer-address/deref)
   (dest:byte-address/deref <- copy c:character)  ; todo: unicode
   (len:integer-address/deref <- add len:integer-address/deref 1:literal)
-  (reply in:buffer-address)
+  (reply in:buffer-address/same-as-arg:0)
 )
 
 (init-fn integer-to-decimal-string
