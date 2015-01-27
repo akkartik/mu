@@ -95,7 +95,9 @@
   { begin
     (print-primitive-to-host (("anarki> " literal)))
     (s:string-address <- read-sexp buffered-stdin:channel-address)
+    (retro-mode)  ; print errors cleanly
     (t:string-address <- $eval s:string-address)
+    (cursor-mode)
     (print-string nil:literal/terminal t:string-address)
     (print-character nil:literal/terminal ((#\newline literal)))
     (loop)
