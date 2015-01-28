@@ -7,7 +7,7 @@
   { begin
     (c:character <- $wait-for-key-from-host)
     ; handle backspace
-    ; todo: backspace into comment or string
+    ; todo: backspace into comment or string; backspace past newline
     { begin
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
       (break-unless backspace?:boolean)
