@@ -118,7 +118,7 @@
       (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       ; if we erase start of comment, return
       (comment-deleted?:boolean <- lesser-or-equal len:integer-address/deref orig-len:integer)
-      (jump-unless comment-deleted?:boolean end:offset)
+      (jump-if comment-deleted?:boolean end:offset)
       (jump next-key-in-comment:offset)
     }
     (result:buffer-address <- append result:buffer-address c:character)
