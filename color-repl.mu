@@ -9,6 +9,9 @@
   (default-space:space-address <- new space:literal 30:literal)
   (result:buffer-address <- init-buffer 30:literal)
   (open-parens:integer <- copy 0:literal)  ; for balancing parens and tracking nesting depth
+  ; we can change color when backspacing over parens or comments or strings,
+  ; but we need to know that they aren't escaped
+  (escapes:integer-buffer-address <- init-integer-buffer 5:literal)
   ; test: 34<enter>
   { begin
     next-key
@@ -36,7 +39,7 @@
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
       ($print-key-to-host c:character 7:literal/white)
-      (result:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white)
+      (result:buffer-address escapes:integer-buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:integer-buffer-address)
       (jump next-key:offset)
     }
     ; parse comment
@@ -55,7 +58,7 @@
       (string-started?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
       (break-unless string-started?:boolean)
       ($print-key-to-host c:character 6:literal/fg/cyan)
-      (slurp-string result:buffer-address)
+      (slurp-string result:buffer-address escapes:integer-buffer-address)
       (jump next-key:offset)
     }
     ; balance parens
@@ -132,6 +135,7 @@
   (default-space:space-address <- new space:literal 30:literal)
   (result:buffer-address <- next-input)
   (orig-len:integer <- get result:buffer-address/deref length:offset)
+  (escapes:integer-buffer-address <- next-input)
   ; test: "abc"
   { begin
     next-key-in-string
@@ -159,7 +163,7 @@
     { begin
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
-      (result:buffer-address <- slurp-escaped-character result:buffer-address 6:literal/cyan)
+      (result:buffer-address escapes:integer-buffer-address <- slurp-escaped-character result:buffer-address 6:literal/cyan escapes:integer-buffer-address)
       (jump next-key-in-string:offset)
     }
     ; if not backslash
@@ -175,19 +179,26 @@
   (color-code:integer <- next-input)
   (c2:character <- $wait-for-key-from-host)
   ($print-key-to-host c2:character color-code:integer)
+  (escapes:integer-buffer-address <- next-input)
+  (len:integer-address <- get-address result:buffer-address/deref length:offset)
+  (escapes:integer-buffer-address <- append escapes:integer-buffer-address len:integer-address/deref)  ; todo: type violation
+;?   (print-primitive-to-host (("+" literal))) ;? 1
   ; handle backspace
   ; test: "abc\<backspace>def"
+  ; test: #\<backspace>
   { begin
     (backspace?:boolean <- equal c2:character ((#\backspace literal)))
     (break-unless backspace?:boolean)
-    (len:integer-address <- get-address result:buffer-address/deref length:offset)
     ; just typed a backslash, so buffer can't be empty
     (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
-    (reply result:buffer-address/same-as-arg:0)
+    (elen:integer-address <- get-address escapes:integer-buffer-address/deref length:offset)
+    (elen:integer-address/deref <- subtract elen:integer-address/deref 1:literal)
+;?     (print-primitive-to-host (("-" literal))) ;? 1
+    (reply result:buffer-address/same-as-arg:0 escapes:integer-buffer-address/same-as-arg:2)
   }
   ; if not backspace
   (result:buffer-address <- append result:buffer-address c2:character)
-  (reply result:buffer-address/same-as-arg:0)
+  (reply result:buffer-address/same-as-arg:0 escapes:integer-buffer-address/same-as-arg:2)
 ])
 
 (function main [

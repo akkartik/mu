@@ -169,6 +169,8 @@
               integer-array-address-address (obj size 1  address t  elem '(integer-array-address))
               integer-address (obj size 1  address t  elem '(integer))  ; pointer to int
               integer-address-address (obj size 1  address t  elem '(integer-address))
+              integer-buffer (obj size 2  and-record t  elems '((integer) (integer-array-address))  fields '(length data))
+              integer-buffer-address (obj size 1  address t  elem '(integer-buffer))
               ; and-records consist of a multiple fields of different types
               integer-boolean-pair (obj size 2  and-record t  elems '((integer) (boolean))  fields '(int bool))
               integer-boolean-pair-address (obj size 1  address t  elem '(integer-boolean-pair))
@@ -2308,6 +2310,17 @@
   (reply result:buffer-address)
 )
 
+(init-fn init-integer-buffer
+  (default-space:space-address <- new space:literal 30:literal)
+  (result:integer-buffer-address <- new integer-buffer:literal)
+  (len:integer-address <- get-address result:buffer-address/deref length:offset)
+  (len:integer-address/deref <- copy 0:literal)
+  (s:integer-array-address-address <- get-address result:integer-buffer-address/deref data:offset)
+  (capacity:integer <- next-input)
+  (s:integer-array-address-address/deref <- new integer-array:literal capacity:integer)
+  (reply result:integer-buffer-address)
+)
+
 (init-fn grow-buffer
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
@@ -2356,6 +2369,22 @@
   (dest:byte-address/deref <- copy c:character)  ; todo: unicode
   (len:integer-address/deref <- add len:integer-address/deref 1:literal)
   (reply in:buffer-address/same-as-arg:0)
+)
+
+(init-fn last
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:buffer-address <- next-input)
+  (n:integer <- get in:buffer-address/deref length:offset)
+  { begin
+    ; if empty return nil
+    (empty?:boolean <- equal n:integer 0:literal)
+    (break-unless empty?:boolean)
+    (reply nil:literal)
+  }
+  (n:integer <- subtract n:integer 1:literal)
+  (s:string-address <- get in:buffer-address/deref data:offset)
+  (result:character <- index s:string-address/deref n:integer)
+  (reply result:character)
 )
 
 (init-fn integer-to-decimal-string
@@ -2471,7 +2500,7 @@
 
 ;; load all provided files and start at 'main'
 (reset)
-;? (new-trace "main") ;? 3
+;? (new-trace "main") ;? 4
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run")))
