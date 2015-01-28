@@ -56,7 +56,9 @@
       }
       (jump next-key:offset)
     }
+;?     (print-primitive-to-host (("append\n" literal))) ;? 1
     (result:buffer-address <- append result:buffer-address c:character)
+;?     (print-primitive-to-host (("done\n" literal))) ;? 1
     ; record backslash and one additional character
     ; test: (prn #\()
     { begin
