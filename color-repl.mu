@@ -7,7 +7,7 @@
 
 (function read-sexp [
   (default-space:space-address <- new space:literal 30:literal)
-  (result:buffer-address <- init-buffer 30:literal)
+  (result:buffer-address <- init-buffer 3:literal)
   (open-parens:integer <- copy 0:literal)  ; for balancing parens and tracking nesting depth
   ; we can change color when backspacing over parens or comments or strings,
   ; but we need to know that they aren't escaped
@@ -100,6 +100,7 @@
       (color-code:integer <- add color-code:integer 1:literal)
       ($print-key-to-host c:character color-code:integer)
       (open-parens:integer <- add open-parens:integer 1:literal)
+;?       (print-primitive-to-host open-parens:integer) ;? 1
       (jump next-key:offset)
     }
     { begin
@@ -109,6 +110,7 @@
       (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
       (color-code:integer <- add color-code:integer 1:literal)
       ($print-key-to-host c:character color-code:integer)
+;?       (print-primitive-to-host open-parens:integer) ;? 1
       (jump next-key:offset)
     }
     { begin
