@@ -150,23 +150,7 @@
     { begin
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
-      ; slurp an extra key
-      { begin
-        (c2:character <- $wait-for-key-from-host)
-        ($print-key-to-host c2:character 6:literal/fg/cyan)
-        ; handle backspace
-        ; test: "abc\<backspace>def"
-        { begin
-          (backspace?:boolean <- equal c2:character ((#\backspace literal)))
-          (break-unless backspace?:boolean)
-          (len:integer-address <- get-address result:buffer-address/deref length:offset)
-          ; just typed a backslash, so buffer can't be empty
-          (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
-          (jump next-key-in-string:offset)
-        }
-        ; if not backspace
-        (result:buffer-address <- append result:buffer-address c2:character)
-      }
+      (result:buffer-address <- slurp-escaped-character result:buffer-address)
       (jump next-key-in-string:offset)
     }
     ; if not backslash
@@ -174,6 +158,26 @@
     (jump-unless end-quote?:boolean next-key-in-string:offset)
   }
   end
+])
+
+(function slurp-escaped-character [
+  (default-space:space-address <- new space:literal 30:literal)
+  (result:buffer-address <- next-input)
+  (c2:character <- $wait-for-key-from-host)
+  ($print-key-to-host c2:character 6:literal/fg/cyan)
+  ; handle backspace
+  ; test: "abc\<backspace>def"
+  { begin
+    (backspace?:boolean <- equal c2:character ((#\backspace literal)))
+    (break-unless backspace?:boolean)
+    (len:integer-address <- get-address result:buffer-address/deref length:offset)
+    ; just typed a backslash, so buffer can't be empty
+    (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
+    (reply result:buffer-address/same-as-arg:0)
+  }
+  ; if not backspace
+  (result:buffer-address <- append result:buffer-address c2:character)
+  (reply result:buffer-address/same-as-arg:0)
 ])
 
 (function main [
