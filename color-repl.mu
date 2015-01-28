@@ -1,9 +1,14 @@
 ; a simple line editor for reading lisp s-expressions
+; colors strings and comments. nested parens get different colors.
+;
+; needs to do its own raw keyboard/screen management since we need to decide
+; how to color each key right as it is printed
+; lots of logic devoted to handling backspace correctly
 
 (function read-sexp [
   (default-space:space-address <- new space:literal 30:literal)
   (result:buffer-address <- init-buffer 30:literal)
-  (open-parens:integer <- copy 0:literal)
+  (open-parens:integer <- copy 0:literal)  ; for balancing parens and tracking nesting depth
   ; test: 34<enter>
   { begin
     next-key
@@ -60,7 +65,7 @@
       (close-paren?:boolean <- equal c:character ((#\) literal)))
       (break-unless close-paren?:boolean)
       (open-parens:integer <- subtract open-parens:integer 1:literal)
-      (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)
+      (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
       (color-code:integer <- add color-code:integer 1:literal)
       ($print-key-to-host c:character color-code:integer)
       (jump next-key:offset)
