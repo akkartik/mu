@@ -19,7 +19,7 @@
     (len:integer-address <- get-address result:buffer-address/deref length:offset)
     ; handle backspace
     ; test: 3<backspace>4<enter>
-    ; todo: backspace into comment or string; backspace past newline
+    ; todo: backspace past newline
     { begin
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
       (break-unless backspace?:boolean)
@@ -29,6 +29,30 @@
         (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
         (break-if zero?:boolean)
         (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
+        ; test: "a"<backspace>bc"
+        ; test: "a\"<backspace>bc"
+        { begin
+          (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:integer-buffer-address)  ; "
+          (break-unless backspaced-over-close-quote?:boolean)
+          (slurp-string result:buffer-address escapes:integer-buffer-address)
+          (jump next-key:offset)
+        }
+        ; test: (+ 1 (<backspace>2)
+        ; test: (+ 1 #\(<backspace><backspace><backspace>2)
+        { begin
+          (backspaced-over-open-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\( literal)) escapes:integer-buffer-address)
+          (break-unless backspaced-over-open-paren?:boolean)
+          (open-parens:integer <- subtract open-parens:integer 1:literal)
+          (jump next-key:offset)
+        }
+        ; test: (+ 1 2)<backspace> 3)
+        ; test: (+ 1 2#\)<backspace><backspace><backspace> 3)
+        { begin
+          (backspaced-over-close-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\) literal)) escapes:integer-buffer-address)
+          (break-unless backspaced-over-close-paren?:boolean)
+          (open-parens:integer <- add open-parens:integer 1:literal)
+          (jump next-key:offset)
+        }
       }
       (jump next-key:offset)
     }
@@ -219,9 +243,10 @@
   ; and char before cursor is not an escape
   { begin
     (most-recent-escape:integer <- last escapes:integer-buffer-address)
-    (curr-idx:integer <- get in:buffer-address/deref length:offset)
-    (curr-idx:integer <- subtract curr-idx:integer 1:literal)
-    (was-unescaped?:boolean <- not-equal curr-idx:integer most-recent-escape:integer)
+    (last-idx:integer <- get in:buffer-address/deref length:offset)
+;?     (print-primitive-to-host most-recent-escape:integer) ;? 1
+;?     (print-primitive-to-host last-idx:integer) ;? 1
+    (was-unescaped?:boolean <- not-equal last-idx:integer most-recent-escape:integer)
     (break-if was-unescaped?:boolean)
     (reply nil:literal)
   }
