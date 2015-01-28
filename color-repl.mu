@@ -30,6 +30,15 @@
       (jump next-key:offset)
     }
     (result:buffer-address <- append result:buffer-address c:character)
+    ; record backslash and one additional character
+    ; test: (prn #\()
+    { begin
+      (backslash?:boolean <- equal c:character ((#\\ literal)))
+      (break-unless backslash?:boolean)
+      ($print-key-to-host c:character 7:literal/white)
+      (result:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white)
+      (jump next-key:offset)
+    }
     ; parse comment
     { begin
       (comment?:boolean <- equal c:character ((#\; literal)))
@@ -150,7 +159,7 @@
     { begin
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
-      (result:buffer-address <- slurp-escaped-character result:buffer-address)
+      (result:buffer-address <- slurp-escaped-character result:buffer-address 6:literal/cyan)
       (jump next-key-in-string:offset)
     }
     ; if not backslash
@@ -163,8 +172,9 @@
 (function slurp-escaped-character [
   (default-space:space-address <- new space:literal 30:literal)
   (result:buffer-address <- next-input)
+  (color-code:integer <- next-input)
   (c2:character <- $wait-for-key-from-host)
-  ($print-key-to-host c2:character 6:literal/fg/cyan)
+  ($print-key-to-host c2:character color-code:integer)
   ; handle backspace
   ; test: "abc\<backspace>def"
   { begin
