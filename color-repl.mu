@@ -6,6 +6,7 @@
   (open-parens:integer <- copy 0:literal)
   ; test: 34<enter>
   { begin
+    next-key
     (c:character <- $wait-for-key-from-host)
     ; handle backspace
     ; test: 3<backspace>4<enter>
@@ -21,7 +22,7 @@
         (break-if zero?:boolean)
         (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       }
-      (loop 2:blocks)
+      (jump next-key:offset)
     }
     (result:buffer-address <- append result:buffer-address c:character)
     ; parse comment
@@ -33,7 +34,7 @@
       ; comment slurps newline, so check if we should return
       (end-sexp?:boolean <- lesser-or-equal open-parens:integer 0:literal)
       (break-if end-sexp?:boolean 2:blocks)
-      (loop 2:blocks)
+      (jump next-key:offset)
     }
     ; parse string
     { begin
@@ -41,7 +42,7 @@
       (break-unless string-started?:boolean)
       ($print-key-to-host c:character 6:literal/fg/cyan)
       (slurp-string result:buffer-address)
-      (loop 2:blocks)
+      (jump next-key:offset)
     }
     ; balance parens
     ; test: (+ 1 1)<enter>
@@ -53,7 +54,7 @@
       (color-code:integer <- add color-code:integer 1:literal)
       ($print-key-to-host c:character color-code:integer)
       (open-parens:integer <- add open-parens:integer 1:literal)
-      (loop 2:blocks)
+      (jump next-key:offset)
     }
     { begin
       (close-paren?:boolean <- equal c:character ((#\) literal)))
@@ -62,22 +63,23 @@
       (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)
       (color-code:integer <- add color-code:integer 1:literal)
       ($print-key-to-host c:character color-code:integer)
-      (loop 2:blocks)
+      (jump next-key:offset)
     }
     { begin
       (newline?:boolean <- equal c:character ((#\newline literal)))
       (break-unless newline?:boolean)
       ($print-key-to-host c:character)
       (end-sexp?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-      (break-if end-sexp?:boolean 2:blocks)
-      (loop 2:blocks)
+      (jump-if end-sexp?:boolean end:offset)
+      (jump next-key:offset)
     }
     ($print-key-to-host c:character)
     ; todo: error on space outside parens, like python
     ; []
     ; don't return if there's no non-whitespace in result
-    (loop)
+    (jump next-key:offset)
   }
+  end
   (s:string-address <- get result:buffer-address/deref data:offset)
   (reply s:string-address)
 ])
@@ -114,6 +116,7 @@
   (result:buffer-address <- next-input)
   ; test: "abc"
   { begin
+    next-key-in-string
     (c:character <- $wait-for-key-from-host)
     ($print-key-to-host c:character 6:literal/fg/cyan)
     ; handle backspace
@@ -131,12 +134,11 @@
         (break-if zero?:boolean)
         (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       }
-      (loop 2:blocks)
+      (jump next-key-in-string:offset)
     }
     (result:buffer-address <- append result:buffer-address c:character)
     (end-quote?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
-    (break-if end-quote?:boolean)
-    (loop)
+    (jump-unless end-quote?:boolean next-key-in-string:offset)
   }
 ])
 
