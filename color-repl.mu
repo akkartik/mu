@@ -13,6 +13,7 @@
   { begin
     next-key
     (c:character <- $wait-for-key-from-host)
+    (len:integer-address <- get-address result:buffer-address/deref length:offset)
     ; handle backspace
     ; test: 3<backspace>4<enter>
     ; todo: backspace into comment or string; backspace past newline
@@ -20,7 +21,6 @@
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
       (break-unless backspace?:boolean)
       ($print-key-to-host c:character)
-      (len:integer-address <- get-address result:buffer-address/deref length:offset)
       ; but only if we need to
       { begin
         (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
