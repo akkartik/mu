@@ -47,7 +47,7 @@
       (comment?:boolean <- equal c:character ((#\; literal)))
       (break-unless comment?:boolean)
       ($print-key-to-host c:character 4:literal/fg/blue)
-      (skip-comment result:buffer-address)
+      (slurp-comment result:buffer-address)
       ; comment slurps newline, so check if we should return
       (end-sexp?:boolean <- lesser-or-equal open-parens:integer 0:literal)
       (break-if end-sexp?:boolean 2:blocks)
@@ -101,7 +101,8 @@
   (reply s:string-address)
 ])
 
-(function skip-comment [
+; list of characters => whether a comment was consumed (can also return by backspacing past comment leader ';')
+(function slurp-comment [
   (default-space:space-address <- new space:literal 30:literal)
   (result:buffer-address <- next-input)
   (orig-len:integer <- get result:buffer-address/deref length:offset)
