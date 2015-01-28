@@ -4,9 +4,11 @@
   (default-space:space-address <- new space:literal 30:literal)
   (result:buffer-address <- init-buffer 30:literal)
   (open-parens:integer <- copy 0:literal)
+  ; test: 34<enter>
   { begin
     (c:character <- $wait-for-key-from-host)
     ; handle backspace
+    ; test: 3<backspace>4<enter>
     ; todo: backspace into comment or string; backspace past newline
     { begin
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
@@ -42,6 +44,8 @@
       (loop 2:blocks)
     }
     ; balance parens
+    ; test: (+ 1 1)<enter>
+    ; test: (def foo () (+ 1 (* 2 3)))<enter>
     { begin
       (open-paren?:boolean <- equal c:character ((#\( literal)))
       (break-unless open-paren?:boolean)
@@ -80,10 +84,12 @@
 
 (function skip-comment [
   (default-space:space-address <- new space:literal 30:literal)
+  ; test: ; abc<enter>
   { begin
     (c:character <- $wait-for-key-from-host)
     ($print-key-to-host c:character 4:literal/fg/blue)
     ; handle backspace
+    ; test: ; abc<backspace><backspace>def<enter>
     ; todo: how to exit comment?
     { begin
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
@@ -106,16 +112,20 @@
 (function slurp-string [
   (default-space:space-address <- new space:literal 30:literal)
   (result:buffer-address <- next-input)
+  ; test: "abc"
   { begin
     (c:character <- $wait-for-key-from-host)
     ($print-key-to-host c:character 6:literal/fg/cyan)
     ; handle backspace
+    ; test: "abc<backspace>d"
     ; todo: how to exit string?
     { begin
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
       (break-unless backspace?:boolean)
       (len:integer-address <- get-address result:buffer-address/deref length:offset)
       ; but only if we need to
+      ; test: "<backspace>abc"
+      ; unnecessary?!
       { begin
         (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
         (break-if zero?:boolean)
