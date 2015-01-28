@@ -30,7 +30,7 @@
       (comment?:boolean <- equal c:character ((#\; literal)))
       (break-unless comment?:boolean)
       ($print-key-to-host c:character 4:literal/fg/blue)
-      (skip-comment)
+      (skip-comment result:buffer-address)
       ; comment slurps newline, so check if we should return
       (end-sexp?:boolean <- lesser-or-equal open-parens:integer 0:literal)
       (break-if end-sexp?:boolean 2:blocks)
@@ -86,8 +86,11 @@
 
 (function skip-comment [
   (default-space:space-address <- new space:literal 30:literal)
+  (result:buffer-address <- next-input)
+  (orig-len:integer <- get result:buffer-address/deref length:offset)
   ; test: ; abc<enter>
   { begin
+    next-key-in-comment
     (c:character <- $wait-for-key-from-host)
     ($print-key-to-host c:character 4:literal/fg/blue)
     ; handle backspace
@@ -96,17 +99,25 @@
     { begin
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
       (break-unless backspace?:boolean)
-      (loop 2:blocks)
+      (len:integer-address <- get-address result:buffer-address/deref length:offset)
+      ; buffer has to have at least the semi-colon so can't be empty
+      (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
+      ; if we erase start of comment, return
+      (comment-deleted?:boolean <- lesser-or-equal len:integer-address/deref orig-len:integer)
+      (jump-unless comment-deleted?:boolean end:offset)
+      (jump next-key-in-comment:offset)
     }
+    (result:buffer-address <- append result:buffer-address c:character)
     (newline?:boolean <- equal c:character ((#\newline literal)))
-    (break-if newline?:boolean)
-    (loop)
+    (jump-unless newline?:boolean next-key-in-comment:offset)
   }
+  end
 ])
 
 (function slurp-string [
   (default-space:space-address <- new space:literal 30:literal)
   (result:buffer-address <- next-input)
+  (orig-len:integer <- get result:buffer-address/deref length:offset)
   ; test: "abc"
   { begin
     next-key-in-string
@@ -119,14 +130,12 @@
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
       (break-unless backspace?:boolean)
       (len:integer-address <- get-address result:buffer-address/deref length:offset)
-      ; but only if we need to
-      ; test: "<backspace>abc"
-      ; unnecessary?!
-      { begin
-        (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
-        (break-if zero?:boolean)
-        (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
-      }
+      ; typed a quote before calling slurp-string, so can't be empty
+      (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
+      ; if we erase start of string, return
+      ; test: "<backspace>34
+      (string-deleted?:boolean <- lesser-or-equal len:integer-address/deref orig-len:integer)
+      (jump-unless string-deleted?:boolean end:offset)
       (jump next-key-in-string:offset)
     }
     (result:buffer-address <- append result:buffer-address c:character)
@@ -145,6 +154,7 @@
           (backspace?:boolean <- equal c2:character ((#\backspace literal)))
           (break-unless backspace?:boolean)
           (len:integer-address <- get-address result:buffer-address/deref length:offset)
+          ; just typed a backslash, so buffer can't be empty
           (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
           (jump next-key-in-string:offset)
         }
@@ -157,6 +167,7 @@
     (end-quote?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
     (jump-unless end-quote?:boolean next-key-in-string:offset)
   }
+  end
 ])
 
 (function main [
