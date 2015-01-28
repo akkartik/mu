@@ -47,11 +47,14 @@
       (comment?:boolean <- equal c:character ((#\; literal)))
       (break-unless comment?:boolean)
       ($print-key-to-host c:character 4:literal/fg/blue)
-      (slurp-comment result:buffer-address)
-      ; comment slurps newline, so check if we should return
+      (comment-read?:boolean <- slurp-comment result:buffer-address escapes:integer-buffer-address)
+      ; return if comment was read (i.e. consumed a newline)
+      ; test: ;a<backspace><backspace> (shouldn't end command until <enter>)
+      (jump-unless comment-read?:boolean next-key:offset)
+      ; and we're not within parens
       (end-sexp?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-      (break-if end-sexp?:boolean 2:blocks)
-      (jump next-key:offset)
+      (jump-unless end-sexp?:boolean next-key:offset)
+      (jump end:offset)
     }
     ; parse string
     { begin
@@ -105,7 +108,7 @@
 (function slurp-comment [
   (default-space:space-address <- new space:literal 30:literal)
   (result:buffer-address <- next-input)
-  (orig-len:integer <- get result:buffer-address/deref length:offset)
+  (escapes:integer-buffer-address <- next-input)
   ; test: ; abc<enter>
   { begin
     next-key-in-comment
@@ -121,21 +124,20 @@
       ; buffer has to have at least the semi-colon so can't be empty
       (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       ; if we erase start of comment, return
-      (comment-deleted?:boolean <- lesser-or-equal len:integer-address/deref orig-len:integer)
-      (jump-if comment-deleted?:boolean end:offset)
-      (jump next-key-in-comment:offset)
+      (comment-deleted?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\; literal)) escapes:integer-buffer-address)  ; "
+      (jump-unless comment-deleted?:boolean next-key-in-comment:offset)
+      (reply nil:literal/read-comment?)
     }
     (result:buffer-address <- append result:buffer-address c:character)
     (newline?:boolean <- equal c:character ((#\newline literal)))
     (jump-unless newline?:boolean next-key-in-comment:offset)
   }
-  end
+  (reply t:literal/read-comment?)
 ])
 
 (function slurp-string [
   (default-space:space-address <- new space:literal 30:literal)
   (result:buffer-address <- next-input)
-  (orig-len:integer <- get result:buffer-address/deref length:offset)
   (escapes:integer-buffer-address <- next-input)
   ; test: "abc"
   { begin
@@ -153,7 +155,7 @@
       (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       ; if we erase start of string, return
       ; test: "<backspace>34
-      (string-deleted?:boolean <- lesser-or-equal len:integer-address/deref orig-len:integer)
+      (string-deleted?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:integer-buffer-address)  ; "
 ;?       (print-primitive-to-host string-deleted?:boolean) ;? 1
       (jump-if string-deleted?:boolean end:offset)
       (jump next-key-in-string:offset)
@@ -200,6 +202,46 @@
   ; if not backspace
   (result:buffer-address <- append result:buffer-address c2:character)
   (reply result:buffer-address/same-as-arg:0 escapes:integer-buffer-address/same-as-arg:2)
+])
+
+(function backspaced-over-unescaped? [
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:buffer-address <- next-input)
+  (expected:character <- next-input)
+  (escapes:integer-buffer-address <- next-input)
+  ; char just backspaced over matches
+  { begin
+    (c:character <- past-last in:buffer-address)
+    (char-match?:boolean <- equal c:character expected:character)
+    (break-if char-match?:boolean)
+    (reply nil:literal)
+  }
+  ; and char before cursor is not an escape
+  { begin
+    (most-recent-escape:integer <- last escapes:integer-buffer-address)
+    (curr-idx:integer <- get in:buffer-address/deref length:offset)
+    (curr-idx:integer <- subtract curr-idx:integer 1:literal)
+    (was-unescaped?:boolean <- not-equal curr-idx:integer most-recent-escape:integer)
+    (break-if was-unescaped?:boolean)
+    (reply nil:literal)
+  }
+  (reply t:literal)
+])
+
+; return the character past the end of the buffer, if there's room
+(function past-last [
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:buffer-address <- next-input)
+  (n:integer <- get in:buffer-address/deref length:offset)
+  (s:string-address <- get in:buffer-address/deref data:offset)
+  (capacity:integer <- length s:string-address/deref)
+  { begin
+    (no-space?:boolean <- greater-or-equal n:integer capacity:integer)
+    (break-unless no-space?:boolean)
+    (reply ((#\null literal)))
+  }
+  (result:character <- index s:string-address/deref n:integer)
+  (reply result:character)
 ])
 
 (function main [
