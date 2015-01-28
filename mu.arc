@@ -1250,7 +1250,7 @@
         (trace "cn0" instr " " canon.location " " canon.isa-field)
         (let (oargs op args)  (parse-instr instr)
 ;?           (tr "about to rename args: @op")
-          (if (in op 'get 'get-address)
+          (when (in op 'get 'get-address)
             ; special case: map field offset by looking up type table
             (with (basetype  (typeof args.0)
                    field  (v args.1))
@@ -1269,14 +1269,15 @@
                     (do (set isa-field.field)
                         (trace "cn0" "field location @idx")
                         (= location.field idx))
-                    (assert nil "couldn't find field in @instr")))))
-            ; map args to location indices
-            (each arg args
-              (trace "cn0" "checking arg " arg)
-              (when (and nondummy.arg not-raw-string.arg)
-                (assert (~isa-field v.arg) "arg @arg is also a field name")
-                (when (maybe-add arg location idx)
-                  (err "use before set: @arg")))))
+                    (assert nil "couldn't find field in @instr"))))))
+          ; map args to location indices
+          (each arg args
+            (trace "cn0" "checking arg " arg)
+            (when (and nondummy.arg not-raw-string.arg (~literal? arg))
+              (assert (~isa-field v.arg) "arg @arg is also a field name")
+              (when (maybe-add arg location idx)
+                ; todo: test this
+                (err "use before set: @arg"))))
 ;?           (tr "about to rename oargs")
           ; map oargs to location indices
           (each arg oargs
