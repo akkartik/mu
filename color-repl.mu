@@ -96,13 +96,6 @@
     { begin
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
       (break-unless backspace?:boolean)
-      (len:integer-address <- get-address result:buffer-address/deref length:offset)
-      ; but only if we need to
-      { begin
-        (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
-        (break-if zero?:boolean)
-        (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
-      }
       (loop 2:blocks)
     }
     (newline?:boolean <- equal c:character ((#\newline literal)))
