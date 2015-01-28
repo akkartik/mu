@@ -821,6 +821,9 @@
                        )
                 $eval
                   (new-string:repr:eval:read:to-arc-string (m arg.0))
+;?                   (let x (to-arc-string (m arg.0)) ;? 1
+;?                     (prn x) ;? 1
+;?                     (new-string:repr:eval x)) ;? 1
 
                 ; user-defined functions
                 next-input
@@ -2327,7 +2330,9 @@
   ; double buffer size
   (x:string-address-address <- get-address in:buffer-address/deref data:offset)
   (oldlen:integer <- length x:string-address-address/deref/deref)
+;?   (print-primitive-to-host oldlen:integer) ;? 1
   (newlen:integer <- multiply oldlen:integer 2:literal)
+;?   (print-primitive-to-host newlen:integer) ;? 1
   (olddata:string-address <- copy x:string-address-address/deref)
   (x:string-address-address/deref <- new string:literal newlen:integer)
   ; copy old contents
@@ -2337,7 +2342,7 @@
     (break-if done?:boolean)
     (src:byte <- index olddata:string-address/deref i:integer)
     (dest:byte-address <- index-address x:string-address-address/deref/deref i:integer)
-    (dest:byte-address <- copy src:byte)
+    (dest:byte-address/deref <- copy src:byte)
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
