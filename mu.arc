@@ -2338,6 +2338,7 @@
     (src:byte <- index olddata:string-address/deref i:integer)
     (dest:byte-address <- index-address x:string-address-address/deref/deref i:integer)
     (dest:byte-address <- copy src:byte)
+    (i:integer <- add i:integer 1:literal)
     (loop)
   }
   (reply in:buffer-address)
@@ -2357,11 +2358,15 @@
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
   (c:character <- next-input)
+;?   (print-primitive-to-host c:character) ;? 1
   { begin
     ; grow buffer if necessary
     (full?:boolean <- buffer-full? in:buffer-address)
+;?     (print-primitive-to-host (("aa\n" literal))) ;? 1
     (break-unless full?:boolean)
+;?     (print-primitive-to-host (("bb\n" literal))) ;? 1
     (in:buffer-address <- grow-buffer in:buffer-address)
+;?     (print-primitive-to-host (("cc\n" literal))) ;? 1
   }
   (len:integer-address <- get-address in:buffer-address/deref length:offset)
   (s:string-address <- get in:buffer-address/deref data:offset)
