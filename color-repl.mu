@@ -140,7 +140,8 @@
       ; if we erase start of string, return
       ; test: "<backspace>34
       (string-deleted?:boolean <- lesser-or-equal len:integer-address/deref orig-len:integer)
-      (jump-unless string-deleted?:boolean end:offset)
+;?       (print-primitive-to-host string-deleted?:boolean) ;? 1
+      (jump-if string-deleted?:boolean end:offset)
       (jump next-key-in-string:offset)
     }
     (result:buffer-address <- append result:buffer-address c:character)
