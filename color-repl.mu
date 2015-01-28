@@ -12,41 +12,43 @@
   ; we can change color when backspacing over parens or comments or strings,
   ; but we need to know that they aren't escaped
   (escapes:integer-buffer-address <- init-integer-buffer 5:literal)
-  ; test: 34<enter>
   { begin
+    ; repeatedly read keys from the keyboard
+    ;   test: 34<enter>
     next-key
     (c:character <- $wait-for-key-from-host)
-    ; handle backspace
-    ; test: 3<backspace>4<enter>
-    ; todo: backspace past newline
+    ; check for backspace
+    ;   test: 3<backspace>4<enter>
+    ;   todo: backspace past newline
     { begin
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
       (break-unless backspace?:boolean)
       ($print-key-to-host c:character)
-      ; but only if we need to
       { begin
+        ; delete last character if any
         (len:integer-address <- get-address result:buffer-address/deref length:offset)
         (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
         (break-if zero?:boolean)
         (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
-        ; test: "a"<backspace>bc"
-        ; test: "a\"<backspace>bc"
+        ; switch colors
+        ;   test: "a"<backspace>bc"
+        ;   test: "a\"<backspace>bc"
         { begin
           (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:integer-buffer-address)  ; "
           (break-unless backspaced-over-close-quote?:boolean)
           (slurp-string result:buffer-address escapes:integer-buffer-address)
           (jump next-key:offset)
         }
-        ; test: (+ 1 (<backspace>2)
-        ; test: (+ 1 #\(<backspace><backspace><backspace>2)
+        ;   test: (+ 1 (<backspace>2)
+        ;   test: (+ 1 #\(<backspace><backspace><backspace>2)
         { begin
           (backspaced-over-open-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\( literal)) escapes:integer-buffer-address)
           (break-unless backspaced-over-open-paren?:boolean)
           (open-parens:integer <- subtract open-parens:integer 1:literal)
           (jump next-key:offset)
         }
-        ; test: (+ 1 2)<backspace> 3)
-        ; test: (+ 1 2#\)<backspace><backspace><backspace> 3)
+        ;   test: (+ 1 2)<backspace> 3)
+        ;   test: (+ 1 2#\)<backspace><backspace><backspace> 3)
         { begin
           (backspaced-over-close-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\) literal)) escapes:integer-buffer-address)
           (break-unless backspaced-over-close-paren?:boolean)
@@ -56,11 +58,12 @@
       }
       (jump next-key:offset)
     }
+    ; not a backspace; save character
 ;?     (print-primitive-to-host (("append\n" literal))) ;? 1
     (result:buffer-address <- append result:buffer-address c:character)
 ;?     (print-primitive-to-host (("done\n" literal))) ;? 1
-    ; record backslash and one additional character
-    ; test: (prn #\()
+    ; if it's backslash, read, save and print one additional character
+    ;   test: (prn #\()
     { begin
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
@@ -68,7 +71,7 @@
       (result:buffer-address escapes:integer-buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:integer-buffer-address)
       (jump next-key:offset)
     }
-    ; parse comment
+    ; if it's a semi-colon, parse a comment
     { begin
       (comment?:boolean <- equal c:character ((#\; literal)))
       (break-unless comment?:boolean)
@@ -82,7 +85,7 @@
       (jump-unless end-sexp?:boolean next-key:offset)
       (jump end:offset)
     }
-    ; parse string
+    ; if it's a quote, parse a string
     { begin
       (string-started?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
       (break-unless string-started?:boolean)
@@ -90,13 +93,13 @@
       (slurp-string result:buffer-address escapes:integer-buffer-address)
       (jump next-key:offset)
     }
-    ; balance parens
-    ; test: (+ 1 1)<enter>
-    ; test: (def foo () (+ 1 (* 2 3)))<enter>
+    ; color parens by depth, so they're easy to balance
+    ;   test: (+ 1 1)<enter>
+    ;   test: (def foo () (+ 1 (* 2 3)))<enter>
     { begin
       (open-paren?:boolean <- equal c:character ((#\( literal)))
       (break-unless open-paren?:boolean)
-      (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)
+      (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
       (color-code:integer <- add color-code:integer 1:literal)
       ($print-key-to-host c:character color-code:integer)
       (open-parens:integer <- add open-parens:integer 1:literal)
@@ -113,6 +116,7 @@
 ;?       (print-primitive-to-host open-parens:integer) ;? 1
       (jump next-key:offset)
     }
+    ; if it's a newline, decide whether to return
     { begin
       (newline?:boolean <- equal c:character ((#\newline literal)))
       (break-unless newline?:boolean)
@@ -121,10 +125,13 @@
       (jump-if end-sexp?:boolean end:offset)
       (jump next-key:offset)
     }
+    ; if all else fails, print the character without color
     ($print-key-to-host c:character)
-    ; todo: error on space outside parens, like python
-    ; []
-    ; don't return if there's no non-whitespace in result
+    ;   todo: error on space outside parens, like python
+    ;   todo: []
+    ;   todo: give up on ctrl-g
+    ;   todo: history on up/down
+    ;   todo: don't return if there's no non-whitespace in result
     (jump next-key:offset)
   }
   end
@@ -143,8 +150,8 @@
     (c:character <- $wait-for-key-from-host)
     ($print-key-to-host c:character 4:literal/fg/blue)
     ; handle backspace
-    ; test: ; abc<backspace><backspace>def<enter>
-    ; todo: how to exit comment?
+    ;   test: ; abc<backspace><backspace>def<enter>
+    ;   todo: how to exit comment?
     { begin
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
       (break-unless backspace?:boolean)
@@ -173,8 +180,8 @@
     (c:character <- $wait-for-key-from-host)
     ($print-key-to-host c:character 6:literal/fg/cyan)
     ; handle backspace
-    ; test: "abc<backspace>d"
-    ; todo: how to exit string?
+    ;   test: "abc<backspace>d"
+    ;   todo: how to exit string?
     { begin
       (backspace?:boolean <- equal c:character ((#\backspace literal)))
       (break-unless backspace?:boolean)
@@ -182,7 +189,7 @@
       ; typed a quote before calling slurp-string, so can't be empty
       (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       ; if we erase start of string, return
-      ; test: "<backspace>34
+      ;   test: "<backspace>34
       (string-deleted?:boolean <- backspaced-over-unescaped? in:buffer-address ((#\" literal)) escapes:integer-buffer-address)  ; "
 ;?       (print-primitive-to-host string-deleted?:boolean) ;? 1
       (jump-if string-deleted?:boolean end:offset)
@@ -190,7 +197,7 @@
     }
     (in:buffer-address <- append in:buffer-address c:character)
     ; break on quote -- unless escaped by backslash
-    ; test: "abc\"ef"
+    ;   test: "abc\"ef"
     { begin
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
@@ -215,8 +222,8 @@
   (escapes:integer-buffer-address <- append escapes:integer-buffer-address len:integer-address/deref)  ; todo: type violation
 ;?   (print-primitive-to-host (("+" literal))) ;? 1
   ; handle backspace
-  ; test: "abc\<backspace>def"
-  ; test: #\<backspace>
+  ;   test: "abc\<backspace>def"
+  ;   test: #\<backspace>
   { begin
     (backspace?:boolean <- equal c2:character ((#\backspace literal)))
     (break-unless backspace?:boolean)
@@ -227,7 +234,7 @@
 ;?     (print-primitive-to-host (("-" literal))) ;? 1
     (reply in:buffer-address/same-as-arg:0 escapes:integer-buffer-address/same-as-arg:2)
   }
-  ; if not backspace
+  ; if not backspace, save and return
   (in:buffer-address <- append in:buffer-address c2:character)
   (reply in:buffer-address/same-as-arg:0 escapes:integer-buffer-address/same-as-arg:2)
 ])
@@ -280,7 +287,7 @@
     (print-primitive-to-host (("anarki> " literal)))
     (s:string-address <- read-sexp)
     (retro-mode)  ; print errors cleanly
-    (t:string-address <- $eval s:string-address)
+      (t:string-address <- $eval s:string-address)
     (cursor-mode)
     (print-string nil:literal/terminal t:string-address)
     (print-character nil:literal/terminal ((#\newline literal)))
