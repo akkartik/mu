@@ -9,7 +9,8 @@
 (function read-sexp [
   (default-space:space-address <- new space:literal 30:literal)
   (abort:continuation <- next-input)
-  (result:buffer-address <- init-buffer 3:literal)
+  (history:buffer-address <- next-input)  ; buffer of strings
+  (result:buffer-address <- init-buffer 3:literal)  ; string to maybe add to
   (open-parens:integer <- copy 0:literal)  ; for balancing parens and tracking nesting depth
   ; we can change color when backspacing over parens or comments or strings,
   ; but we need to know that they aren't escaped
@@ -337,9 +338,14 @@
   (print-primitive-to-host (("connected to anarki! type in an expression, then hit enter. ctrl-d exits. ctrl-g clears the current expression." literal)))
   (print-character nil:literal/terminal ((#\newline literal)))
   (abort:continuation <- current-continuation)
+  (history:buffer-address <- init-buffer 5:literal)
   { begin
-    (s:string-address <- read-sexp abort:continuation)
+    (s:string-address <- read-sexp abort:continuation history:buffer-address)
     (break-unless s:string-address)
+    (history:buffer-address <- append history:buffer-address s:string-address)
+    (len:integer <- get history:buffer-address/deref length:offset)
+    (print-primitive-to-host len:integer)
+    (print-primitive-to-host ((#\newline literal)))
     (retro-mode)  ; print errors cleanly
       (t:string-address <- $eval s:string-address)
     (cursor-mode)
