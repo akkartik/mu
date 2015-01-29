@@ -235,7 +235,7 @@
     { begin
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
-      (in:buffer-address escapes:integer-buffer-address <- slurp-escaped-character in:buffer-address 6:literal/cyan escapes:integer-buffer-address)
+      (in:buffer-address escapes:integer-buffer-address <- slurp-escaped-character in:buffer-address 6:literal/cyan escapes:integer-buffer-address abort:continuation)
       (jump next-key-in-string:offset)
     }
     ; if not backslash
@@ -250,11 +250,11 @@
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
   (color-code:integer <- next-input)
+  (escapes:integer-buffer-address <- next-input)
   (abort:continuation <- next-input)
   (c:character <- $wait-for-key-from-host)
   (maybe-cancel-this-sexp c:character abort:continuation)  ; test: check needs to come before print
   ($print-key-to-host c:character color-code:integer)
-  (escapes:integer-buffer-address <- next-input)
   (len:integer-address <- get-address in:buffer-address/deref length:offset)
   (escapes:integer-buffer-address <- append escapes:integer-buffer-address len:integer-address/deref)  ; todo: type violation
 ;?   (print-primitive-to-host (("+" literal))) ;? 1
