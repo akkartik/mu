@@ -90,6 +90,8 @@
       ; test: ;a<backspace><backspace> (shouldn't end command until <enter>)
       (jump-unless comment-read?:boolean next-key:offset)
       ; and we're not within parens
+      ;   test: (+ 1 2)  ; comment<enter>
+      ;   test: (+ 1<enter>; abc<enter>2)<enter>
       (end-sexp?:boolean <- lesser-or-equal open-parens:integer 0:literal)
       (jump-unless end-sexp?:boolean next-key:offset)
       (jump end:offset)
