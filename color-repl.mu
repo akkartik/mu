@@ -17,6 +17,7 @@
     ;   test: 34<enter>
     next-key
     (c:character <- $wait-for-key-from-host)
+    (check-abort c:character)
     ; check for backspace
     ;   test: 3<backspace>4<enter>
     ;   todo: backspace past newline
@@ -129,7 +130,6 @@
     ($print-key-to-host c:character)
     ;   todo: error on space outside parens, like python
     ;   todo: []
-    ;   todo: give up on ctrl-g
     ;   todo: history on up/down
     ;   todo: don't return if there's no non-whitespace in result
     (jump next-key:offset)
@@ -148,6 +148,7 @@
   { begin
     next-key-in-comment
     (c:character <- $wait-for-key-from-host)
+    (check-abort c:character)  ; test: check needs to come before print
     ($print-key-to-host c:character 4:literal/fg/blue)
     ; handle backspace
     ;   test: ; abc<backspace><backspace>def<enter>
@@ -178,6 +179,7 @@
   { begin
     next-key-in-string
     (c:character <- $wait-for-key-from-host)
+    (check-abort c:character)  ; test: check needs to come before print
     ($print-key-to-host c:character 6:literal/fg/cyan)
     ; handle backspace
     ;   test: "abc<backspace>d"
@@ -215,8 +217,9 @@
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
   (color-code:integer <- next-input)
-  (c2:character <- $wait-for-key-from-host)
-  ($print-key-to-host c2:character color-code:integer)
+  (c:character <- $wait-for-key-from-host)
+  (check-abort c:character)  ; test: check needs to come before print
+  ($print-key-to-host c:character color-code:integer)
   (escapes:integer-buffer-address <- next-input)
   (len:integer-address <- get-address in:buffer-address/deref length:offset)
   (escapes:integer-buffer-address <- append escapes:integer-buffer-address len:integer-address/deref)  ; todo: type violation
@@ -225,7 +228,7 @@
   ;   test: "abc\<backspace>def"
   ;   test: #\<backspace>
   { begin
-    (backspace?:boolean <- equal c2:character ((#\backspace literal)))
+    (backspace?:boolean <- equal c:character ((#\backspace literal)))
     (break-unless backspace?:boolean)
     ; just typed a backslash, so buffer can't be empty
     (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
@@ -235,7 +238,7 @@
     (reply in:buffer-address/same-as-arg:0 escapes:integer-buffer-address/same-as-arg:2)
   }
   ; if not backspace, save and return
-  (in:buffer-address <- append in:buffer-address c2:character)
+  (in:buffer-address <- append in:buffer-address c:character)
   (reply in:buffer-address/same-as-arg:0 escapes:integer-buffer-address/same-as-arg:2)
 ])
 
@@ -278,6 +281,19 @@
   }
   (result:character <- index s:string-address/deref n:integer)
   (reply result:character)
+])
+
+(function check-abort [
+  ; check for ctrl-g and abort
+  (default-space:space-address <- new space:literal 30:literal)
+  (c:character <- next-input)
+  { begin
+    (interrupt?:boolean <- equal c:character ((ctrl-g literal)))
+    (break-unless interrupt?:boolean)
+    ($print-key-to-host (("^G" literal)))
+    ($print-key-to-host ((#\newline literal)))
+    (abort-to main:fn)
+  }
 ])
 
 (function main [
