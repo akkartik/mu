@@ -830,7 +830,6 @@
                     (until (is caller top.routine*!fn-name)
                       (pop-stack routine*)
                       ; no incrementing pc; we want to retry the call
-                      (-- pc.routine*)  ; temporary hack, hardcoded for color-repl.mu
                       )
                     ((abort-routine*)))
 

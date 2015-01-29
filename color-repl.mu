@@ -305,15 +305,18 @@
 (function main [
   (default-space:space-address <- new space:literal 30:literal)
   (cursor-mode)
+  (print-primitive-to-host (("connected to anarki! type in an expression, then hit enter. ctrl-d exits. ctrl-g clears the current expression." literal)))
+  (print-character nil:literal/terminal ((#\newline literal)))
   { begin
-    (print-primitive-to-host (("anarki> " literal)))
     (s:string-address <- read-sexp)
     (break-unless s:string-address)
     (retro-mode)  ; print errors cleanly
       (t:string-address <- $eval s:string-address)
     (cursor-mode)
+    (print-primitive-to-host (("=> " literal)))
     (print-string nil:literal/terminal t:string-address)
     (print-character nil:literal/terminal ((#\newline literal)))
+    (print-character nil:literal/terminal ((#\newline literal)))  ; empty line separates each expression and result
     (loop)
   }
 ])
