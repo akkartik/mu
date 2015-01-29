@@ -13,7 +13,7 @@
   (open-parens:integer <- copy 0:literal)  ; for balancing parens and tracking nesting depth
   ; we can change color when backspacing over parens or comments or strings,
   ; but we need to know that they aren't escaped
-  (escapes:integer-buffer-address <- init-integer-buffer 5:literal)
+  (escapes:buffer-address <- init-buffer 5:literal)
   ; to not return after just a comment
   (not-empty?:boolean <- copy nil:literal)
   { begin
@@ -45,15 +45,15 @@
         ;   test: "a"<backspace>bc"
         ;   test: "a\"<backspace>bc"
         { begin
-          (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:integer-buffer-address)  ; "
+          (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:buffer-address)  ; "
           (break-unless backspaced-over-close-quote?:boolean)
-          (slurp-string result:buffer-address escapes:integer-buffer-address abort:continuation)
+          (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
           (jump next-key:offset)
         }
         ;   test: (+ 1 (<backspace>2)
         ;   test: (+ 1 #\(<backspace><backspace><backspace>2)
         { begin
-          (backspaced-over-open-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\( literal)) escapes:integer-buffer-address)
+          (backspaced-over-open-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\( literal)) escapes:buffer-address)
           (break-unless backspaced-over-open-paren?:boolean)
           (open-parens:integer <- subtract open-parens:integer 1:literal)
           (jump next-key:offset)
@@ -61,7 +61,7 @@
         ;   test: (+ 1 2)<backspace> 3)
         ;   test: (+ 1 2#\)<backspace><backspace><backspace> 3)
         { begin
-          (backspaced-over-close-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\) literal)) escapes:integer-buffer-address)
+          (backspaced-over-close-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\) literal)) escapes:buffer-address)
           (break-unless backspaced-over-close-paren?:boolean)
           (open-parens:integer <- add open-parens:integer 1:literal)
           (jump next-key:offset)
@@ -79,7 +79,7 @@
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
       ($print-key-to-host c:character 7:literal/white)
-      (result:buffer-address escapes:integer-buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:integer-buffer-address abort:continuation)
+      (result:buffer-address escapes:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:buffer-address abort:continuation)
       (jump next-key:offset)
     }
     ; if it's a semi-colon, parse a comment
@@ -87,7 +87,7 @@
       (comment?:boolean <- equal c:character ((#\; literal)))
       (break-unless comment?:boolean)
       ($print-key-to-host c:character 4:literal/fg/blue)
-      (comment-read?:boolean <- slurp-comment result:buffer-address escapes:integer-buffer-address abort:continuation)
+      (comment-read?:boolean <- slurp-comment result:buffer-address escapes:buffer-address abort:continuation)
       ; return if comment was read (i.e. consumed a newline)
       ; test: ;a<backspace><backspace> (shouldn't end command until <enter>)
       (jump-unless comment-read?:boolean next-key:offset)
@@ -117,7 +117,7 @@
       (string-started?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
       (break-unless string-started?:boolean)
       ($print-key-to-host c:character 6:literal/fg/cyan)
-      (slurp-string result:buffer-address escapes:integer-buffer-address abort:continuation)
+      (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
       (jump next-key:offset)
     }
     ; color parens by depth, so they're easy to balance
@@ -173,7 +173,7 @@
 (function slurp-comment [
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
-  (escapes:integer-buffer-address <- next-input)
+  (escapes:buffer-address <- next-input)
   (abort:continuation <- next-input)
   ; test: ; abc<enter>
   { begin
@@ -191,7 +191,7 @@
       ; buffer has to have at least the semi-colon so can't be empty
       (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       ; if we erase start of comment, return
-      (comment-deleted?:boolean <- backspaced-over-unescaped? in:buffer-address ((#\; literal)) escapes:integer-buffer-address)  ; "
+      (comment-deleted?:boolean <- backspaced-over-unescaped? in:buffer-address ((#\; literal)) escapes:buffer-address)  ; "
       (jump-unless comment-deleted?:boolean next-key-in-comment:offset)
       (reply nil:literal/read-comment?)
     }
@@ -205,7 +205,7 @@
 (function slurp-string [
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
-  (escapes:integer-buffer-address <- next-input)
+  (escapes:buffer-address <- next-input)
   (abort:continuation <- next-input)
   ; test: "abc"
   { begin
@@ -224,7 +224,7 @@
       (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       ; if we erase start of string, return
       ;   test: "<backspace>34
-      (string-deleted?:boolean <- backspaced-over-unescaped? in:buffer-address ((#\" literal)) escapes:integer-buffer-address)  ; "
+      (string-deleted?:boolean <- backspaced-over-unescaped? in:buffer-address ((#\" literal)) escapes:buffer-address)  ; "
 ;?       (print-primitive-to-host string-deleted?:boolean) ;? 1
       (jump-if string-deleted?:boolean end:offset)
       (jump next-key-in-string:offset)
@@ -235,7 +235,7 @@
     { begin
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
-      (in:buffer-address escapes:integer-buffer-address <- slurp-escaped-character in:buffer-address 6:literal/cyan escapes:integer-buffer-address abort:continuation)
+      (in:buffer-address escapes:buffer-address <- slurp-escaped-character in:buffer-address 6:literal/cyan escapes:buffer-address abort:continuation)
       (jump next-key-in-string:offset)
     }
     ; if not backslash
@@ -250,13 +250,13 @@
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
   (color-code:integer <- next-input)
-  (escapes:integer-buffer-address <- next-input)
+  (escapes:buffer-address <- next-input)
   (abort:continuation <- next-input)
   (c:character <- $wait-for-key-from-host)
   (maybe-cancel-this-sexp c:character abort:continuation)  ; test: check needs to come before print
   ($print-key-to-host c:character color-code:integer)
   (len:integer-address <- get-address in:buffer-address/deref length:offset)
-  (escapes:integer-buffer-address <- append escapes:integer-buffer-address len:integer-address/deref)  ; todo: type violation
+  (escapes:buffer-address <- append escapes:buffer-address len:integer-address/deref)
 ;?   (print-primitive-to-host (("+" literal))) ;? 1
   ; handle backspace
   ;   test: "abc\<backspace>def"
@@ -266,21 +266,21 @@
     (break-unless backspace?:boolean)
     ; just typed a backslash, so buffer can't be empty
     (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
-    (elen:integer-address <- get-address escapes:integer-buffer-address/deref length:offset)
+    (elen:integer-address <- get-address escapes:buffer-address/deref length:offset)
     (elen:integer-address/deref <- subtract elen:integer-address/deref 1:literal)
 ;?     (print-primitive-to-host (("-" literal))) ;? 1
-    (reply in:buffer-address/same-as-arg:0 escapes:integer-buffer-address/same-as-arg:2)
+    (reply in:buffer-address/same-as-arg:0 escapes:buffer-address/same-as-arg:2)
   }
   ; if not backspace, save and return
   (in:buffer-address <- append in:buffer-address c:character)
-  (reply in:buffer-address/same-as-arg:0 escapes:integer-buffer-address/same-as-arg:2)
+  (reply in:buffer-address/same-as-arg:0 escapes:buffer-address/same-as-arg:2)
 ])
 
 (function backspaced-over-unescaped? [
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
   (expected:character <- next-input)
-  (escapes:integer-buffer-address <- next-input)
+  (escapes:buffer-address <- next-input)
   ; char just backspaced over matches
   { begin
     (c:character <- past-last in:buffer-address)
@@ -290,7 +290,7 @@
   }
   ; and char before cursor is not an escape
   { begin
-    (most-recent-escape:integer <- last escapes:integer-buffer-address)
+    (most-recent-escape:integer <- last escapes:buffer-address)
     (last-idx:integer <- get in:buffer-address/deref length:offset)
 ;?     (print-primitive-to-host most-recent-escape:integer) ;? 1
 ;?     (print-primitive-to-host last-idx:integer) ;? 1
