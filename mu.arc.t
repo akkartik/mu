@@ -1075,7 +1075,7 @@
 (push-stack routine* 'callee)  ; pretend call was at first instruction of caller
 (run-for-time-slice 1)
 (when (~is 1 pc.routine*)
-  (prn "F - 'reply' should increment pc in caller (to move past calling instruction)"))
+  (prn "F - 'reply' increments pc in caller (to move past calling instruction)"))
 
 (reset)
 (new-trace "new-fn-arg-sequential")
@@ -2277,6 +2277,59 @@
 (when (or (~is memory*.2 5)
           (~is memory*.3 5))
   (prn "F - override names for the default space"))
+
+(reset)
+(new-trace "default-space-shared-with-extra-names")
+(add-code
+  '((function f [
+      (default-space:space-address <- new space:literal 30:literal)
+      (x:integer <- copy 3:literal)
+      (y:integer <- copy 4:literal)
+      (reply default-space:space-address)
+     ])
+    (function g [
+      (default-space:space-address/names:f <- next-input)
+      (y:integer <- add y:integer 1:literal)
+      (x:integer <- add x:integer 2:literal)
+      (z:integer <- add x:integer y:integer)
+      (reply z:integer)
+     ])
+    (function main [
+      (1:space-address <- f)
+      (2:integer <- g 1:space-address)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(when (~is memory*.2 10)
+  (prn "F - shared spaces can add new names"))
+
+(reset)
+(new-trace "default-space-shared-extra-names-dont-overlap-bindings")
+(add-code
+  '((function f [
+      (default-space:space-address <- new space:literal 30:literal)
+      (x:integer <- copy 3:literal)
+      (y:integer <- copy 4:literal)
+      (reply default-space:space-address)
+     ])
+    (function g [
+      (default-space:space-address/names:f <- next-input)
+      (y:integer <- add y:integer 1:literal)
+      (x:integer <- add x:integer 2:literal)
+      (z:integer <- copy 2:literal)
+      (reply x:integer y:integer)
+     ])
+    (function main [
+      (1:space-address <- f)
+      (2:integer <- g 1:space-address)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(when (or (~is memory*.2 5)
+          (~is memory*.3 5))
+  (prn "F - new names in shared spaces don't override old ones"))
 
 )  ; section 20
 

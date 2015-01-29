@@ -1264,6 +1264,7 @@
 (def assign-names-to-location (instrs name)
 ;?   (tr name)
 ;?   (prn name ": " location*) ;? 1
+  (point return
   (ret location (table)
     ; if default-space in first instruction has a name, begin with its bindings
     (when (acons instrs.0)  ; not a label
@@ -1273,11 +1274,16 @@
                    (assoc 'names metadata.first-oarg-of-first-instr))
           (let old-names (location*:alref metadata.first-oarg-of-first-instr 'names)
             (unless old-names
-              (err "@name requires bindings for @(alref metadata.first-oarg-of-first-instr 'names) which aren't computed yet. Reorder @name to load later."))
+;?               (prn "@name requires bindings for @(alref metadata.first-oarg-of-first-instr 'names) which aren't computed yet. Waiting.") ;? 1
+              (return nil))
             (= location copy.old-names))))) ; assumption: we've already converted names for 'it'
-;?     (prn location) ;? 1
+;?     (unless empty.location (prn location)) ;? 2
     (with (isa-field  (table)
-           idx  1)  ; 0 always reserved for next space
+           idx  (+ 1  ; 0 always reserved for next space
+                   (or (apply max vals.location)  ; skip past bindings already shared from elsewhere
+                       0))
+           already-location (copy location)
+           )
       (each instr instrs
         (point continue
         (when atom.instr
@@ -1294,7 +1300,8 @@
 ;?               (tr 112)
               (trace "cn0" "field-access @field in @args.0 of type @basetype")
               (when (isa field 'sym)
-                (assert (or (~location field) isa-field.field) "field @args.1 is also a variable")
+                (unless (already-location field)
+                  (assert (or (~location field) isa-field.field) "field @args.1 is also a variable"))
                 (when (~location field)
                   (trace "cn0" "new field; computing location")
 ;?                   (tr "aa " type*.basetype)
@@ -1322,7 +1329,7 @@
               (when (maybe-add arg location idx)
                 (trace "cn0" "location for oarg " arg ": " idx)
                 ; todo: can't allocate arrays on the stack
-                (++ idx (sizeof `((_ ,@ty.arg)))))))))))))
+                (++ idx (sizeof `((_ ,@ty.arg))))))))))))))
 
 (def replace-names-with-location (instrs name)
   (each instr instrs
@@ -1509,8 +1516,15 @@
     (= function-table.name (convert-labels:convert-braces:tokenize-args:insert-code body name)))
   (each (name body)  canon.function-table
     (add-next-space-generator body name))
-  (each (name body)  canon.function-table
-    (= location*.name (assign-names-to-location body name)))
+  (let change t
+    (while change
+      (= change nil)
+      (each (name body)  canon.function-table
+        (when (no location*.name)
+          (= change t))
+        (or= location*.name (assign-names-to-location body name)))))
+;?   (each (name body)  canon.function-table ;? 1
+;?     (or= location*.name (assign-names-to-location body name))) ;? 1
   (each (name body)  canon.function-table
     (= function-table.name (replace-names-with-location body name)))
   ; we could clear location* at this point, but maybe we'll find a use for it
