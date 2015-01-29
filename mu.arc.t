@@ -2252,6 +2252,32 @@
   (prn "F - /names to name variables in outer spaces"))
 ;? (quit)
 
+(reset)
+(new-trace "default-space-shared-with-names")
+(add-code
+  '((function f [
+      (default-space:space-address <- new space:literal 30:literal)
+      (x:integer <- copy 3:literal)
+      (y:integer <- copy 4:literal)
+      (reply default-space:space-address)
+     ])
+    (function g [
+      (default-space:space-address/names:f <- next-input)
+      (y:integer <- add y:integer 1:literal)
+      (x:integer <- add x:integer 2:literal)
+      (reply x:integer y:integer)
+     ])
+    (function main [
+      (1:space-address <- f)
+      (2:integer 3:integer <- g 1:space-address)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(when (or (~is memory*.2 5)
+          (~is memory*.3 5))
+  (prn "F - override names for the default space"))
+
 )  ; section 20
 
 (section 100

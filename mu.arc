@@ -1076,7 +1076,7 @@
                   (- space 1))))
 
 (def space (operand)
-  (or (alref operand 'space)
+  (or (alref metadata.operand 'space)
       0))
 
 (def deref (operand)
@@ -1263,7 +1263,19 @@
 
 (def assign-names-to-location (instrs name)
 ;?   (tr name)
+;?   (prn name ": " location*) ;? 1
   (ret location (table)
+    ; if default-space in first instruction has a name, begin with its bindings
+    (when (acons instrs.0)  ; not a label
+      (let first-oarg-of-first-instr instrs.0.0  ; hack: assumes the standard default-space boilerplate
+        (when (and (nondummy first-oarg-of-first-instr)
+                   (is 'default-space (v first-oarg-of-first-instr))
+                   (assoc 'names metadata.first-oarg-of-first-instr))
+          (let old-names (location*:alref metadata.first-oarg-of-first-instr 'names)
+            (unless old-names
+              (err "@name requires bindings for @(alref metadata.first-oarg-of-first-instr 'names) which aren't computed yet. Reorder @name to load later."))
+            (= location copy.old-names))))) ; assumption: we've already converted names for 'it'
+;?     (prn location) ;? 1
     (with (isa-field  (table)
            idx  1)  ; 0 always reserved for next space
       (each instr instrs
