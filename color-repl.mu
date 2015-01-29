@@ -112,7 +112,8 @@
         (break-if end-sexp?:boolean)
         (continue-from next-key:continuation)
       }
-      (jump end:offset)
+      (s:string-address <- get result:buffer-address/deref data:offset)
+      (reply s:string-address)
     }
 ;?     (print-primitive-to-host 7:literal) ;? 1
     ; if it's not whitespace, set not-empty? and continue
@@ -169,8 +170,12 @@
       ($print-key-to-host c:character)
       (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
       (end-sexp?:boolean <- and at-top-level?:boolean not-empty?:boolean)
-      (jump-if end-sexp?:boolean end:offset)
-      (continue-from next-key:continuation)
+      { begin
+        (break-if end-sexp?:boolean)
+        (continue-from next-key:continuation)
+      }
+      (s:string-address <- get result:buffer-address/deref data:offset)
+      (reply s:string-address)
     }
 ;?     (print-primitive-to-host 12:literal) ;? 1
     ; if all else fails, print the character without color
@@ -181,7 +186,6 @@
     ;   todo: don't return if there's no non-whitespace in result
     (continue-from next-key:continuation)
   }
-  end
   (s:string-address <- get result:buffer-address/deref data:offset)
   (reply s:string-address)
 ])
