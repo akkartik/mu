@@ -1,4 +1,4 @@
-; a simple line editor for reading lisp s-expressions
+; a simple line editor for reading lisp expressions
 ; colors strings and comments. nested parens get different colors.
 ;
 ; needs to do its own raw keyboard/screen management since we need to decide
@@ -6,7 +6,7 @@
 ; lots of logic devoted to handling backspace correctly
 
 ; abort continuation -> string
-(function read-sexp [
+(function read-expression [
   (default-space:space-address <- new space:literal 30:literal)
   (abort:continuation <- next-input)
   (history:buffer-address <- next-input)  ; buffer of strings
@@ -29,16 +29,17 @@
 ])
 
 (function process-key [
-  (default-space:space-address/names:read-sexp <- next-input)
+  ; must always be called from within 'read-expression'
+  (default-space:space-address/names:read-expression <- next-input)
   (c:character <- next-input)
 ;?   (print-primitive-to-host 1:literal) ;? 2
-  (maybe-cancel-this-sexp c:character abort:continuation)
+  (maybe-cancel-this-expression c:character abort:continuation)
 ;?   (print-primitive-to-host 2:literal) ;? 2
   ; check for ctrl-d and exit
   { begin
     (eof?:boolean <- equal c:character ((ctrl-d literal)))
     (break-unless eof?:boolean)
-    ; return nil from read-sexp
+    ; return empty expression
     (s:string-address-address <- get-address result:buffer-address/deref data:offset)
     (s:string-address-address/deref <- copy nil:literal)
     (reply t:literal)
@@ -119,12 +120,12 @@
     ;   test: ; comment<enter>(+ 1 2)<enter>
     ;   too expensive to build: 3<backspace>; comment<enter>(+ 1 2)<enter>
     (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-    (end-sexp?:boolean <- and at-top-level?:boolean not-empty?:boolean)
+    (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
     { begin
-      (break-if end-sexp?:boolean)
+      (break-if end-expression?:boolean)
       (continue-from next-key:continuation)
     }
-    (reply nil:literal)
+    (reply nil:literal)  ; wait for more keys
   }
 ;?   (print-primitive-to-host 7:literal) ;? 2
   ; if it's not whitespace, set not-empty? and continue
@@ -180,12 +181,12 @@
     (break-unless newline?:boolean)
     ($print-key-to-host c:character)
     (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-    (end-sexp?:boolean <- and at-top-level?:boolean not-empty?:boolean)
+    (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
     { begin
-      (break-if end-sexp?:boolean)
+      (break-if end-expression?:boolean)
       (continue-from next-key:continuation)
     }
-    (reply nil:literal)
+    (reply nil:literal)  ; wait for more keys
   }
 ;?   (print-primitive-to-host 12:literal) ;? 2
   ; if all else fails, print the character without color
@@ -207,7 +208,7 @@
   { begin
     next-key-in-comment
     (c:character <- $wait-for-key-from-host)
-    (maybe-cancel-this-sexp c:character abort:continuation)  ; test: check needs to come before print
+    (maybe-cancel-this-expression c:character abort:continuation)  ; test: check needs to come before print
     ($print-key-to-host c:character 4:literal/fg/blue)
     ; handle backspace
     ;   test: ; abc<backspace><backspace>def<enter>
@@ -239,7 +240,7 @@
   { begin
     next-key-in-string
     (c:character <- $wait-for-key-from-host)
-    (maybe-cancel-this-sexp c:character abort:continuation)  ; test: check needs to come before print
+    (maybe-cancel-this-expression c:character abort:continuation)  ; test: check needs to come before print
     ($print-key-to-host c:character 6:literal/fg/cyan)
     ; handle backspace
     ;   test: "abc<backspace>d"
@@ -281,7 +282,7 @@
   (escapes:buffer-address <- next-input)
   (abort:continuation <- next-input)
   (c:character <- $wait-for-key-from-host)
-  (maybe-cancel-this-sexp c:character abort:continuation)  ; test: check needs to come before print
+  (maybe-cancel-this-expression c:character abort:continuation)  ; test: check needs to come before print
   ($print-key-to-host c:character color-code:integer)
   (len:integer-address <- get-address in:buffer-address/deref length:offset)
   (escapes:buffer-address <- append escapes:buffer-address len:integer-address/deref)
@@ -345,7 +346,7 @@
   (reply result:character)
 ])
 
-(function maybe-cancel-this-sexp [
+(function maybe-cancel-this-expression [
   ; check for ctrl-g and abort
   (default-space:space-address <- new space:literal 30:literal)
   (c:character <- next-input)
@@ -367,7 +368,7 @@
   (abort:continuation <- current-continuation)
   (history:buffer-address <- init-buffer 5:literal)
   { begin
-    (s:string-address <- read-sexp abort:continuation history:buffer-address)
+    (s:string-address <- read-expression abort:continuation history:buffer-address)
     (break-unless s:string-address)
     (history:buffer-address <- append history:buffer-address s:string-address)
     (len:integer <- get history:buffer-address/deref length:offset)

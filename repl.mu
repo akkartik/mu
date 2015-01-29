@@ -1,6 +1,6 @@
-; a simple line editor for reading lisp s-expressions
+; a simple line editor for reading lisp expressions
 
-(function read-sexp [
+(function read-expression [
   (default-space:space-address <- new space:literal 30:literal)
   (in:channel-address <- next-input)
   (result:buffer-address <- init-buffer 30:literal)
@@ -9,7 +9,7 @@
 ;?     (skip-whitespace k:keyboard-address) ;? 1
     (x:tagged-value in:channel-address/deref <- read in:channel-address)
     (c:character <- maybe-coerce x:tagged-value character:literal)
-    (assert c:character "read-sexp: non-character in stdin")
+    (assert c:character "read-expression: non-character in stdin")
 ;?     (print-primitive-to-host (("key: " literal))) ;? 1
 ;?     (print-primitive-to-host c:character) ;? 2
 ;?     (print-primitive-to-host (("$\n" literal))) ;? 2
@@ -20,8 +20,8 @@
       (break-unless comment?:boolean)
       (skip-comment in:channel-address)
       ; comment slurps newline, so check if we should return
-      (end-sexp?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-      (break-if end-sexp?:boolean 2:blocks)
+      (end-expression?:boolean <- lesser-or-equal open-parens:integer 0:literal)
+      (break-if end-expression?:boolean 2:blocks)
     }
     ; parse string
     { begin
@@ -44,8 +44,8 @@
       (newline?:boolean <- equal c:character ((#\newline literal)))
       (break-unless newline?:boolean)
 ;?       (print-primitive-to-host (("AAA" literal))) ;? 1
-      (end-sexp?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-      (break-if end-sexp?:boolean 2:blocks)
+      (end-expression?:boolean <- lesser-or-equal open-parens:integer 0:literal)
+      (break-if end-expression?:boolean 2:blocks)
     }
     ; todo: error on space outside parens, like python
     ; []
@@ -63,7 +63,7 @@
   { begin
     (x:tagged-value in:channel-address/deref <- read in:channel-address)
     (c:character <- maybe-coerce x:tagged-value character:literal)
-    (assert c:character "read-sexp: non-character in stdin")
+    (assert c:character "read-expression: non-character in stdin")
     (newline?:boolean <- equal c:character ((#\newline literal)))
     (break-if newline?:boolean)
     (loop)
@@ -77,7 +77,7 @@
   { begin
     (x:tagged-value in:channel-address/deref <- read in:channel-address)
     (c:character <- maybe-coerce x:tagged-value character:literal)
-    (assert c:character "read-sexp: non-character in stdin")
+    (assert c:character "read-expression: non-character in stdin")
     (result:buffer-address <- append result:buffer-address c:character)
     (end-quote?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
     (break-if end-quote?:boolean)
@@ -94,7 +94,7 @@
   (fork-helper buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
   { begin
     (print-primitive-to-host (("anarki> " literal)))
-    (s:string-address <- read-sexp buffered-stdin:channel-address)
+    (s:string-address <- read-expression buffered-stdin:channel-address)
     (retro-mode)  ; print errors cleanly
     (t:string-address <- $eval s:string-address)
     (cursor-mode)
