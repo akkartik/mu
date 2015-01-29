@@ -129,10 +129,12 @@
   (= type* (table))  ; name -> type info
   (= memory* (table))  ; address -> value
   (= function* (table))  ; name -> [instructions]
+  ; transforming mu programs
   (= location* (table))  ; function -> {name -> index into default-space}
   (= next-space-generator* (table))  ; function -> name of function generating next space
   ; each function's next space will usually always come from a single function
   (= next-routine-id* 0)
+  (= continuation* (table))
   )
 
 (on-init
@@ -195,6 +197,9 @@
               channel (obj size 3  and-record t  elems '((integer) (integer) (tagged-value-array-address))  fields '(first-full first-free circular-buffer))
               ; be careful of accidental copies to channels
               channel-address (obj size 1  address t  elem '(channel))
+              ; opaque pointer to a call stack
+              ; todo: save properly in allocated memory
+              continuation (obj size 1)
               ; editor
               line (obj array t  elem '(character))
               line-address (obj size 1  address t  elem '(line))
@@ -825,13 +830,21 @@
 ;?                     (prn x) ;? 1
 ;?                     (new-string:repr:eval x)) ;? 1
 
-                abort-to
-                  (let caller (m arg.0)
-                    (until (is caller top.routine*!fn-name)
-                      (pop-stack routine*)
-                      ; no incrementing pc; we want to retry the call
-                      )
-                    ((abort-routine*)))
+                ; first-class continuations
+                current-continuation
+                  (w/uniq continuation-name
+                    (trace "continuation" "saving @(repr rep.routine*!call-stack) to @continuation-name")
+                    (= continuation*.continuation-name (copy rep.routine*!call-stack))
+                    continuation-name)
+                continue-from
+                  (let continuation-name (m arg.0)
+                    (trace "continuation" "restoring @continuation-name")
+                    (trace "continuation" continuation*.continuation-name)
+                    (= rep.routine*!call-stack continuation*.continuation-name)
+                    (trace "continuation" "call stack is now @(repr rep.routine*!call-stack)")
+;?                     (++ pc.routine*) ;? 1
+                    (continue))
+;?                     ((abort-routine*))) ;? 1
 
                 ; user-defined functions
                 next-input
@@ -2523,6 +2536,7 @@
   (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run")))
 ;?   (= dump-trace* (obj whitelist '("schedule")))
+;?   (= dump-trace* (obj whitelist '("run" "continuation"))) ;? 1
 ;?   (= dump-trace* (obj whitelist '("cn0" "cn1")))
 ;?   (set dump-trace*) ;? 1
 ;?   (freeze function*)
