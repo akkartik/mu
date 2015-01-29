@@ -22,171 +22,178 @@
     ;   test: 34<enter>
     (next-key:continuation <- current-continuation)
     (c:character <- $wait-for-key-from-host)
-;?     (print-primitive-to-host 1:literal) ;? 1
-    (maybe-cancel-this-sexp c:character abort:continuation)
-;?     (print-primitive-to-host 2:literal) ;? 1
-    ; check for ctrl-d and exit
-    { begin
-      (eof?:boolean <- equal c:character ((ctrl-d literal)))
-      (break-unless eof?:boolean)
-      (reply nil:literal)
-    }
-;?     (print-primitive-to-host 3:literal) ;? 1
-    ; check for backspace
-    ;   test: 3<backspace>4<enter>
-    ;   todo: backspace past newline
-    { begin
-      (backspace?:boolean <- equal c:character ((#\backspace literal)))
-      (break-unless backspace?:boolean)
-      ($print-key-to-host c:character)
-      { begin
-        ; delete last character if any
-        (len:integer-address <- get-address result:buffer-address/deref length:offset)
-        (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
-        (break-if zero?:boolean)
-        (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
-        ; switch colors
-        ;   test: "a"<backspace>bc"
-        ;   test: "a\"<backspace>bc"
-        { begin
-          (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:buffer-address)  ; "
-          (break-unless backspaced-over-close-quote?:boolean)
-          (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
-          (continue-from next-key:continuation)
-        }
-        ;   test: (+ 1 (<backspace>2)
-        ;   test: (+ 1 #\(<backspace><backspace><backspace>2)
-        { begin
-          (backspaced-over-open-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\( literal)) escapes:buffer-address)
-          (break-unless backspaced-over-open-paren?:boolean)
-          (open-parens:integer <- subtract open-parens:integer 1:literal)
-          (continue-from next-key:continuation)
-        }
-        ;   test: (+ 1 2)<backspace> 3)
-        ;   test: (+ 1 2#\)<backspace><backspace><backspace> 3)
-        { begin
-          (backspaced-over-close-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\) literal)) escapes:buffer-address)
-          (break-unless backspaced-over-close-paren?:boolean)
-          (open-parens:integer <- add open-parens:integer 1:literal)
-          (continue-from next-key:continuation)
-        }
-      }
-      (continue-from next-key:continuation)
-    }
-;?     (print-primitive-to-host 4:literal) ;? 1
-    ; not a backspace; save character
-;?     (print-primitive-to-host (("append\n" literal))) ;? 1
-    (result:buffer-address <- append result:buffer-address c:character)
-;?     (print-primitive-to-host (("done\n" literal))) ;? 1
-    ; if it's backslash, read, save and print one additional character
-    ;   test: (prn #\()
-;?     (print-primitive-to-host 5:literal) ;? 1
-    { begin
-      (backslash?:boolean <- equal c:character ((#\\ literal)))
-      (break-unless backslash?:boolean)
-      ($print-key-to-host c:character 7:literal/white)
-      (result:buffer-address escapes:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:buffer-address abort:continuation)
-      (continue-from next-key:continuation)
-    }
-;?     (print-primitive-to-host 6:literal) ;? 1
-    ; if it's a semi-colon, parse a comment
-    { begin
-      (comment?:boolean <- equal c:character ((#\; literal)))
-      (break-unless comment?:boolean)
-      ($print-key-to-host c:character 4:literal/fg/blue)
-      (comment-read?:boolean <- slurp-comment result:buffer-address escapes:buffer-address abort:continuation)
-      ; return if comment was read (i.e. consumed a newline)
-      ; test: ;a<backspace><backspace> (shouldn't end command until <enter>)
-      { begin
-        (break-if comment-read?:boolean)
-        (continue-from next-key:continuation)
-      }
-      ; and we're not within parens
-      ;   test: (+ 1 2)  ; comment<enter>
-      ;   test: (+ 1<enter>; abc<enter>2)<enter>
-      ;   test: ; comment<enter>(+ 1 2)<enter>
-      ;   too expensive to build: 3<backspace>; comment<enter>(+ 1 2)<enter>
-      (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-      (end-sexp?:boolean <- and at-top-level?:boolean not-empty?:boolean)
-      { begin
-        (break-if end-sexp?:boolean)
-        (continue-from next-key:continuation)
-      }
-      (s:string-address <- get result:buffer-address/deref data:offset)
-      (reply s:string-address)
-    }
-;?     (print-primitive-to-host 7:literal) ;? 1
-    ; if it's not whitespace, set not-empty? and continue
-    { begin
-      (space?:boolean <- equal c:character ((#\space literal)))
-      (break-if space?:boolean)
-      (newline?:boolean <- equal c:character ((#\newline literal)))
-      (break-if newline?:boolean)
-      (tab?:boolean <- equal c:character ((tab literal)))
-      (break-if tab?:boolean)
-      (not-empty?:boolean <- copy t:literal)
-      ; fall through
-    }
-;?     (print-primitive-to-host 8:literal) ;? 1
-    ; if it's a quote, parse a string
-    { begin
-      (string-started?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
-      (break-unless string-started?:boolean)
-      ($print-key-to-host c:character 6:literal/fg/cyan)
-      (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
-      (continue-from next-key:continuation)
-    }
-;?     (print-primitive-to-host 9:literal) ;? 1
-    ; color parens by depth, so they're easy to balance
-    ;   test: (+ 1 1)<enter>
-    ;   test: (def foo () (+ 1 (* 2 3)))<enter>
-    { begin
-      (open-paren?:boolean <- equal c:character ((#\( literal)))
-      (break-unless open-paren?:boolean)
-      (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
-      (color-code:integer <- add color-code:integer 1:literal)
-      ($print-key-to-host c:character color-code:integer)
-      (open-parens:integer <- add open-parens:integer 1:literal)
-;?       (print-primitive-to-host open-parens:integer) ;? 1
-      (continue-from next-key:continuation)
-    }
-;?     (print-primitive-to-host 10:literal) ;? 1
-    { begin
-      (close-paren?:boolean <- equal c:character ((#\) literal)))
-      (break-unless close-paren?:boolean)
-      (open-parens:integer <- subtract open-parens:integer 1:literal)
-      (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
-      (color-code:integer <- add color-code:integer 1:literal)
-      ($print-key-to-host c:character color-code:integer)
-;?       (print-primitive-to-host open-parens:integer) ;? 1
-      (continue-from next-key:continuation)
-    }
-;?     (print-primitive-to-host 11:literal) ;? 1
-    ; if it's a newline, decide whether to return
-    ;   test: <enter>34<enter>
-    { begin
-      (newline?:boolean <- equal c:character ((#\newline literal)))
-      (break-unless newline?:boolean)
-      ($print-key-to-host c:character)
-      (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-      (end-sexp?:boolean <- and at-top-level?:boolean not-empty?:boolean)
-      { begin
-        (break-if end-sexp?:boolean)
-        (continue-from next-key:continuation)
-      }
-      (s:string-address <- get result:buffer-address/deref data:offset)
-      (reply s:string-address)
-    }
-;?     (print-primitive-to-host 12:literal) ;? 1
-    ; if all else fails, print the character without color
-    ($print-key-to-host c:character)
-    ;   todo: error on space outside parens, like python
-    ;   todo: []
-    ;   todo: history on up/down
-    (continue-from next-key:continuation)
+    (done?:boolean <- process-key default-space:space-address c:character)
   }
   (s:string-address <- get result:buffer-address/deref data:offset)
   (reply s:string-address)
+])
+
+(function process-key [
+  (default-space:space-address/names:read-sexp <- next-input)
+  (c:character <- next-input)
+;?   (print-primitive-to-host 1:literal) ;? 2
+  (maybe-cancel-this-sexp c:character abort:continuation)
+;?   (print-primitive-to-host 2:literal) ;? 2
+  ; check for ctrl-d and exit
+  { begin
+    (eof?:boolean <- equal c:character ((ctrl-d literal)))
+    (break-unless eof?:boolean)
+    ; return nil from read-sexp
+    (s:string-address-address <- get-address result:buffer-address/deref data:offset)
+    (s:string-address-address/deref <- copy nil:literal)
+    (reply t:literal)
+  }
+;?   (print-primitive-to-host 3:literal) ;? 2
+  ; check for backspace
+  ;   test: 3<backspace>4<enter>
+  ;   todo: backspace past newline
+  { begin
+    (backspace?:boolean <- equal c:character ((#\backspace literal)))
+    (break-unless backspace?:boolean)
+    ($print-key-to-host c:character)
+    { begin
+      ; delete last character if any
+      (len:integer-address <- get-address result:buffer-address/deref length:offset)
+      (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
+      (break-if zero?:boolean)
+      (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
+      ; switch colors
+      ;   test: "a"<backspace>bc"
+      ;   test: "a\"<backspace>bc"
+      { begin
+        (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:buffer-address)  ; "
+        (break-unless backspaced-over-close-quote?:boolean)
+        (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
+        (continue-from next-key:continuation)
+      }
+      ;   test: (+ 1 (<backspace>2)
+      ;   test: (+ 1 #\(<backspace><backspace><backspace>2)
+      { begin
+        (backspaced-over-open-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\( literal)) escapes:buffer-address)
+        (break-unless backspaced-over-open-paren?:boolean)
+        (open-parens:integer <- subtract open-parens:integer 1:literal)
+        (continue-from next-key:continuation)
+      }
+      ;   test: (+ 1 2)<backspace> 3)
+      ;   test: (+ 1 2#\)<backspace><backspace><backspace> 3)
+      { begin
+        (backspaced-over-close-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\) literal)) escapes:buffer-address)
+        (break-unless backspaced-over-close-paren?:boolean)
+        (open-parens:integer <- add open-parens:integer 1:literal)
+        (continue-from next-key:continuation)
+      }
+    }
+    (continue-from next-key:continuation)
+  }
+;?   (print-primitive-to-host 4:literal) ;? 2
+  ; not a backspace; save character
+;?   (print-primitive-to-host (("append\n" literal))) ;? 2
+  (result:buffer-address <- append result:buffer-address c:character)
+;?   (print-primitive-to-host (("done\n" literal))) ;? 2
+  ; if it's backslash, read, save and print one additional character
+  ;   test: (prn #\()
+;?   (print-primitive-to-host 5:literal) ;? 2
+  { begin
+    (backslash?:boolean <- equal c:character ((#\\ literal)))
+    (break-unless backslash?:boolean)
+    ($print-key-to-host c:character 7:literal/white)
+    (result:buffer-address escapes:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:buffer-address abort:continuation)
+    (continue-from next-key:continuation)
+  }
+;?   (print-primitive-to-host 6:literal) ;? 2
+  ; if it's a semi-colon, parse a comment
+  { begin
+    (comment?:boolean <- equal c:character ((#\; literal)))
+    (break-unless comment?:boolean)
+    ($print-key-to-host c:character 4:literal/fg/blue)
+    (comment-read?:boolean <- slurp-comment result:buffer-address escapes:buffer-address abort:continuation)
+    ; return if comment was read (i.e. consumed a newline)
+    ; test: ;a<backspace><backspace> (shouldn't end command until <enter>)
+    { begin
+      (break-if comment-read?:boolean)
+      (continue-from next-key:continuation)
+    }
+    ; and we're not within parens
+    ;   test: (+ 1 2)  ; comment<enter>
+    ;   test: (+ 1<enter>; abc<enter>2)<enter>
+    ;   test: ; comment<enter>(+ 1 2)<enter>
+    ;   too expensive to build: 3<backspace>; comment<enter>(+ 1 2)<enter>
+    (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
+    (end-sexp?:boolean <- and at-top-level?:boolean not-empty?:boolean)
+    { begin
+      (break-if end-sexp?:boolean)
+      (continue-from next-key:continuation)
+    }
+    (reply nil:literal)
+  }
+;?   (print-primitive-to-host 7:literal) ;? 2
+  ; if it's not whitespace, set not-empty? and continue
+  { begin
+    (space?:boolean <- equal c:character ((#\space literal)))
+    (break-if space?:boolean)
+    (newline?:boolean <- equal c:character ((#\newline literal)))
+    (break-if newline?:boolean)
+    (tab?:boolean <- equal c:character ((tab literal)))
+    (break-if tab?:boolean)
+    (not-empty?:boolean <- copy t:literal)
+    ; fall through
+  }
+;?   (print-primitive-to-host 8:literal) ;? 2
+  ; if it's a quote, parse a string
+  { begin
+    (string-started?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
+    (break-unless string-started?:boolean)
+    ($print-key-to-host c:character 6:literal/fg/cyan)
+    (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
+    (continue-from next-key:continuation)
+  }
+;?   (print-primitive-to-host 9:literal) ;? 2
+  ; color parens by depth, so they're easy to balance
+  ;   test: (+ 1 1)<enter>
+  ;   test: (def foo () (+ 1 (* 2 3)))<enter>
+  { begin
+    (open-paren?:boolean <- equal c:character ((#\( literal)))
+    (break-unless open-paren?:boolean)
+    (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
+    (color-code:integer <- add color-code:integer 1:literal)
+    ($print-key-to-host c:character color-code:integer)
+    (open-parens:integer <- add open-parens:integer 1:literal)
+;?     (print-primitive-to-host open-parens:integer) ;? 2
+    (continue-from next-key:continuation)
+  }
+;?   (print-primitive-to-host 10:literal) ;? 2
+  { begin
+    (close-paren?:boolean <- equal c:character ((#\) literal)))
+    (break-unless close-paren?:boolean)
+    (open-parens:integer <- subtract open-parens:integer 1:literal)
+    (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
+    (color-code:integer <- add color-code:integer 1:literal)
+    ($print-key-to-host c:character color-code:integer)
+;?     (print-primitive-to-host open-parens:integer) ;? 2
+    (continue-from next-key:continuation)
+  }
+;?   (print-primitive-to-host 11:literal) ;? 2
+  ; if it's a newline, decide whether to return
+  ;   test: <enter>34<enter>
+  { begin
+    (newline?:boolean <- equal c:character ((#\newline literal)))
+    (break-unless newline?:boolean)
+    ($print-key-to-host c:character)
+    (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
+    (end-sexp?:boolean <- and at-top-level?:boolean not-empty?:boolean)
+    { begin
+      (break-if end-sexp?:boolean)
+      (continue-from next-key:continuation)
+    }
+    (reply nil:literal)
+  }
+;?   (print-primitive-to-host 12:literal) ;? 2
+  ; if all else fails, print the character without color
+  ($print-key-to-host c:character)
+  ;   todo: error on space outside parens, like python
+  ;   todo: []
+  ;   todo: history on up/down
+  (continue-from next-key:continuation)
 ])
 
 ; list of characters, list of indices of escaped characters, abort continuation
