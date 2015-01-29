@@ -169,10 +169,6 @@
       ($print-key-to-host c:character)
       (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
       (end-sexp?:boolean <- and at-top-level?:boolean not-empty?:boolean)
-      { begin
-        (break-if end-sexp?:boolean)
-        (continue-from next-key:continuation)
-      }
       (jump-if end-sexp?:boolean end:offset)
       (continue-from next-key:continuation)
     }
