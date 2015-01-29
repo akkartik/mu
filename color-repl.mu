@@ -5,8 +5,10 @@
 ; how to color each key right as it is printed
 ; lots of logic devoted to handling backspace correctly
 
+; abort continuation -> string
 (function read-sexp [
   (default-space:space-address <- new space:literal 30:literal)
+  (abort:continuation <- next-input)
   (result:buffer-address <- init-buffer 3:literal)
   (open-parens:integer <- copy 0:literal)  ; for balancing parens and tracking nesting depth
   ; we can change color when backspacing over parens or comments or strings,
@@ -17,7 +19,7 @@
     ;   test: 34<enter>
     next-key
     (c:character <- $wait-for-key-from-host)
-    (check-abort c:character)
+    (maybe-cancel-this-sexp c:character abort:continuation)
     ; check for ctrl-d and exit
     { begin
       (eof?:boolean <- equal c:character ((ctrl-d literal)))
@@ -43,7 +45,7 @@
         { begin
           (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:integer-buffer-address)  ; "
           (break-unless backspaced-over-close-quote?:boolean)
-          (slurp-string result:buffer-address escapes:integer-buffer-address)
+          (slurp-string result:buffer-address escapes:integer-buffer-address abort:continuation)
           (jump next-key:offset)
         }
         ;   test: (+ 1 (<backspace>2)
@@ -75,7 +77,7 @@
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
       ($print-key-to-host c:character 7:literal/white)
-      (result:buffer-address escapes:integer-buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:integer-buffer-address)
+      (result:buffer-address escapes:integer-buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:integer-buffer-address abort:continuation)
       (jump next-key:offset)
     }
     ; if it's a semi-colon, parse a comment
@@ -83,7 +85,7 @@
       (comment?:boolean <- equal c:character ((#\; literal)))
       (break-unless comment?:boolean)
       ($print-key-to-host c:character 4:literal/fg/blue)
-      (comment-read?:boolean <- slurp-comment result:buffer-address escapes:integer-buffer-address)
+      (comment-read?:boolean <- slurp-comment result:buffer-address escapes:integer-buffer-address abort:continuation)
       ; return if comment was read (i.e. consumed a newline)
       ; test: ;a<backspace><backspace> (shouldn't end command until <enter>)
       (jump-unless comment-read?:boolean next-key:offset)
@@ -97,7 +99,7 @@
       (string-started?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
       (break-unless string-started?:boolean)
       ($print-key-to-host c:character 6:literal/fg/cyan)
-      (slurp-string result:buffer-address escapes:integer-buffer-address)
+      (slurp-string result:buffer-address escapes:integer-buffer-address abort:continuation)
       (jump next-key:offset)
     }
     ; color parens by depth, so they're easy to balance
@@ -145,16 +147,18 @@
   (reply s:string-address)
 ])
 
-; list of characters => whether a comment was consumed (can also return by backspacing past comment leader ';')
+; list of characters, list of indices of escaped characters, abort continuation
+; -> whether a comment was consumed (can also return by backspacing past comment leader ';')
 (function slurp-comment [
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
   (escapes:integer-buffer-address <- next-input)
+  (abort:continuation <- next-input)
   ; test: ; abc<enter>
   { begin
     next-key-in-comment
     (c:character <- $wait-for-key-from-host)
-    (check-abort c:character)  ; test: check needs to come before print
+    (maybe-cancel-this-sexp c:character abort:continuation)  ; test: check needs to come before print
     ($print-key-to-host c:character 4:literal/fg/blue)
     ; handle backspace
     ;   test: ; abc<backspace><backspace>def<enter>
@@ -181,11 +185,12 @@
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
   (escapes:integer-buffer-address <- next-input)
+  (abort:continuation <- next-input)
   ; test: "abc"
   { begin
     next-key-in-string
     (c:character <- $wait-for-key-from-host)
-    (check-abort c:character)  ; test: check needs to come before print
+    (maybe-cancel-this-sexp c:character abort:continuation)  ; test: check needs to come before print
     ($print-key-to-host c:character 6:literal/fg/cyan)
     ; handle backspace
     ;   test: "abc<backspace>d"
@@ -219,12 +224,14 @@
   end
 ])
 
+; buffer to add character to, color to print it in to the screen, abort continuation
 (function slurp-escaped-character [
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
   (color-code:integer <- next-input)
+  (abort:continuation <- next-input)
   (c:character <- $wait-for-key-from-host)
-  (check-abort c:character)  ; test: check needs to come before print
+  (maybe-cancel-this-sexp c:character abort:continuation)  ; test: check needs to come before print
   ($print-key-to-host c:character color-code:integer)
   (escapes:integer-buffer-address <- next-input)
   (len:integer-address <- get-address in:buffer-address/deref length:offset)
@@ -289,16 +296,17 @@
   (reply result:character)
 ])
 
-(function check-abort [
+(function maybe-cancel-this-sexp [
   ; check for ctrl-g and abort
   (default-space:space-address <- new space:literal 30:literal)
   (c:character <- next-input)
+  (abort:continuation <- next-input)
   { begin
     (interrupt?:boolean <- equal c:character ((ctrl-g literal)))
     (break-unless interrupt?:boolean)
     ($print-key-to-host (("^G" literal)))
     ($print-key-to-host ((#\newline literal)))
-    (abort-to main:fn)
+    (continue-from abort:continuation)
   }
 ])
 
@@ -307,8 +315,9 @@
   (cursor-mode)
   (print-primitive-to-host (("connected to anarki! type in an expression, then hit enter. ctrl-d exits. ctrl-g clears the current expression." literal)))
   (print-character nil:literal/terminal ((#\newline literal)))
+  (abort:continuation <- current-continuation)
   { begin
-    (s:string-address <- read-sexp)
+    (s:string-address <- read-sexp abort:continuation)
     (break-unless s:string-address)
     (retro-mode)  ; print errors cleanly
       (t:string-address <- $eval s:string-address)
