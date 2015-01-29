@@ -158,7 +158,8 @@
               string-address-array-address (obj size 1  address t  elem '(string-address-array))
               character (obj size 1)  ; int32 like a Go rune
               character-address (obj size 1  address t  elem '(character))
-              ; a buffer makes it easy to append to a string
+              ; a buffer makes it easy to append to a string/array
+              ; todo: make this generic
               buffer (obj size 2  and-record t  elems '((integer) (string-address))  fields '(length data))
               buffer-address (obj size 1  address t  elem '(buffer))
               ; isolating function calls
@@ -171,8 +172,6 @@
               integer-array-address-address (obj size 1  address t  elem '(integer-array-address))
               integer-address (obj size 1  address t  elem '(integer))  ; pointer to int
               integer-address-address (obj size 1  address t  elem '(integer-address))
-              integer-buffer (obj size 2  and-record t  elems '((integer) (integer-array-address))  fields '(length data))
-              integer-buffer-address (obj size 1  address t  elem '(integer-buffer))
               ; and-records consist of a multiple fields of different types
               integer-boolean-pair (obj size 2  and-record t  elems '((integer) (boolean))  fields '(int bool))
               integer-boolean-pair-address (obj size 1  address t  elem '(integer-boolean-pair))
@@ -2332,17 +2331,6 @@
   (capacity:integer <- next-input)
   (s:string-address-address/deref <- new string:literal capacity:integer)
   (reply result:buffer-address)
-)
-
-(init-fn init-integer-buffer
-  (default-space:space-address <- new space:literal 30:literal)
-  (result:integer-buffer-address <- new integer-buffer:literal)
-  (len:integer-address <- get-address result:buffer-address/deref length:offset)
-  (len:integer-address/deref <- copy 0:literal)
-  (s:integer-array-address-address <- get-address result:integer-buffer-address/deref data:offset)
-  (capacity:integer <- next-input)
-  (s:integer-array-address-address/deref <- new integer-array:literal capacity:integer)
-  (reply result:integer-buffer-address)
 )
 
 (init-fn grow-buffer
