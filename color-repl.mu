@@ -18,6 +18,12 @@
     next-key
     (c:character <- $wait-for-key-from-host)
     (check-abort c:character)
+    ; check for ctrl-d and exit
+    { begin
+      (eof?:boolean <- equal c:character ((ctrl-d literal)))
+      (break-unless eof?:boolean)
+      (reply nil:literal)
+    }
     ; check for backspace
     ;   test: 3<backspace>4<enter>
     ;   todo: backspace past newline
@@ -302,6 +308,7 @@
   { begin
     (print-primitive-to-host (("anarki> " literal)))
     (s:string-address <- read-sexp)
+    (break-unless s:string-address)
     (retro-mode)  ; print errors cleanly
       (t:string-address <- $eval s:string-address)
     (cursor-mode)
