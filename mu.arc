@@ -1257,10 +1257,8 @@
 ; and replace-names-with-location.
 (def convert-names (instrs (o name))
 ;?   (tr "convert-names " instrs)
-  (let location (table)
-    (= location*.name (assign-names-to-location instrs name))
-;?     (tr "save names for function @name: @(tostring:pr location*.name)")
-    )
+  (= location*.name (assign-names-to-location instrs name))
+;?   (tr "save names for function @name: @(tostring:pr location*.name)") ;? 1
   (replace-names-with-location instrs name))
 
 (def assign-names-to-location (instrs name)

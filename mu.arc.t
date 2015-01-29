@@ -2218,7 +2218,7 @@
 ;? (prn memory*)
 (when (or (~is memory*.2 4)
           (~is memory*.3 5))
-  (prn "F - multiple calls to a function can share locals"))
+  (prn "F - closures using /space metadata"))
 ;? (quit)
 
 (reset)
@@ -2249,7 +2249,7 @@
 ;? (prn memory*)
 (when (or (~is memory*.2 4)
           (~is memory*.3 5))
-  (prn "F - multiple calls to a function can share locals"))
+  (prn "F - /names to name variables in outer spaces"))
 ;? (quit)
 
 )  ; section 20
