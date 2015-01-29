@@ -183,7 +183,6 @@
     ;   todo: error on space outside parens, like python
     ;   todo: []
     ;   todo: history on up/down
-    ;   todo: don't return if there's no non-whitespace in result
     (continue-from next-key:continuation)
   }
   (s:string-address <- get result:buffer-address/deref data:offset)
