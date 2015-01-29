@@ -2530,8 +2530,8 @@
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
   (when ($.graphics-open?) ($.close-viewport Viewport) ($.close-graphics))
-  (pr "\nmemory: ")
-  (write int-canon.memory*)
+;?   (pr "\nmemory: ")
+;?   (write int-canon.memory*)
   (prn)
   (each routine completed-routines*
     (awhen rep.routine!error
