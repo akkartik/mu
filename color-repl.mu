@@ -14,6 +14,8 @@
   ; we can change color when backspacing over parens or comments or strings,
   ; but we need to know that they aren't escaped
   (escapes:integer-buffer-address <- init-integer-buffer 5:literal)
+  ; to not return after just a comment
+  (not-empty?:boolean <- copy nil:literal)
   { begin
     ; repeatedly read keys from the keyboard
     ;   test: 34<enter>
@@ -92,9 +94,23 @@
       ; and we're not within parens
       ;   test: (+ 1 2)  ; comment<enter>
       ;   test: (+ 1<enter>; abc<enter>2)<enter>
-      (end-sexp?:boolean <- lesser-or-equal open-parens:integer 0:literal)
+      ;   test: ; comment<enter>(+ 1 2)<enter>
+      ;   too expensive to build: 3<backspace>; comment<enter>(+ 1 2)<enter>
+      (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
+      (end-sexp?:boolean <- and at-top-level?:boolean not-empty?:boolean)
       (jump-unless end-sexp?:boolean next-key:offset)
       (jump end:offset)
+    }
+    ; if it's not whitespace, set not-empty? and continue
+    { begin
+      (space?:boolean <- equal c:character ((#\space literal)))
+      (break-if space?:boolean)
+      (newline?:boolean <- equal c:character ((#\newline literal)))
+      (break-if newline?:boolean)
+      (tab?:boolean <- equal c:character ((tab literal)))
+      (break-if tab?:boolean)
+      (not-empty?:boolean <- copy t:literal)
+      ; fall through
     }
     ; if it's a quote, parse a string
     { begin
@@ -128,11 +144,14 @@
       (jump next-key:offset)
     }
     ; if it's a newline, decide whether to return
+    ;   test: <enter>34<enter>
     { begin
       (newline?:boolean <- equal c:character ((#\newline literal)))
       (break-unless newline?:boolean)
       ($print-key-to-host c:character)
-      (end-sexp?:boolean <- lesser-or-equal open-parens:integer 0:literal)
+      (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
+      (end-sexp?:boolean <- and at-top-level?:boolean not-empty?:boolean)
+      (jump-unless end-sexp?:boolean next-key:offset)
       (jump-if end-sexp?:boolean end:offset)
       (jump next-key:offset)
     }
