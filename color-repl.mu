@@ -1,9 +1,9 @@
-; a simple line editor for reading lisp expressions
+; a simple line editor for reading lisp expressions.
 ; colors strings and comments. nested parens get different colors.
 ;
 ; needs to do its own raw keyboard/screen management since we need to decide
-; how to color each key right as it is printed
-; lots of logic devoted to handling backspace correctly
+; how to color each key right as it is printed.
+; lots of logic devoted to handling backspace correctly.
 
 ; abort continuation -> string
 (function read-expression [
