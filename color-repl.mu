@@ -87,8 +87,22 @@
     }
     (continue-from next-key:continuation)
   }
+  ; if it's a newline, decide whether to return
+  ;   test: <enter>34<enter>
+  { begin
+    (newline?:boolean <- equal c:character ((#\newline literal)))
+    (break-unless newline?:boolean)
+    ($print-key-to-host c:character)
+    (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
+    (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
+    { begin
+      (break-if end-expression?:boolean)
+      (continue-from next-key:continuation)
+    }
+    (reply nil:literal)  ; wait for more keys
+  }
 ;?   (print-primitive-to-host 4:literal) ;? 2
-  ; not a backspace; save character
+  ; printable character; save
 ;?   (print-primitive-to-host (("append\n" literal))) ;? 2
   (result:buffer-address <- append result:buffer-address c:character)
 ;?   (print-primitive-to-host (("done\n" literal))) ;? 2
@@ -175,21 +189,6 @@
     (continue-from next-key:continuation)
   }
 ;?   (print-primitive-to-host 11:literal) ;? 2
-  ; if it's a newline, decide whether to return
-  ;   test: <enter>34<enter>
-  { begin
-    (newline?:boolean <- equal c:character ((#\newline literal)))
-    (break-unless newline?:boolean)
-    ($print-key-to-host c:character)
-    (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-    (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
-    { begin
-      (break-if end-expression?:boolean)
-      (continue-from next-key:continuation)
-    }
-    (reply nil:literal)  ; wait for more keys
-  }
-;?   (print-primitive-to-host 12:literal) ;? 2
   ; if all else fails, print the character without color
   ($print-key-to-host c:character)
   ;   todo: error on space outside parens, like python
