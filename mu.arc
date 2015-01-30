@@ -160,6 +160,8 @@
               character-address (obj size 1  address t  elem '(character))
               ; a buffer makes it easy to append to a string/array
               ; todo: make this generic
+              ; data isn't a 'real' array: its length is stored outside it,
+              ; so for example, 'print-string' won't work on it.
               buffer (obj size 2  and-record t  elems '((integer) (string-address))  fields '(length data))
               buffer-address (obj size 1  address t  elem '(buffer))
               ; isolating function calls
@@ -447,6 +449,8 @@
   (cdr operand.0))
 
 (def literal? (operand)
+  (unless (acons ty.operand)
+    (err "no type in operand @operand"))
   (in ty.operand.0 'literal 'offset 'fn))
 
 (def typeinfo (operand)
@@ -2392,6 +2396,35 @@
   (reply result:boolean)
 )
 
+(init-fn to-array  ; from buffer
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:buffer-address <- next-input)
+  (len:integer <- get in:buffer-address/deref length:offset)
+  (s:string-address <- get in:buffer-address/deref data:offset)
+  { begin
+    ; test: ctrl-d -> s is nil -> to-array returns nil -> read-expression returns t -> exit repl
+    (break-if s:string-address)
+    (reply nil:literal)
+  }
+  ; we can't just return s because it is usually the wrong length
+  (result:string-address <- new string:literal len:integer)
+  (i:integer <- copy 0:literal)
+  { begin
+    (done?:boolean <- greater-or-equal i:integer len:integer)
+    (break-if done?:boolean)
+    (src:byte <- index s:string-address/deref i:integer)
+;?     (foo:integer <- character-to-integer src:byte) ;? 1
+;?     (print-primitive-to-host (("a: " literal))) ;? 1
+;?     (print-primitive-to-host foo:integer) ;? 1
+;?     (print-primitive-to-host ((#\newline literal))) ;? 1
+    (dest:byte-address <- index-address result:string-address/deref i:integer)
+    (dest:byte-address/deref <- copy src:byte)
+    (i:integer <- add i:integer 1:literal)
+    (loop)
+  }
+  (reply result:string-address)
+)
+
 (init-fn append
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
@@ -2546,11 +2579,11 @@
 ;? (new-trace "main") ;? 4
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
-;?   (= dump-trace* (obj whitelist '("run")))
+;?   (= dump-trace* (obj whitelist '("run"))) ;? 1
 ;?   (= dump-trace* (obj whitelist '("schedule")))
 ;?   (= dump-trace* (obj whitelist '("run" "continuation"))) ;? 1
 ;?   (= dump-trace* (obj whitelist '("cn0" "cn1")))
-;?   (set dump-trace*) ;? 1
+;?   (set dump-trace*) ;? 2
 ;?   (freeze function*)
 ;?   (prn function*!factorial)
   (run 'main)
