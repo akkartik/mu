@@ -7,7 +7,7 @@
 
 ; abort continuation -> string
 (function read-expression [
-  (default-space:space-address <- new space:literal 30:literal)
+  (default-space:space-address <- new space:literal 60:literal)
   (abort:continuation <- next-input)
   (history:buffer-address <- next-input)  ; buffer of strings
   (result:buffer-address <- init-buffer 10:literal)  ; string to maybe add to
@@ -23,6 +23,14 @@
     (next-key:continuation <- current-continuation)
     (c:character <- $wait-for-key-from-host)
     (done?:boolean <- process-key default-space:space-address c:character)
+  }
+  ; trim trailing newline in result (easier history management below)
+  { begin
+    (l:character <- last result:buffer-address)
+    (trailing-newline?:boolean <- equal l:character ((#\newline literal)))
+    (break-unless trailing-newline?:boolean)
+    (len:integer-address <- get-address result:buffer-address/deref length:offset)
+    (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
   }
   ; test: 3<enter> => size of s is 2
   (s:string-address <- to-array result:buffer-address)
