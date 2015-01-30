@@ -10,7 +10,7 @@
   (default-space:space-address <- new space:literal 30:literal)
   (abort:continuation <- next-input)
   (history:buffer-address <- next-input)  ; buffer of strings
-  (result:buffer-address <- init-buffer 3:literal)  ; string to maybe add to
+  (result:buffer-address <- init-buffer 10:literal)  ; string to maybe add to
   (open-parens:integer <- copy 0:literal)  ; for balancing parens and tracking nesting depth
   ; we can change color when backspacing over parens or comments or strings,
   ; but we need to know that they aren't escaped
@@ -24,7 +24,8 @@
     (c:character <- $wait-for-key-from-host)
     (done?:boolean <- process-key default-space:space-address c:character)
   }
-  (s:string-address <- get result:buffer-address/deref data:offset)
+  ; test: 3<enter> => size of s is 2
+  (s:string-address <- to-array result:buffer-address)
   (reply s:string-address)
 ])
 
@@ -370,6 +371,9 @@
   { begin
     (s:string-address <- read-expression abort:continuation history:buffer-address)
     (break-unless s:string-address)
+;?     (x:integer <- length s:string-address/deref) ;? 1
+;?     (print-primitive-to-host x:integer) ;? 1
+;?     (print-primitive-to-host ((#\newline literal))) ;? 1
     (history:buffer-address <- append history:buffer-address s:string-address)
     (len:integer <- get history:buffer-address/deref length:offset)
     (print-primitive-to-host len:integer)
