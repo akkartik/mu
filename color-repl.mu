@@ -382,9 +382,9 @@
 ;?     (print-primitive-to-host x:integer) ;? 1
 ;?     (print-primitive-to-host ((#\newline literal))) ;? 1
     (history:buffer-address <- append history:buffer-address s:string-address)
-    (len:integer <- get history:buffer-address/deref length:offset)
-    (print-primitive-to-host len:integer)
-    (print-primitive-to-host ((#\newline literal)))
+;?     (len:integer <- get history:buffer-address/deref length:offset) ;? 1
+;?     (print-primitive-to-host len:integer) ;? 1
+;?     (print-primitive-to-host ((#\newline literal))) ;? 1
     (retro-mode)  ; print errors cleanly
       (t:string-address <- $eval s:string-address)
     (cursor-mode)
