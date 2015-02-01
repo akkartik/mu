@@ -2408,6 +2408,23 @@
   (reply result:boolean)
 )
 
+(init-fn buffer-index
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:buffer-address <- next-input)
+  (idx:integer <- next-input)
+  { begin
+    (len:integer <- get in:buffer-address/deref length:offset)
+    (not-too-high?:boolean <- less-than idx:integer len:integer)
+    (not-too-low?:boolean <- greater-or-equal idx:integer 0:literal)
+    (in-bounds?:boolean <- and not-too-low?:boolean not-too-high?:boolean)
+    (break-if in-bounds?:boolean)
+    (assert nil:literal (("buffer-index out of bounds" literal)))
+  }
+  (s:string-address <- get in:buffer-address/deref data:offset)
+  (result:character <- index s:string-address/deref idx:integer)
+  (reply result:character)
+)
+
 (init-fn to-array  ; from buffer
   (default-space:space-address <- new space:literal 30:literal)
   (in:buffer-address <- next-input)
@@ -2588,14 +2605,13 @@
 
 ;; load all provided files and start at 'main'
 (reset)
-;? (new-trace "main") ;? 4
 (awhen (pos "--" argv)
   (map add-code:readfile (cut argv (+ it 1)))
 ;?   (= dump-trace* (obj whitelist '("run"))) ;? 1
 ;?   (= dump-trace* (obj whitelist '("schedule")))
 ;?   (= dump-trace* (obj whitelist '("run" "continuation"))) ;? 1
 ;?   (= dump-trace* (obj whitelist '("cn0" "cn1")))
-;?   (set dump-trace*) ;? 2
+;?   (set dump-trace*) ;? 4
 ;?   (freeze function*)
 ;?   (prn function*!factorial)
   (run 'main)
