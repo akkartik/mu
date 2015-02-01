@@ -41,19 +41,19 @@
 ])
 
 (function process-key [  ; return t to signal end of expression
-  ; must always be called from within 'read-expression'
-  (default-space:space-address/names:read-expression <- next-input)
+  (default-space:space-address <- new space:literal 60:literal)
+  (0:space-address/names:read-expression <- next-input)
   (k:keyboard-address <- next-input)
   (screen:terminal-address <- next-input)
   (c:character <- wait-for-key k:keyboard-address silent:literal/terminal)
-  (len:integer-address <- get-address result:buffer-address/deref length:offset)
-  (maybe-cancel-this-expression c:character abort:continuation)
+  (len:integer-address <- get-address result:buffer-address/space:1/space:1/deref length:offset)
+  (maybe-cancel-this-expression c:character abort:continuation/space:1)
   ; check for ctrl-d and exit
   { begin
     (eof?:boolean <- equal c:character ((ctrl-d literal)))
     (break-unless eof?:boolean)
     ; return empty expression
-    (s:string-address-address <- get-address result:buffer-address/deref data:offset)
+    (s:string-address-address <- get-address result:buffer-address/space:1/deref data:offset)
     (s:string-address-address/deref <- copy nil:literal)
     (reply t:literal)
   }
@@ -73,25 +73,25 @@
       ;   test: "a"<backspace>bc"
       ;   test: "a\"<backspace>bc"
       { begin
-        (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:buffer-address)  ; "
+        (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address/space:1 ((#\" literal)) escapes:buffer-address/space:1)  ; "
         (break-unless backspaced-over-close-quote?:boolean)
-        (slurp-string result:buffer-address escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
+        (slurp-string result:buffer-address/space:1 escapes:buffer-address/space:1 abort:continuation/space:1 k:keyboard-address screen:terminal-address)
         (reply nil:literal)
       }
       ;   test: (+ 1 (<backspace>2)
       ;   test: (+ 1 #\(<backspace><backspace><backspace>2)
       { begin
-        (backspaced-over-open-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\( literal)) escapes:buffer-address)
+        (backspaced-over-open-paren?:boolean <- backspaced-over-unescaped? result:buffer-address/space:1 ((#\( literal)) escapes:buffer-address/space:1)
         (break-unless backspaced-over-open-paren?:boolean)
-        (open-parens:integer <- subtract open-parens:integer 1:literal)
+        (open-parens:integer/space:1 <- subtract open-parens:integer/space:1 1:literal)
         (reply nil:literal)
       }
       ;   test: (+ 1 2)<backspace> 3)
       ;   test: (+ 1 2#\)<backspace><backspace><backspace> 3)
       { begin
-        (backspaced-over-close-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\) literal)) escapes:buffer-address)
+        (backspaced-over-close-paren?:boolean <- backspaced-over-unescaped? result:buffer-address/space:1 ((#\) literal)) escapes:buffer-address/space:1)
         (break-unless backspaced-over-close-paren?:boolean)
-        (open-parens:integer <- add open-parens:integer 1:literal)
+        (open-parens:integer/space:1 <- add open-parens:integer/space:1 1:literal)
         (reply nil:literal)
       }
     }
@@ -104,14 +104,14 @@
     ; if history exists
     ;   test: <up><enter>  up without history has no effect
     { begin
-      (empty-history?:boolean <- lesser-or-equal history-length:integer 0:literal)
+      (empty-history?:boolean <- lesser-or-equal history-length:integer/space:1 0:literal)
       (break-unless empty-history?:boolean)
       (reply nil:literal)
     }
     ; if pointer not already at start of history
     ;   test: 34<enter><up><up><enter>  up past history has no effect
     { begin
-      (at-history-start?:boolean <- lesser-or-equal current-history-index:integer 0:literal)
+      (at-history-start?:boolean <- lesser-or-equal current-history-index:integer/space:1 0:literal)
       (break-unless at-history-start?:boolean)
       (reply nil:literal)
     }
@@ -130,17 +130,17 @@
     }
     ; then clear result and all other state accumulated for the existing expression
     (len:integer-address/deref <- copy 0:literal)
-    (open-parens:integer <- copy 0:literal)
-    (escapes:buffer-address <- init-buffer 5:literal)
-    (not-empty?:boolean <- copy nil:literal)
+    (open-parens:integer/space:1 <- copy 0:literal)
+    (escapes:buffer-address/space:1 <- init-buffer 5:literal)
+    (not-empty?:boolean/space:1 <- copy nil:literal)
     ; save old keyboard
     ; beware: recursive calls to process-key below can clobber locals used
     ; outside the up/down cases. So we need to save copies that are only used
     ; in this part of the function. This is all a giant hack.
     (old-keyboard:keyboard-address <- copy k:keyboard-address)
     ; identify the history item
-    (current-history-index:integer <- subtract current-history-index:integer 1:literal)
-    (curr-history:string-address <- buffer-index history:buffer-address current-history-index:integer)
+    (current-history-index:integer/space:1 <- subtract current-history-index:integer/space:1 1:literal)
+    (curr-history:string-address <- buffer-index history:buffer-address/space:1 current-history-index:integer/space:1)
     (curr-history-len:integer <- length curr-history:string-address/deref)
     ; and retype it into the current expression
     (hist:keyboard-address <- init-keyboard curr-history:string-address)
@@ -151,7 +151,7 @@
 ;?       ($print (("\n" literal))) ;? 1
       (done?:boolean <- greater-or-equal hist-index:integer-address/deref curr-history-len:integer)
       (break-if done?:boolean)
-      (sub-return:boolean <- process-key default-space:space-address hist:keyboard-address screen:terminal-address)
+      (sub-return:boolean <- process-key 0:space-address hist:keyboard-address screen:terminal-address)
       (assert-false sub-return:boolean (("recursive call to process keys thought it was done" literal)))
       (loop)
     }
@@ -166,13 +166,13 @@
     (newline?:boolean <- equal c:character ((#\newline literal)))
     (break-unless newline?:boolean)
     (print-character screen:terminal-address c:character/newline)
-    (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-    (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
+    (at-top-level?:boolean <- lesser-or-equal open-parens:integer/space:1 0:literal)
+    (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean/space:1)
     (reply end-expression?:boolean)
   }
   ; printable character; save
 ;?   ($print (("append\n" literal))) ;? 2
-  (result:buffer-address <- append result:buffer-address c:character)
+  (result:buffer-address/space:1 <- append result:buffer-address/space:1 c:character)
 ;?   ($print (("done\n" literal))) ;? 2
   ; if it's backslash, read, save and print one additional character
   ;   test: (prn #\()
@@ -180,7 +180,7 @@
     (backslash?:boolean <- equal c:character ((#\\ literal)))
     (break-unless backslash?:boolean)
     (print-character screen:terminal-address c:character/backslash 7:literal/white)
-    (result:buffer-address escapes:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
+    (result:buffer-address/space:1 escapes:buffer-address/space:1 <- slurp-escaped-character result:buffer-address/space:1 7:literal/white escapes:buffer-address/space:1 abort:continuation/space:1 k:keyboard-address screen:terminal-address)
     (reply nil:literal)
   }
   ; if it's a semi-colon, parse a comment
@@ -188,7 +188,7 @@
     (comment?:boolean <- equal c:character ((#\; literal)))
     (break-unless comment?:boolean)
     (print-character screen:terminal-address c:character/semi-colon 4:literal/fg/blue)
-    (comment-read?:boolean <- slurp-comment result:buffer-address escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
+    (comment-read?:boolean <- slurp-comment result:buffer-address/space:1 escapes:buffer-address/space:1 abort:continuation/space:1 k:keyboard-address screen:terminal-address)
     ; return if comment was read (i.e. consumed a newline)
     ; test: ;a<backspace><backspace> (shouldn't end command until <enter>)
     { begin
@@ -200,8 +200,8 @@
     ;   test: (+ 1<enter>; abc<enter>2)<enter>
     ;   test: ; comment<enter>(+ 1 2)<enter>
     ;   too expensive to build: 3<backspace>; comment<enter>(+ 1 2)<enter>
-    (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
-    (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
+    (at-top-level?:boolean <- lesser-or-equal open-parens:integer/space:1 0:literal)
+    (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean/space:1)
     (reply end-expression?:boolean)
   }
   ; if it's not whitespace, set not-empty? and continue
@@ -212,7 +212,7 @@
     (break-if newline?:boolean)
     (tab?:boolean <- equal c:character ((tab literal)))
     (break-if tab?:boolean)
-    (not-empty?:boolean <- copy t:literal)
+    (not-empty?:boolean/space:1 <- copy t:literal)
     ; fall through
   }
   ; if it's a quote, parse a string
@@ -220,7 +220,7 @@
     (string-started?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
     (break-unless string-started?:boolean)
     (print-character screen:terminal-address c:character/open-quote 6:literal/fg/cyan)
-    (slurp-string result:buffer-address escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
+    (slurp-string result:buffer-address/space:1 escapes:buffer-address/space:1 abort:continuation/space:1 k:keyboard-address screen:terminal-address)
     (reply nil:literal)
   }
   ; color parens by depth, so they're easy to balance
@@ -229,21 +229,21 @@
   { begin
     (open-paren?:boolean <- equal c:character ((#\( literal)))
     (break-unless open-paren?:boolean)
-    (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
+    (_ color-code:integer <- divide-with-remainder open-parens:integer/space:1 3:literal)  ; 3 distinct colors for parens
     (color-code:integer <- add color-code:integer 1:literal)
     (print-character screen:terminal-address c:character/open-paren color-code:integer)
-    (open-parens:integer <- add open-parens:integer 1:literal)
-;?     ($print open-parens:integer) ;? 2
+    (open-parens:integer/space:1 <- add open-parens:integer/space:1 1:literal)
+;?     ($print open-parens:integer/space:1) ;? 2
     (reply nil:literal)
   }
   { begin
     (close-paren?:boolean <- equal c:character ((#\) literal)))
     (break-unless close-paren?:boolean)
-    (open-parens:integer <- subtract open-parens:integer 1:literal)
-    (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
+    (open-parens:integer/space:1 <- subtract open-parens:integer/space:1 1:literal)
+    (_ color-code:integer <- divide-with-remainder open-parens:integer/space:1 3:literal)  ; 3 distinct colors for parens
     (color-code:integer <- add color-code:integer 1:literal)
     (print-character screen:terminal-address c:character/close-paren color-code:integer)
-;?     ($print open-parens:integer) ;? 2
+;?     ($print open-parens:integer/space:1) ;? 2
     (reply nil:literal)
   }
   ; if all else fails, print the character without color
