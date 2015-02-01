@@ -23,6 +23,8 @@
     (next-key:continuation <- current-continuation)
     (c:character <- $wait-for-key-from-host)
     (done?:boolean <- process-key default-space:space-address c:character)
+    (break-if done?:boolean)
+    (loop)
   }
   ; trim trailing newline in result (easier history management below)
   { begin
@@ -37,7 +39,7 @@
   (reply s:string-address)
 ])
 
-(function process-key [
+(function process-key [  ; return t to signal end of expression
   ; must always be called from within 'read-expression'
   (default-space:space-address/names:read-expression <- next-input)
   (c:character <- next-input)
@@ -74,7 +76,7 @@
         (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:buffer-address)  ; "
         (break-unless backspaced-over-close-quote?:boolean)
         (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
-        (continue-from next-key:continuation)
+        (reply nil:literal)
       }
       ;   test: (+ 1 (<backspace>2)
       ;   test: (+ 1 #\(<backspace><backspace><backspace>2)
@@ -82,7 +84,7 @@
         (backspaced-over-open-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\( literal)) escapes:buffer-address)
         (break-unless backspaced-over-open-paren?:boolean)
         (open-parens:integer <- subtract open-parens:integer 1:literal)
-        (continue-from next-key:continuation)
+        (reply nil:literal)
       }
       ;   test: (+ 1 2)<backspace> 3)
       ;   test: (+ 1 2#\)<backspace><backspace><backspace> 3)
@@ -90,10 +92,10 @@
         (backspaced-over-close-paren?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\) literal)) escapes:buffer-address)
         (break-unless backspaced-over-close-paren?:boolean)
         (open-parens:integer <- add open-parens:integer 1:literal)
-        (continue-from next-key:continuation)
+        (reply nil:literal)
       }
     }
-    (continue-from next-key:continuation)
+    (reply nil:literal)
   }
   ; if it's a newline, decide whether to return
   ;   test: <enter>34<enter>
@@ -103,11 +105,7 @@
     ($print-key-to-host c:character)
     (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
     (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
-    { begin
-      (break-if end-expression?:boolean)
-      (continue-from next-key:continuation)
-    }
-    (reply nil:literal)  ; wait for more keys
+    (reply end-expression?:boolean)
   }
 ;?   (print-primitive-to-host 4:literal) ;? 2
   ; printable character; save
@@ -122,7 +120,7 @@
     (break-unless backslash?:boolean)
     ($print-key-to-host c:character 7:literal/white)
     (result:buffer-address escapes:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:buffer-address abort:continuation)
-    (continue-from next-key:continuation)
+    (reply nil:literal)
   }
 ;?   (print-primitive-to-host 6:literal) ;? 2
   ; if it's a semi-colon, parse a comment
@@ -135,7 +133,7 @@
     ; test: ;a<backspace><backspace> (shouldn't end command until <enter>)
     { begin
       (break-if comment-read?:boolean)
-      (continue-from next-key:continuation)
+      (reply nil:literal)
     }
     ; and we're not within parens
     ;   test: (+ 1 2)  ; comment<enter>
@@ -144,11 +142,7 @@
     ;   too expensive to build: 3<backspace>; comment<enter>(+ 1 2)<enter>
     (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
     (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
-    { begin
-      (break-if end-expression?:boolean)
-      (continue-from next-key:continuation)
-    }
-    (reply nil:literal)  ; wait for more keys
+    (reply end-expression?:boolean)
   }
 ;?   (print-primitive-to-host 7:literal) ;? 2
   ; if it's not whitespace, set not-empty? and continue
@@ -169,7 +163,7 @@
     (break-unless string-started?:boolean)
     ($print-key-to-host c:character 6:literal/fg/cyan)
     (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
-    (continue-from next-key:continuation)
+    (reply nil:literal)
   }
 ;?   (print-primitive-to-host 9:literal) ;? 2
   ; color parens by depth, so they're easy to balance
@@ -183,7 +177,7 @@
     ($print-key-to-host c:character color-code:integer)
     (open-parens:integer <- add open-parens:integer 1:literal)
 ;?     (print-primitive-to-host open-parens:integer) ;? 2
-    (continue-from next-key:continuation)
+    (reply nil:literal)
   }
 ;?   (print-primitive-to-host 10:literal) ;? 2
   { begin
@@ -194,7 +188,7 @@
     (color-code:integer <- add color-code:integer 1:literal)
     ($print-key-to-host c:character color-code:integer)
 ;?     (print-primitive-to-host open-parens:integer) ;? 2
-    (continue-from next-key:continuation)
+    (reply nil:literal)
   }
 ;?   (print-primitive-to-host 11:literal) ;? 2
   ; if all else fails, print the character without color
@@ -202,7 +196,7 @@
   ;   todo: error on space outside parens, like python
   ;   todo: []
   ;   todo: history on up/down
-  (continue-from next-key:continuation)
+  (reply nil:literal)
 ])
 
 ; list of characters, list of indices of escaped characters, abort continuation
