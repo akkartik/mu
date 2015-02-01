@@ -10,6 +10,8 @@
   (default-space:space-address <- new space:literal 60:literal)
   (abort:continuation <- next-input)
   (history:buffer-address <- next-input)  ; buffer of strings
+  (history-length:integer <- get history:buffer-address/deref length:offset)
+  (current-history-index:integer <- copy history-length:integer)
   (result:buffer-address <- init-buffer 10:literal)  ; string to maybe add to
   (open-parens:integer <- copy 0:literal)  ; for balancing parens and tracking nesting depth
   ; we can change color when backspacing over parens or comments or strings,
@@ -20,7 +22,6 @@
   { begin
     ; repeatedly read keys from the keyboard
     ;   test: 34<enter>
-    (next-key:continuation <- current-continuation)
     (c:character <- $wait-for-key-from-host)
     (done?:boolean <- process-key default-space:space-address c:character)
     (break-if done?:boolean)
@@ -43,6 +44,7 @@
   ; must always be called from within 'read-expression'
   (default-space:space-address/names:read-expression <- next-input)
   (c:character <- next-input)
+  (len:integer-address <- get-address result:buffer-address/deref length:offset)
 ;?   (print-primitive-to-host 1:literal) ;? 2
   (maybe-cancel-this-expression c:character abort:continuation)
 ;?   (print-primitive-to-host 2:literal) ;? 2
@@ -65,7 +67,6 @@
     ($print-key-to-host c:character)
     { begin
       ; delete last character if any
-      (len:integer-address <- get-address result:buffer-address/deref length:offset)
       (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
       (break-if zero?:boolean)
       (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
@@ -95,6 +96,85 @@
         (reply nil:literal)
       }
     }
+    (reply nil:literal)
+  }
+  ; up arrow; switch to previous item in history
+  { begin
+    (up-arrow?:boolean <- equal c:character ((up literal)))
+    (break-unless up-arrow?:boolean)
+    ; if history exists
+    ;   test: <up><enter>  up without history has no effect
+    { begin
+      (empty-history?:boolean <- lesser-or-equal history-length:integer 0:literal)
+      (break-unless empty-history?:boolean)
+      (reply nil:literal)
+    }
+    ; if pointer not already at start of history
+    ;   test: 34<enter><up><up><enter>  up past history has no effect
+    { begin
+      (at-history-start?:boolean <- lesser-or-equal current-history-index:integer 0:literal)
+      (break-unless at-history-start?:boolean)
+      (reply nil:literal)
+    }
+    ; then update history index, copy into current buffer
+    ;   test: 34<enter><up><enter>  up restores previous command
+    ;   test todo: 34<enter>23<up>34<down><enter>  up doesn't mess up typing on current line
+    ;   test todo: 34<enter><up>5<enter><up><up>  commands don't modify history
+    ;   test todo: multi-line expressions
+    ; then clear line
+    { begin
+      (done?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
+      (break-if done?:boolean)
+      ($print-key-to-host ((#\backspace literal)))
+      (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
+      (loop)
+    }
+    ; then clear result and all other state accumulated for the existing expression
+    (len:integer-address/deref <- copy 0:literal)
+    (open-parens:integer <- copy 0:literal)
+    (escapes:buffer-address <- init-buffer 5:literal)
+    (not-empty?:boolean <- copy nil:literal)
+    ; identify the history item
+    (current-history-index:integer <- subtract current-history-index:integer 1:literal)
+    (curr-history:string-address <- buffer-index history:buffer-address current-history-index:integer)
+    (curr-history-len:integer <- length curr-history:string-address/deref)
+;?     (print-primitive-to-host curr-history-len:integer) ;? 2
+;?     (cursor-to-next-line) ;? 1
+;?     ($quit) ;? 1
+;?     ($dump-trace "before-retype") ;? 1
+    ; and retype it into the current expression
+    (i:integer <- copy 0:literal)
+    { begin
+;?       (print-primitive-to-host i:integer) ;? 1
+;?       (cursor-to-next-line) ;? 1
+      (done?:boolean <- greater-or-equal i:integer curr-history-len:integer)
+      (break-if done?:boolean)
+;?       (print-primitive-to-host i:integer) ;? 1
+;?       (cursor-to-next-line) ;? 1
+;?       ($dump-trace "retype-iter") ;? 1
+;?       (print-primitive-to-host (("aaa: " literal))) ;? 1
+;?       (print-primitive-to-host curr-history:string-address) ;? 1
+;?       (print-primitive-to-host (("\n" literal))) ;? 1
+;?       ($dump-memory) ;? 1
+;?       ($start-tracing) ;? 1
+      ; no more access to current character
+      (c:character <- index curr-history:string-address/deref i:integer)
+;?       ($quit) ;? 1
+;?       ($dump-trace "retype-iter2") ;? 1
+;?       (print-primitive-to-host c:character) ;? 1
+;?       (print-primitive-to-host (("\n" literal))) ;? 1
+      ; recursive calls to process-key can clobber any local state except i,
+      ; which we won't touch because history strings are guaranteed to only
+      ; have printable characters, never <up> or <down>
+;?       ($dump-trace "retype-iter8") ;? 1
+      (process-key default-space:space-address c:character)
+;?       ($dump-trace "retype-iter9") ;? 1
+      (i:integer <- add i:integer 1:literal)
+      (loop)
+    }
+;?     ($dump-trace "after-retype") ;? 1
+    ; <enter> is trimmed in the history expression, so wait for the human to
+    ; hit <enter> again or backspace to make edits
     (reply nil:literal)
   }
   ; if it's a newline, decide whether to return
@@ -368,7 +448,7 @@
   (print-primitive-to-host (("connected to anarki! type in an expression, then hit enter. ctrl-d exits. ctrl-g clears the current expression." literal)))
   (print-character nil:literal/terminal ((#\newline literal)))
   (abort:continuation <- current-continuation)
-  (history:buffer-address <- init-buffer 5:literal)
+  (history:buffer-address <- init-buffer 5:literal)  ; buffer of buffers of strings, one per expression typed in
   { begin
     (s:string-address <- read-expression abort:continuation history:buffer-address)
     (break-unless s:string-address)
@@ -380,6 +460,7 @@
 ;?     (print-primitive-to-host len:integer) ;? 1
 ;?     (print-primitive-to-host ((#\newline literal))) ;? 1
     (retro-mode)  ; print errors cleanly
+;?       (print-string nil:literal/terminal s:string-address) ;? 1
       (t:string-address <- $eval s:string-address)
     (cursor-mode)
     (print-primitive-to-host (("=> " literal)))
