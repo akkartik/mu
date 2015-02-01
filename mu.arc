@@ -667,6 +667,9 @@
                 assert
                   (unless (m arg.0)
                     (die (v arg.1)))  ; other routines will be able to look at the error status
+                assert-false
+                  (when (m arg.0)
+                    (die (v arg.1)))
 
                 ; cursor-based (text mode) interaction
                 cursor-mode

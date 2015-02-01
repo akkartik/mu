@@ -24,11 +24,8 @@
   { begin
     ; repeatedly read keys from the keyboard
     ;   test: 34<enter>
-    (c:character <- wait-for-key k:keyboard-address silent:literal/terminal)
-    (loop-unless c:character)
-    (done?:boolean <- process-key default-space:space-address c:character k:keyboard-address screen:terminal-address)
-    (break-if done?:boolean)
-    (loop)
+    (done?:boolean <- process-key default-space:space-address k:keyboard-address screen:terminal-address)
+    (loop-unless done?:boolean)
   }
   ; trim trailing newline in result (easier history management below)
   { begin
@@ -46,9 +43,9 @@
 (function process-key [  ; return t to signal end of expression
   ; must always be called from within 'read-expression'
   (default-space:space-address/names:read-expression <- next-input)
-  (c:character <- next-input)
   (k:keyboard-address <- next-input)
   (screen:terminal-address <- next-input)
+  (c:character <- wait-for-key k:keyboard-address silent:literal/terminal)
   (len:integer-address <- get-address result:buffer-address/deref length:offset)
   (maybe-cancel-this-expression c:character abort:continuation)
   ; check for ctrl-d and exit
@@ -141,17 +138,18 @@
     (curr-history:string-address <- buffer-index history:buffer-address current-history-index:integer)
     (curr-history-len:integer <- length curr-history:string-address/deref)
     ; and retype it into the current expression
-    (i:integer <- copy 0:literal)
+    (hist:keyboard-address <- init-keyboard curr-history:string-address)
+    (hist-index:integer-address <- get-address hist:keyboard-address/deref index:offset)
     { begin
-      (done?:boolean <- greater-or-equal i:integer curr-history-len:integer)
+      ($print hist-index:integer-address/deref)
+      ($print curr-history-len:integer)
+      ($print (("\n" literal)))
+      (done?:boolean <- greater-or-equal hist-index:integer-address/deref curr-history-len:integer)
       (break-if done?:boolean)
-      ; no more access to current character
-      (c:character <- index curr-history:string-address/deref i:integer)
-      ; recursive calls to process-key can clobber any local state except i,
-      ; which we won't touch because history strings are guaranteed to only
-      ; have printable characters, never <up> or <down>
-      (process-key default-space:space-address c:character)
-      (i:integer <- add i:integer 1:literal)
+      ; beware: recursive calls to process-key can clobber locals used outside
+      ; the up/down cases
+      (sub-return:boolean <- process-key default-space:space-address hist:keyboard-address screen:terminal-address)
+      (assert-false sub-return:boolean (("recursive call to process keys thought it was done" literal)))
       (loop)
     }
     ; <enter> is trimmed in the history expression, so wait for the human to
