@@ -679,6 +679,8 @@
                           ($.charterm-clear-screen)
                         ($.graphics-open?)
                           ($.clear-viewport Viewport)))
+                clear-line-on-host
+                  (do1 nil ($.charterm-clear-line))
                 cursor-on-host
                   (do1 nil ($.charterm-cursor (m arg.0) (m arg.1)))
                 cursor-on-host-to-next-line
@@ -761,12 +763,22 @@
                 $dump-memory
                   (do1 nil
                     (prn:repr int-canon.memory*))
+                $dump-trace
+                  (tofile arg.0
+                    (each (label trace) (as cons traces*)
+                      (pr label ": " trace)))
                 $start-tracing
                   (do1 nil
                     (set dump-trace*))
                 $stop-tracing
                   (do1 nil
                     (wipe dump-trace*))
+                $dump-routine
+                  (do1 nil
+                    ($.close-charterm)
+                    (prn routine*)
+                    ($.open-charterm)
+                    )
                 $dump-channel
                   (do1 nil
                     ($.close-charterm) ;? 1
@@ -947,7 +959,7 @@
     (when (is v.loc 'default-space)
       (return rep.routine*!call-stack.0!default-space))
     (trace "m" loc)
-    (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?) @loc")
+    (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?): @repr.loc")
     (with (n  sizeof.loc
            addr  addr.loc)
 ;?       (trace "m" "reading " n " locations starting at " addr)
