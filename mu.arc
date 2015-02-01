@@ -687,7 +687,7 @@
                   (do1 nil ($.charterm-newline))
                 print-character-to-host
                   (do1 nil
-                       (assert (isa (m arg.0) 'char))
+                       (assert (in (type:m arg.0) 'char 'sym) (rep (m arg.0)))
 ;?                        (write (m arg.0))  (pr " => ")  (prn (type (m arg.0)))
                        (if (no ($.current-charterm))
                          (pr (m arg.0))
@@ -704,13 +704,15 @@
                              (do ($.close-charterm)
                                  (die "interrupted"))
                            ;else
-                             (if (len> arg 2)
+                             (if (and (len> arg 2)
+                                      (m arg.2))
                                    (do
                                      ($.foreground (m arg.1))
                                      ($.background (m arg.2))
                                      (pr x)
                                      ($.reset))
-                                 (len> arg 1)
+                                 (and (len> arg 1)
+                                      (m arg.1))
                                    (do
                                      ($.foreground (m arg.1))
                                      (pr x)
@@ -2133,6 +2135,7 @@
 (init-fn read-key
   (default-space:space-address <- new space:literal 30:literal)
   (x:keyboard-address <- next-input)
+  (screen:terminal-address <- next-input)
   { begin
     (break-unless x:keyboard-address)
     (idx:integer-address <- get-address x:keyboard-address/deref index:offset)
@@ -2151,12 +2154,24 @@
   (sleep for-some-cycles:literal 1:literal)
   (c:character <- read-key-from-host)
   ; when we read from a real keyboard we print to screen as well
-  ; later we'll need ways to suppress this
   { begin
     (break-unless c:character)
+    (silent?:boolean <- equal screen:terminal-address ((silent literal)))
+    (break-if silent?:boolean)
+;?     ($print (("aaaa\n" literal))) ;? 1
     (print-character-to-host c:character)
   }
   (reply c:character)
+)
+
+(init-fn wait-for-key
+  (k:keyboard-address <- next-input)
+  (screen:terminal-address <- next-input)
+  { begin
+    (result:character <- read-key k:keyboard-address screen:terminal-address)
+    (loop-unless result:character)
+  }
+  (reply result:character)
 )
 
 (init-fn send-keys-to-stdin
@@ -2310,6 +2325,8 @@
   (default-space:space-address <- new space:literal 30:literal)
   (x:terminal-address <- next-input)
   (c:character <- next-input)
+  (fg:integer/color <- next-input)
+  (bg:integer/color <- next-input)
 ;?   ($print (("printing character to screen " literal)))
 ;?   ($print c:character)
 ;?   (reply)
@@ -2329,7 +2346,7 @@
     ; maybe die if we go out of screen bounds?
     (reply)
   }
-  (print-character-to-host c:character)
+  (print-character-to-host c:character fg:integer/color bg:integer/color)
 )
 
 (init-fn print-string
@@ -2612,7 +2629,7 @@
 ;?   (= dump-trace* (obj whitelist '("schedule")))
 ;?   (= dump-trace* (obj whitelist '("run" "continuation"))) ;? 1
 ;?   (= dump-trace* (obj whitelist '("cn0" "cn1")))
-;?   (set dump-trace*) ;? 4
+;?   (set dump-trace*) ;? 5
 ;?   (freeze function*)
 ;?   (prn function*!factorial)
   (run 'main)

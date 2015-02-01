@@ -5,9 +5,11 @@
 ; how to color each key right as it is printed.
 ; lots of logic devoted to handling backspace correctly.
 
-; abort continuation -> string
+; keyboard screen abort continuation -> string
 (function read-expression [
   (default-space:space-address <- new space:literal 60:literal)
+  (k:keyboard-address <- next-input)
+  (screen:terminal-address <- next-input)
   (abort:continuation <- next-input)
   (history:buffer-address <- next-input)  ; buffer of strings
   (history-length:integer <- get history:buffer-address/deref length:offset)
@@ -22,8 +24,9 @@
   { begin
     ; repeatedly read keys from the keyboard
     ;   test: 34<enter>
-    (c:character <- $wait-for-key-from-host)
-    (done?:boolean <- process-key default-space:space-address c:character)
+    (c:character <- wait-for-key k:keyboard-address silent:literal/terminal)
+    (loop-unless c:character)
+    (done?:boolean <- process-key default-space:space-address c:character k:keyboard-address screen:terminal-address)
     (break-if done?:boolean)
     (loop)
   }
@@ -44,6 +47,8 @@
   ; must always be called from within 'read-expression'
   (default-space:space-address/names:read-expression <- next-input)
   (c:character <- next-input)
+  (k:keyboard-address <- next-input)
+  (screen:terminal-address <- next-input)
   (len:integer-address <- get-address result:buffer-address/deref length:offset)
 ;?   ($print 1:literal) ;? 2
   (maybe-cancel-this-expression c:character abort:continuation)
@@ -64,7 +69,7 @@
   { begin
     (backspace?:boolean <- equal c:character ((#\backspace literal)))
     (break-unless backspace?:boolean)
-    (print-character-to-host c:character)
+    (print-character screen:terminal-address c:character/backspace)
     { begin
       ; delete last character if any
       (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
@@ -76,7 +81,7 @@
       { begin
         (backspaced-over-close-quote?:boolean <- backspaced-over-unescaped? result:buffer-address ((#\" literal)) escapes:buffer-address)  ; "
         (break-unless backspaced-over-close-quote?:boolean)
-        (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
+        (slurp-string result:buffer-address escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
         (reply nil:literal)
       }
       ;   test: (+ 1 (<backspace>2)
@@ -125,7 +130,7 @@
     { begin
       (done?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
       (break-if done?:boolean)
-      (print-character-to-host ((#\backspace literal)))
+      (print-character screen:terminal-address ((#\backspace literal)))
       (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       (loop)
     }
@@ -182,7 +187,7 @@
   { begin
     (newline?:boolean <- equal c:character ((#\newline literal)))
     (break-unless newline?:boolean)
-    (print-character-to-host c:character)
+    (print-character screen:terminal-address c:character/newline)
     (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
     (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
     (reply end-expression?:boolean)
@@ -198,8 +203,8 @@
   { begin
     (backslash?:boolean <- equal c:character ((#\\ literal)))
     (break-unless backslash?:boolean)
-    (print-character-to-host c:character 7:literal/white)
-    (result:buffer-address escapes:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:buffer-address abort:continuation)
+    (print-character screen:terminal-address c:character/backslash 7:literal/white)
+    (result:buffer-address escapes:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
     (reply nil:literal)
   }
 ;?   ($print 6:literal) ;? 2
@@ -207,8 +212,8 @@
   { begin
     (comment?:boolean <- equal c:character ((#\; literal)))
     (break-unless comment?:boolean)
-    (print-character-to-host c:character 4:literal/fg/blue)
-    (comment-read?:boolean <- slurp-comment result:buffer-address escapes:buffer-address abort:continuation)
+    (print-character screen:terminal-address c:character/semi-colon 4:literal/fg/blue)
+    (comment-read?:boolean <- slurp-comment result:buffer-address escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
     ; return if comment was read (i.e. consumed a newline)
     ; test: ;a<backspace><backspace> (shouldn't end command until <enter>)
     { begin
@@ -241,8 +246,8 @@
   { begin
     (string-started?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
     (break-unless string-started?:boolean)
-    (print-character-to-host c:character 6:literal/fg/cyan)
-    (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
+    (print-character screen:terminal-address c:character/open-quote 6:literal/fg/cyan)
+    (slurp-string result:buffer-address escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
     (reply nil:literal)
   }
 ;?   ($print 9:literal) ;? 2
@@ -254,7 +259,7 @@
     (break-unless open-paren?:boolean)
     (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
     (color-code:integer <- add color-code:integer 1:literal)
-    (print-character-to-host c:character color-code:integer)
+    (print-character screen:terminal-address c:character/open-paren color-code:integer)
     (open-parens:integer <- add open-parens:integer 1:literal)
 ;?     ($print open-parens:integer) ;? 2
     (reply nil:literal)
@@ -266,13 +271,13 @@
     (open-parens:integer <- subtract open-parens:integer 1:literal)
     (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
     (color-code:integer <- add color-code:integer 1:literal)
-    (print-character-to-host c:character color-code:integer)
+    (print-character screen:terminal-address c:character/close-paren color-code:integer)
 ;?     ($print open-parens:integer) ;? 2
     (reply nil:literal)
   }
 ;?   ($print 11:literal) ;? 2
   ; if all else fails, print the character without color
-  (print-character-to-host c:character)
+  (print-character screen:terminal-address c:character/regular)
   ;   todo: error on space outside parens, like python
   ;   todo: []
   ;   todo: history on up/down
@@ -286,12 +291,14 @@
   (in:buffer-address <- next-input)
   (escapes:buffer-address <- next-input)
   (abort:continuation <- next-input)
+  (k:keyboard-address <- next-input)
+  (screen:terminal-address <- next-input)
   ; test: ; abc<enter>
   { begin
     next-key-in-comment
-    (c:character <- $wait-for-key-from-host)
-    (maybe-cancel-this-expression c:character abort:continuation)  ; test: check needs to come before print
-    (print-character-to-host c:character 4:literal/fg/blue)
+    (c:character <- wait-for-key k:keyboard-address silent:literal/terminal)
+    (maybe-cancel-this-expression c:character abort:continuation screen:terminal-address)  ; test: check needs to come before print
+    (print-character screen:terminal-address c:character 4:literal/fg/blue)
     ; handle backspace
     ;   test: ; abc<backspace><backspace>def<enter>
     ;   todo: how to exit comment?
@@ -318,12 +325,14 @@
   (in:buffer-address <- next-input)
   (escapes:buffer-address <- next-input)
   (abort:continuation <- next-input)
+  (k:keyboard-address <- next-input)
+  (screen:terminal-address <- next-input)
   ; test: "abc"
   { begin
     next-key-in-string
-    (c:character <- $wait-for-key-from-host)
-    (maybe-cancel-this-expression c:character abort:continuation)  ; test: check needs to come before print
-    (print-character-to-host c:character 6:literal/fg/cyan)
+    (c:character <- wait-for-key k:keyboard-address silent:literal/terminal)
+    (maybe-cancel-this-expression c:character abort:continuation screen:terminal-address)  ; test: check needs to come before print
+    (print-character screen:terminal-address c:character 6:literal/fg/cyan)
     ; handle backspace
     ;   test: "abc<backspace>d"
     ;   todo: how to exit string?
@@ -346,7 +355,7 @@
     { begin
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
-      (in:buffer-address escapes:buffer-address <- slurp-escaped-character in:buffer-address 6:literal/cyan escapes:buffer-address abort:continuation)
+      (in:buffer-address escapes:buffer-address <- slurp-escaped-character in:buffer-address 6:literal/cyan escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
       (jump next-key-in-string:offset)
     }
     ; if not backslash
@@ -363,9 +372,11 @@
   (color-code:integer <- next-input)
   (escapes:buffer-address <- next-input)
   (abort:continuation <- next-input)
-  (c:character <- $wait-for-key-from-host)
-  (maybe-cancel-this-expression c:character abort:continuation)  ; test: check needs to come before print
-  (print-character-to-host c:character color-code:integer)
+  (k:keyboard-address <- next-input)
+  (screen:terminal-address <- next-input)
+  (c:character <- wait-for-key k:keyboard-address silent:literal/terminal)
+  (maybe-cancel-this-expression c:character abort:continuation screen:terminal-address)  ; test: check needs to come before print
+  (print-character screen:terminal-address c:character color-code:integer)
   (len:integer-address <- get-address in:buffer-address/deref length:offset)
   (escapes:buffer-address <- append escapes:buffer-address len:integer-address/deref)
 ;?   ($print (("+" literal))) ;? 1
@@ -433,12 +444,13 @@
   (default-space:space-address <- new space:literal 30:literal)
   (c:character <- next-input)
   (abort:continuation <- next-input)
+  (screen:terminal-address <- next-input)
   { begin
     (interrupt?:boolean <- equal c:character ((ctrl-g literal)))
     (break-unless interrupt?:boolean)
-    (print-character-to-host ((#\^ literal)))
-    (print-character-to-host ((#\G literal)))
-    (print-character-to-host ((#\newline literal)))
+    (print-character screen:terminal-address ((#\^ literal)))
+    (print-character screen:terminal-address ((#\G literal)))
+    (print-character screen:terminal-address ((#\newline literal)))
     (continue-from abort:continuation)
   }
 ])
@@ -448,10 +460,11 @@
   (cursor-mode)
   ($print (("connected to anarki! type in an expression, then hit enter. ctrl-d exits. ctrl-g clears the current expression." literal)))
   (print-character nil:literal/terminal ((#\newline literal)))
+  ; todo: ctrl-g shouldn't clear history
   (abort:continuation <- current-continuation)
   (history:buffer-address <- init-buffer 5:literal)  ; buffer of buffers of strings, one per expression typed in
   { begin
-    (s:string-address <- read-expression abort:continuation history:buffer-address)
+    (s:string-address <- read-expression nil:literal/keyboard nil:literal/terminal abort:continuation history:buffer-address)
     (break-unless s:string-address)
 ;?     (x:integer <- length s:string-address/deref) ;? 1
 ;?     ($print x:integer) ;? 1
