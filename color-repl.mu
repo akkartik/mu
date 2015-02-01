@@ -50,9 +50,7 @@
   (k:keyboard-address <- next-input)
   (screen:terminal-address <- next-input)
   (len:integer-address <- get-address result:buffer-address/deref length:offset)
-;?   ($print 1:literal) ;? 2
   (maybe-cancel-this-expression c:character abort:continuation)
-;?   ($print 2:literal) ;? 2
   ; check for ctrl-d and exit
   { begin
     (eof?:boolean <- equal c:character ((ctrl-d literal)))
@@ -62,7 +60,6 @@
     (s:string-address-address/deref <- copy nil:literal)
     (reply t:literal)
   }
-;?   ($print 3:literal) ;? 2
   ; check for backspace
   ;   test: 3<backspace>4<enter>
   ;   todo: backspace past newline
@@ -143,41 +140,20 @@
     (current-history-index:integer <- subtract current-history-index:integer 1:literal)
     (curr-history:string-address <- buffer-index history:buffer-address current-history-index:integer)
     (curr-history-len:integer <- length curr-history:string-address/deref)
-;?     ($print curr-history-len:integer) ;? 2
-;?     (cursor-to-next-line) ;? 1
-;?     ($quit) ;? 1
-;?     ($dump-trace "before-retype") ;? 1
     ; and retype it into the current expression
     (i:integer <- copy 0:literal)
     { begin
-;?       ($print i:integer) ;? 1
-;?       (cursor-to-next-line) ;? 1
       (done?:boolean <- greater-or-equal i:integer curr-history-len:integer)
       (break-if done?:boolean)
-;?       ($print i:integer) ;? 1
-;?       (cursor-to-next-line) ;? 1
-;?       ($dump-trace "retype-iter") ;? 1
-;?       ($print (("aaa: " literal))) ;? 1
-;?       ($print curr-history:string-address) ;? 1
-;?       ($print (("\n" literal))) ;? 1
-;?       ($dump-memory) ;? 1
-;?       ($start-tracing) ;? 1
       ; no more access to current character
       (c:character <- index curr-history:string-address/deref i:integer)
-;?       ($quit) ;? 1
-;?       ($dump-trace "retype-iter2") ;? 1
-;?       ($print c:character) ;? 1
-;?       ($print (("\n" literal))) ;? 1
       ; recursive calls to process-key can clobber any local state except i,
       ; which we won't touch because history strings are guaranteed to only
       ; have printable characters, never <up> or <down>
-;?       ($dump-trace "retype-iter8") ;? 1
       (process-key default-space:space-address c:character)
-;?       ($dump-trace "retype-iter9") ;? 1
       (i:integer <- add i:integer 1:literal)
       (loop)
     }
-;?     ($dump-trace "after-retype") ;? 1
     ; <enter> is trimmed in the history expression, so wait for the human to
     ; hit <enter> again or backspace to make edits
     (reply nil:literal)
@@ -192,14 +168,12 @@
     (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
     (reply end-expression?:boolean)
   }
-;?   ($print 4:literal) ;? 2
   ; printable character; save
 ;?   ($print (("append\n" literal))) ;? 2
   (result:buffer-address <- append result:buffer-address c:character)
 ;?   ($print (("done\n" literal))) ;? 2
   ; if it's backslash, read, save and print one additional character
   ;   test: (prn #\()
-;?   ($print 5:literal) ;? 2
   { begin
     (backslash?:boolean <- equal c:character ((#\\ literal)))
     (break-unless backslash?:boolean)
@@ -207,7 +181,6 @@
     (result:buffer-address escapes:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
     (reply nil:literal)
   }
-;?   ($print 6:literal) ;? 2
   ; if it's a semi-colon, parse a comment
   { begin
     (comment?:boolean <- equal c:character ((#\; literal)))
@@ -229,7 +202,6 @@
     (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
     (reply end-expression?:boolean)
   }
-;?   ($print 7:literal) ;? 2
   ; if it's not whitespace, set not-empty? and continue
   { begin
     (space?:boolean <- equal c:character ((#\space literal)))
@@ -241,7 +213,6 @@
     (not-empty?:boolean <- copy t:literal)
     ; fall through
   }
-;?   ($print 8:literal) ;? 2
   ; if it's a quote, parse a string
   { begin
     (string-started?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
@@ -250,7 +221,6 @@
     (slurp-string result:buffer-address escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
     (reply nil:literal)
   }
-;?   ($print 9:literal) ;? 2
   ; color parens by depth, so they're easy to balance
   ;   test: (+ 1 1)<enter>
   ;   test: (def foo () (+ 1 (* 2 3)))<enter>
@@ -264,7 +234,6 @@
 ;?     ($print open-parens:integer) ;? 2
     (reply nil:literal)
   }
-;?   ($print 10:literal) ;? 2
   { begin
     (close-paren?:boolean <- equal c:character ((#\) literal)))
     (break-unless close-paren?:boolean)
@@ -275,7 +244,6 @@
 ;?     ($print open-parens:integer) ;? 2
     (reply nil:literal)
   }
-;?   ($print 11:literal) ;? 2
   ; if all else fails, print the character without color
   (print-character screen:terminal-address c:character/regular)
   ;   todo: error on space outside parens, like python
