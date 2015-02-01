@@ -133,11 +133,6 @@
     (open-parens:integer/space:1 <- copy 0:literal)
     (escapes:buffer-address/space:1 <- init-buffer 5:literal)
     (not-empty?:boolean/space:1 <- copy nil:literal)
-    ; save old keyboard
-    ; beware: recursive calls to process-key below can clobber locals used
-    ; outside the up/down cases. So we need to save copies that are only used
-    ; in this part of the function. This is all a giant hack.
-    (old-keyboard:keyboard-address <- copy k:keyboard-address)
     ; identify the history item
     (current-history-index:integer/space:1 <- subtract current-history-index:integer/space:1 1:literal)
     (curr-history:string-address <- buffer-index history:buffer-address/space:1 current-history-index:integer/space:1)
@@ -157,7 +152,6 @@
     }
     ; <enter> is trimmed in the history expression, so wait for the human to
     ; hit <enter> again or backspace to make edits
-    (k:keyboard-address <- copy old-keyboard:keyboard-address)
     (reply nil:literal)
   }
   ; if it's a newline, decide whether to return
