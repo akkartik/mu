@@ -133,6 +133,11 @@
     (open-parens:integer <- copy 0:literal)
     (escapes:buffer-address <- init-buffer 5:literal)
     (not-empty?:boolean <- copy nil:literal)
+    ; save old keyboard
+    ; beware: recursive calls to process-key below can clobber locals used
+    ; outside the up/down cases. So we need to save copies that are only used
+    ; in this part of the function. This is all a giant hack.
+    (old-keyboard:keyboard-address <- copy k:keyboard-address)
     ; identify the history item
     (current-history-index:integer <- subtract current-history-index:integer 1:literal)
     (curr-history:string-address <- buffer-index history:buffer-address current-history-index:integer)
@@ -141,19 +146,18 @@
     (hist:keyboard-address <- init-keyboard curr-history:string-address)
     (hist-index:integer-address <- get-address hist:keyboard-address/deref index:offset)
     { begin
-      ($print hist-index:integer-address/deref)
-      ($print curr-history-len:integer)
-      ($print (("\n" literal)))
+;?       ($print hist-index:integer-address/deref) ;? 1
+;?       ($print curr-history-len:integer) ;? 1
+;?       ($print (("\n" literal))) ;? 1
       (done?:boolean <- greater-or-equal hist-index:integer-address/deref curr-history-len:integer)
       (break-if done?:boolean)
-      ; beware: recursive calls to process-key can clobber locals used outside
-      ; the up/down cases
       (sub-return:boolean <- process-key default-space:space-address hist:keyboard-address screen:terminal-address)
       (assert-false sub-return:boolean (("recursive call to process keys thought it was done" literal)))
       (loop)
     }
     ; <enter> is trimmed in the history expression, so wait for the human to
     ; hit <enter> again or backspace to make edits
+    (k:keyboard-address <- copy old-keyboard:keyboard-address)
     (reply nil:literal)
   }
   ; if it's a newline, decide whether to return
