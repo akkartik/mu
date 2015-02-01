@@ -5,7 +5,7 @@
 
 (function g [
   (c:continuation <- current-continuation)  ; <-- loop back to here
-  (print-primitive-to-host (("a" literal)))
+  (print-character nil:literal/terminal ((#\a literal)))
   (reply c:continuation)
 ])
 

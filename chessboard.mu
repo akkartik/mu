@@ -128,14 +128,14 @@
   (default-space:space-address <- new space:literal 30:literal)
   (stdin:channel-address <- next-input)
   (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
-;?   (print-primitive-to-host x:tagged-value) ;? 1
-;?   (print-primitive-to-host (("\n" literal))) ;? 1
+;?   ($print x:tagged-value) ;? 1
+;?   ($print (("\n" literal))) ;? 1
   (a:character <- copy ((#\a literal)))
   (file-base:integer <- character-to-integer a:character)
   (c:character <- maybe-coerce x:tagged-value character:literal)
-;?   (print-primitive-to-host (("AAA " literal))) ;? 1
-;?   (print-primitive-to-host c:character) ;? 1
-;?   (print-primitive-to-host (("\n" literal))) ;? 1
+;?   ($print (("AAA " literal))) ;? 1
+;?   ($print c:character) ;? 1
+;?   ($print (("\n" literal))) ;? 1
   { begin
     (quit:boolean <- equal c:character ((#\q literal)))
     (break-unless quit:boolean)
@@ -156,9 +156,9 @@
   (stdin:channel-address <- next-input)
   (x:tagged-value stdin:channel-address/deref <- read stdin:channel-address)
   (c:character <- maybe-coerce x:tagged-value character:literal)
-;?   (print-primitive-to-host (("BBB " literal))) ;? 1
-;?   (print-primitive-to-host c:character) ;? 1
-;?   (print-primitive-to-host (("\n" literal))) ;? 1
+;?   ($print (("BBB " literal))) ;? 1
+;?   ($print c:character) ;? 1
+;?   ($print (("\n" literal))) ;? 1
   { begin
     (quit:boolean <- equal c:character ((#\q literal)))
     (break-unless quit:boolean)
@@ -224,32 +224,29 @@
   ; buffer stdin
   (buffered-stdin:channel-address <- init-channel 1:literal)
   (fork-helper buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
+  ($print (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
+  (cursor-to-next-line nil:literal/terminal)
   { begin
-    ; print any stray characters from keyboard *before* clearing screen
-    (clear-screen nil:literal/terminal)
-    (print-primitive-to-host (("Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves." literal)))
-    (cursor-to-next-line nil:literal/terminal)
     (cursor-to-next-line nil:literal/terminal)
     (print-board nil:literal/terminal b:board-address)
     (cursor-to-next-line nil:literal/terminal)
-    (print-primitive-to-host (("Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>." literal)))
+    ($print (("Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>." literal)))
     (cursor-to-next-line nil:literal/terminal)
-    (print-primitive-to-host (("Hit 'q' to exit." literal)))
+    ($print (("Hit 'q' to exit." literal)))
     (cursor-to-next-line nil:literal/terminal)
-    (print-primitive-to-host (("move: " literal)))
+    ($print (("move: " literal)))
     (m:move-address <- read-move buffered-stdin:channel-address)
 ;?     (retro-mode) ;? 1
-;?     (print-primitive-to-host stdin:channel-address) ;? 1
-;?     (print-primitive-to-host (("\n" literal))) ;? 1
-;?     (print-primitive-to-host buffered-stdin:channel-address) ;? 1
-;?     (print-primitive-to-host (("\n" literal))) ;? 1
+;?     ($print stdin:channel-address) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+;?     ($print buffered-stdin:channel-address) ;? 1
+;?     ($print (("\n" literal))) ;? 1
 ;?     ($dump-memory) ;? 1
 ;?     (cursor-mode) ;? 1
     (break-unless m:move-address)
     (b:board-address <- make-move b:board-address m:move-address)
     (loop)
   }
-  (cursor-to-next-line)
 ])
 
 ; todo:
