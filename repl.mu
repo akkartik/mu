@@ -10,9 +10,9 @@
     (x:tagged-value in:channel-address/deref <- read in:channel-address)
     (c:character <- maybe-coerce x:tagged-value character:literal)
     (assert c:character "read-expression: non-character in stdin")
-;?     (print-primitive-to-host (("key: " literal))) ;? 1
-;?     (print-primitive-to-host c:character) ;? 2
-;?     (print-primitive-to-host (("$\n" literal))) ;? 2
+;?     ($print (("key: " literal))) ;? 1
+;?     ($print c:character) ;? 2
+;?     ($print (("$\n" literal))) ;? 2
     (result:buffer-address <- append result:buffer-address c:character)
     ; parse comment
     { begin
@@ -43,7 +43,7 @@
     { begin
       (newline?:boolean <- equal c:character ((#\newline literal)))
       (break-unless newline?:boolean)
-;?       (print-primitive-to-host (("AAA" literal))) ;? 1
+;?       ($print (("AAA" literal))) ;? 1
       (end-expression?:boolean <- lesser-or-equal open-parens:integer 0:literal)
       (break-if end-expression?:boolean 2:blocks)
     }
@@ -52,7 +52,7 @@
     ; don't return if there's no non-whitespace in result
     (loop)
   }
-;?   (print-primitive-to-host (("BAA" literal))) ;? 1
+;?   ($print (("BAA" literal))) ;? 1
   (s:string-address <- get result:buffer-address/deref data:offset)
   (reply s:string-address)
 ])
@@ -93,7 +93,7 @@
   (buffered-stdin:channel-address <- init-channel 1:literal)
   (fork-helper buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
   { begin
-    (print-primitive-to-host (("anarki> " literal)))
+    ($print (("anarki> " literal)))
     (s:string-address <- read-expression buffered-stdin:channel-address)
     (retro-mode)  ; print errors cleanly
     (t:string-address <- $eval s:string-address)

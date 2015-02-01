@@ -3,7 +3,6 @@
 (function main [
   (default-space:space-address <- new space:literal 30:literal)
   (cursor-mode) ;? 1
-  (clear-screen) ;? 1
   ; hook up stdin
   (stdin:channel-address <- init-channel 1:literal)
   (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit nil:literal/keyboard stdin:channel-address)
@@ -17,9 +16,9 @@
     { begin
       (x:tagged-value buffered-stdin:channel-address/deref <- read buffered-stdin:channel-address)
       (c:character <- maybe-coerce x:tagged-value character:literal)
-;?       (print-primitive-to-host (("AAA " literal))) ;? 1
-;?       (print-primitive-to-host c:character) ;? 1
-;?       (print-primitive-to-host (("\n" literal))) ;? 1
+;?       ($print (("AAA " literal))) ;? 1
+;?       ($print c:character) ;? 1
+;?       ($print (("\n" literal))) ;? 1
       (print-character nil:literal/terminal c:character)
       (line-done?:boolean <- equal c:character ((#\newline literal)))
       (loop-unless line-done?:boolean)

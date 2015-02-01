@@ -45,9 +45,9 @@
   (default-space:space-address/names:read-expression <- next-input)
   (c:character <- next-input)
   (len:integer-address <- get-address result:buffer-address/deref length:offset)
-;?   (print-primitive-to-host 1:literal) ;? 2
+;?   ($print 1:literal) ;? 2
   (maybe-cancel-this-expression c:character abort:continuation)
-;?   (print-primitive-to-host 2:literal) ;? 2
+;?   ($print 2:literal) ;? 2
   ; check for ctrl-d and exit
   { begin
     (eof?:boolean <- equal c:character ((ctrl-d literal)))
@@ -57,14 +57,14 @@
     (s:string-address-address/deref <- copy nil:literal)
     (reply t:literal)
   }
-;?   (print-primitive-to-host 3:literal) ;? 2
+;?   ($print 3:literal) ;? 2
   ; check for backspace
   ;   test: 3<backspace>4<enter>
   ;   todo: backspace past newline
   { begin
     (backspace?:boolean <- equal c:character ((#\backspace literal)))
     (break-unless backspace?:boolean)
-    ($print-key-to-host c:character)
+    (print-character-to-host c:character)
     { begin
       ; delete last character if any
       (zero?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
@@ -125,7 +125,7 @@
     { begin
       (done?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
       (break-if done?:boolean)
-      ($print-key-to-host ((#\backspace literal)))
+      (print-character-to-host ((#\backspace literal)))
       (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       (loop)
     }
@@ -138,31 +138,31 @@
     (current-history-index:integer <- subtract current-history-index:integer 1:literal)
     (curr-history:string-address <- buffer-index history:buffer-address current-history-index:integer)
     (curr-history-len:integer <- length curr-history:string-address/deref)
-;?     (print-primitive-to-host curr-history-len:integer) ;? 2
+;?     ($print curr-history-len:integer) ;? 2
 ;?     (cursor-to-next-line) ;? 1
 ;?     ($quit) ;? 1
 ;?     ($dump-trace "before-retype") ;? 1
     ; and retype it into the current expression
     (i:integer <- copy 0:literal)
     { begin
-;?       (print-primitive-to-host i:integer) ;? 1
+;?       ($print i:integer) ;? 1
 ;?       (cursor-to-next-line) ;? 1
       (done?:boolean <- greater-or-equal i:integer curr-history-len:integer)
       (break-if done?:boolean)
-;?       (print-primitive-to-host i:integer) ;? 1
+;?       ($print i:integer) ;? 1
 ;?       (cursor-to-next-line) ;? 1
 ;?       ($dump-trace "retype-iter") ;? 1
-;?       (print-primitive-to-host (("aaa: " literal))) ;? 1
-;?       (print-primitive-to-host curr-history:string-address) ;? 1
-;?       (print-primitive-to-host (("\n" literal))) ;? 1
+;?       ($print (("aaa: " literal))) ;? 1
+;?       ($print curr-history:string-address) ;? 1
+;?       ($print (("\n" literal))) ;? 1
 ;?       ($dump-memory) ;? 1
 ;?       ($start-tracing) ;? 1
       ; no more access to current character
       (c:character <- index curr-history:string-address/deref i:integer)
 ;?       ($quit) ;? 1
 ;?       ($dump-trace "retype-iter2") ;? 1
-;?       (print-primitive-to-host c:character) ;? 1
-;?       (print-primitive-to-host (("\n" literal))) ;? 1
+;?       ($print c:character) ;? 1
+;?       ($print (("\n" literal))) ;? 1
       ; recursive calls to process-key can clobber any local state except i,
       ; which we won't touch because history strings are guaranteed to only
       ; have printable characters, never <up> or <down>
@@ -182,32 +182,32 @@
   { begin
     (newline?:boolean <- equal c:character ((#\newline literal)))
     (break-unless newline?:boolean)
-    ($print-key-to-host c:character)
+    (print-character-to-host c:character)
     (at-top-level?:boolean <- lesser-or-equal open-parens:integer 0:literal)
     (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
     (reply end-expression?:boolean)
   }
-;?   (print-primitive-to-host 4:literal) ;? 2
+;?   ($print 4:literal) ;? 2
   ; printable character; save
-;?   (print-primitive-to-host (("append\n" literal))) ;? 2
+;?   ($print (("append\n" literal))) ;? 2
   (result:buffer-address <- append result:buffer-address c:character)
-;?   (print-primitive-to-host (("done\n" literal))) ;? 2
+;?   ($print (("done\n" literal))) ;? 2
   ; if it's backslash, read, save and print one additional character
   ;   test: (prn #\()
-;?   (print-primitive-to-host 5:literal) ;? 2
+;?   ($print 5:literal) ;? 2
   { begin
     (backslash?:boolean <- equal c:character ((#\\ literal)))
     (break-unless backslash?:boolean)
-    ($print-key-to-host c:character 7:literal/white)
+    (print-character-to-host c:character 7:literal/white)
     (result:buffer-address escapes:buffer-address <- slurp-escaped-character result:buffer-address 7:literal/white escapes:buffer-address abort:continuation)
     (reply nil:literal)
   }
-;?   (print-primitive-to-host 6:literal) ;? 2
+;?   ($print 6:literal) ;? 2
   ; if it's a semi-colon, parse a comment
   { begin
     (comment?:boolean <- equal c:character ((#\; literal)))
     (break-unless comment?:boolean)
-    ($print-key-to-host c:character 4:literal/fg/blue)
+    (print-character-to-host c:character 4:literal/fg/blue)
     (comment-read?:boolean <- slurp-comment result:buffer-address escapes:buffer-address abort:continuation)
     ; return if comment was read (i.e. consumed a newline)
     ; test: ;a<backspace><backspace> (shouldn't end command until <enter>)
@@ -224,7 +224,7 @@
     (end-expression?:boolean <- and at-top-level?:boolean not-empty?:boolean)
     (reply end-expression?:boolean)
   }
-;?   (print-primitive-to-host 7:literal) ;? 2
+;?   ($print 7:literal) ;? 2
   ; if it's not whitespace, set not-empty? and continue
   { begin
     (space?:boolean <- equal c:character ((#\space literal)))
@@ -236,16 +236,16 @@
     (not-empty?:boolean <- copy t:literal)
     ; fall through
   }
-;?   (print-primitive-to-host 8:literal) ;? 2
+;?   ($print 8:literal) ;? 2
   ; if it's a quote, parse a string
   { begin
     (string-started?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
     (break-unless string-started?:boolean)
-    ($print-key-to-host c:character 6:literal/fg/cyan)
+    (print-character-to-host c:character 6:literal/fg/cyan)
     (slurp-string result:buffer-address escapes:buffer-address abort:continuation)
     (reply nil:literal)
   }
-;?   (print-primitive-to-host 9:literal) ;? 2
+;?   ($print 9:literal) ;? 2
   ; color parens by depth, so they're easy to balance
   ;   test: (+ 1 1)<enter>
   ;   test: (def foo () (+ 1 (* 2 3)))<enter>
@@ -254,25 +254,25 @@
     (break-unless open-paren?:boolean)
     (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
     (color-code:integer <- add color-code:integer 1:literal)
-    ($print-key-to-host c:character color-code:integer)
+    (print-character-to-host c:character color-code:integer)
     (open-parens:integer <- add open-parens:integer 1:literal)
-;?     (print-primitive-to-host open-parens:integer) ;? 2
+;?     ($print open-parens:integer) ;? 2
     (reply nil:literal)
   }
-;?   (print-primitive-to-host 10:literal) ;? 2
+;?   ($print 10:literal) ;? 2
   { begin
     (close-paren?:boolean <- equal c:character ((#\) literal)))
     (break-unless close-paren?:boolean)
     (open-parens:integer <- subtract open-parens:integer 1:literal)
     (_ color-code:integer <- divide-with-remainder open-parens:integer 3:literal)  ; 3 distinct colors for parens
     (color-code:integer <- add color-code:integer 1:literal)
-    ($print-key-to-host c:character color-code:integer)
-;?     (print-primitive-to-host open-parens:integer) ;? 2
+    (print-character-to-host c:character color-code:integer)
+;?     ($print open-parens:integer) ;? 2
     (reply nil:literal)
   }
-;?   (print-primitive-to-host 11:literal) ;? 2
+;?   ($print 11:literal) ;? 2
   ; if all else fails, print the character without color
-  ($print-key-to-host c:character)
+  (print-character-to-host c:character)
   ;   todo: error on space outside parens, like python
   ;   todo: []
   ;   todo: history on up/down
@@ -291,7 +291,7 @@
     next-key-in-comment
     (c:character <- $wait-for-key-from-host)
     (maybe-cancel-this-expression c:character abort:continuation)  ; test: check needs to come before print
-    ($print-key-to-host c:character 4:literal/fg/blue)
+    (print-character-to-host c:character 4:literal/fg/blue)
     ; handle backspace
     ;   test: ; abc<backspace><backspace>def<enter>
     ;   todo: how to exit comment?
@@ -323,7 +323,7 @@
     next-key-in-string
     (c:character <- $wait-for-key-from-host)
     (maybe-cancel-this-expression c:character abort:continuation)  ; test: check needs to come before print
-    ($print-key-to-host c:character 6:literal/fg/cyan)
+    (print-character-to-host c:character 6:literal/fg/cyan)
     ; handle backspace
     ;   test: "abc<backspace>d"
     ;   todo: how to exit string?
@@ -336,7 +336,7 @@
       ; if we erase start of string, return
       ;   test: "<backspace>34
       (string-deleted?:boolean <- backspaced-over-unescaped? in:buffer-address ((#\" literal)) escapes:buffer-address)  ; "
-;?       (print-primitive-to-host string-deleted?:boolean) ;? 1
+;?       ($print string-deleted?:boolean) ;? 1
       (jump-if string-deleted?:boolean end:offset)
       (jump next-key-in-string:offset)
     }
@@ -365,10 +365,10 @@
   (abort:continuation <- next-input)
   (c:character <- $wait-for-key-from-host)
   (maybe-cancel-this-expression c:character abort:continuation)  ; test: check needs to come before print
-  ($print-key-to-host c:character color-code:integer)
+  (print-character-to-host c:character color-code:integer)
   (len:integer-address <- get-address in:buffer-address/deref length:offset)
   (escapes:buffer-address <- append escapes:buffer-address len:integer-address/deref)
-;?   (print-primitive-to-host (("+" literal))) ;? 1
+;?   ($print (("+" literal))) ;? 1
   ; handle backspace
   ;   test: "abc\<backspace>def"
   ;   test: #\<backspace>
@@ -379,7 +379,7 @@
     (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
     (elen:integer-address <- get-address escapes:buffer-address/deref length:offset)
     (elen:integer-address/deref <- subtract elen:integer-address/deref 1:literal)
-;?     (print-primitive-to-host (("-" literal))) ;? 1
+;?     ($print (("-" literal))) ;? 1
     (reply in:buffer-address/same-as-arg:0 escapes:buffer-address/same-as-arg:2)
   }
   ; if not backspace, save and return
@@ -403,8 +403,8 @@
   { begin
     (most-recent-escape:integer <- last escapes:buffer-address)
     (last-idx:integer <- get in:buffer-address/deref length:offset)
-;?     (print-primitive-to-host most-recent-escape:integer) ;? 1
-;?     (print-primitive-to-host last-idx:integer) ;? 1
+;?     ($print most-recent-escape:integer) ;? 1
+;?     ($print last-idx:integer) ;? 1
     (was-unescaped?:boolean <- not-equal last-idx:integer most-recent-escape:integer)
     (break-if was-unescaped?:boolean)
     (reply nil:literal)
@@ -436,8 +436,9 @@
   { begin
     (interrupt?:boolean <- equal c:character ((ctrl-g literal)))
     (break-unless interrupt?:boolean)
-    ($print-key-to-host (("^G" literal)))
-    ($print-key-to-host ((#\newline literal)))
+    (print-character-to-host ((#\^ literal)))
+    (print-character-to-host ((#\G literal)))
+    (print-character-to-host ((#\newline literal)))
     (continue-from abort:continuation)
   }
 ])
@@ -445,7 +446,7 @@
 (function main [
   (default-space:space-address <- new space:literal 30:literal)
   (cursor-mode)
-  (print-primitive-to-host (("connected to anarki! type in an expression, then hit enter. ctrl-d exits. ctrl-g clears the current expression." literal)))
+  ($print (("connected to anarki! type in an expression, then hit enter. ctrl-d exits. ctrl-g clears the current expression." literal)))
   (print-character nil:literal/terminal ((#\newline literal)))
   (abort:continuation <- current-continuation)
   (history:buffer-address <- init-buffer 5:literal)  ; buffer of buffers of strings, one per expression typed in
@@ -453,17 +454,17 @@
     (s:string-address <- read-expression abort:continuation history:buffer-address)
     (break-unless s:string-address)
 ;?     (x:integer <- length s:string-address/deref) ;? 1
-;?     (print-primitive-to-host x:integer) ;? 1
-;?     (print-primitive-to-host ((#\newline literal))) ;? 1
+;?     ($print x:integer) ;? 1
+;?     ($print ((#\newline literal))) ;? 1
     (history:buffer-address <- append history:buffer-address s:string-address)
 ;?     (len:integer <- get history:buffer-address/deref length:offset) ;? 1
-;?     (print-primitive-to-host len:integer) ;? 1
-;?     (print-primitive-to-host ((#\newline literal))) ;? 1
+;?     ($print len:integer) ;? 1
+;?     ($print ((#\newline literal))) ;? 1
     (retro-mode)  ; print errors cleanly
 ;?       (print-string nil:literal/terminal s:string-address) ;? 1
       (t:string-address <- $eval s:string-address)
     (cursor-mode)
-    (print-primitive-to-host (("=> " literal)))
+    ($print (("=> " literal)))
     (print-string nil:literal/terminal t:string-address)
     (print-character nil:literal/terminal ((#\newline literal)))
     (print-character nil:literal/terminal ((#\newline literal)))  ; empty line separates each expression and result
