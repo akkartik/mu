@@ -2322,14 +2322,16 @@
      ])
     (function main [
       (1:space-address <- f)
-      (2:integer <- g 1:space-address)
+      (2:integer 3:integer <- g 1:space-address)
      ])))
 (run 'main)
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
+;? (prn memory*) ;? 1
 (when (or (~is memory*.2 5)
           (~is memory*.3 5))
   (prn "F - new names in shared spaces don't override old ones"))
+;? (quit) ;? 1
 
 )  ; section 20
 
