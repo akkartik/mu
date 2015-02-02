@@ -253,6 +253,12 @@ inserting code at them.
 
 (You'll find this version in `tangle.mu`.)
 
+This is a good time to point out that `{` and `}` are also just labels in mu
+syntax, and that `break` and `loop` get rewritten as jumps to just after the
+enclosing `}` and `{` respectively. This gives us a simple sort of structured
+programming without adding complexity to the parser -- mu functions remain
+just flat lists of instructions.
+
 ---
 
 Another example, this time with concurrency.
