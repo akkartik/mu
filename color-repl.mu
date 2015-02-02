@@ -131,6 +131,41 @@
     ; hit <enter> again or backspace to make edits
     (reply nil:literal)
   }
+  ; down arrow; switch to next item in history
+  { begin
+    (down-arrow?:boolean <- equal c:character ((down literal)))
+    (break-unless down-arrow?:boolean)
+    ; if history exists
+    ;   test: <down><enter>  down without history has no effect
+    { begin
+      (empty-history?:boolean <- lesser-or-equal history-length:integer/space:1 0:literal)
+      (break-unless empty-history?:boolean)
+      (reply nil:literal)
+    }
+    ; if pointer not already at end of history
+    ;   test: 34<enter><down><down><enter>  up past history has no effect
+    { begin
+      (x:integer <- subtract history-length:integer/space:1 1:literal)
+      (before-history-end?:boolean <- greater-or-equal current-history-index:integer/space:1 x:integer)
+      (break-unless before-history-end?:boolean)
+      (reply nil:literal)
+    }
+    ; then update history index, copy into current buffer
+    ;   test: 34<enter><up><enter>  up restores previous command
+    ;   test todo: 34<enter>23<up>34<down><enter>  up doesn't mess up typing on current line
+    ;   test todo: 34<enter><up>5<enter><up><up>  commands don't modify history
+    ;   test todo: multi-line expressions
+    ; identify the history item
+    (current-history-index:integer/space:1 <- add current-history-index:integer/space:1 1:literal)
+    ; then clear line
+    (backspace-over len:integer-address/deref screen:terminal-address)
+    ; then clear result and all other state accumulated for the existing expression
+    (len:integer-address/deref <- copy 0:literal)
+    (switch-to-history 0:space-address screen:terminal-address)
+    ; <enter> is trimmed in the history expression, so wait for the human to
+    ; hit <enter> again or backspace to make edits
+    (reply nil:literal)
+  }
   ; if it's a newline, decide whether to return
   ;   test: <enter>34<enter>
   { begin
