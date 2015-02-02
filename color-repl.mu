@@ -120,36 +120,13 @@
     ;   test todo: 34<enter>23<up>34<down><enter>  up doesn't mess up typing on current line
     ;   test todo: 34<enter><up>5<enter><up><up>  commands don't modify history
     ;   test todo: multi-line expressions
-    ; then clear line
-    { begin
-      (done?:boolean <- lesser-or-equal len:integer-address/deref 0:literal)
-      (break-if done?:boolean)
-      (print-character screen:terminal-address ((#\backspace literal)))
-      (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
-      (loop)
-    }
-    ; then clear result and all other state accumulated for the existing expression
-    (len:integer-address/deref <- copy 0:literal)
-    (open-parens:integer/space:1 <- copy 0:literal)
-    (escapes:buffer-address/space:1 <- init-buffer 5:literal)
-    (not-empty?:boolean/space:1 <- copy nil:literal)
     ; identify the history item
     (current-history-index:integer/space:1 <- subtract current-history-index:integer/space:1 1:literal)
-    (curr-history:string-address <- buffer-index history:buffer-address/space:1 current-history-index:integer/space:1)
-    (curr-history-len:integer <- length curr-history:string-address/deref)
-    ; and retype it into the current expression
-    (hist:keyboard-address <- init-keyboard curr-history:string-address)
-    (hist-index:integer-address <- get-address hist:keyboard-address/deref index:offset)
-    { begin
-;?       ($print hist-index:integer-address/deref) ;? 1
-;?       ($print curr-history-len:integer) ;? 1
-;?       ($print (("\n" literal))) ;? 1
-      (done?:boolean <- greater-or-equal hist-index:integer-address/deref curr-history-len:integer)
-      (break-if done?:boolean)
-      (sub-return:boolean <- process-key 0:space-address hist:keyboard-address screen:terminal-address)
-      (assert-false sub-return:boolean (("recursive call to process keys thought it was done" literal)))
-      (loop)
-    }
+    ; then clear line
+    (backspace-over len:integer-address/deref screen:terminal-address)
+    ; then clear result and all other state accumulated for the existing expression
+    (len:integer-address/deref <- copy 0:literal)
+    (switch-to-history 0:space-address screen:terminal-address)
     ; <enter> is trimmed in the history expression, so wait for the human to
     ; hit <enter> again or backspace to make edits
     (reply nil:literal)
@@ -246,6 +223,45 @@
   ;   todo: []
   ;   todo: history on up/down
   (reply nil:literal)
+])
+
+(function switch-to-history [
+  (default-space:space-address <- new space:literal 30:literal)
+  (0:space-address/names:read-expression <- next-input)
+  (screen:terminal-address <- next-input)
+  (clear-repl-state 0:space-address)
+  (curr-history:string-address <- buffer-index history:buffer-address/space:1 current-history-index:integer/space:1)
+  (curr-history-len:integer <- length curr-history:string-address/deref)
+  ; and retype it into the current expression
+  (hist:keyboard-address <- init-keyboard curr-history:string-address)
+  (hist-index:integer-address <- get-address hist:keyboard-address/deref index:offset)
+  { begin
+    (done?:boolean <- greater-or-equal hist-index:integer-address/deref curr-history-len:integer)
+    (break-if done?:boolean)
+    (sub-return:boolean <- process-key 0:space-address hist:keyboard-address screen:terminal-address)
+    (assert-false sub-return:boolean (("recursive call to process keys thought it was done" literal)))
+    (loop)
+  }
+])
+
+(function clear-repl-state [
+  (default-space:space-address/names:read-expression <- next-input)
+  (open-parens:integer <- copy 0:literal)
+  (escapes:buffer-address <- init-buffer 5:literal)
+  (not-empty?:boolean <- copy nil:literal)
+])
+
+(function backspace-over [
+  (default-space:space-address <- new space:literal 30:literal)
+  (len:integer <- next-input)
+  (screen:terminal-address <- next-input)
+  { begin
+    (done?:boolean <- lesser-or-equal len:integer 0:literal)
+    (break-if done?:boolean)
+    (print-character screen:terminal-address ((#\backspace literal)))
+    (len:integer <- subtract len:integer 1:literal)
+    (loop)
+  }
 ])
 
 ; list of characters, list of indices of escaped characters, abort continuation
