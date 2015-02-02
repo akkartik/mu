@@ -46,7 +46,7 @@
   (k:keyboard-address <- next-input)
   (screen:terminal-address <- next-input)
   (c:character <- wait-for-key k:keyboard-address silent:literal/terminal)
-  (len:integer-address <- get-address result:buffer-address/space:1/space:1/deref length:offset)
+  (len:integer-address <- get-address result:buffer-address/space:1/deref length:offset)
   (maybe-cancel-this-expression c:character abort:continuation/space:1)
   ; check for ctrl-d and exit
   { begin
@@ -122,10 +122,6 @@
     ;   test todo: multi-line expressions
     ; identify the history item
     (current-history-index:integer/space:1 <- subtract current-history-index:integer/space:1 1:literal)
-    ; then clear line
-    (backspace-over len:integer-address/deref screen:terminal-address)
-    ; then clear result and all other state accumulated for the existing expression
-    (len:integer-address/deref <- copy 0:literal)
     (switch-to-history 0:space-address screen:terminal-address)
     ; <enter> is trimmed in the history expression, so wait for the human to
     ; hit <enter> again or backspace to make edits
@@ -157,10 +153,6 @@
     ;   test todo: multi-line expressions
     ; identify the history item
     (current-history-index:integer/space:1 <- add current-history-index:integer/space:1 1:literal)
-    ; then clear line
-    (backspace-over len:integer-address/deref screen:terminal-address)
-    ; then clear result and all other state accumulated for the existing expression
-    (len:integer-address/deref <- copy 0:literal)
     (switch-to-history 0:space-address screen:terminal-address)
     ; <enter> is trimmed in the history expression, so wait for the human to
     ; hit <enter> again or backspace to make edits
@@ -281,6 +273,11 @@
 
 (function clear-repl-state [
   (default-space:space-address/names:read-expression <- next-input)
+  ; clear result
+  (len:integer-address <- get-address result:buffer-address/deref length:offset)
+  (backspace-over len:integer-address/deref screen:terminal-address)
+  (len:integer-address/deref <- copy 0:literal)
+  ; clear other state accumulated for the existing expression
   (open-parens:integer <- copy 0:literal)
   (escapes:buffer-address <- init-buffer 5:literal)
   (not-empty?:boolean <- copy nil:literal)
