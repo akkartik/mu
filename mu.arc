@@ -302,7 +302,7 @@
   (= abort-routine* (parameter nil))
   (= curr-cycle* 0)
   (= scheduling-interval* 500)
-  (= scheduler-switch-table* nil)  ; hook into scheduler for tests
+  (= scheduler-switch-table* nil)  ; hook into scheduler for debugging
   )
 
 ; like arc's 'point' but you can also call ((abort-routine*)) in nested calls
@@ -494,13 +494,14 @@
         (++ pc.routine*))
       (++ curr-cycle*)
 ;?       (trace "run" "-- " int-canon.memory*) ;? 1
-      (trace "run" curr-cycle* " " top.routine*!fn-name " " pc.routine* ": " (body.routine* pc.routine*))
+;?       (trace "run" curr-cycle*)
+      (trace "run" label.routine* " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
       (when (atom (body.routine* pc.routine*))  ; label
         (when (aand scheduler-switch-table*
                     (alref it (body.routine* pc.routine*)))
           (++ pc.routine*)
-          (trace "run" "context-switch forced " abort-routine*)
+          (trace "run" label.routine* " " pc.routine* ": " "context-switch forced " abort-routine*)
           ((abort-routine*)))
         (++ pc.routine*)
         (continue))
@@ -654,7 +655,7 @@
                     (case (v arg.0)
                       for-some-cycles
                         (let wakeup-time (+ curr-cycle* (v arg.1))
-                          (trace "run" "sleeping until " wakeup-time)  ; TODO
+                          (trace "run" label.routine* " " pc.routine* ": " "sleeping until " wakeup-time)
                           (= rep.routine*!sleep `(until ,wakeup-time)))
                       until-location-changes
                         (= rep.routine*!sleep `(until-location-changes ,(addr arg.1) ,(m arg.1)))
@@ -899,13 +900,13 @@
                         (pop-stack routine*)
                         (if empty.routine* (return ninstrs))
                         (let (call-oargs _ call-args)  (parse-instr (body.routine* pc.routine*))
-                          (trace "reply" repr.arg " " repr.call-oargs)
+;?                           (trace "reply" repr.arg " " repr.call-oargs) ;? 1
                           (each (dest reply-arg val)  (zip call-oargs reply-args results)
+                            (trace "run" label.routine* " " pc.routine* ": " repr.val " => " dest)
                             (when nondummy.dest
                               (whenlet argidx (alref metadata.reply-arg 'same-as-arg)
                                 (unless (is v.dest (v call-args.argidx))
                                   (die "'same-as-arg' output arg in @repr.reply-args can't bind to @repr.call-oargs")))
-                              (trace "reply" repr.val " => " dest)
                               (setm dest val))))
                         (++ pc.routine*)
                         (while (>= pc.routine* (len body.routine*))
@@ -936,10 +937,10 @@
               (if (acons results)
                 (each (dest val) (zip oarg results)
                   (unless (is dest '_)
-                    (trace "run" repr.val " => " dest)
+                    (trace "run" label.routine* " " pc.routine* ": " repr.val " => " dest)
                     (setm dest val)))
                 (when oarg  ; must be a list
-                  (trace "run" repr.results " => " oarg.0)
+                  (trace "run" label.routine* " " pc.routine* ": " repr.results " => " oarg.0)
                   (setm oarg.0 results)))
               )
         (++ pc.routine*)))
@@ -964,16 +965,18 @@
       (return v.loc))
     (when (is v.loc 'default-space)
       (return rep.routine*!call-stack.0!default-space))
-    (trace "m" loc)
+;?     (trace "mem" loc) ;? 1
     (assert (isa v.loc 'int) "addresses must be numeric (problem in convert-names?): @repr.loc")
-    (with (n  sizeof.loc
-           addr  addr.loc)
-;?       (trace "m" "reading " n " locations starting at " addr)
-      (if (is 1 n)
-            memory*.addr
-          :else
-            (annotate 'record
-                      (map memory* (addrs addr n)))))))
+    (ret result
+      (with (n  sizeof.loc
+             addr  addr.loc)
+;?         (trace "mem" "reading " n " locations starting at " addr) ;? 1
+        (if (is 1 n)
+              memory*.addr
+            :else
+              (annotate 'record
+                        (map memory* (addrs addr n)))))
+      (trace "mem" loc " => " result))))
 
 (def setm (loc val)  ; set memory, respecting metadata
 ;?   (tr 111)
@@ -985,16 +988,16 @@
       (return))
 ;?   (tr 120)
     (assert (isa v.loc 'int) "can't store to non-numeric address (problem in convert-names?)")
-    (trace "setm" loc " <= " repr.val)
+;?     (trace "mem" loc " <= " repr.val) ;? 1
     (with (n  (if (isa val 'record) (len rep.val) 1)
            addr  addr.loc
            typ  typeof.loc)
-      (trace "setm" "size of " loc " is " n)
+;?       (trace "mem" "size of " loc " is " n) ;? 1
       (assert n "setm: can't compute type of @loc")
       (assert addr "setm: null pointer @loc")
       (if (is 1 n)
         (do (assert (~isa val 'record) "setm: record of size 1 @(tostring prn.val)")
-            (trace "setm" loc ": setting " addr " to " repr.val)
+            (trace "mem" loc ": " addr " <= " repr.val)
             (= memory*.addr val))
         (do (if type*.typ!array
               ; size check for arrays
@@ -1007,7 +1010,7 @@
                 (die "writing to incorrect size @(tostring pr.val) => @loc")))
             (let addrs (addrs addr n)
               (each (dest src) (zip addrs rep.val)
-                (trace "setm" loc ": setting " dest " to " repr.src)
+                (trace "mem" loc ": " dest " <= " repr.src)
                 (= memory*.dest src))))))))
 
 (def typeof (operand)
@@ -1046,7 +1049,7 @@
         (err "can't take len of non-array @operand")))
 
 (def sizeof (x)
-  (trace "sizeof" x)
+;?   (trace "sizeof" x) ;? 1
   (assert acons.x)
   (zap canonize x)
   (point return

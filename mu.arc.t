@@ -163,7 +163,8 @@
 ;? (prn memory*)
 (when (~is memory*.1 23)
   (prn "F - 'copy' writes its lone 'arg' after the instruction name to its lone 'oarg' or output arg before the arrow. After this test, the value 23 is stored in memory address 1."))
-;? (quit)
+;? (reset) ;? 1
+;? (quit) ;? 1
 
 ; Our basic arithmetic ops can operate on memory locations or literals.
 ; (Ignore hardware details like registers for now.)
@@ -180,7 +181,8 @@
 ;? (prn memory*)
 (when (~iso memory* (obj 1 1  2 3  3 4))
   (prn "F - 'add' operates on two addresses"))
-;? (quit)
+;? (reset) ;? 1
+;? (quit) ;? 1
 
 (reset)
 (new-trace "add-literal")
@@ -628,7 +630,7 @@
       (7:integer-boolean-pair-array-address <- copy 1:literal)
       (8:integer-boolean-pair <- index 7:integer-boolean-pair-array-address/deref 6:integer)
      ])))
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+;? (= dump-trace* (obj blacklist '("sz" "mem" "addr" "cvt0" "cvt1")))
 ;? (set dump-trace*)
 (run 'main)
 ;? (prn memory*)
@@ -719,7 +721,7 @@
       (7:integer <- length 6:integer-boolean-pair-array-address/deref)
      ])))
 ;? (set dump-trace*)
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+;? (= dump-trace* (obj blacklist '("sz" "mem" "addr" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn memory*)
 (when (~is memory*.7 2)
@@ -804,7 +806,7 @@
 
 (reset)
 (new-trace "tagged-value")
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+;? (= dump-trace* (obj blacklist '("sz" "mem" "addr" "cvt0" "cvt1")))
 (add-code
   '((function main [
       (1:type <- copy integer:literal)
@@ -857,7 +859,7 @@
       (2:tagged-value-address <- init-tagged-value integer:literal 1:integer)
       (3:integer 4:boolean <- maybe-coerce 2:tagged-value-address/deref integer:literal)
      ])))
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
+;? (= dump-trace* (obj blacklist '("sz" "mem" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
 ;? (prn memory*)
 (when (or (~is memory*.3 34)
@@ -936,7 +938,7 @@
   '((function main [
       (1:integer <- init-list 3:literal 4:literal 5:literal)
      ])))
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1" "sizeof")))
+;? (= dump-trace* (obj blacklist '("sz" "mem" "addr" "cvt0" "cvt1" "sizeof")))
 (run 'main)
 ;? (prn memory*)
 (let first memory*.1
@@ -2058,7 +2060,7 @@
       (2:integer-address/deref <- copy 34:literal)
       (3:integer/raw <- get 1:integer-boolean-pair-address/deref 0:offset)
      ])))
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "cvt0" "cvt1")))
+;? (= dump-trace* (obj blacklist '("sz" "mem" "addr" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn memory*)
 ;? (prn completed-routines*)
@@ -2134,7 +2136,7 @@
       (7:integer-boolean-pair-array <- copy 6:integer-boolean-pair-array-address/deref)
      ])))
 ;? (set dump-trace*)
-;? (= dump-trace* (obj whitelist '("run" "m" "sizeof")))
+;? (= dump-trace* (obj whitelist '("run" "mem" "sizeof")))
 (run 'main)
 ;? (prn memory*)
 (each routine completed-routines*
@@ -3263,7 +3265,7 @@
      ])))
 ;? (prn function*!write)
 ;? (set dump-trace*)
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
+;? (= dump-trace* (obj blacklist '("sz" "mem" "addr" "array-len" "cvt0" "cvt1")))
 ;? (= dump-trace* (obj whitelist '("jump")))
 ;? (= dump-trace* (obj whitelist '("run" "reply")))
 (run 'main)
@@ -3289,7 +3291,7 @@
       (9:integer <- get 1:channel-address/deref first-free:offset)
      ])))
 ;? (set dump-trace*)
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
+;? (= dump-trace* (obj blacklist '("sz" "mem" "addr" "array-len" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn int-canon.memory*)
 (when (~is memory*.7 34)
@@ -3317,7 +3319,7 @@
       (6:integer <- get 1:channel-address/deref first-free:offset)
      ])))
 ;? (set dump-trace*)
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
+;? (= dump-trace* (obj blacklist '("sz" "mem" "addr" "array-len" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn canon.memory*)
 (when (or (~is 1 memory*.5)
@@ -3345,7 +3347,7 @@
       (6:integer <- get 1:channel-address/deref first-full:offset)
      ])))
 ;? (set dump-trace*)
-;? (= dump-trace* (obj blacklist '("sz" "m" "setm" "addr" "array-len" "cvt0" "cvt1")))
+;? (= dump-trace* (obj blacklist '("sz" "mem" "addr" "array-len" "cvt0" "cvt1")))
 (run 'main)
 ;? (prn canon.memory*)
 (when (or (~is 1 memory*.5)
@@ -4857,7 +4859,7 @@
   (prn "F - 'setm' checks that array written is well-formed"))
 (= routine* make-routine!foo)
 ;? (prn 111)
-;? (= dump-trace* (obj whitelist '("sizeof" "setm")))
+;? (= dump-trace* (obj whitelist '("sizeof" "mem")))
 (setm '((4 integer-boolean-pair-array)) (annotate 'record '(2 31 nil 32 nil 33)))
 (when (~posmatch "invalid array" rep.routine*!error)
   (prn "F - 'setm' checks that array of records is well-formed"))
