@@ -1,56 +1,35 @@
 schedule: main
-run: 1 main 0: (((1 string-address)) <- ((new)) )
-run: 1000 => ((1 string-address))
-setm: ((1 string-address)) <= 1000
-setm: size of ((1 string-address)) is 1
-setm: ((1 string-address)): setting 1 to 1000
-run: 2 main 1: (((2 integer)) <- ((find-next)) ((1 string-address)) ((/ literal)) ((0 literal)))
-m: ((1 string-address))
-sizeof: ((1 string-address))
-run: 3 find-next 0: (((1 string-address)) <- ((next-input)))
+run: main 0: (((1 string-address)) <- ((new)) )
+run: main 0: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1 <= 1000
+run: main 1: (((2 integer)) <- ((find-next)) ((1 string-address)) ((/ literal)) ((0 literal)))
+mem: ((1 string-address)) => 1000
+run: find-next/main 0: (((1 string-address)) <- ((next-input)))
 arg: nil 0 (1000 #\/ 0)
-run: 1000 => ((1 string-address))
-setm: ((1 string-address)) <= 1000
-setm: size of ((1 string-address)) is 1
-setm: ((1 string-address)): setting 1 to 1000
-run: 4 find-next 1: (((2 character)) <- ((next-input)))
+run: find-next/main 0: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1 <= 1000
+run: find-next/main 1: (((2 character)) <- ((next-input)))
 arg: nil 1 (1000 #\/ 0)
-run: #\/ => ((2 character))
-setm: ((2 character)) <= #\/
-setm: size of ((2 character)) is 1
-setm: ((2 character)): setting 2 to #\/
-run: 5 find-next 2: (((3 integer)) <- ((next-input)))
+run: find-next/main 1: #\/ => ((2 character))
+mem: ((2 character)): 2 <= #\/
+run: find-next/main 2: (((3 integer)) <- ((next-input)))
 arg: nil 2 (1000 #\/ 0)
-run: 0 => ((3 integer))
-setm: ((3 integer)) <= 0
-setm: size of ((3 integer)) is 1
-setm: ((3 integer)): setting 3 to 0
-run: 6 find-next 3: (((4 integer)) <- ((length)) ((1 string-address) (deref)))
+run: find-next/main 2: 0 => ((3 integer))
+mem: ((3 integer)): 3 <= 0
+run: find-next/main 3: (((4 integer)) <- ((length)) ((1 string-address) (deref)))
 array-len: ((1 string-address) (deref))
-m: ((1000 integer))
-sizeof: ((1000 integer))
-run: 0 => ((4 integer))
-setm: ((4 integer)) <= 0
-setm: size of ((4 integer)) is 1
-setm: ((4 integer)): setting 4 to 0
-run: 7 find-next 4: (((5 boolean)) <- ((greater-or-equal)) ((3 integer)) ((4 integer)))
-m: ((3 integer))
-sizeof: ((3 integer))
-m: ((4 integer))
-sizeof: ((4 integer))
-run: t => ((5 boolean))
-setm: ((5 boolean)) <= t
-setm: size of ((5 boolean)) is 1
-setm: ((5 boolean)): setting 5 to t
-run: 8 find-next 5: (((jump-if)) ((5 boolean)) ((5 offset)))
-m: ((5 boolean))
-sizeof: ((5 boolean))
-run: 9 find-next 11: (((reply)) ((3 integer)))
-m: ((3 integer))
-sizeof: ((3 integer))
-reply: (((3 integer))) (((2 integer)))
-reply: 0 => ((2 integer))
-setm: ((2 integer)) <= 0
-setm: size of ((2 integer)) is 1
-setm: ((2 integer)): setting 2 to 0
+mem: ((1000 integer)) => 0
+run: find-next/main 3: 0 => ((4 integer))
+mem: ((4 integer)): 4 <= 0
+run: find-next/main 4: (((5 boolean)) <- ((greater-or-equal)) ((3 integer)) ((4 integer)))
+mem: ((3 integer)) => 0
+mem: ((4 integer)) => 0
+run: find-next/main 4: t => ((5 boolean))
+mem: ((5 boolean)): 5 <= t
+run: find-next/main 5: (((jump-if)) ((5 boolean)) ((5 offset)))
+mem: ((5 boolean)) => t
+run: find-next/main 11: (((reply)) ((3 integer)))
+mem: ((3 integer)) => 0
+run: main 1: 0 => ((2 integer))
+mem: ((2 integer)): 2 <= 0
 schedule: done with routine 

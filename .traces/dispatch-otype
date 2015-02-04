@@ -1,47 +1,29 @@
 schedule: main
-run: 1 main 0: (((1 integer)) <- ((test1)) ((1 literal)) ((3 literal)))
-run: 2 test1 0: (((4 type)) <- ((otype)) ((0 offset)))
-run: integer => ((4 type))
-setm: ((4 type)) <= integer
-setm: size of ((4 type)) is 1
-setm: ((4 type)): setting 4 to integer
-run: 3 test1 1: (((5 boolean)) <- ((equal)) ((4 type)) ((integer literal)))
-m: ((4 type))
-sizeof: ((4 type))
-run: t => ((5 boolean))
-setm: ((5 boolean)) <= t
-setm: size of ((5 boolean)) is 1
-setm: ((5 boolean)): setting 5 to t
-run: 4 test1 2: (((jump-unless)) ((5 boolean)) ((3 offset)))
-m: ((5 boolean))
-sizeof: ((5 boolean))
-run: 5 test1 3: (((6 integer)) <- ((next-input)))
+run: main 0: (((1 integer)) <- ((test1)) ((1 literal)) ((3 literal)))
+run: test1/main 0: (((4 type)) <- ((otype)) ((0 offset)))
+run: test1/main 0: integer => ((4 type))
+mem: ((4 type)): 4 <= integer
+run: test1/main 1: (((5 boolean)) <- ((equal)) ((4 type)) ((integer literal)))
+mem: ((4 type)) => integer
+run: test1/main 1: t => ((5 boolean))
+mem: ((5 boolean)): 5 <= t
+run: test1/main 2: (((jump-unless)) ((5 boolean)) ((3 offset)))
+mem: ((5 boolean)) => t
+run: test1/main 3: (((6 integer)) <- ((next-input)))
 arg: nil 0 (1 3)
-run: 1 => ((6 integer))
-setm: ((6 integer)) <= 1
-setm: size of ((6 integer)) is 1
-setm: ((6 integer)): setting 6 to 1
-run: 6 test1 4: (((7 integer)) <- ((next-input)))
+run: test1/main 3: 1 => ((6 integer))
+mem: ((6 integer)): 6 <= 1
+run: test1/main 4: (((7 integer)) <- ((next-input)))
 arg: nil 1 (1 3)
-run: 3 => ((7 integer))
-setm: ((7 integer)) <= 3
-setm: size of ((7 integer)) is 1
-setm: ((7 integer)): setting 7 to 3
-run: 7 test1 5: (((8 integer)) <- ((add)) ((6 integer)) ((7 integer)))
-m: ((6 integer))
-sizeof: ((6 integer))
-m: ((7 integer))
-sizeof: ((7 integer))
-run: 4 => ((8 integer))
-setm: ((8 integer)) <= 4
-setm: size of ((8 integer)) is 1
-setm: ((8 integer)): setting 8 to 4
-run: 8 test1 6: (((reply)) ((8 integer)))
-m: ((8 integer))
-sizeof: ((8 integer))
-reply: (((8 integer))) (((1 integer)))
-reply: 4 => ((1 integer))
-setm: ((1 integer)) <= 4
-setm: size of ((1 integer)) is 1
-setm: ((1 integer)): setting 1 to 4
+run: test1/main 4: 3 => ((7 integer))
+mem: ((7 integer)): 7 <= 3
+run: test1/main 5: (((8 integer)) <- ((add)) ((6 integer)) ((7 integer)))
+mem: ((6 integer)) => 1
+mem: ((7 integer)) => 3
+run: test1/main 5: 4 => ((8 integer))
+mem: ((8 integer)): 8 <= 4
+run: test1/main 6: (((reply)) ((8 integer)))
+mem: ((8 integer)) => 4
+run: main 0: 4 => ((1 integer))
+mem: ((1 integer)): 1 <= 4
 schedule: done with routine 

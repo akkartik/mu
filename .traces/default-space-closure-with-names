@@ -1,89 +1,52 @@
 schedule: main
-run: 1 main 0: (((1 space-address) (names init-counter)) <- ((init-counter)))
-run: 2 init-counter 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
-sizeof: ((_ location))
-run: 1000 => ((default-space space-address))
-sizeof: ((default-space space-address))
-run: 3 init-counter 1: (((1 integer)) <- ((copy)) ((23 literal)))
-run: 23 => ((1 integer))
-setm: ((1 integer)) <= 23
-setm: size of ((1 integer)) is 1
-setm: ((1 integer)): setting 1002 to 23
-run: 4 init-counter 2: (((2 integer)) <- ((copy)) ((3 literal)))
-run: 3 => ((2 integer))
-setm: ((2 integer)) <= 3
-setm: size of ((2 integer)) is 1
-setm: ((2 integer)): setting 1003 to 3
-run: 5 init-counter 3: (((reply)) ((default-space space-address)))
-reply: (((default-space space-address))) (((1 space-address) (names init-counter)))
-reply: 1000 => ((1 space-address) (names init-counter))
-setm: ((1 space-address) (names init-counter)) <= 1000
-setm: size of ((1 space-address) (names init-counter)) is 1
-setm: ((1 space-address) (names init-counter)): setting 1 to 1000
-run: 6 main 1: (((2 integer)) <- ((increment-counter)) ((1 space-address) (names init-counter)))
-m: ((1 space-address) (names init-counter))
-sizeof: ((1 space-address) (names init-counter))
-run: 7 increment-counter 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
-sizeof: ((_ location))
-run: 1031 => ((default-space space-address))
-sizeof: ((default-space space-address))
-run: 8 increment-counter 1: (((0 space-address) (names init-counter)) <- ((next-input)))
+run: main 0: (((1 space-address) (names init-counter)) <- ((init-counter)))
+run: init-counter/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: init-counter/main 0: 1000 => ((default-space space-address))
+run: init-counter/main 1: (((1 integer)) <- ((copy)) ((23 literal)))
+run: init-counter/main 1: 23 => ((1 integer))
+mem: ((1 integer)): 1002 <= 23
+run: init-counter/main 2: (((2 integer)) <- ((copy)) ((3 literal)))
+run: init-counter/main 2: 3 => ((2 integer))
+mem: ((2 integer)): 1003 <= 3
+run: init-counter/main 3: (((reply)) ((default-space space-address)))
+run: main 0: 1000 => ((1 space-address) (names init-counter))
+mem: ((1 space-address) (names init-counter)): 1 <= 1000
+run: main 1: (((2 integer)) <- ((increment-counter)) ((1 space-address) (names init-counter)))
+mem: ((1 space-address) (names init-counter)) => 1000
+run: increment-counter/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: increment-counter/main 0: 1031 => ((default-space space-address))
+run: increment-counter/main 1: (((0 space-address) (names init-counter)) <- ((next-input)))
 arg: nil 0 (1000)
-run: 1000 => ((0 space-address) (names init-counter))
-setm: ((0 space-address) (names init-counter)) <= 1000
-setm: size of ((0 space-address) (names init-counter)) is 1
-setm: ((0 space-address) (names init-counter)): setting 1032 to 1000
-run: 9 increment-counter 2: (((2 integer) (space 1)) <- ((add)) ((2 integer) (space 1)) ((1 literal)))
-m: ((2 integer) (space 1))
-sizeof: ((2 integer) (space 1))
-run: 4 => ((2 integer) (space 1))
-setm: ((2 integer) (space 1)) <= 4
-setm: size of ((2 integer) (space 1)) is 1
-setm: ((2 integer) (space 1)): setting 1003 to 4
-run: 10 increment-counter 3: (((1 integer)) <- ((copy)) ((34 literal)))
-run: 34 => ((1 integer))
-setm: ((1 integer)) <= 34
-setm: size of ((1 integer)) is 1
-setm: ((1 integer)): setting 1033 to 34
-run: 11 increment-counter 4: (((reply)) ((2 integer) (space 1)))
-m: ((2 integer) (space 1))
-sizeof: ((2 integer) (space 1))
-reply: (((2 integer) (space 1))) (((2 integer)))
-reply: 4 => ((2 integer))
-setm: ((2 integer)) <= 4
-setm: size of ((2 integer)) is 1
-setm: ((2 integer)): setting 2 to 4
-run: 12 main 2: (((3 integer)) <- ((increment-counter)) ((1 space-address) (names init-counter)))
-m: ((1 space-address) (names init-counter))
-sizeof: ((1 space-address) (names init-counter))
-run: 13 increment-counter 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
-sizeof: ((_ location))
-run: 1062 => ((default-space space-address))
-sizeof: ((default-space space-address))
-run: 14 increment-counter 1: (((0 space-address) (names init-counter)) <- ((next-input)))
+run: increment-counter/main 1: 1000 => ((0 space-address) (names init-counter))
+mem: ((0 space-address) (names init-counter)): 1032 <= 1000
+run: increment-counter/main 2: (((2 integer) (space 1)) <- ((add)) ((2 integer) (space 1)) ((1 literal)))
+mem: ((2 integer) (space 1)) => 3
+run: increment-counter/main 2: 4 => ((2 integer) (space 1))
+mem: ((2 integer) (space 1)): 1003 <= 4
+run: increment-counter/main 3: (((1 integer)) <- ((copy)) ((34 literal)))
+run: increment-counter/main 3: 34 => ((1 integer))
+mem: ((1 integer)): 1033 <= 34
+run: increment-counter/main 4: (((reply)) ((2 integer) (space 1)))
+mem: ((2 integer) (space 1)) => 4
+run: main 1: 4 => ((2 integer))
+mem: ((2 integer)): 2 <= 4
+run: main 2: (((3 integer)) <- ((increment-counter)) ((1 space-address) (names init-counter)))
+mem: ((1 space-address) (names init-counter)) => 1000
+run: increment-counter/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: increment-counter/main 0: 1062 => ((default-space space-address))
+run: increment-counter/main 1: (((0 space-address) (names init-counter)) <- ((next-input)))
 arg: nil 0 (1000)
-run: 1000 => ((0 space-address) (names init-counter))
-setm: ((0 space-address) (names init-counter)) <= 1000
-setm: size of ((0 space-address) (names init-counter)) is 1
-setm: ((0 space-address) (names init-counter)): setting 1063 to 1000
-run: 15 increment-counter 2: (((2 integer) (space 1)) <- ((add)) ((2 integer) (space 1)) ((1 literal)))
-m: ((2 integer) (space 1))
-sizeof: ((2 integer) (space 1))
-run: 5 => ((2 integer) (space 1))
-setm: ((2 integer) (space 1)) <= 5
-setm: size of ((2 integer) (space 1)) is 1
-setm: ((2 integer) (space 1)): setting 1003 to 5
-run: 16 increment-counter 3: (((1 integer)) <- ((copy)) ((34 literal)))
-run: 34 => ((1 integer))
-setm: ((1 integer)) <= 34
-setm: size of ((1 integer)) is 1
-setm: ((1 integer)): setting 1064 to 34
-run: 17 increment-counter 4: (((reply)) ((2 integer) (space 1)))
-m: ((2 integer) (space 1))
-sizeof: ((2 integer) (space 1))
-reply: (((2 integer) (space 1))) (((3 integer)))
-reply: 5 => ((3 integer))
-setm: ((3 integer)) <= 5
-setm: size of ((3 integer)) is 1
-setm: ((3 integer)): setting 3 to 5
+run: increment-counter/main 1: 1000 => ((0 space-address) (names init-counter))
+mem: ((0 space-address) (names init-counter)): 1063 <= 1000
+run: increment-counter/main 2: (((2 integer) (space 1)) <- ((add)) ((2 integer) (space 1)) ((1 literal)))
+mem: ((2 integer) (space 1)) => 4
+run: increment-counter/main 2: 5 => ((2 integer) (space 1))
+mem: ((2 integer) (space 1)): 1003 <= 5
+run: increment-counter/main 3: (((1 integer)) <- ((copy)) ((34 literal)))
+run: increment-counter/main 3: 34 => ((1 integer))
+mem: ((1 integer)): 1064 <= 34
+run: increment-counter/main 4: (((reply)) ((2 integer) (space 1)))
+mem: ((2 integer) (space 1)) => 5
+run: main 2: 5 => ((3 integer))
+mem: ((3 integer)): 3 <= 5
 schedule: done with routine 

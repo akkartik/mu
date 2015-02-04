@@ -1,58 +1,34 @@
 schedule: main
-run: 1 main 0: (((1 space-address)) <- ((f)))
-run: 2 f 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
-sizeof: ((_ location))
-run: 1000 => ((default-space space-address))
-sizeof: ((default-space space-address))
-run: 3 f 1: (((1 integer)) <- ((copy)) ((3 literal)))
-run: 3 => ((1 integer))
-setm: ((1 integer)) <= 3
-setm: size of ((1 integer)) is 1
-setm: ((1 integer)): setting 1002 to 3
-run: 4 f 2: (((2 integer)) <- ((copy)) ((4 literal)))
-run: 4 => ((2 integer))
-setm: ((2 integer)) <= 4
-setm: size of ((2 integer)) is 1
-setm: ((2 integer)): setting 1003 to 4
-run: 5 f 3: (((reply)) ((default-space space-address)))
-reply: (((default-space space-address))) (((1 space-address)))
-reply: 1000 => ((1 space-address))
-setm: ((1 space-address)) <= 1000
-setm: size of ((1 space-address)) is 1
-setm: ((1 space-address)): setting 1 to 1000
-run: 6 main 1: (((2 integer)) ((3 integer)) <- ((g)) ((1 space-address)))
-m: ((1 space-address))
-sizeof: ((1 space-address))
-run: 7 g 0: (((default-space space-address) (names f)) <- ((next-input)))
+run: main 0: (((1 space-address)) <- ((f)))
+run: f/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: f/main 0: 1000 => ((default-space space-address))
+run: f/main 1: (((1 integer)) <- ((copy)) ((3 literal)))
+run: f/main 1: 3 => ((1 integer))
+mem: ((1 integer)): 1002 <= 3
+run: f/main 2: (((2 integer)) <- ((copy)) ((4 literal)))
+run: f/main 2: 4 => ((2 integer))
+mem: ((2 integer)): 1003 <= 4
+run: f/main 3: (((reply)) ((default-space space-address)))
+run: main 0: 1000 => ((1 space-address))
+mem: ((1 space-address)): 1 <= 1000
+run: main 1: (((2 integer)) ((3 integer)) <- ((g)) ((1 space-address)))
+mem: ((1 space-address)) => 1000
+run: g/main 0: (((default-space space-address) (names f)) <- ((next-input)))
 arg: nil 0 (1000)
-run: 1000 => ((default-space space-address) (names f))
-sizeof: ((default-space space-address) (names f))
-run: 8 g 1: (((2 integer)) <- ((add)) ((2 integer)) ((1 literal)))
-m: ((2 integer))
-sizeof: ((2 integer))
-run: 5 => ((2 integer))
-setm: ((2 integer)) <= 5
-setm: size of ((2 integer)) is 1
-setm: ((2 integer)): setting 1003 to 5
-run: 9 g 2: (((1 integer)) <- ((add)) ((1 integer)) ((2 literal)))
-m: ((1 integer))
-sizeof: ((1 integer))
-run: 5 => ((1 integer))
-setm: ((1 integer)) <= 5
-setm: size of ((1 integer)) is 1
-setm: ((1 integer)): setting 1002 to 5
-run: 10 g 3: (((reply)) ((1 integer)) ((2 integer)))
-m: ((1 integer))
-sizeof: ((1 integer))
-m: ((2 integer))
-sizeof: ((2 integer))
-reply: (((1 integer)) ((2 integer))) (((2 integer)) ((3 integer)))
-reply: 5 => ((2 integer))
-setm: ((2 integer)) <= 5
-setm: size of ((2 integer)) is 1
-setm: ((2 integer)): setting 2 to 5
-reply: 5 => ((3 integer))
-setm: ((3 integer)) <= 5
-setm: size of ((3 integer)) is 1
-setm: ((3 integer)): setting 3 to 5
+run: g/main 0: 1000 => ((default-space space-address) (names f))
+run: g/main 1: (((2 integer)) <- ((add)) ((2 integer)) ((1 literal)))
+mem: ((2 integer)) => 4
+run: g/main 1: 5 => ((2 integer))
+mem: ((2 integer)): 1003 <= 5
+run: g/main 2: (((1 integer)) <- ((add)) ((1 integer)) ((2 literal)))
+mem: ((1 integer)) => 3
+run: g/main 2: 5 => ((1 integer))
+mem: ((1 integer)): 1002 <= 5
+run: g/main 3: (((reply)) ((1 integer)) ((2 integer)))
+mem: ((1 integer)) => 5
+mem: ((2 integer)) => 5
+run: main 1: 5 => ((2 integer))
+mem: ((2 integer)): 2 <= 5
+run: main 1: 5 => ((3 integer))
+mem: ((3 integer)): 3 <= 5
 schedule: done with routine 

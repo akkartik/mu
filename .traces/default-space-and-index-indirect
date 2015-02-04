@@ -1,37 +1,21 @@
 schedule: main
-run: 1 main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((5 literal)))
-sizeof: ((_ location))
-run: 1000 => ((default-space space-address))
-sizeof: ((default-space space-address))
-run: 2 main 1: (((1 integer-array-address)) <- ((new)) ((integer-array literal)) ((4 literal)))
-sizeof: ((_ integer))
-run: 1006 => ((1 integer-array-address))
-setm: ((1 integer-array-address)) <= 1006
-setm: size of ((1 integer-array-address)) is 1
-setm: ((1 integer-array-address)): setting 1002 to 1006
-run: 3 main 2: (((2 integer-address)) <- ((index-address)) ((1 integer-array-address) (deref)) ((2 offset)))
+run: main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((5 literal)))
+run: main 0: 1000 => ((default-space space-address))
+run: main 1: (((1 integer-array-address)) <- ((new)) ((integer-array literal)) ((4 literal)))
+run: main 1: 1006 => ((1 integer-array-address))
+mem: ((1 integer-array-address)): 1002 <= 1006
+run: main 2: (((2 integer-address)) <- ((index-address)) ((1 integer-array-address) (deref)) ((2 offset)))
 array-len: ((1006 integer-array) (raw))
-m: ((1006 integer) (raw))
-sizeof: ((1006 integer) (raw))
-sizeof: ((_ integer))
-run: 1009 => ((2 integer-address))
-setm: ((2 integer-address)) <= 1009
-setm: size of ((2 integer-address)) is 1
-setm: ((2 integer-address)): setting 1003 to 1009
-run: 4 main 3: (((2 integer-address) (deref)) <- ((copy)) ((34 literal)))
-run: 34 => ((2 integer-address) (deref))
-setm: ((2 integer-address) (deref)) <= 34
-setm: size of ((2 integer-address) (deref)) is 1
-setm: ((2 integer-address) (deref)): setting 1009 to 34
-run: 5 main 4: (((3 integer) (raw)) <- ((index)) ((1 integer-array-address) (deref)) ((2 offset)))
+mem: ((1006 integer) (raw)) => 4
+run: main 2: 1009 => ((2 integer-address))
+mem: ((2 integer-address)): 1003 <= 1009
+run: main 3: (((2 integer-address) (deref)) <- ((copy)) ((34 literal)))
+run: main 3: 34 => ((2 integer-address) (deref))
+mem: ((2 integer-address) (deref)): 1009 <= 34
+run: main 4: (((3 integer) (raw)) <- ((index)) ((1 integer-array-address) (deref)) ((2 offset)))
 array-len: ((1006 integer-array) (raw))
-m: ((1006 integer) (raw))
-sizeof: ((1006 integer) (raw))
-sizeof: ((_ integer))
-m: ((1009 integer) (raw))
-sizeof: ((1009 integer) (raw))
-run: 34 => ((3 integer) (raw))
-setm: ((3 integer) (raw)) <= 34
-setm: size of ((3 integer) (raw)) is 1
-setm: ((3 integer) (raw)): setting 3 to 34
+mem: ((1006 integer) (raw)) => 4
+mem: ((1009 integer) (raw)) => 34
+run: main 4: 34 => ((3 integer) (raw))
+mem: ((3 integer) (raw)): 3 <= 34
 schedule: done with routine 

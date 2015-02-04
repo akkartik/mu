@@ -1,38 +1,24 @@
 schedule: main
-run: 1 main 0: (((2 integer-address)) <- ((new)) ((integer literal)))
-sizeof: ((_ integer))
-run: 1000 => ((2 integer-address))
-setm: ((2 integer-address)) <= 1000
-setm: size of ((2 integer-address)) is 1
-setm: ((2 integer-address)): setting 2 to 1000
-run: 2 main 1: (((2 integer-address) (deref)) <- ((copy)) ((0 literal)))
-run: 0 => ((2 integer-address) (deref))
-setm: ((2 integer-address) (deref)) <= 0
-setm: size of ((2 integer-address) (deref)) is 1
-setm: ((2 integer-address) (deref)): setting 1000 to 0
-run: 3 main 2: (((3 integer-address)) <- ((test1)) ((2 integer-address)))
-m: ((2 integer-address))
-sizeof: ((2 integer-address))
-run: 4 test1 0: (((default-space space-address)) <- ((new)) ((space literal)) ((2 literal)))
-sizeof: ((_ location))
-run: 1001 => ((default-space space-address))
-sizeof: ((default-space space-address))
-run: 5 test1 1: (((1 integer-address)) <- ((next-input)))
+run: main 0: (((2 integer-address)) <- ((new)) ((integer literal)))
+run: main 0: 1000 => ((2 integer-address))
+mem: ((2 integer-address)): 2 <= 1000
+run: main 1: (((2 integer-address) (deref)) <- ((copy)) ((0 literal)))
+run: main 1: 0 => ((2 integer-address) (deref))
+mem: ((2 integer-address) (deref)): 1000 <= 0
+run: main 2: (((3 integer-address)) <- ((test1)) ((2 integer-address)))
+mem: ((2 integer-address)) => 1000
+run: test1/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((2 literal)))
+run: test1/main 0: 1001 => ((default-space space-address))
+run: test1/main 1: (((1 integer-address)) <- ((next-input)))
 arg: nil 0 (1000)
-run: 1000 => ((1 integer-address))
-setm: ((1 integer-address)) <= 1000
-setm: size of ((1 integer-address)) is 1
-setm: ((1 integer-address)): setting 1003 to 1000
-run: 6 test1 2: (((1 integer-address) (deref)) <- ((add)) ((1 integer-address) (deref)) ((1 literal)))
-m: ((1 integer-address) (deref))
-sizeof: ((1 integer-address) (deref))
-run: 1 => ((1 integer-address) (deref))
-setm: ((1 integer-address) (deref)) <= 1
-setm: size of ((1 integer-address) (deref)) is 1
-setm: ((1 integer-address) (deref)): setting 1000 to 1
-run: 7 test1 3: (((reply)) ((1 integer-address) (same-as-arg 0)))
-m: ((1 integer-address) (same-as-arg 0))
-sizeof: ((1 integer-address) (same-as-arg 0))
-reply: (((1 integer-address) (same-as-arg 0))) (((3 integer-address)))
+run: test1/main 1: 1000 => ((1 integer-address))
+mem: ((1 integer-address)): 1003 <= 1000
+run: test1/main 2: (((1 integer-address) (deref)) <- ((add)) ((1 integer-address) (deref)) ((1 literal)))
+mem: ((1 integer-address) (deref)) => 0
+run: test1/main 2: 1 => ((1 integer-address) (deref))
+mem: ((1 integer-address) (deref)): 1000 <= 1
+run: test1/main 3: (((reply)) ((1 integer-address) (same-as-arg 0)))
+mem: ((1 integer-address) (same-as-arg 0)) => 1000
+run: main 2: 1000 => ((3 integer-address))
 -: die: 'same-as-arg' output arg in (((1 integer-address) (same-as-arg 0))) can't bind to (((3 integer-address)))
 schedule: done with dead routine main
