@@ -4000,6 +4000,89 @@
       (prn "F - 'new' initializes allocated memory to string literal"))))
 
 (reset)
+(new-trace "string-equal")
+(add-code
+  '((function main [
+      (1:string-address <- new "hello")
+      (2:string-address <- new "hello")
+      (3:boolean <- string-equal 1:string-address 2:string-address)
+     ])))
+(run 'main)
+(when (~iso memory*.3 t)
+  (prn "F - 'string-equal'"))
+
+(reset)
+(new-trace "string-equal-empty")
+(add-code
+  '((function main [
+      (1:string-address <- new "")
+      (2:string-address <- new "")
+      (3:boolean <- string-equal 1:string-address 2:string-address)
+     ])))
+(run 'main)
+(when (~iso memory*.3 t)
+  (prn "F - 'string-equal' works on empty strings"))
+
+(reset)
+(new-trace "string-equal-compare-with-empty")
+(add-code
+  '((function main [
+      (1:string-address <- new "a")
+      (2:string-address <- new "")
+      (3:boolean <- string-equal 1:string-address 2:string-address)
+     ])))
+(run 'main)
+(when (~iso memory*.3 nil)
+  (prn "F - 'string-equal' compares correctly with empty strings"))
+
+(reset)
+(new-trace "string-equal-compares-length")
+(add-code
+  '((function main [
+      (1:string-address <- new "a")
+      (2:string-address <- new "ab")
+      (3:boolean <- string-equal 1:string-address 2:string-address)
+     ])))
+(run 'main)
+(when (~iso memory*.3 nil)
+  (prn "F - 'string-equal' handles differing lengths"))
+
+(reset)
+(new-trace "string-equal-compares-initial-element")
+(add-code
+  '((function main [
+      (1:string-address <- new "aa")
+      (2:string-address <- new "ba")
+      (3:boolean <- string-equal 1:string-address 2:string-address)
+     ])))
+(run 'main)
+(when (~iso memory*.3 nil)
+  (prn "F - 'string-equal' handles inequal final byte"))
+
+(reset)
+(new-trace "string-equal-compares-final-element")
+(add-code
+  '((function main [
+      (1:string-address <- new "ab")
+      (2:string-address <- new "aa")
+      (3:boolean <- string-equal 1:string-address 2:string-address)
+     ])))
+(run 'main)
+(when (~iso memory*.3 nil)
+  (prn "F - 'string-equal' handles inequal final byte"))
+
+(reset)
+(new-trace "string-equal-reflexive")
+(add-code
+  '((function main [
+      (1:string-address <- new "ab")
+      (3:boolean <- string-equal 1:string-address 1:string-address)
+     ])))
+(run 'main)
+(when (~iso memory*.3 t)
+  (prn "F - 'string-equal' handles identical pointer"))
+
+(reset)
 (new-trace "strcat")
 (add-code
   '((function main [

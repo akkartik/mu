@@ -1,0 +1,41 @@
+schedule: main
+run: main 0: (((1 string-address)) <- ((new)) a)
+run: main 0: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1 <= 1000
+run: main 1: (((2 string-address)) <- ((new)) ab)
+run: main 1: 1002 => ((2 string-address))
+mem: ((2 string-address)): 2 <= 1002
+run: main 2: (((3 boolean)) <- ((string-equal)) ((1 string-address)) ((2 string-address)))
+mem: ((1 string-address)) => 1000
+mem: ((2 string-address)) => 1002
+run: string-equal/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: string-equal/main 0: 1005 => ((default-space space-address))
+run: string-equal/main 1: (((1 string-address)) <- ((next-input)))
+arg: nil 0 (1000 1002)
+run: string-equal/main 1: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1007 <= 1000
+run: string-equal/main 2: (((2 integer)) <- ((length)) ((1 string-address) (deref)))
+array-len: ((1 string-address) (deref))
+mem: ((1000 integer) (raw)) => 1
+run: string-equal/main 2: 1 => ((2 integer))
+mem: ((2 integer)): 1008 <= 1
+run: string-equal/main 3: (((3 string-address)) <- ((next-input)))
+arg: nil 1 (1000 1002)
+run: string-equal/main 3: 1002 => ((3 string-address))
+mem: ((3 string-address)): 1009 <= 1002
+run: string-equal/main 4: (((4 integer)) <- ((length)) ((3 string-address) (deref)))
+array-len: ((3 string-address) (deref))
+mem: ((1002 integer) (raw)) => 2
+run: string-equal/main 4: 2 => ((4 integer))
+mem: ((4 integer)): 1010 <= 2
+run: string-equal/main 5: (((5 boolean)) <- ((equal)) ((2 integer)) ((4 integer)))
+mem: ((2 integer)) => 1
+mem: ((4 integer)) => 2
+run: string-equal/main 5: nil => ((5 boolean))
+mem: ((5 boolean)): 1011 <= nil
+run: string-equal/main 6: (((jump-if)) ((5 boolean)) ((1 offset)))
+mem: ((5 boolean)) => nil
+run: string-equal/main 7: (((reply)) ((nil literal)))
+run: main 2: nil => ((3 boolean))
+mem: ((3 boolean)): 3 <= nil
+schedule: done with routine 
