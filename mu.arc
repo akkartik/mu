@@ -1891,6 +1891,36 @@
   (result:boolean <- equal full:integer curr:integer)
   (reply result:boolean))
 
+(init-fn string-equal
+  (default-space:space-address <- new space:literal 30:literal)
+  (a:string-address <- next-input)
+  (a-len:integer <- length a:string-address/deref)
+  (b:string-address <- next-input)
+  (b-len:integer <- length b:string-address/deref)
+  ; compare lengths
+  { begin
+    (length-equal?:boolean <- equal a-len:integer b-len:integer)
+    (break-if length-equal?:boolean)
+    (reply nil:literal)
+  }
+  ; compare each corresponding byte
+  (i:integer <- copy 0:literal)
+  { begin
+    (done?:boolean <- greater-or-equal i:integer a-len:integer)
+    (break-if done?:boolean)
+    (a-char:byte <- index a:string-address/deref i:integer)
+    (b-char:byte <- index b:string-address/deref i:integer)
+    { begin
+      (chars-match?:boolean <- equal a-char:byte b-char:byte)
+      (break-if chars-match?:boolean)
+      (reply nil:literal)
+    }
+    (i:integer <- add i:integer 1:literal)
+    (loop)
+  }
+  (reply t:literal)
+)
+
 (init-fn strcat
   (default-space:space-address <- new space:literal 30:literal)
   ; result = new string[a.length + b.length]
