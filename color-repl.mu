@@ -322,12 +322,12 @@
       (len:integer-address/deref <- subtract len:integer-address/deref 1:literal)
       ; if we erase start of comment, return
       (comment-deleted?:boolean <- backspaced-over-unescaped? in:buffer-address ((#\; literal)) escapes:buffer-address)  ; "
-      (jump-unless comment-deleted?:boolean next-key-in-comment:offset)
+      (jump-unless comment-deleted?:boolean next-key-in-comment:offset)  ; loop
       (reply nil:literal/read-comment?)
     }
     (in:buffer-address <- append in:buffer-address c:character)
     (newline?:boolean <- equal c:character ((#\newline literal)))
-    (jump-unless newline?:boolean next-key-in-comment:offset)
+    (loop-unless newline?:boolean)
   }
   (reply t:literal/read-comment?)
 ])
@@ -358,8 +358,8 @@
       ;   test: "<backspace>34
       (string-deleted?:boolean <- backspaced-over-unescaped? in:buffer-address ((#\" literal)) escapes:buffer-address)  ; "
 ;?       ($print string-deleted?:boolean) ;? 1
-      (jump-if string-deleted?:boolean end:offset)
-      (jump next-key-in-string:offset)
+      (jump-if string-deleted?:boolean end:offset)  ; break
+      (jump next-key-in-string:offset)  ; loop
     }
     (in:buffer-address <- append in:buffer-address c:character)
     ; break on quote -- unless escaped by backslash
@@ -368,11 +368,11 @@
       (backslash?:boolean <- equal c:character ((#\\ literal)))
       (break-unless backslash?:boolean)
       (in:buffer-address escapes:buffer-address <- slurp-escaped-character in:buffer-address 6:literal/cyan escapes:buffer-address abort:continuation k:keyboard-address screen:terminal-address)
-      (jump next-key-in-string:offset)
+      (jump next-key-in-string:offset)  ; loop
     }
     ; if not backslash
     (end-quote?:boolean <- equal c:character ((#\" literal)))  ; for vim: "
-    (jump-unless end-quote?:boolean next-key-in-string:offset)
+    (loop-unless end-quote?:boolean)
   }
   end
 ])
