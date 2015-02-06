@@ -2231,7 +2231,8 @@
   } ;? 1
 )
 
-(init-fn buffer-stdin
+; collect characters until newline before sending out
+(init-fn buffer-lines
   (default-space:space-address <- new space:literal 30:literal)
   (stdin:channel-address <- next-input)
   (buffered-stdin:channel-address <- next-input)

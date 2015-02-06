@@ -8,7 +8,7 @@
   (fork-helper send-keys-to-stdin:fn nil:literal/globals nil:literal/limit nil:literal/keyboard stdin:channel-address)
   ; buffer stdin
   (buffered-stdin:channel-address <- init-channel 1:literal)
-  (fork-helper buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
+  (fork-helper buffer-lines:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
   { begin
     ; now read characters from the buffer until 'enter' is typed
     (s:string-address <- new "? ")

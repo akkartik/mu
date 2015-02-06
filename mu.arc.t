@@ -4456,7 +4456,7 @@
       (stdin:channel-address <- init-channel 1:literal)
       (fork send-keys-to-stdin:fn nil:literal/globals nil:literal/limit k:keyboard-address stdin:channel-address)
       (buffered-stdin:channel-address <- init-channel 1:literal)
-      (r:integer/routine <- fork buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
+      (r:integer/routine <- fork buffer-lines:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
       (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
       (5:string-address/raw <- get screen:terminal-address/deref data:offset)
       (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit screen:terminal-address buffered-stdin:channel-address)
@@ -4480,7 +4480,7 @@
              "                    "
              "                    "
              "                    "))
-  (prn "F - 'buffer-stdin' prints nothing until newline is encountered"))
+  (prn "F - 'buffer-lines' prints nothing until newline is encountered"))
 ;? (quit) ;? 3
 
 (reset)
@@ -4493,7 +4493,7 @@
       (stdin:channel-address <- init-channel 1:literal)
       (fork send-keys-to-stdin:fn nil:literal/globals nil:literal/limit k:keyboard-address stdin:channel-address)
       (buffered-stdin:channel-address <- init-channel 1:literal)
-      (r:integer/routine <- fork buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
+      (r:integer/routine <- fork buffer-lines:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
       (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
       (5:string-address/raw <- get screen:terminal-address/deref data:offset)
       (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit screen:terminal-address buffered-stdin:channel-address)
@@ -4515,7 +4515,7 @@
              "                    "
              "                    "
              "                    "))
-  (prn "F - 'buffer-stdin' prints lines to screen"))
+  (prn "F - 'buffer-lines' prints lines to screen"))
 
 (reset)
 (new-trace "print-buffered-contents-right-at-newline")
@@ -4527,7 +4527,7 @@
       (stdin:channel-address <- init-channel 1:literal)
       (fork send-keys-to-stdin:fn nil:literal/globals nil:literal/limit k:keyboard-address stdin:channel-address)
       (buffered-stdin:channel-address <- init-channel 1:literal)
-      (r:integer/routine <- fork buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
+      (r:integer/routine <- fork buffer-lines:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
       (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
       (5:string-address/raw <- get screen:terminal-address/deref data:offset)
       (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit screen:terminal-address buffered-stdin:channel-address)
@@ -4551,7 +4551,7 @@
              "                    "
              "                    "
              "                    "))
-  (prn "F - 'buffer-stdin' prints lines to screen immediately on newline"))
+  (prn "F - 'buffer-lines' prints lines to screen immediately on newline"))
 
 (reset)
 (new-trace "buffered-contents-skip-backspace")
@@ -4563,7 +4563,7 @@
       (stdin:channel-address <- init-channel 1:literal)
       (fork send-keys-to-stdin:fn nil:literal/globals nil:literal/limit k:keyboard-address stdin:channel-address)
       (buffered-stdin:channel-address <- init-channel 1:literal)
-      (r:integer/routine <- fork buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
+      (r:integer/routine <- fork buffer-lines:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
       (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
       (5:string-address/raw <- get screen:terminal-address/deref data:offset)
       (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit screen:terminal-address buffered-stdin:channel-address)
@@ -4585,7 +4585,7 @@
              "                    "
              "                    "
              "                    "))
-  (prn "F - 'buffer-stdin' handles backspace"))
+  (prn "F - 'buffer-lines' handles backspace"))
 
 (reset)
 (new-trace "buffered-contents-ignore-excess-backspace")
@@ -4597,7 +4597,7 @@
       (stdin:channel-address <- init-channel 1:literal)
       (fork send-keys-to-stdin:fn nil:literal/globals nil:literal/limit k:keyboard-address stdin:channel-address)
       (buffered-stdin:channel-address <- init-channel 1:literal)
-      (r:integer/routine <- fork buffer-stdin:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
+      (r:integer/routine <- fork buffer-lines:fn nil:literal/globals nil:literal/limit stdin:channel-address buffered-stdin:channel-address)
       (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
       (5:string-address/raw <- get screen:terminal-address/deref data:offset)
       (fork-helper send-prints-to-stdout:fn nil:literal/globals nil:literal/limit screen:terminal-address buffered-stdin:channel-address)
@@ -4622,7 +4622,7 @@
              "                    "
              "                    "
              "                    "))
-  (prn "F - 'buffer-stdin' ignores backspace when there's nothing to backspace over"))
+  (prn "F - 'buffer-lines' ignores backspace when there's nothing to backspace over"))
 
 )  ; section 100
 
