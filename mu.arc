@@ -1482,10 +1482,12 @@
       function!
         (let (name (_make-br-fn body))  rest
           (assert (is 'make-br-fn _make-br-fn))
+          (= name (v tokenize-arg.name))
           (= function*.name body))
       function
         (let (name (_make-br-fn body))  rest
           (assert (is 'make-br-fn _make-br-fn))
+          (= name (v tokenize-arg.name))
           (when function*.name
             (prn "adding new clause to @name"))
           (= function*.name (join body function*.name)))
@@ -1494,6 +1496,7 @@
       and-record
         (let (name (_make-br-fn fields))  rest
           (assert (is 'make-br-fn _make-br-fn))
+          (= name (v tokenize-arg.name))
           (let fields (map tokenize-arg fields)
             (= type*.name (obj size len.fields
                                and-record t
@@ -1504,11 +1507,13 @@
       ; primitive <type>
       primitive
         (let (name) rest
+          (= name (v tokenize-arg.name))
           (= type*.name (obj size 1)))
 
       ; address <type> <elem-type>
       address
         (let (name types)  rest
+          (= name (v tokenize-arg.name))
           (= type*.name (obj size 1
                              address t
                              elem types)))
@@ -1516,6 +1521,7 @@
       ; array <type> <elem-type>
       array
         (let (name types)  rest
+          (= name (v tokenize-arg.name))
           (= type*.name (obj array t
                              elem types)))
 
@@ -1525,6 +1531,8 @@
       before
         (let (label (_make-br-fn fragment))  rest
           (assert (is 'make-br-fn _make-br-fn))
+          ; todo: stop using '/' in non-standard manner
+          ;(= label (v tokenize-arg.label))
           (or= before*.label (queue))
           (enq fragment before*.label))
 
@@ -1536,6 +1544,8 @@
       after
         (let (label (_make-br-fn fragment))  rest
           (assert (is 'make-br-fn _make-br-fn))
+          ; todo: stop using '/' in non-standard manner
+          ;(= label (v tokenize-arg.label))
           (push fragment after*.label))
 
       ;else
@@ -1682,7 +1692,8 @@
 (= system-function* (table))
 
 (mac init-fn (name . body)
-  `(= (system-function* ',name) ',body))
+  (let real-name (v tokenize-arg.name)
+    `(= (system-function* ',real-name) ',body)))
 
 (def load-system-functions ()
   (each (name f) system-function*
