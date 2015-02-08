@@ -2109,20 +2109,77 @@
 
 (init-fn find-next  ; string, character, index -> next index
   (default-space:space-address <- new space:literal 30:literal)
-  (s:string-address <- next-input)
-  (needle:character <- next-input)
+  (text:string-address <- next-input)
+  (pattern:character <- next-input)
   (idx:integer <- next-input)
-  (len:integer <- length s:string-address/deref)
+  (len:integer <- length text:string-address/deref)
   { begin
     (eof?:boolean <- greater-or-equal idx:integer len:integer)
     (break-if eof?:boolean)
-    (curr:byte <- index s:string-address/deref idx:integer)
-    (found?:boolean <- equal curr:byte needle:character)
+    (curr:byte <- index text:string-address/deref idx:integer)
+    (found?:boolean <- equal curr:byte pattern:character)
     (break-if found?:boolean)
     (idx:integer <- add idx:integer 1:literal)
     (loop)
   }
   (reply idx:integer))
+
+(init-fn find-substring/variant:find-next
+  (default-space:space-address <- new space:literal 30:literal)
+  ; fairly dumb algorithm; used for parsing code and traces
+  (text:string-address <- next-input)
+  (pattern:string-address <- next-input)
+  (idx:integer <- next-input)
+  (first:character <- index pattern:string-address/deref 0:literal)
+  ; repeatedly check for match at current idx
+  (len:integer <- length text:string-address/deref)
+  { begin
+    ; does some unnecessary work checking for substrings even when there isn't enough of text left
+    (eof?:boolean <- greater-or-equal idx:integer len:integer)
+    (break-if eof?:boolean)
+    (found?:boolean <- match-at text:string-address pattern:string-address idx:integer)
+    (break-if found?:boolean)
+    (idx:integer <- add idx:integer 1:literal)
+    ; optimization: skip past indices that definitely won't match
+    (idx:integer <- find-next text:string-address first:character idx:integer)
+    (loop)
+  }
+  (reply idx:integer)
+)
+
+(init-fn match-at
+  (default-space:space-address <- new space:literal 30:literal)
+  ; fairly dumb algorithm; used for parsing code and traces
+  (text:string-address <- next-input)
+  (pattern:string-address <- next-input)
+  (idx:integer <- next-input)
+  (pattern-len:integer <- length pattern:string-address/deref)
+  ; check that there's space left for the pattern
+  { begin
+    (x:integer <- length text:string-address/deref)
+    (x:integer <- subtract x:integer pattern-len:integer)
+    (enough-room?:boolean <- lesser-or-equal idx:integer x:integer)
+    (break-if enough-room?:boolean)
+    (reply nil:literal)
+  }
+  ; check each character of pattern
+  (pattern-idx:integer <- copy 0:literal)
+  { begin
+    (done?:boolean <- greater-or-equal pattern-idx:integer pattern-len:integer)
+    (break-if done?:boolean)
+    (c:character <- index text:string-address/deref idx:integer)
+    (exp:character <- index pattern:string-address/deref pattern-idx:integer)
+    { begin
+      (match?:boolean <- equal c:character exp:character)
+      (break-if match?:boolean)
+      (reply nil:literal)
+    }
+    (idx:integer <- add idx:integer 1:literal)
+    (pattern-idx:integer <- add pattern-idx:integer 1:literal)
+    (loop)
+  }
+  (reply t:literal)
+)
 
 (init-fn split  ; string, character -> string-address-array-address
   (default-space:space-address <- new space:literal 30:literal)

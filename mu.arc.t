@@ -4267,6 +4267,175 @@
   (prn "F - 'find-next' finds second of multiple options"))
 
 (reset)
+(new-trace "match-at")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- new "ab")
+      (3:boolean <- match-at 1:string-address 2:string-address 0:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 t)
+  (prn "F - 'match-at' matches substring at given index"))
+
+(reset)
+(new-trace "match-at-reflexive")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (3:boolean <- match-at 1:string-address 1:string-address 0:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 t)
+  (prn "F - 'match-at' always matches a string at itself at index 0"))
+
+(reset)
+(new-trace "match-at-outside-bounds")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- new "a")
+      (3:boolean <- match-at 1:string-address 2:string-address 4:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 nil)
+  (prn "F - 'match-at' always fails to match outside the bounds of the text"))
+
+(reset)
+(new-trace "match-at-empty-pattern")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- new "")
+      (3:boolean <- match-at 1:string-address 2:string-address 0:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 t)
+  (prn "F - 'match-at' always matches empty pattern"))
+
+(reset)
+(new-trace "match-at-empty-pattern-outside-bounds")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- new "")
+      (3:boolean <- match-at 1:string-address 2:string-address 4:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 nil)
+  (prn "F - 'match-at' matches empty pattern -- unless index is out of bounds"))
+
+(reset)
+(new-trace "match-at-empty-text")
+(add-code
+  '((function main [
+      (1:string-address <- new "")
+      (2:string-address <- new "abc")
+      (3:boolean <- match-at 1:string-address 2:string-address 0:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 nil)
+  (prn "F - 'match-at' never matches empty text"))
+
+(reset)
+(new-trace "match-at-empty-against-empty")
+(add-code
+  '((function main [
+      (1:string-address <- new "")
+      (3:boolean <- match-at 1:string-address 1:string-address 0:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 t)
+  (prn "F - 'match-at' never matches empty text -- unless pattern is also empty"))
+
+(reset)
+(new-trace "match-at-inside-bounds")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- new "bc")
+      (3:boolean <- match-at 1:string-address 2:string-address 1:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 t)
+  (prn "F - 'match-at' matches inner substring"))
+
+(reset)
+(new-trace "match-at-inside-bounds-2")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- new "bc")
+      (3:boolean <- match-at 1:string-address 2:string-address 0:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 nil)
+  (prn "F - 'match-at' matches inner substring - 2"))
+
+(reset)
+(new-trace "find-substring")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- new "bc")
+      (3:integer <- find-substring 1:string-address 2:string-address 0:literal)
+     ])))
+(run 'main)
+;? (prn memory*.3) ;? 1
+(when (~is memory*.3 1)
+  (prn "F - 'find-substring' returns index of match"))
+
+(reset)
+(new-trace "find-substring-2")
+(add-code
+  '((function main [
+      (1:string-address <- new "abcd")
+      (2:string-address <- new "bc")
+      (3:integer <- find-substring 1:string-address 2:string-address 1:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 1)
+  (prn "F - 'find-substring' returns provided index if it matches"))
+
+(reset)
+(new-trace "find-substring-no-match")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- new "bd")
+      (3:integer <- find-substring 1:string-address 2:string-address 0:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 3)
+  (prn "F - 'find-substring' returns out-of-bounds index on no-match"))
+
+(reset)
+(new-trace "find-substring-suffix-match")
+(add-code
+  '((function main [
+      (1:string-address <- new "abcd")
+      (2:string-address <- new "cd")
+      (3:integer <- find-substring 1:string-address 2:string-address 0:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 2)
+  (prn "F - 'find-substring' returns provided index if it matches"))
+
+(reset)
+(new-trace "find-substring-suffix-match-2")
+(add-code
+  '((function main [
+      (1:string-address <- new "abcd")
+      (2:string-address <- new "cde")
+      (3:integer <- find-substring 1:string-address 2:string-address 0:literal)
+     ])))
+(run 'main)
+(when (~is memory*.3 4)
+  (prn "F - 'find-substring' returns provided index if it matches"))
+
+;? (quit) ;? 1
+
+(reset)
 (new-trace "string-split")
 (add-code
   '((function main [
