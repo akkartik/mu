@@ -2232,11 +2232,32 @@
   (reply result:string-address-array-address)
 )
 
+(init-fn split-first-at-substring/variant:split-first  ; string text, string delim -> string first, string rest
+  (default-space:space-address <- new space:literal 30:literal)
+  (text:string-address <- next-input)
+  (delim:string-address <- next-input)
+  ; empty string? return empty strings
+  (len:integer <- length text:string-address/deref)
+  { begin
+    (empty?:boolean <- equal len:integer 0:literal)
+    (break-unless empty?:boolean)
+    (x:string-address <- new "")
+    (y:string-address <- new "")
+    (reply x:string-address y:string-address)
+  }
+  (idx:integer <- find-substring text:string-address delim:string-address 0:literal)
+  (x:string-address <- string-copy text:string-address 0:literal idx:integer)
+  (k:integer <- length delim:string-address/deref)
+  (idx:integer <- add idx:integer k:integer)
+  (y:string-address <- string-copy text:string-address idx:integer len:integer)
+  (reply x:string-address y:string-address)
+)
+
 (init-fn split-first  ; string text, character delim -> string first, string rest
   (default-space:space-address <- new space:literal 30:literal)
   (text:string-address <- next-input)
   (delim:character <- next-input)
-  ; empty string? return empty array
+  ; empty string? return empty strings
   (len:integer <- length text:string-address/deref)
   { begin
     (empty?:boolean <- equal len:integer 0:literal)
@@ -2263,6 +2284,10 @@
 ;?   ($print (("-" literal))) ;? 1
 ;?   ($print end:integer) ;? 1
 ;?   ($print (("\n" literal))) ;? 1
+  ; if end is out of bounds, trim it
+  (len:integer <- length buf:string-address/deref)
+  (end:integer <- min len:integer end:integer)
+  ; allocate space for result
   (len:integer <- subtract end:integer start:integer)
   (result:string-address <- new string:literal len:integer)
   ; copy start..end into result[curr-result]
@@ -2282,6 +2307,30 @@
     (loop)
   }
   (reply result:string-address)
+)
+
+(init-fn min
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:integer <- next-input)
+  (y:integer <- next-input)
+  { begin
+    (return-x?:boolean <- less-than x:integer y:integer)
+    (break-if return-x?:boolean)
+    (reply y:integer)
+  }
+  (reply x:integer)
+)
+
+(init-fn max
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:integer <- next-input)
+  (y:integer <- next-input)
+  { begin
+    (return-x?:boolean <- greater-than x:integer y:integer)
+    (break-if return-x?:boolean)
+    (reply y:integer)
+  }
+  (reply x:integer)
 )
 
 (init-fn init-stream

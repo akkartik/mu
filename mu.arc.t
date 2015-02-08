@@ -4542,6 +4542,76 @@
   (prn "F - 'split-first' cuts string at first occurrence of delimiter"))
 
 (reset)
+(new-trace "string-split-first-at-substring")
+(add-code
+  '((function main [
+      (1:string-address <- new "a//b")
+      (2:string-address <- new "//")
+      (3:string-address 4:string-address <- split-first-at-substring 1:string-address 2:string-address)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+;? (prn int-canon.memory*) ;? 1
+(when (or (~memory-contains-array memory*.3 "a")
+          (~memory-contains-array memory*.4 "b"))
+  (prn "F - 'split-first-at-substring' is like split-first but with a string delimiter"))
+
+(reset)
+(new-trace "string-copy")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- string-copy 1:string-address 1:literal 3:literal)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(when (~memory-contains-array memory*.2 "bc")
+  (prn "F - 'string-copy' returns a copy of a substring"))
+
+(reset)
+(new-trace "string-copy-out-of-bounds")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- string-copy 1:string-address 2:literal 4:literal)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(when (~memory-contains-array memory*.2 "c")
+  (prn "F - 'string-copy' stops at bounds"))
+
+(reset)
+(new-trace "string-copy-out-of-bounds-2")
+(add-code
+  '((function main [
+      (1:string-address <- new "abc")
+      (2:string-address <- string-copy 1:string-address 3:literal 3:literal)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(when (~memory-contains-array memory*.2 "")
+  (prn "F - 'string-copy' returns empty string when range is out of bounds"))
+
+(reset)
+(new-trace "min")
+(add-code
+  '((function main [
+      (1:integer <- min 3:literal 4:literal)
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+;? (prn int-canon.memory*) ;? 1
+(when (~is memory*.1 3)
+  (prn "F - 'min' returns smaller of two numbers"))
+
+;? (quit) ;? 2
+
+(reset)
 (new-trace "integer-to-decimal-string")
 (add-code
   '((function main [
