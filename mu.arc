@@ -1375,6 +1375,16 @@
     (trace "cn1" instr))
   instrs)
 
+(def check-default-space (instrs name)
+  (let oarg-names (accum yield
+                    (each (oargs _ _) (map parse-instr (keep acons  ; non-label
+                                                             instrs))
+                      (each oarg oargs
+                        (when nondummy.oarg
+                          (yield v.oarg)))))
+    (when (~pos 'default-space oarg-names)
+      (prn "function @name has no default-space"))))
+
 ; assign an index to an arg
 (def maybe-add (arg location idx)
   (trace "maybe-add" arg)
@@ -1557,7 +1567,11 @@
 ;?     (prn "freeze " name)
     (= function-table.name (convert-labels:convert-braces:tokenize-args:insert-code body name)))
   (each (name body)  canon.function-table
+    (check-default-space body name))
+  (each (name body)  canon.function-table
     (add-next-space-generator body name))
+  ; keep converting names until none remain
+  ; (we need to skip unrecognized spaces)
   (let change t
     (while change
       (= change nil)
@@ -2092,6 +2106,7 @@
   (reply result:string-address))
 
 (init-fn find-next  ; string, character, index -> next index
+  (default-space:space-address <- new space:literal 30:literal)
   (s:string-address <- next-input)
   (needle:character <- next-input)
   (idx:integer <- next-input)
@@ -2300,6 +2315,7 @@
 )
 
 (init-fn wait-for-key
+  (default-space:space-address <- new space:literal 30:literal)
   (k:keyboard-address <- next-input)
   (screen:terminal-address <- next-input)
   { begin
@@ -2731,6 +2747,7 @@
 ; remember to call this before you clear the screen or at any other milestone
 ; in an interactive program
 (init-fn flush-stdout
+  (default-space:boolean <- copy nil:literal)  ; silence warning, but die if locals used
   (sleep for-some-cycles:literal 1:literal)
 )
 
