@@ -83,7 +83,8 @@
   (cs:string-address-array-address-address <- get-address result:instruction-trace-address/deref call-stack:offset)
   (cs:string-address-array-address-address/deref <- split f1:string-address ((#\/ literal)))
   (p:string-address-address <- get-address result:instruction-trace-address/deref pc:offset)
-  (p:string-address-address/deref rest:string-address <- split-first rest:string-address ((#\space literal)))
+  (delim:string-address <- new ": ")
+  (p:string-address-address/deref rest:string-address <- split-first-at-substring rest:string-address delim:string-address)
   (inst:string-address-address <- get-address result:instruction-trace-address/deref instruction:offset)
   (inst:string-address-address/deref <- copy rest:string-address)
   (reply result:instruction-trace-address)
@@ -94,7 +95,8 @@
 ;?   ($print (("parse-trace\n" literal))) ;? 1
   (in:string-address <- next-input)
   (result:trace-address <- new trace:literal)
-  (first:string-address rest:string-address <- split-first in:string-address ((#\: literal)))
+  (delim:string-address <- new ": ")
+  (first:string-address rest:string-address <- split-first-at-substring in:string-address delim:string-address)
   (l:string-address-address <- get-address result:trace-address/deref label:offset)
   (l:string-address-address/deref <- copy first:string-address)
   (c:string-address-address <- get-address result:trace-address/deref contents:offset)
@@ -162,18 +164,18 @@
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (x:string-address <- new
 "schedule: main
-run:main 0: (((1 integer)) <- ((copy)) ((1 literal)))
-run:main 0: 1 => ((1 integer))
-mem:((1 integer)): 1 <= 1
-run:main 1: (((2 integer)) <- ((copy)) ((3 literal)))
-run:main 1: 3 => ((2 integer))
-mem:((2 integer)): 2 <= 3
-run:main 2: (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))
-mem:((1 integer)) => 1
-mem:((2 integer)) => 3
-run:main 2: 4 => ((3 integer))
-mem:((3 integer)): 3 <= 4
-schedule: done with routine")
+run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
+run: main 0: 1 => ((1 integer))
+mem: ((1 integer)): 1 <= 1
+run: main 1: (((2 integer)) <- ((copy)) ((3 literal)))
+run: main 1: 3 => ((2 integer))
+mem: ((2 integer)): 2 <= 3
+run: main 2: (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))
+mem: ((1 integer)) => 1
+mem: ((2 integer)) => 3
+run: main 2: 4 => ((3 integer))
+mem: ((3 integer)): 3 <= 4
+schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
   (arr:instruction-trace-address-array-address <- parse-traces s:stream-address)
   (len:integer <- length arr:instruction-trace-address-array-address/deref)
