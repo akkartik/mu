@@ -116,6 +116,8 @@
 (selective-load "mu.arc" section-level)
 ;? (quit)
 
+(set allow-raw-addresses*)
+
 (section 20
 
 ; Our language is assembly-like in that functions consist of series of

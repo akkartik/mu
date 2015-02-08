@@ -1,4 +1,5 @@
 (selective-load "mu.arc" section-level)
+(set allow-raw-addresses*)
 
 (section 100
 

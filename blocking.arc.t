@@ -1,4 +1,5 @@
 (selective-load "mu.arc" section-level)
+(set allow-raw-addresses*)
 
 (reset)
 (new-trace "blocking-example")

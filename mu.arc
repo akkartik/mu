@@ -1375,15 +1375,17 @@
     (trace "cn1" instr))
   instrs)
 
+(= allow-raw-addresses* nil)
 (def check-default-space (instrs name)
-  (let oarg-names (accum yield
-                    (each (oargs _ _) (map parse-instr (keep acons  ; non-label
-                                                             instrs))
-                      (each oarg oargs
-                        (when nondummy.oarg
-                          (yield v.oarg)))))
-    (when (~pos 'default-space oarg-names)
-      (prn "function @name has no default-space"))))
+  (unless allow-raw-addresses*
+    (let oarg-names (accum yield
+                      (each (oargs _ _) (map parse-instr (keep acons  ; non-label
+                                                               instrs))
+                        (each oarg oargs
+                          (when nondummy.oarg
+                            (yield v.oarg)))))
+      (when (~pos 'default-space oarg-names)
+        (prn "function @name has no default-space")))))
 
 ; assign an index to an arg
 (def maybe-add (arg location idx)
