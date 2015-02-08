@@ -156,6 +156,7 @@
               string-address-address (obj size 1  address t  elem '(string-address))
               string-address-array (obj array t  elem '(string-address))
               string-address-array-address (obj size 1  address t  elem '(string-address-array))
+              string-address-array-address-address (obj size 1  address t  elem '(string-address-array-address))
               character (obj size 1)  ; int32 like a Go rune
               character-address (obj size 1  address t  elem '(character))
               ; a buffer makes it easy to append to a string/array
@@ -164,6 +165,9 @@
               ; so for example, 'print-string' won't work on it.
               buffer (obj size 2  and-record t  elems '((integer) (string-address))  fields '(length data))
               buffer-address (obj size 1  address t  elem '(buffer))
+              ; a stream makes it easy to read from a string/array
+              stream (obj size 2  and-record t  elems '((integer) (string-address))  fields '(pointer data))
+              stream-address (obj size 1  address t  elem '(stream))
               ; isolating function calls
               space (obj array t  elem '(location))  ; by convention index 0 points to outer space
               space-address (obj size 1  address t  elem '(space))
@@ -2192,6 +2196,53 @@
   (reply result:string-address)
 )
 
+(init-fn init-stream
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:string-address <- next-input)
+  (result:stream-address <- new stream:literal)
+  (x:integer-address <- get-address result:stream-address/deref pointer:offset)
+  (x:integer-address/deref <- copy 0:literal)
+  (y:string-address-address <- get-address result:stream-address/deref data:offset)
+  (y:string-address-address/deref <- copy in:string-address)
+  (reply result:stream-address)
+)
+
+(init-fn read-line
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:stream-address <- next-input)
+  (idx:integer-address <- get-address in:stream-address/deref pointer:offset)
+  (s:string-address <- get in:stream-address/deref data:offset)
+;?   ($print (("idx before: " literal))) ;? 1
+;?   ($print idx:integer-address/deref) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (next-idx:integer <- find-next s:string-address ((#\newline literal)) idx:integer-address/deref)
+;?   ($print (("next-idx: " literal))) ;? 1
+;?   ($print next-idx:integer) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (result:string-address <- string-copy s:string-address idx:integer-address/deref next-idx:integer)
+  (idx:integer-address/deref <- add next-idx:integer 1:literal)  ; skip newline
+;?   ($print (("idx now: " literal))) ;? 1
+;?   ($print idx:integer-address/deref) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (reply result:string-address)
+)
+
+(init-fn end-of-stream?
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:stream-address <- next-input)
+  (idx:integer <- get in:stream-address/deref pointer:offset)
+  (s:string-address <- get in:stream-address/deref data:offset)
+  (len:integer <- length s:string-address/deref)
+;?   ($print (("eos: " literal))) ;? 1
+;?   ($print len:integer) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+;?   ($print (("idx: " literal))) ;? 1
+;?   ($print idx:integer) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (result:boolean <- greater-or-equal idx:integer len:integer)
+  (reply result:boolean)
+)
+
 (init-fn init-keyboard
   (default-space:space-address <- new space:literal 30:literal)
   (result:keyboard-address <- new keyboard:literal)
@@ -2700,7 +2751,7 @@
 ;?   (= dump-trace* (obj whitelist '("schedule")))
 ;?   (= dump-trace* (obj whitelist '("run" "continuation"))) ;? 1
 ;?   (= dump-trace* (obj whitelist '("cn0" "cn1")))
-;?   (set dump-trace*) ;? 5
+;?   (set dump-trace*) ;? 7
 ;?   (freeze function*)
 ;?   (prn function*!factorial)
   (run 'main)
