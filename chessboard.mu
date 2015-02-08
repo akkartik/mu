@@ -1,5 +1,3 @@
-;; hack: assumes stdin is at raw memory location 1
-
 ;; data structure: board
 (primitive square)
 (address square-address (square))  ; pointer. verbose but sadly necessary for now
