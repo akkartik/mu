@@ -2140,6 +2140,26 @@
   (reply result:string-address-array-address)
 )
 
+(init-fn split-first  ; string, character -> string, string
+  (default-space:space-address <- new space:literal 30:literal)
+  (s:string-address <- next-input)
+  (delim:character <- next-input)  ; todo: unicode chars
+  ; empty string? return empty array
+  (len:integer <- length s:string-address/deref)
+  { begin
+    (empty?:boolean <- equal len:integer 0:literal)
+    (break-unless empty?:boolean)
+    (x:string-address <- new "")
+    (y:string-address <- new "")
+    (reply x:string-address y:string-address)
+  }
+  (idx:integer <- find-next s:string-address delim:character 0:literal)
+  (x:string-address <- string-copy s:string-address 0:literal idx:integer)
+  (idx:integer <- add idx:integer 1:literal)
+  (y:string-address <- string-copy s:string-address idx:integer len:integer)
+  (reply x:string-address y:string-address)
+)
+
 ; todo: make this generic
 (init-fn string-copy  ; buf start end -> address of new array
   (default-space:space-address <- new space:literal 30:literal)
