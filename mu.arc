@@ -2232,12 +2232,12 @@
   (reply result:string-address-array-address)
 )
 
-(init-fn split-first  ; string, character -> string, string
+(init-fn split-first  ; string text, character delim -> string first, string rest
   (default-space:space-address <- new space:literal 30:literal)
-  (s:string-address <- next-input)
+  (text:string-address <- next-input)
   (delim:character <- next-input)
   ; empty string? return empty array
-  (len:integer <- length s:string-address/deref)
+  (len:integer <- length text:string-address/deref)
   { begin
     (empty?:boolean <- equal len:integer 0:literal)
     (break-unless empty?:boolean)
@@ -2245,10 +2245,10 @@
     (y:string-address <- new "")
     (reply x:string-address y:string-address)
   }
-  (idx:integer <- find-next s:string-address delim:character 0:literal)
-  (x:string-address <- string-copy s:string-address 0:literal idx:integer)
+  (idx:integer <- find-next text:string-address delim:character 0:literal)
+  (x:string-address <- string-copy text:string-address 0:literal idx:integer)
   (idx:integer <- add idx:integer 1:literal)
-  (y:string-address <- string-copy s:string-address idx:integer len:integer)
+  (y:string-address <- string-copy text:string-address idx:integer len:integer)
   (reply x:string-address y:string-address)
 )
 
