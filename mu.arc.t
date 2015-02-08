@@ -4357,6 +4357,20 @@
 ;? (quit) ;? 1
 
 (reset)
+(new-trace "string-split-first")
+(add-code
+  '((function main [
+      (1:string-address <- new "a/b")
+      (2:string-address 3:string-address <- split-first 1:string-address ((#\/ literal)))
+     ])))
+(run 'main)
+(each routine completed-routines*
+  (aif rep.routine!error (prn "error - " it)))
+(when (or (~memory-contains-array memory*.2 "a")
+          (~memory-contains-array memory*.3 "b"))
+  (prn "F - 'split-first' cuts string at first occurrence of delimiter"))
+
+(reset)
 (new-trace "integer-to-decimal-string")
 (add-code
   '((function main [
