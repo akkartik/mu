@@ -157,6 +157,9 @@
               string-address-array (obj array t  elem '(string-address))
               string-address-array-address (obj size 1  address t  elem '(string-address-array))
               string-address-array-address-address (obj size 1  address t  elem '(string-address-array-address))
+              ; 'character' will be of larger size when mu supports unicode
+              ; we're currently undisciplined about mixing 'byte' and 'character'
+              ; realistic test of indiscipline in general
               character (obj size 1)  ; int32 like a Go rune
               character-address (obj size 1  address t  elem '(character))
               ; a buffer makes it easy to append to a string/array
@@ -1912,10 +1915,10 @@
   { begin
     (done?:boolean <- greater-or-equal i:integer a-len:integer)
     (break-if done?:boolean)
-    (a-char:byte <- index a:string-address/deref i:integer)
-    (b-char:byte <- index b:string-address/deref i:integer)
+    (a2:byte <- index a:string-address/deref i:integer)
+    (b2:byte <- index b:string-address/deref i:integer)
     { begin
-      (chars-match?:boolean <- equal a-char:byte b-char:byte)
+      (chars-match?:boolean <- equal a2:byte b2:byte)
       (break-if chars-match?:boolean)
       (reply nil:literal)
     }
@@ -2079,7 +2082,7 @@
 
 (init-fn find-next  ; string, character, index -> next index
   (s:string-address <- next-input)
-  (needle:character <- next-input)  ; todo: unicode chars
+  (needle:character <- next-input)
   (idx:integer <- next-input)
   (len:integer <- length s:string-address/deref)
   { begin
@@ -2096,7 +2099,7 @@
 (init-fn split  ; string, character -> string-address-array-address
   (default-space:space-address <- new space:literal 30:literal)
   (s:string-address <- next-input)
-  (delim:character <- next-input)  ; todo: unicode chars
+  (delim:character <- next-input)
   ; empty string? return empty array
   (len:integer <- length s:string-address/deref)
   { begin
@@ -2147,7 +2150,7 @@
 (init-fn split-first  ; string, character -> string, string
   (default-space:space-address <- new space:literal 30:literal)
   (s:string-address <- next-input)
-  (delim:character <- next-input)  ; todo: unicode chars
+  (delim:character <- next-input)
   ; empty string? return empty array
   (len:integer <- length s:string-address/deref)
   { begin
@@ -2483,7 +2486,7 @@
   { begin
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
-    (c:character <- index s:string-address/deref i:integer)  ; todo: unicode
+    (c:character <- index s:string-address/deref i:integer)
     (print-character x:terminal-address c:character)
     (i:integer <- add i:integer 1:literal)
     (loop)
@@ -2611,7 +2614,7 @@
   (len:integer-address <- get-address in:buffer-address/deref length:offset)
   (s:string-address <- get in:buffer-address/deref data:offset)
   (dest:byte-address <- index-address s:string-address/deref len:integer-address/deref)
-  (dest:byte-address/deref <- copy c:character)  ; todo: unicode
+  (dest:byte-address/deref <- copy c:character)
   (len:integer-address/deref <- add len:integer-address/deref 1:literal)
   (reply in:buffer-address/same-as-arg:0)
 )
