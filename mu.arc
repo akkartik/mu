@@ -1621,7 +1621,7 @@
              (~is memory*.addr value.idx)
                (do1 nil
                     (prn "@addr should contain @(repr value.idx) but contains @(repr memory*.addr)")
-;?                     (recur (+ addr 1) (+ idx 1)) ;? 2
+;?                     (recur (+ addr 1) (+ idx 1)) ;? 3
                     )
              :else
                (recur (+ addr 1) (+ idx 1))))))
@@ -2125,37 +2125,51 @@
     (done?:boolean <- greater-or-equal start:integer len:integer)
     (break-if done?:boolean)
     (end:integer <- find-next s:string-address delim:character start:integer)
-;?     ($print (("i: " literal)))
-;?     ($print start:integer)
-;?     ($print (("-" literal)))
-;?     ($print end:integer)
-;?     ($print ((" => " literal)))
-;?     ($print curr-result:integer)
-;?     ($print (("\n" literal)))
-    ; compute length of slice
-    (slice-len:integer <- subtract end:integer start:integer)
-    ; allocate result[curr-result]
-    (dest:string-address-address <- index-address result:string-address-array-address/deref curr-result:integer)
-    (dest:string-address-address/deref <- new string:literal slice-len:integer)
+;?     ($print start:integer) ;? 1
+;?     ($print ((" " literal))) ;? 1
+;?     ($print end:integer) ;? 1
+;?     ($print (("\n" literal))) ;? 1
     ; copy start..end into result[curr-result]
-    (src-idx:integer <- copy start:integer)
-    (dest-idx:integer <- copy 0:literal)
-    { begin
-      (end-copy?:boolean <- greater-or-equal src-idx:integer end:integer)
-      (break-if end-copy?:boolean)
-      (src:character <- index s:string-address/deref src-idx:integer)
-      (tmp:character-address <- index-address dest:string-address-address/deref/deref dest-idx:integer)
-      (tmp:character-address/deref <- copy src:character)
-      (src-idx:integer <- add src-idx:integer 1:literal)
-      (dest-idx:integer <- add dest-idx:integer 1:literal)
-      (loop)
-    }
+    (dest:string-address-address <- index-address result:string-address-array-address/deref curr-result:integer)
+    (dest:string-address-address/deref <- string-copy s:string-address start:integer end:integer)
     ; slide over to next slice
     (start:integer <- add end:integer 1:literal)
     (curr-result:integer <- add curr-result:integer 1:literal)
     (loop)
   }
   (reply result:string-address-array-address)
+)
+
+; todo: make this generic
+(init-fn string-copy  ; buf start end -> address of new array
+  (default-space:space-address <- new space:literal 30:literal)
+  (buf:string-address <- next-input)
+  (start:integer <- next-input)
+  (end:integer <- next-input)
+;?   ($print (("  copy: " literal))) ;? 1
+;?   ($print start:integer) ;? 1
+;?   ($print (("-" literal))) ;? 1
+;?   ($print end:integer) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (len:integer <- subtract end:integer start:integer)
+  (result:string-address <- new string:literal len:integer)
+  ; copy start..end into result[curr-result]
+  (src-idx:integer <- copy start:integer)
+  (dest-idx:integer <- copy 0:literal)
+  { begin
+    (done?:boolean <- greater-or-equal src-idx:integer end:integer)
+    (break-if done?:boolean)
+    (src:character <- index buf:string-address/deref src-idx:integer)
+;?     ($print (("  copying " literal))) ;? 1
+;?     ($print src:character) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    (dest:character-address <- index-address result:string-address/deref dest-idx:integer)
+    (dest:character-address/deref <- copy src:character)
+    (src-idx:integer <- add src-idx:integer 1:literal)
+    (dest-idx:integer <- add dest-idx:integer 1:literal)
+    (loop)
+  }
+  (reply result:string-address)
 )
 
 (init-fn init-keyboard
