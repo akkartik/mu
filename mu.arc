@@ -1649,13 +1649,13 @@
   (and (>= memory*.addr len.value)
        (loop (addr (+ addr 1)
               idx  0)
-;?          (prn "comparing @idx: @memory*.addr and @value.idx")
+;?          (and (< idx len.value) (prn "comparing @idx: @memory*.addr and @value.idx")) ;? 1
          (if (>= idx len.value)
                t
              (~is memory*.addr value.idx)
                (do1 nil
                     (prn "@addr should contain @(repr value.idx) but contains @(repr memory*.addr)")
-;?                     (recur (+ addr 1) (+ idx 1)) ;? 3
+;?                     (recur (+ addr 1) (+ idx 1)) ;? 4
                     )
              :else
                (recur (+ addr 1) (+ idx 1))))))

@@ -106,16 +106,20 @@
 
 (function print-trace [
   (default-space:space-address <- new space:literal 30:literal)
+  (screen:terminal-address <- next-input)
   (x:trace-address <- next-input)
   (l:string-address <- get x:trace-address/deref label:offset)
-  (print-string nil:literal/terminal l:string-address)
-  ($print ((" : " literal)))
+  (print-string screen:terminal-address l:string-address)
+  (print-character screen:terminal-address ((#\space literal)))
+  (print-character screen:terminal-address ((#\: literal)))
+  (print-character screen:terminal-address ((#\space literal)))
   (c:string-address <- get x:trace-address/deref contents:offset)
-  (print-string nil:literal/terminal c:string-address)
+  (print-string screen:terminal-address c:string-address)
 ])
 
 (function print-instruction-trace [
   (default-space:space-address <- new space:literal 30:literal)
+  (screen:terminal-address <- next-input)
   (x:instruction-trace-address <- next-input)
   ; print call stack
   (c:string-address-array-address <- get x:instruction-trace-address/deref call-stack:offset)
@@ -125,20 +129,22 @@
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
     (s:string-address <- index c:string-address-array-address/deref i:integer)
-    (print-string nil:literal/terminal s:string-address)
-    ($print (("/" literal)))
+    (print-string screen:terminal-address s:string-address)
+    (print-character screen:terminal-address ((#\/ literal)))
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
   ; print pc
-  ($print ((" " literal)))
+  (print-character screen:terminal-address ((#\space literal)))
   (p:string-address <- get x:instruction-trace-address/deref pc:offset)
-  (print-string nil:literal/terminal p:string-address)
+  (print-string screen:terminal-address p:string-address)
   ; print instruction
-  ($print ((" : " literal)))
+  (print-character screen:terminal-address ((#\space literal)))
+  (print-character screen:terminal-address ((#\: literal)))
+  (print-character screen:terminal-address ((#\space literal)))
   (i:string-address <- get x:instruction-trace-address/deref instruction:offset)
-  (print-string nil:literal/terminal i:string-address)
-  ($print (("\r\n" literal)))
+  (print-string screen:terminal-address i:string-address)
+  (cursor-to-next-line screen:terminal-address)
   ; print children
   (ch:trace-address-array-address <- get x:instruction-trace-address/deref children:offset)
   (i:integer <- copy 0:literal)
@@ -152,9 +158,9 @@
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
     (t:trace-address <- index ch:trace-address-array-address/deref i:integer)
-    ($print (("  " literal)))
-    (print-trace t:trace-address)
-    ($print (("\r\n" literal)))
+    (print-character screen:terminal-address ((#\space literal)))
+    (print-trace screen:terminal-address t:trace-address)
+    (cursor-to-next-line screen:terminal-address)
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
@@ -162,8 +168,10 @@
 
 (function print-instruction-trace-collapsed [
   (default-space:space-address <- new space:literal 30:literal)
+  (screen:terminal <- next-input)
   (x:instruction-trace-address <- next-input)
-  ($print (("+ " literal)))
+  (print-character screen:terminal-address ((#\+ literal)))
+  (print-character screen:terminal-address ((#\space literal)))
   ; print call stack
   (c:string-address-array-address <- get x:instruction-trace-address/deref call-stack:offset)
   (i:integer <- copy 0:literal)
@@ -172,20 +180,24 @@
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
     (s:string-address <- index c:string-address-array-address/deref i:integer)
-    (print-string nil:literal/terminal s:string-address)
-    ($print (("/" literal)))
+    (print-string screen:terminal-address s:string-address)
+;?     (print-character screen:terminal-address ((#\space literal)))
+    (print-character screen:terminal-address ((#\/ literal)))
+;?     (print-character screen:terminal-address ((#\space literal)))
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
   ; print pc
-  ($print ((" " literal)))
+  (print-character screen:terminal-address ((#\space literal)))
   (p:string-address <- get x:instruction-trace-address/deref pc:offset)
-  (print-string nil:literal/terminal p:string-address)
+  (print-string screen:terminal-address p:string-address)
   ; print instruction
-  ($print ((" : " literal)))
+  (print-character screen:terminal-address ((#\space literal)))
+  (print-character screen:terminal-address ((#\: literal)))
+  (print-character screen:terminal-address ((#\space literal)))
   (i:string-address <- get x:instruction-trace-address/deref instruction:offset)
-  (print-string nil:literal/terminal i:string-address)
-  ($print (("\r\n" literal)))
+  (print-string screen:terminal-address i:string-address)
+  (cursor-to-next-line screen:terminal-address)
 ])
 
 (function main [
@@ -217,7 +229,7 @@ schedule:  done with routine")
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
     (tr:instruction-trace-address <- index arr:instruction-trace-address-array-address/deref i:integer)
-    (print-instruction-trace-collapsed tr:instruction-trace-address)
+    (print-instruction-trace-collapsed nil:literal/terminal tr:instruction-trace-address)
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
@@ -253,7 +265,7 @@ schedule:  done with routine")
       (toggle?:boolean <- equal c:character ((#\newline literal)))
       (break-unless toggle?:boolean)
       (tr:instruction-trace-address <- index arr:instruction-trace-address-array-address/deref cursor-row:integer)
-      (print-instruction-trace tr:instruction-trace-address)
+      (print-instruction-trace nil:literal/terminal tr:instruction-trace-address)
       (jump next-key:offset)  ; loop
     }
     ; debugging: print cursor-row
