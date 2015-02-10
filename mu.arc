@@ -681,21 +681,19 @@
 
                 ; cursor-based (text mode) interaction
                 cursor-mode
+                  ;(do1 nil (system "/bin/stty -F /dev/tty raw"))
                   (do1 nil (if (no ($.current-charterm)) ($.open-charterm)))
                 retro-mode
+                  ;(do1 nil (system "/bin/stty -F /dev/tty sane"))
                   (do1 nil (if ($.current-charterm) ($.close-charterm)))
                 clear-host-screen
-                  (do1 nil
-                    (if ($.current-charterm)
-                          ($.charterm-clear-screen)
-                        ($.graphics-open?)
-                          ($.clear-viewport Viewport)))
+                  (do1 nil (pr "\e[m\e[2J\e[;H"))
                 clear-line-on-host
-                  (do1 nil ($.charterm-clear-line))
+                  (do1 nil (pr "\e[2K"))
                 cursor-on-host
-                  (do1 nil ($.charterm-cursor (m arg.0) (m arg.1)))
+                  (do1 nil (pr (+ "\e[" (m arg.0) ";" (m arg.1) "H")))
                 cursor-on-host-to-next-line
-                  (do1 nil ($.charterm-newline))
+                  (do1 nil (pr "\r\n"))
                 print-character-to-host
                   (do1 nil
                        (assert (in (type:m arg.0) 'char 'sym) (rep (m arg.0)))
@@ -705,12 +703,10 @@
                          (caselet x (m arg.0)
                            ; todo: test these exceptions
                            #\newline
-                             ($.charterm-newline)
+                             (pr "\r\n")
                            #\backspace
                              ; backspace doesn't clear after moving the cursor
-                             (do ($.charterm-display #\backspace)
-                                 ($.charterm-display #\space)
-                                 ($.charterm-display #\backspace))
+                             (pr " ")
                            ctrl-c
                              (do ($.close-charterm)
                                  (die "interrupted"))
@@ -728,9 +724,8 @@
                                      ($.foreground (m arg.1))
                                      (pr x)
                                      ($.reset))
-;?                                    (print-with-fg x (m arg.1)) ;? 1
                                  :else
-                                   ($.charterm-display x))))
+                                   (pr x))))
                        )
                 read-key-from-host
                   (if ($.current-charterm)
@@ -841,17 +836,15 @@
                          (caselet x (m arg.0)
                            ; todo: test these exceptions
                            #\newline
-                             ($.charterm-newline)
+                             (pr "\r\n")
                            #\backspace
                              ; backspace doesn't clear after moving the cursor
-                             (do ($.charterm-display #\backspace)
-                                 ($.charterm-display #\space)
-                                 ($.charterm-display #\backspace))
+                             (pr " ")
                            ctrl-c
                              (do ($.close-charterm)
                                  (die "interrupted"))
                            ;else
-                             ($.charterm-display x)))
+                             (pr x)))
                        )
                 $eval
                   (new-string:repr:eval:read:to-arc-string (m arg.0))
