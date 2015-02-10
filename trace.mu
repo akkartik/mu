@@ -138,7 +138,7 @@
   ($print ((" : " literal)))
   (i:string-address <- get x:instruction-trace-address/deref instruction:offset)
   (print-string nil:literal/terminal i:string-address)
-  ($print (("\n" literal)))
+  ($print (("\r\n" literal)))
   ; print children
   (ch:trace-address-array-address <- get x:instruction-trace-address/deref children:offset)
   (i:integer <- copy 0:literal)
@@ -154,10 +154,38 @@
     (t:trace-address <- index ch:trace-address-array-address/deref i:integer)
     ($print (("  " literal)))
     (print-trace t:trace-address)
-    ($print (("\n" literal)))
+    ($print (("\r\n" literal)))
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
+])
+
+(function print-instruction-trace-collapsed [
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:instruction-trace-address <- next-input)
+  ($print (("+ " literal)))
+  ; print call stack
+  (c:string-address-array-address <- get x:instruction-trace-address/deref call-stack:offset)
+  (i:integer <- copy 0:literal)
+  (len:integer <- length c:string-address-array-address/deref)
+  { begin
+    (done?:boolean <- greater-or-equal i:integer len:integer)
+    (break-if done?:boolean)
+    (s:string-address <- index c:string-address-array-address/deref i:integer)
+    (print-string nil:literal/terminal s:string-address)
+    ($print (("/" literal)))
+    (i:integer <- add i:integer 1:literal)
+    (loop)
+  }
+  ; print pc
+  ($print ((" " literal)))
+  (p:string-address <- get x:instruction-trace-address/deref pc:offset)
+  (print-string nil:literal/terminal p:string-address)
+  ; print instruction
+  ($print ((" : " literal)))
+  (i:string-address <- get x:instruction-trace-address/deref instruction:offset)
+  (print-string nil:literal/terminal i:string-address)
+  ($print (("\r\n" literal)))
 ])
 
 (function main [
@@ -182,12 +210,25 @@ schedule:  done with routine")
 ;?   ($print (("#traces: " literal))) ;? 1
 ;?   ($print len:integer) ;? 1
 ;?   ($print (("\n" literal))) ;? 1
+  (cursor-mode)
+  ; print trace collapsed
   (i:integer <- copy 0:literal)
   { begin
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
     (tr:instruction-trace-address <- index arr:instruction-trace-address-array-address/deref i:integer)
-    (print-instruction-trace tr:instruction-trace-address)
+    (print-instruction-trace-collapsed tr:instruction-trace-address)
+    (i:integer <- add i:integer 1:literal)
+    (loop)
+  }
+  ; handle key presses
+  (i:integer <- copy 0:literal)
+  { begin
+    (c:character <- read-key nil:literal/keyboard)
+    (loop-unless c:character)
+    (quit?:boolean <- equal c:character ((#\q literal)))
+    (break-if quit?:boolean)
+    ($print i:integer)
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
