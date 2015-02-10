@@ -181,7 +181,7 @@
       (b:board-address <- init-board initial-position:list-address)
       (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
       (print-board screen:terminal-address b:board-address)
-      (5:string-address/raw <- get screen:terminal-address/deref data:offset)
+      (1:string-address/raw <- get screen:terminal-address/deref data:offset)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("run")))
@@ -189,8 +189,8 @@
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
-;? (prn memory*.5)
-(when (~memory-contains-array memory*.5
+;? (prn memory*.1)
+(when (~memory-contains-array memory*.1
           (+ "8 | r n b q k b n r "
              "7 | p p p p p p p p "
              "6 | _ _ _ _ _ _ _ _ "
@@ -201,7 +201,7 @@
              "1 | R N B Q K B N R "
              "  +---------------- "
              "    a b c d e f g h "))
-  (prn "F - print-board works; chessboard begins at @memory*.5"))
+  (prn "F - print-board works; chessboard begins at @memory*.1"))
 
 ; todo: how to fold this more elegantly with the previous test?
 (reset)
@@ -238,7 +238,7 @@
       (dest:integer-address/deref <- copy 3:literal)  ; to-rank: 4
       (b:board-address <- make-move b:board-address m:move-address)
       (print-board screen:terminal-address b:board-address)
-      (5:string-address/raw <- get screen:terminal-address/deref data:offset)
+      (1:string-address/raw <- get screen:terminal-address/deref data:offset)
      ])))
 ;? (set dump-trace*)
 ;? (= dump-trace* (obj whitelist '("run")))
@@ -246,8 +246,8 @@
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
-;? (prn memory*.5)
-(when (~memory-contains-array memory*.5
+;? (prn memory*.1)
+(when (~memory-contains-array memory*.1
           (+ "8 | r n b q k b n r "
              "7 | p p p p p p p p "
              "6 | _ _ _ _ _ _ _ _ "
@@ -258,6 +258,6 @@
              "1 | R N B Q K B N R "
              "  +---------------- "
              "    a b c d e f g h "))
-  (prn "F - make-move works; chessboard begins at @memory*.5"))
+  (prn "F - make-move works; chessboard begins at @memory*.1"))
 
 (reset)
