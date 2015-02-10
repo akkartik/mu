@@ -714,7 +714,7 @@
                              (pr "\r\n")
                            #\backspace
                              ; backspace doesn't clear after moving the cursor
-                             (pr " ")
+                             (pr "\b \b")
                            ctrl-c
                              (do ($.close-charterm)
                                  (die "interrupted"))
@@ -847,7 +847,7 @@
                              (pr "\r\n")
                            #\backspace
                              ; backspace doesn't clear after moving the cursor
-                             (pr " ")
+                             (pr "\b \b")
                            ctrl-c
                              (do ($.close-charterm)
                                  (die "interrupted"))
