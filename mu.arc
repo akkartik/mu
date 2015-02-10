@@ -694,6 +694,14 @@
                   (do1 nil (pr (+ "\e[" (m arg.0) ";" (m arg.1) "H")))
                 cursor-on-host-to-next-line
                   (do1 nil (pr "\r\n"))
+                cursor-up-on-host
+                  (do1 nil (pr (+ "\e[" (aif (len> arg 0) (or m arg.0) 1) "A")))
+                cursor-down-on-host
+                  (do1 nil (pr (+ "\e[" (aif (len> arg 0) (or m arg.0) 1) "B")))
+                cursor-right-on-host
+                  (do1 nil (pr (+ "\e[" (aif (len> arg 0) (or m arg.0) 1) "C")))
+                cursor-left-on-host
+                  (do1 nil (pr (+ "\e[" (aif (len> arg 0) (or m arg.0) 1) "D")))
                 print-character-to-host
                   (do1 nil
                        (assert (in (type:m arg.0) 'char 'sym) (rep (m arg.0)))
