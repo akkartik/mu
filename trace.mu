@@ -222,14 +222,50 @@ schedule:  done with routine")
     (loop)
   }
   ; handle key presses
-  (i:integer <- copy 0:literal)
+  (cursor-row:integer <- copy len:integer)
   { begin
-    (c:character <- read-key nil:literal/keyboard)
+    next-key
+    (c:character <- read-key nil:literal/keyboard silent:literal/terminal)
     (loop-unless c:character)
     (quit?:boolean <- equal c:character ((#\q literal)))
     (break-if quit?:boolean)
-    ($print i:integer)
-    (i:integer <- add i:integer 1:literal)
+    ; up/down navigation
+    { begin
+      (up?:boolean <- equal c:character ((up literal)))
+      (break-unless up?:boolean)
+      (at-top?:boolean <- lesser-or-equal cursor-row:integer 0:literal)
+      (break-if at-top?:boolean)
+      (cursor-row:integer <- subtract cursor-row:integer 1:literal)
+      (cursor-up-on-host)
+      (jump next-key:offset)  ; loop
+    }
+    { begin
+      (down?:boolean <- equal c:character ((down literal)))
+      (break-unless down?:boolean)
+      (at-bottom?:boolean <- greater-or-equal cursor-row:integer len:integer)
+      (break-if at-bottom?:boolean)
+      (cursor-row:integer <- add cursor-row:integer 1:literal)
+      (cursor-down-on-host)
+      (jump next-key:offset)  ; loop
+    }
+    ; enter: expand current row
+    { begin
+      (toggle?:boolean <- equal c:character ((#\newline literal)))
+      (break-unless toggle?:boolean)
+      (tr:instruction-trace-address <- index arr:instruction-trace-address-array-address/deref cursor-row:integer)
+      (print-instruction-trace tr:instruction-trace-address)
+      (jump next-key:offset)  ; loop
+    }
+    ; debugging: print cursor-row
+    ($print cursor-row:integer)
+    (loop)
+  }
+  ; move cursor to bottom before exiting
+  { begin
+    (at-bottom?:boolean <- greater-or-equal cursor-row:integer len:integer)
+    (break-if at-bottom?:boolean)
+    (cursor-down-on-host)
+    (cursor-row:integer <- add cursor-row:integer 1:literal)
     (loop)
   }
 ])
