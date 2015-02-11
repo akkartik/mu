@@ -266,6 +266,54 @@
   (cursor-to-next-line screen:terminal-address)
 ])
 
+(function process-key [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:screen-state <- next-input)
+  (k:keyboard-address <- next-input)
+  (screen:terminal-address <- next-input)
+  (traces:instruction-trace-address-array-address <- next-input)
+  (c:character <- read-key k:keyboard-address silent:literal/terminal)
+  { begin
+    ; no key yet
+    (break-if c:character)
+    (reply nil:literal)
+  }
+  { begin
+    ; user quit
+    (q-pressed?:boolean <- equal c:character ((#\q literal)))
+    (end-of-fake-keyboard-input?:boolean <- equal c:character ((#\null literal)))
+    (quit?:boolean <- or q-pressed?:boolean end-of-fake-keyboard-input?:boolean)
+    (break-unless quit?:boolean)
+    (reply t:literal)
+  }
+  ; up/down navigation
+  { begin
+    (up?:boolean <- equal c:character ((up literal)))
+    (k?:boolean <- equal c:character ((#\k literal)))
+    (up?:boolean <- or up?:boolean k?:boolean)
+    (break-unless up?:boolean)
+    (up 0:space-address/screen-state screen:terminal-address)
+    (reply nil:literal)
+  }
+  { begin
+    (down?:boolean <- equal c:character ((down literal)))
+    (j?:boolean <- equal c:character ((#\j literal)))
+    (down?:boolean <- or down?:boolean j?:boolean)
+    (break-unless down?:boolean)
+    (down 0:space-address/screen-state screen:terminal-address)
+    (reply nil:literal)
+  }
+  ; enter: expand current row
+  { begin
+    (toggle?:boolean <- equal c:character ((#\newline literal)))
+    (break-unless toggle?:boolean)
+    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref cursor-row:integer/space:1)
+    (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
+    (reply nil:literal)
+  }
+  (reply nil:literal)
+])
+
 (function main [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:screen-state <- screen-state)
@@ -302,38 +350,8 @@ schedule:  done with routine")
   }
   ; handle key presses
   { begin
-    next-key
-    (c:character <- read-key nil:literal/keyboard silent:literal/terminal)
-    (loop-unless c:character)
-    (quit?:boolean <- equal c:character ((#\q literal)))
+    (quit?:boolean <- process-key 0:space-address/screen-state nil:literal/keyboard nil:literal/terminal traces:instruction-trace-address-array-address)
     (break-if quit?:boolean)
-    (quit?:boolean <- equal c:character ((#\null literal)))
-    (break-if quit?:boolean)
-    ; up/down navigation
-    { begin
-      (up?:boolean <- equal c:character ((up literal)))
-      (k?:boolean <- equal c:character ((#\k literal)))
-      (up?:boolean <- or up?:boolean k?:boolean)
-      (break-unless up?:boolean)
-      (up 0:space-address/screen-state nil:literal/terminal)
-      (jump next-key:offset)  ; loop
-    }
-    { begin
-      (down?:boolean <- equal c:character ((down literal)))
-      (j?:boolean <- equal c:character ((#\j literal)))
-      (down?:boolean <- or down?:boolean j?:boolean)
-      (break-unless down?:boolean)
-      (down 0:space-address/screen-state nil:literal/terminal)
-      (jump next-key:offset)  ; loop
-    }
-    ; enter: expand current row
-    { begin
-      (toggle?:boolean <- equal c:character ((#\newline literal)))
-      (break-unless toggle?:boolean)
-      (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref cursor-row:integer/space:1)
-      (print-instruction-trace nil:literal/terminal tr:instruction-trace-address 0:space-address/screen-state)
-      (jump next-key:offset)  ; loop
-    }
     (loop)
   }
   ; move cursor to bottom before exiting
