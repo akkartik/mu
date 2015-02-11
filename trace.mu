@@ -266,6 +266,24 @@
   (cursor-to-next-line screen:terminal-address)
 ])
 
+;; initial screen state
+(function print-traces-collapsed [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:screen-state <- next-input)
+  (traces:instruction-trace-address-array-address <- next-input)
+  (len:integer <- length traces:instruction-trace-address-array-address/deref)
+  (i:integer <- copy 0:literal)
+  { begin
+    (done?:boolean <- greater-or-equal i:integer len:integer)
+    (break-if done?:boolean)
+    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref i:integer)
+    (print-instruction-trace-collapsed nil:literal/terminal tr:instruction-trace-address 0:space-address/screen-state)
+    (i:integer <- add i:integer 1:literal)
+    (loop)
+  }
+])
+
+;; modify screen state in response to a single key
 (function process-key [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:screen-state <- next-input)
@@ -333,22 +351,11 @@ mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
   (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
-  (len:integer <- length traces:instruction-trace-address-array-address/deref)
 ;?   ($print (("#traces: " literal))) ;? 1
 ;?   ($print len:integer) ;? 1
 ;?   ($print (("\n" literal))) ;? 1
   (cursor-mode)
-  ; print trace collapsed
-  (i:integer <- copy 0:literal)
-  { begin
-    (done?:boolean <- greater-or-equal i:integer len:integer)
-    (break-if done?:boolean)
-    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref i:integer)
-    (print-instruction-trace-collapsed nil:literal/terminal tr:instruction-trace-address 0:space-address/screen-state)
-    (i:integer <- add i:integer 1:literal)
-    (loop)
-  }
-  ; handle key presses
+  (print-traces-collapsed 0:space-address/screen-state traces:instruction-trace-address-array-address)
   { begin
     (quit?:boolean <- process-key 0:space-address/screen-state nil:literal/keyboard nil:literal/terminal traces:instruction-trace-address-array-address)
     (break-if quit?:boolean)
