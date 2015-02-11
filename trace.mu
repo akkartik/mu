@@ -331,7 +331,7 @@ schedule:  done with routine")
       (toggle?:boolean <- equal c:character ((#\newline literal)))
       (break-unless toggle?:boolean)
       (tr:instruction-trace-address <- index arr:instruction-trace-address-array-address/deref cursor-row:integer/space:1)
-      (print-instruction-trace nil:literal/terminal tr:instruction-trace-address)
+      (print-instruction-trace nil:literal/terminal tr:instruction-trace-address 0:space-address/screen-state)
       (jump next-key:offset)  ; loop
     }
     (loop)
