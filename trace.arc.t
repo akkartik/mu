@@ -26,13 +26,14 @@ schedule:  done with routine")
       (len:integer <- length arr:instruction-trace-address-array-address/deref)
       ; fake screen
       (screen:terminal-address <- init-fake-terminal 70:literal 15:literal)
+      (screen-state:space-address <- screen-state)
       ; print trace collapsed
       (i:integer <- copy 0:literal)
       { begin
         (done?:boolean <- greater-or-equal i:integer len:integer)
         (break-if done?:boolean)
         (tr:instruction-trace-address <- index arr:instruction-trace-address-array-address/deref i:integer)
-        (print-instruction-trace-collapsed screen:terminal-address tr:instruction-trace-address)
+        (print-instruction-trace-collapsed screen:terminal-address tr:instruction-trace-address screen-state:space-address)
         (i:integer <- add i:integer 1:literal)
         (loop)
       }

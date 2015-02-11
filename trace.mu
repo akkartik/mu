@@ -121,6 +121,7 @@
   (default-space:space-address <- new space:literal 30:literal)
   (screen:terminal-address <- next-input)
   (x:instruction-trace-address <- next-input)
+  (screen-state:space-address <- next-input)
   (print-character screen:terminal-address ((#\- literal)))
   (print-character screen:terminal-address ((#\space literal)))
   ; print call stack
@@ -146,7 +147,7 @@
   (print-character screen:terminal-address ((#\space literal)))
   (i:string-address <- get x:instruction-trace-address/deref instruction:offset)
   (print-string screen:terminal-address i:string-address)
-  (cursor-to-next-line screen:terminal-address)
+  (add-line screen-state:space-address screen:terminal-address)
   ; print children
   (ch:trace-address-array-address <- get x:instruction-trace-address/deref children:offset)
   (i:integer <- copy 0:literal)
@@ -164,7 +165,7 @@
     (print-character screen:terminal-address ((#\space literal)))
     (print-character screen:terminal-address ((#\space literal)))
     (print-trace screen:terminal-address t:trace-address)
-    (cursor-to-next-line screen:terminal-address)
+    (add-line screen-state:space-address screen:terminal-address)
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
@@ -174,6 +175,7 @@
   (default-space:space-address <- new space:literal 30:literal)
   (screen:terminal <- next-input)
   (x:instruction-trace-address <- next-input)
+  (screen-state:space-address <- next-input)
   (print-character screen:terminal-address ((#\+ literal)))
   (print-character screen:terminal-address ((#\space literal)))
   ; print call stack
@@ -201,7 +203,7 @@
   (print-character screen:terminal-address ((#\space literal)))
   (i:string-address <- get x:instruction-trace-address/deref instruction:offset)
   (print-string screen:terminal-address i:string-address)
-  (cursor-to-next-line screen:terminal-address)
+  (add-line screen-state:space-address screen:terminal-address)
 ])
 
 ;; data structure
@@ -220,8 +222,8 @@
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
   { begin
-    (bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 height:integer/space:1)
-    (break-if bottom?:boolean)
+    (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 height:integer/space:1)
+    (break-if at-bottom?:boolean)
     (cursor-row:integer/space:1 <- add cursor-row:integer/space:1 1:literal)
     (cursor-down screen:terminal-address)
   }
@@ -232,8 +234,8 @@
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
   { begin
-    (bottom?:boolean <- lesser-or-equal cursor-row:integer/space:1 0:literal)
-    (break-if bottom?:boolean)
+    (at-top?:boolean <- lesser-or-equal cursor-row:integer/space:1 0:literal)
+    (break-if at-top?:boolean)
     (cursor-row:integer/space:1 <- subtract cursor-row:integer/space:1 1:literal)
     (cursor-up screen:terminal-address)
   }
@@ -249,6 +251,19 @@
     (down 0:space-address screen:terminal-address)
     (loop)
   }
+])
+
+(function add-line [  ; move down, adding line if necessary
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:screen-state <- next-input)
+  (screen:terminal-address <- next-input)
+  { begin
+    (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 height:integer/space:1)
+    (break-unless at-bottom?:boolean)
+    (height:integer/space:1 <- add height:integer/space:1 1:literal)
+  }
+  (cursor-row:integer/space:1 <- add cursor-row:integer/space:1 1:literal)
+  (cursor-to-next-line screen:terminal-address)
 ])
 
 (function main [
@@ -281,13 +296,11 @@ schedule:  done with routine")
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
     (tr:instruction-trace-address <- index arr:instruction-trace-address-array-address/deref i:integer)
-    (print-instruction-trace-collapsed nil:literal/terminal tr:instruction-trace-address)
+    (print-instruction-trace-collapsed nil:literal/terminal tr:instruction-trace-address 0:space-address/screen-state)
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
   ; handle key presses
-  (cursor-row:integer/space:1 <- copy len:integer)
-  (height:integer/space:1 <- length arr:instruction-trace-address-array-address/deref)
   { begin
     next-key
     (c:character <- read-key nil:literal/keyboard silent:literal/terminal)
