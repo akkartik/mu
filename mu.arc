@@ -321,6 +321,7 @@
 
 (def run fn-names
   (freeze function*)
+;?   (prn function*!main) ;? 1
   (load-system-functions)
   (apply run-more fn-names))
 
@@ -1651,18 +1652,30 @@
           (recur (+ addr 1) (+ idx 1)))))
 
 (def memory-contains-array (addr value)
-;?   (prn "Looking for @value starting at @addr, size @memory*.addr vs @len.value")
+  (or
+    (and (>= memory*.addr len.value)
+         (loop (addr (+ addr 1)
+                idx  0)
+           (if (>= idx len.value)
+                 t
+               (~is memory*.addr value.idx)
+                 nil
+               :else
+                 (recur (+ addr 1) (+ idx 1)))))
+    (memory-contains-array-verbose addr value)))
+
+(def memory-contains-array-verbose (addr value)
+  (prn "Mismatch when looking at @addr, size @memory*.addr vs @len.value")
   (and (>= memory*.addr len.value)
        (loop (addr (+ addr 1)
               idx  0)
-;?          (and (< idx len.value) (prn "comparing @idx: @memory*.addr and @value.idx")) ;? 2
+         (and (< idx len.value) (prn "comparing @idx: @memory*.addr and @value.idx"))
          (if (>= idx len.value)
                t
              (~is memory*.addr value.idx)
                (do1 nil
                     (prn "@addr should contain @(repr value.idx) but contains @(repr memory*.addr)")
-;?                     (recur (+ addr 1) (+ idx 1)) ;? 5
-                    )
+                    (recur (+ addr 1) (+ idx 1)))
              :else
                (recur (+ addr 1) (+ idx 1))))))
 
@@ -1670,6 +1683,9 @@
 (mac run-code (name . body)
   ; careful to avoid re-processing functions and adding noise to traces
   `(do
+     (when (function* ',name)
+       (prn "run-code: redefining " ',name))
+     (wipe (function* ',name))
      (add-code '((function ,name [ ,@body ])))
      (freeze-another ',name)
      (run-more ',name)))
@@ -2627,6 +2643,47 @@
     (reply)
   }
   (cursor-up-on-host)
+)
+
+(init-fn cursor-left
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:terminal-address <- next-input)
+  { begin
+    (break-unless x:terminal-address)
+    (col:integer-address <- get-address x:terminal-address/deref cursor-col:offset)
+    { begin
+      (edge?:boolean <- lesser-or-equal col:integer-address/deref 0:literal)
+      (break-if edge?:boolean)
+      (col:integer-address/deref <- subtract col:integer-address/deref 1:literal)
+    }
+    (reply)
+  }
+  (cursor-left-on-host)
+)
+
+(init-fn cursor-right
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:terminal-address <- next-input)
+  (width:integer-address <- get-address x:terminal-address/deref num-cols:offset)
+  { begin
+    (break-unless x:terminal-address)
+    (col:integer-address <- get-address x:terminal-address/deref cursor-col:offset)
+    { begin
+      (edge?:boolean <- lesser-or-equal col:integer-address/deref width:integer-address/deref)
+      (break-if edge?:boolean)
+      (col:integer-address/deref <- add col:integer-address/deref 1:literal)
+    }
+    (reply)
+  }
+  (cursor-right-on-host)
+)
+
+(init-fn replace-character
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:terminal-address <- next-input)
+  (c:character <- next-input)
+  (print-character x:terminal-address c:character)
+  (cursor-left x:terminal-address)
 )
 
 (init-fn print-character
