@@ -241,6 +241,8 @@ schedule:  done with routine")
     (loop-unless c:character)
     (quit?:boolean <- equal c:character ((#\q literal)))
     (break-if quit?:boolean)
+    (quit?:boolean <- equal c:character ((#\null literal)))
+    (break-if quit?:boolean)
     ; up/down navigation
     { begin
       (up?:boolean <- equal c:character ((up literal)))
