@@ -248,7 +248,7 @@ schedule:  done with routine")
       (at-top?:boolean <- lesser-or-equal cursor-row:integer 0:literal)
       (break-if at-top?:boolean)
       (cursor-row:integer <- subtract cursor-row:integer 1:literal)
-      (cursor-up-on-host)
+      (cursor-up nil:literal/keyboard)
       (jump next-key:offset)  ; loop
     }
     { begin
@@ -257,7 +257,7 @@ schedule:  done with routine")
       (at-bottom?:boolean <- greater-or-equal cursor-row:integer len:integer)
       (break-if at-bottom?:boolean)
       (cursor-row:integer <- add cursor-row:integer 1:literal)
-      (cursor-down-on-host)
+      (cursor-down nil:literal/keyboard)
       (jump next-key:offset)  ; loop
     }
     ; enter: expand current row
@@ -269,14 +269,14 @@ schedule:  done with routine")
       (jump next-key:offset)  ; loop
     }
     ; debugging: print cursor-row
-    ($print cursor-row:integer)
+;?     ($print cursor-row:integer) ;? 1
     (loop)
   }
   ; move cursor to bottom before exiting
   { begin
     (at-bottom?:boolean <- greater-or-equal cursor-row:integer len:integer)
     (break-if at-bottom?:boolean)
-    (cursor-down-on-host)
+    (cursor-down nil:literal/terminal)
     (cursor-row:integer <- add cursor-row:integer 1:literal)
     (loop)
   }
