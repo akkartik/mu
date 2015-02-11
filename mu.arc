@@ -2582,6 +2582,39 @@
   (cursor-on-host-to-next-line)
 )
 
+(init-fn cursor-down
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:terminal-address <- next-input)
+  (height:integer-address <- get-address x:terminal-address/deref num-rows:offset)
+  { begin
+    (break-unless x:terminal-address)
+    (row:integer-address <- get-address x:terminal-address/deref cursor-row:offset)
+    { begin
+      (bottom?:boolean <- lesser-or-equal row:integer-address/deref height:integer-address/deref)
+      (break-if bottom?:boolean)
+      (row:integer-address/deref <- add row:integer-address/deref 1:literal)
+    }
+    (reply)
+  }
+  (cursor-down-on-host)
+)
+
+(init-fn cursor-up
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:terminal-address <- next-input)
+  { begin
+    (break-unless x:terminal-address)
+    (row:integer-address <- get-address x:terminal-address/deref cursor-row:offset)
+    { begin
+      (top?:boolean <- lesser-or-equal row:integer-address/deref 0:literal)
+      (break-if top?:boolean)
+      (row:integer-address/deref <- subtract row:integer-address/deref 1:literal)
+    }
+    (reply)
+  }
+  (cursor-up-on-host)
+)
+
 (init-fn print-character
   (default-space:space-address <- new space:literal 30:literal)
   (x:terminal-address <- next-input)
