@@ -1649,13 +1649,13 @@
   (and (>= memory*.addr len.value)
        (loop (addr (+ addr 1)
               idx  0)
-;?          (and (< idx len.value) (prn "comparing @idx: @memory*.addr and @value.idx")) ;? 1
+;?          (and (< idx len.value) (prn "comparing @idx: @memory*.addr and @value.idx")) ;? 2
          (if (>= idx len.value)
                t
              (~is memory*.addr value.idx)
                (do1 nil
                     (prn "@addr should contain @(repr value.idx) but contains @(repr memory*.addr)")
-;?                     (recur (+ addr 1) (+ idx 1)) ;? 4
+;?                     (recur (+ addr 1) (+ idx 1)) ;? 5
                     )
              :else
                (recur (+ addr 1) (+ idx 1))))))
@@ -2585,14 +2585,19 @@
 (init-fn cursor-down
   (default-space:space-address <- new space:literal 30:literal)
   (x:terminal-address <- next-input)
+;?   ($print ((#\# literal))) ;? 1
   (height:integer-address <- get-address x:terminal-address/deref num-rows:offset)
+;?   ($print height:integer-address/deref) ;? 1
   { begin
     (break-unless x:terminal-address)
+;?     ($print ((#\% literal))) ;? 1
     (row:integer-address <- get-address x:terminal-address/deref cursor-row:offset)
     { begin
-      (bottom?:boolean <- lesser-or-equal row:integer-address/deref height:integer-address/deref)
+      (bottom?:boolean <- greater-or-equal row:integer-address/deref height:integer-address/deref)
       (break-if bottom?:boolean)
       (row:integer-address/deref <- add row:integer-address/deref 1:literal)
+;?       ($print ((#\* literal))) ;? 1
+;?       ($print row:integer-address/deref) ;? 1
     }
     (reply)
   }
@@ -2628,6 +2633,7 @@
   { begin
     (break-unless x:terminal-address)
     (row:integer-address <- get-address x:terminal-address/deref cursor-row:offset)
+;?     ($print row:integer-address/deref) ;? 1
     (col:integer-address <- get-address x:terminal-address/deref cursor-col:offset)
     (width:integer <- get x:terminal-address/deref num-cols:offset)
     (t1:integer <- multiply row:integer-address/deref width:integer)
