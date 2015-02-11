@@ -284,8 +284,8 @@ run: main 2: 4 => ((3 integer))
 mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
-  (arr:instruction-trace-address-array-address <- parse-traces s:stream-address)
-  (len:integer <- length arr:instruction-trace-address-array-address/deref)
+  (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
+  (len:integer <- length traces:instruction-trace-address-array-address/deref)
 ;?   ($print (("#traces: " literal))) ;? 1
 ;?   ($print len:integer) ;? 1
 ;?   ($print (("\n" literal))) ;? 1
@@ -295,7 +295,7 @@ schedule:  done with routine")
   { begin
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
-    (tr:instruction-trace-address <- index arr:instruction-trace-address-array-address/deref i:integer)
+    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref i:integer)
     (print-instruction-trace-collapsed nil:literal/terminal tr:instruction-trace-address 0:space-address/screen-state)
     (i:integer <- add i:integer 1:literal)
     (loop)
@@ -330,7 +330,7 @@ schedule:  done with routine")
     { begin
       (toggle?:boolean <- equal c:character ((#\newline literal)))
       (break-unless toggle?:boolean)
-      (tr:instruction-trace-address <- index arr:instruction-trace-address-array-address/deref cursor-row:integer/space:1)
+      (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref cursor-row:integer/space:1)
       (print-instruction-trace nil:literal/terminal tr:instruction-trace-address 0:space-address/screen-state)
       (jump next-key:offset)  ; loop
     }
