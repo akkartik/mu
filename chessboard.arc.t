@@ -48,6 +48,8 @@
 (add-code:readfile "chessboard.mu")
 ; initialize some variables at specific raw locations
 ;? (prn "== init")
+(freeze function*)
+(load-system-functions)
 (run-code test-init
   (1:channel-address/raw <- init-channel 1:literal)
   (2:terminal-address/raw <- init-fake-terminal 20:literal 10:literal)
@@ -64,7 +66,7 @@
   (wipe completed-routines*)
   ; check that read-move consumes it and then goes to sleep
   (enq read-move-routine running-routines*)
-  (run)
+  (run-more)
   (when (ran-to-completion 'read-move)
     (prn "F - chessboard waits after first letter of move"))
   (wipe completed-routines*)

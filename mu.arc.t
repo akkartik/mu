@@ -165,8 +165,8 @@
 ;? (prn memory*)
 (when (~is memory*.1 23)
   (prn "F - 'copy' writes its lone 'arg' after the instruction name to its lone 'oarg' or output arg before the arrow. After this test, the value 23 is stored in memory address 1."))
-;? (reset) ;? 1
-;? (quit) ;? 1
+;? (reset) ;? 2
+;? (quit) ;? 2
 
 ; Our basic arithmetic ops can operate on memory locations or literals.
 ; (Ignore hardware details like registers for now.)
@@ -918,13 +918,8 @@
                   (~is (memory* (+ second 1)) t)
                   (~is memory*.10 nil))))
       (prn "F - lists can contain elements of different types"))))
-(add-code
-  '((function test2 [
-      (10:list-address <- list-next 1:list-address)
-     ])))
-;? (set dump-trace*)
-(run 'test2)
-;? (prn memory*)
+(run-code test2
+  (10:list-address <- list-next 1:list-address))
 (each routine completed-routines*
   (aif rep.routine!error (prn "error - " it)))
 (when (~is memory*.10 memory*.6)
