@@ -322,9 +322,10 @@
 (def run fn-names
   (freeze function*)
   (load-system-functions)
-;?   (write function*)
-;?   (quit)
-  (= traces* (queue))
+  (apply run-more fn-names))
+
+; assume we've already frozen; throw on a few more routines and continue scheduling
+(def run-more fn-names
   (each it fn-names
     (enq make-routine.it running-routines*))
   (while (~empty running-routines*)
@@ -335,10 +336,7 @@
     (trace "schedule" label.routine*)
     (routine-mark
       (run-for-time-slice scheduling-interval*))
-    (update-scheduler-state)
-;?     (tr "after run iter " running-routines*)
-;?     (tr "after run iter " empty.running-routines*)
-    ))
+    (update-scheduler-state)))
 
 ; prepare next iteration of round-robin scheduler
 ;
@@ -1282,7 +1280,9 @@
           (when (and (nondummy oarg)
                      (is v.oarg 0)
                      (iso ty.oarg '(space-address)))
-            (assert (no next-space-generator*.name) "function can have only one next-space-generator environment")
+            (assert (or (no next-space-generator*.name)
+                        (is next-space-generator*.name (alref oarg 'names)))
+                    "function can have only one next-space-generator environment")
             (tr "next-space-generator of @name is @(alref oarg 'names)")
             (= next-space-generator*.name (alref oarg 'names))))))))
 
@@ -1295,7 +1295,7 @@
   (replace-names-with-location instrs name))
 
 (def assign-names-to-location (instrs name)
-;?   (tr name)
+  (trace "cn0" "convert-names in @name")
 ;?   (prn name ": " location*) ;? 1
   (point return
   (ret location (table)
@@ -1589,6 +1589,12 @@
   ; we could clear location* at this point, but maybe we'll find a use for it
   )
 
+(def freeze-another (fn-name)
+  (= function*.fn-name (convert-labels:convert-braces:tokenize-args:insert-code function*.fn-name fn-name))
+  (check-default-space function*.fn-name fn-name)
+  (add-next-space-generator function*.fn-name fn-name)
+  (convert-names function*.fn-name fn-name))
+
 (def tokenize-arg (arg)
 ;?   (tr "tokenize-arg " arg)
   (if (in arg '<- '_)
@@ -1660,10 +1666,13 @@
              :else
                (recur (+ addr 1) (+ idx 1))))))
 
+; run code in tests
 (mac run-code (name . body)
+  ; careful to avoid re-processing functions and adding noise to traces
   `(do
      (add-code '((function ,name [ ,@body ])))
-     (run ',name)))
+     (freeze-another ',name)
+     (run-more ',name)))
 
 (def routine-that-ran (f)
   (find [some [is f _!fn-name] stack._]
