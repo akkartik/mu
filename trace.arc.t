@@ -68,22 +68,19 @@ schedule:  done with routine")
       (s:stream-address <- init-stream x:string-address)
       (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
       (len:integer <- length traces:instruction-trace-address-array-address/deref)
-      (screen:terminal-address <- init-fake-terminal 70:literal 15:literal)
+      (1:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
       ; position the cursor away from top of screen
-      (cursor-down screen:terminal-address)
-      (cursor-down screen:terminal-address)
+      (cursor-down 1:terminal-address/raw)
+      (cursor-down 1:terminal-address/raw)
       (screen-state:space-address <- screen-state)
-      (print-traces-collapsed screen-state:space-address screen:terminal-address traces:instruction-trace-address-array-address)
-      (1:string-address/raw <- get screen:terminal-address/deref data:offset)
+      (print-traces-collapsed screen-state:space-address 1:terminal-address/raw traces:instruction-trace-address-array-address)
+      (2:string-address/raw <- get 1:terminal-address/raw/deref data:offset)
     ])))
-;? (set dump-trace*)
-;? (= dump-trace* (obj whitelist '("run")))
 (run 'main)
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
-;? (prn memory*.1)
-(when (~memory-contains-array memory*.1
+(when (~memory-contains-array memory*.2
          (+ "                                                                      "
             "                                                                      "
             "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
@@ -93,5 +90,19 @@ schedule:  done with routine")
             "+ main/ 2 : (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))    "
             "+ main/ 2 : 4 => ((3 integer))                                        "))
   (prn "F - print-traces-collapsed works"))
+
+(run-code main2
+  (print-character 1:terminal-address/raw ((#\* literal))))
+(when (~memory-contains-array memory*.2
+         (+ "                                                                      "
+            "                                                                      "
+            "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
+            "+ main/ 0 : 1 => ((1 integer))                                        "
+            "+ main/ 1 : (((2 integer)) <- ((copy)) ((3 literal)))                 "
+            "+ main/ 1 : 3 => ((2 integer))                                        "
+            "+ main/ 2 : (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))    "
+            "+ main/ 2 : 4 => ((3 integer))                                        "
+            "*                                                                     "))
+  (prn "F - print-traces-collapsed leaves cursor at next line"))
 
 (reset)
