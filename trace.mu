@@ -253,6 +253,25 @@
   }
 ])
 
+(function back-to [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:screen-state <- next-input)
+  (screen:terminal-address <- next-input)
+  (target-row:integer <- next-input)
+  { begin
+    (below-target?:boolean <- greater-than cursor-row:integer/space:1 target-row:integer)
+    (break-unless below-target?:boolean)
+    (up 0:space-address screen:terminal-address)
+    (loop)
+  }
+  { begin
+    (above-target?:boolean <- less-than cursor-row:integer/space:1 target-row:integer)
+    (break-unless above-target?:boolean)
+    (down 0:space-address screen:terminal-address)
+    (loop)
+  }
+])
+
 (function add-line [  ; move down, adding line if necessary
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:screen-state <- next-input)
@@ -326,8 +345,10 @@
   { begin
     (toggle?:boolean <- equal c:character ((#\newline literal)))
     (break-unless toggle?:boolean)
+    (target-row:integer <- copy cursor-row:integer/space:1)
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref cursor-row:integer/space:1)
     (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
+    (back-to 0:space-address/screen-state screen:terminal-address target-row:integer)
     (reply nil:literal)
   }
   (reply nil:literal)

@@ -325,5 +325,26 @@ schedule:  done with routine")
             "   mem : ((3 integer)): 3 <= 4                                        "
             "   schedule :  done with routine                                      "))
   (prn "F - process-key expands current trace segment on <enter>"))
+; and cursor should remain on the top-level line
+(run-code main3
+  (replace-character 2:terminal-address/raw ((#\* literal)))
+  )
+(when (~memory-contains-array memory*.4
+         (+ "                                                                      "
+            "                                                                      "
+            "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
+            "+ main/ 0 : 1 => ((1 integer))                                        "
+            "+ main/ 1 : (((2 integer)) <- ((copy)) ((3 literal)))                 "
+            "+ main/ 1 : 3 => ((2 integer))                                        "
+            "+ main/ 2 : (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))    "
+            "* main/ 2 : 4 => ((3 integer))                                        "
+            ;^cursor
+            "   mem : ((1 integer)): 1 <= 1                                        "
+            "   mem : ((2 integer)): 2 <= 3                                        "
+            "   mem : ((1 integer)) => 1                                           "
+            "   mem : ((2 integer)) => 3                                           "
+            "   mem : ((3 integer)): 3 <= 4                                        "
+            "   schedule :  done with routine                                      "))
+  (prn "F - process-key positions cursor on top of trace after expanding"))
 
 (reset)
