@@ -46,6 +46,8 @@
         (break-unless curr-tail:instruction-trace-address)
         (c:trace-address-array-address-address <- get-address curr-tail:instruction-trace-address/deref children:offset)
         (c:trace-address-array-address-address/deref <- to-array ch:buffer-address)
+        ; clear 'ch'
+        (ch:buffer-address <- init-buffer 5:literal)
       }
       ; append a new curr-tail to result
       (curr-tail:instruction-trace-address <- parse-instruction-trace f:trace-address)
