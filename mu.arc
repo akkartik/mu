@@ -1700,6 +1700,7 @@
 (mac run-code (name . body)
   ; careful to avoid re-processing functions and adding noise to traces
   `(do
+     (prn "-- " ',name)
      (when (function* ',name)
        (prn "run-code: redefining " ',name))
      (wipe (function* ',name))

@@ -405,6 +405,7 @@ schedule:  done with routine")
 run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
 run: main 0: 1 => ((1 integer))
 mem: ((1 integer)): 1 <= 1
+mem: ((1 integer)): 1 <= 1
 run: main 1: (((2 integer)) <- ((copy)) ((3 literal)))
 run: main 1: 3 => ((2 integer))
 mem: ((2 integer)): 2 <= 3
@@ -503,6 +504,37 @@ schedule:  done with routine")
             "+ main/ 2 : 4 => ((3 integer))                                        "
             "                                                                      "
             "                                                                      "))
+  (prn "F - process-key: navigation moves between top-level lines only"))
+(run-code main4
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  ; move up a few lines, expand, then move down and expand again
+  (s:string-address <- new "kkk\njjj\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+;?   (replace-character 2:terminal-address/raw ((#\* literal))) ;? 1
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+; first expand should have no effect
+(when (~screen-contains memory*.4 70
+         (+ "                                                                      "
+            "                                                                      "
+            "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
+            "+ main/ 0 : 1 => ((1 integer))                                        "
+            "+ main/ 1 : (((2 integer)) <- ((copy)) ((3 literal)))                 "
+            "+ main/ 1 : 3 => ((2 integer))                                        "
+            "- main/ 2 : (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))    "
+            "   mem : ((1 integer)) => 1                                           "
+            "   mem : ((2 integer)) => 3                                           "
+            "+ main/ 2 : 4 => ((3 integer))                                        "))
   (prn "F - process-key: navigation moves between top-level lines only"))
 
 (reset)
