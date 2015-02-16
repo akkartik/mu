@@ -192,7 +192,7 @@
   (awhen rep.routine!error
     (prn "error - " it)))
 ;? (prn memory*.1)
-(when (~memory-contains-array memory*.1
+(when (~screen-contains memory*.1 20
           (+ "8 | r n b q k b n r "
              "7 | p p p p p p p p "
              "6 | _ _ _ _ _ _ _ _ "
@@ -249,7 +249,7 @@
   (awhen rep.routine!error
     (prn "error - " it)))
 ;? (prn memory*.1)
-(when (~memory-contains-array memory*.1
+(when (~screen-contains memory*.1 20
           (+ "8 | r n b q k b n r "
              "7 | p p p p p p p p "
              "6 | _ _ _ _ _ _ _ _ "

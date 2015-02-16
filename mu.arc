@@ -1652,17 +1652,15 @@
           (recur (+ addr 1) (+ idx 1)))))
 
 (def memory-contains-array (addr value)
-  (or
-    (and (>= memory*.addr len.value)
-         (loop (addr (+ addr 1)  ; skip count
-                idx  0)
-           (if (>= idx len.value)
-                 t
-               (~is memory*.addr value.idx)
-                 nil
-               :else
-                 (recur (+ addr 1) (+ idx 1)))))
-    (memory-contains-array-verbose addr value)))
+  (and (>= memory*.addr len.value)
+       (loop (addr (+ addr 1)  ; skip count
+              idx  0)
+         (if (>= idx len.value)
+               t
+             (~is memory*.addr value.idx)
+               nil
+             :else
+               (recur (+ addr 1) (+ idx 1))))))
 
 (def memory-contains-array-verbose (addr value)
   (prn "Mismatch when looking at @addr, size @memory*.addr vs @len.value")
