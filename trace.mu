@@ -295,8 +295,16 @@
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
   (traces:instruction-trace-address-array-address <- next-input)
+  (print-traces-collapsed-from 0:space-address screen:terminal-address traces:instruction-trace-address-array-address 0:literal/from)
+])
+
+(function print-traces-collapsed-from [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:screen-state <- next-input)
+  (screen:terminal-address <- next-input)
+  (traces:instruction-trace-address-array-address <- next-input)
+  (i:integer <- next-input)
   (len:integer <- length traces:instruction-trace-address-array-address/deref)
-  (i:integer <- copy 0:literal)
   { begin
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
@@ -352,6 +360,8 @@
     (target-row:integer <- copy cursor-row:integer/space:1)
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref cursor-row:integer/space:1)
     (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
+    (next-row:integer <- add target-row:integer 1:literal)
+    (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address traces:instruction-trace-address-array-address next-row:integer)
     (back-to 0:space-address/screen-state screen:terminal-address target-row:integer)
     (reply nil:literal)
   }
