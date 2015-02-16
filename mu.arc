@@ -1654,7 +1654,7 @@
 (def memory-contains-array (addr value)
   (or
     (and (>= memory*.addr len.value)
-         (loop (addr (+ addr 1)
+         (loop (addr (+ addr 1)  ; skip count
                 idx  0)
            (if (>= idx len.value)
                  t
@@ -1667,7 +1667,7 @@
 (def memory-contains-array-verbose (addr value)
   (prn "Mismatch when looking at @addr, size @memory*.addr vs @len.value")
   (and (>= memory*.addr len.value)
-       (loop (addr (+ addr 1)
+       (loop (addr (+ addr 1)  ; skip count
               idx  0)
          (and (< idx len.value) (prn "comparing @idx: @memory*.addr and @value.idx"))
          (if (>= idx len.value)
@@ -1678,6 +1678,24 @@
                     (recur (+ addr 1) (+ idx 1)))
              :else
                (recur (+ addr 1) (+ idx 1))))))
+
+(def screen-contains (addr width value)
+  (or (memory-contains-array addr value)
+      (do ;(memory-contains-array-verbose addr value)
+          (prn "Screen contents:")
+          (with (row-start-addr  (+ addr 1)  ; skip count
+                 idx  0)
+            (for row 0  (< row (/ len.value width))  (do ++.row  (++ row-start-addr width))
+              (pr ". ")
+              (for col 0  (< col width)  ++.col
+                (with (expected  value.idx
+                       got  (memory* (+ col row-start-addr)))
+                  (if (is expected got)
+                    (do (pr got)  (pr " "))
+                    (do (pr "X")  (pr got))))
+                ++.idx)
+              (prn " .")
+              )))))
 
 ; run code in tests
 (mac run-code (name . body)
@@ -2684,6 +2702,33 @@
   (c:character <- next-input)
   (print-character x:terminal-address c:character)
   (cursor-left x:terminal-address)
+)
+
+(init-fn clear-line
+  (default-space:space-address <- new space:literal 30:literal)
+  (x:terminal-address <- next-input)
+  { begin
+    (break-unless x:terminal-address)
+    (n:integer <- get x:terminal-address/deref num-cols:offset)
+    (col:integer-address <- get-address x:terminal-address/deref cursor-col:offset)
+    (orig-col:integer <- copy col:integer-address/deref)
+    ; space over the entire line
+    { begin
+      (done?:boolean <- greater-or-equal col:integer-address/deref n:integer)
+      (break-if done?:boolean)
+      (print-character x:terminal-address ((#\space literal)))  ; implicitly updates 'col'
+      (loop)
+    }
+    ; now back to where the cursor was
+    { begin
+      (done?:boolean <- lesser-or-equal col:integer-address/deref orig-col:integer)
+      (break-if done?:boolean)
+      (cursor-left x:terminal-address)
+      (loop)
+    }
+    (reply)
+  }
+  (clear-line-on-host)
 )
 
 (init-fn print-character

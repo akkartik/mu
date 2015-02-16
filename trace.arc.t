@@ -36,7 +36,7 @@ schedule:  done with routine")
   (awhen rep.routine!error
     (prn "error - " it)))
 ;? (prn memory*.1)
-(when (~memory-contains-array memory*.1
+(when (~screen-contains memory*.1 70
          (+ "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
             "+ main/ 0 : 1 => ((1 integer))                                        "
             "+ main/ 1 : (((2 integer)) <- ((copy)) ((3 literal)))                 "
@@ -80,7 +80,7 @@ schedule:  done with routine")
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
-(when (~memory-contains-array memory*.2
+(when (~screen-contains memory*.2 70
          (+ "                                                                      "
             "                                                                      "
             "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
@@ -93,7 +93,7 @@ schedule:  done with routine")
 
 (run-code main2
   (print-character 1:terminal-address/raw ((#\* literal))))
-(when (~memory-contains-array memory*.2
+(when (~screen-contains memory*.2 70
          (+ "                                                                      "
             "                                                                      "
             "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
@@ -148,7 +148,7 @@ schedule:  done with routine")
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
-(when (~memory-contains-array memory*.4
+(when (~screen-contains memory*.4 70
          (+ "                                                                      "
             "                                                                      "
             "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
@@ -172,7 +172,7 @@ schedule:  done with routine")
   (replace-character 2:terminal-address/raw ((#\* literal)))
   )
 ; cursor is now at line 3
-(when (~memory-contains-array memory*.4
+(when (~screen-contains memory*.4 70
          (+ "                                                                      "
             "                                                                      "
             "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
@@ -196,7 +196,7 @@ schedule:  done with routine")
   )
 ; cursor doesn't go beyond the first line printed
 ; stuff on screen before screen-state was initialized is inviolate
-(when (~memory-contains-array memory*.4
+(when (~screen-contains memory*.4 70
          (+ "                                                                      "
             "                                                                      "
             "* main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
@@ -219,7 +219,7 @@ schedule:  done with routine")
   (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
   (replace-character 2:terminal-address/raw ((#\* literal)))
   )
-(when (~memory-contains-array memory*.4
+(when (~screen-contains memory*.4 70
          (+ "                                                                      "
             "                                                                      "
             "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
@@ -242,7 +242,7 @@ schedule:  done with routine")
   (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
   (replace-character 2:terminal-address/raw ((#\* literal)))
   )
-(when (~memory-contains-array memory*.4
+(when (~screen-contains memory*.4 70
          (+ "                                                                      "
             "                                                                      "
             "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
@@ -290,7 +290,7 @@ schedule:  done with routine")
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
-(when (~memory-contains-array memory*.4
+(when (~screen-contains memory*.4 70
          (+ "                                                                      "
             "                                                                      "
             "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
@@ -309,7 +309,7 @@ schedule:  done with routine")
   (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
   )
 ; final line is expanded
-(when (~memory-contains-array memory*.4
+(when (~screen-contains memory*.4 70
          (+ "                                                                      "
             "                                                                      "
             "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
@@ -325,7 +325,7 @@ schedule:  done with routine")
 (run-code main3
   (replace-character 2:terminal-address/raw ((#\* literal)))
   )
-(when (~memory-contains-array memory*.4
+(when (~screen-contains memory*.4 70
          (+ "                                                                      "
             "                                                                      "
             "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
