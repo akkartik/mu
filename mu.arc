@@ -252,10 +252,11 @@
   ((rep routine) 'call-stack))
 
 (def push-stack (routine op)
-  (push (obj fn-name op  pc 0  caller-arg-idx 0)
+  (push (obj fn-name op  pc 0  caller-arg-idx 0  t0 (msec))
         rep.routine!call-stack))
 
 (def pop-stack (routine)
+  (update-time top.routine!fn-name (msec))
   (pop rep.routine!call-stack))
 
 (def top (routine)
@@ -2720,12 +2721,7 @@
       (loop)
     }
     ; now back to where the cursor was
-    { begin
-      (done?:boolean <- lesser-or-equal col:integer-address/deref orig-col:integer)
-      (break-if done?:boolean)
-      (cursor-left x:terminal-address)
-      (loop)
-    }
+    (col:integer-address/deref <- copy orig-col:integer)
     (reply)
   }
   (clear-line-on-host)
