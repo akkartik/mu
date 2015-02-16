@@ -357,12 +357,12 @@
   { begin
     (toggle?:boolean <- equal c:character ((#\newline literal)))
     (break-unless toggle?:boolean)
-    (target-row:integer <- copy cursor-row:integer/space:1)
-    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref cursor-row:integer/space:1)
+    (original-row:integer <- copy cursor-row:integer/space:1)
+    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref cursor-row:integer/space:1)  ; assumes cursor row is a valid index into traces, ie no expanded rows
     (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
-    (next-row:integer <- add target-row:integer 1:literal)
+    (next-row:integer <- add original-row:integer 1:literal)
     (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address traces:instruction-trace-address-array-address next-row:integer)
-    (back-to 0:space-address/screen-state screen:terminal-address target-row:integer)
+    (back-to 0:space-address/screen-state screen:terminal-address original-row:integer)
     (reply nil:literal)
   }
   (reply nil:literal)
