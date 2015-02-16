@@ -1680,7 +1680,7 @@
 (def screen-contains (addr width value)
   (or (memory-contains-array addr value)
       (do ;(memory-contains-array-verbose addr value)
-          (prn "Screen contents:")
+          (prn "Mismatch detected. Screen contents:")
           (with (row-start-addr  (+ addr 1)  ; skip count
                  idx  0)
             (for row 0  (< row (/ len.value width))  (do ++.row  (++ row-start-addr width))
@@ -1688,9 +1688,8 @@
               (for col 0  (< col width)  ++.col
                 (with (expected  value.idx
                        got  (memory* (+ col row-start-addr)))
-                  (if (is expected got)
-                    (do (pr got)  (pr " "))
-                    (do (pr "X")  (pr got))))
+                  (pr got)
+                  (pr (if (is expected got) " " "X")))
                 ++.idx)
               (prn " .")
               )))))
