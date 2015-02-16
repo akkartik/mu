@@ -111,6 +111,7 @@
   (screen:terminal-address <- next-input)
   (x:trace-address <- next-input)
   (l:string-address <- get x:trace-address/deref label:offset)
+  (clear-line screen:terminal-address)
   (print-string screen:terminal-address l:string-address)
   (print-character screen:terminal-address ((#\space literal)))
   (print-character screen:terminal-address ((#\: literal)))
@@ -124,6 +125,7 @@
   (screen:terminal-address <- next-input)
   (x:instruction-trace-address <- next-input)
   (screen-state:space-address <- next-input)
+  (clear-line screen:terminal-address)
   (print-character screen:terminal-address ((#\- literal)))
   (print-character screen:terminal-address ((#\space literal)))
   ; print call stack
