@@ -210,6 +210,16 @@
   (add-line screen-state:space-address screen:terminal-address)
 ])
 
+(function instruction-trace-num-children [
+  (default-space:space-address <- new space:literal 30:literal)
+  (traces:instruction-trace-address-array-address <- next-input)
+  (index:integer <- next-input)
+  (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref index:integer)
+  (tr-children:trace-address-array-address <- get tr:instruction-trace-address/deref children:offset)
+  (n:integer <- length tr-children:instruction-trace-address-array-address/deref)
+  (reply n:integer)
+])
+
 ;; data structure
 (function screen-state [
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -219,6 +229,7 @@
   (cursor-row:integer <- copy 0:literal)
   (max-rows:integer <- copy 0:literal)  ; area of the screen we're responsible for
   (height:integer <- copy 0:literal)  ; part of it that currently has text
+  (expanded-row:integer <- copy -1:literal)
   (reply default-space:space-address)
 ])
 
@@ -226,6 +237,25 @@
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
+  ; if at expanded, skip past nested lines
+  { begin
+    (no-expanded?:boolean <- less-than expanded-row:integer/space:1 0:literal)
+    (break-if no-expanded?:boolean)
+    (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-row:integer/space:1)
+    (break-unless at-expanded?:boolean)
+    (n:integer <- instruction-trace-num-children traces:instruction-trace-address-array-address/space:1 expanded-row:integer/space:1)
+    (n:integer <- add n:integer 1:literal)
+    (i:integer <- copy 0:literal)
+    { begin
+      (done?:boolean <- greater-or-equal i:integer n:integer)
+      (break-if done?:boolean)
+      (cursor-row:integer/space:1 <- add cursor-row:integer/space:1 1:literal)
+      (cursor-down screen:terminal-address)
+      (i:integer <- add i:integer 1:literal)
+      (loop)
+    }
+    (reply)
+  }
   ; if not at bottom, move cursor down
   { begin
     (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 height:integer/space:1)
@@ -239,6 +269,27 @@
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
+  ; if at expanded, skip past nested lines
+  { begin
+    (no-expanded?:boolean <- less-than expanded-row:integer/space:1 0:literal)
+    (break-if no-expanded?:boolean)
+    (n:integer <- instruction-trace-num-children traces:instruction-trace-address-array-address/space:1 expanded-row:integer/space:1)
+    (n:integer <- add n:integer 1:literal)
+    (cursor-row-below-expanded:integer <- add expanded-row:integer/space:1 n:integer)
+    (just-below-expanded?:boolean <- equal cursor-row:integer/space:1 cursor-row-below-expanded:integer)
+    (break-unless just-below-expanded?:boolean)
+    (i:integer <- copy 0:literal)
+    { begin
+      (done?:boolean <- greater-or-equal i:integer n:integer)
+      (break-if done?:boolean)
+      (cursor-row:integer/space:1 <- subtract cursor-row:integer/space:1 1:literal)
+      (cursor-up screen:terminal-address)
+      (i:integer <- add i:integer 1:literal)
+      (loop)
+    }
+    (reply)
+  }
+  ; if not at top, move cursor up
   { begin
     (at-top?:boolean <- lesser-or-equal cursor-row:integer/space:1 0:literal)
     (break-if at-top?:boolean)
@@ -359,6 +410,7 @@
     (original-row:integer <- copy cursor-row:integer/space:1)
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref cursor-row:integer/space:1)  ; assumes cursor row is a valid index into traces, ie no expanded rows
     (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
+    (expanded-row:integer/space:1 <- copy original-row:integer)
     (next-row:integer <- add original-row:integer 1:literal)
     (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address next-row:integer)
     (back-to 0:space-address/screen-state screen:terminal-address original-row:integer)

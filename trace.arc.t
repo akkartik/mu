@@ -395,3 +395,89 @@ schedule:  done with routine")
   (prn "F - process-key: expanding a line continues to print lines after it"))
 
 (reset)
+(new-trace "process-key-skip-expanded")
+(add-code:readfile "trace.mu")
+(add-code
+  '((function! main [
+      (default-space:space-address <- new space:literal 30:literal/capacity)
+      (x:string-address <- new
+"schedule: main
+run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
+run: main 0: 1 => ((1 integer))
+mem: ((1 integer)): 1 <= 1
+run: main 1: (((2 integer)) <- ((copy)) ((3 literal)))
+run: main 1: 3 => ((2 integer))
+mem: ((2 integer)): 2 <= 3
+run: main 2: (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))
+mem: ((1 integer)) => 1
+mem: ((2 integer)) => 3
+run: main 2: 4 => ((3 integer))
+mem: ((3 integer)): 3 <= 4
+schedule:  done with routine")
+      (s:stream-address <- init-stream x:string-address)
+      (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
+      (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
+      (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
+      ; position the cursor away from top of screen
+      (cursor-down 2:terminal-address/raw)
+      (cursor-down 2:terminal-address/raw)
+      (3:space-address/raw <- screen-state 1:instruction-trace-address-array-address/raw)
+      ; draw trace
+      (print-traces-collapsed 3:space-address/raw/screen-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+      ; expand penultimate line, then move one line down and draw cursor
+      (s:string-address <- new "kk\nj")
+      (k:keyboard-address <- init-keyboard s:string-address)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+      (replace-character 2:terminal-address/raw ((#\* literal)))
+      (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
+    ])))
+;? (set dump-trace*) ;? 1
+(run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+; cursor should be at next top-level 'run' line
+(when (~screen-contains memory*.4 70
+         (+ "                                                                      "
+            "                                                                      "
+            "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
+            "+ main/ 0 : 1 => ((1 integer))                                        "
+            "+ main/ 1 : (((2 integer)) <- ((copy)) ((3 literal)))                 "
+            "+ main/ 1 : 3 => ((2 integer))                                        "
+            "- main/ 2 : (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))    "
+            "   mem : ((1 integer)) => 1                                           "
+            "   mem : ((2 integer)) => 3                                           "
+            "* main/ 2 : 4 => ((3 integer))                                        "))
+  (prn "F - process-key: navigation moves between top-level lines only"))
+(run-code main2
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  ; reset previous cursor
+  (replace-character 2:terminal-address/raw ((#\+ literal)))
+  ; move cursor back up one line
+  (s:string-address <- new "k")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  ; show cursor
+  (replace-character 2:terminal-address/raw ((#\* literal)))
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+; cursor should be back at the top of the expanded line
+(when (~screen-contains memory*.4 70
+         (+ "                                                                      "
+            "                                                                      "
+            "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
+            "+ main/ 0 : 1 => ((1 integer))                                        "
+            "+ main/ 1 : (((2 integer)) <- ((copy)) ((3 literal)))                 "
+            "+ main/ 1 : 3 => ((2 integer))                                        "
+            "* main/ 2 : (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))    "
+            "   mem : ((1 integer)) => 1                                           "
+            "   mem : ((2 integer)) => 3                                           "
+            "+ main/ 2 : 4 => ((3 integer))                                        "))
+  (prn "F - process-key: navigation moves between top-level lines only"))
+
+(reset)
