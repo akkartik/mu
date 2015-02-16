@@ -251,12 +251,12 @@
 (def stack (routine)
   ((rep routine) 'call-stack))
 
-(mac push-stack (routine op)
-  `(push (obj fn-name ,op  pc 0  caller-arg-idx 0)
-         ((rep ,routine) 'call-stack)))
+(def push-stack (routine op)
+  (push (obj fn-name op  pc 0  caller-arg-idx 0)
+        rep.routine!call-stack))
 
-(mac pop-stack (routine)
-  `(pop ((rep ,routine) 'call-stack)))
+(def pop-stack (routine)
+  (pop rep.routine!call-stack))
 
 (def top (routine)
   stack.routine.0)
