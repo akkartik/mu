@@ -180,6 +180,7 @@
   (screen:terminal <- next-input)
   (x:instruction-trace-address <- next-input)
   (screen-state:space-address <- next-input)
+  (clear-line screen:terminal-address)
   (print-character screen:terminal-address ((#\+ literal)))
   (print-character screen:terminal-address ((#\space literal)))
   ; print call stack
@@ -229,7 +230,7 @@
   (cursor-row:integer <- copy 0:literal)
   (max-rows:integer <- copy 0:literal)  ; area of the screen we're responsible for
   (height:integer <- copy 0:literal)  ; part of it that currently has text
-  (expanded-row:integer <- copy -1:literal)
+  (expanded-index:integer <- copy -1:literal)
   (reply default-space:space-address)
 ])
 
@@ -239,11 +240,11 @@
   (screen:terminal-address <- next-input)
   ; if at expanded, skip past nested lines
   { begin
-    (no-expanded?:boolean <- less-than expanded-row:integer/space:1 0:literal)
+    (no-expanded?:boolean <- less-than expanded-index:integer/space:1 0:literal)
     (break-if no-expanded?:boolean)
-    (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-row:integer/space:1)
+    (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-index:integer/space:1)
     (break-unless at-expanded?:boolean)
-    (n:integer <- instruction-trace-num-children traces:instruction-trace-address-array-address/space:1 expanded-row:integer/space:1)
+    (n:integer <- instruction-trace-num-children traces:instruction-trace-address-array-address/space:1 expanded-index:integer/space:1)
     (n:integer <- add n:integer 1:literal)
     (i:integer <- copy 0:literal)
     { begin
@@ -271,11 +272,11 @@
   (screen:terminal-address <- next-input)
   ; if at expanded, skip past nested lines
   { begin
-    (no-expanded?:boolean <- less-than expanded-row:integer/space:1 0:literal)
+    (no-expanded?:boolean <- less-than expanded-index:integer/space:1 0:literal)
     (break-if no-expanded?:boolean)
-    (n:integer <- instruction-trace-num-children traces:instruction-trace-address-array-address/space:1 expanded-row:integer/space:1)
+    (n:integer <- instruction-trace-num-children traces:instruction-trace-address-array-address/space:1 expanded-index:integer/space:1)
     (n:integer <- add n:integer 1:literal)
-    (cursor-row-below-expanded:integer <- add expanded-row:integer/space:1 n:integer)
+    (cursor-row-below-expanded:integer <- add expanded-index:integer/space:1 n:integer)
     (just-below-expanded?:boolean <- equal cursor-row:integer/space:1 cursor-row-below-expanded:integer)
     (break-unless just-below-expanded?:boolean)
     (i:integer <- copy 0:literal)
@@ -385,6 +386,27 @@
   }
 ])
 
+(function cursor-row-to-trace-index [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:screen-state <- next-input)
+  (n:integer/screen <- next-input)
+  ; no row expanded? no munging needed
+  { begin
+    (has-expanded?:boolean <- greater-or-equal expanded-index:integer/space:1 0:literal)
+    (break-if has-expanded?:boolean)
+    (reply n:integer/index)
+  }
+  ; expanded row is below cursor-row? no munging needed
+  { begin
+    (above-expanded?:boolean <- lesser-or-equal cursor-row:integer/space:1/screen expanded-index:integer/space:1 )
+    (break-unless above-expanded?:boolean)
+    (reply n:integer/index)
+  }
+  (k:integer/index <- instruction-trace-num-children traces:instruction-trace-address-array-address/space:1 expanded-index:integer/space:1)
+  (result:integer/index <- subtract n:integer/screen k:integer/index)
+  (reply result:integer/index)
+])
+
 ;; modify screen state in response to a single key
 (function process-key [
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -426,44 +448,57 @@
   { begin
     (toggle?:boolean <- equal c:character ((#\newline literal)))
     (break-unless toggle?:boolean)
-    (original-row:integer <- copy cursor-row:integer/space:1)
-    ; is expanded-row already set?
+    (original-cursor-row:integer <- copy cursor-row:integer/space:1)
+;?     ($print original-cursor-row:integer) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    (original-trace-index:integer <- cursor-row-to-trace-index 0:space-address/screen-state original-cursor-row:integer)
+;?     ($print original-trace-index:integer) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    ; is expanded-index already set?
     { begin
-      (expanded?:boolean <- greater-or-equal expanded-row:integer/space:1 0:literal)
+      (expanded?:boolean <- greater-or-equal expanded-index:integer/space:1 0:literal)
       (break-unless expanded?:boolean)
       { begin
         ; are we at the expanded row?
-        (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-row:integer/space:1)
+        (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-index:integer/space:1)
         (break-unless at-expanded?:boolean)
         ; print remaining lines collapsed and return
-        (expanded-row:integer/space:1 <- copy -1:literal)
+        (expanded-index:integer/space:1 <- copy -1:literal)
         (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address cursor-row:integer/space:1)
-        (back-to 0:space-address/screen-state screen:terminal-address original-row:integer)
+        (back-to 0:space-address/screen-state screen:terminal-address original-cursor-row:integer)
         (reply)
       }
       ; are we below the expanded row?
       { begin
-        (below-expanded?:boolean <- greater-than cursor-row:integer/space:1 expanded-row:integer/space:1)
+        (below-expanded?:boolean <- greater-than cursor-row:integer/space:1 expanded-index:integer/space:1)
         (break-unless below-expanded?:boolean)
         ; scan up to expanded row
         { begin
-          (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-row:integer/space:1)
+          (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-index:integer/space:1)
           (break-if at-expanded?:boolean)
           (up 0:space-address screen:terminal-address)
           (loop)
         }
-        ; collapse
-        ; keep printing until we return to original row
+        ; print traces collapsed until just before original row
+        { begin
+          (done?:boolean <- greater-or-equal cursor-row:integer/space:1 original-trace-index:integer)
+          (break-if done?:boolean)
+          (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref cursor-row:integer/space:1)
+          (print-instruction-trace-collapsed screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
+          (loop)
+        }
         ; fall through
       }
     }
     ; expand original row and print traces below it
-    (expanded-row:integer/space:1 <- copy original-row:integer)
-    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref cursor-row:integer/space:1)  ; assumes cursor row is a valid index into traces, ie no expanded rows
+    (expanded-index:integer/space:1 <- copy original-trace-index:integer)
+    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref original-trace-index:integer)
     (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
-    (next-row:integer <- add original-row:integer 1:literal)
-    (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address next-row:integer)
-    (back-to 0:space-address/screen-state screen:terminal-address original-row:integer)
+    (next-index:integer <- add original-trace-index:integer 1:literal)
+;?     ($print next-index:integer) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address next-index:integer)
+    (back-to 0:space-address/screen-state screen:terminal-address original-trace-index:integer)
     (reply nil:literal)
   }
   (reply nil:literal)
