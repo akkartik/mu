@@ -1662,6 +1662,7 @@
              :else
                (recur (+ addr 1) (+ idx 1))))))
 
+; like memory-contains-array but shows diffs
 (def memory-contains-array-verbose (addr value)
   (prn "Mismatch when looking at @addr, size @memory*.addr vs @len.value")
   (and (>= memory*.addr len.value)
@@ -1677,6 +1678,7 @@
              :else
                (recur (+ addr 1) (+ idx 1))))))
 
+; like memory-contains-array but shows diffs in 2D
 (def screen-contains (addr width value)
   (or (memory-contains-array addr value)
       (do ;(memory-contains-array-verbose addr value)
