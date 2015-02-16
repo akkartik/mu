@@ -213,6 +213,7 @@
 ;; data structure
 (function screen-state [
   (default-space:space-address <- new space:literal 30:literal/capacity)
+  (traces:instruction-trace-address-array-address <- next-input)
   ; app-specific coordinates depending on where the cursor was when the trace
   ; browser was started
   (cursor-row:integer <- copy 0:literal)
@@ -225,6 +226,7 @@
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
+  ; if not at bottom, move cursor down
   { begin
     (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 height:integer/space:1)
     (break-if at-bottom?:boolean)
@@ -294,21 +296,19 @@
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
-  (traces:instruction-trace-address-array-address <- next-input)
-  (print-traces-collapsed-from 0:space-address screen:terminal-address traces:instruction-trace-address-array-address 0:literal/from)
+  (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address 0:literal/from)
 ])
 
 (function print-traces-collapsed-from [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
-  (traces:instruction-trace-address-array-address <- next-input)
   (i:integer <- next-input)
-  (len:integer <- length traces:instruction-trace-address-array-address/deref)
+  (len:integer <- length traces:instruction-trace-address-array-address/space:1/deref)
   { begin
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
-    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref i:integer)
+    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref i:integer)
     (print-instruction-trace-collapsed screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
     (i:integer <- add i:integer 1:literal)
     (loop)
@@ -321,7 +321,6 @@
   (0:space-address/names:screen-state <- next-input)
   (k:keyboard-address <- next-input)
   (screen:terminal-address <- next-input)
-  (traces:instruction-trace-address-array-address <- next-input)
   (c:character <- read-key k:keyboard-address silent:literal/terminal)
   { begin
     ; no key yet
@@ -358,10 +357,10 @@
     (toggle?:boolean <- equal c:character ((#\newline literal)))
     (break-unless toggle?:boolean)
     (original-row:integer <- copy cursor-row:integer/space:1)
-    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/deref cursor-row:integer/space:1)  ; assumes cursor row is a valid index into traces, ie no expanded rows
+    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref cursor-row:integer/space:1)  ; assumes cursor row is a valid index into traces, ie no expanded rows
     (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
     (next-row:integer <- add original-row:integer 1:literal)
-    (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address traces:instruction-trace-address-array-address next-row:integer)
+    (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address next-row:integer)
     (back-to 0:space-address/screen-state screen:terminal-address original-row:integer)
     (reply nil:literal)
   }
@@ -370,7 +369,6 @@
 
 (function main [
   (default-space:space-address <- new space:literal 30:literal/capacity)
-  (0:space-address/names:screen-state <- screen-state)
   (x:string-address <- new
 "schedule: main
 run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
@@ -387,13 +385,14 @@ mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
   (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
+  (0:space-address/names:screen-state <- screen-state traces:instruction-trace-address-array-address)
 ;?   ($print (("#traces: " literal))) ;? 1
 ;?   ($print len:integer) ;? 1
 ;?   ($print (("\n" literal))) ;? 1
   (cursor-mode)
-  (print-traces-collapsed 0:space-address/screen-state nil:literal/terminal traces:instruction-trace-address-array-address)
+  (print-traces-collapsed 0:space-address/screen-state nil:literal/terminal)
   { begin
-    (quit?:boolean <- process-key 0:space-address/screen-state nil:literal/keyboard nil:literal/terminal traces:instruction-trace-address-array-address)
+    (quit?:boolean <- process-key 0:space-address/screen-state nil:literal/keyboard nil:literal/terminal)
     (break-if quit?:boolean)
     (loop)
   }
