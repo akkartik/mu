@@ -139,7 +139,7 @@ schedule:  done with routine")
       ; we have no way yet to test special keys like up-arrow
       (s:string-address <- new "k")
       (k:keyboard-address <- init-keyboard s:string-address)
-      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
       ; draw cursor
       (replace-character 2:terminal-address/raw ((#\* literal)))
       (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
@@ -166,9 +166,9 @@ schedule:  done with routine")
   ; move cursor up 3 more lines
   (s:string-address <- new "kkk")
   (k:keyboard-address <- init-keyboard s:string-address)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
   (replace-character 2:terminal-address/raw ((#\* literal)))
   )
 ; cursor is now at line 3
@@ -189,9 +189,9 @@ schedule:  done with routine")
   (replace-character 2:terminal-address/raw ((#\+ literal)))
   (s:string-address <- new "kkk")
   (k:keyboard-address <- init-keyboard s:string-address)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
   (replace-character 2:terminal-address/raw ((#\* literal)))
   )
 ; cursor doesn't go beyond the first line printed
@@ -213,10 +213,10 @@ schedule:  done with routine")
   (replace-character 2:terminal-address/raw ((#\+ literal)))
   (s:string-address <- new "jjjj")
   (k:keyboard-address <- init-keyboard s:string-address)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
   (replace-character 2:terminal-address/raw ((#\* literal)))
   )
 (when (~screen-contains memory*.4 70
@@ -236,10 +236,10 @@ schedule:  done with routine")
   (replace-character 2:terminal-address/raw ((#\+ literal)))
   (s:string-address <- new "jjjj")
   (k:keyboard-address <- init-keyboard s:string-address)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
   (replace-character 2:terminal-address/raw ((#\* literal)))
   )
 (when (~screen-contains memory*.4 70
@@ -305,8 +305,8 @@ schedule:  done with routine")
   ; move cursor to final line and expand
   (s:string-address <- new "k\n")
   (k:keyboard-address <- init-keyboard s:string-address)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
   )
 ; final line is expanded
 (when (~screen-contains memory*.4 70
@@ -372,9 +372,9 @@ schedule:  done with routine")
       ; expand penultimate line
       (s:string-address <- new "kk\n")
       (k:keyboard-address <- init-keyboard s:string-address)
-      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
       (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
     ])))
 (run 'main)
@@ -395,7 +395,7 @@ schedule:  done with routine")
   (prn "F - process-key: expanding a line continues to print lines after it"))
 
 (reset)
-(new-trace "process-key-skip-expanded")
+(new-trace "process-key-expanded")
 (add-code:readfile "trace.mu")
 (add-code
   '((function! main [
@@ -427,10 +427,10 @@ schedule:  done with routine")
       ; expand penultimate line, then move one line down and draw cursor
       (s:string-address <- new "kk\nj")
       (k:keyboard-address <- init-keyboard s:string-address)
-      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+      (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
       (replace-character 2:terminal-address/raw ((#\* literal)))
       (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
     ])))
@@ -459,7 +459,7 @@ schedule:  done with routine")
   ; move cursor back up one line
   (s:string-address <- new "k")
   (k:keyboard-address <- init-keyboard s:string-address)
-  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
   ; show cursor
   (replace-character 2:terminal-address/raw ((#\* literal)))
   )
@@ -478,6 +478,31 @@ schedule:  done with routine")
             "   mem : ((1 integer)) => 1                                           "
             "   mem : ((2 integer)) => 3                                           "
             "+ main/ 2 : 4 => ((3 integer))                                        "))
+  (prn "F - process-key: navigation moves between top-level lines only"))
+(run-code main3
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  ; reset previous cursor
+  (replace-character 2:terminal-address/raw ((#\+ literal)))
+  ; press enter
+  (s:string-address <- new "\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+; expanded trace should now be collapsed
+(when (~screen-contains memory*.4 70
+         (+ "                                                                      "
+            "                                                                      "
+            "+ main/ 0 : (((1 integer)) <- ((copy)) ((1 literal)))                 "
+            "+ main/ 0 : 1 => ((1 integer))                                        "
+            "+ main/ 1 : (((2 integer)) <- ((copy)) ((3 literal)))                 "
+            "+ main/ 1 : 3 => ((2 integer))                                        "
+            "+ main/ 2 : (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))    "
+            "+ main/ 2 : 4 => ((3 integer))                                        "
+            "                                                                      "
+            "                                                                      "))
   (prn "F - process-key: navigation moves between top-level lines only"))
 
 (reset)
