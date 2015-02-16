@@ -337,6 +337,12 @@
     (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 height:integer/space:1)
     (break-unless at-bottom?:boolean)
     (height:integer/space:1 <- add height:integer/space:1 1:literal)
+    ; update max-rows if necessary
+    { begin
+      (grow-max?:boolean <- greater-than height:integer/space:1 max-rows:integer/space:1)
+      (break-unless grow-max?:boolean)
+      (max-rows:integer/space:1 <- copy height:integer/space:1)
+    }
   }
   (cursor-row:integer/space:1 <- add cursor-row:integer/space:1 1:literal)
   (cursor-to-next-line screen:terminal-address)
@@ -356,11 +362,24 @@
   (screen:terminal-address <- next-input)
   (i:integer <- next-input)
   (len:integer <- length traces:instruction-trace-address-array-address/space:1/deref)
+  ; print remaining traces collapsed
   { begin
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref i:integer)
     (print-instruction-trace-collapsed screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
+    (i:integer <- add i:integer 1:literal)
+    (loop)
+  }
+  ; empty any remaining lines
+;?   ($print i:integer) ;? 1
+;?   ($print ((#\space literal))) ;? 1
+;?   ($print max-rows:integer/space:1) ;? 1
+  { begin
+    (done?:boolean <- greater-or-equal i:integer max-rows:integer/space:1)
+    (break-if done?:boolean)
+    (clear-line screen:terminal-address)
+    (down 0:space-address/screen-state screen:terminal-address)
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
@@ -403,14 +422,45 @@
     (down 0:space-address/screen-state screen:terminal-address)
     (reply nil:literal)
   }
-  ; enter: expand current row
+  ; enter: expand/collapse current row
   { begin
     (toggle?:boolean <- equal c:character ((#\newline literal)))
     (break-unless toggle?:boolean)
     (original-row:integer <- copy cursor-row:integer/space:1)
+    ; is expanded-row already set?
+    { begin
+      (expanded?:boolean <- greater-or-equal expanded-row:integer/space:1 0:literal)
+      (break-unless expanded?:boolean)
+      { begin
+        ; are we at the expanded row?
+        (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-row:integer/space:1)
+        (break-unless at-expanded?:boolean)
+        ; print remaining lines collapsed and return
+        (expanded-row:integer/space:1 <- copy -1:literal)
+        (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address cursor-row:integer/space:1)
+        (back-to 0:space-address/screen-state screen:terminal-address original-row:integer)
+        (reply)
+      }
+      ; are we below the expanded row?
+      { begin
+        (below-expanded?:boolean <- greater-than cursor-row:integer/space:1 expanded-row:integer/space:1)
+        (break-unless below-expanded?:boolean)
+        ; scan up to expanded row
+        { begin
+          (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-row:integer/space:1)
+          (break-if at-expanded?:boolean)
+          (up 0:space-address screen:terminal-address)
+          (loop)
+        }
+        ; collapse
+        ; keep printing until we return to original row
+        ; fall through
+      }
+    }
+    ; expand original row and print traces below it
+    (expanded-row:integer/space:1 <- copy original-row:integer)
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref cursor-row:integer/space:1)  ; assumes cursor row is a valid index into traces, ie no expanded rows
     (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
-    (expanded-row:integer/space:1 <- copy original-row:integer)
     (next-row:integer <- add original-row:integer 1:literal)
     (print-traces-collapsed-from 0:space-address/screen-state screen:terminal-address next-row:integer)
     (back-to 0:space-address/screen-state screen:terminal-address original-row:integer)
