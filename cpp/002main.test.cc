@@ -2,6 +2,7 @@ void test_parse() {
   compile("recipe main [\n"
           "  1:integer <- copy 23:literal\n"
           "]\n");
+  cout << '\n'; DUMP("parse");
   CHECK(Recipe_number.find("main") != Recipe_number.end());
   recipe r = Recipe[Recipe_number["main"]];
   vector<instruction>::iterator i = r.step.begin();
@@ -24,6 +25,7 @@ void test_parse2() {
   compile("recipe main [\n"
           "  1:integer, 2:integer <- copy 23:literal\n"
           "]\n");
+  cout << '\n'; DUMP("parse");
   CHECK(Recipe_number.find("main") != Recipe_number.end());
   recipe r = Recipe[Recipe_number["main"]];
   vector<instruction>::iterator i = r.step.begin();
