@@ -120,7 +120,7 @@ struct reagent {
   }
   string to_string() {
     ostringstream out;
-    out << "{name: \"" << name << "\", type: " << types[0] << "}\n";  // todo: properties
+    out << "{name: \"" << name << "\", type: " << types[0] << "}";  // todo: properties
     return out.str();
   }
 };

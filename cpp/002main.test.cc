@@ -2,65 +2,22 @@ void test_parse() {
   compile("recipe main [\n"
           "  1:integer <- copy 23:literal\n"
           "]\n");
-  cout << '\n'; DUMP("parse");
-  CHECK(Recipe_number.find("main") != Recipe_number.end());
-  recipe r = Recipe[Recipe_number["main"]];
-  vector<instruction>::iterator i = r.step.begin();
-  CHECK_EQ(i->is_label, false);
-  CHECK_EQ(i->label, "");
-  CHECK_EQ(i->operation, Recipe_number["copy"]);
-  CHECK_EQ(i->ingredients.size(), 1);
-  CHECK_EQ(i->ingredients[0].name, string("23"));
-  CHECK_EQ(i->ingredients[0].types.size(), 1);
-  CHECK_EQ(i->ingredients[0].types[0], Type_number["literal"]);
-  CHECK_EQ(i->ingredients[0].properties.size(), 0);
-  CHECK_EQ(i->products.size(), 1);
-  CHECK_EQ(i->products[0].name, string("1"));
-  CHECK_EQ(i->products[0].types.size(), 1);
-  CHECK_EQ(i->products[0].types[0], Type_number["integer"]);
-  CHECK_EQ(i->products[0].properties.size(), 0);
+  CHECK_TRACE_CONTENTS("parse", "instruction: 1  ingredient: {name: \"23\", type: 0}  product: {name: \"1\", type: 1}");
 }
 
 void test_parse_label() {
   compile("recipe main [\n"
           "  foo:\n"
           "]\n");
-  cout << '\n'; DUMP("parse");
-  CHECK(Recipe_number.find("main") != Recipe_number.end());
-  recipe r = Recipe[Recipe_number["main"]];
-  vector<instruction>::iterator i = r.step.begin();
-  CHECK_EQ(i->is_label, true);
-  CHECK_EQ(i->label, string("foo"));
-  CHECK_EQ(i->operation, 0);
-  CHECK_EQ(i->ingredients.size(), 0);
-  CHECK_EQ(i->products.size(), 0);
+  CHECK_TRACE_CONTENTS("parse", "label: foo");
+  CHECK_TRACE_DOESNT_CONTAIN("parse", "instruction: 1");
 }
 
 void test_parse2() {
   compile("recipe main [\n"
           "  1:integer, 2:integer <- copy 23:literal\n"
           "]\n");
-  cout << '\n'; DUMP("parse");
-  CHECK(Recipe_number.find("main") != Recipe_number.end());
-  recipe r = Recipe[Recipe_number["main"]];
-  vector<instruction>::iterator i = r.step.begin();
-  CHECK_EQ(i->is_label, false);
-  CHECK_EQ(i->label, "");
-  CHECK_EQ(i->operation, Recipe_number["copy"]);
-  CHECK_EQ(i->ingredients.size(), 1);
-  CHECK_EQ(i->ingredients[0].name, string("23"));
-  CHECK_EQ(i->ingredients[0].types.size(), 1);
-  CHECK_EQ(i->ingredients[0].types[0], Type_number["literal"]);
-  CHECK_EQ(i->ingredients[0].properties.size(), 0);
-  CHECK_EQ(i->products.size(), 2);
-  CHECK_EQ(i->products[0].name, string("1"));
-  CHECK_EQ(i->products[0].types.size(), 1);
-  CHECK_EQ(i->products[0].types[0], Type_number["integer"]);
-  CHECK_EQ(i->products[0].properties.size(), 0);
-  CHECK_EQ(i->products[1].name, string("2"));
-  CHECK_EQ(i->products[1].types.size(), 1);
-  CHECK_EQ(i->products[1].types[0], Type_number["integer"]);
-  CHECK_EQ(i->products[1].properties.size(), 0);
+  CHECK_TRACE_CONTENTS("parse", "instruction: 1  ingredient: {name: \"23\", type: 0}  product: {name: \"1\", type: 1}  product: {name: \"2\", type: 1}");
 }
 
 void test_literal() {
