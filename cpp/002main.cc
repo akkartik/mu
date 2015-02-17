@@ -116,7 +116,12 @@ struct reagent {
   reagent(string s) {
     istringstream in(s);
     name = slurp_until(in, ':');
-    types.push_back(Type_number[slurp_until(in, '/')]);
+    types.push_back(Type_number[slurp_until(in, '/')]);  // todo: multiple types
+  }
+  string to_string() {
+    ostringstream out;
+    out << "{name: \"" << name << "\", type: " << types[0] << "}\n";  // todo: properties
+    return out.str();
   }
 };
 
@@ -152,8 +157,17 @@ void setup_memory() {
 }
 
 void setup_types() {
+  Type.clear();  Type_number.clear();
+  Type_number["literal"] = 0;
+  Next_type_number = 1;
   int integer = Type_number["integer"] = Next_type_number++;
   Type[integer].size = 1;
+}
+
+void setup_recipes() {
+  Recipe.clear();  Recipe_number.clear();  Next_recipe_number = 1;
+  Recipe_number["copy"] = Next_recipe_number++;
+//?   dbg << "AAA " << Recipe_number["copy"] << '\n'; //? 1
 }
 
 void compile(string form) {
@@ -222,8 +236,17 @@ bool next_instruction(istream& in, instruction* curr) {
   curr->operation = Recipe_number[*p];  ++p;
 
   for (; p != words.end(); ++p) {
+    if (*p == ",") continue;
 //?     cout << "ingredient: " << *p << '\n'; //? 1
     curr->ingredients.push_back(reagent(*p));
+  }
+
+  trace("parse") << "instruction: " << curr->operation;
+  for (vector<reagent>::iterator p = curr->ingredients.begin(); p != curr->ingredients.end(); ++p) {
+    trace("parse") << "  ingredient: " << p->to_string();
+  }
+  for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p) {
+    trace("parse") << "  product: " << p->to_string();
   }
   return !in.eof();
 }
@@ -316,6 +339,7 @@ void verify() {
 void setup() {
   setup_memory();
   setup_types();
+  setup_recipes();
   Passed = true;
 }
 
