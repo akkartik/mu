@@ -101,7 +101,10 @@ struct type_info {
   vector<vector<type_number> > elements;  // only if is_record or is_array
 };
 
-unordered_map<type_number, type_info> type;
+typedef int type_number;
+unordered_map<string, type_number> Type_name;
+unordered_map<type_number, type_info> Type;
+unordered_map<int, int> Memory;
 
 struct reagent {
   string name;
@@ -110,15 +113,35 @@ struct reagent {
 };
 
 struct instruction {
-  recipe_number op;
-  vector<reagent> ingredients;
-  vector<reagent> products;
+  bool is_label;
+  string label;  // only if is_label
+  recipe_number operation;  // only if !is_label
+  vector<reagent> ingredients;  // only if !is_label
+  vector<reagent> products;  // only if !is_label
 };
 
-void load(const char* filename) {
+struct recipe {
+  vector<instruction> step;
+};
+
+unordered_map<int, recipe> Recipe;
+
+void load(string filename) {
 }
 
-void run(const char* function_name) {
+void run(string function_name) {
+}
+
+void setup_memory() {
+  Memory.clear();
+}
+
+void setup_types() {
+  Type_name["integer"] = 1;
+  Type[1].size = 1;
+}
+
+void compile(string form) {
 }
 
 
@@ -148,6 +171,8 @@ void verify() {
 }
 
 void setup() {
+  setup_memory();
+  setup_types();
   Passed = true;
 }
 
