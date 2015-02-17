@@ -86,9 +86,19 @@ ostream& operator<<(ostream& os, unused die) {
 #define DUMP(layer)  cerr << Trace_stream->readable_contents(layer)
 
 // Trace_stream is a resource, lease_tracer uses RAII to manage it.
+string Trace_file;
+static string Trace_dir = ".traces/";
 struct lease_tracer {
   lease_tracer() { Trace_stream = new trace_stream; }
-  ~lease_tracer() { delete Trace_stream, Trace_stream = NULL; }
+  ~lease_tracer() {
+//?     cerr << "write to file? " << Trace_file << "$\n"; //? 1
+    if (!Trace_file.empty()) {
+//?       cerr << "writing\n"; //? 1
+      ofstream fout((Trace_dir+Trace_file).c_str());
+      fout << Trace_stream->readable_contents("");
+      fout.close();
+    }
+    delete Trace_stream, Trace_stream = NULL; Trace_file = ""; }
 };
 
 #define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;
