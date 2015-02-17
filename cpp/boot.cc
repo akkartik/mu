@@ -49,6 +49,7 @@ using std::ofstream;
 
 
 // interpreter decls
+namespace mu {
 
 #include "type_list"
 
@@ -61,3 +62,5 @@ using std::ofstream;
 // interpreter tests
 
 #include "test_file_list"
+
+}  // namespace mu
