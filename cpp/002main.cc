@@ -142,6 +142,36 @@ void setup_types() {
 }
 
 void compile(string form) {
+  istringstream in(form);
+  in >> std::noskipws;
+  if (next_word(in) != "recipe")
+    RAISE << "top-level forms must be of the form 'recipe _name_ [ _instruction_ ... ]'";
+}
+
+string next_word(istream& in) {
+  ostringstream out;
+  skip_whitespace(in);
+  slurp_word(in, out);
+//?   cout << out.str() << '\n'; //? 1
+  return out.str();
+}
+
+void slurp_word(istream& in, ostream& out) {
+  char c;
+  while (in >> c) {
+//?     cout << c << '\n'; //? 1
+    if (isspace(c)) {
+//?       cout << "  space\n"; //? 1
+      in.putback(c);
+      break;
+    }
+    out << c;
+  }
+}
+
+void skip_whitespace(istream& in) {
+  while (isspace(in.peek()) && in.peek() != '\n')
+    in.get();
 }
 
 
