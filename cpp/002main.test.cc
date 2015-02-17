@@ -21,6 +21,21 @@ void test_parse() {
   CHECK_EQ(i->products[0].properties.size(), 0);
 }
 
+void test_parse_label() {
+  compile("recipe main [\n"
+          "  foo:\n"
+          "]\n");
+  cout << '\n'; DUMP("parse");
+  CHECK(Recipe_number.find("main") != Recipe_number.end());
+  recipe r = Recipe[Recipe_number["main"]];
+  vector<instruction>::iterator i = r.step.begin();
+  CHECK_EQ(i->is_label, true);
+  CHECK_EQ(i->label, string("foo"));
+  CHECK_EQ(i->operation, 0);
+  CHECK_EQ(i->ingredients.size(), 0);
+  CHECK_EQ(i->products.size(), 0);
+}
+
 void test_parse2() {
   compile("recipe main [\n"
           "  1:integer, 2:integer <- copy 23:literal\n"
