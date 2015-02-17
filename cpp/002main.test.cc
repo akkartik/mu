@@ -1,5 +1,5 @@
 void test_literal() {
-  compile("function main [\n"
+  compile("recipe main [\n"
           "  1:integer <- copy 23:literal\n"
           "]\n");
   run("main");
