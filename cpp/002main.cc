@@ -154,13 +154,28 @@ void compile(string form) {
   istringstream in(form);
   in >> std::noskipws;
 
-  if (next_word(in) != "recipe")
-    raise << "top-level forms must be of the form 'recipe _name_ [ _instruction_ ... ]'";
+  string _recipe = next_word(in);
+//?   cout << _recipe << '\n'; //? 1
+  if (_recipe != "recipe")
+    raise << "top-level forms must be of the form 'recipe _name_ [ _instruction_ ... ]'\n";
 
   string recipe_name = next_word(in);
+//?   cout << '^' << recipe_name << "$\n"; //? 1
   if (recipe_name.empty())
     raise << "empty recipe name in " << form << '\n';
   int r = Recipe_number[recipe_name] = Next_recipe_number++;
+
+//?   string foo = next_word(in); //? 1
+//?   cout << '^' << foo << "$ (" << foo.size() << ")\n"; //? 1
+  if (next_word(in) != "[")
+    raise << "recipe body must begin with '['\n";
+
+  skip_newlines(in);
+
+  instruction curr;
+//?   while (next_instruction(in, &curr)) { //? 1
+//?     Recipe[r].step.push_back(curr); //? 1
+//?   } //? 1
 }
 
 bool next_instruction(istream& in, instruction* curr) {
@@ -171,8 +186,11 @@ bool next_instruction(istream& in, instruction* curr) {
 
 string next_word(istream& in) {
   ostringstream out;
+//?   cout << "1: " << (int)in.peek() << '\n'; //? 1
   skip_whitespace(in);
+//?   cout << "2: " << (int)in.peek() << '\n'; //? 1
   slurp_word(in, out);
+//?   cout << "3: " << (int)in.peek() << '\n'; //? 1
 //?   cout << out.str() << '\n'; //? 1
   return out.str();
 }
@@ -181,7 +199,7 @@ void slurp_word(istream& in, ostream& out) {
   char c;
   while (in >> c) {
 //?     cout << c << '\n'; //? 1
-    if (isspace(c) && c != '\n' && c != ',') {
+    if (isspace(c) || c == ',') {
 //?       cout << "  space\n"; //? 1
       in.putback(c);
       break;
@@ -191,8 +209,10 @@ void slurp_word(istream& in, ostream& out) {
 }
 
 void skip_whitespace(istream& in) {
-  while (isspace(in.peek()) && in.peek() != '\n')
+  while (isspace(in.peek()) && in.peek() != '\n') {
+//?     cout << "skip\n"; //? 1
     in.get();
+  }
 }
 
 void skip_newlines(istream& in) {
