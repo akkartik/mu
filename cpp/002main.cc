@@ -210,6 +210,7 @@ bool next_instruction(istream& in, instruction* curr) {
   if (find(words.begin(), words.end(), "<-") != words.end()) {
 //?     cout << "instruction yields products\n"; //? 1
     for (; *p != "<-"; ++p) {
+      if (*p == ",") continue;
 //?       cout << "product: " << *p << '\n'; //? 1
 //?       products.push_back(*p); //? 1
       curr->products.push_back(reagent(*p));
