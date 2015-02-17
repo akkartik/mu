@@ -165,7 +165,9 @@ void setup_types() {
 }
 
 void setup_recipes() {
-  Recipe.clear();  Recipe_number.clear();  Next_recipe_number = 1;
+  Recipe.clear();  Recipe_number.clear();
+  Recipe_number["idle"] = 0;
+  Next_recipe_number = 1;
   Recipe_number["copy"] = Next_recipe_number++;
 //?   dbg << "AAA " << Recipe_number["copy"] << '\n'; //? 1
 }
@@ -219,6 +221,14 @@ bool next_instruction(istream& in, instruction* curr) {
 //?   } //? 1
 //?   cout << '\n'; //? 1
 //?   return true; //? 1
+
+  if (words.size() == 1 && *(words[0].end()-1) == ':') {
+    curr->is_label = true;
+    words[0].erase(words[0].end()-1);
+    curr->label = words[0];
+    trace("parse") << "label: " << curr->label;
+    return !in.eof();
+  }
 
   vector<string>::iterator p = words.begin();
   if (find(words.begin(), words.end(), "<-") != words.end()) {
