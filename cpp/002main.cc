@@ -113,6 +113,11 @@ struct reagent {
   string name;
   vector<type_number> types;
   vector<pair<string, property> > properties;
+  reagent(string s) {
+    istringstream in(s);
+    name = slurp_until(in, ':');
+    types.push_back(Type_number[slurp_until(in, '/')]);
+  }
 };
 
 const int idle = 0;
@@ -124,6 +129,7 @@ struct instruction {
   vector<reagent> ingredients;  // only if !is_label
   vector<reagent> products;  // only if !is_label
   instruction() :is_label(false), operation(idle) {}
+  void clear() { is_label=false; label.clear(); operation=idle; ingredients.clear(); products.clear(); }
 };
 
 struct recipe {
@@ -173,14 +179,51 @@ void compile(string form) {
   skip_newlines(in);
 
   instruction curr;
-//?   while (next_instruction(in, &curr)) { //? 1
-//?     Recipe[r].step.push_back(curr); //? 1
-//?   } //? 1
+  while (next_instruction(in, &curr)) {
+    Recipe[r].step.push_back(curr);
+  }
 }
 
 bool next_instruction(istream& in, instruction* curr) {
-  skip_whitespace(in);
-  skip_newlines(in);
+  curr->clear();
+  if (in.eof()) return false;
+  skip_whitespace(in);  if (in.eof()) return false;
+  skip_newlines(in);  if (in.eof()) return false;
+
+//?   vector<string> ingredients, products; //? 1
+  vector<string> words;
+  while (in.peek() != '\n') {
+    skip_whitespace(in);  if (in.eof()) return false;
+    string word = next_word(in);  if (in.eof()) return false;
+    words.push_back(word);
+    skip_whitespace(in);  if (in.eof()) return false;
+  }
+  skip_newlines(in);  if (in.eof()) return false;
+//?   cout << "words: "; //? 1
+//?   for (vector<string>::iterator p = words.begin(); p != words.end(); ++p) { //? 1
+//?     cout << *p << "; "; //? 1
+//?   } //? 1
+//?   cout << '\n'; //? 1
+//?   return true; //? 1
+
+  vector<string>::iterator p = words.begin();
+  if (find(words.begin(), words.end(), "<-") != words.end()) {
+//?     cout << "instruction yields products\n"; //? 1
+    for (; *p != "<-"; ++p) {
+//?       cout << "product: " << *p << '\n'; //? 1
+//?       products.push_back(*p); //? 1
+      curr->products.push_back(reagent(*p));
+    }
+    ++p;  // skip <-
+  }
+//?   return true; //? 1
+
+  curr->operation = Recipe_number[*p];  ++p;
+
+  for (; p != words.end(); ++p) {
+//?     cout << "ingredient: " << *p << '\n'; //? 1
+    curr->ingredients.push_back(reagent(*p));
+  }
   return !in.eof();
 }
 
@@ -197,6 +240,11 @@ string next_word(istream& in) {
 
 void slurp_word(istream& in, ostream& out) {
   char c;
+  if (in.peek() == ',') {
+    in >> c;
+    out << c;
+    return;
+  }
   while (in >> c) {
 //?     cout << c << '\n'; //? 1
     if (isspace(c) || c == ',') {
@@ -224,6 +272,18 @@ void skip_comma(istream& in) {
   skip_whitespace(in);
   if (in.peek() == ',') in.get();
   skip_whitespace(in);
+}
+
+string slurp_until(istream& in, char delim) {
+  ostringstream out;
+  char c;
+  while (in >> c) {
+    if (c == delim) {
+      break;
+    }
+    out << c;
+  }
+  return out.str();
 }
 
 
