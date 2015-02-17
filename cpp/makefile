@@ -9,6 +9,7 @@ type_list: boot.cc [0-9]*.cc
 function_list: boot.cc [0-9]*.cc
 	@# assumes function decl has space before '{'
 	@grep -h "^[^ #].*) {" [0-9]*.cc |perl -pwe 's/ {.*/;/' > function_list
+	@grep -h "^[[:space:]]*TEST(" [0-9]*.cc |perl -pwe 's/^\s*TEST\((.*)\)$$/void test_$$1();/' >> function_list
 
 file_list: boot.cc [0-9]*.cc
 	@ls [0-9]*.cc |grep -v "\.test\.cc$$" |perl -pwe 's/.*/#include "$$&"/' > file_list
@@ -18,6 +19,7 @@ test_file_list: [0-9]*.test.cc
 
 test_list: [0-9]*.cc
 	@grep -h "^[[:space:]]*void test_" [0-9]*.cc |perl -pwe 's/^\s*void (.*)\(\) {$$/$$1,/' > test_list
+	@grep -h "^[[:space:]]*TEST(" [0-9]*.cc |perl -pwe 's/^\s*TEST\((.*)\)$$/test_$$1,/' >> test_list
 
 clean:
 	rm -rf mu* *_list

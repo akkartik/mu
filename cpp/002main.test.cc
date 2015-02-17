@@ -1,11 +1,11 @@
-void test_parse() {
+TEST(parse)
   compile("recipe main [\n"
           "  1:integer <- copy 23:literal\n"
           "]\n");
   CHECK_TRACE_CONTENTS("parse", "instruction: 1  ingredient: {name: \"23\", type: 0}  product: {name: \"1\", type: 1}");
 }
 
-void test_parse_label() {
+TEST(parse_label)
   compile("recipe main [\n"
           "  foo:\n"
           "]\n");
@@ -13,14 +13,14 @@ void test_parse_label() {
   CHECK_TRACE_DOESNT_CONTAIN("parse", "instruction: 1");
 }
 
-void test_parse2() {
+TEST(parse2)
   compile("recipe main [\n"
           "  1:integer, 2:integer <- copy 23:literal\n"
           "]\n");
   CHECK_TRACE_CONTENTS("parse", "instruction: 1  ingredient: {name: \"23\", type: 0}  product: {name: \"1\", type: 1}  product: {name: \"2\", type: 1}");
 }
 
-void test_literal() {
+TEST(literal)
   compile("recipe main [\n"
           "  1:integer <- copy 23:literal\n"
           "]\n");
