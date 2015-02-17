@@ -168,6 +168,7 @@ void parse_layer_and_frame(const string& orig, string* layer, string* frame) {
 
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, string expected) {  // empty layer == everything, multiple layers, hierarchical layers
   vector<string> expected_lines = split(expected, "");
+//?   cout << "aa check2 " << layer << ": " << expected_lines.size() << '\n'; //? 1
   size_t curr_expected_line = 0;
   while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
     ++curr_expected_line;
@@ -178,6 +179,8 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (!layer.empty() && !any_prefix_match(layers, p->first))
       continue;
+//?     cout << "comparing " << p->second.second << '\n'; //? 1
+//?     cout << "     with " << expected_lines[curr_expected_line] << '\n'; //? 1
     if (p->second.second != expected_lines[curr_expected_line])
       continue;
     ++curr_expected_line;
