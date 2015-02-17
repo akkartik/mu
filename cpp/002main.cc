@@ -1,90 +1,90 @@
-enum recipe_number {
-  // arithmetic
-  add = 1,
-  subtract,
-  multiply,
-  divide,
-  divide_with_remainder,
-
-  // boolean
-  conjunction,  // 'and' is a keyword
-  disjunction,  // 'or' is a keyword
-  negation,  // 'not' is a keyword
-
-  // comparison
-  equal,
-  not_equal,
-  less_than,
-  greater_than,
-  lesser_or_equal,
-  greater_or_equal,
-
-  // control flow
-  jump,
-  jump_if,
-  jump_unless,
-
-  // data management: scalars, arrays, and_records (structs)
-  copy,
-  get,
-  get_address,
-  index,
-  index_address,
-  allocate,
-  size,
-  length,
-
-  // tagged_values require one primitive
-  save_type,
-
-  // code points for characters
-  character_to_integer,
-  integer_to_character,
-
-  // multiprocessing
-  fork,
-  fork_helper,
-  sleep,
-  assert,
-  assert_false,
-
-  // cursor-based (text mode) interaction
-  cursor_mode,
-  retro_mode,
-  clear_host_screen,
-  clear_line_on_host,
-  cursor_on_host,
-  cursor_on_host_to_next_line,
-  cursor_up_on_host,
-  cursor_down_on_host,
-  cursor_right_on_host,
-  cursor_left_on_host,
-  print_character_to_host,
-  read_key_from_host,
-
-  // debugging aides
-  _dump_memory,
-  _dump_trace,
-  _start_tracing,
-  _stop_tracing,
-  _dump_routine,
-  _dump_channel,
-  _quit,
-  _wait_for_key_from_host,
-  _print,
-
-  // first-class continuations
-  current_continuation,
-  continue_from,
-
-  // user-defined functions
-  next_input,
-  input,
-  prepare_reply,
-  reply,
-
-  Max_primitive_recipe,
-};
+//? enum recipe_number {
+//?   // arithmetic
+//?   add = 1,
+//?   subtract,
+//?   multiply,
+//?   divide,
+//?   divide_with_remainder,
+//? 
+//?   // boolean
+//?   conjunction,  // 'and' is a keyword
+//?   disjunction,  // 'or' is a keyword
+//?   negation,  // 'not' is a keyword
+//? 
+//?   // comparison
+//?   equal,
+//?   not_equal,
+//?   less_than,
+//?   greater_than,
+//?   lesser_or_equal,
+//?   greater_or_equal,
+//? 
+//?   // control flow
+//?   jump,
+//?   jump_if,
+//?   jump_unless,
+//? 
+//?   // data management: scalars, arrays, and_records (structs)
+//?   copy,
+//?   get,
+//?   get_address,
+//?   index,
+//?   index_address,
+//?   allocate,
+//?   size,
+//?   length,
+//? 
+//?   // tagged_values require one primitive
+//?   save_type,
+//? 
+//?   // code points for characters
+//?   character_to_integer,
+//?   integer_to_character,
+//? 
+//?   // multiprocessing
+//?   fork,
+//?   fork_helper,
+//?   sleep,
+//?   assert,
+//?   assert_false,
+//? 
+//?   // cursor-based (text mode) interaction
+//?   cursor_mode,
+//?   retro_mode,
+//?   clear_host_screen,
+//?   clear_line_on_host,
+//?   cursor_on_host,
+//?   cursor_on_host_to_next_line,
+//?   cursor_up_on_host,
+//?   cursor_down_on_host,
+//?   cursor_right_on_host,
+//?   cursor_left_on_host,
+//?   print_character_to_host,
+//?   read_key_from_host,
+//? 
+//?   // debugging aides
+//?   _dump_memory,
+//?   _dump_trace,
+//?   _start_tracing,
+//?   _stop_tracing,
+//?   _dump_routine,
+//?   _dump_channel,
+//?   _quit,
+//?   _wait_for_key_from_host,
+//?   _print,
+//? 
+//?   // first-class continuations
+//?   current_continuation,
+//?   continue_from,
+//? 
+//?   // user-defined functions
+//?   next_input,
+//?   input,
+//?   prepare_reply,
+//?   reply,
+//? 
+//?   Max_primitive_recipe,
+//? };
 
 struct property {
   vector<string> values;
@@ -99,11 +99,14 @@ struct type_info {
   bool is_array;
   vector<type_number> target;  // only if is_address
   vector<vector<type_number> > elements;  // only if is_record or is_array
+  type_info() :size(0) {}
 };
 
 typedef int type_number;
-unordered_map<string, type_number> Type_name;
+unordered_map<string, type_number> Type_number;
 unordered_map<type_number, type_info> Type;
+int Next_type_number = 1;
+
 unordered_map<int, int> Memory;
 
 struct reagent {
@@ -112,19 +115,25 @@ struct reagent {
   vector<pair<string, property> > properties;
 };
 
+const int idle = 0;
+
 struct instruction {
   bool is_label;
   string label;  // only if is_label
   recipe_number operation;  // only if !is_label
   vector<reagent> ingredients;  // only if !is_label
   vector<reagent> products;  // only if !is_label
+  instruction() :is_label(false), operation(idle) {}
 };
 
 struct recipe {
   vector<instruction> step;
 };
 
-unordered_map<int, recipe> Recipe;
+typedef int recipe_number;
+unordered_map<string, recipe_number> Recipe_number;
+unordered_map<recipe_number, recipe> Recipe;
+int Next_recipe_number = 1;
 
 void load(string filename) {
 }
@@ -137,15 +146,27 @@ void setup_memory() {
 }
 
 void setup_types() {
-  Type_name["integer"] = 1;
-  Type[1].size = 1;
+  int integer = Type_number["integer"] = Next_type_number++;
+  Type[integer].size = 1;
 }
 
 void compile(string form) {
   istringstream in(form);
   in >> std::noskipws;
+
   if (next_word(in) != "recipe")
-    RAISE << "top-level forms must be of the form 'recipe _name_ [ _instruction_ ... ]'";
+    raise << "top-level forms must be of the form 'recipe _name_ [ _instruction_ ... ]'";
+
+  string recipe_name = next_word(in);
+  if (recipe_name.empty())
+    raise << "empty recipe name in " << form << '\n';
+  int r = Recipe_number[recipe_name] = Next_recipe_number++;
+}
+
+bool next_instruction(istream& in, instruction* curr) {
+  skip_whitespace(in);
+  skip_newlines(in);
+  return !in.eof();
 }
 
 string next_word(istream& in) {
@@ -160,7 +181,7 @@ void slurp_word(istream& in, ostream& out) {
   char c;
   while (in >> c) {
 //?     cout << c << '\n'; //? 1
-    if (isspace(c)) {
+    if (isspace(c) && c != '\n' && c != ',') {
 //?       cout << "  space\n"; //? 1
       in.putback(c);
       break;
@@ -172,6 +193,17 @@ void slurp_word(istream& in, ostream& out) {
 void skip_whitespace(istream& in) {
   while (isspace(in.peek()) && in.peek() != '\n')
     in.get();
+}
+
+void skip_newlines(istream& in) {
+  while (in.peek() == '\n')
+    in.get();
+}
+
+void skip_comma(istream& in) {
+  skip_whitespace(in);
+  if (in.peek() == ',') in.get();
+  skip_whitespace(in);
 }
 
 

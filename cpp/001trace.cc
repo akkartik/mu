@@ -69,11 +69,11 @@ trace_stream* Trace_stream = NULL;
 #define trace(layer)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(layer)
 // Warnings should go straight to cerr by default since calls to trace() have
 // some unfriendly constraints (they delay printing, they can't nest)
-#define RAISE  ((!Trace_stream || !Hide_warnings) ? cerr /*do print*/ : Trace_stream->stream("warn")) << __FILE__ << ":" << __LINE__ << " "
+#define raise ((!Trace_stream || !Hide_warnings) ? cerr /*do print*/ : Trace_stream->stream("warn")) << __FILE__ << ":" << __LINE__ << " "
 // Just debug logging without any test support.
 #define dbg cerr << __FUNCTION__ << '(' << __FILE__ << ':' << __LINE__ << ") "
 
-// RAISE << die exits after printing -- unless Hide_warnings is set.
+// raise << die exits after printing -- unless Hide_warnings is set.
 struct die {};
 ostream& operator<<(ostream& os, unused die) {
   if (Hide_warnings) return os;
