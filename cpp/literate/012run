@@ -1,0 +1,41 @@
+:(scenarios run)
+:(scenario copy_literal)
+recipe main [
+  1:integer <- copy 23:literal
+]
++run: instruction 0
++run:   ingredient 23
++mem:   storing in location 1
+
+:(code)
+void run(string form) {
+  run(add_recipe(form));
+}
+
+void run(recipe_number r) {
+  vector<instruction>& instructions(Recipe[r].steps);
+  int n = 0;
+  vector<instruction>::iterator p;
+  for (n = 0, p = instructions.begin(); p != instructions.end(); ++p, ++n) {
+    trace("run") << "instruction " << n;
+    switch (p->operation) {
+    case 1: {  // copy
+      int arg = to_int(p->ingredients[0].name);
+      trace("run") << "  ingredient " << arg;
+      int dest = to_int(p->products[0].name);
+      trace("mem") << "  storing in location " << dest;
+      Memory[dest] = arg;
+      break;
+    }
+    default:
+      raise << "undefined operation " << p->operation;
+    }
+  }
+}
+
+int to_int(string n) {
+  char* end = NULL;
+  int result = strtol(n.c_str(), &end, /*any base*/0);
+  assert(*end == '\0');
+  return result;
+}
