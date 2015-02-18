@@ -1,5 +1,6 @@
 // It's often convenient to express recipes in a textual fashion.
-:(scenario add_recipe)
+:(scenarios add_recipe)
+:(scenario first_recipe)
 recipe main [
   1:integer <- copy 23:literal
 ]
@@ -8,10 +9,6 @@ recipe main [
 +parse:   product: {name: "1", type: 1}
 
 :(code)
-void run(string text) {
-  add_recipe(text);
-}
-
 void add_recipe(string form) {
   istringstream in(form);
   in >> std::noskipws;
@@ -124,3 +121,29 @@ void skip_comma(istream& in) {
   if (in.peek() == ',') in.get();
   skip_whitespace(in);
 }
+
+:(scenario parse_label)
+recipe main [
+  foo:
+]
++parse: label: foo
+-parse: instruction: 1
+
+:(scenario parse_multiple_products)
+recipe main [
+  1:integer, 2:integer <- copy 23:literal
+]
++parse: instruction: 1
++parse:   ingredient: {name: "23", type: 0}
++parse:   product: {name: "1", type: 1}
++parse:   product: {name: "2", type: 1}
+
+:(scenario parse_multiple_ingredients)
+recipe main [
+  1:integer, 2:integer <- copy 23:literal, 4:integer
+]
++parse: instruction: 1
++parse:   ingredient: {name: "23", type: 0}
++parse:   ingredient: {name: "4", type: 1}
++parse:   product: {name: "1", type: 1}
++parse:   product: {name: "2", type: 1}
