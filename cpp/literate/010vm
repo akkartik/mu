@@ -1,0 +1,114 @@
+// A mu program is a book of recipes (functions)
+
+:(after "Types")
+typedef int recipe_number;
+:(before "End Globals")
+unordered_map<string, recipe_number> Recipe_number;
+unordered_map<recipe_number, recipe> Recipe;
+int Next_recipe_number = 1;
+
+:(before "End Types")
+// Recipes are lists of instructions. Recipes are 'run' by running their
+// instructions.
+struct recipe {
+  vector<instruction> step;
+};
+
+const int idle = 0;  // always the first entry in the recipe book
+
+:(before "struct recipe")
+// Each instruction is either of the form:
+//   product1, product2, product3, ... <- operation ingredient1, ingredient2, ingredient3, ...
+// or just a single 'label' followed by a colon
+//   label:
+struct instruction {
+  bool is_label;
+  string label;  // only if is_label
+  recipe_number operation;  // only if !is_label
+  vector<reagent> ingredients;  // only if !is_label
+  vector<reagent> products;  // only if !is_label
+  instruction();
+  void clear();
+};
+
+:(before "struct instruction")
+// Ingredients and products all the same kind of 'thing' -- a reagent.
+// Reagents refer either to numbers or to locations in memory along with
+// 'type' tags telling us how to interpret them. They also can contain
+// arbitrary other lists of properties besides types, but we're getting ahead
+// of ourselves.
+struct reagent {
+  string name;
+  vector<type_number> types;
+  vector<pair<string, property> > properties;
+  reagent(string s);
+  string to_string();
+};
+
+:(before "struct reagent")
+struct property {
+  vector<string> values;
+};
+
+:(before "End Globals")
+// Locations refer to a common 'memory'. Each location can store a number.
+unordered_map<int, int> Memory;
+
+:(after "Types")
+// Types encode how the numbers stored in different parts of memory are
+// interpreted. A location tagged as a 'character' type will interpret the
+// number 97 as the letter 'a', while a different location of type 'integer'
+// would not.
+//
+// Unlike most computers today, mu stores types in a single big table, shared
+// by all the mu programs on the computer. This is useful in providing a
+// seamless experience to help understand arbitrary mu programs.
+typedef int type_number;
+:(before "End Globals")
+unordered_map<string, type_number> Type_number;
+unordered_map<type_number, type_info> Type;
+int Next_type_number = 1;
+
+:(before "End Types")
+// You can construct arbitrary new types. Types are either 'records', containing
+// 'fields' of other types, 'array's of a single type repeated over and over,
+// or 'addresses' pointing at a location elsewhere in memory.
+struct type_info {
+  int size;
+  bool is_address;
+  bool is_record;
+  bool is_array;
+  vector<type_number> target;  // only if is_address
+  vector<vector<type_number> > elements;  // only if is_record or is_array
+  type_info() :size(0) {}
+};
+
+
+
+:(code)
+// Helpers
+  instruction::instruction() :is_label(false), operation(idle) {}
+  void instruction::clear() { is_label=false; label.clear(); operation=idle; ingredients.clear(); products.clear(); }
+
+  reagent::reagent(string s) {
+    istringstream in(s);
+    name = slurp_until(in, ':');
+    types.push_back(Type_number[slurp_until(in, '/')]);  // todo: multiple types
+  }
+  string reagent::to_string() {
+    ostringstream out;
+    out << "{name: \"" << name << "\", type: " << types[0] << "}";  // todo: properties
+    return out.str();
+  }
+
+string slurp_until(istream& in, char delim) {
+  ostringstream out;
+  char c;
+  while (in >> c) {
+    if (c == delim) {
+      break;
+    }
+    out << c;
+  }
+  return out.str();
+}
