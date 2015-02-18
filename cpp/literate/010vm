@@ -14,8 +14,6 @@ struct recipe {
   vector<instruction> step;
 };
 
-const int idle = 0;  // always the first entry in the recipe book
-
 :(before "struct recipe")
 // Each instruction is either of the form:
 //   product1, product2, product3, ... <- operation ingredient1, ingredient2, ingredient3, ...
@@ -53,6 +51,8 @@ struct property {
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
 unordered_map<int, int> Memory;
+:(before "End Setup")
+  Memory.clear();
 
 :(after "Types")
 // Types encode how the numbers stored in different parts of memory are
@@ -68,6 +68,16 @@ typedef int type_number;
 unordered_map<string, type_number> Type_number;
 unordered_map<type_number, type_info> Type;
 int Next_type_number = 1;
+:(code)
+void setup_types() {
+  Type.clear();  Type_number.clear();
+  Type_number["literal"] = 0;
+  Next_type_number = 1;
+  int integer = Type_number["integer"] = Next_type_number++;
+  Type[integer].size = 1;
+}
+:(before "End Setup")
+  setup_types();
 
 :(before "End Types")
 // You can construct arbitrary new types. Types are either 'records', containing
@@ -82,6 +92,22 @@ struct type_info {
   vector<vector<type_number> > elements;  // only if is_record or is_array
   type_info() :size(0) {}
 };
+
+:(code)
+// It's all very well to construct recipes out of other recipes, but we need
+// to know how to do *something* out of the box. For the following
+// recipes there are only codes, no entries in the book, because mu just knows
+// what to do for them.
+void setup_recipes() {
+  Recipe.clear();  Recipe_number.clear();
+  Recipe_number["idle"] = 0;
+  Next_recipe_number = 1;
+  Recipe_number["copy"] = Next_recipe_number++;
+}
+:(before "End Types")
+const int idle = 0;  // always the first entry in the recipe book
+:(before "End Setup")
+  setup_recipes();
 
 
 
@@ -113,3 +139,7 @@ string slurp_until(istream& in, char delim) {
   }
   return out.str();
 }
+
+
+
+:(before "End Setup")

@@ -1,0 +1,126 @@
+// It's often convenient to express recipes in a textual fashion.
+:(scenario add_recipe)
+recipe main [
+  1:integer <- copy 23:literal
+]
++parse: instruction: 1
++parse:   ingredient: {name: "23", type: 0}
++parse:   product: {name: "1", type: 1}
+
+:(code)
+void run(string text) {
+  add_recipe(text);
+}
+
+void add_recipe(string form) {
+  istringstream in(form);
+  in >> std::noskipws;
+
+  string _recipe = next_word(in);
+  if (_recipe != "recipe")
+    raise << "top-level forms must be of the form 'recipe _name_ [ _instruction_ ... ]'\n";
+
+  string recipe_name = next_word(in);
+  if (recipe_name.empty())
+    raise << "empty recipe name in " << form << '\n';
+  int r = Recipe_number[recipe_name] = Next_recipe_number++;
+
+  if (next_word(in) != "[")
+    raise << "recipe body must begin with '['\n";
+
+  skip_newlines(in);
+
+  instruction curr;
+  while (next_instruction(in, &curr)) {
+    Recipe[r].step.push_back(curr);
+  }
+}
+
+bool next_instruction(istream& in, instruction* curr) {
+  curr->clear();
+  if (in.eof()) return false;
+  skip_whitespace(in);  if (in.eof()) return false;
+  skip_newlines(in);  if (in.eof()) return false;
+
+  vector<string> words;
+  while (in.peek() != '\n') {
+    skip_whitespace(in);  if (in.eof()) return false;
+    string word = next_word(in);  if (in.eof()) return false;
+    words.push_back(word);
+    skip_whitespace(in);  if (in.eof()) return false;
+  }
+  skip_newlines(in);  if (in.eof()) return false;
+
+  if (words.size() == 1 && *(words[0].end()-1) == ':') {
+    curr->is_label = true;
+    words[0].erase(words[0].end()-1);
+    curr->label = words[0];
+    trace("parse") << "label: " << curr->label;
+    return !in.eof();
+  }
+
+  vector<string>::iterator p = words.begin();
+  if (find(words.begin(), words.end(), "<-") != words.end()) {
+    for (; *p != "<-"; ++p) {
+      if (*p == ",") continue;
+      curr->products.push_back(reagent(*p));
+    }
+    ++p;  // skip <-
+  }
+
+  curr->operation = Recipe_number[*p];  ++p;
+
+  for (; p != words.end(); ++p) {
+    if (*p == ",") continue;
+    curr->ingredients.push_back(reagent(*p));
+  }
+
+  trace("parse") << "instruction: " << curr->operation;
+  for (vector<reagent>::iterator p = curr->ingredients.begin(); p != curr->ingredients.end(); ++p) {
+    trace("parse") << "  ingredient: " << p->to_string();
+  }
+  for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p) {
+    trace("parse") << "  product: " << p->to_string();
+  }
+  return !in.eof();
+}
+
+string next_word(istream& in) {
+  ostringstream out;
+  skip_whitespace(in);
+  slurp_word(in, out);
+  return out.str();
+}
+
+void slurp_word(istream& in, ostream& out) {
+  char c;
+  if (in.peek() == ',') {
+    in >> c;
+    out << c;
+    return;
+  }
+  while (in >> c) {
+    if (isspace(c) || c == ',') {
+      in.putback(c);
+      break;
+    }
+    out << c;
+  }
+}
+
+void skip_whitespace(istream& in) {
+  while (isspace(in.peek()) && in.peek() != '\n') {
+    in.get();
+  }
+}
+
+void skip_newlines(istream& in) {
+  while (in.peek() == '\n')
+    in.get();
+}
+
+void skip_comma(istream& in) {
+  skip_whitespace(in);
+  if (in.peek() == ',') in.get();
+  skip_whitespace(in);
+}

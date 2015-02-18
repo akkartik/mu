@@ -210,7 +210,7 @@ void emit_test(const string& name, list<string>& lines, list<string>& result) {
 }
 
 void emit_session(list<string>& lines, list<string>& result) {
-  result.push_back("  rmref("+Toplevel+"(\""+input_lines(lines)+"\"));");
+  result.push_back("  "+Toplevel+"(\""+input_lines(lines)+"\");");
 }
 
 void emit_result_checking_session(list<string>& lines, list<string>& result) {
