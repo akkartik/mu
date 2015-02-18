@@ -1,4 +1,4 @@
-// A mu program is a book of recipes (functions)
+// A program is a book of 'recipes' (functions)
 
 :(after "Types")
 typedef int recipe_number;
@@ -8,7 +8,7 @@ unordered_map<recipe_number, recipe> Recipe;
 int Next_recipe_number = 1;
 
 :(before "End Types")
-// Recipes are lists of instructions. Recipes are 'run' by running their
+// Recipes are lists of instructions. To run a recipe, the computer runs its
 // instructions.
 struct recipe {
   vector<instruction> step;
@@ -21,6 +21,7 @@ const int idle = 0;  // always the first entry in the recipe book
 //   product1, product2, product3, ... <- operation ingredient1, ingredient2, ingredient3, ...
 // or just a single 'label' followed by a colon
 //   label:
+// Labels don't do anything, they're just waypoints.
 struct instruction {
   bool is_label;
   string label;  // only if is_label
@@ -32,11 +33,10 @@ struct instruction {
 };
 
 :(before "struct instruction")
-// Ingredients and products all the same kind of 'thing' -- a reagent.
-// Reagents refer either to numbers or to locations in memory along with
-// 'type' tags telling us how to interpret them. They also can contain
-// arbitrary other lists of properties besides types, but we're getting ahead
-// of ourselves.
+// Ingredients and products are a single species -- a reagent. Reagents refer
+// either to numbers or to locations in memory along with 'type' tags telling
+// us how to interpret them. They also can contain arbitrary other lists of
+// properties besides types, but we're getting ahead of ourselves.
 struct reagent {
   string name;
   vector<type_number> types;
@@ -90,6 +90,7 @@ struct type_info {
   instruction::instruction() :is_label(false), operation(idle) {}
   void instruction::clear() { is_label=false; label.clear(); operation=idle; ingredients.clear(); products.clear(); }
 
+  // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
   reagent::reagent(string s) {
     istringstream in(s);
     name = slurp_until(in, ':');
