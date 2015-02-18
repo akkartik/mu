@@ -102,7 +102,6 @@ struct type_info {
   type_info() :size(0) {}
 };
 
-typedef int type_number;
 unordered_map<string, type_number> Type_number;
 unordered_map<type_number, type_info> Type;
 int Next_type_number = 1;
