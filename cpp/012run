@@ -7,6 +7,16 @@ recipe main [
 +run: ingredient 0 is 23
 +mem: storing in location 1
 
+:(scenario copy)
+recipe main [
+  1:integer <- copy 23:literal
+  2:integer <- copy 1:integer
+]
++run: instruction 1
++mem: location 1 is 23
++run: ingredient 0 is 23
++mem: storing in location 2
+
 :(code)
 void run(string form) {
   run(add_recipe(form));
@@ -33,7 +43,13 @@ void run(recipe_number r) {
 
 vector<int> read_memory(reagent x) {
   vector<int> result;
-  result.push_back(to_int(x.name));
+  if (x.types[0] == 0) {  // literal
+    result.push_back(to_int(x.name));
+    return result;
+  }
+  int val = Memory[to_int(x.name)];
+  trace("mem") << "location " << x.name << " is " << val;
+  result.push_back(val);
   return result;
 }
 
