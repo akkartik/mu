@@ -181,7 +181,7 @@ list<string>::iterator balancing_curly(list<string>::iterator orig) {
 //  followed by one or more lines trace shouldn't include ('-')
 // Remember to update is_input below if you add to this format.
 void emit_test(const string& name, list<string>& lines, list<string>& result) {
-  result.push_back("void test_"+name+"() {");
+  result.push_back("TEST("+name+")");
   while (any_non_input_line(lines)) {
     if (!any_line_starts_with(lines, "=>"))
       emit_session(lines, result);  // simpler version; no need to check result
