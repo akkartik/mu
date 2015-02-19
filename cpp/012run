@@ -4,8 +4,8 @@ recipe main [
   1:integer <- copy 23:literal
 ]
 +run: instruction 0
-+run:   ingredient 23
-+mem:   storing in location 1
++run: ingredient 0 is 23
++mem: storing in location 1
 
 :(code)
 void run(string form) {
@@ -20,17 +20,27 @@ void run(recipe_number r) {
     trace("run") << "instruction " << n;
     switch (p->operation) {
     case 1: {  // copy
-      int arg = to_int(p->ingredients[0].name);
-      trace("run") << "  ingredient " << arg;
-      int dest = to_int(p->products[0].name);
-      trace("mem") << "  storing in location " << dest;
-      Memory[dest] = arg;
+      vector<int> data = read_memory(p->ingredients[0]);
+      trace("run") << "ingredient 0 is " << data[0];
+      write_memory(p->products[0], data);
       break;
     }
     default:
       raise << "undefined operation " << p->operation;
     }
   }
+}
+
+vector<int> read_memory(reagent x) {
+  vector<int> result;
+  result.push_back(to_int(x.name));
+  return result;
+}
+
+void write_memory(reagent x, vector<int> data) {
+  int dest = to_int(x.name);
+  trace("mem") << "storing in location " << dest;
+  Memory[dest] = data[0];
 }
 
 int to_int(string n) {
