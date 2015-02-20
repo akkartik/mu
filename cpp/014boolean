@@ -1,0 +1,68 @@
+:(before "End Globals")
+// Boolean ops.
+const int AND = 7;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["and"] = AND;
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case AND: {
+  trace("run") << "ingredient 0 is " << p->ingredients[0].name;
+  vector<int> arg0 = read_memory(p->ingredients[0]);
+  assert(arg0.size() == 1);
+  trace("run") << "ingredient 1 is " << p->ingredients[1].name;
+  vector<int> arg1 = read_memory(p->ingredients[1]);
+  assert(arg1.size() == 1);
+  vector<int> result;
+  result.push_back(arg0[0] && arg1[0]);
+  trace("run") << "product 0 is " << result[0];
+  write_memory(p->products[0], result);
+  break;
+}
+
+:(scenario "and")
+recipe main [
+  1:integer <- copy 1:literal
+  2:integer <- copy 0:literal
+  3:integer <- and 1:integer, 2:integer
+]
++run: instruction 2
++run: ingredient 0 is 1
++mem: location 1 is 1
++run: ingredient 1 is 2
++mem: location 2 is 0
++run: product 0 is 0
++mem: storing in location 3
+
+:(before "End Globals")
+const int OR = 8;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["or"] = OR;
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case OR: {
+  trace("run") << "ingredient 0 is " << p->ingredients[0].name;
+  vector<int> arg0 = read_memory(p->ingredients[0]);
+  assert(arg0.size() == 1);
+  trace("run") << "ingredient 1 is " << p->ingredients[1].name;
+  vector<int> arg1 = read_memory(p->ingredients[1]);
+  assert(arg1.size() == 1);
+  vector<int> result;
+  result.push_back(arg0[0] || arg1[0]);
+  trace("run") << "product 0 is " << result[0];
+  write_memory(p->products[0], result);
+  break;
+}
+
+:(scenario "or")
+recipe main [
+  1:integer <- copy 1:literal
+  2:integer <- copy 0:literal
+  3:integer <- or 1:integer, 2:integer
+]
++run: instruction 2
++run: ingredient 0 is 1
++mem: location 1 is 1
++run: ingredient 1 is 2
++mem: location 2 is 0
++run: product 0 is 1
++mem: storing in location 3
