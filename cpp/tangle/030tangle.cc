@@ -197,6 +197,10 @@ void emit_test(const string& name, list<string>& lines, list<string>& result) {
       result.push_back("  CLEAR_TRACE;");
       lines.pop_front();
     }
+    if (!lines.empty() && lines.front() == "?") {
+      result.push_back("  DUMP(\"\");");
+      lines.pop_front();
+    }
   }
   result.push_back("}");
 
