@@ -96,6 +96,9 @@ struct type_info {
   type_info() :size(0) {}
 };
 
+:(before "End Globals")
+const int IDLE = 0;  // always the first entry in the recipe book
+const int COPY = 1;
 :(code)
 // It's all very well to construct recipes out of other recipes, but we need
 // to know how to do *something* out of the box. For the following
@@ -103,15 +106,13 @@ struct type_info {
 // what to do for them.
 void setup_recipes() {
   Recipe.clear();  Recipe_number.clear();
-  Recipe_number["idle"] = 0;
+  Recipe_number["idle"] = IDLE;
   Next_recipe_number = 1;
   // Primitive Recipe Numbers.
-  Recipe_number["copy"] = 1;
+  Recipe_number["copy"] = COPY;
   Next_recipe_number++;
   // End Primitive Recipe Numbers.
 }
-:(before "End Types")
-const int idle = 0;  // always the first entry in the recipe book
 :(before "End Setup")
   setup_recipes();
 
@@ -119,8 +120,8 @@ const int idle = 0;  // always the first entry in the recipe book
 
 :(code)
 // Helpers
-  instruction::instruction() :is_label(false), operation(idle) {}
-  void instruction::clear() { is_label=false; label.clear(); operation=idle; ingredients.clear(); products.clear(); }
+  instruction::instruction() :is_label(false), operation(IDLE) {}
+  void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
 
   // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
   reagent::reagent(string s) {

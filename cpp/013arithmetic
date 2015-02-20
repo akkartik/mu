@@ -1,21 +1,23 @@
-:(before "End Primitive Recipe Numbers")
+:(before "End Globals")
 // Arithmetic ops.
-Recipe_number["add"] = 2;
+const int ADD = 2;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["add"] = ADD;
 Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
-  case 2: {  // add
-    trace("run") << "ingredient 0 is " << p->ingredients[0].name;
-    vector<int> arg0 = read_memory(p->ingredients[0]);
-    assert(arg0.size() == 1);
-    trace("run") << "ingredient 1 is " << p->ingredients[1].name;
-    vector<int> arg1 = read_memory(p->ingredients[1]);
-    assert(arg1.size() == 1);
-    vector<int> result;
-    result.push_back(arg0[0]+arg1[0]);
-    trace("run") << "product 0 is " << result[0];
-    write_memory(p->products[0], result);
-    break;
-  }
+case ADD: {
+  trace("run") << "ingredient 0 is " << p->ingredients[0].name;
+  vector<int> arg0 = read_memory(p->ingredients[0]);
+  assert(arg0.size() == 1);
+  trace("run") << "ingredient 1 is " << p->ingredients[1].name;
+  vector<int> arg1 = read_memory(p->ingredients[1]);
+  assert(arg1.size() == 1);
+  vector<int> result;
+  result.push_back(arg0[0]+arg1[0]);
+  trace("run") << "product 0 is " << result[0];
+  write_memory(p->products[0], result);
+  break;
+}
 
 :(scenario "add_literal")
 recipe main [
@@ -41,23 +43,25 @@ recipe main [
 +run: product 0 is 57
 +mem: storing in location 3
 
+:(before "End Globals")
+const int SUBTRACT = 3;
 :(before "End Primitive Recipe Numbers")
-Recipe_number["subtract"] = 3;
+Recipe_number["subtract"] = SUBTRACT;
 Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
-  case 3: {  // subtract
-    trace("run") << "ingredient 0 is " << p->ingredients[0].name;
-    vector<int> arg0 = read_memory(p->ingredients[0]);
-    assert(arg0.size() == 1);
-    trace("run") << "ingredient 1 is " << p->ingredients[1].name;
-    vector<int> arg1 = read_memory(p->ingredients[1]);
-    assert(arg1.size() == 1);
-    vector<int> result;
-    result.push_back(arg0[0]-arg1[0]);
-    trace("run") << "product 0 is " << result[0];
-    write_memory(p->products[0], result);
-    break;
-  }
+case SUBTRACT: {
+  trace("run") << "ingredient 0 is " << p->ingredients[0].name;
+  vector<int> arg0 = read_memory(p->ingredients[0]);
+  assert(arg0.size() == 1);
+  trace("run") << "ingredient 1 is " << p->ingredients[1].name;
+  vector<int> arg1 = read_memory(p->ingredients[1]);
+  assert(arg1.size() == 1);
+  vector<int> result;
+  result.push_back(arg0[0]-arg1[0]);
+  trace("run") << "product 0 is " << result[0];
+  write_memory(p->products[0], result);
+  break;
+}
 
 :(scenario "subtract_literal")
 recipe main [
@@ -83,24 +87,26 @@ recipe main [
 +run: product 0 is -11
 +mem: storing in location 3
 
+:(before "End Globals")
+const int MULTIPLY = 4;
 :(before "End Primitive Recipe Numbers")
-Recipe_number["multiply"] = 4;
+Recipe_number["multiply"] = MULTIPLY;
 Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
-  case 4: {  // multiply
-    trace("run") << "ingredient 0 is " << p->ingredients[0].name;
-    vector<int> arg0 = read_memory(p->ingredients[0]);
-    assert(arg0.size() == 1);
-    trace("run") << "ingredient 1 is " << p->ingredients[1].name;
-    vector<int> arg1 = read_memory(p->ingredients[1]);
-    assert(arg1.size() == 1);
-    trace("run") << "ingredient 1 is " << arg1[0];
-    vector<int> result;
-    result.push_back(arg0[0]*arg1[0]);
-    trace("run") << "product 0 is " << result[0];
-    write_memory(p->products[0], result);
-    break;
-  }
+case MULTIPLY: {
+  trace("run") << "ingredient 0 is " << p->ingredients[0].name;
+  vector<int> arg0 = read_memory(p->ingredients[0]);
+  assert(arg0.size() == 1);
+  trace("run") << "ingredient 1 is " << p->ingredients[1].name;
+  vector<int> arg1 = read_memory(p->ingredients[1]);
+  assert(arg1.size() == 1);
+  trace("run") << "ingredient 1 is " << arg1[0];
+  vector<int> result;
+  result.push_back(arg0[0]*arg1[0]);
+  trace("run") << "product 0 is " << result[0];
+  write_memory(p->products[0], result);
+  break;
+}
 
 :(scenario "multiply_literal")
 recipe main [
@@ -126,24 +132,26 @@ recipe main [
 +run: product 0 is 24
 +mem: storing in location 3
 
+:(before "End Globals")
+const int DIVIDE = 5;
 :(before "End Primitive Recipe Numbers")
-Recipe_number["divide"] = 5;
+Recipe_number["divide"] = DIVIDE;
 Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
-  case 5: {  // divide
-    trace("run") << "ingredient 0 is " << p->ingredients[0].name;
-    vector<int> arg0 = read_memory(p->ingredients[0]);
-    assert(arg0.size() == 1);
-    trace("run") << "ingredient 1 is " << p->ingredients[1].name;
-    vector<int> arg1 = read_memory(p->ingredients[1]);
-    assert(arg1.size() == 1);
-    trace("run") << "ingredient 1 is " << arg1[0];
-    vector<int> result;
-    result.push_back(arg0[0]/arg1[0]);
-    trace("run") << "product 0 is " << result[0];
-    write_memory(p->products[0], result);
-    break;
-  }
+case DIVIDE: {
+  trace("run") << "ingredient 0 is " << p->ingredients[0].name;
+  vector<int> arg0 = read_memory(p->ingredients[0]);
+  assert(arg0.size() == 1);
+  trace("run") << "ingredient 1 is " << p->ingredients[1].name;
+  vector<int> arg1 = read_memory(p->ingredients[1]);
+  assert(arg1.size() == 1);
+  trace("run") << "ingredient 1 is " << arg1[0];
+  vector<int> result;
+  result.push_back(arg0[0]/arg1[0]);
+  trace("run") << "product 0 is " << result[0];
+  write_memory(p->products[0], result);
+  break;
+}
 
 :(scenario "divide_literal")
 recipe main [
@@ -169,27 +177,29 @@ recipe main [
 +run: product 0 is 9
 +mem: storing in location 3
 
+:(before "End Globals")
+const int DIVIDE_WITH_REMAINDER = 6;
 :(before "End Primitive Recipe Numbers")
-Recipe_number["divide_with_remainder"] = 6;
+Recipe_number["divide_with_remainder"] = DIVIDE_WITH_REMAINDER;
 Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
-  case 6: {  // divide_with_remainder
-    trace("run") << "ingredient 0 is " << p->ingredients[0].name;
-    vector<int> arg0 = read_memory(p->ingredients[0]);
-    assert(arg0.size() == 1);
-    trace("run") << "ingredient 1 is " << p->ingredients[1].name;
-    vector<int> arg1 = read_memory(p->ingredients[1]);
-    assert(arg1.size() == 1);
-    vector<int> result0;
-    result0.push_back(arg0[0]/arg1[0]);
-    trace("run") << "product 0 is " << result0[0];
-    write_memory(p->products[0], result0);
-    vector<int> result1;
-    result1.push_back(arg0[0]%arg1[0]);
-    trace("run") << "product 1 is " << result1[0];
-    write_memory(p->products[1], result1);
-    break;
-  }
+case DIVIDE_WITH_REMAINDER: {
+  trace("run") << "ingredient 0 is " << p->ingredients[0].name;
+  vector<int> arg0 = read_memory(p->ingredients[0]);
+  assert(arg0.size() == 1);
+  trace("run") << "ingredient 1 is " << p->ingredients[1].name;
+  vector<int> arg1 = read_memory(p->ingredients[1]);
+  assert(arg1.size() == 1);
+  vector<int> result0;
+  result0.push_back(arg0[0]/arg1[0]);
+  trace("run") << "product 0 is " << result0[0];
+  write_memory(p->products[0], result0);
+  vector<int> result1;
+  result1.push_back(arg0[0]%arg1[0]);
+  trace("run") << "product 1 is " << result1[0];
+  write_memory(p->products[1], result1);
+  break;
+}
 
 :(scenario "divide_with_remainder_literal")
 recipe main [
