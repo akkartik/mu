@@ -1,0 +1,32 @@
+:(before "End Globals")
+// Jump ops.
+const int JUMP = 10;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["jump"] = JUMP;
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case JUMP: {
+  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
+  pc += to_int(instructions[pc].ingredients[0].name);
+  break;
+}
+
+:(scenario "jump_can_skip_instructions")
+recipe main [
+  jump 1:offset
+  1:integer <- copy 1:literal
+]
++run: instruction 0
++run: ingredient 0 is 1
+-run: instruction 1
+-mem: storing in location 1
+
+:(scenario "jump_backward")
+recipe main [
+  jump 1:offset
+  jump 1:offset
+  jump -2:offset
+]
++run: instruction 0
++run: instruction 2
++run: instruction 1
