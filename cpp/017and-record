@@ -25,3 +25,59 @@ recipe main [
 +mem: location 2 is 0
 +mem: storing in location 3
 +mem: storing in location 4
+
+:(before "End Globals")
+// Operator to look at fields of records.
+const int GET = 18;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["get"] = GET;
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case GET: {
+  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
+  int base_address = to_int(instructions[pc].ingredients[0].name);
+  trace("run") << "base address " << base_address;
+  int base_type = instructions[pc].ingredients[0].types[0];
+  trace("run") << "base type is " << base_type;
+  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
+  assert(instructions[pc].ingredients[1].types.size() == 1);
+  assert(instructions[pc].ingredients[1].types[0] == 0);  // must be literal
+  size_t offset = to_int(instructions[pc].ingredients[1].name);
+  int src = base_address+offset;
+  trace("run") << "address to copy is " << src;
+  assert(Type[base_type].is_record);
+  assert(Type[base_type].elements.size() > offset);
+  int src_type = Type[base_type].elements[offset][0];
+  trace("run") << "its type is " << src_type;
+  ostringstream s;
+  s << src;
+  reagent tmp(s.str());
+  tmp.types[0] = src_type;
+  vector<int> result(read_memory(tmp));
+  trace("run") << "product 0 is " << result[0];
+  write_memory(instructions[pc].products[0], result);
+  break;
+}
+
+:(scenario "get")
+recipe main [
+  12:integer <- copy 34:literal
+  13:boolean <- copy 0:literal
+  15:boolean <- get 12:integer-boolean, 1:offset
+]
++run: instruction 2
++run: ingredient 0 is 12
++run: base address 12
++run: ingredient 1 is 1
++run: address to copy is 13
++run: its type is 2
++mem: location 13 is 0
++run: product 0 is 0
++mem: storing in location 15
+
+:(code)
+int size_of(type_number x) {
+  type_info t = Type[x];
+  if (!t.is_record && !t.is_array) return t.size;
+  return t.size;  // TODO
+}
