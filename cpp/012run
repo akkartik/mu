@@ -47,16 +47,23 @@ vector<int> read_memory(reagent x) {
     result.push_back(to_int(x.name));
     return result;
   }
-  int val = Memory[to_int(x.name)];
-  trace("mem") << "location " << x.name << " is " << val;
-  result.push_back(val);
+  int base = to_int(x.name);
+  for (size_t offset = 0; offset < Type[x.types[0]].size; ++offset) {
+    int val = Memory[base+offset];
+    trace("mem") << "location " << base+offset << " is " << val;
+    result.push_back(val);
+  }
   return result;
 }
 
 void write_memory(reagent x, vector<int> data) {
-  int dest = to_int(x.name);
-  trace("mem") << "storing in location " << dest;
-  Memory[dest] = data[0];
+  int base = to_int(x.name);
+  size_t size = Type[x.types[0]].size;
+  if (size != data.size()) raise << "size mismatch in storing to " << x.to_string();
+  for (size_t offset = 0; offset < size; ++offset) {
+    trace("mem") << "storing in location " << base+offset;
+    Memory[base+offset] = data[offset];
+  }
 }
 
 :(code)

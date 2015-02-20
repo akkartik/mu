@@ -1,0 +1,27 @@
+// Support for records.
+:(before "End Mu Types")
+// We'll use this record as a running example, with two fields: an integer and
+// a boolean.
+int integer_boolean = Type_number["integer-boolean"] = Next_type_number++;
+Type[integer_boolean].size = 2;
+Type[integer_boolean].is_record = true;
+vector<type_number> i;
+i.push_back(integer);
+Type[integer_boolean].elements.push_back(i);
+vector<type_number> b;
+b.push_back(boolean);
+Type[integer_boolean].elements.push_back(b);
+
+// Records can be copied around with a single instruction just like integers,
+// no matter how large they are.
+:(scenario copy_multiple_locations)
+recipe main [
+  1:integer <- copy 34:literal
+  2:boolean <- copy 0:literal
+  3:integer-boolean <- copy 1:integer-boolean
+]
++run: ingredient 0 is 1
++mem: location 1 is 34
++mem: location 2 is 0
++mem: storing in location 3
++mem: storing in location 4
