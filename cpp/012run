@@ -24,21 +24,19 @@ void run(string form) {
 
 void run(recipe_number r) {
   vector<instruction>& instructions(Recipe[r].steps);
-  int n = 0;
-  vector<instruction>::iterator p;
-  for (n = 0, p = instructions.begin(); p != instructions.end(); ++p, ++n) {
-    trace("run") << "instruction " << n;
-    switch (p->operation) {
+  for (size_t pc = 0; pc < instructions.size(); ++pc) {
+    trace("run") << "instruction " << pc;
+    switch (instructions[pc].operation) {
     // Primitive Recipe Implementations.
     case COPY: {
-      trace("run") << "ingredient 0 is " << p->ingredients[0].name;
-      vector<int> data = read_memory(p->ingredients[0]);
-      write_memory(p->products[0], data);
+      trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
+      vector<int> data = read_memory(instructions[pc].ingredients[0]);
+      write_memory(instructions[pc].products[0], data);
       break;
     }
     // End Primitive Recipe Implementations.
     default:
-      raise << "undefined operation " << p->operation;
+      raise << "undefined operation " << instructions[pc].operation;
     }
   }
 }
