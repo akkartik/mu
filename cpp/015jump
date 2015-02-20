@@ -23,10 +23,93 @@ recipe main [
 
 :(scenario "jump_backward")
 recipe main [
-  jump 1:offset
-  jump 1:offset
-  jump -2:offset
-]
+  jump 1:offset  // 0 -+
+  jump 1:offset  //    | 1 +-+
+  jump -2:offset //  2 +-->+ |
+]                //       3 \/
 +run: instruction 0
 +run: instruction 2
 +run: instruction 1
+
+:(before "End Globals")
+const int JUMP_IF = 11;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["jump-if"] = JUMP_IF;
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case JUMP_IF: {
+  vector<int> arg0 = read_memory(instructions[pc].ingredients[0]);
+  assert(arg0.size() == 1);
+  trace("run") << "ingredient 0 is " << arg0[0];
+  if (!arg0[0]) {
+    trace("run") << "jump-if fell through";
+    break;
+  }
+  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
+  pc += to_int(instructions[pc].ingredients[1].name);
+  trace("run") << "jumping to instruction " << pc+1;
+  break;
+}
+
+:(scenario "jump_if")
+recipe main [
+  jump-if 999:literal 1:offset
+  1:integer <- copy 1:literal
+]
++run: instruction 0
++run: ingredient 1 is 1
++run: jumping to instruction 2
+-run: instruction 1
+-mem: storing in location 1
+
+:(scenario "jump_if_fallthrough")
+recipe main [
+  jump-if 0:literal 1:offset
+  123:integer <- copy 1:literal
+]
++run: instruction 0
++run: jump-if fell through
++run: instruction 1
++mem: storing in location 123
+
+:(before "End Globals")
+const int JUMP_UNLESS = 12;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["jump-unless"] = JUMP_UNLESS;
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case JUMP_UNLESS: {
+  vector<int> arg0 = read_memory(instructions[pc].ingredients[0]);
+  assert(arg0.size() == 1);
+  trace("run") << "ingredient 0 is " << arg0[0];
+  if (arg0[0]) {
+    trace("run") << "jump-unless fell through";
+    break;
+  }
+  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
+  pc += to_int(instructions[pc].ingredients[1].name);
+  trace("run") << "jumping to instruction " << pc+1;
+  break;
+}
+
+:(scenario "jump_unless")
+recipe main [
+  jump-unless 0:literal 1:offset
+  1:integer <- copy 1:literal
+]
++run: instruction 0
++run: ingredient 1 is 1
++run: jumping to instruction 2
+-run: instruction 1
+-mem: storing in location 1
+
+:(scenario "jump_unless_fallthrough")
+recipe main [
+  jump-unless 999:literal 1:offset
+  123:integer <- copy 1:literal
+]
++run: instruction 0
++run: ingredient 0 is 999
++run: jump-unless fell through
++run: instruction 1
++mem: storing in location 123
