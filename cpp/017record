@@ -52,7 +52,7 @@ case GET: {
   ostringstream s;
   s << src;
   reagent tmp(s.str());
-  tmp.types[0] = src_type;
+  tmp.types.push_back(src_type);
   vector<int> result(read_memory(tmp));
   trace("run") << "product 0 is " << result[0];
   write_memory(instructions[pc].products[0], result);
@@ -70,7 +70,7 @@ recipe main [
 +run: base address 12
 +run: ingredient 1 is 1
 +run: address to copy is 13
-+run: its type is 2
++run: its type is 3
 +mem: location 13 is 0
 +run: product 0 is 0
 +mem: storing in location 15
@@ -105,7 +105,7 @@ case GET_ADDRESS: {
 recipe main [
   12:integer <- copy 34:literal
   13:boolean <- copy 0:literal
-  15:integer <- get-address 12:integer-boolean, 1:offset  # todo: product is an address
+  15:address:integer <- get-address 12:integer-boolean, 1:offset
 ]
 +run: instruction 2
 +run: ingredient 0 is 12

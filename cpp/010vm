@@ -1,6 +1,5 @@
-// A program is a book of 'recipes' (functions)
-
 :(after "Types")
+// A program is a book of 'recipes' (functions)
 typedef int recipe_number;
 :(before "End Globals")
 unordered_map<string, recipe_number> Recipe_number;
@@ -74,9 +73,10 @@ void setup_types() {
   Type_number["literal"] = 0;
   Next_type_number = 1;
   // Mu Types.
-  int integer = Type_number["integer"] = 1;
+  int integer = Type_number["integer"] = Next_type_number++;
   Type[integer].size = 1;
-  Next_type_number++;
+  int address = Type_number["address"] = Next_type_number++;
+  Type[address].size = 1;
   int boolean = Type_number["boolean"] = Next_type_number++;
   Type[boolean].size = 1;
   // End Mu Types.
@@ -132,13 +132,25 @@ void setup_recipes() {
 
   // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
   reagent::reagent(string s) {
+//?     cout << s << '\n'; //? 1
     istringstream in(s);
     name = slurp_until(in, ':');
-    types.push_back(Type_number[slurp_until(in, '/')]);  // todo: multiple types
+    istringstream ts(slurp_until(in, '/'));
+    string t;
+    while (!(t = slurp_until(ts, ':')).empty()) {
+      types.push_back(Type_number[t]);
+    }
+//?     cout << types.size() << '\n'; //? 1
+    // todo: properties
   }
   string reagent::to_string() {
     ostringstream out;
-    out << "{name: \"" << name << "\", type: " << types[0] << "}";  // todo: properties
+    out << "{name: \"" << name << "\", type: ";
+    for (size_t i = 0; i < types.size(); ++i) {
+      out << types[i];
+      if (i < types.size()-1) out << "-";
+    }
+    out << "}";  // todo: properties
     return out.str();
   }
 
@@ -153,7 +165,3 @@ string slurp_until(istream& in, char delim) {
   }
   return out.str();
 }
-
-
-
-:(before "End Setup")
