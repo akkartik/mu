@@ -16,3 +16,6 @@ function! HighlightTangledFile()
 endfunction
 call HighlightTangledFile()
 autocmd BufReadPost,BufNewFile 0* call HighlightTangledFile()
+
+syntax match muAssign "<-" | highlight link muAssign SpecialChar
+syntax match muAssign "\<raw\>"
