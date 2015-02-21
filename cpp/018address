@@ -28,8 +28,19 @@ vector<int> read_memory(reagent x) {
   return result;
 }
 
+:(scenario "store_indirect")
+# similarly, write to addresses pointing at other locations using the 'deref' property
+recipe main [
+  1:address:integer <- copy 2:literal
+  1:address:integer/deref <- copy 34:literal
+]
++run: instruction 1
++mem: location 1 is 2
++mem: storing in location 2
+
 :(replace{} "void write_memory(reagent x, vector<int> data)")
 void write_memory(reagent x, vector<int> data) {
+  x = canonize(x);
   int base = to_int(x.name);
   size_t size = size_of(x.types[0]);
   if (size != data.size()) raise << "size mismatch in storing to " << x.to_string();
