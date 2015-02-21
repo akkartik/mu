@@ -13,6 +13,7 @@ int add_recipe(string form) {
   istringstream in(form);
   in >> std::noskipws;
 
+  skip_comments_and_newlines(in);
   string _recipe = next_word(in);
   if (_recipe != "recipe")
     raise << "top-level forms must be of the form 'recipe _name_ [ _instruction_ ... ]'\n";
@@ -25,7 +26,7 @@ int add_recipe(string form) {
   if (next_word(in) != "[")
     raise << "recipe body must begin with '['\n";
 
-  skip_newlines(in);
+  skip_comments_and_newlines(in);
 
   instruction curr;
   while (next_instruction(in, &curr)) {
@@ -38,7 +39,7 @@ bool next_instruction(istream& in, instruction* curr) {
   curr->clear();
   if (in.eof()) return false;
   skip_whitespace(in);  if (in.eof()) return false;
-  skip_newlines(in);  if (in.eof()) return false;
+  skip_comments_and_newlines(in);  if (in.eof()) return false;
 
   vector<string> words;
   while (in.peek() != '\n') {
@@ -47,7 +48,7 @@ bool next_instruction(istream& in, instruction* curr) {
     words.push_back(word);
     skip_whitespace(in);  if (in.eof()) return false;
   }
-  skip_newlines(in);  if (in.eof()) return false;
+  skip_comments_and_newlines(in);  if (in.eof()) return false;
 
   if (words.size() == 1 && *(words[0].end()-1) == ':') {
     curr->is_label = true;
@@ -112,9 +113,14 @@ void skip_whitespace(istream& in) {
   }
 }
 
-void skip_newlines(istream& in) {
-  while (in.peek() == '\n')
+void skip_comments_and_newlines(istream& in) {
+  while (in.peek() == '\n' || in.peek() == '#') {
+    if (in.peek() == '#') {
+      in.get();
+      while (in.peek() != '\n') in.get();
+    }
     in.get();
+  }
 }
 
 void skip_comma(istream& in) {
