@@ -141,7 +141,12 @@ void setup_recipes() {
       types.push_back(Type_number[t]);
     }
 //?     cout << types.size() << '\n'; //? 1
-    // todo: properties
+    // properties
+    while (!in.eof()) {
+      istringstream prop(slurp_until(in, '/'));
+      string name = slurp_until(prop, ':');
+      properties.push_back(pair<string, property>(name, property()));
+    }
   }
   string reagent::to_string() {
     ostringstream out;
@@ -150,7 +155,17 @@ void setup_recipes() {
       out << types[i];
       if (i < types.size()-1) out << "-";
     }
-    out << "}";  // todo: properties
+    if (!properties.empty()) {
+      out << ", property: ";
+      for (size_t i = 0; i < properties.size(); ++i) {
+        out << properties[i].first << ":";
+        for (size_t j = 0; j < properties[i].second.values.size(); ++j) {
+          out << properties[i].second.values[j];
+          if (j < properties[i].second.values.size()-1) out << ":";
+        }
+      }
+    }
+    out << "}";
     return out.str();
   }
 
@@ -159,6 +174,7 @@ string slurp_until(istream& in, char delim) {
   char c;
   while (in >> c) {
     if (c == delim) {
+      // drop the delim
       break;
     }
     out << c;
