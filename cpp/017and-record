@@ -74,3 +74,42 @@ recipe main [
 +mem: location 13 is 0
 +run: product 0 is 0
 +mem: storing in location 15
+
+:(before "End Globals")
+// To write to fields of records, you need their address.
+const int GET_ADDRESS = 19;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["get-address"] = GET_ADDRESS;
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case GET_ADDRESS: {
+  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
+  int base_address = to_int(instructions[pc].ingredients[0].name);
+  trace("run") << "base address " << base_address;
+  int base_type = instructions[pc].ingredients[0].types[0];
+  trace("run") << "base type is " << base_type;
+  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
+  assert(instructions[pc].ingredients[1].types.size() == 1);
+  assert(instructions[pc].ingredients[1].types[0] == 0);  // must be literal
+  size_t offset = to_int(instructions[pc].ingredients[1].name);
+  int src = base_address+offset;
+  trace("run") << "address to copy is " << src;
+  vector<int> result;
+  result.push_back(src);
+  trace("run") << "product 0 is " << result[0];
+  write_memory(instructions[pc].products[0], result);
+  break;
+}
+
+:(scenario "get_address")
+recipe main [
+  12:integer <- copy 34:literal
+  13:boolean <- copy 0:literal
+  15:integer <- get-address 12:integer-boolean, 1:offset
+]
++run: instruction 2
++run: ingredient 0 is 12
++run: base address 12
++run: ingredient 1 is 1
++run: address to copy is 13
++mem: storing in location 15
