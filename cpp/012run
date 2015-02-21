@@ -59,7 +59,7 @@ vector<int> read_memory(reagent x) {
 
 void write_memory(reagent x, vector<int> data) {
   int base = to_int(x.name);
-  size_t size = Type[x.types[0]].size;
+  size_t size = size_of(x.types[0]);
   if (size != data.size()) raise << "size mismatch in storing to " << x.to_string();
   for (size_t offset = 0; offset < size; ++offset) {
     trace("mem") << "storing in location " << base+offset;
@@ -73,4 +73,10 @@ int to_int(string n) {
   int result = strtol(n.c_str(), &end, /*any base*/0);
   assert(*end == '\0');
   return result;
+}
+
+int size_of(type_number x) {
+  type_info t = Type[x];
+  if (!t.is_record && !t.is_array) return t.size;
+  return t.size;  // TODO
 }
