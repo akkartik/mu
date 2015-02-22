@@ -43,9 +43,9 @@ recipe main [
 void write_memory(reagent x, vector<int> data) {
   x = canonize(x);
   int base = to_int(x.name);
-  size_t size = size_of(x);
-  if (size != data.size()) raise << "size mismatch in storing to " << x.to_string();
-  for (size_t offset = 0; offset < size; ++offset) {
+  if (!Type[x.types[0]].is_array && size_of(x) != data.size())
+    raise << "size mismatch in storing to " << x.to_string();
+  for (size_t offset = 0; offset < data.size(); ++offset) {
     trace("mem") << "storing in location " << base+offset;
     Memory[base+offset] = data[offset];
   }
