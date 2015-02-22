@@ -38,7 +38,10 @@ case GET: {
   assert(instructions[pc].ingredients[1].types.size() == 1);
   assert(instructions[pc].ingredients[1].types[0] == 0);  // must be literal
   size_t offset = to_int(instructions[pc].ingredients[1].name);
-  int src = base_address+offset;
+  int src = base_address;
+  for (size_t i = 0; i < offset; ++i) {
+    src += size_of(reagent(Type[base_type].elements[i][0]));
+  }
   trace("run") << "address to copy is " << src;
   assert(Type[base_type].is_record);
   assert(Type[base_type].elements.size() > offset);
@@ -67,6 +70,33 @@ recipe main [
 +run: its type is 1
 +mem: location 13 is 35
 +run: product 0 is 35
++mem: storing in location 15
+
+:(before "End Mu Types")
+// A more complex record, containing another record.
+int point_integer = Type_number["point-integer"] = Next_type_number++;
+Type[point_integer].size = 2;
+Type[point_integer].is_record = true;
+vector<type_number> p2;
+p2.push_back(point);
+Type[point_integer].elements.push_back(p2);
+vector<type_number> i2;
+i2.push_back(integer);
+Type[point_integer].elements.push_back(i2);
+:(scenario "get_handles_record_fields")
+recipe main [
+  12:integer <- copy 34:literal
+  13:integer <- copy 35:literal
+  14:integer <- copy 36:literal
+  15:integer <- get 12:point-integer, 1:offset
+]
++run: instruction 2
++run: ingredient 0 is 12
++run: ingredient 1 is 1
++run: address to copy is 14
++run: its type is 1
++mem: location 14 is 36
++run: product 0 is 36
 +mem: storing in location 15
 
 :(before "End Globals")
