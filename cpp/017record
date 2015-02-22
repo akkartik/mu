@@ -116,7 +116,10 @@ case GET_ADDRESS: {
   assert(instructions[pc].ingredients[1].types.size() == 1);
   assert(instructions[pc].ingredients[1].types[0] == 0);  // must be literal
   size_t offset = to_int(instructions[pc].ingredients[1].name);
-  int src = base_address+offset;
+  int src = base_address;
+  for (size_t i = 0; i < offset; ++i) {
+    src += size_of(reagent(Type[base_type].elements[i][0]));
+  }
   trace("run") << "address to copy is " << src;
   vector<int> result;
   result.push_back(src);
