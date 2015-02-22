@@ -1,0 +1,54 @@
+// Support for records.
+:(before "End Mu Types")
+// We'll use this array as a running example:
+int integer_array = Type_number["integer-array"] = Next_type_number++;
+Type[integer_array].is_array = true;
+Type[integer_array].element.push_back(integer);
+
+:(scenario copy_array)
+# Arrays can be copied around with a single instruction just like integers,
+# no matter how large they are.
+recipe main [
+  1:integer <- copy 3:literal
+  2:integer <- copy 14:literal
+  3:integer <- copy 15:literal
+  4:integer <- copy 16:literal
+  5:integer-array <- copy 1:integer-array
+]
++run: instruction 4
++run: ingredient 0 is 1
++mem: location 1 is 3
++mem: location 2 is 14
++mem: location 3 is 15
++mem: location 4 is 16
++mem: storing in location 5
++mem: storing in location 6
++mem: storing in location 7
++mem: storing in location 8
+
+:(replace{} "size_t size_of(reagent r)")
+size_t size_of(reagent r) {
+  type_info t = Type[r.types[0]];
+  if (t.is_record) {
+    int result = 0;
+    for (size_t i = 0; i < t.size; ++i) {
+      ostringstream out;
+      out << result;
+      reagent x(out.str());
+      copy(t.elements[i].begin(), t.elements[i].end(), inserter(x.types, x.types.begin()));
+      result += size_of(x);
+    }
+    return result;
+  }
+  if (t.is_array) {
+    int base = to_int(r.name);
+    if (Memory[base] == 0) return 0;
+    ostringstream out;
+    out << base+1;
+    reagent x(out.str());
+    x.types.push_back(t.element[0]);
+    return 1 + Memory[base]*size_of(x);
+  }
+  // scalar
+  return t.size;
+}
