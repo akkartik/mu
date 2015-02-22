@@ -1,28 +1,25 @@
 // Support for records.
 :(before "End Mu Types")
-// We'll use this record as a running example, with two fields: an integer and
-// a boolean.
-int integer_boolean = Type_number["integer-boolean"] = Next_type_number++;
-Type[integer_boolean].size = 2;
-Type[integer_boolean].is_record = true;
+// We'll use this record as a running example, with two integer fields
+int point = Type_number["point"] = Next_type_number++;
+Type[point].size = 2;
+Type[point].is_record = true;
 vector<type_number> i;
 i.push_back(integer);
-Type[integer_boolean].elements.push_back(i);
-vector<type_number> b;
-b.push_back(boolean);
-Type[integer_boolean].elements.push_back(b);
+Type[point].elements.push_back(i);
+Type[point].elements.push_back(i);
 
 :(scenario copy_multiple_locations)
 # Records can be copied around with a single instruction just like integers,
 # no matter how large they are.
 recipe main [
   1:integer <- copy 34:literal
-  2:boolean <- copy 0:literal
-  3:integer-boolean <- copy 1:integer-boolean
+  2:integer <- copy 35:literal
+  3:point <- copy 1:point
 ]
 +run: ingredient 0 is 1
 +mem: location 1 is 34
-+mem: location 2 is 0
++mem: location 2 is 35
 +mem: storing in location 3
 +mem: storing in location 4
 
@@ -60,16 +57,16 @@ case GET: {
 :(scenario "get")
 recipe main [
   12:integer <- copy 34:literal
-  13:boolean <- copy 0:literal
-  15:boolean <- get 12:integer-boolean, 1:offset
+  13:integer <- copy 35:literal
+  15:integer <- get 12:point, 1:offset
 ]
 +run: instruction 2
 +run: ingredient 0 is 12
 +run: ingredient 1 is 1
 +run: address to copy is 13
-+run: its type is 3
-+mem: location 13 is 0
-+run: product 0 is 0
++run: its type is 1
++mem: location 13 is 35
++run: product 0 is 35
 +mem: storing in location 15
 
 :(before "End Globals")
@@ -101,8 +98,8 @@ case GET_ADDRESS: {
 :(scenario "get_address")
 recipe main [
   12:integer <- copy 34:literal
-  13:boolean <- copy 0:literal
-  15:address:integer <- get-address 12:integer-boolean, 1:offset
+  13:integer <- copy 35:literal
+  15:address:integer <- get-address 12:point, 1:offset
 ]
 +run: instruction 2
 +run: ingredient 0 is 12
