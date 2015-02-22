@@ -94,3 +94,79 @@ reagent deref(reagent x) {
   }
   return result;
 }
+
+:(scenario "get_address_indirect")
+# 'get' can read from record address
+recipe main [
+  1:integer <- copy 2:literal
+  2:integer <- copy 34:literal
+  3:integer <- copy 35:literal
+  4:integer <- get 1:address:point/deref, 0:offset
+]
++run: instruction 3
++run: address to copy is 2
++run: product 0 is 34
++mem: storing in location 4
+
+:(replace{} "case GET:")
+case GET: {
+  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
+  reagent base = canonize(instructions[pc].ingredients[0]);
+  int base_address = to_int(base.name);
+  int base_type = base.types[0];
+  assert(Type[base_type].is_record);
+  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
+  assert(instructions[pc].ingredients[1].types.size() == 1);
+  assert(instructions[pc].ingredients[1].types[0] == 0);  // must be literal
+  size_t offset = to_int(instructions[pc].ingredients[1].name);
+  int src = base_address;
+  for (size_t i = 0; i < offset; ++i) {
+    src += size_of(reagent(Type[base_type].elements[i][0]));
+  }
+  trace("run") << "address to copy is " << src;
+  assert(Type[base_type].is_record);
+  assert(Type[base_type].elements.size() > offset);
+  int src_type = Type[base_type].elements[offset][0];
+  trace("run") << "its type is " << src_type;
+  ostringstream s;
+  s << src;
+  reagent tmp(s.str());
+  tmp.types.push_back(src_type);
+  vector<int> result(read_memory(tmp));
+  trace("run") << "product 0 is " << result[0];
+  write_memory(instructions[pc].products[0], result);
+  break;
+}
+
+:(scenario "get_indirect")
+# 'get' can read from record address
+recipe main [
+  1:integer <- copy 2:literal
+  2:integer <- copy 34:literal
+  3:integer <- copy 35:literal
+  4:integer <- get-address 1:address:point/deref, 0:offset
+]
++run: instruction 3
++run: address to copy is 2
++run: product 0 is 2
+
+:(replace{} "case GET_ADDRESS:")
+case GET_ADDRESS: {
+  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
+  reagent base = canonize(instructions[pc].ingredients[0]);
+  int base_address = to_int(base.name);
+  int base_type = base.types[0];
+  assert(Type[base_type].is_record);
+  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
+  assert(instructions[pc].ingredients[1].types.size() == 1);
+  assert(instructions[pc].ingredients[1].types[0] == 0);  // must be literal
+  size_t offset = to_int(instructions[pc].ingredients[1].name);
+  int src = base_address+offset;
+  trace("run") << "address to copy is " << src;
+  vector<int> result;
+  result.push_back(src);
+  trace("run") << "product 0 is " << result[0];
+  write_memory(instructions[pc].products[0], result);
+  break;
+}
+
