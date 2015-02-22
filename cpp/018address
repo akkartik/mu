@@ -20,7 +20,7 @@ vector<int> read_memory(reagent x) {
   }
   x = canonize(x);
   int base = to_int(x.name);
-  size_t size = size_of(x.types[0]);
+  size_t size = size_of(x);
   for (size_t offset = 0; offset < size; ++offset) {
     int val = Memory[base+offset];
     trace("mem") << "location " << base+offset << " is " << val;
@@ -43,7 +43,7 @@ recipe main [
 void write_memory(reagent x, vector<int> data) {
   x = canonize(x);
   int base = to_int(x.name);
-  size_t size = size_of(x.types[0]);
+  size_t size = size_of(x);
   if (size != data.size()) raise << "size mismatch in storing to " << x.to_string();
   for (size_t offset = 0; offset < size; ++offset) {
     trace("mem") << "storing in location " << base+offset;
