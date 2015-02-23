@@ -1300,11 +1300,11 @@
 ;?   (tr "save names for function @name: @(tostring:pr location*.name)") ;? 1
   (replace-names-with-location instrs name))
 
-(def assign-names-to-location (instrs name)
+(def assign-names-to-location (instrs name (o init-locations))
   (trace "cn0" "convert-names in @name")
 ;?   (prn name ": " location*) ;? 1
   (point return
-  (ret location (table)
+  (ret location (or init-locations (table))
     ; if default-space in first instruction has a name, begin with its bindings
     (when (acons instrs.0)  ; not a label
       (let first-oarg-of-first-instr instrs.0.0  ; hack: assumes the standard default-space boilerplate
@@ -1599,7 +1599,8 @@
   (= function*.fn-name (convert-labels:convert-braces:tokenize-args:insert-code function*.fn-name fn-name))
   (check-default-space function*.fn-name fn-name)
   (add-next-space-generator function*.fn-name fn-name)
-  (convert-names function*.fn-name fn-name))
+  (= location*.fn-name (assign-names-to-location function*.fn-name fn-name location*.fn-name))
+  (replace-names-with-location function*.fn-name fn-name))
 
 (def tokenize-arg (arg)
 ;?   (tr "tokenize-arg " arg)
