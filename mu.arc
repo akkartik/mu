@@ -1765,6 +1765,9 @@
     (= (function* name)
        (system-function* name))))
 
+; allow running mu.arc without load.arc
+(unless bound!section (= section do))
+
 (section 100
 
 (init-fn maybe-coerce
