@@ -509,6 +509,7 @@
       (trace "run" label.routine* " " pc.routine* ": " (body.routine* pc.routine*))
 ;?       (trace "run" routine*)
       (when (atom (body.routine* pc.routine*))  ; label
+;?         (tr "label") ;? 1
         (when (aand scheduler-switch-table*
                     (alref it (body.routine* pc.routine*)))
           (++ pc.routine*)
@@ -517,6 +518,7 @@
         (++ pc.routine*)
         (continue))
       (let (oarg op arg)  (parse-instr (body.routine* pc.routine*))
+;?         (tr op) ;? 1
         (let results
               (case op
                 ; arithmetic
@@ -1713,6 +1715,15 @@
      (add-code '((function ,name [ ,@body ])))
      (freeze-another ',name)
      (run-more ',name)))
+
+; repl
+(def run-interactive (stmt)
+  ; careful to avoid re-processing functions and adding noise to traces
+  (= function*!interactive (convert-labels:convert-braces:tokenize-args (list stmt)))
+  (add-next-space-generator function*!interactive 'interactive)
+  (= location*!interactive (assign-names-to-location function*!interactive 'interactive location*!interactive))
+  (replace-names-with-location function*!interactive 'interactive)
+  (run-more 'interactive))
 
 (def routine-that-ran (f)
   (find [some [is f _!fn-name] stack._]
@@ -3037,17 +3048,13 @@
 (freeze system-function*)
 )  ; section 100 for system software
 
-;; load all provided files and start at 'main'
+;; initialization
+
 (reset)
 (awhen (pos "--" argv)
+  ; batch mode: load all provided files and start at 'main'
   (map add-code:readfile (cut argv (+ it 1)))
-;?   (= dump-trace* (obj whitelist '("run"))) ;? 1
-;?   (= dump-trace* (obj whitelist '("schedule")))
-;?   (= dump-trace* (obj whitelist '("run" "continuation"))) ;? 1
-;?   (= dump-trace* (obj whitelist '("cn0" "cn1")))
-;?   (set dump-trace*) ;? 7
-;?   (freeze function*)
-;?   (prn function*!factorial)
+;?   (set dump-trace*)
   (run 'main)
   (if ($.current-charterm) ($.close-charterm))
   (when ($.graphics-open?) ($.close-viewport Viewport) ($.close-graphics))
@@ -3060,5 +3067,10 @@
 ;?       (prn routine)
       ))
 )
+(when (no cdr.argv)
+  ; interactive mode
+  (whilet expr (do (pr "mu> ") (read))
+    (run-interactive expr)))
+
 (reset)
 ;? (print-times)
