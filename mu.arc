@@ -446,11 +446,12 @@
 ; routines consist of instrs
 ; instrs consist of oargs, op and args
 (def parse-instr (instr)
-;?   (prn instr)
   (iflet delim (pos '<- instr)
-    (list (cut instr 0 delim)  ; oargs
-          (v (instr (+ delim 1)))  ; op
-          (cut instr (+ delim 2)))  ; args
+    (do (when (atom (instr (+ delim 1)))
+          (err "operator not tokenized in @instr; maybe you need to freeze functions*?"))
+        (list (cut instr 0 delim)  ; oargs
+              (v (instr (+ delim 1)))  ; op
+              (cut instr (+ delim 2))))  ; args
     (list nil (v car.instr) cdr.instr)))
 
 (def metadata (operand)
