@@ -1717,15 +1717,6 @@
      (freeze-another ',name)
      (run-more ',name)))
 
-; repl
-(def run-interactive (stmt)
-  ; careful to avoid re-processing functions and adding noise to traces
-  (= function*!interactive (convert-labels:convert-braces:tokenize-args (list stmt)))
-  (add-next-space-generator function*!interactive 'interactive)
-  (= location*!interactive (assign-names-to-location function*!interactive 'interactive location*!interactive))
-  (replace-names-with-location function*!interactive 'interactive)
-  (run-more 'interactive))
-
 (def routine-that-ran (f)
   (find [some [is f _!fn-name] stack._]
         completed-routines*))
@@ -3068,6 +3059,15 @@
 ;?       (prn routine)
       ))
 )
+
+; repl
+(def run-interactive (stmt)
+  ; careful to avoid re-processing functions and adding noise to traces
+  (= function*!interactive (convert-labels:convert-braces:tokenize-args (list stmt)))
+  (add-next-space-generator function*!interactive 'interactive)
+  (= location*!interactive (assign-names-to-location function*!interactive 'interactive location*!interactive))
+  (replace-names-with-location function*!interactive 'interactive)
+  (run-more 'interactive))
 (when (no cdr.argv)
   ; interactive mode
   (whilet expr (do (pr "mu> ") (read))
