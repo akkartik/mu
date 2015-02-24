@@ -504,6 +504,39 @@
   (reply nil:literal)
 ])
 
+(function browse-trace [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (x:string-address <- next-input)
+;?   ($start-tracing) ;? 1
+;?   (x:string-address <- new
+;? "schedule: main
+;? run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
+;? run: main 0: 1 => ((1 integer))
+;? mem: ((1 integer)): 1 <= 1
+;? run: main 1: (((2 integer)) <- ((copy)) ((3 literal)))
+;? run: main 1: 3 => ((2 integer))
+;? mem: ((2 integer)): 2 <= 3
+;? run: main 2: (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))
+;? mem: ((1 integer)) => 1
+;? mem: ((2 integer)) => 3
+;? run: main 2: 4 => ((3 integer))
+;? mem: ((3 integer)): 3 <= 4
+;? schedule:  done with routine")
+  (s:stream-address <- init-stream x:string-address)
+  (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
+  (0:space-address/names:screen-state <- screen-state traces:instruction-trace-address-array-address)
+  (cursor-mode)
+  (print-traces-collapsed 0:space-address/screen-state nil:literal/terminal)
+  { begin
+    (quit?:boolean <- process-key 0:space-address/screen-state nil:literal/keyboard nil:literal/terminal)
+    (break-if quit?:boolean)
+    (loop)
+  }
+  ; move cursor to bottom before exiting
+  (to-bottom 0:space-address/screen-state nil:literal/terminal)
+  (retro-mode)
+])
+
 (function main [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (x:string-address <- new
@@ -520,19 +553,5 @@ mem: ((2 integer)) => 3
 run: main 2: 4 => ((3 integer))
 mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
-  (s:stream-address <- init-stream x:string-address)
-  (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
-  (0:space-address/names:screen-state <- screen-state traces:instruction-trace-address-array-address)
-;?   ($print (("#traces: " literal))) ;? 1
-;?   ($print len:integer) ;? 1
-;?   ($print (("\n" literal))) ;? 1
-  (cursor-mode)
-  (print-traces-collapsed 0:space-address/screen-state nil:literal/terminal)
-  { begin
-    (quit?:boolean <- process-key 0:space-address/screen-state nil:literal/keyboard nil:literal/terminal)
-    (break-if quit?:boolean)
-    (loop)
-  }
-  ; move cursor to bottom before exiting
-  (to-bottom 0:space-address/screen-state nil:literal/terminal)
+  (browse-trace x:string-address)
 ])

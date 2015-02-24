@@ -867,6 +867,18 @@
 ;?                     (prn x) ;? 1
 ;?                     (new-string:repr:eval x)) ;? 1
 
+                $clear-trace
+                  (do1 nil (wipe interactive-traces*))
+                $save-trace
+;?                   (let x (string:map [string:intersperse ": " _]
+;?                                      (as cons (interactive-traces* (m arg.0))))
+                  (let x (string:map [string:intersperse ": " _]
+                                     (apply join
+                                            (map [as cons _] rev.interactive-traces*)))
+;?                     (write x)(write #\newline) ;? 1
+;?                     (prn x) ;? 1
+                    (new-string x))
+
                 ; first-class continuations
                 current-continuation
                   (w/uniq continuation-name
@@ -3067,11 +3079,30 @@
   (add-next-space-generator function*!interactive 'interactive)
   (= location*!interactive (assign-names-to-location function*!interactive 'interactive location*!interactive))
   (replace-names-with-location function*!interactive 'interactive)
+  (= traces* (queue))  ; skip preprocessing
   (run-more 'interactive))
-(when (no cdr.argv)
-  ; interactive mode
-  (whilet expr (do (pr "mu> ") (read))
-    (run-interactive expr)))
 
+(when (no cdr.argv)
+  (add-code:readfile "trace.mu")
+  (freeze function*)
+  (load-system-functions)
+  (wipe interactive-commands*)
+  (wipe interactive-traces*)
+  (= interactive-cmdidx* 0)
+  (= traces* (queue))
+;?   (set dump-trace*) ;? 2
+  ; interactive mode
+  (point break
+  (while t
+    (pr interactive-cmdidx*)(pr "> ")
+    (let expr (read)
+      (unless expr (break))
+      (push expr interactive-commands*)
+      (run-interactive expr))
+    (push traces* interactive-traces*)
+    (++ interactive-cmdidx*)
+    )))
+
+(if ($.current-charterm) ($.close-charterm))
 (reset)
 ;? (print-times)
