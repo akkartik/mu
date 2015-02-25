@@ -38,8 +38,8 @@ void run(string form) {
 void run(call_stack context) {
 // #defines save us the trouble of updating aliases when dependent variables
 // change.
-#define TOP Recipe[context.top().running_recipe]
-#define instructions TOP.steps
+#define TOP_RECIPE Recipe[context.top().running_recipe]
+#define instructions TOP_RECIPE.steps
   while (!context.empty()) {
     while (context.top().pc >= instructions.size()) {
       context.pop();
@@ -47,10 +47,8 @@ void run(call_stack context) {
       // todo: no results returned warning
       ++context.top().pc;
     }
-//?     cout << context.size() << '\n'; //? 1
     size_t& pc = context.top().pc;
-//?     cout << "instruction " << TOP.name << '/' << pc << '\n'; //? 1
-    trace("run") << "instruction " << TOP.name << '/' << pc;
+    trace("run") << "instruction " << TOP_RECIPE.name << '/' << pc;
     switch (instructions[pc].operation) {
     // Primitive Recipe Implementations.
     case COPY: {
@@ -65,7 +63,7 @@ void run(call_stack context) {
     }
     ++pc;
   }
-#undef TOP
+#undef TOP_RECIPE
 #undef instructions
 }
 
