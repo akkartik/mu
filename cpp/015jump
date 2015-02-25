@@ -16,9 +16,9 @@ recipe main [
   jump 1:offset
   1:integer <- copy 1:literal
 ]
-+run: instruction 0
++run: instruction main/0
 +run: ingredient 0 is 1
--run: instruction 1
+-run: instruction main/1
 -mem: storing in location 1
 
 :(scenario "jump_backward")
@@ -27,9 +27,9 @@ recipe main [
   jump 1:offset  //    | 1 +-+
   jump -2:offset //  2 +-->+ |
 ]                //       3 \/
-+run: instruction 0
-+run: instruction 2
-+run: instruction 1
++run: instruction main/0
++run: instruction main/2
++run: instruction main/1
 
 :(before "End Globals")
 const int JUMP_IF = 11;
@@ -56,10 +56,10 @@ recipe main [
   jump-if 999:literal 1:offset
   1:integer <- copy 1:literal
 ]
-+run: instruction 0
++run: instruction main/0
 +run: ingredient 1 is 1
 +run: jumping to instruction 2
--run: instruction 1
+-run: instruction main/1
 -mem: storing in location 1
 
 :(scenario "jump_if_fallthrough")
@@ -67,9 +67,9 @@ recipe main [
   jump-if 0:literal 1:offset
   123:integer <- copy 1:literal
 ]
-+run: instruction 0
++run: instruction main/0
 +run: jump-if fell through
-+run: instruction 1
++run: instruction main/1
 +mem: storing in location 123
 
 :(before "End Globals")
@@ -97,10 +97,10 @@ recipe main [
   jump-unless 0:literal 1:offset
   1:integer <- copy 1:literal
 ]
-+run: instruction 0
++run: instruction main/0
 +run: ingredient 1 is 1
 +run: jumping to instruction 2
--run: instruction 1
+-run: instruction main/1
 -mem: storing in location 1
 
 :(scenario "jump_unless_fallthrough")
@@ -108,8 +108,8 @@ recipe main [
   jump-unless 999:literal 1:offset
   123:integer <- copy 1:literal
 ]
-+run: instruction 0
++run: instruction main/0
 +run: ingredient 0 is 999
 +run: jump-unless fell through
-+run: instruction 1
++run: instruction main/1
 +mem: storing in location 123

@@ -3,7 +3,7 @@
 recipe main [
   1:integer <- copy 23:literal
 ]
-+run: instruction 0
++run: instruction main/0
 +run: ingredient 0 is 23
 +mem: storing in location 1
 
@@ -12,20 +12,45 @@ recipe main [
   1:integer <- copy 23:literal
   2:integer <- copy 1:integer
 ]
-+run: instruction 1
++run: instruction main/1
 +run: ingredient 0 is 1
 +mem: location 1 is 23
 +mem: storing in location 2
 
+:(before "End Types")
+// Each recipe can be 'called' many many times in a program. Each call needs a
+// little extra information.
+struct call {
+  recipe_number running_recipe;
+  size_t pc;
+  call(recipe_number r) :running_recipe(r), pc(0) {}
+};
+typedef stack<call> call_stack;
+
 :(code)
 void run(string form) {
-  run(add_recipe(form));
+  recipe_number r = add_recipe(form);
+  call_stack context;
+  context.push(call(r));
+  run(context);
 }
 
-void run(recipe_number r) {
-  vector<instruction>& instructions(Recipe[r].steps);
-  for (size_t pc = 0; pc < instructions.size(); ++pc) {
-    trace("run") << "instruction " << pc;
+void run(call_stack context) {
+// #defines save us the trouble of updating aliases when dependent variables
+// change.
+#define TOP Recipe[context.top().running_recipe]
+#define instructions TOP.steps
+  while (!context.empty()) {
+    while (context.top().pc >= instructions.size()) {
+      context.pop();
+      if (context.empty()) return;
+      // todo: no results returned warning
+      ++context.top().pc;
+    }
+//?     cout << context.size() << '\n'; //? 1
+    size_t& pc = context.top().pc;
+//?     cout << "instruction " << TOP.name << '/' << pc << '\n'; //? 1
+    trace("run") << "instruction " << TOP.name << '/' << pc;
     switch (instructions[pc].operation) {
     // Primitive Recipe Implementations.
     case COPY: {
@@ -38,7 +63,10 @@ void run(recipe_number r) {
     default:
       raise << "undefined operation " << instructions[pc].operation;
     }
+    ++pc;
   }
+#undef TOP
+#undef instructions
 }
 
 vector<int> read_memory(reagent x) {
