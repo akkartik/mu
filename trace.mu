@@ -225,11 +225,9 @@
 (function screen-state [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (traces:instruction-trace-address-array-address <- next-input)
-  ; app-specific coordinates depending on where the cursor was when the trace
-  ; browser was started
-  (cursor-row:integer <- copy 0:literal)
-  (max-rows:integer <- copy 0:literal)  ; area of the screen we're responsible for
-  (height:integer <- copy 0:literal)  ; part of it that currently has text
+  (app-height:integer <- copy 0:literal)  ; area of the screen we're responsible for; can't be larger than screen-height
+  (printed-height:integer <- copy 0:literal)  ; part of screen that currently has text; can't be larger than app-height
+  (cursor-row:integer <- copy 0:literal)  ; position of cursor on screen; can't be larger than printed-height + 1
   (expanded-index:integer <- copy -1:literal)
   (reply default-space:space-address)
 ])
@@ -259,7 +257,7 @@
   }
   ; if not at bottom, move cursor down
   { begin
-    (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 height:integer/space:1)
+    (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 printed-height:integer/space:1)
     (break-if at-bottom?:boolean)
     (cursor-row:integer/space:1 <- add cursor-row:integer/space:1 1:literal)
     (cursor-down screen:terminal-address)
@@ -304,7 +302,7 @@
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
   { begin
-    (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 height:integer/space:1)
+    (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 printed-height:integer/space:1)
     (break-if at-bottom?:boolean)
     (down 0:space-address screen:terminal-address)
     (loop)
@@ -335,14 +333,14 @@
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
   { begin
-    (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 height:integer/space:1)
+    (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 printed-height:integer/space:1)
     (break-unless at-bottom?:boolean)
-    (height:integer/space:1 <- add height:integer/space:1 1:literal)
-    ; update max-rows if necessary
+    (printed-height:integer/space:1 <- add printed-height:integer/space:1 1:literal)
+    ; update app-height if necessary
     { begin
-      (grow-max?:boolean <- greater-than height:integer/space:1 max-rows:integer/space:1)
+      (grow-max?:boolean <- greater-than printed-height:integer/space:1 app-height:integer/space:1)
       (break-unless grow-max?:boolean)
-      (max-rows:integer/space:1 <- copy height:integer/space:1)
+      (app-height:integer/space:1 <- copy printed-height:integer/space:1)
     }
   }
   (cursor-row:integer/space:1 <- add cursor-row:integer/space:1 1:literal)
@@ -375,9 +373,9 @@
   ; empty any remaining lines
 ;?   ($print i:integer) ;? 1
 ;?   ($print ((#\space literal))) ;? 1
-;?   ($print max-rows:integer/space:1) ;? 1
+;?   ($print app-height:integer/space:1) ;? 1
   { begin
-    (done?:boolean <- greater-or-equal i:integer max-rows:integer/space:1)
+    (done?:boolean <- greater-or-equal i:integer app-height:integer/space:1)
     (break-if done?:boolean)
     (clear-line screen:terminal-address)
     (down 0:space-address/screen-state screen:terminal-address)
