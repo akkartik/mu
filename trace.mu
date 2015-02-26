@@ -225,6 +225,7 @@
 (function screen-state [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (traces:instruction-trace-address-array-address <- next-input)
+  (screen-height:integer <- next-input)  ; 'hardware' limitation
   (app-height:integer <- copy 0:literal)  ; area of the screen we're responsible for; can't be larger than screen-height
   (printed-height:integer <- copy 0:literal)  ; part of screen that currently has text; can't be larger than app-height
   (cursor-row:integer <- copy 0:literal)  ; position of cursor on screen; can't be larger than printed-height + 1
@@ -505,6 +506,7 @@
 (function browse-trace [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (x:string-address <- next-input)
+  (screen-height:integer <- next-input)
 ;?   ($start-tracing) ;? 1
 ;?   (x:string-address <- new
 ;? "schedule: main
@@ -522,7 +524,7 @@
 ;? schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
   (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
-  (0:space-address/names:screen-state <- screen-state traces:instruction-trace-address-array-address)
+  (0:space-address/names:screen-state <- screen-state traces:instruction-trace-address-array-address screen-height:integer)
   (cursor-mode)
   (print-traces-collapsed 0:space-address/screen-state nil:literal/terminal)
   { begin
