@@ -124,7 +124,7 @@
   (default-space:space-address <- new space:literal 30:literal)
   (screen:terminal-address <- next-input)
   (x:instruction-trace-address <- next-input)
-  (screen-state:space-address <- next-input)
+  (0:space-address/names:screen-state <- next-input)
   (clear-line screen:terminal-address)
   (print-character screen:terminal-address ((#\- literal)))
   (print-character screen:terminal-address ((#\space literal)))
@@ -151,7 +151,7 @@
   (print-character screen:terminal-address ((#\space literal)))
   (i:string-address <- get x:instruction-trace-address/deref instruction:offset)
   (print-string screen:terminal-address i:string-address)
-  (add-line screen-state:space-address screen:terminal-address)
+  (add-line 0:space-address/screen-state screen:terminal-address)
   ; print children
   (ch:trace-address-array-address <- get x:instruction-trace-address/deref children:offset)
   (i:integer <- copy 0:literal)
@@ -162,14 +162,18 @@
   }
   (len:integer <- length ch:trace-address-array-address/deref)
   { begin
+    ; until done with trace
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
+    ; or screen ends
+    (screen-done?:boolean <- greater-or-equal cursor-row:integer/space:1 screen-height:integer/space:1)
+    (break-if screen-done?:boolean)
     (t:trace-address <- index ch:trace-address-array-address/deref i:integer)
     (print-character screen:terminal-address ((#\space literal)))
     (print-character screen:terminal-address ((#\space literal)))
     (print-character screen:terminal-address ((#\space literal)))
     (print-trace screen:terminal-address t:trace-address)
-    (add-line screen-state:space-address screen:terminal-address)
+    (add-line 0:space-address/screen-state screen:terminal-address)
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
@@ -336,6 +340,13 @@
   { begin
     (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 printed-height:integer/space:1)
     (break-unless at-bottom?:boolean)
+    { begin
+      (screen-full?:boolean <- greater-or-equal app-height:integer/space:1 screen-height:integer/space:1)
+      (break-unless screen-full?:boolean)
+      (cursor-to-next-line screen:terminal-address)
+      (cursor-up screen:terminal-address)
+      (reply)
+    }
     (printed-height:integer/space:1 <- add printed-height:integer/space:1 1:literal)
     ; update app-height if necessary
     { begin
@@ -360,27 +371,32 @@
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:screen-state <- next-input)
   (screen:terminal-address <- next-input)
-  (i:integer <- next-input)
+  (trace-index:integer <- next-input)
   (len:integer <- length traces:instruction-trace-address-array-address/space:1/deref)
+  (height:integer <- min len:integer screen-height:integer/space:1)
   ; print remaining traces collapsed
   { begin
-    (done?:boolean <- greater-or-equal i:integer len:integer)
-    (break-if done?:boolean)
-    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref i:integer)
+    ; until trace ends
+    (trace-done?:boolean <- greater-or-equal trace-index:integer len:integer)
+    (break-if trace-done?:boolean)
+    ; or screen ends
+    (screen-done?:boolean <- greater-or-equal cursor-row:integer/space:1 screen-height:integer/space:1)
+    (break-if screen-done?:boolean)
+    ; continue printing trace lines
+    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref trace-index:integer)
     (print-instruction-trace-collapsed screen:terminal-address tr:instruction-trace-address 0:space-address/screen-state)
-    (i:integer <- add i:integer 1:literal)
+    (trace-index:integer <- add trace-index:integer 1:literal)
     (loop)
   }
   ; empty any remaining lines
-;?   ($print i:integer) ;? 1
+;?   ($print trace-index:integer) ;? 1
 ;?   ($print ((#\space literal))) ;? 1
 ;?   ($print app-height:integer/space:1) ;? 1
   { begin
-    (done?:boolean <- greater-or-equal i:integer app-height:integer/space:1)
+    (done?:boolean <- greater-or-equal cursor-row:integer/space:1 app-height:integer/space:1)
     (break-if done?:boolean)
     (clear-line screen:terminal-address)
     (down 0:space-address/screen-state screen:terminal-address)
-    (i:integer <- add i:integer 1:literal)
     (loop)
   }
 ])
@@ -540,18 +556,19 @@
 (function main [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (x:string-address <- new
-"schedule: main
-run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
-run: main 0: 1 => ((1 integer))
-mem: ((1 integer)): 1 <= 1
-run: main 1: (((2 integer)) <- ((copy)) ((3 literal)))
-run: main 1: 3 => ((2 integer))
-mem: ((2 integer)): 2 <= 3
-run: main 2: (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))
-mem: ((1 integer)) => 1
-mem: ((2 integer)) => 3
-run: main 2: 4 => ((3 integer))
-mem: ((3 integer)): 3 <= 4
-schedule:  done with routine")
-  (browse-trace x:string-address)
+"run: main 0: a b c
+mem: 0
+run: main 1: d e f
+mem: 1
+mem: 1
+mem: 1
+run: main 2: g hi
+run: main 3: j
+mem: 3
+run: main 4: k
+run: main 5: l
+run: main 6: m
+run: main 7: n
+run: main 8: o")
+  (browse-trace x:string-address 5:literal/screen-height)
 ])

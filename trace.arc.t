@@ -537,5 +537,86 @@ schedule:  done with routine")
             "+ main/ 2 : 4 => ((3 integer))                                        "))
   (prn "F - process-key: navigation moves between top-level lines only"))
 
+;; manage screen height
+
+(reset)
+(new-trace "trace-paginate")
+(add-code:readfile "trace.mu")
+(add-code
+  '((function! main [
+      (default-space:space-address <- new space:literal 30:literal/capacity)
+      (x:string-address <- new
+"run: main 0: a b c
+mem: 0 a
+run: main 1: d e f
+mem: 1 a
+mem: 1 b
+mem: 1 c
+run: main 2: g hi
+run: main 3: j
+mem: 3 a
+run: main 4: k
+run: main 5: l
+run: main 6: m
+run: main 7: n
+run: main 8: o")
+      (s:stream-address <- init-stream x:string-address)
+      (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
+      (len:integer <- length traces:instruction-trace-address-array-address/deref)
+      (2:terminal-address/raw <- init-fake-terminal 17:literal 15:literal)
+      (3:space-address/raw/screen-state <- screen-state traces:instruction-trace-address-array-address 3:literal/screen-height)
+      (print-traces-collapsed 3:space-address/raw/screen-state 2:terminal-address/raw)
+      (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
+    ])))
+(run 'main)
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+; screen shows a subset of collapsed trace lines
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 0 : a b c"
+            "+ main/ 1 : d e f"
+            "+ main/ 2 : g hi "))
+  (prn "F - print-traces-collapsed can show just one 'page' of a larger trace"))
+; expand top line
+(run-code main2
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (s:string-address <- new "kkk\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  )
+; screen shows just first trace line fully expanded
+(when (~screen-contains memory*.4 17
+         (+ "- main/ 0 : a b c"
+            "   mem : 0 a     "
+            "+ main/ 1 : d e f"
+            "                 "))
+  (prn "F - expanding doesn't print past end of page"))
+; expand line below without first collapsing previously expanded line
+(run-code main3
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (s:string-address <- new "j\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  )
+; screen shows part of the second trace line expanded
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 0 : a b c"
+            "- main/ 1 : d e f"
+            "   mem : 1 a     "
+            "                 "
+            "                 "))
+  (prn "F - expanding below expanded line respects screen/page height"))
+
+; todo
+;   respect screen height expanding and collapsing below
+;   pgup/pgdn to navigate pages (minimize up/down responsibilities for performance)
+;   expanded trace straddles page boundary
+;   what if entire page is within an expanded trace?
+
 (reset)
 ;? (print-times) ;? 2
