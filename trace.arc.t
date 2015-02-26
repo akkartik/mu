@@ -25,7 +25,7 @@ schedule:  done with routine")
       (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
       (len:integer <- length traces:instruction-trace-address-array-address/deref)
       (screen:terminal-address <- init-fake-terminal 70:literal 15:literal)
-      (screen-state:space-address <- screen-state traces:instruction-trace-address-array-address)
+      (screen-state:space-address <- screen-state traces:instruction-trace-address-array-address 30:literal/screen-height)
       (print-traces-collapsed screen-state:space-address screen:terminal-address)
       (1:string-address/raw <- get screen:terminal-address/deref data:offset)
     ])))
@@ -73,7 +73,7 @@ schedule:  done with routine")
       ; position the cursor away from top of screen
       (cursor-down 1:terminal-address/raw)
       (cursor-down 1:terminal-address/raw)
-      (screen-state:space-address <- screen-state traces:instruction-trace-address-array-address)
+      (screen-state:space-address <- screen-state traces:instruction-trace-address-array-address 30:literal/screen-height)
       (print-traces-collapsed screen-state:space-address 1:terminal-address/raw traces:instruction-trace-address-array-address)
       (2:string-address/raw <- get 1:terminal-address/raw/deref data:offset)
     ])))
@@ -132,7 +132,7 @@ schedule:  done with routine")
       ; position the cursor away from top of screen
       (cursor-down 2:terminal-address/raw)
       (cursor-down 2:terminal-address/raw)
-      (3:space-address/raw <- screen-state 1:instruction-trace-address-array-address/raw)
+      (3:space-address/raw <- screen-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
       ; draw trace
       (print-traces-collapsed 3:space-address/raw/screen-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
       ; move cursor up
@@ -281,7 +281,7 @@ schedule:  done with routine")
       ; position the cursor away from top of screen
       (cursor-down 2:terminal-address/raw)
       (cursor-down 2:terminal-address/raw)
-      (3:space-address/raw <- screen-state 1:instruction-trace-address-array-address/raw)
+      (3:space-address/raw <- screen-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
       ; draw trace
       (print-traces-collapsed 3:space-address/raw/screen-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
       (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
@@ -366,7 +366,7 @@ schedule:  done with routine")
       ; position the cursor away from top of screen
       (cursor-down 2:terminal-address/raw)
       (cursor-down 2:terminal-address/raw)
-      (3:space-address/raw <- screen-state 1:instruction-trace-address-array-address/raw)
+      (3:space-address/raw <- screen-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
       ; draw trace
       (print-traces-collapsed 3:space-address/raw/screen-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
       ; expand penultimate line
@@ -422,7 +422,7 @@ schedule:  done with routine")
       ; position the cursor away from top of screen
       (cursor-down 2:terminal-address/raw)
       (cursor-down 2:terminal-address/raw)
-      (3:space-address/raw <- screen-state 1:instruction-trace-address-array-address/raw)
+      (3:space-address/raw <- screen-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
       ; draw trace
       (print-traces-collapsed 3:space-address/raw/screen-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
       ; expand penultimate line, then move one line down and draw cursor
