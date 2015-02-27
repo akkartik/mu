@@ -231,6 +231,10 @@
   ; trace state
   (traces:instruction-trace-address-array-address <- next-input)  ; the ground truth being rendered
   (expanded-index:integer <- copy -1:literal)  ; currently trace browser only ever shows one item expanded
+  (first-index-on-page:integer <- copy 0:literal)  ; 'outer' line with label 'run'
+  (first-subindex-on-page:integer <- copy 0:literal)  ; 'inner' line with other labels
+  (last-index-on-page:integer <- copy 0:literal)
+  (last-subindex-on-page:integer <- copy 0:literal)
   ; screen state
   (screen-height:integer <- next-input)  ; 'hardware' limitation
   (app-height:integer <- copy 0:literal)  ; area of the screen we're responsible for; can't be larger than screen-height
@@ -316,6 +320,18 @@
   }
 ])
 
+(function to-top [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- next-input)
+  (screen:terminal-address <- next-input)
+  { begin
+    (at-top?:boolean <- lesser-or-equal cursor-row:integer/space:1 0:literal)
+    (break-if at-top?:boolean)
+    (up 0:space-address screen:terminal-address)
+    (loop)
+  }
+])
+
 (function back-to [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- next-input)
@@ -386,6 +402,7 @@
     (break-if screen-done?:boolean)
     ; continue printing trace lines
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref trace-index:integer)
+    (last-index-on-page:integer/space:1 <- copy trace-index:integer)
     (print-instruction-trace-collapsed screen:terminal-address tr:instruction-trace-address 0:space-address/browser-state)
     (trace-index:integer <- add trace-index:integer 1:literal)
     (loop)
@@ -460,6 +477,24 @@
     (break-unless down?:boolean)
     (down 0:space-address/browser-state screen:terminal-address)
     (reply nil:literal)
+  }
+  ; page up/page down
+  { begin
+    (page-up?:boolean <- equal c:character ((page-up literal)))
+    (K?:boolean <- equal c:character ((#\K literal)))
+    (page-up?:boolean <- or page-up?:boolean K?:boolean)
+    (break-unless page-up?:boolean)
+  }
+  { begin
+    (page-down?:boolean <- equal c:character ((page-up literal)))
+    (J?:boolean <- equal c:character ((#\J literal)))
+    (page-down?:boolean <- or page-down?:boolean J?:boolean)
+    (break-unless page-down?:boolean)
+    ; move cursor to top of screen
+    (to-top 0:space-address/browser-state screen:terminal-address)
+    ; start drawing from next page
+    (new-page-start:integer <- add last-index-on-page:integer/space:1 1:literal)
+    (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address new-page-start:integer)
   }
   ; enter: expand/collapse current row
   { begin
