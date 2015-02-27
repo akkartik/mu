@@ -656,6 +656,19 @@ run: main 7: n")
             "+ main/ 7 : n    "
             "                 "))
   (prn "F - 'page-down' skips to same place regardless of cursor position"))
+; try to page-down past end of trace
+(run-code main7
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (s:string-address <- new "J")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+; no change
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 6 : m    "
+            "+ main/ 7 : n    "
+            "                 "))
+  (prn "F - 'page-down' skips to same place regardless of cursor position"))
 
 ; todo
 ;   pgup/pgdn to navigate pages (minimize up/down responsibilities for performance)
