@@ -626,6 +626,25 @@ run: main 8: o")
             "+ main/ 1 : d e f"
             "                 "))
   (prn "F - expanding above expanded line respects screen/page height"))
+; collapse everything and hit page-down
+; again, we can't yet check for special keys like 'page-down so we'll use
+; upper-case J and K for moving a page down or up, respectively.
+(run-code main5
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (s:string-address <- new "\nJ")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+; screen shows second page of traces
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 3 : j    "
+            "+ main/ 4 : k    "
+            "+ main/ 5 : l    "
+            "                 "))
+  (prn "F - 'page-down' skips to next page after this one"))
+
+;?   (prn "F - 'page-down' skips to same place regardless of cursor position")
 
 ; todo
 ;   pgup/pgdn to navigate pages (minimize up/down responsibilities for performance)
