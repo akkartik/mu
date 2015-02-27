@@ -480,7 +480,7 @@
   }
   ; page up/page down
   { begin
-    (page-up?:boolean <- equal c:character ((page-up literal)))
+    (page-up?:boolean <- equal c:character ((pgup literal)))
     (K?:boolean <- equal c:character ((#\K literal)))
     (page-up?:boolean <- or page-up?:boolean K?:boolean)
     (break-unless page-up?:boolean)
@@ -495,7 +495,7 @@
     (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-index-on-page:integer/space:1)
   }
   { begin
-    (page-down?:boolean <- equal c:character ((page-up literal)))
+    (page-down?:boolean <- equal c:character ((pgdn literal)))
     (J?:boolean <- equal c:character ((#\J literal)))
     (page-down?:boolean <- or page-down?:boolean J?:boolean)
     (break-unless page-down?:boolean)
@@ -509,6 +509,8 @@
     ; start drawing from next page
     (first-index-on-page:integer/space:1 <- copy next-page-start:integer)
     (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-index-on-page:integer/space:1)
+    ; move cursor back to top of screen
+    (to-top 0:space-address/browser-state screen:terminal-address)
   }
   ; enter: expand/collapse current row
   { begin
