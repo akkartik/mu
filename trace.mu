@@ -489,8 +489,10 @@
     ; move cursor to top of screen
     (to-top 0:space-address/browser-state screen:terminal-address)
     ; start drawing from previous page
-    (new-page-start:integer <- subtract first-index-on-page:integer/space:1 screen-height:integer/space:1)
-    (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address new-page-start:integer)
+    (first-index-on-page:integer/space:1 <- subtract first-index-on-page:integer/space:1 screen-height:integer/space:1)
+    ; don't need to check for less than zero because page-up/page-down won't
+    ; currently allow it
+    (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-index-on-page:integer/space:1)
   }
   { begin
     (page-down?:boolean <- equal c:character ((page-up literal)))
@@ -499,13 +501,14 @@
     (break-unless page-down?:boolean)
     ; if we're not past end of trace
     (len:integer <- length traces:instruction-trace-address-array-address/space:1/deref)
-    (new-page-start:integer <- add last-index-on-page:integer/space:1 1:literal)
-    (last-page?:boolean <- greater-or-equal new-page-start:integer len:integer)
+    (next-page-start:integer <- add last-index-on-page:integer/space:1 1:literal)
+    (last-page?:boolean <- greater-or-equal next-page-start:integer len:integer)
     (break-if last-page?:boolean)
     ; move cursor to top of screen
     (to-top 0:space-address/browser-state screen:terminal-address)
     ; start drawing from next page
-    (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address new-page-start:integer)
+    (first-index-on-page:integer/space:1 <- copy next-page-start:integer)
+    (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-index-on-page:integer/space:1)
   }
   ; enter: expand/collapse current row
   { begin
