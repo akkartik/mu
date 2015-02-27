@@ -611,9 +611,23 @@ run: main 8: o")
             "                 "
             "                 "))
   (prn "F - expanding below expanded line respects screen/page height"))
+; expand line *above* without first collapsing previously expanded line
+(run-code main4
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (s:string-address <- new "k\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/screen-state k:keyboard-address 2:terminal-address/raw)
+  )
+; screen again shows first trace line expanded
+(when (~screen-contains memory*.4 17
+         (+ "- main/ 0 : a b c"
+            "   mem : 0 a     "
+            "+ main/ 1 : d e f"
+            "                 "))
+  (prn "F - expanding above expanded line respects screen/page height"))
 
 ; todo
-;   respect screen height expanding and collapsing below
 ;   pgup/pgdn to navigate pages (minimize up/down responsibilities for performance)
 ;   expanded trace straddles page boundary
 ;   what if entire page is within an expanded trace?
