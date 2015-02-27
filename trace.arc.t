@@ -558,8 +558,7 @@ mem: 3 a
 run: main 4: k
 run: main 5: l
 run: main 6: m
-run: main 7: n
-run: main 8: o")
+run: main 7: n")
       (s:stream-address <- init-stream x:string-address)
       (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
       (len:integer <- length traces:instruction-trace-address-array-address/deref)
@@ -643,8 +642,20 @@ run: main 8: o")
             "+ main/ 5 : l    "
             "                 "))
   (prn "F - 'page-down' skips to next page after this one"))
-
-;?   (prn "F - 'page-down' skips to same place regardless of cursor position")
+; move cursor down, then page-down
+(run-code main6
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (s:string-address <- new "jJ")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+; page-down behaves the same regardless of where the cursor was
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 6 : m    "
+            "+ main/ 7 : n    "
+            "                 "))
+  (prn "F - 'page-down' skips to same place regardless of cursor position"))
 
 ; todo
 ;   pgup/pgdn to navigate pages (minimize up/down responsibilities for performance)
