@@ -490,10 +490,14 @@
     (J?:boolean <- equal c:character ((#\J literal)))
     (page-down?:boolean <- or page-down?:boolean J?:boolean)
     (break-unless page-down?:boolean)
+    ; if we're not past end of trace
+    (len:integer <- length traces:instruction-trace-address-array-address/space:1/deref)
+    (new-page-start:integer <- add last-index-on-page:integer/space:1 1:literal)
+    (last-page?:boolean <- greater-or-equal new-page-start:integer len:integer)
+    (break-if last-page?:boolean)
     ; move cursor to top of screen
     (to-top 0:space-address/browser-state screen:terminal-address)
     ; start drawing from next page
-    (new-page-start:integer <- add last-index-on-page:integer/space:1 1:literal)
     (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address new-page-start:integer)
   }
   ; enter: expand/collapse current row
