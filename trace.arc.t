@@ -672,20 +672,19 @@ run: main 7: n")
 ; now page-up
 (run-code main8
   (default-space:space-address <- new space:literal 30:literal/capacity)
-  (s:string-address <- new "jJ")
+  (s:string-address <- new "K")
   (k:keyboard-address <- init-keyboard s:string-address)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
-  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
-; page-down behaves the same regardless of where the cursor was
+; precisely undoes previous page-down
 (when (~screen-contains memory*.4 17
-         (+ "+ main/ 6 : m    "
-            "+ main/ 7 : n    "
+         (+ "+ main/ 3 : j    "
+            "+ main/ 4 : k    "
+            "+ main/ 5 : l    "
             "                 "))
-  (prn "F - 'page-down' skips to same place regardless of cursor position"))
+  (prn "F - 'page-up' on partial page behaves as if page was full"))
 
 ; todo
-;   pgup/pgdn to navigate pages (minimize up/down responsibilities for performance)
 ;   expanded trace straddles page boundary
 ;   what if entire page is within an expanded trace?
 
