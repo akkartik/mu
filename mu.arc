@@ -59,29 +59,26 @@
   (= curr-trace-file* filename))
 
 (= dump-trace* nil)
-(mac trace (label . args)
-     )
-(mac tr args)
-;? (def trace (label . args)
-;?   (when (or (is dump-trace* t)
-;?             (and dump-trace* (is label "-"))
-;?             (and dump-trace* (pos label dump-trace*!whitelist))
-;?             (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
-;?     (apply prn label ": " args))
-;?   (enq (list label (apply tostring:prn args))
-;?        traces*)
-;?   (car args))
-;? 
-;? (on-init
-;?   (wipe dump-trace*))
-;? 
-;? (redef tr args  ; why am I still returning to prn when debugging? Will this help?
-;?   (do1 nil
-;?        (apply trace "-" args)))
-;? 
-;? (def tr2 (msg arg)
-;?   (tr msg arg)
-;?   arg)
+(def trace (label . args)
+  (when (or (is dump-trace* t)
+            (and dump-trace* (is label "-"))
+            (and dump-trace* (pos label dump-trace*!whitelist))
+            (and dump-trace* (no dump-trace*!whitelist) (~pos label dump-trace*!blacklist)))
+    (apply prn label ": " args))
+  (enq (list label (apply tostring:prn args))
+       traces*)
+  (car args))
+
+(on-init
+  (wipe dump-trace*))
+
+(redef tr args  ; why am I still returning to prn when debugging? Will this help?
+  (do1 nil
+       (apply trace "-" args)))
+
+(def tr2 (msg arg)
+  (tr msg arg)
+  arg)
 
 (def check-trace-contents (msg expected-contents)
   (unless (trace-contents-match expected-contents)
@@ -251,28 +248,28 @@
 (defextend empty (x)  (isa x 'routine)
   (no rep.x!call-stack))
 
-(deftimed stack (routine)
+(def stack (routine)
   ((rep routine) 'call-stack))
 
-(deftimed push-stack (routine op)
+(def push-stack (routine op)
   (push (obj fn-name op  pc 0  caller-arg-idx 0  t0 (msec))
         rep.routine!call-stack))
 
-(deftimed pop-stack (routine)
+(def pop-stack (routine)
 ;?   (update-time label.routine (msec)) ;? 1
   (pop rep.routine!call-stack))
 
-(deftimed top (routine)
+(def top (routine)
   stack.routine.0)
 
-(deftimed label (routine)
+(def label (routine)
   (whenlet stack stack.routine
     (or= stack.0!label
          (label2 stack))))
-(deftimed label2 (stack)
+(def label2 (stack)
          (string:intersperse "/" (map [_ 'fn-name] stack)));))
 
-(deftimed body (routine)
+(def body (routine)
   (function* stack.routine.0!fn-name))
 
 (mac pc (routine (o idx 0))  ; assignable
@@ -293,10 +290,10 @@
 (mac reply-args (routine)  ; assignable
   `((((rep ,routine) 'call-stack) 0) 'reply-args))
 
-(deftimed waiting-for-exact-cycle? (routine)
+(def waiting-for-exact-cycle? (routine)
   (is 'until rep.routine!sleep.0))
 
-(deftimed ready-to-wake-up (routine)
+(def ready-to-wake-up (routine)
   (assert no.routine*)
   (case rep.routine!sleep.0
     until
@@ -358,7 +355,7 @@
 ;     particular time or for a particular memory location to change)
 ;   detect termination: all non-helper routines completed
 ;   detect deadlock: kill all sleeping routines when none can be woken
-(deftimed update-scheduler-state ()
+(def update-scheduler-state ()
   (when routine*
 ;?     (prn "update scheduler state: " routine*)
     (if
@@ -423,7 +420,7 @@
   (detect-deadlock)
   )
 
-(deftimed detect-deadlock ()
+(def detect-deadlock ()
   (when (and (empty running-routines*)
              (~empty sleeping-routines*)
              (~some 'literal (map (fn(_) rep._!sleep.1)
@@ -433,7 +430,7 @@
       (= rep.routine!error "deadlock detected")
       (push routine completed-routines*))))
 
-(deftimed die (msg)
+(def die (msg)
   (tr "die: " msg)
   (= rep.routine*!error msg)
   (iflet abort-continuation (abort-routine*)
@@ -448,7 +445,7 @@
 
 ; routines consist of instrs
 ; instrs consist of oargs, op and args
-(deftimed parse-instr (instr)
+(def parse-instr (instr)
   (iflet delim (pos '<- instr)
     (do (when (atom (instr (+ delim 1)))
           (err "operator not tokenized in @instr; maybe you need to freeze functions*?"))
@@ -457,31 +454,31 @@
               (cut instr (+ delim 2))))  ; args
     (list nil (v car.instr) cdr.instr)))
 
-(deftimed metadata (operand)
+(def metadata (operand)
   cdr.operand)
 
-(deftimed ty (operand)
+(def ty (operand)
   (cdr operand.0))
 
-(deftimed literal? (operand)
+(def literal? (operand)
   (unless (acons ty.operand)
     (err "no type in operand @operand"))
   (in ty.operand.0 'literal 'offset 'fn))
 
-(deftimed typeinfo (operand)
+(def typeinfo (operand)
   (or (type* ty.operand.0)
       (err "unknown type @(tostring prn.operand)")))
 
 ; operand accessors
-(deftimed nondummy (operand)  ; precondition for helpers below
+(def nondummy (operand)  ; precondition for helpers below
   (~is '_ operand))
 
 ; just for convenience, 'new' instruction sometimes takes a raw string and
 ; allocates just enough space to store it
-(deftimed not-raw-string (operand)
+(def not-raw-string (operand)
   (~isa operand 'string))
 
-(deftimed address? (operand)
+(def address? (operand)
   (or (is ty.operand.0 'location)
       typeinfo.operand!address))
 
@@ -496,7 +493,7 @@
 ($:define (reset) (tput 'sgr0))
 
 ; run instructions from 'routine*' for 'time-slice'
-(deftimed run-for-time-slice (time-slice)
+(def run-for-time-slice (time-slice)
   (point return
     (for ninstrs 0 (< ninstrs time-slice) (++ ninstrs)
       (if (empty body.routine*) (err "@stack.routine*.0!fn-name not defined"))
@@ -976,7 +973,7 @@
         (++ pc.routine*)))
     (return time-slice)))
 
-(deftimed prepare-reply (args)
+(def prepare-reply (args)
   (= results.routine*
      (accum yield
        (each a args
@@ -989,7 +986,7 @@
 ;   indirect addressing - 'deref'
 ;   relative addressing - if routine* has 'default-space'
 
-(deftimed m (loc)  ; read memory, respecting metadata
+(def m (loc)  ; read memory, respecting metadata
   (point return
     (when (literal? loc)
       (return v.loc))
@@ -1008,7 +1005,7 @@
                         (map memory* (addrs addr n)))))
       (trace "mem" loc " => " result))))
 
-(deftimed setm (loc val)  ; set memory, respecting metadata
+(def setm (loc val)  ; set memory, respecting metadata
 ;?   (tr 111)
   (point return
 ;?   (tr 112)
@@ -1043,22 +1040,22 @@
                 (trace "mem" loc ": " dest " <= " repr.src)
                 (= memory*.dest src))))))))
 
-(deftimed typeof (operand)
+(def typeof (operand)
   (let loc absolutize.operand
     (while (pos '(deref) metadata.loc)
       (zap deref loc))
     ty.loc.0))
 
-(deftimed addr (operand)
+(def addr (operand)
   (v canonize.operand))
 
-(deftimed addrs (n sz)
+(def addrs (n sz)
   (accum yield
     (repeat sz
       (yield n)
       (++ n))))
 
-(deftimed canonize (operand)
+(def canonize (operand)
 ;?   (tr "0: @operand")
   (ret operand
 ;?     (prn "1: " operand)
@@ -1070,7 +1067,7 @@
 ;?       (tr "3: @repr.operand")
       )))
 
-(deftimed array-len (operand)
+(def array-len (operand)
   (trace "array-len" operand)
   (zap canonize operand)
   (if typeinfo.operand!array
@@ -1078,7 +1075,7 @@
       :else
         (err "can't take len of non-array @operand")))
 
-(deftimed sizeof (x)
+(def sizeof (x)
 ;?   (trace "sizeof" x) ;? 1
   (assert acons.x)
   (zap canonize x)
@@ -1098,7 +1095,7 @@
 ;?   (tr "sizeof: @x is a primitive")
   (return typeinfo.x!size)))
 
-(deftimed absolutize (operand)
+(def absolutize (operand)
   (if (no routine*)
         operand
       (in v.operand '_ 'default-space)
@@ -1118,7 +1115,7 @@
                         space.operand)
           operand)))
 
-(deftimed lookup-space (operand base space)
+(def lookup-space (operand base space)
   (if (is 0 space)
     ; base case
     (if (< v.operand memory*.base)
@@ -1130,17 +1127,17 @@
     (lookup-space operand (memory* (+ base 1))  ; location 0 points to next space
                   (- space 1))))
 
-(deftimed space (operand)
+(def space (operand)
   (or (alref metadata.operand 'space)
       0))
 
-(deftimed deref (operand)
+(def deref (operand)
   (assert (pos '(deref) metadata.operand))
   (assert address?.operand)
   (cons `(,(memory* v.operand) ,@typeinfo.operand!elem)
         (drop-one '(deref) metadata.operand)))
 
-(deftimed drop-one (f x)
+(def drop-one (f x)
   (when acons.x  ; proper lists only
     (if (testify.f car.x)
       cdr.x
@@ -1148,7 +1145,7 @@
 
 ; memory allocation
 
-(deftimed alloc (sz)
+(def alloc (sz)
   (when (> sz (- rep.routine*!alloc-max rep.routine*!alloc))
     (let curr-alloc Memory-allocated-until
       (= rep.routine*!alloc curr-alloc)
@@ -1157,16 +1154,16 @@
   (ret result rep.routine*!alloc
     (++ rep.routine*!alloc sz)))
 
-(deftimed new-scalar (type)
+(def new-scalar (type)
 ;?   (tr "new scalar: @type")
   (alloc (sizeof `((_ ,type)))))
 
-(deftimed new-array (type size)
+(def new-array (type size)
 ;?   (tr "new array: @type @size")
   (ret result (alloc (+ 1 (* (sizeof `((_ ,@type*.type!elem))) size)))
     (= memory*.result size)))
 
-(deftimed new-string (literal-string)
+(def new-string (literal-string)
 ;?   (tr "new string: @literal-string")
   (ret result (alloc (+ 1 len.literal-string))
     (= memory*.result len.literal-string)
@@ -1174,14 +1171,14 @@
 ;?       (prn index " " repr.c) ;? 1
       (= (memory* (+ result 1 index)) c))))
 
-(deftimed to-arc-string (string-address)
+(def to-arc-string (string-address)
   (let len (memory* string-address)
     (string:map memory* (range (+ string-address 1)
                                (+ string-address len)))))
 
 ;; desugar structured assembly based on blocks
 
-(deftimed convert-braces (instrs)
+(def convert-braces (instrs)
 ;?   (prn "convert-braces " instrs)
   (let locs ()  ; list of information on each brace: (open/close pc)
     (let pc 0
@@ -1245,7 +1242,7 @@
                   (yield-unchanged)))
             (++ pc))))))))
 
-(deftimed close-offset (pc locs nblocks)
+(def close-offset (pc locs nblocks)
   (or= nblocks 1)
 ;?   (tr nblocks)
   (point return
@@ -1264,13 +1261,13 @@
 ;?         (tr "close now " loc)
         (return (- loc pc 1))))))))
 
-(deftimed open-offset (pc stack nblocks)
+(def open-offset (pc stack nblocks)
   (or= nblocks 1)
   (- (stack (- nblocks 1)) 1 pc))
 
 ;; convert jump targets to offsets
 
-(deftimed convert-labels (instrs)
+(def convert-labels (instrs)
 ;?   (tr "convert-labels " instrs)
   (let labels (table)
     (let pc 0
@@ -1295,7 +1292,7 @@
 
 ;; convert symbolic names to raw memory locations
 
-(deftimed add-next-space-generator (instrs name)
+(def add-next-space-generator (instrs name)
 ;?   (prn "== @name")
   (each instr instrs
     (when acons.instr
@@ -1388,7 +1385,7 @@
                 ; todo: can't allocate arrays on the stack
                 (++ idx (sizeof `((_ ,@ty.arg))))))))))))))
 
-(deftimed replace-names-with-location (instrs name)
+(def replace-names-with-location (instrs name)
   (each instr instrs
     (when (acons instr)
       (let (oargs op args)  (parse-instr instr)
@@ -1401,7 +1398,7 @@
   instrs)
 
 (= allow-raw-addresses* nil)
-(deftimed check-default-space (instrs name)
+(def check-default-space (instrs name)
   (unless allow-raw-addresses*
     (let oarg-names (accum yield
                       (each (oargs _ _) (map parse-instr (keep acons  ; non-label
@@ -1413,7 +1410,7 @@
         (prn "function @name has no default-space")))))
 
 ; assign an index to an arg
-(deftimed maybe-add (arg location idx)
+(def maybe-add (arg location idx)
   (trace "maybe-add" arg)
   (when (and nondummy.arg
 ;?              (prn arg " " (assoc 'space arg))
@@ -1426,7 +1423,7 @@
     (= (location v.arg) idx)))
 
 ; convert the arg to corresponding index
-(deftimed convert-name (arg default-name)
+(def convert-name (arg default-name)
 ;?   (prn "111 @arg @default-name")
   (when (and nondummy.arg not-raw-string.arg
              (~is ty.arg.0 'literal))  ; can't use 'literal?' because we want to rename offsets
@@ -1441,7 +1438,7 @@
 ;?       (prn 115)
       )))
 
-(deftimed space-to-name (arg default-name)
+(def space-to-name (arg default-name)
   (ret name default-name
     (when (~is space.arg 'global)
       (repeat space.arg
@@ -1449,7 +1446,7 @@
 
 ;; literate tangling system for reordering code
 
-(deftimed convert-quotes (instrs)
+(def convert-quotes (instrs)
   (let deferred (queue)
     (each instr instrs
       (when (acons instr)
@@ -1511,7 +1508,7 @@
 
 ;; loading code into the virtual machine
 
-(deftimed add-code (forms)
+(def add-code (forms)
   (each (op . rest)  forms
     (case op
       ; function <name> [ <instructions> ]
@@ -1589,7 +1586,7 @@
         (prn "unrecognized top-level " (cons op rest))
       )))
 
-(deftimed freeze (function-table)
+(def freeze (function-table)
   (each (name body)  canon.function-table
 ;?     (prn "freeze " name)
     (= function-table.name (convert-labels:convert-braces:tokenize-args:insert-code body name)))
@@ -1613,14 +1610,14 @@
   ; we could clear location* at this point, but maybe we'll find a use for it
   )
 
-(deftimed freeze-another (fn-name)
+(def freeze-another (fn-name)
   (= function*.fn-name (convert-labels:convert-braces:tokenize-args:insert-code function*.fn-name fn-name))
   (check-default-space function*.fn-name fn-name)
   (add-next-space-generator function*.fn-name fn-name)
   (= location*.fn-name (assign-names-to-location function*.fn-name fn-name location*.fn-name))
   (replace-names-with-location function*.fn-name fn-name))
 
-(deftimed tokenize-arg (arg)
+(def tokenize-arg (arg)
 ;?   (tr "tokenize-arg " arg)
   (if (in arg '<- '_)
         arg
@@ -1631,7 +1628,7 @@
       :else
         arg))
 
-(deftimed tokenize-args (instrs)
+(def tokenize-args (instrs)
 ;?   (tr "tokenize-args " instrs)
 ;?   (prn2 "@(tostring prn.instrs) => "
   (accum yield
@@ -1648,21 +1645,21 @@
   (pr msg)
   (apply prn args))
 
-(deftimed canon (table)
+(def canon (table)
   (sort (compare < [tostring (prn:car _)]) (as cons table)))
 
-(deftimed int-canon (table)
+(def int-canon (table)
   (sort (compare < car) (as cons table)))
 
-(deftimed routine-canon (routine-table)
+(def routine-canon (routine-table)
   (sort (compare < label:car) (as cons routine-table)))
 
-(deftimed repr (val)
+(def repr (val)
   (tostring write.val))
 
 ;; test helpers
 
-(deftimed memory-contains (addr value)
+(def memory-contains (addr value)
 ;?   (prn "Looking for @value starting at @addr")
   (loop (addr addr
          idx  0)
@@ -1675,7 +1672,7 @@
         :else
           (recur (+ addr 1) (+ idx 1)))))
 
-(deftimed memory-contains-array (addr value)
+(def memory-contains-array (addr value)
   (and (>= memory*.addr len.value)
        (loop (addr (+ addr 1)  ; skip count
               idx  0)
@@ -1687,7 +1684,7 @@
                (recur (+ addr 1) (+ idx 1))))))
 
 ; like memory-contains-array but shows diffs
-(deftimed memory-contains-array-verbose (addr value)
+(def memory-contains-array-verbose (addr value)
   (prn "Mismatch when looking at @addr, size @memory*.addr vs @len.value")
   (and (>= memory*.addr len.value)
        (loop (addr (+ addr 1)  ; skip count
@@ -1703,7 +1700,7 @@
                (recur (+ addr 1) (+ idx 1))))))
 
 ; like memory-contains-array but shows diffs in 2D
-(deftimed screen-contains (addr width value)
+(def screen-contains (addr width value)
   (or (memory-contains-array addr value)
       (do ;(memory-contains-array-verbose addr value)
           (prn "Mismatch detected. Screen contents:")
@@ -1732,11 +1729,11 @@
      (freeze-another ',name)
      (run-more ',name)))
 
-(deftimed routine-that-ran (f)
+(def routine-that-ran (f)
   (find [some [is f _!fn-name] stack._]
         completed-routines*))
 
-(deftimed routine-running (f)
+(def routine-running (f)
   (or
     (find [some [is f _!fn-name] stack._]
           completed-routines*)
@@ -1748,19 +1745,19 @@
          (some [is f _!fn-name] stack.routine*)
          routine*)))
 
-(deftimed ran-to-completion (f)
+(def ran-to-completion (f)
   ; if a routine calling f ran to completion there'll be no sign of it in any
   ; completed call-stacks.
   (~routine-that-ran f))
 
-(deftimed restart (routine)
+(def restart (routine)
   (while (in top.routine!fn-name 'read 'write)
     (pop-stack routine))
   (wipe rep.routine!sleep)
   (wipe rep.routine!error)
   (enq routine running-routines*))
 
-(deftimed dump (msg routine)
+(def dump (msg routine)
   (prn "= @msg " rep.routine!sleep)
   (prn:rem [in car._ 'sleep 'call-stack] (as cons rep.routine))
   (each frame rep.routine!call-stack
@@ -1779,7 +1776,7 @@
   (let real-name (v tokenize-arg.name)
     `(= (system-function* ',real-name) ',body)))
 
-(deftimed load-system-functions ()
+(def load-system-functions ()
   (each (name f) system-function*
     (= (function* name)
        (system-function* name))))
@@ -3076,7 +3073,7 @@
 )
 
 ; repl
-(deftimed run-interactive (stmt)
+(def run-interactive (stmt)
   ; careful to avoid re-processing functions and adding noise to traces
   (= function*!interactive (convert-labels:convert-braces:tokenize-args (list stmt)))
   (add-next-space-generator function*!interactive 'interactive)
