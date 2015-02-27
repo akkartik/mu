@@ -484,6 +484,13 @@
     (K?:boolean <- equal c:character ((#\K literal)))
     (page-up?:boolean <- or page-up?:boolean K?:boolean)
     (break-unless page-up?:boolean)
+    (first-page?:boolean <- lesser-or-equal first-index-on-page:integer/space:1 0:literal)
+    (break-if first-page?:boolean)
+    ; move cursor to top of screen
+    (to-top 0:space-address/browser-state screen:terminal-address)
+    ; start drawing from previous page
+    (new-page-start:integer <- subtract first-index-on-page:integer/space:1 screen-height:integer/space:1)
+    (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address new-page-start:integer)
   }
   { begin
     (page-down?:boolean <- equal c:character ((page-up literal)))
