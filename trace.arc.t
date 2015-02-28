@@ -552,6 +552,8 @@ run: main 1: d e f
 mem: 1 a
 mem: 1 b
 mem: 1 c
+mem: 1 d
+mem: 1 e
 run: main 2: g hi
 run: main 3: j
 mem: 3 a
@@ -710,18 +712,29 @@ run: main 7: n")
 ;?   ($start-tracing) ;? 1
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
-; no lines skipped
+; no lines skipped, page with just inner traces
 (when (~screen-contains memory*.4 17
          (+ "   mem : 1 b     "
             "   mem : 1 c     "
-            "+ main/ 2 : g hi "
+            "   mem : 1 d     "
             "                 "
             "                 "))
   (prn "F - page down continues existing expanded line"))
-
-; todo
-;   expanded trace straddles page boundary
-;   what if entire page is within an expanded trace?
+; next page
+(run-code main11
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (s:string-address <- new "J")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+; page with partial inner trace and more collapsed
+(when (~screen-contains memory*.4 17
+         (+ "   mem : 1 e     "
+            "+ main/ 2 : g hi "
+            "+ main/ 3 : j    "
+            "                 "
+            "                 "))
+  (prn "F - page down shows collapsed lines after continued expanded line at top of page"))
 
 (reset)
 ;? (print-times) ;? 3
