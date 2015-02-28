@@ -163,6 +163,9 @@
   (len:integer <- length ch:trace-address-array-address/deref)
   (expanded-children:integer/space:1 <- copy len:integer)
   { begin
+;?     ($print (("i: " literal))) ;? 1
+;?     ($print i:integer) ;? 1
+;?     ($print (("\n" literal))) ;? 1
     ; until done with trace
     (done?:boolean <- greater-or-equal i:integer len:integer)
     (break-if done?:boolean)
@@ -175,6 +178,10 @@
     (print-character screen:terminal-address ((#\space literal)))
     (print-trace screen:terminal-address t:trace-address)
     (add-line 0:space-address/browser-state screen:terminal-address)
+    (last-subindex-on-page:integer/space:1 <- copy i:integer)
+;?     ($print (("subindex: " literal))) ;? 1
+;?     ($print last-subindex-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
     (i:integer <- add i:integer 1:literal)
     (loop)
   }
@@ -234,9 +241,9 @@
   (expanded-index:integer <- copy -1:literal)  ; currently trace browser only ever shows one item expanded
   (expanded-children:integer <- copy -1:literal)
   (first-index-on-page:integer <- copy 0:literal)  ; 'outer' line with label 'run'
-  (first-subindex-on-page:integer <- copy 0:literal)  ; 'inner' line with other labels
+  (first-subindex-on-page:integer <- copy -1:literal)  ; 'inner' line with other labels
   (last-index-on-page:integer <- copy 0:literal)
-  (last-subindex-on-page:integer <- copy 0:literal)
+  (last-subindex-on-page:integer <- copy -1:literal)
   ; screen state
   (screen-height:integer <- next-input)  ; 'hardware' limitation
   (app-height:integer <- copy 0:literal)  ; area of the screen we're responsible for; can't be larger than screen-height
@@ -405,6 +412,10 @@
     ; continue printing trace lines
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref trace-index:integer)
     (last-index-on-page:integer/space:1 <- copy trace-index:integer)
+;?     ($print (("setting last index: " literal))) ;? 1
+;?     ($print last-index-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    (last-subindex-on-page:integer/space:1 <- copy -1:literal)
     (print-instruction-trace-collapsed screen:terminal-address tr:instruction-trace-address 0:space-address/browser-state)
     (trace-index:integer <- add trace-index:integer 1:literal)
     (loop)
@@ -420,6 +431,42 @@
     (down 0:space-address/browser-state screen:terminal-address)
     (loop)
   }
+])
+
+(function print-page [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- next-input)
+  (screen:terminal-address <- next-input)
+  (first-full-index:integer <- copy first-index-on-page:integer/space:1)
+  ; finish printing the last trace from the previous page
+  { begin
+    (partial-trace?:boolean <- equal first-index-on-page:integer/space:1 expanded-index:integer/space:1)
+    (break-unless partial-trace?:boolean)
+    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref first-index-on-page:integer/space:1)
+    (ch:trace-address-array-address <- get tr:instruction-trace-address/deref children:offset)
+    (i:integer <- copy first-subindex-on-page:integer/space:1)
+    ; print any remaining data in the currently expanded trace
+    { begin
+      ; until done with trace
+      (done?:boolean <- greater-or-equal i:integer expanded-children:integer/space:1)
+      (break-if done?:boolean)
+      ; or screen ends
+      (screen-done?:boolean <- greater-or-equal cursor-row:integer/space:1 screen-height:integer/space:1)
+      (break-if screen-done?:boolean)
+      (t:trace-address <- index ch:trace-address-array-address/deref i:integer)
+      (print-character screen:terminal-address ((#\space literal)))
+      (print-character screen:terminal-address ((#\space literal)))
+      (print-character screen:terminal-address ((#\space literal)))
+      (print-trace screen:terminal-address t:trace-address)
+      (add-line 0:space-address/browser-state screen:terminal-address)
+      (last-subindex-on-page:integer/space:1 <- copy i:integer)
+      (i:integer <- add i:integer 1:literal)
+      (loop)
+    }
+    (first-full-index:integer <- add first-full-index:integer 1:literal)
+  }
+  ; more new lines
+  (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-full-index:integer)
 ])
 
 (function cursor-row-to-trace-index [
@@ -495,7 +542,7 @@
     ; switch browser state
     (previous-page 0:space-address/browser-state)
     ; redraw
-    (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-index-on-page:integer/space:1)
+    (print-page 0:space-address/browser-state screen:terminal-address)
     (reply nil:literal)
   }
   { begin
@@ -509,10 +556,16 @@
     (break-if final-page?:boolean)
     ; move cursor to top of screen
     (to-top 0:space-address/browser-state screen:terminal-address)
+;?     ($print (("before: " literal))) ;? 1
+;?     ($print first-index-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
     ; switch browser state
     (next-page 0:space-address/browser-state)
+;?     ($print (("after: " literal))) ;? 1
+;?     ($print first-index-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
     ; redraw
-    (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-index-on-page:integer/space:1)
+    (print-page 0:space-address/browser-state screen:terminal-address)
     ; move cursor back to top of screen
     (to-top 0:space-address/browser-state screen:terminal-address)
     (reply nil:literal)
@@ -531,6 +584,7 @@
     { begin
       (expanded?:boolean <- greater-or-equal expanded-index:integer/space:1 0:literal)
       (break-unless expanded?:boolean)
+;?       ($print (("already expanded\n" literal))) ;? 1
       { begin
         ; are we at the expanded row?
         (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-index:integer/space:1)
@@ -566,11 +620,13 @@
     }
     ; expand original row and print traces below it
     (expanded-index:integer/space:1 <- copy original-trace-index:integer)
+    (last-index-on-page:integer/space:1 <- copy original-trace-index:integer)
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref original-trace-index:integer)
     (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/browser-state)
     (next-index:integer <- add original-trace-index:integer 1:literal)
-;?     ($print next-index:integer) ;? 1
-;?     ($print (("\n" literal))) ;? 1
+;?     ($print (("printing collapsed lines from " literal))) ;? 1
+;?     ($print next-index:integer) ;? 2
+;?     ($print (("\n" literal))) ;? 2
     (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address next-index:integer)
     (back-to 0:space-address/browser-state screen:terminal-address original-trace-index:integer)
     (reply nil:literal)
@@ -583,6 +639,17 @@
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- next-input)  ; read-only
   (result:boolean <- lesser-or-equal first-index-on-page:integer/space:1 0:literal)
+  { begin
+    (break-if result:boolean)
+    (reply nil:literal)
+  }
+  (expanded?:boolean <- equal expanded-index:integer/space:1 0:literal)
+  { begin
+    (break-if expanded?:boolean)
+    (reply t:literal)
+  }
+  ; if first subindex is 0, the top-level line is on a previous page
+  (result:boolean <- less-than first-subindex-on-page:integer/space:1 0:literal)
   (reply result:boolean)
 ])
 
@@ -590,16 +657,46 @@
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- next-input)  ; read-only
   (len:integer <- length traces:instruction-trace-address-array-address/space:1/deref)
-  (next-page-start:integer <- add last-index-on-page:integer/space:1 1:literal)
-  (result:boolean <- greater-or-equal next-page-start:integer len:integer)
+  (final-index:integer <- subtract len:integer 1:literal)
+  (result:boolean <- greater-or-equal last-index-on-page:integer/space:1 final-index:integer)
+  { begin
+    (break-if result:boolean)
+    (reply nil:literal)
+  }
+  (last-trace-expanded?:boolean <- equal expanded-index:integer/space:1 len:integer)
+  { begin
+    (break-if last-trace-expanded?:boolean)
+    (reply t:literal)
+  }
+  (result:boolean <- greater-or-equal last-subindex-on-page:integer/space:1 expanded-children:integer/space:1)
   (reply result:boolean)
 ])
 
 (function next-page [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- next-input)
-  (next-page-start:integer <- add last-index-on-page:integer/space:1 1:literal)
-  (first-index-on-page:integer/space:1 <- copy next-page-start:integer)
+  { begin
+;?     ($print (("expanded: " literal))) ;? 1
+;?     ($print expanded-index:integer/space:1) ;? 1
+;?     ($print ((" last index: " literal))) ;? 1
+;?     ($print last-index-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    (last-index-expanded?:boolean <- equal expanded-index:integer/space:1 last-index-on-page:integer/space:1)
+    (break-unless last-index-expanded?:boolean)
+    ; expanded
+;?     ($print (("last expanded\n" literal))) ;? 1
+    { begin
+      (expanded-index-done?:boolean <- equal expanded-children:integer/space:1 last-subindex-on-page:integer/space:1)
+      (break-if expanded-index-done?:boolean 2:blocks)
+;?       ($print (("children left\n" literal))) ;? 1
+      ; children left to open
+      (first-index-on-page:integer/space:1 <- copy last-index-on-page:integer/space:1)
+      (first-subindex-on-page:integer/space:1 <- add last-subindex-on-page:integer/space:1 1:literal)
+      (reply)
+    }
+  }
+  (first-index-on-page:integer/space:1 <- add last-index-on-page:integer/space:1 1:literal)
+  (first-subindex-on-page:integer/space:1 <- copy -1:integer)
 ])
 
 (function previous-page [

@@ -1116,6 +1116,7 @@
           operand)))
 
 (def lookup-space (operand base space)
+;?   (prn operand " " base) ;? 1
   (if (is 0 space)
     ; base case
     (if (< v.operand memory*.base)

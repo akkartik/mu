@@ -683,6 +683,41 @@ run: main 7: n")
             "+ main/ 5 : l    "
             "                 "))
   (prn "F - 'page-up' on partial page behaves as if page was full"))
+;; back to page 1, expand a line
+(run-code main9
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (s:string-address <- new "Kkk\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+;?   (print-character 2:terminal-address/raw ((#\* literal))) ;? 1
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+; now we have an expanded line
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 0 : a b c"
+            "- main/ 1 : d e f"
+            "   mem : 1 a     "
+            "                 "
+            "                 "))
+  (prn "F - intermediate state after expanding a line"))
+; next page
+(run-code main10
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (s:string-address <- new "J")
+  (k:keyboard-address <- init-keyboard s:string-address)
+;?   ($start-tracing) ;? 1
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+; no lines skipped
+(when (~screen-contains memory*.4 17
+         (+ "   mem : 1 b     "
+            "   mem : 1 c     "
+            "+ main/ 2 : g hi "
+            "                 "
+            "                 "))
+  (prn "F - page down continues existing expanded line"))
 
 ; todo
 ;   expanded trace straddles page boundary
