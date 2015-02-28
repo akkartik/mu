@@ -161,6 +161,7 @@
     (reply)
   }
   (len:integer <- length ch:trace-address-array-address/deref)
+  (expanded-children:integer/space:1 <- copy len:integer)
   { begin
     ; until done with trace
     (done?:boolean <- greater-or-equal i:integer len:integer)
@@ -231,6 +232,7 @@
   ; trace state
   (traces:instruction-trace-address-array-address <- next-input)  ; the ground truth being rendered
   (expanded-index:integer <- copy -1:literal)  ; currently trace browser only ever shows one item expanded
+  (expanded-children:integer <- copy -1:literal)
   (first-index-on-page:integer <- copy 0:literal)  ; 'outer' line with label 'run'
   (first-subindex-on-page:integer <- copy 0:literal)  ; 'inner' line with other labels
   (last-index-on-page:integer <- copy 0:literal)
@@ -480,37 +482,40 @@
   }
   ; page up/page down
   { begin
+    ; if page-up pressed
     (page-up?:boolean <- equal c:character ((pgup literal)))
     (K?:boolean <- equal c:character ((#\K literal)))
     (page-up?:boolean <- or page-up?:boolean K?:boolean)
     (break-unless page-up?:boolean)
-    (first-page?:boolean <- lesser-or-equal first-index-on-page:integer/space:1 0:literal)
+    ; if we're not already at start of trace
+    (first-page?:boolean <- at-first-page 0:space-address/browser-state)
     (break-if first-page?:boolean)
     ; move cursor to top of screen
     (to-top 0:space-address/browser-state screen:terminal-address)
-    ; start drawing from previous page
-    (first-index-on-page:integer/space:1 <- subtract first-index-on-page:integer/space:1 screen-height:integer/space:1)
-    ; don't need to check for less than zero because page-up/page-down won't
-    ; currently allow it
+    ; switch browser state
+    (previous-page 0:space-address/browser-state)
+    ; redraw
     (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-index-on-page:integer/space:1)
+    (reply nil:literal)
   }
   { begin
+    ; if page-down pressed
     (page-down?:boolean <- equal c:character ((pgdn literal)))
     (J?:boolean <- equal c:character ((#\J literal)))
     (page-down?:boolean <- or page-down?:boolean J?:boolean)
     (break-unless page-down?:boolean)
-    ; if we're not past end of trace
-    (len:integer <- length traces:instruction-trace-address-array-address/space:1/deref)
-    (next-page-start:integer <- add last-index-on-page:integer/space:1 1:literal)
-    (last-page?:boolean <- greater-or-equal next-page-start:integer len:integer)
-    (break-if last-page?:boolean)
+    ; if we're not already at end of trace
+    (final-page?:boolean <- at-final-page 0:space-address/browser-state)
+    (break-if final-page?:boolean)
     ; move cursor to top of screen
     (to-top 0:space-address/browser-state screen:terminal-address)
-    ; start drawing from next page
-    (first-index-on-page:integer/space:1 <- copy next-page-start:integer)
+    ; switch browser state
+    (next-page 0:space-address/browser-state)
+    ; redraw
     (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-index-on-page:integer/space:1)
     ; move cursor back to top of screen
     (to-top 0:space-address/browser-state screen:terminal-address)
+    (reply nil:literal)
   }
   ; enter: expand/collapse current row
   { begin
@@ -532,9 +537,10 @@
         (break-unless at-expanded?:boolean)
         ; print remaining lines collapsed and return
         (expanded-index:integer/space:1 <- copy -1:literal)
+        (expanded-children:integer/space:1 <- copy -1:literal)
         (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address cursor-row:integer/space:1)
         (back-to 0:space-address/browser-state screen:terminal-address original-cursor-row:integer)
-        (reply)
+        (reply nil:literal)
       }
       ; are we below the expanded row?
       { begin
@@ -570,6 +576,38 @@
     (reply nil:literal)
   }
   (reply nil:literal)
+])
+
+; pagination helpers
+(function at-first-page [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- next-input)  ; read-only
+  (result:boolean <- lesser-or-equal first-index-on-page:integer/space:1 0:literal)
+  (reply result:boolean)
+])
+
+(function at-final-page [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- next-input)  ; read-only
+  (len:integer <- length traces:instruction-trace-address-array-address/space:1/deref)
+  (next-page-start:integer <- add last-index-on-page:integer/space:1 1:literal)
+  (result:boolean <- greater-or-equal next-page-start:integer len:integer)
+  (reply result:boolean)
+])
+
+(function next-page [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- next-input)
+  (next-page-start:integer <- add last-index-on-page:integer/space:1 1:literal)
+  (first-index-on-page:integer/space:1 <- copy next-page-start:integer)
+])
+
+(function previous-page [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- next-input)
+  (first-index-on-page:integer/space:1 <- subtract first-index-on-page:integer/space:1 screen-height:integer/space:1)
+  ; don't need to check for less than zero because page-up/page-down won't
+  ; currently allow it
 ])
 
 (function browse-trace [
