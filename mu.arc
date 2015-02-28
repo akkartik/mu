@@ -1702,7 +1702,7 @@
 ; like memory-contains-array but shows diffs in 2D
 (def screen-contains (addr width value)
   (or (memory-contains-array addr value)
-      (do ;(memory-contains-array-verbose addr value)
+      (do1 nil
           (prn "Mismatch detected. Screen contents:")
           (with (row-start-addr  (+ addr 1)  ; skip count
                  idx  0)
