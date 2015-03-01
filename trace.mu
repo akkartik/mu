@@ -750,6 +750,8 @@ run: main 1: d e f
 mem: 1
 mem: 1
 mem: 1
+mem: 1
+mem: 1
 run: main 2: g hi
 run: main 3: j
 mem: 3
@@ -758,5 +760,5 @@ run: main 5: l
 run: main 6: m
 run: main 7: n
 run: main 8: o")
-  (browse-trace x:string-address 5:literal/screen-height)
+  (browse-trace x:string-address 3:literal/screen-height)
 ])
