@@ -36,29 +36,6 @@
   (each f (as cons initialization-fns*)
     (f)))
 
-; kludge to prevent reloading functions in .mu files for every test
-(def reset2 ()
-  (= memory* (table))
-  (= Memory-allocated-until 1000)
-  (awhen curr-trace-file*
-    (tofile (+ trace-dir* it)
-      (each (label trace) (as cons traces*)
-        (pr label ": " trace))))
-  (= curr-trace-file* nil)
-  (= traces* (queue))
-  (wipe dump-trace*)
-  (wipe function*!main)
-  (wipe location*!main)
-  (= running-routines* (queue))
-  (= sleeping-routines* (table))
-  (wipe completed-routines*)
-  (wipe routine*)
-  (= abort-routine* (parameter nil))
-  (= curr-cycle* 0)
-  (= scheduling-interval* 500)
-  (= scheduler-switch-table* nil)
-  )
-
 (mac on-init body
   `(enq (fn () ,@body)
         initialization-fns*))
@@ -1753,6 +1730,29 @@
      (freeze-another ',name)
 ;?      (set dump-trace*) ;? 1
      (run-more ',name)))
+
+; kludge to prevent reloading functions in .mu files for every test
+(def reset2 ()
+  (= memory* (table))
+  (= Memory-allocated-until 1000)
+  (awhen curr-trace-file*
+    (tofile (+ trace-dir* it)
+      (each (label trace) (as cons traces*)
+        (pr label ": " trace))))
+  (= curr-trace-file* nil)
+  (= traces* (queue))
+  (wipe dump-trace*)
+  (wipe function*!main)
+  (wipe location*!main)
+  (= running-routines* (queue))
+  (= sleeping-routines* (table))
+  (wipe completed-routines*)
+  (wipe routine*)
+  (= abort-routine* (parameter nil))
+  (= curr-cycle* 0)
+  (= scheduling-interval* 500)
+  (= scheduler-switch-table* nil)
+  )
 
 (def routine-that-ran (f)
   (find [some [is f _!fn-name] stack._]
