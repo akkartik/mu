@@ -1,13 +1,14 @@
 (selective-load "mu.arc" section-level)
 (set allow-raw-addresses*)
-
-(reset)
-(new-trace "print-trace")
 (add-code:readfile "trace.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (x:string-address <- new
+(freeze function*)
+(load-system-functions)
+
+(reset2)
+(new-trace "print-trace")
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (x:string-address <- new
 "schedule: main
 run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
 run: main 0: 1 => ((1 integer))
@@ -21,17 +22,14 @@ mem: ((2 integer)) => 3
 run: main 2: 4 => ((3 integer))
 mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
-      (s:stream-address <- init-stream x:string-address)
-      (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
-      (len:integer <- length traces:instruction-trace-address-array-address/deref)
-      (screen:terminal-address <- init-fake-terminal 70:literal 15:literal)
-      (browser-state:space-address <- browser-state traces:instruction-trace-address-array-address 30:literal/screen-height)
-      (print-traces-collapsed browser-state:space-address screen:terminal-address)
-      (1:string-address/raw <- get screen:terminal-address/deref data:offset)
-    ])))
-;? (set dump-trace*)
-;? (= dump-trace* (obj whitelist '("run")))
-(run 'main)
+  (s:stream-address <- init-stream x:string-address)
+  (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
+  (len:integer <- length traces:instruction-trace-address-array-address/deref)
+  (screen:terminal-address <- init-fake-terminal 70:literal 15:literal)
+  (browser-state:space-address <- browser-state traces:instruction-trace-address-array-address 30:literal/screen-height)
+  (print-traces-collapsed browser-state:space-address screen:terminal-address)
+  (1:string-address/raw <- get screen:terminal-address/deref data:offset)
+)
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
@@ -46,13 +44,11 @@ schedule:  done with routine")
   (prn "F - print-traces-collapsed works"))
 ;? (quit) ;? 1
 
-(reset)
+(reset2)
 (new-trace "print-trace-from-middle-of-screen")
-(add-code:readfile "trace.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (x:string-address <- new
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (x:string-address <- new
 "schedule: main
 run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
 run: main 0: 1 => ((1 integer))
@@ -66,18 +62,17 @@ mem: ((2 integer)) => 3
 run: main 2: 4 => ((3 integer))
 mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
-      (s:stream-address <- init-stream x:string-address)
-      (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
-      (len:integer <- length traces:instruction-trace-address-array-address/deref)
-      (1:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
-      ; position the cursor away from top of screen
-      (cursor-down 1:terminal-address/raw)
-      (cursor-down 1:terminal-address/raw)
-      (browser-state:space-address <- browser-state traces:instruction-trace-address-array-address 30:literal/screen-height)
-      (print-traces-collapsed browser-state:space-address 1:terminal-address/raw traces:instruction-trace-address-array-address)
-      (2:string-address/raw <- get 1:terminal-address/raw/deref data:offset)
-    ])))
-(run 'main)
+  (s:stream-address <- init-stream x:string-address)
+  (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
+  (len:integer <- length traces:instruction-trace-address-array-address/deref)
+  (1:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
+  ; position the cursor away from top of screen
+  (cursor-down 1:terminal-address/raw)
+  (cursor-down 1:terminal-address/raw)
+  (browser-state:space-address <- browser-state traces:instruction-trace-address-array-address 30:literal/screen-height)
+  (print-traces-collapsed browser-state:space-address 1:terminal-address/raw traces:instruction-trace-address-array-address)
+  (2:string-address/raw <- get 1:terminal-address/raw/deref data:offset)
+)
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
@@ -105,13 +100,11 @@ schedule:  done with routine")
             "*                                                                     "))
   (prn "F - print-traces-collapsed leaves cursor at next line"))
 
-(reset)
+(reset2)
 (new-trace "process-key-move-up-down")
-(add-code:readfile "trace.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (x:string-address <- new
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (x:string-address <- new
 "schedule: main
 run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
 run: main 0: 1 => ((1 integer))
@@ -125,26 +118,25 @@ mem: ((2 integer)) => 3
 run: main 2: 4 => ((3 integer))
 mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
-      (s:stream-address <- init-stream x:string-address)
-      (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
-      (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
-      (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
-      ; position the cursor away from top of screen
-      (cursor-down 2:terminal-address/raw)
-      (cursor-down 2:terminal-address/raw)
-      (3:space-address/raw <- browser-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
-      ; draw trace
-      (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-      ; move cursor up
-      ; we have no way yet to test special keys like up-arrow
-      (s:string-address <- new "k")
-      (k:keyboard-address <- init-keyboard s:string-address)
-      (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
-      ; draw cursor
-      (replace-character 2:terminal-address/raw ((#\* literal)))
-      (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
-    ])))
-(run 'main)
+  (s:stream-address <- init-stream x:string-address)
+  (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
+  (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
+  (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
+  ; position the cursor away from top of screen
+  (cursor-down 2:terminal-address/raw)
+  (cursor-down 2:terminal-address/raw)
+  (3:space-address/raw <- browser-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
+  ; draw trace
+  (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  ; move cursor up
+  ; we have no way yet to test special keys like up-arrow
+  (s:string-address <- new "k")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  ; draw cursor
+  (replace-character 2:terminal-address/raw ((#\* literal)))
+  (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
+)
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
@@ -161,7 +153,7 @@ schedule:  done with routine")
   (prn "F - process-key can move up"))
 (run-code main2
   (default-space:space-address <- new space:literal 30:literal/capacity)
-  ; reset previous cursor
+  ; reset2 previous cursor
   (replace-character 2:terminal-address/raw ((#\+ literal)))
   ; move cursor up 3 more lines
   (s:string-address <- new "kkk")
@@ -254,13 +246,11 @@ schedule:  done with routine")
             "*                                                                     "))
   (prn "F - process-key doesn't move below bounds"))
 
-(reset)
+(reset2)
 (new-trace "process-key-expand")
-(add-code:readfile "trace.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (x:string-address <- new
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (x:string-address <- new
 "schedule: main
 run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
 run: main 0: 1 => ((1 integer))
@@ -274,19 +264,18 @@ mem: ((2 integer)) => 3
 run: main 2: 4 => ((3 integer))
 mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
-      (s:stream-address <- init-stream x:string-address)
-      (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
-      (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
-      (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
-      ; position the cursor away from top of screen
-      (cursor-down 2:terminal-address/raw)
-      (cursor-down 2:terminal-address/raw)
-      (3:space-address/raw <- browser-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
-      ; draw trace
-      (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-      (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
-    ])))
-(run 'main)
+  (s:stream-address <- init-stream x:string-address)
+  (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
+  (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
+  (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
+  ; position the cursor away from top of screen
+  (cursor-down 2:terminal-address/raw)
+  (cursor-down 2:terminal-address/raw)
+  (3:space-address/raw <- browser-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
+  ; draw trace
+  (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
+)
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
@@ -339,13 +328,11 @@ schedule:  done with routine")
             "   schedule :  done with routine                                      "))
   (prn "F - process-key positions cursor on top of trace after expanding"))
 
-(reset)
+(reset2)
 (new-trace "process-key-expand-nonlast")
-(add-code:readfile "trace.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (x:string-address <- new
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (x:string-address <- new
 "schedule: main
 run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
 run: main 0: 1 => ((1 integer))
@@ -359,25 +346,24 @@ mem: ((2 integer)) => 3
 run: main 2: 4 => ((3 integer))
 mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
-      (s:stream-address <- init-stream x:string-address)
-      (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
-      (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
-      (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
-      ; position the cursor away from top of screen
-      (cursor-down 2:terminal-address/raw)
-      (cursor-down 2:terminal-address/raw)
-      (3:space-address/raw <- browser-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
-      ; draw trace
-      (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-      ; expand penultimate line
-      (s:string-address <- new "kk\n")
-      (k:keyboard-address <- init-keyboard s:string-address)
-      (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
-      (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
-      (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
-      (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
-    ])))
-(run 'main)
+  (s:stream-address <- init-stream x:string-address)
+  (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
+  (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
+  (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
+  ; position the cursor away from top of screen
+  (cursor-down 2:terminal-address/raw)
+  (cursor-down 2:terminal-address/raw)
+  (3:space-address/raw <- browser-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
+  ; draw trace
+  (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  ; expand penultimate line
+  (s:string-address <- new "kk\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
+)
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
@@ -394,13 +380,11 @@ schedule:  done with routine")
             "+ main/ 2 : 4 => ((3 integer))                                        "))
   (prn "F - process-key: expanding a line continues to print lines after it"))
 
-(reset)
+(reset2)
 (new-trace "process-key-expanded")
-(add-code:readfile "trace.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (x:string-address <- new
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (x:string-address <- new
 "schedule: main
 run: main 0: (((1 integer)) <- ((copy)) ((1 literal)))
 run: main 0: 1 => ((1 integer))
@@ -415,28 +399,26 @@ mem: ((2 integer)) => 3
 run: main 2: 4 => ((3 integer))
 mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
-      (s:stream-address <- init-stream x:string-address)
-      (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
-      (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
-      (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
-      ; position the cursor away from top of screen
-      (cursor-down 2:terminal-address/raw)
-      (cursor-down 2:terminal-address/raw)
-      (3:space-address/raw <- browser-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
-      ; draw trace
-      (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
-      ; expand penultimate line, then move one line down and draw cursor
-      (s:string-address <- new "kk\nj")
-      (k:keyboard-address <- init-keyboard s:string-address)
-      (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
-      (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
-      (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
-      (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
-      (replace-character 2:terminal-address/raw ((#\* literal)))
-      (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
-    ])))
-;? (set dump-trace*) ;? 1
-(run 'main)
+  (s:stream-address <- init-stream x:string-address)
+  (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
+  (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
+  (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
+  ; position the cursor away from top of screen
+  (cursor-down 2:terminal-address/raw)
+  (cursor-down 2:terminal-address/raw)
+  (3:space-address/raw <- browser-state 1:instruction-trace-address-array-address/raw 30:literal/screen-height)
+  ; draw trace
+  (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw 1:instruction-trace-address-array-address/raw)
+  ; expand penultimate line, then move one line down and draw cursor
+  (s:string-address <- new "kk\nj")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (replace-character 2:terminal-address/raw ((#\* literal)))
+  (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
+)
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
@@ -455,7 +437,7 @@ schedule:  done with routine")
   (prn "F - process-key: navigation moves between top-level lines only"))
 (run-code main2
   (default-space:space-address <- new space:literal 30:literal/capacity)
-  ; reset previous cursor
+  ; reset2 previous cursor
   (replace-character 2:terminal-address/raw ((#\+ literal)))
   ; move cursor back up one line
   (s:string-address <- new "k")
@@ -482,7 +464,7 @@ schedule:  done with routine")
   (prn "F - process-key: navigation moves between top-level lines only"))
 (run-code main3
   (default-space:space-address <- new space:literal 30:literal/capacity)
-  ; reset previous cursor
+  ; reset2 previous cursor
   (replace-character 2:terminal-address/raw ((#\+ literal)))
   ; press enter
   (s:string-address <- new "\n")
@@ -539,13 +521,11 @@ schedule:  done with routine")
 
 ;; manage screen height
 
-(reset)
+(reset2)
 (new-trace "trace-paginate")
-(add-code:readfile "trace.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (x:string-address <- new
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (x:string-address <- new
 "run: main 0: a b c
 mem: 0 a
 run: main 1: d e f
@@ -561,15 +541,14 @@ run: main 4: k
 run: main 5: l
 run: main 6: m
 run: main 7: n")
-      (s:stream-address <- init-stream x:string-address)
-      (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
-      (len:integer <- length traces:instruction-trace-address-array-address/deref)
-      (2:terminal-address/raw <- init-fake-terminal 17:literal 15:literal)
-      (3:space-address/raw/browser-state <- browser-state traces:instruction-trace-address-array-address 3:literal/screen-height)
-      (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw)
-      (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
-    ])))
-(run 'main)
+  (s:stream-address <- init-stream x:string-address)
+  (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
+  (len:integer <- length traces:instruction-trace-address-array-address/deref)
+  (2:terminal-address/raw <- init-fake-terminal 17:literal 15:literal)
+  (3:space-address/raw/browser-state <- browser-state traces:instruction-trace-address-array-address 3:literal/screen-height)
+  (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw)
+  (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
+)
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
@@ -750,5 +729,5 @@ run: main 7: n")
             "                 "))
   (prn "F - page up understands expanded lines"))
 
-(reset)
+(reset2)
 ;? (print-times) ;? 3
