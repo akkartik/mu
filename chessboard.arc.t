@@ -1,38 +1,35 @@
 (selective-load "mu.arc" section-level)
 (set allow-raw-addresses*)
-
-(reset)
-(new-trace "read-move-legal")
 (add-code:readfile "chessboard.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (stdin:channel-address <- init-channel 1:literal)
-      (r:integer/routine <- fork read-move:fn nil:literal/globals 2000:literal/limit stdin:channel-address)
-      (c:character <- copy ((#\a literal)))
-      (x:tagged-value <- save-type c:character)
-      (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
-      (c:character <- copy ((#\2 literal)))
-      (x:tagged-value <- save-type c:character)
-      (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
-      (c:character <- copy ((#\- literal)))
-      (x:tagged-value <- save-type c:character)
-      (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
-      (c:character <- copy ((#\a literal)))
-      (x:tagged-value <- save-type c:character)
-      (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
-      (c:character <- copy ((#\4 literal)))
-      (x:tagged-value <- save-type c:character)
-      (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
-      (c:character <- copy ((#\newline literal)))
-      (x:tagged-value <- save-type c:character)
-      (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
-      (sleep until-routine-done:literal r:integer/routine)
-     ])))
-;? (set dump-trace*)
-;? (= dump-trace* (obj whitelist '("schedule")))
-;? (= dump-trace* (obj whitelist '("schedule" "run")))
-(run 'main)
+(freeze function*)
+(load-system-functions)
+
+(reset2)
+(new-trace "read-move-legal")
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (stdin:channel-address <- init-channel 1:literal)
+  (r:integer/routine <- fork read-move:fn nil:literal/globals 2000:literal/limit stdin:channel-address)
+  (c:character <- copy ((#\a literal)))
+  (x:tagged-value <- save-type c:character)
+  (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
+  (c:character <- copy ((#\2 literal)))
+  (x:tagged-value <- save-type c:character)
+  (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
+  (c:character <- copy ((#\- literal)))
+  (x:tagged-value <- save-type c:character)
+  (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
+  (c:character <- copy ((#\a literal)))
+  (x:tagged-value <- save-type c:character)
+  (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
+  (c:character <- copy ((#\4 literal)))
+  (x:tagged-value <- save-type c:character)
+  (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
+  (c:character <- copy ((#\newline literal)))
+  (x:tagged-value <- save-type c:character)
+  (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
+  (sleep until-routine-done:literal r:integer/routine)
+)
 (each routine completed-routines*
 ;?   (prn "  " routine)
   (awhen rep.routine!error
@@ -43,13 +40,10 @@
 ; but that's at a lower level
 ;? (quit)
 
-(reset)
+(reset2)
 (new-trace "read-move-incomplete")
-(add-code:readfile "chessboard.mu")
 ; initialize some variables at specific raw locations
 ;? (prn "== init")
-(freeze function*)
-(load-system-functions)
 (run-code test-init
   (1:channel-address/raw <- init-channel 1:literal)
   (2:terminal-address/raw <- init-fake-terminal 20:literal 10:literal)
@@ -105,40 +99,33 @@
     (prn "F - 'read-move' completes after final letter of move"))
 )
 
-(reset)
+(reset2)
 (new-trace "read-move-quit")
-(add-code:readfile "chessboard.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (stdin:channel-address <- init-channel 1:literal)
-      (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
-      (r:integer/routine <- fork-helper read-move:fn nil:literal/globals 2000:literal/limit stdin:channel-address dummy:terminal-address)
-      (c:character <- copy ((#\q literal)))
-      (x:tagged-value <- save-type c:character)
-      (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
-      (sleep until-routine-done:literal r:integer/routine)
-     ])))
-(run 'main)
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (stdin:channel-address <- init-channel 1:literal)
+  (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
+  (r:integer/routine <- fork-helper read-move:fn nil:literal/globals 2000:literal/limit stdin:channel-address dummy:terminal-address)
+  (c:character <- copy ((#\q literal)))
+  (x:tagged-value <- save-type c:character)
+  (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
+  (sleep until-routine-done:literal r:integer/routine)
+)
 (when (~ran-to-completion 'read-move)
   (prn "F - chessboard quits on move starting with 'q'"))
 
-(reset)
+(reset2)
 (new-trace "read-illegal-file")
-(add-code:readfile "chessboard.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (stdin:channel-address <- init-channel 1:literal)
-      (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
-      (r:integer/routine <- fork-helper read-file:fn nil:literal/globals 2000:literal/limit stdin:channel-address dummy:terminal-address)
-      (c:character <- copy ((#\i literal)))
-      (x:tagged-value <- save-type c:character)
-      (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
-      (sleep until-routine-done:literal r:integer/routine)
-     ])))
-;? (= dump-trace* (obj whitelist '("schedule")))
-(run 'main)
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (stdin:channel-address <- init-channel 1:literal)
+  (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
+  (r:integer/routine <- fork-helper read-file:fn nil:literal/globals 2000:literal/limit stdin:channel-address dummy:terminal-address)
+  (c:character <- copy ((#\i literal)))
+  (x:tagged-value <- save-type c:character)
+  (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
+  (sleep until-routine-done:literal r:integer/routine)
+)
 ;? (each routine completed-routines*
 ;?   (prn "  " routine))
 (when (or (ran-to-completion 'read-file)
@@ -146,48 +133,40 @@
             (~posmatch "file too high" rep.routine!error)))
   (prn "F - 'read-file' checks that file lies between 'a' and 'h'"))
 
-(reset)
+(reset2)
 (new-trace "read-illegal-rank")
-(add-code:readfile "chessboard.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (stdin:channel-address <- init-channel 1:literal)
-      (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
-      (r:integer/routine <- fork-helper read-rank:fn nil:literal/globals 2000:literal/limit stdin:channel-address dummy:terminal-address)
-      (c:character <- copy ((#\9 literal)))
-      (x:tagged-value <- save-type c:character)
-      (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
-      (sleep until-routine-done:literal r:integer/routine)
-     ])))
-(run 'main)
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (stdin:channel-address <- init-channel 1:literal)
+  (dummy:terminal-address <- init-fake-terminal 20:literal 10:literal)
+  (r:integer/routine <- fork-helper read-rank:fn nil:literal/globals 2000:literal/limit stdin:channel-address dummy:terminal-address)
+  (c:character <- copy ((#\9 literal)))
+  (x:tagged-value <- save-type c:character)
+  (stdin:channel-address/deref <- write stdin:channel-address x:tagged-value)
+  (sleep until-routine-done:literal r:integer/routine)
+)
 (when (or (ran-to-completion 'read-rank)
           (let routine routine-running!read-rank
             (~posmatch "rank too high" rep.routine!error)))
   (prn "F - 'read-rank' checks that rank lies between '1' and '8'"))
 
-(reset)
+(reset2)
 (new-trace "print-board")
-(add-code:readfile "chessboard.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      (initial-position:list-address <- init-list ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal))
-                                                  ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
-                                                  ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
-                                                  ((#\Q literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\q literal))
-                                                  ((#\K literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\k literal))
-                                                  ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
-                                                  ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
-                                                  ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal)))
-      (b:board-address <- init-board initial-position:list-address)
-      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
-      (print-board screen:terminal-address b:board-address)
-      (1:string-address/raw <- get screen:terminal-address/deref data:offset)
-     ])))
-;? (set dump-trace*)
-;? (= dump-trace* (obj whitelist '("run")))
-(run 'main)
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (initial-position:list-address <- init-list ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal))
+                                              ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                              ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                              ((#\Q literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\q literal))
+                                              ((#\K literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\k literal))
+                                              ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                              ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                              ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal)))
+  (b:board-address <- init-board initial-position:list-address)
+  (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
+  (print-board screen:terminal-address b:board-address)
+  (1:string-address/raw <- get screen:terminal-address/deref data:offset)
+)
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
@@ -206,45 +185,40 @@
   (prn "F - print-board works; chessboard begins at @memory*.1"))
 
 ; todo: how to fold this more elegantly with the previous test?
-(reset)
+(reset2)
 (new-trace "make-move")
-(add-code:readfile "chessboard.mu")
-(add-code
-  '((function! main [
-      (default-space:space-address <- new space:literal 30:literal/capacity)
-      ; hook up stdin
-      (stdin:channel-address <- init-channel 1:literal)
-      ; fake screen
-      (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
-      ; initial position
-      (initial-position:list-address <- init-list ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal))
-                                                  ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
-                                                  ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
-                                                  ((#\Q literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\q literal))
-                                                  ((#\K literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\k literal))
-                                                  ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
-                                                  ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
-                                                  ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal)))
-      (b:board-address <- init-board initial-position:list-address)
-      ; move: a2-a4
-      (m:move-address <- new move:literal)
-      (f:integer-integer-pair-address <- get-address m:move-address/deref from:offset)
-      (dest:integer-address <- get-address f:integer-integer-pair-address/deref 0:offset)
-      (dest:integer-address/deref <- copy 0:literal)  ; from-file: a
-      (dest:integer-address <- get-address f:integer-integer-pair-address/deref 1:offset)
-      (dest:integer-address/deref <- copy 1:literal)  ; from-rank: 2
-      (t0:integer-integer-pair-address <- get-address m:move-address/deref to:offset)
-      (dest:integer-address <- get-address t0:integer-integer-pair-address/deref 0:offset)
-      (dest:integer-address/deref <- copy 0:literal)  ; to-file: a
-      (dest:integer-address <- get-address t0:integer-integer-pair-address/deref 1:offset)
-      (dest:integer-address/deref <- copy 3:literal)  ; to-rank: 4
-      (b:board-address <- make-move b:board-address m:move-address)
-      (print-board screen:terminal-address b:board-address)
-      (1:string-address/raw <- get screen:terminal-address/deref data:offset)
-     ])))
-;? (set dump-trace*)
-;? (= dump-trace* (obj whitelist '("run")))
-(run 'main)
+(run-code main
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  ; hook up stdin
+  (stdin:channel-address <- init-channel 1:literal)
+  ; fake screen
+  (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
+  ; initial position
+  (initial-position:list-address <- init-list ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal))
+                                              ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                              ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                              ((#\Q literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\q literal))
+                                              ((#\K literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\k literal))
+                                              ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                              ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                              ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal)))
+  (b:board-address <- init-board initial-position:list-address)
+  ; move: a2-a4
+  (m:move-address <- new move:literal)
+  (f:integer-integer-pair-address <- get-address m:move-address/deref from:offset)
+  (dest:integer-address <- get-address f:integer-integer-pair-address/deref 0:offset)
+  (dest:integer-address/deref <- copy 0:literal)  ; from-file: a
+  (dest:integer-address <- get-address f:integer-integer-pair-address/deref 1:offset)
+  (dest:integer-address/deref <- copy 1:literal)  ; from-rank: 2
+  (t0:integer-integer-pair-address <- get-address m:move-address/deref to:offset)
+  (dest:integer-address <- get-address t0:integer-integer-pair-address/deref 0:offset)
+  (dest:integer-address/deref <- copy 0:literal)  ; to-file: a
+  (dest:integer-address <- get-address t0:integer-integer-pair-address/deref 1:offset)
+  (dest:integer-address/deref <- copy 3:literal)  ; to-rank: 4
+  (b:board-address <- make-move b:board-address m:move-address)
+  (print-board screen:terminal-address b:board-address)
+  (1:string-address/raw <- get screen:terminal-address/deref data:offset)
+)
 (each routine completed-routines*
   (awhen rep.routine!error
     (prn "error - " it)))
@@ -262,4 +236,4 @@
              "    a b c d e f g h "))
   (prn "F - make-move works; chessboard begins at @memory*.1"))
 
-(reset)
+(reset2)
