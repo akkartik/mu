@@ -702,9 +702,127 @@
 (function previous-page [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- next-input)
+;?   ($print (("before: " literal))) ;? 1
+;?   ($print first-index-on-page:integer/space:1) ;? 1
+;?   ($print ((" " literal))) ;? 1
+;?   ($print first-subindex-on-page:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  ; easy case: no expanded-index
+  (jump-unless expanded-index:integer/space:1)
+;?   ($print (("b\n" literal))) ;? 1
+  (x:boolean <- less-than expanded-index:integer/space:1 0:literal)
+  (jump-if x:boolean easy-case:offset)
+  ; easy case: expanded-index lies below top of current page
+;?   ($print (("c\n" literal))) ;? 1
+  (x:boolean <- greater-than expanded-index:integer/space:1 first-index-on-page:integer/space:1)
+  (jump-if x:boolean easy-case:offset)
+  ; easy case: expanded-index *starts* at top of current page
+;?   ($print (("d\n" literal))) ;? 1
+  (top-of-screen-inside-expanded:boolean <- equal expanded-index:integer/space:1 first-index-on-page:integer/space:1)
+  (y:boolean <- lesser-or-equal first-subindex-on-page:integer/space:1 0:literal)
+  (y:boolean <- and top-of-screen-inside-expanded:boolean y:boolean)
+  (jump-if y:boolean easy-case:offset)
+  ; easy case: expanded-index too far up for previous page
+;?   ($print (("e\n" literal))) ;? 1
+  (delta-to-expanded:integer <- subtract first-index-on-page:integer/space:1 expanded-index:integer/space:1)
+;?   ($print (("e2\n" literal))) ;? 1
+  (x:boolean <- greater-than delta-to-expanded:integer expanded-index:integer/space:1)
+;?   ($print (("e3\n" literal))) ;? 1
+  (jump-if x:boolean easy-case:offset)
+;?   ($print (("f\n" literal))) ;? 1
+  ; tough case
+  { begin
+    (break-unless top-of-screen-inside-expanded:boolean)
+    (previous-page-when-expanded-index-overlaps-top-of-page 0:space-address/browser-state)
+    (reply)
+  }
+  ; tough case
+  (previous-page-when-expanded-index-overlaps-previous-page 0:space-address/browser-state delta-to-expanded:integer)
+  (reply)
+  easy-case
   (first-index-on-page:integer/space:1 <- subtract first-index-on-page:integer/space:1 screen-height:integer/space:1)
-  ; don't need to check for less than zero because page-up/page-down won't
-  ; currently allow it
+  (first-index-on-page:integer/space:1 <- max first-index-on-page:integer/space:1 0:literal)
+  (first-subindex-on-page:integer/space:1 <- copy -1:literal)
+])
+
+(function previous-page-when-expanded-index-overlaps-top-of-page [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- next-input)
+  (lines-remaining-to-decrement:integer <- copy screen-height:integer/space:1)
+  ; if expanded-index will occupy remainder of page, deal with that and return
+  { begin
+    ; todo: not quite right. not all children are available to scroll past
+    (stop-at-expanded?:boolean <- greater-than first-subindex-on-page:integer/space:1 lines-remaining-to-decrement:integer)
+    (break-unless stop-at-expanded?:boolean)
+    (first-subindex-on-page:integer/space:1 <- subtract first-subindex-on-page:integer/space:1 lines-remaining-to-decrement:integer)
+;?     ($print (("after4: " literal))) ;? 1
+;?     ($print first-index-on-page:integer/space:1) ;? 1
+;?     ($print ((" " literal))) ;? 1
+;?     ($print first-subindex-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    (reply)
+  }
+  ; if not,
+  ; a) scroll past expanded-index
+  (first-subindex-on-page:integer/space:1 <- copy -1:literal)
+  (lines-remaining-to-decrement:integer <- subtract lines-remaining-to-decrement:integer expanded-children:integer/space:1)
+  ; b) scroll past remainder of page
+  (first-index-on-page:integer <- subtract first-index-on-page:integer/space:1 lines-remaining-to-decrement:integer)
+  (first-index-on-page:integer/space:1 <- max first-index-on-page:integer/space:1 0:literal)
+;?   ($print (("after5: " literal))) ;? 1
+;?   ($print first-index-on-page:integer/space:1) ;? 1
+;?   ($print ((" " literal))) ;? 1
+;?   ($print first-subindex-on-page:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+])
+
+(function previous-page-when-expanded-index-overlaps-previous-page [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- next-input)
+  (delta-to-expanded:integer <- next-input)
+  ; a) scroll up until expanded index
+  (lines-remaining-to-decrement:integer <- copy screen-height:integer/space:1)
+  (first-index-on-page:integer/space:1 <- subtract first-index-on-page:integer/space:1 delta-to-expanded:integer)
+  (first-index-on-page:integer/space:1 <- max first-index-on-page:integer/space:1 0:literal)
+  (lines-remaining-to-decrement:integer <- subtract lines-remaining-to-decrement:integer delta-to-expanded:integer)
+  ; interlude for some sanity checks
+  { begin
+    (done?:boolean <- lesser-or-equal lines-remaining-to-decrement:integer 0:literal)
+    (break-unless done?:boolean)
+;?     ($print (("after: " literal))) ;? 1
+;?     ($print first-index-on-page:integer/space:1) ;? 1
+;?     ($print ((" " literal))) ;? 1
+;?     ($print first-subindex-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    (reply)
+  }
+  (x:boolean <- equal expanded-index:integer/space:1 first-index-on-page:integer/space:1)
+  (assert x:boolean (("delta-to-expanded was incorrect" literal)))
+  ; if expanded-index will occupy remainder of page, deal with that and return
+  { begin
+    ; todo: not quite right. not all children are available to scroll past
+    (stop-at-expanded?:boolean <- greater-than expanded-children:integer/space:1 lines-remaining-to-decrement:integer)
+    (break-unless stop-at-expanded?:boolean)
+    (first-subindex-on-page:integer/space:1 <- subtract expanded-children:integer/space:1 lines-remaining-to-decrement:integer)
+;?     ($print (("after2: " literal))) ;? 1
+;?     ($print first-index-on-page:integer/space:1) ;? 1
+;?     ($print ((" " literal))) ;? 1
+;?     ($print first-subindex-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    (reply)
+  }
+  ; if not,
+  ; b) scroll past expanded-index
+  (first-subindex-on-page:integer/space:1 <- copy -1:literal)
+  (lines-remaining-to-decrement:integer <- subtract lines-remaining-to-decrement:integer expanded-children:integer/space:1)
+  ; c) scroll past remainder of page
+  (first-index-on-page:integer <- subtract first-index-on-page:integer/space:1 lines-remaining-to-decrement:integer)
+  (first-index-on-page:integer/space:1 <- max first-index-on-page:integer/space:1 0:literal)
+;?   ($print (("after3: " literal))) ;? 1
+;?   ($print first-index-on-page:integer/space:1) ;? 1
+;?   ($print ((" " literal))) ;? 1
+;?   ($print first-subindex-on-page:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 1
 ])
 
 (function browse-trace [

@@ -735,6 +735,20 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page down shows collapsed lines after continued expanded line at top of page"))
+; page-up through an expanded line
+(run-code main12
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (s:string-address <- new "K")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+(when (~screen-contains memory*.4 17
+         (+ "   mem : 1 b     "
+            "   mem : 1 c     "
+            "   mem : 1 d     "
+            "                 "
+            "                 "))
+  (prn "F - page up understands expanded lines"))
 
 (reset)
 ;? (print-times) ;? 3
