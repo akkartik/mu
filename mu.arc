@@ -1723,8 +1723,7 @@
   ; careful to avoid re-processing functions and adding noise to traces
   `(do
      (prn "-- " ',name)
-     (when (function* ',name)
-       (prn "run-code: redefining " ',name))
+     (trace "===" ',name)
      (wipe (function* ',name))
      (add-code '((function ,name [ ,@body ])))
      (freeze-another ',name)
