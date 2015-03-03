@@ -568,6 +568,9 @@ run: main 7: n")
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 ; screen shows just first trace line fully expanded
 (when (~screen-contains memory*.4 17
          (+ "- main/ 0 : a b c"
@@ -583,6 +586,9 @@ run: main 7: n")
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 ; screen shows part of the second trace line expanded
 (when (~screen-contains memory*.4 17
          (+ "+ main/ 0 : a b c"
@@ -599,6 +605,9 @@ run: main 7: n")
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 ; screen again shows first trace line expanded
 (when (~screen-contains memory*.4 17
          (+ "- main/ 0 : a b c"
@@ -616,6 +625,9 @@ run: main 7: n")
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 ; screen shows second page of traces
 (when (~screen-contains memory*.4 17
          (+ "+ main/ 3 : j    "
@@ -631,6 +643,9 @@ run: main 7: n")
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 ; page-down behaves the same regardless of where the cursor was
 (when (~screen-contains memory*.4 17
          (+ "+ main/ 6 : m    "
@@ -644,6 +659,9 @@ run: main 7: n")
   (k:keyboard-address <- init-keyboard s:string-address)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 ; no change
 (when (~screen-contains memory*.4 17
          (+ "+ main/ 6 : m    "
@@ -657,6 +675,9 @@ run: main 7: n")
   (k:keyboard-address <- init-keyboard s:string-address)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 ; precisely undoes previous page-down
 (when (~screen-contains memory*.4 17
          (+ "+ main/ 3 : j    "
@@ -675,6 +696,9 @@ run: main 7: n")
 ;?   (print-character 2:terminal-address/raw ((#\* literal))) ;? 1
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 ; now we have an expanded line
 (when (~screen-contains memory*.4 17
          (+ "+ main/ 0 : a b c"
@@ -691,6 +715,9 @@ run: main 7: n")
 ;?   ($start-tracing) ;? 1
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 ; no lines skipped, page with just inner traces
 (when (~screen-contains memory*.4 17
          (+ "   mem : 1 b     "
@@ -706,6 +733,9 @@ run: main 7: n")
   (k:keyboard-address <- init-keyboard s:string-address)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 ; page with partial inner trace and more collapsed
 (when (~screen-contains memory*.4 17
          (+ "   mem : 1 e     "
@@ -721,6 +751,9 @@ run: main 7: n")
   (k:keyboard-address <- init-keyboard s:string-address)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
 (when (~screen-contains memory*.4 17
          (+ "   mem : 1 b     "
             "   mem : 1 c     "
@@ -728,6 +761,136 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page up understands expanded lines"))
+;; page up scenarios
+; skip ones starting at top of trace for now
+; page-up scenario 2
+; + run: main 0: a b c
+;   mem: 0 a
+; + run: main 1: d e f  <- top of page
+;   mem: 1 a
+;   mem: 1 b
+;   mem: 1 c
+;   mem: 1 d
+;   mem: 1 e
+; + run: main 2: g hi
+; + run: main 3: j      <- bottom of page
+;   mem: 3 a
+; + run: main 4: k
+; + run: main 5: l
+; + run: main 6: m
+; + run: main 7: n
+(run-code main13
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+;?   ($print first-index-on-page:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (first-index-on-page:integer/space:1 <- copy 1:literal)
+;?   ($print first-index-on-page:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (first-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (last-index-on-page:integer/space:1 <- copy 3:literal)
+  (last-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (expanded-index:integer/space:1 <- copy -1:literal)
+  (expanded-children:integer/space:1 <- copy -1:literal)
+  (s:string-address <- new "K")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 0 : a b c"
+            "+ main/ 1 : d e f"
+            "+ main/ 2 : g hi "))
+  (prn "F - page-up 2"))
+; page-up scenario 3
+; + run: main 0: a b c
+;   mem: 0 a
+; - run: main 1: d e f  <- top of page
+;   mem: 1 a
+;   mem: 1 b            <- bottom of page
+;   mem: 1 c
+;   mem: 1 d
+;   mem: 1 e
+; + run: main 2: g hi
+; + run: main 3: j
+;   mem: 3 a
+; + run: main 4: k
+; + run: main 5: l
+; + run: main 6: m
+; + run: main 7: n
+(run-code main14
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+;?   ($print first-index-on-page:integer/space:1) ;? 2
+;?   ($print (("\n" literal))) ;? 2
+  (first-index-on-page:integer/space:1 <- copy 1:literal)
+;?   ($print first-index-on-page:integer/space:1) ;? 2
+;?   ($print (("\n" literal))) ;? 2
+  (first-subindex-on-page:integer/space:1 <- copy -1:literal)
+  (last-index-on-page:integer/space:1 <- copy 1:literal)
+  (last-subindex-on-page:integer/space:1 <- copy 1:literal)
+  (expanded-index:integer/space:1 <- copy 1:literal)
+  (expanded-children:integer/space:1 <- copy 5:literal)
+  (s:string-address <- new "K")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 0 : a b c"
+            "- main/ 1 : d e f"
+            "   mem : 1 a     "
+            "                 "
+            "                 "))
+  (prn "F - page-up 3"))
+; page-up scenario 4
+; + run: main 0: a b c
+;   mem: 0 a
+; - run: main 1: d e f
+;   mem: 1 a
+;   mem: 1 b
+;   mem: 1 c            <- top of page
+;   mem: 1 d
+;   mem: 1 e            <- bottom of page
+; + run: main 2: g hi
+; + run: main 3: j
+;   mem: 3 a
+; + run: main 4: k
+; + run: main 5: l
+; + run: main 6: m
+; + run: main 7: n
+(run-code main15
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+;?   ($print first-index-on-page:integer/space:1) ;? 2
+;?   ($print (("\n" literal))) ;? 2
+  (first-index-on-page:integer/space:1 <- copy 1:literal)
+;?   ($print first-index-on-page:integer/space:1) ;? 2
+;?   ($print (("\n" literal))) ;? 2
+  (first-subindex-on-page:integer/space:1 <- copy 2:literal)
+  (last-index-on-page:integer/space:1 <- copy 1:literal)
+  (last-subindex-on-page:integer/space:1 <- copy 4:literal)
+  (expanded-index:integer/space:1 <- copy 1:literal)
+  (expanded-children:integer/space:1 <- copy 5:literal)
+  (s:string-address <- new "K")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  ($start-tracing)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "- main/ 1 : d e f"
+            "   mem : 1 a     "
+            "   mem : 1 b     "
+            "                 "
+            "                 "))
+  (prn "F - page-up 4"))
 
 (reset2)
 ;? (print-times) ;? 3
