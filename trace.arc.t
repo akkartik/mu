@@ -820,6 +820,32 @@ run: main 7: n")
 ; + run: main 5: l
 ; + run: main 6: m
 ; + run: main 7: n
+(run-code main14pre
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+;?   ($print first-index-on-page:integer/space:1) ;? 2
+;?   ($print (("\n" literal))) ;? 2
+  (first-index-on-page:integer/space:1 <- copy 1:literal)
+;?   ($print first-index-on-page:integer/space:1) ;? 2
+;?   ($print (("\n" literal))) ;? 2
+  (first-subindex-on-page:integer/space:1 <- copy -1:literal)
+  (last-index-on-page:integer/space:1 <- copy 1:literal)
+  (last-subindex-on-page:integer/space:1 <- copy 1:literal)
+  (expanded-index:integer/space:1 <- copy 1:literal)
+  (expanded-children:integer/space:1 <- copy 5:literal)
+  (to-top 0:space-address/browser-state 2:terminal-address/raw)
+  (print-page 0:space-address/browser-state 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "- main/ 1 : d e f"
+            "   mem : 1 a     "
+            "   mem : 1 b     "
+            "                 "
+            "                 "))
+  (prn "F - page-up 3: initial print-page state"))
 (run-code main14
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
@@ -835,6 +861,7 @@ run: main 7: n")
   (expanded-children:integer/space:1 <- copy 5:literal)
   (s:string-address <- new "K")
   (k:keyboard-address <- init-keyboard s:string-address)
+;?   ($start-tracing) ;? 1
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
 (each routine completed-routines*
@@ -878,7 +905,7 @@ run: main 7: n")
   (expanded-children:integer/space:1 <- copy 5:literal)
   (s:string-address <- new "K")
   (k:keyboard-address <- init-keyboard s:string-address)
-  ($start-tracing)
+;?   ($start-tracing) ;? 1
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
 (each routine completed-routines*

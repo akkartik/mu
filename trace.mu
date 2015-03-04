@@ -417,6 +417,7 @@
     ; or screen ends
     (screen-done?:boolean <- greater-or-equal cursor-row:integer/space:1 screen-height:integer/space:1)
     (break-if screen-done?:boolean)
+;?     ($print (("screen not done\n" literal))) ;? 1
     ; continue printing trace lines
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref trace-index:integer)
     (last-index-on-page:integer/space:1 <- copy trace-index:integer)
@@ -435,6 +436,7 @@
   { begin
     (done?:boolean <- greater-or-equal cursor-row:integer/space:1 app-height:integer/space:1)
     (break-if done?:boolean)
+;?     ($print (("emptying line\n" literal))) ;? 1
     (clear-line screen:terminal-address)
     (down 0:space-address/browser-state screen:terminal-address)
     (loop)
@@ -453,15 +455,17 @@
   (first-full-index:integer <- copy first-index-on-page:integer/space:1)
   ; finish printing the last trace from the previous page
   { begin
+    (screen-done?:boolean <- greater-or-equal cursor-row:integer/space:1 screen-height:integer/space:1)
+    (break-if screen-done?:boolean)
     (partial-trace?:boolean <- equal first-index-on-page:integer/space:1 expanded-index:integer/space:1)
     (break-unless partial-trace?:boolean)
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref first-index-on-page:integer/space:1)
-    (ch:trace-address-array-address <- get tr:instruction-trace-address/deref children:offset)
     { begin
       (print-parent?:boolean <- equal first-subindex-on-page:integer/space:1 -1:literal)
       (break-unless print-parent?:boolean)
       (print-instruction-trace-parent screen:terminal-address tr:instruction-trace-address 0:space-address/browser-state)
     }
+    (ch:trace-address-array-address <- get tr:instruction-trace-address/deref children:offset)
     (i:integer <- max first-subindex-on-page:integer/space:1 0:literal)
     ; print any remaining data in the currently expanded trace
     { begin
@@ -484,9 +488,12 @@
     (first-full-index:integer <- add first-full-index:integer 1:literal)
   }
   ; more new lines
-;?   ($print (("AAA " literal))) ;? 1
+;?   ($print (("AAA " literal))) ;? 2
 ;?   ($print first-full-index:integer) ;? 1
-;?   ($print (("\n" literal))) ;? 1
+;?   ($print cursor-row:integer/space:1) ;? 1
+;?   ($print ((" " literal))) ;? 1
+;?   ($print screen-height:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 2
   (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-full-index:integer)
 ])
 
