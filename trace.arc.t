@@ -931,6 +931,70 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page-up 4"))
+; page-up scenario 5
+; + run: main 0: a b c
+;   mem: 0 a
+; - run: main 1: d e f
+;   mem: 1 a            <- top of page
+;   mem: 1 b
+;   mem: 1 c            <- bottom of page
+;   mem: 1 d
+;   mem: 1 e
+; + run: main 2: g hi
+; + run: main 3: j
+;   mem: 3 a
+; + run: main 4: k
+; + run: main 5: l
+; + run: main 6: m
+; + run: main 7: n
+(run-code main16pre
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  (first-index-on-page:integer/space:1 <- copy 1:literal)
+  (first-subindex-on-page:integer/space:1 <- copy 0:literal)
+  (last-index-on-page:integer/space:1 <- copy 1:literal)
+  (last-subindex-on-page:integer/space:1 <- copy 2:literal)
+  (expanded-index:integer/space:1 <- copy 1:literal)
+  (expanded-children:integer/space:1 <- copy 5:literal)
+;?   ($print cursor-row:integer/space:1) ;? 1
+  (to-top 0:space-address/browser-state 2:terminal-address/raw)
+;?   ($print cursor-row:integer/space:1) ;? 1
+  (print-page 0:space-address/browser-state 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "   mem : 1 a     "
+            "   mem : 1 b     "
+            "   mem : 1 c     "
+            "                 "
+            "                 "))
+  (prn "F - page-up 5: initial print-page state"))
+(run-code main16
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  (first-index-on-page:integer/space:1 <- copy 1:literal)
+  (first-subindex-on-page:integer/space:1 <- copy 0:literal)
+  (last-index-on-page:integer/space:1 <- copy 1:literal)
+  (last-subindex-on-page:integer/space:1 <- copy 2:literal)
+  (expanded-index:integer/space:1 <- copy 1:literal)
+  (expanded-children:integer/space:1 <- copy 5:literal)
+  (s:string-address <- new "K")
+  (k:keyboard-address <- init-keyboard s:string-address)
+;?   ($dump-browser-state 3:space-address/raw/browser-state) ;? 1
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 0 : a b c"
+            "- main/ 1 : d e f"
+            "   mem : 1 a     "
+            "                 "
+            "                 "))
+  (prn "F - page-up 5"))
 
 (reset2)
 ;? (print-times) ;? 3
