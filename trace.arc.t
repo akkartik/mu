@@ -635,6 +635,7 @@ run: main 7: n")
             "+ main/ 5 : l    "
             "                 "))
   (prn "F - 'page-down' skips to next page after this one"))
+;? (quit) ;? 1
 ; move cursor down, then page-down
 (run-code main6
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -744,6 +745,7 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page down shows collapsed lines after continued expanded line at top of page"))
+;? (quit) ;? 1
 ; page-up through an expanded line
 (run-code main12
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -823,11 +825,7 @@ run: main 7: n")
 (run-code main14pre
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
-;?   ($print first-index-on-page:integer/space:1) ;? 2
-;?   ($print (("\n" literal))) ;? 2
   (first-index-on-page:integer/space:1 <- copy 1:literal)
-;?   ($print first-index-on-page:integer/space:1) ;? 2
-;?   ($print (("\n" literal))) ;? 2
   (first-subindex-on-page:integer/space:1 <- copy -1:literal)
   (last-index-on-page:integer/space:1 <- copy 1:literal)
   (last-subindex-on-page:integer/space:1 <- copy 1:literal)
@@ -846,14 +844,33 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page-up 3: initial print-page state"))
+(run-code main14post
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  (first-index-on-page:integer/space:1 <- copy 0:literal)
+  (first-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (last-index-on-page:integer/space:1 <- copy 1:literal)
+  (last-subindex-on-page:integer/space:1 <- copy 0:literal)
+  (expanded-index:integer/space:1 <- copy 1:literal)
+  (expanded-children:integer/space:1 <- copy 5:literal)
+  (to-top 0:space-address/browser-state 2:terminal-address/raw)
+  (print-page 0:space-address/browser-state 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 0 : a b c"
+            "- main/ 1 : d e f"
+            "   mem : 1 a     "
+            "                 "
+            "                 "))
+  (prn "F - page-up 3: expected post page-up state"))
+;? (quit) ;? 1
 (run-code main14
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
-;?   ($print first-index-on-page:integer/space:1) ;? 2
-;?   ($print (("\n" literal))) ;? 2
   (first-index-on-page:integer/space:1 <- copy 1:literal)
-;?   ($print first-index-on-page:integer/space:1) ;? 2
-;?   ($print (("\n" literal))) ;? 2
   (first-subindex-on-page:integer/space:1 <- copy -1:literal)
   (last-index-on-page:integer/space:1 <- copy 1:literal)
   (last-subindex-on-page:integer/space:1 <- copy 1:literal)
@@ -874,6 +891,7 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page-up 3"))
+;? (quit) ;? 1
 ; page-up scenario 4
 ; + run: main 0: a b c
 ;   mem: 0 a
@@ -893,11 +911,7 @@ run: main 7: n")
 (run-code main15
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
-;?   ($print first-index-on-page:integer/space:1) ;? 2
-;?   ($print (("\n" literal))) ;? 2
   (first-index-on-page:integer/space:1 <- copy 1:literal)
-;?   ($print first-index-on-page:integer/space:1) ;? 2
-;?   ($print (("\n" literal))) ;? 2
   (first-subindex-on-page:integer/space:1 <- copy 2:literal)
   (last-index-on-page:integer/space:1 <- copy 1:literal)
   (last-subindex-on-page:integer/space:1 <- copy 4:literal)
@@ -905,7 +919,6 @@ run: main 7: n")
   (expanded-children:integer/space:1 <- copy 5:literal)
   (s:string-address <- new "K")
   (k:keyboard-address <- init-keyboard s:string-address)
-;?   ($start-tracing) ;? 1
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
   )
 (each routine completed-routines*
