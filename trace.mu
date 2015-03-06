@@ -433,7 +433,6 @@
   (screen:terminal-address <- next-input)
   (trace-index:integer <- next-input)
   (len:integer <- length traces:instruction-trace-address-array-address/space:1/deref)
-  (height:integer <- min len:integer screen-height:integer/space:1)
   ; print remaining traces collapsed
   { begin
     ; until trace ends
