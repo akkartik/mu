@@ -400,6 +400,7 @@
   (0:space-address/names:browser-state <- next-input)
   (screen:terminal-address <- next-input)
   (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address 0:literal/from)
+  (clear-rest-of-page 0:space-address/browser-state screen:terminal-address)
 ])
 
 (function print-traces-collapsed-from [
@@ -429,14 +430,15 @@
     (trace-index:integer <- add trace-index:integer 1:literal)
     (loop)
   }
-  ; empty any remaining lines
-;?   ($print trace-index:integer) ;? 1
-;?   ($print ((#\space literal))) ;? 1
-;?   ($print app-height:integer/space:1) ;? 1
+])
+
+(function clear-rest-of-page [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- next-input)
+  (screen:terminal-address <- next-input)
   { begin
     (done?:boolean <- greater-or-equal cursor-row:integer/space:1 app-height:integer/space:1)
     (break-if done?:boolean)
-;?     ($print (("emptying line\n" literal))) ;? 1
     (clear-line screen:terminal-address)
     (down 0:space-address/browser-state screen:terminal-address)
     (loop)
@@ -495,6 +497,7 @@
 ;?   ($print screen-height:integer/space:1) ;? 1
 ;?   ($print (("\n" literal))) ;? 2
   (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address first-full-index:integer)
+  (clear-rest-of-page 0:space-address/browser-state screen:terminal-address)
 ])
 
 (function cursor-row-to-trace-index [
@@ -621,6 +624,7 @@
         (expanded-index:integer/space:1 <- copy -1:literal)
         (expanded-children:integer/space:1 <- copy -1:literal)
         (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address cursor-row:integer/space:1)
+        (clear-rest-of-page 0:space-address/browser-state screen:terminal-address)
         (back-to 0:space-address/browser-state screen:terminal-address original-cursor-row:integer)
         (reply nil:literal)
       }
@@ -656,6 +660,7 @@
 ;?     ($print next-index:integer) ;? 2
 ;?     ($print (("\n" literal))) ;? 2
     (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address next-index:integer)
+    (clear-rest-of-page 0:space-address/browser-state screen:terminal-address)
     (back-to 0:space-address/browser-state screen:terminal-address original-trace-index:integer)
     (reply nil:literal)
   }
