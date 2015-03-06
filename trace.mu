@@ -633,7 +633,7 @@
     (to-top 0:space-address/browser-state screen:terminal-address)
     ; switch browser state
     (previous-page 0:space-address/browser-state)
-;?     ($dump-browser-state 0:space-address) ;? 1
+;?     ($dump-browser-state 0:space-address) ;? 2
     ; redraw
     (print-page 0:space-address/browser-state screen:terminal-address)
     (reply nil:literal)
@@ -824,7 +824,7 @@
   (x:boolean <- greater-than delta-to-expanded:integer expanded-index:integer/space:1)
 ;?   ($print (("e3\n" literal))) ;? 2
   (jump-if x:boolean easy-case:offset)
-;?   ($print (("f\n" literal))) ;? 2
+;?   ($print (("f\n" literal))) ;? 3
   ; tough case
   { begin
     (break-unless top-of-screen-inside-expanded:boolean)
@@ -832,6 +832,7 @@
     (reply)
   }
   ; tough case
+;?   ($print (("g\n" literal))) ;? 1
   (previous-page-when-expanded-index-overlaps-previous-page 0:space-address/browser-state delta-to-expanded:integer)
   (reply)
   easy-case
@@ -847,8 +848,10 @@
   ; if expanded-index will occupy remainder of page, deal with that and return
   { begin
     ; todo: not quite right. not all children are available to scroll past
-    (stop-at-expanded?:boolean <- greater-than first-subindex-on-page:integer/space:1 lines-remaining-to-decrement:integer)
+    (n:integer <- add first-subindex-on-page:integer/space:1 1:literal)
+    (stop-at-expanded?:boolean <- greater-or-equal n:integer lines-remaining-to-decrement:integer)
     (break-unless stop-at-expanded?:boolean)
+;?     ($print (("AAA 1\n" literal))) ;? 1
     (first-subindex-on-page:integer/space:1 <- subtract first-subindex-on-page:integer/space:1 lines-remaining-to-decrement:integer)
 ;?     ($print (("after4: " literal))) ;? 2
 ;?     ($print first-index-on-page:integer/space:1) ;? 2
@@ -857,6 +860,7 @@
 ;?     ($print (("\n" literal))) ;? 2
     (reply)
   }
+;?   ($print (("AAA 2\n" literal))) ;? 1
   ; if not,
   ; a) scroll past expanded-index
   (first-subindex-on-page:integer/space:1 <- copy -2:literal)
