@@ -558,6 +558,7 @@ run: main 7: n")
             "+ main/ 1 : d e f"
             "+ main/ 2 : g hi "))
   (prn "F - print-traces-collapsed can show just one 'page' of a larger trace"))
+
 ; expand top line
 (run-code main2
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -578,6 +579,7 @@ run: main 7: n")
             "+ main/ 1 : d e f"
             "                 "))
   (prn "F - expanding doesn't print past end of page"))
+
 ; expand line below without first collapsing previously expanded line
 (run-code main3
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -597,6 +599,7 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - expanding below expanded line respects screen/page height"))
+
 ; expand line *above* without first collapsing previously expanded line
 (run-code main4
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -615,6 +618,7 @@ run: main 7: n")
             "+ main/ 1 : d e f"
             "                 "))
   (prn "F - expanding above expanded line respects screen/page height"))
+
 ; collapse everything and hit page-down
 ; again, we can't yet check for special keys like 'page-down so we'll use
 ; upper-case J and K for moving a page down or up, respectively.
@@ -636,6 +640,7 @@ run: main 7: n")
             "                 "))
   (prn "F - 'page-down' skips to next page after this one"))
 ;? (quit) ;? 1
+
 ; move cursor down, then page-down
 (run-code main6
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -653,6 +658,7 @@ run: main 7: n")
             "+ main/ 7 : n    "
             "                 "))
   (prn "F - 'page-down' skips to same place regardless of cursor position"))
+
 ; try to page-down past end of trace
 (run-code main7
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -669,6 +675,7 @@ run: main 7: n")
             "+ main/ 7 : n    "
             "                 "))
   (prn "F - 'page-down' skips to same place regardless of cursor position"))
+
 ; now page-up
 (run-code main8
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -686,6 +693,7 @@ run: main 7: n")
             "+ main/ 5 : l    "
             "                 "))
   (prn "F - 'page-up' on partial page behaves as if page was full"))
+
 ;; back to page 1, expand a line
 (run-code main9
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -708,6 +716,7 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - intermediate state after expanding a line"))
+
 ; next page
 (run-code main10
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -727,6 +736,7 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page down continues existing expanded line"))
+
 ; next page
 (run-code main11
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -746,6 +756,7 @@ run: main 7: n")
             "                 "))
   (prn "F - page down shows collapsed lines after continued expanded line at top of page"))
 ;? (quit) ;? 1
+
 ; page-up through an expanded line
 (run-code main12
   (default-space:space-address <- new space:literal 30:literal/capacity)
@@ -763,6 +774,7 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page up understands expanded lines"))
+
 ;; page up scenarios
 ; skip ones starting at top of trace for now
 ; page-up scenario 2
@@ -806,6 +818,7 @@ run: main 7: n")
             "+ main/ 1 : d e f"
             "+ main/ 2 : g hi "))
   (prn "F - page-up 2"))
+
 ; page-up scenario 3
 ; + run: main 0: a b c
 ;   mem: 0 a
@@ -844,6 +857,7 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page-up 3: initial print-page state"))
+
 (run-code main14post
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
@@ -892,6 +906,7 @@ run: main 7: n")
             "                 "))
   (prn "F - page-up 3"))
 ;? (quit) ;? 1
+
 ; page-up scenario 4
 ; + run: main 0: a b c
 ;   mem: 0 a
@@ -931,6 +946,7 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page-up 4"))
+
 ; page-up scenario 5
 ; + run: main 0: a b c
 ;   mem: 0 a
