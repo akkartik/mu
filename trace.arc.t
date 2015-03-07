@@ -24,7 +24,6 @@ mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
   (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
-  (len:integer <- length traces:instruction-trace-address-array-address/deref)
   (screen:terminal-address <- init-fake-terminal 70:literal 15:literal)
   (browser-state:space-address <- browser-state traces:instruction-trace-address-array-address 30:literal/screen-height)
   (print-traces-collapsed browser-state:space-address screen:terminal-address)
@@ -64,7 +63,6 @@ mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
   (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
-  (len:integer <- length traces:instruction-trace-address-array-address/deref)
   (1:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
   ; position the cursor away from top of screen
   (cursor-down 1:terminal-address/raw)
@@ -120,7 +118,6 @@ mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
   (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
-  (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
   (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
   ; position the cursor away from top of screen
   (cursor-down 2:terminal-address/raw)
@@ -266,7 +263,6 @@ mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
   (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
-  (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
   (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
   ; position the cursor away from top of screen
   (cursor-down 2:terminal-address/raw)
@@ -348,7 +344,6 @@ mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
   (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
-  (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
   (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
   ; position the cursor away from top of screen
   (cursor-down 2:terminal-address/raw)
@@ -401,7 +396,6 @@ mem: ((3 integer)): 3 <= 4
 schedule:  done with routine")
   (s:stream-address <- init-stream x:string-address)
   (1:instruction-trace-address-array-address/raw <- parse-traces s:stream-address)
-  (len:integer <- length 1:instruction-trace-address-array-address/raw/deref)
   (2:terminal-address/raw <- init-fake-terminal 70:literal 15:literal)
   ; position the cursor away from top of screen
   (cursor-down 2:terminal-address/raw)
@@ -543,7 +537,6 @@ run: main 6: m
 run: main 7: n")
   (s:stream-address <- init-stream x:string-address)
   (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
-  (len:integer <- length traces:instruction-trace-address-array-address/deref)
   (2:terminal-address/raw <- init-fake-terminal 17:literal 15:literal)
   (3:space-address/raw/browser-state <- browser-state traces:instruction-trace-address-array-address 3:literal/screen-height)
   (print-traces-collapsed 3:space-address/raw/browser-state 2:terminal-address/raw)
@@ -857,7 +850,6 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page-up 3: initial print-page state"))
-
 (run-code main14post
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
