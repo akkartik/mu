@@ -2787,8 +2787,11 @@
   { begin
     (break-unless x:terminal-address)
     (row:integer-address <- get-address x:terminal-address/deref cursor-row:offset)
-;?     ($print row:integer-address/deref) ;? 1
+;?     ($print row:integer-address/deref) ;? 2
+;?     ($print ((", " literal))) ;? 1
     (col:integer-address <- get-address x:terminal-address/deref cursor-col:offset)
+;?     ($print col:integer-address/deref) ;? 1
+;?     ($print (("\n" literal))) ;? 1
     (width:integer <- get x:terminal-address/deref num-cols:offset)
     (t1:integer <- multiply row:integer-address/deref width:integer)
     (idx:integer <- add t1:integer col:integer-address/deref)
