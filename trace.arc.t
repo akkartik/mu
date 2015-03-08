@@ -1282,5 +1282,75 @@ run: main 7: n")
             "                 "))
   (prn "F - page-up 11 - expanded index overlaps target page - 3"))
 
+; page-up scenario 12
+; + run: main 0: a b c
+;   mem: 0 a
+; + run: main 1: d e f
+; - run: main 2: g hi
+;   mem: 2 a
+; + run: main 3: j
+;   mem: 3 a
+; + run: main 4: k      <- top of page
+; + run: main 5: l
+; + run: main 6: m      <- bottom of page
+; + run: main 7: n
+(run-code main23
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  (first-index-on-page:integer/space:1 <- copy 4:literal)
+  (first-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (last-index-on-page:integer/space:1 <- copy 6:literal)
+  (last-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (expanded-index:integer/space:1 <- copy 2:literal)
+  (expanded-children:integer/space:1 <- copy 1:literal)
+  (s:string-address <- new "K")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "- main/ 2 : g hi "
+            "   mem : 2 a     "
+            "+ main/ 3 : j    "
+            "                 "))
+  (prn "F - page-up 12 - expanded index overlaps target page - 4"))
+
+; page-up scenario 13
+; + run: main 0: a b c
+;   mem: 0 a
+; + run: main 1: d e f
+; - run: main 2: g hi
+;   mem: 2 a
+; + run: main 3: j
+;   mem: 3 a
+; + run: main 4: k
+; + run: main 5: l
+; + run: main 6: m      <- top of page
+; + run: main 7: n      <- bottom of page
+(run-code main23
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  (first-index-on-page:integer/space:1 <- copy 6:literal)
+  (first-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (last-index-on-page:integer/space:1 <- copy 7:literal)
+  (last-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (expanded-index:integer/space:1 <- copy 2:literal)
+  (expanded-children:integer/space:1 <- copy 1:literal)
+  (s:string-address <- new "K")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 3 : j    "
+            "+ main/ 4 : k    "
+            "+ main/ 5 : l    "
+            "                 "))
+  (prn "F - page-up 13 - expanded index far above target page"))
+
 (reset2)
 ;? (print-times) ;? 3
