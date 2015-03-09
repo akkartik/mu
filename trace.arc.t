@@ -150,7 +150,7 @@ schedule:  done with routine")
   (prn "F - process-key can move up the cursor"))
 (run-code main2
   (default-space:space-address <- new space:literal 30:literal/capacity)
-  ; reset2 previous cursor
+  ; reset previous cursor
   (replace-character 2:terminal-address/raw ((#\+ literal)))
   ; move cursor up 3 more lines
   (s:string-address <- new "kkk")
@@ -431,7 +431,7 @@ schedule:  done with routine")
   (prn "F - process-key: navigation moves between top-level trace indices only"))
 (run-code main2
   (default-space:space-address <- new space:literal 30:literal/capacity)
-  ; reset2 previous cursor
+  ; reset previous cursor
   (replace-character 2:terminal-address/raw ((#\+ literal)))
   ; move cursor back up one line
   (s:string-address <- new "k")
@@ -458,7 +458,7 @@ schedule:  done with routine")
   (prn "F - process-key: navigation moves between top-level indices only - 2"))
 (run-code main3
   (default-space:space-address <- new space:literal 30:literal/capacity)
-  ; reset2 previous cursor
+  ; reset previous cursor
   (replace-character 2:terminal-address/raw ((#\+ literal)))
   ; press enter
   (s:string-address <- new "\n")
