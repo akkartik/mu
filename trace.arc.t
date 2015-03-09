@@ -572,10 +572,22 @@ run: main 7: n")
             "+ main/ 1 : d e f"
             "                 "))
   (prn "F - expanding doesn't print past end of page"))
+(run-code main2-2
+  (replace-character 2:terminal-address/raw ((#\* literal)))
+  )
+; screen shows part of the second trace line expanded
+(when (~screen-contains memory*.4 17
+         (+ "* main/ 0 : a b c"
+            "   mem : 0 a     "
+            "+ main/ 1 : d e f"
+            "                 "))
+  (prn "F - cursor at right place after expand"))
 
 ; expand line below without first collapsing previously expanded line
 (run-code main3
   (default-space:space-address <- new space:literal 30:literal/capacity)
+  ; reset previous cursor
+  (replace-character 2:terminal-address/raw ((#\- literal)))
   (s:string-address <- new "j\n")
   (k:keyboard-address <- init-keyboard s:string-address)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
@@ -592,10 +604,23 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - expanding below expanded line respects screen/page height"))
+(run-code main3-2
+  (replace-character 2:terminal-address/raw ((#\* literal)))
+  )
+; screen shows part of the second trace line expanded
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 0 : a b c"
+            "* main/ 1 : d e f"
+            "   mem : 1 a     "
+            "                 "
+            "                 "))
+  (prn "F - cursor at right place after expand below"))
 
 ; expand line *above* without first collapsing previously expanded line
 (run-code main4
   (default-space:space-address <- new space:literal 30:literal/capacity)
+  ; reset previous cursor
+  (replace-character 2:terminal-address/raw ((#\- literal)))
   (s:string-address <- new "k\n")
   (k:keyboard-address <- init-keyboard s:string-address)
   (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
@@ -611,6 +636,7 @@ run: main 7: n")
             "+ main/ 1 : d e f"
             "                 "))
   (prn "F - expanding above expanded line respects screen/page height"))
+;? (quit) ;? 1
 
 ; collapse everything and hit page-down
 ; again, we can't yet check for special keys like 'page-down so we'll use

@@ -707,13 +707,7 @@
           (loop)
         }
         ; print traces collapsed until just before original row
-        { begin
-          (done?:boolean <- greater-or-equal cursor-row:integer/space:1 original-trace-index:integer)
-          (break-if done?:boolean)
-          (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref cursor-row:integer/space:1)
-          (print-instruction-trace-collapsed screen:terminal-address tr:instruction-trace-address 0:space-address/browser-state)
-          (loop)
-        }
+        (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address cursor-row:integer/space:1 original-trace-index:integer/until)
         ; fall through
       }
     }
