@@ -1329,7 +1329,7 @@ run: main 7: n")
 ; + run: main 5: l
 ; + run: main 6: m      <- top of page
 ; + run: main 7: n      <- bottom of page
-(run-code main23
+(run-code main24
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
   (first-index-on-page:integer/space:1 <- copy 6:literal)
