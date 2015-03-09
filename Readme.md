@@ -57,6 +57,8 @@ unit of comprehension. If I'm right, it makes sense to prioritize the right
 *tactile* interface for working with and getting feedback on large programs
 before we invest in the *visual* tools for making them concise.
 
+([More details.](http://akkartik.name/about))
+
 **Taking mu for a spin**
 
 First install [Racket](http://racket-lang.org) (just for the initial
