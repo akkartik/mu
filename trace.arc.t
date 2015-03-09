@@ -83,7 +83,7 @@ schedule:  done with routine")
             "+ main/ 1 : 3 => ((2 integer))                                        "
             "+ main/ 2 : (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))    "
             "+ main/ 2 : 4 => ((3 integer))                                        "))
-  (prn "F - print-traces-collapsed works"))
+  (prn "F - print-traces-collapsed works anywhere on the screen"))
 (run-code main2
   (print-character 1:terminal-address/raw ((#\* literal))))
 (when (~screen-contains memory*.2 70
@@ -147,7 +147,7 @@ schedule:  done with routine")
             "+ main/ 2 : (((3 integer)) <- ((add)) ((1 integer)) ((2 integer)))    "
             "* main/ 2 : 4 => ((3 integer))                                        "))
             ;^cursor
-  (prn "F - process-key can move up"))
+  (prn "F - process-key can move up the cursor"))
 (run-code main2
   (default-space:space-address <- new space:literal 30:literal/capacity)
   ; reset2 previous cursor
@@ -305,7 +305,7 @@ schedule:  done with routine")
             "- main/ 2 : 4 => ((3 integer))                                        "
             "   mem : ((3 integer)): 3 <= 4                                        "
             "   schedule :  done with routine                                      "))
-  (prn "F - process-key expands current trace segment on <enter>"))
+  (prn "F - process-key expands the trace index at cursor on <enter>"))
 ; and cursor should remain on the top-level line
 (run-code main3
   (replace-character 2:terminal-address/raw ((#\* literal)))
@@ -322,7 +322,7 @@ schedule:  done with routine")
             ;^cursor
             "   mem : ((3 integer)): 3 <= 4                                        "
             "   schedule :  done with routine                                      "))
-  (prn "F - process-key positions cursor on top of trace after expanding"))
+  (prn "F - process-key positions cursor at start of trace index after expanding"))
 
 (reset2)
 (new-trace "process-key-expand-nonlast")
@@ -428,7 +428,7 @@ schedule:  done with routine")
             "   mem : ((1 integer)) => 1                                           "
             "   mem : ((2 integer)) => 3                                           "
             "* main/ 2 : 4 => ((3 integer))                                        "))
-  (prn "F - process-key: navigation moves between top-level lines only"))
+  (prn "F - process-key: navigation moves between top-level trace indices only"))
 (run-code main2
   (default-space:space-address <- new space:literal 30:literal/capacity)
   ; reset2 previous cursor
@@ -455,7 +455,7 @@ schedule:  done with routine")
             "   mem : ((1 integer)) => 1                                           "
             "   mem : ((2 integer)) => 3                                           "
             "+ main/ 2 : 4 => ((3 integer))                                        "))
-  (prn "F - process-key: navigation moves between top-level lines only"))
+  (prn "F - process-key: navigation moves between top-level indices only - 2"))
 (run-code main3
   (default-space:space-address <- new space:literal 30:literal/capacity)
   ; reset2 previous cursor
@@ -480,7 +480,7 @@ schedule:  done with routine")
             "+ main/ 2 : 4 => ((3 integer))                                        "
             "                                                                      "
             "                                                                      "))
-  (prn "F - process-key: navigation moves between top-level lines only"))
+  (prn "F - process-key: process-key collapses trace indices correctly after moving around"))
 (run-code main4
   (default-space:space-address <- new space:literal 30:literal/capacity)
   ; move up a few lines, expand, then move down and expand again
@@ -511,7 +511,7 @@ schedule:  done with routine")
             "   mem : ((1 integer)) => 1                                           "
             "   mem : ((2 integer)) => 3                                           "
             "+ main/ 2 : 4 => ((3 integer))                                        "))
-  (prn "F - process-key: navigation moves between top-level lines only"))
+  (prn "F - process-key: process-key collapses the previously expanded trace index when expanding elsewhere"))
 
 ;; manage screen height
 
