@@ -1251,7 +1251,7 @@ run: main 7: n")
             "                 "
             "                 "))
   (prn "F - page-up 10 - expanded index overlaps target page - 2"))
-;? (quit) ;? 1
+;? (quit) ;? 2
 
 (reset2)
 (new-trace "trace-paginate2")
@@ -1377,6 +1377,25 @@ run: main 7: n")
             "+ main/ 5 : l    "
             "                 "))
   (prn "F - page-up 13 - expanded index far above target page"))
+
+(run-code main25
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  (s:string-address <- new "kk\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 3 : j    "
+            "- main/ 4 : k    "
+            "+ main/ 5 : l    "
+            "                 "))
+  (prn "F - process-key expands trace segment on any page"))
 
 (reset2)
 ;? (print-times) ;? 3
