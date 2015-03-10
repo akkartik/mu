@@ -1,5 +1,5 @@
 (selective-load "mu.arc" section-level)
-(set allow-raw-addresses*)
+(test-only-settings)
 (add-code:readfile "trace.mu")
 (freeze function*)
 (load-system-functions)

@@ -848,19 +848,19 @@
 ;?                        (write (m arg.0))  (pr " => ")  (prn (type (m arg.0)))
                        (if (no ($.current-charterm))
                          (pr (m arg.0))
-                         (caselet x (m arg.0)
-                           ; todo: test these exceptions
-                           #\newline
-                             (pr "\r\n")
-                           #\backspace
-                             ; backspace doesn't clear after moving the cursor
-                             (pr "\b \b")
-                           ctrl-c
-                             (do ($.close-charterm)
-                                 (die "interrupted"))
-                           ;else
-                             (pr x)))
-                       )
+                         (unless disable-debug-prints-in-console-mode*
+                           (caselet x (m arg.0)
+                             #\newline
+                               (pr "\r\n")
+                             #\backspace
+                               ; backspace doesn't clear after moving the cursor
+                               (pr "\b \b")
+                             ctrl-c
+                               (do ($.close-charterm)
+                                   (die "interrupted"))
+                             ;else
+                               (pr x)))
+                          ))
                 $eval
                   (new-string:repr:eval:read:to-arc-string (m arg.0))
 ;?                   (let x (to-arc-string (m arg.0)) ;? 1
@@ -1752,6 +1752,11 @@
   (= scheduling-interval* 500)
   (= scheduler-switch-table* nil)
   )
+
+(= disable-debug-prints-in-console-mode* nil)
+(def test-only-settings ()
+  (set allow-raw-addresses*)
+  (set disable-debug-prints-in-console-mode*))
 
 (def routine-that-ran (f)
   (find [some [is f _!fn-name] stack._]
