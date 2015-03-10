@@ -605,161 +605,6 @@
   (reply result:integer/index)
 ])
 
-;; modify screen state in response to a single key
-(function process-key [
-  (default-space:space-address <- new space:literal 30:literal/capacity)
-  (0:space-address/names:browser-state <- next-input)
-  (k:keyboard-address <- next-input)
-  (screen:terminal-address <- next-input)
-  (c:character <- read-key k:keyboard-address silent:literal/terminal)
-  { begin
-    ; no key yet
-    (break-if c:character)
-    (reply nil:literal)
-  }
-  { begin
-    ; user quit
-    (q-pressed?:boolean <- equal c:character ((#\q literal)))
-    (end-of-fake-keyboard-input?:boolean <- equal c:character ((#\null literal)))
-    (quit?:boolean <- or q-pressed?:boolean end-of-fake-keyboard-input?:boolean)
-    (break-unless quit?:boolean)
-    (reply t:literal)
-  }
-  ; up/down navigation
-  { begin
-    (up?:boolean <- equal c:character ((up literal)))
-    (k?:boolean <- equal c:character ((#\k literal)))
-    (up?:boolean <- or up?:boolean k?:boolean)
-    (break-unless up?:boolean)
-    (up 0:space-address/browser-state screen:terminal-address)
-    (reply nil:literal)
-  }
-  { begin
-    (down?:boolean <- equal c:character ((down literal)))
-    (j?:boolean <- equal c:character ((#\j literal)))
-    (down?:boolean <- or down?:boolean j?:boolean)
-    (break-unless down?:boolean)
-    (down 0:space-address/browser-state screen:terminal-address)
-    (reply nil:literal)
-  }
-  ; page up/page down
-  { begin
-    ; if page-up pressed
-    (page-up?:boolean <- equal c:character ((pgup literal)))
-    (K?:boolean <- equal c:character ((#\K literal)))
-    (page-up?:boolean <- or page-up?:boolean K?:boolean)
-    (break-unless page-up?:boolean)
-    ; if we're not already at start of trace
-    (first-page?:boolean <- at-first-page 0:space-address/browser-state)
-    (break-if first-page?:boolean)
-    ; move cursor to top of screen
-    (to-top 0:space-address/browser-state screen:terminal-address)
-    ; switch browser state
-    (previous-page 0:space-address/browser-state)
-;?     ($dump-browser-state 0:space-address) ;? 3
-    ; redraw
-    (print-page 0:space-address/browser-state screen:terminal-address)
-    (reply nil:literal)
-  }
-  { begin
-    ; if page-down pressed
-    (page-down?:boolean <- equal c:character ((pgdn literal)))
-    (J?:boolean <- equal c:character ((#\J literal)))
-    (page-down?:boolean <- or page-down?:boolean J?:boolean)
-    (break-unless page-down?:boolean)
-    ; if we're not already at end of trace
-    (final-page?:boolean <- at-final-page 0:space-address/browser-state)
-    (break-if final-page?:boolean)
-    ; move cursor to top of screen
-    (to-top 0:space-address/browser-state screen:terminal-address)
-;?     ($print (("before: " literal))) ;? 1
-;?     ($print first-index-on-page:integer/space:1) ;? 1
-;?     ($print (("\n" literal))) ;? 1
-    ; switch browser state
-    (next-page 0:space-address/browser-state)
-;?     ($print (("after: " literal))) ;? 1
-;?     ($print first-index-on-page:integer/space:1) ;? 1
-;?     ($print (("\n" literal))) ;? 1
-    ; redraw
-    (print-page 0:space-address/browser-state screen:terminal-address)
-    ; move cursor back to top of screen
-    (to-top 0:space-address/browser-state screen:terminal-address)
-    (reply nil:literal)
-  }
-  ; enter: expand/collapse current row
-  { begin
-    (toggle?:boolean <- equal c:character ((#\newline literal)))
-    (break-unless toggle?:boolean)
-    (original-cursor-row:integer <- copy cursor-row:integer/space:1)
-;?     ($print (("cursor starts at row " literal))) ;? 1
-;?     ($print original-cursor-row:integer) ;? 2
-;?     ($print (("\n" literal))) ;? 2
-    (original-trace-index:integer <- cursor-row-to-trace-index 0:space-address/browser-state original-cursor-row:integer)
-;?     ($print (("which maps to index " literal))) ;? 2
-;?     ($print original-trace-index:integer) ;? 4
-;?     ($print (("\n" literal))) ;? 4
-    ; is expanded-index already set?
-    { begin
-      (expanded?:boolean <- greater-or-equal expanded-index:integer/space:1 0:literal)
-      (break-unless expanded?:boolean)
-      (too-early?:boolean <- less-than expanded-index:integer/space:1 first-index-on-page:integer/space:1)
-      (break-if too-early?:boolean)
-      (too-late?:boolean <- greater-than expanded-index:integer/space:1 last-index-on-page:integer/space:1)
-      (break-if too-late?:boolean)
-      ; expanded-index is now on this page
-;?       ($print (("expanded index on this page\n" literal))) ;? 2
-      { begin
-        ; are we at the expanded row?
-        (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-index:integer/space:1)
-        (break-unless at-expanded?:boolean)
-;?         ($print (("at expanded index\n" literal))) ;? 1
-        ; print remaining lines collapsed and return
-        (expanded-index:integer/space:1 <- copy -1:literal)
-        (expanded-children:integer/space:1 <- copy -1:literal)
-        (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address cursor-row:integer/space:1)
-        (clear-rest-of-page 0:space-address/browser-state screen:terminal-address)
-        (back-to 0:space-address/browser-state screen:terminal-address original-cursor-row:integer)
-        (reply nil:literal)
-      }
-      ; are we below the expanded row?
-      { begin
-        (below-expanded?:boolean <- greater-than cursor-row:integer/space:1 expanded-index:integer/space:1)
-        (break-unless below-expanded?:boolean)
-;?         ($print (("below expanded index\n" literal))) ;? 1
-        ; scan up to expanded row
-        { begin
-          (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-index:integer/space:1)
-          (break-if at-expanded?:boolean)
-          (up 0:space-address screen:terminal-address)
-          (loop)
-        }
-        ; print traces collapsed until just before original row
-        (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address cursor-row:integer/space:1 original-trace-index:integer/until)
-        ; fall through
-      }
-    }
-    ; expand original row and print traces below it
-;?     ($print (("done collapsing previously expanded index\n" literal))) ;? 2
-    (expanded-index:integer/space:1 <- copy original-trace-index:integer)
-    (last-index-on-page:integer/space:1 <- copy original-trace-index:integer)
-    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref original-trace-index:integer)
-;?     ($print (("expanded\n" literal))) ;? 2
-    (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/browser-state)
-    (next-index:integer <- add original-trace-index:integer 1:literal)
-;?     ($print (("printing collapsed lines from " literal))) ;? 3
-;?     ($print next-index:integer) ;? 4
-;?     ($print (("\n" literal))) ;? 4
-    (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address next-index:integer)
-;?     ($print (("clearing rest of page\n" literal))) ;? 2
-    (clear-rest-of-page 0:space-address/browser-state screen:terminal-address)
-;?     ($print (("moving cursor back up\n" literal))) ;? 2
-    (back-to-index 0:space-address/browser-state screen:terminal-address original-trace-index:integer)
-;?     ($print (("returning\n" literal))) ;? 2
-    (reply nil:literal)
-  }
-  (reply nil:literal)
-])
-
 (function back-to-index [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- next-input)
@@ -774,7 +619,7 @@
   }
 ])
 
-; pagination helpers
+;; pagination helpers
 (function at-first-page [
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- next-input)  ; read-only
@@ -942,6 +787,161 @@
   (reply nil:literal)
   done
   (reply t:literal)
+])
+
+;; modify screen state in response to a single key
+(function process-key [
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- next-input)
+  (k:keyboard-address <- next-input)
+  (screen:terminal-address <- next-input)
+  (c:character <- read-key k:keyboard-address silent:literal/terminal)
+  { begin
+    ; no key yet
+    (break-if c:character)
+    (reply nil:literal)
+  }
+  { begin
+    ; user quit
+    (q-pressed?:boolean <- equal c:character ((#\q literal)))
+    (end-of-fake-keyboard-input?:boolean <- equal c:character ((#\null literal)))
+    (quit?:boolean <- or q-pressed?:boolean end-of-fake-keyboard-input?:boolean)
+    (break-unless quit?:boolean)
+    (reply t:literal)
+  }
+  ; up/down navigation
+  { begin
+    (up?:boolean <- equal c:character ((up literal)))
+    (k?:boolean <- equal c:character ((#\k literal)))
+    (up?:boolean <- or up?:boolean k?:boolean)
+    (break-unless up?:boolean)
+    (up 0:space-address/browser-state screen:terminal-address)
+    (reply nil:literal)
+  }
+  { begin
+    (down?:boolean <- equal c:character ((down literal)))
+    (j?:boolean <- equal c:character ((#\j literal)))
+    (down?:boolean <- or down?:boolean j?:boolean)
+    (break-unless down?:boolean)
+    (down 0:space-address/browser-state screen:terminal-address)
+    (reply nil:literal)
+  }
+  ; page up/page down
+  { begin
+    ; if page-up pressed
+    (page-up?:boolean <- equal c:character ((pgup literal)))
+    (K?:boolean <- equal c:character ((#\K literal)))
+    (page-up?:boolean <- or page-up?:boolean K?:boolean)
+    (break-unless page-up?:boolean)
+    ; if we're not already at start of trace
+    (first-page?:boolean <- at-first-page 0:space-address/browser-state)
+    (break-if first-page?:boolean)
+    ; move cursor to top of screen
+    (to-top 0:space-address/browser-state screen:terminal-address)
+    ; switch browser state
+    (previous-page 0:space-address/browser-state)
+;?     ($dump-browser-state 0:space-address) ;? 3
+    ; redraw
+    (print-page 0:space-address/browser-state screen:terminal-address)
+    (reply nil:literal)
+  }
+  { begin
+    ; if page-down pressed
+    (page-down?:boolean <- equal c:character ((pgdn literal)))
+    (J?:boolean <- equal c:character ((#\J literal)))
+    (page-down?:boolean <- or page-down?:boolean J?:boolean)
+    (break-unless page-down?:boolean)
+    ; if we're not already at end of trace
+    (final-page?:boolean <- at-final-page 0:space-address/browser-state)
+    (break-if final-page?:boolean)
+    ; move cursor to top of screen
+    (to-top 0:space-address/browser-state screen:terminal-address)
+;?     ($print (("before: " literal))) ;? 1
+;?     ($print first-index-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    ; switch browser state
+    (next-page 0:space-address/browser-state)
+;?     ($print (("after: " literal))) ;? 1
+;?     ($print first-index-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
+    ; redraw
+    (print-page 0:space-address/browser-state screen:terminal-address)
+    ; move cursor back to top of screen
+    (to-top 0:space-address/browser-state screen:terminal-address)
+    (reply nil:literal)
+  }
+  ; enter: expand/collapse current row
+  { begin
+    (toggle?:boolean <- equal c:character ((#\newline literal)))
+    (break-unless toggle?:boolean)
+    (original-cursor-row:integer <- copy cursor-row:integer/space:1)
+;?     ($print (("cursor starts at row " literal))) ;? 1
+;?     ($print original-cursor-row:integer) ;? 2
+;?     ($print (("\n" literal))) ;? 2
+    (original-trace-index:integer <- cursor-row-to-trace-index 0:space-address/browser-state original-cursor-row:integer)
+;?     ($print (("which maps to index " literal))) ;? 2
+;?     ($print original-trace-index:integer) ;? 4
+;?     ($print (("\n" literal))) ;? 4
+    ; is expanded-index already set?
+    { begin
+      (expanded?:boolean <- greater-or-equal expanded-index:integer/space:1 0:literal)
+      (break-unless expanded?:boolean)
+      (too-early?:boolean <- less-than expanded-index:integer/space:1 first-index-on-page:integer/space:1)
+      (break-if too-early?:boolean)
+      (too-late?:boolean <- greater-than expanded-index:integer/space:1 last-index-on-page:integer/space:1)
+      (break-if too-late?:boolean)
+      ; expanded-index is now on this page
+;?       ($print (("expanded index on this page\n" literal))) ;? 2
+      { begin
+        ; are we at the expanded row?
+        (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-index:integer/space:1)
+        (break-unless at-expanded?:boolean)
+;?         ($print (("at expanded index\n" literal))) ;? 1
+        ; print remaining lines collapsed and return
+        (expanded-index:integer/space:1 <- copy -1:literal)
+        (expanded-children:integer/space:1 <- copy -1:literal)
+        (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address cursor-row:integer/space:1)
+        (clear-rest-of-page 0:space-address/browser-state screen:terminal-address)
+        (back-to 0:space-address/browser-state screen:terminal-address original-cursor-row:integer)
+        (reply nil:literal)
+      }
+      ; are we below the expanded row?
+      { begin
+        (below-expanded?:boolean <- greater-than cursor-row:integer/space:1 expanded-index:integer/space:1)
+        (break-unless below-expanded?:boolean)
+;?         ($print (("below expanded index\n" literal))) ;? 1
+        ; scan up to expanded row
+        { begin
+          (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-index:integer/space:1)
+          (break-if at-expanded?:boolean)
+          (up 0:space-address screen:terminal-address)
+          (loop)
+        }
+        ; print traces collapsed until just before original row
+        (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address cursor-row:integer/space:1 original-trace-index:integer/until)
+        ; fall through
+      }
+    }
+    ; expand original row and print traces below it
+;?     ($print (("done collapsing previously expanded index\n" literal))) ;? 2
+    (expanded-index:integer/space:1 <- copy original-trace-index:integer)
+    (last-index-on-page:integer/space:1 <- copy original-trace-index:integer)
+    (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref original-trace-index:integer)
+;?     ($print (("expanded\n" literal))) ;? 2
+    (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/browser-state)
+    (next-index:integer <- add original-trace-index:integer 1:literal)
+;?     ($print (("printing collapsed lines from " literal))) ;? 3
+;?     ($print next-index:integer) ;? 4
+;?     ($print (("\n" literal))) ;? 4
+    (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address next-index:integer)
+;?     ($print (("clearing rest of page\n" literal))) ;? 2
+    (clear-rest-of-page 0:space-address/browser-state screen:terminal-address)
+;?     ($print (("moving cursor back up\n" literal))) ;? 2
+    (back-to-index 0:space-address/browser-state screen:terminal-address original-trace-index:integer)
+;?     ($print (("returning\n" literal))) ;? 2
+    (reply nil:literal)
+  }
+  (reply nil:literal)
 ])
 
 (function browse-trace [
