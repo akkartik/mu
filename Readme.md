@@ -59,7 +59,7 @@ before we invest in the *visual* tools for making them concise.
 
 ([More details.](http://akkartik.name/about))
 
-**Taking mu for a spin**
+**Taking Mu for a spin**
 
 First install [Racket](http://racket-lang.org) (just for the initial
 prototype). Then:
@@ -69,7 +69,7 @@ prototype). Then:
   $ git clone http://github.com/arclanguage/anarki
 ```
 
-As a sneak peek, here's how you compute factorial in mu:
+As a sneak peek, here's how you compute factorial in Mu:
 
 ```lisp
   function factorial [
@@ -141,7 +141,7 @@ might turn into this:
   3:integer <- add 1:integer, 2:integer
 ```
 
-You shouldn't rely on the specific address mu chooses for a variable, but it
+You shouldn't rely on the specific address Mu chooses for a variable, but it
 will be unique (other variables won't clobber it) and consistent (all mentions
 of the name will map to the same address inside a function).
 
@@ -189,7 +189,7 @@ be the next space of the next space, and so on.
 See `counters.mu` for an example of managing multiple accumulators at once
 without allowing them to clobber each other. This is a classic example of the
 sorts of things closures and objects are useful for in other languages. Spaces
-in mu provide the same functionality.
+in Mu provide the same functionality.
 
 ---
 
@@ -202,7 +202,7 @@ separate them with slashes.
   z:list:integer/assign-once:true/assigned:false
 ```
 
-Most properties are meaningless to mu, and it'll silently skip them when
+Most properties are meaningless to Mu, and it'll silently skip them when
 running, but they are fodder for *meta-programs* to check or modify your
 programs, a task other languages typically hide from their programmers. For
 example, where other programmers are restricted to the checks their type
@@ -210,7 +210,7 @@ system permits and forces them to use, you'll learn to create new checks that
 make sense for your specific program. If it makes sense to perform different
 checks in different parts of your program, you'll be able to do that.
 
-To summarize: mu instructions have multiple operand and result values. Values
+To summarize: Mu instructions have multiple operand and result values. Values
 can have multiple rows separated by slashes, and rows can have multiple
 columns separated by colons. The address of a value is always in the very
 first column of the first row of its 'table'. You can visualize the last
@@ -255,10 +255,10 @@ inserting code at them.
 
 (You'll find this version in `tangle.mu`.)
 
-This is a good time to point out that `{` and `}` are also just labels in mu
+This is a good time to point out that `{` and `}` are also just labels in Mu
 syntax, and that `break` and `loop` get rewritten as jumps to just after the
 enclosing `}` and `{` respectively. This gives us a simple sort of structured
-programming without adding complexity to the parser -- mu functions remain
+programming without adding complexity to the parser -- Mu functions remain
 just flat lists of instructions.
 
 ---
@@ -293,13 +293,13 @@ Yet another example forks two 'routines' that communicate over a channel:
   error - deadlock detected
 ```
 
-Channels are the unit of synchronization in mu. Blocking on channels are the
+Channels are the unit of synchronization in Mu. Blocking on channels are the
 only way tasks can sleep waiting for results. The plan is to do all I/O over
 channels that wait for data to return.
 
 Routines are expected to communicate purely by message passing, though nothing
 stops them from sharing memory since all routines share a common address
-space. However, idiomatic mu will make it hard to accidentally read or clobber
+space. However, idiomatic Mu will make it hard to accidentally read or clobber
 random memory locations. Bounds checking is baked deeply into the semantics,
 and pointer arithmetic will be mostly forbidden (except inside the memory
 allocator and a few other places).
@@ -320,12 +320,12 @@ Now start reading `mu.arc.t` to see how it works. A colorized copy of it is at
 `mu.arc.t.html` and http://akkartik.github.io/mu.
 
 You might also want to peek in the `.traces` directory, which automatically
-includes logs for each test showing you just how it ran on my machine. If mu
+includes logs for each test showing you just how it ran on my machine. If Mu
 eventually gets complex enough that you have trouble running examples, these
 logs might help figure out if my system is somehow different from yours or if
 I've just been insufficiently diligent and my documentation is out of date.
 
-The immediate goal of mu is to build up towards an environment for parsing and
+The immediate goal of Mu is to build up towards an environment for parsing and
 visualizing these traces in a hierarchical manner, and to easily turn traces
 into reproducible tests by flagging inputs entering the log and outputs
 leaving it. The former will have to be faked in, and the latter will want to
