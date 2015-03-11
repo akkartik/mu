@@ -1406,7 +1406,7 @@ run: main 7: n")
             "+ main/ 5 : l    "
             "                 "))
   (prn "F - process-key resets the cursor after expand"))
-(quit)
+;? (quit) ;? 1
 
 (run-code main27
   (default-space:space-address <- new space:literal 30:literal/capacity)

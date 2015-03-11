@@ -888,13 +888,13 @@
     (toggle?:boolean <- equal c:character ((#\newline literal)))
     (break-unless toggle?:boolean)
     (original-cursor-row:integer <- copy cursor-row:integer/space:1)
-;?     ($print (("cursor starts at row " literal))) ;? 2
-;?     ($print original-cursor-row:integer) ;? 3
-;?     ($print (("\n" literal))) ;? 3
+;?     ($print (("cursor starts at row " literal))) ;? 3
+;?     ($print original-cursor-row:integer) ;? 4
+;?     ($print (("\n" literal))) ;? 4
     (original-trace-index:integer <- cursor-row-to-trace-index 0:space-address/browser-state original-cursor-row:integer)
-;?     ($print (("which maps to index " literal))) ;? 3
-;?     ($print original-trace-index:integer) ;? 5
-;?     ($print (("\n" literal))) ;? 5
+;?     ($print (("which maps to index " literal))) ;? 4
+;?     ($print original-trace-index:integer) ;? 6
+;?     ($print (("\n" literal))) ;? 6
     ; is expanded-index already set?
     { begin
       (expanded?:boolean <- greater-or-equal expanded-index:integer/space:1 0:literal)
@@ -904,12 +904,12 @@
       (too-late?:boolean <- greater-than expanded-index:integer/space:1 last-index-on-page:integer/space:1)
       (break-if too-late?:boolean)
       ; expanded-index is now on this page
-;?       ($print (("expanded index on this page\n" literal))) ;? 3
+;?       ($print (("expanded index on this page\n" literal))) ;? 4
       { begin
         ; are we at the expanded row?
         (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-index:integer/space:1)
         (break-unless at-expanded?:boolean)
-;?         ($print (("at expanded index\n" literal))) ;? 2
+;?         ($print (("at expanded index\n" literal))) ;? 3
         ; print remaining lines collapsed and return
         (expanded-index:integer/space:1 <- copy -1:literal)
         (expanded-children:integer/space:1 <- copy -1:literal)
@@ -920,38 +920,32 @@
       }
       ; are we below the expanded row?
       { begin
-        (below-expanded?:boolean <- greater-than cursor-row:integer/space:1 expanded-index:integer/space:1)
+        (below-expanded?:boolean <- greater-than original-trace-index:integer expanded-index:integer/space:1)
         (break-unless below-expanded?:boolean)
-;?         ($print (("below expanded index\n" literal))) ;? 2
-        ; scan up to expanded row
-        { begin
-          (at-expanded?:boolean <- equal cursor-row:integer/space:1 expanded-index:integer/space:1)
-          (break-if at-expanded?:boolean)
-          (up 0:space-address screen:terminal-address)
-          (loop)
-        }
+;?         ($print (("below expanded index\n" literal))) ;? 3
+        (back-to-index 0:space-address/browser-state screen:terminal-address expanded-index:integer/space:1)
         ; print traces collapsed until just before original row
-        (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address cursor-row:integer/space:1 original-trace-index:integer/until)
+        (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address expanded-index:integer/space:1 original-trace-index:integer/until)
         ; fall through
       }
     }
     ; expand original row and print traces below it
-;?     ($print (("done collapsing previously expanded index\n" literal))) ;? 3
+;?     ($print (("done collapsing previously expanded index\n" literal))) ;? 4
     (expanded-index:integer/space:1 <- copy original-trace-index:integer)
     (last-index-on-page:integer/space:1 <- copy original-trace-index:integer)
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref original-trace-index:integer)
-;?     ($print (("expanded\n" literal))) ;? 3
+;?     ($print (("expanded\n" literal))) ;? 4
     (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/browser-state)
     (next-index:integer <- add original-trace-index:integer 1:literal)
-;?     ($print (("printing collapsed lines from " literal))) ;? 4
-;?     ($print next-index:integer) ;? 5
-;?     ($print (("\n" literal))) ;? 5
+;?     ($print (("printing collapsed lines from " literal))) ;? 5
+;?     ($print next-index:integer) ;? 6
+;?     ($print (("\n" literal))) ;? 6
     (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address next-index:integer)
-;?     ($print (("clearing rest of page\n" literal))) ;? 3
+;?     ($print (("clearing rest of page\n" literal))) ;? 4
     (clear-rest-of-page 0:space-address/browser-state screen:terminal-address)
-;?     ($print (("moving cursor back up\n" literal))) ;? 3
+;?     ($print (("moving cursor back up\n" literal))) ;? 4
     (back-to-index 0:space-address/browser-state screen:terminal-address original-trace-index:integer)
-    ($print (("returning\n" literal))) ;? 2
+;?     ($print (("returning\n" literal))) ;? 3
     (reply nil:literal)
   }
   (reply nil:literal)
