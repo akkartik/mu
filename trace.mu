@@ -1009,6 +1009,7 @@
 
 (function main [
   (default-space:space-address <- new space:literal 30:literal/capacity)
+  ($print (("loading trace.. (takes ~10s)\n" literal)))
   (x:string-address <- new
 "run: main 0: a b c
 mem: 0
