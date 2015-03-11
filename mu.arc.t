@@ -114,6 +114,7 @@
 ; this file on the scenarios the code cares about.
 
 (selective-load "mu.arc" section-level)
+(ero "running tests in mu.ar.c.t (takes ~30s)")
 ;? (quit)
 
 (set allow-raw-addresses*)

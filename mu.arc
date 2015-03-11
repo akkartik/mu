@@ -1,3 +1,4 @@
+(ero "initializing mu.. (takes ~4s)")
 ;; profiler (http://arclanguage.org/item?id=11556)
 ; Keeping this right on top as a reminder to profile before guessing at why my
 ; program is slow.
