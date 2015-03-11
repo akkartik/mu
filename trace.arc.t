@@ -1396,7 +1396,37 @@ run: main 7: n")
             "- main/ 4 : k    "
             "+ main/ 5 : l    "
             "                 "))
-  (prn "F - process-key expands trace segment on any page"))
+  (prn "F - process-key expands a trace index on any page"))
+(run-code main26
+  (replace-character 2:terminal-address/raw ((#\* literal)))
+)
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 3 : j    "
+            "* main/ 4 : k    "
+            "+ main/ 5 : l    "
+            "                 "))
+  (prn "F - process-key resets the cursor after expand"))
+(quit)
+
+(run-code main27
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  ; reset previous cursor
+  (replace-character 2:terminal-address/raw ((#\- literal)))
+  (s:string-address <- new "j\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 3 : j    "
+            "+ main/ 4 : k    "
+            "- main/ 5 : l    "
+            "                 "))
+  (prn "F - process-key expands a trace index on any page when there's an expanded trace index above it on the same page"))
 
 (reset2)
 ;? (print-times) ;? 3
