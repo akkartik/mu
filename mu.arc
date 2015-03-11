@@ -2689,6 +2689,9 @@
     (break-unless x:terminal-address)
 ;?     ($print ((#\% literal))) ;? 1
     (row:integer-address <- get-address x:terminal-address/deref cursor-row:offset)
+;?     ($print (("cursor down: " literal))) ;? 1
+;?     ($print row:integer-address/deref) ;? 1
+;?     ($print (("\n" literal))) ;? 1
     { begin
       (bottom?:boolean <- greater-or-equal row:integer-address/deref height:integer-address/deref)
       (break-if bottom?:boolean)
@@ -2707,6 +2710,9 @@
   { begin
     (break-unless x:terminal-address)
     (row:integer-address <- get-address x:terminal-address/deref cursor-row:offset)
+;?     ($print (("cursor up: " literal))) ;? 1
+;?     ($print row:integer-address/deref) ;? 1
+;?     ($print (("\n" literal))) ;? 1
     { begin
       (top?:boolean <- lesser-or-equal row:integer-address/deref 0:literal)
       (break-if top?:boolean)
