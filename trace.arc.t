@@ -1,7 +1,7 @@
 (selective-load "mu.arc" section-level)
-(ero "running tests in trace.arc.t (takes ~10 mins)")
 (test-only-settings)
 (add-code:readfile "trace.mu")
+(ero "running tests in trace.arc.t (takes ~10 mins)")
 (freeze function*)
 (load-system-functions)
 
