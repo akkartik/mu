@@ -1449,6 +1449,29 @@
       (repeat space.arg
         (zap next-space-generator* name)))))
 
+(proc check-numeric-address (instrs name)
+;?   (prn name) ;? 2
+  (on instr instrs
+;?     (prn instr) ;? 2
+    (when acons.instr  ; not a label
+      (let (oargs op args)  (parse-instr instr)
+        (each arg oargs
+;?           (prn " " arg) ;? 2
+          (when (and acons.arg  ; not dummy _ or raw string
+                     (isa v.arg 'int)
+                     (~is v.arg 0)
+                     (~pos '(raw) metadata.arg)
+                     (~literal? arg))
+            (prn "using a raw integer address @arg in @name (instruction #@index)")))
+        (each arg args
+;?           (prn " " arg) ;? 2
+          (when (and acons.arg  ; not dummy _ or raw string
+                     (isa v.arg 'int)
+                     (~is v.arg 0)
+                     (~pos '(raw) metadata.arg)
+                     (~literal? arg))
+            (prn "using a raw integer address @arg in @name (instruction #@index)")))))))
+
 ;; literate tangling system for reordering code
 
 (def convert-quotes (instrs)
@@ -1597,6 +1620,8 @@
     (= function-table.name (convert-labels:convert-braces:tokenize-args:insert-code body name)))
   (each (name body)  canon.function-table
     (check-default-space body name))
+  (each (name body)  canon.function-table
+    (check-numeric-address body name))
   (each (name body)  canon.function-table
     (add-next-space-generator body name))
   ; keep converting names until none remain
