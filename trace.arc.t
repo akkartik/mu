@@ -1581,9 +1581,11 @@ run: main 5: l")
             "+ main/ 2 : g hi "
             "+ main/ 3 : j    "))
   (prn "F - process-key expands trace index on a page with only subindex lines"))
+
 (run-code main31
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  ; reinitialize
   (first-index-on-page:integer/space:1 <- copy 0:literal)
   (first-subindex-on-page:integer/space:1 <- copy -2:literal)
   (last-index-on-page:integer/space:1 <- copy 2:literal)
@@ -1622,6 +1624,36 @@ run: main 5: l")
             "                 "
             "                 "))
   (prn "F - process-key expands final index of trace at bottom of page"))
+
+(run-code main32
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  ; reinitialize
+  (first-index-on-page:integer/space:1 <- copy 0:literal)
+  (first-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (last-index-on-page:integer/space:1 <- copy 2:literal)
+  (last-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (expanded-index:integer/space:1 <- copy -1:literal)
+  (expanded-children:integer/space:1 <- copy -1:literal)
+  (to-top 0:space-address/browser-state 2:terminal-address/raw)
+  (print-page 0:space-address/browser-state 2:terminal-address/raw)
+;?   (replace-character 2:terminal-address/raw ((#\* literal))) ;? 1
+  (s:string-address <- new "kk\nJjj")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (5:integer-address/raw <- get-address 2:terminal-address/raw/deref cursor-row:offset)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+;? (prn (memory* memory*.5)) ;? 1
+(when (~is 3 (memory* memory*.5))
+  (prn "F - key movement stays within screen bounds, even when no next trace on page"))
 
 (reset2)
 ;? (print-times) ;? 3
