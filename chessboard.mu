@@ -204,7 +204,7 @@
   (reply b:board-address)
 ])
 
-(function main [
+(function chessboard [
   (default-space:space-address <- new space:literal 30:literal)
   (initial-position:list-address <- init-list ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal))
                                               ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
@@ -245,6 +245,11 @@
     (b:board-address <- make-move b:board-address m:move-address)
     (loop)
   }
+  (retro-mode)
+])
+
+(function main [
+  (chessboard)
 ])
 
 ; todo:
