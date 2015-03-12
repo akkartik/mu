@@ -862,6 +862,9 @@
                              ;else
                                (pr x)))
                           ))
+                $write
+                  (do1 nil
+                    (write (m arg.0)))
                 $eval
                   (new-string:repr:eval:read:to-arc-string (m arg.0))
 ;?                   (let x (to-arc-string (m arg.0)) ;? 1
