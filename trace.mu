@@ -574,16 +574,19 @@
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- next-input)
   (n:integer/screen <- next-input)
-;?   ($print (("cursor-to-index: n " literal))) ;? 1
-;?   ($print n:integer) ;? 1
+;?   ($print (("to trace index: first subindex " literal))) ;? 1
+;?   ($print first-subindex-on-page:integer/space:1) ;? 1
 ;?   ($print (("\n" literal))) ;? 1
-;?   ($print (("cursor-to-index: first index " literal))) ;? 1
-;?   ($print first-index-on-page:integer/space:1) ;? 1
-;?   ($print (("\n" literal))) ;? 1
+;?   ($print (("cursor-to-index: n " literal))) ;? 2
+;?   ($print n:integer) ;? 2
+;?   ($print (("\n" literal))) ;? 2
+;?   ($print (("cursor-to-index: first index " literal))) ;? 2
+;?   ($print first-index-on-page:integer/space:1) ;? 2
+;?   ($print (("\n" literal))) ;? 2
   (simple-result:integer <- add first-index-on-page:integer/space:1 n:integer)
-;?   ($print (("cursor-to-index: simple result " literal))) ;? 1
-;?   ($print simple-result:integer) ;? 1
-;?   ($print (("\n" literal))) ;? 1
+;?   ($print (("cursor-to-index: simple result " literal))) ;? 2
+;?   ($print simple-result:integer) ;? 2
+;?   ($print (("\n" literal))) ;? 2
   ; no row expanded? no munging needed
   { begin
     (has-expanded?:boolean <- greater-or-equal expanded-index:integer/space:1 0:literal)
@@ -599,13 +602,14 @@
   ; expanded row at top of current page and partial?
   { begin
     (expanded-at-top?:boolean <- equal first-index-on-page:integer/space:1 expanded-index:integer/space:1)
-;?     ($print (("cursor-to-index: first subindex " literal))) ;? 1
-;?     ($print first-subindex-on-page:integer/space:1) ;? 1
-;?     ($print (("\n" literal))) ;? 1
+;?     ($print (("cursor-to-index: first subindex " literal))) ;? 2
+;?     ($print first-subindex-on-page:integer/space:1) ;? 2
+;?     ($print (("\n" literal))) ;? 2
     (partial-at-top?:boolean <- greater-or-equal first-subindex-on-page:integer/space:1 0:literal)
+;?     ($print (("AAA\n" literal))) ;? 1
     (partial-expanded-at-top?:boolean <- and expanded-at-top?:boolean partial-at-top?:boolean)
     (break-unless partial-expanded-at-top?:boolean)
-;?     ($print (("expanded child at top of page\n" literal))) ;? 1
+;?     ($print (("expanded child at top of page\n" literal))) ;? 2
     (expanded-children-on-page:integer <- subtract expanded-children:integer/space:1 first-subindex-on-page:integer/space:1)
     (result:integer <- subtract simple-result:integer expanded-children-on-page:integer)
     (result:integer <- add result:integer 1:literal)
@@ -634,34 +638,40 @@
   (0:space-address/names:browser-state <- next-input)
   (screen:terminal-address <- next-input)
   (target-index:integer <- next-input)
-;?   ($print (("back-to-index: target " literal))) ;? 2
-;?   ($print target-index:integer) ;? 2
-;?   ($print (("\n" literal))) ;? 2
+;?   ($print (("back-to-index: target " literal))) ;? 3
+;?   ($print target-index:integer) ;? 3
+;?   ($print (("\n" literal))) ;? 3
+;?   ($print (("back-to-index: first subindex " literal))) ;? 1
+;?   ($print first-subindex-on-page:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 1
   ; scan up until top, or *before* target-index (to skip expanded children)
   { begin
+;?     ($print cursor-row:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
     (at-top?:boolean <- equal cursor-row:integer/space:1 0:literal)
     (break-if at-top?:boolean)
     (index:integer <- cursor-row-to-trace-index 0:space-address/browser-state cursor-row:integer/space:1)
-;?     ($print cursor-row:integer/space:1) ;? 2
-;?     ($print ((" " literal))) ;? 2
-;?     ($print index:integer) ;? 2
-;?     ($print (("\n" literal))) ;? 2
+;?     ($print cursor-row:integer/space:1) ;? 3
+;?     ($print ((" " literal))) ;? 3
+;?     ($print index:integer) ;? 3
+;?     ($print (("\n" literal))) ;? 3
     (done?:boolean <- less-than index:integer target-index:integer)
     (break-if done?:boolean)
     (up 0:space-address screen:terminal-address)
     (loop)
   }
   ; now if we're before target-index, down 1
+;?   ($print (("final down?\n" literal))) ;? 1
   (index:integer <- cursor-row-to-trace-index 0:space-address/browser-state cursor-row:integer/space:1)
-;?   ($print (("done scanning; cursor at row " literal))) ;? 1
-;?   ($print cursor-row:integer/space:1) ;? 1
-;?   ($print ((", which is index " literal))) ;? 1
-;?   ($print index:integer) ;? 1
-;?   ($print (("\n" literal))) ;? 1
+;?   ($print (("done scanning; cursor at row " literal))) ;? 2
+;?   ($print cursor-row:integer/space:1) ;? 2
+;?   ($print ((", which is index " literal))) ;? 2
+;?   ($print index:integer) ;? 2
+;?   ($print (("\n" literal))) ;? 2
   { begin
     (at-target?:boolean <- greater-or-equal index:integer target-index:integer)
     (break-if at-target?:boolean)
-;?     ($print (("down 1\n" literal))) ;? 1
+;?     ($print (("down 1\n" literal))) ;? 2
     ; above expanded
     (down 0:space-address screen:terminal-address)
   }
@@ -709,19 +719,19 @@
   (default-space:space-address <- new space:literal 30:literal/capacity)
   (0:space-address/names:browser-state <- next-input)
   { begin
-;?     ($print (("expanded: " literal))) ;? 2
-;?     ($print expanded-index:integer/space:1) ;? 2
-;?     ($print ((" last index: " literal))) ;? 2
-;?     ($print last-index-on-page:integer/space:1) ;? 2
-;?     ($print (("\n" literal))) ;? 2
+;?     ($print (("expanded: " literal))) ;? 3
+;?     ($print expanded-index:integer/space:1) ;? 3
+;?     ($print ((" last index: " literal))) ;? 3
+;?     ($print last-index-on-page:integer/space:1) ;? 3
+;?     ($print (("\n" literal))) ;? 3
     (last-index-expanded?:boolean <- equal expanded-index:integer/space:1 last-index-on-page:integer/space:1)
     (break-unless last-index-expanded?:boolean)
     ; expanded
-;?     ($print (("last expanded\n" literal))) ;? 2
+;?     ($print (("last expanded\n" literal))) ;? 3
     { begin
       (expanded-index-done?:boolean <- equal expanded-children:integer/space:1 last-subindex-on-page:integer/space:1)
       (break-if expanded-index-done?:boolean 2:blocks)
-;?       ($print (("children left\n" literal))) ;? 2
+;?       ($print (("children left\n" literal))) ;? 3
       ; children left to open
       (first-index-on-page:integer/space:1 <- copy last-index-on-page:integer/space:1)
       (first-subindex-on-page:integer/space:1 <- add last-subindex-on-page:integer/space:1 1:literal)
@@ -729,7 +739,7 @@
     }
   }
   (first-index-on-page:integer/space:1 <- add last-index-on-page:integer/space:1 1:literal)
-  (first-subindex-on-page:integer/space:1 <- copy -2:integer)
+  (first-subindex-on-page:integer/space:1 <- copy -2:literal)
 ])
 
 (function previous-page [
@@ -925,14 +935,17 @@
   { begin
     (toggle?:boolean <- equal c:character ((#\newline literal)))
     (break-unless toggle?:boolean)
+;?     ($print (("expand: first subindex " literal))) ;? 1
+;?     ($print first-subindex-on-page:integer/space:1) ;? 1
+;?     ($print (("\n" literal))) ;? 1
     (original-cursor-row:integer <- copy cursor-row:integer/space:1)
-;?     ($print (("cursor starts at row " literal))) ;? 5
-;?     ($print original-cursor-row:integer) ;? 6
-;?     ($print (("\n" literal))) ;? 6
+;?     ($print (("cursor starts at row " literal))) ;? 6
+;?     ($print original-cursor-row:integer) ;? 7
+;?     ($print (("\n" literal))) ;? 7
     (original-trace-index:integer <- cursor-row-to-trace-index 0:space-address/browser-state original-cursor-row:integer)
-;?     ($print (("which maps to index " literal))) ;? 6
-;?     ($print original-trace-index:integer) ;? 8
-;?     ($print (("\n" literal))) ;? 8
+;?     ($print (("which maps to index " literal))) ;? 7
+;?     ($print original-trace-index:integer) ;? 9
+;?     ($print (("\n" literal))) ;? 9
     ; is expanded-index already set?
     { begin
       (expanded?:boolean <- greater-or-equal expanded-index:integer/space:1 0:literal)
@@ -942,12 +955,12 @@
       (too-late?:boolean <- greater-than expanded-index:integer/space:1 last-index-on-page:integer/space:1)
       (break-if too-late?:boolean)
       ; expanded-index is now on this page
-;?       ($print (("expanded index on this page\n" literal))) ;? 5
+;?       ($print (("expanded index on this page\n" literal))) ;? 6
       { begin
         ; are we at the expanded row?
         (at-expanded?:boolean <- equal original-trace-index:integer expanded-index:integer/space:1)
         (break-unless at-expanded?:boolean)
-;?         ($print (("at expanded index\n" literal))) ;? 4
+;?         ($print (("at expanded index\n" literal))) ;? 5
         ; print remaining lines collapsed and return
         (back-to-index 0:space-address/browser-state screen:terminal-address expanded-index:integer/space:1)
         (expanded-index:integer/space:1 <- copy -1:literal)
@@ -961,33 +974,33 @@
       { begin
         (below-expanded?:boolean <- greater-than original-trace-index:integer expanded-index:integer/space:1)
         (break-unless below-expanded?:boolean)
-;?         ($print (("below expanded index\n" literal))) ;? 5
+;?         ($print (("below expanded index\n" literal))) ;? 6
         (back-to-index 0:space-address/browser-state screen:terminal-address expanded-index:integer/space:1)
-;?         ($print (("scanning up to row " literal))) ;? 2
-;?         ($print cursor-row:integer/space:1) ;? 2
-;?         ($print (("\n" literal))) ;? 2
+;?         ($print (("scanning up to row " literal))) ;? 3
+;?         ($print cursor-row:integer/space:1) ;? 3
+;?         ($print (("\n" literal))) ;? 3
         ; print traces collapsed until just before original row
         (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address expanded-index:integer/space:1 original-trace-index:integer/until)
         ; fall through
       }
     }
     ; expand original row and print traces below it
-;?     ($print (("done collapsing previously expanded index\n" literal))) ;? 5
+;?     ($print (("done collapsing previously expanded index\n" literal))) ;? 6
     (expanded-index:integer/space:1 <- copy original-trace-index:integer)
     (last-index-on-page:integer/space:1 <- copy original-trace-index:integer)
     (tr:instruction-trace-address <- index traces:instruction-trace-address-array-address/space:1/deref original-trace-index:integer)
-;?     ($print (("expanded\n" literal))) ;? 5
+;?     ($print (("expanded\n" literal))) ;? 6
     (print-instruction-trace screen:terminal-address tr:instruction-trace-address 0:space-address/browser-state)
     (next-index:integer <- add original-trace-index:integer 1:literal)
-;?     ($print (("printing collapsed lines from " literal))) ;? 6
-;?     ($print next-index:integer) ;? 7
-;?     ($print (("\n" literal))) ;? 7
+;?     ($print (("printing collapsed lines from " literal))) ;? 7
+;?     ($print next-index:integer) ;? 8
+;?     ($print (("\n" literal))) ;? 8
     (print-traces-collapsed-from 0:space-address/browser-state screen:terminal-address next-index:integer)
-;?     ($print (("clearing rest of page\n" literal))) ;? 5
+;?     ($print (("clearing rest of page\n" literal))) ;? 6
     (clear-rest-of-page 0:space-address/browser-state screen:terminal-address)
-;?     ($print (("moving cursor back up\n" literal))) ;? 5
+;?     ($print (("moving cursor back up\n" literal))) ;? 6
     (back-to-index 0:space-address/browser-state screen:terminal-address original-trace-index:integer)
-;?     ($print (("returning\n" literal))) ;? 4
+;?     ($print (("returning\n" literal))) ;? 5
     (reply nil:literal)
   }
   (reply nil:literal)

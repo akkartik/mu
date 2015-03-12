@@ -1583,4 +1583,65 @@ run: main 5: l")
   (prn "F - process-key expands trace index on a page with only subindex lines"))
 
 (reset2)
+(new-trace "trace-paginate4")
+(run-code main31
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (x:string-address <- new
+"run: main 0: a b c
+mem: 0 a
+run: main 1: d e f
+mem: 1 a
+mem: 1 b
+mem: 1 c
+run: main 2: g hi
+mem: 2 a
+run: main 3: j
+run: main 4: k
+run: main 5: l")
+  (s:stream-address <- init-stream x:string-address)
+  (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
+  (2:terminal-address/raw <- init-fake-terminal 17:literal 15:literal)
+  (3:space-address/raw/browser-state <- browser-state traces:instruction-trace-address-array-address 3:literal/screen-height)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  (4:string-address/raw <- get 2:terminal-address/raw/deref data:offset)
+  (first-index-on-page:integer/space:1 <- copy 0:literal)
+  (first-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (last-index-on-page:integer/space:1 <- copy 2:literal)
+  (last-subindex-on-page:integer/space:1 <- copy -2:literal)
+  (expanded-index:integer/space:1 <- copy -1:literal)
+  (expanded-children:integer/space:1 <- copy -1:literal)
+  (to-top 0:space-address/browser-state 2:terminal-address/raw)
+  (print-page 0:space-address/browser-state 2:terminal-address/raw)
+;?   (replace-character 2:terminal-address/raw ((#\* literal))) ;? 1
+  (s:string-address <- new "Jjj\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+;?   ($print (("test: first subindex " literal))) ;? 1
+;?   ($print first-subindex-on-page:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+;?   ($print (("test: first subindex 2 " literal))) ;? 1
+;?   ($print first-subindex-on-page:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+;?   ($print (("test: first subindex 3 " literal))) ;? 1
+;?   ($print first-subindex-on-page:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+;?   ($print (("test: first subindex 4 " literal))) ;? 1
+;?   ($print first-subindex-on-page:integer/space:1) ;? 1
+;?   ($print (("\n" literal))) ;? 1
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+         (+ "+ main/ 3 : j    "
+            "+ main/ 4 : k    "
+            "- main/ 5 : l    "
+            "                 "
+            "                 "))
+  (prn "F - process-key expands final index of trace at bottom of page"))
+
+(reset2)
 ;? (print-times) ;? 3
