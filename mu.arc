@@ -3151,6 +3151,7 @@
 
 (when (no cdr.argv)
   (add-code:readfile "trace.mu")
+  (add-code:readfile "chessboard.mu")
   (freeze function*)
   (load-system-functions)
   (wipe interactive-commands*)
