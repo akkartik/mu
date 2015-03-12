@@ -1540,5 +1540,47 @@ run: main 5: l")
             "                 "))
   (prn "F - process-key expands trace index on a page that starts with a partial expanded trace - 2"))
 
+; expand scenario
+; + run: main 0: a b c
+;   mem: 0 a
+; + run: main 1: d e f
+;   mem: 1 a              <- top of page
+;   mem: 1 b
+;   mem: 1 c              <- bottom of page
+; + run: main 2: g hi
+;   mem: 2 a
+; + run: main 3: j
+; + run: main 4: k
+; + run: main 5: l
+(run-code main30
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (0:space-address/names:browser-state <- copy 3:space-address/raw/browser-state)
+  (first-index-on-page:integer/space:1 <- copy 1:literal)
+  (first-subindex-on-page:integer/space:1 <- copy 0:literal)
+  (last-index-on-page:integer/space:1 <- copy 1:literal)
+  (last-subindex-on-page:integer/space:1 <- copy 2:literal)
+  (expanded-index:integer/space:1 <- copy 1:literal)
+  (expanded-children:integer/space:1 <- copy 3:literal)
+  (to-top 0:space-address/browser-state 2:terminal-address/raw)
+  (print-page 0:space-address/browser-state 2:terminal-address/raw)
+  (s:string-address <- new "k\n")
+  (k:keyboard-address <- init-keyboard s:string-address)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+  (process-key 3:space-address/raw/browser-state k:keyboard-address 2:terminal-address/raw)
+;?   (replace-character 2:terminal-address/raw ((#\* literal))) ;? 1
+  )
+(each routine completed-routines*
+  (awhen rep.routine!error
+    (prn "error - " it)))
+(when (~screen-contains memory*.4 17
+;?          (+ "   mem : 1 a     "  ; after print-page
+;?             "   mem : 1 b     "
+;?             "   mem : 1 c     "
+;?             "*                "))
+         (+ "+ main/ 1 : d e f"
+            "+ main/ 2 : g hi "
+            "+ main/ 3 : j    "))
+  (prn "F - process-key expands trace index on a page with only subindex lines"))
+
 (reset2)
 ;? (print-times) ;? 3
