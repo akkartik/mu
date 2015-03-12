@@ -1012,6 +1012,7 @@
 
 (function browse-trace [
   (default-space:space-address <- new space:literal 30:literal/capacity)
+  ($print (("parsing trace... (might take a while, depending on how long the trace is\n" literal)))
   (x:string-address <- next-input)
   (screen-height:integer <- next-input)
   (s:stream-address <- init-stream x:string-address)
