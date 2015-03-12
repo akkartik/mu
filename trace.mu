@@ -301,6 +301,8 @@
     { begin
       (done?:boolean <- greater-or-equal i:integer n:integer)
       (break-if done?:boolean)
+      (at-bottom?:boolean <- greater-or-equal cursor-row:integer/space:1 printed-height:integer/space:1)
+      (break-if at-bottom?:boolean)
 ;?       ($print (("down: incrementing\n" literal))) ;? 1
       (cursor-row:integer/space:1 <- add cursor-row:integer/space:1 1:literal)
       (cursor-down screen:terminal-address)
@@ -335,6 +337,8 @@
     { begin
       (done?:boolean <- greater-or-equal i:integer n:integer)
       (break-if done?:boolean)
+      (at-top?:boolean <- lesser-or-equal cursor-row:integer/space:1 0:literal)
+      (break-if at-top?:boolean)
       (cursor-row:integer/space:1 <- subtract cursor-row:integer/space:1 1:literal)
       (cursor-up screen:terminal-address)
       (i:integer <- add i:integer 1:literal)
