@@ -5,6 +5,10 @@
 (mac proc (name params . body)
   `(def ,name ,params ,@body nil))
 
+(mac filter-log (msg f x)
+  `(ret x@ ,x
+     (prn ,msg (,f x@))))
+
 (= times* (table))
 
 (mac deftimed (name args . body)
@@ -493,6 +497,8 @@
 ($:define (background color) (tput 'setab color))
 ($:define (reset) (tput 'sgr0))
 
+(= new-string-foo* nil)
+
 ; run instructions from 'routine*' for 'time-slice'
 (def run-for-time-slice (time-slice)
   (point return
@@ -874,14 +880,22 @@
                 $clear-trace
                   (do1 nil (wipe interactive-traces*))
                 $save-trace
+                  (let x (filter-log "CCC: " len
+                         (string
+                           (filter-log "BBB: " len
+                           (map [string:intersperse ": " _]
+                                (filter-log "AAA: " len
+                                (as cons (interactive-traces* (m arg.0)))))
+                                )))
 ;?                   (let x (string:map [string:intersperse ": " _]
-;?                                      (as cons (interactive-traces* (m arg.0))))
-                  (let x (string:map [string:intersperse ": " _]
-                                     (apply join
-                                            (map [as cons _] rev.interactive-traces*)))
+;?                                      (apply join
+;?                                             (map [as cons _] rev.interactive-traces*)))
+                    (prn "computed trace; now saving to memory\n")
 ;?                     (write x)(write #\newline) ;? 1
 ;?                     (prn x) ;? 1
-                    (new-string x))
+                    (set new-string-foo*)
+                    (do1 (new-string x)
+                      (wipe new-string-foo*)))
 
                 ; first-class continuations
                 current-continuation
@@ -1173,7 +1187,8 @@
   (ret result (alloc (+ 1 len.literal-string))
     (= memory*.result len.literal-string)
     (on c literal-string
-;?       (prn index " " repr.c) ;? 1
+      (when (and new-string-foo* (is 0 (mod index 100)))
+        (prn index " " repr.c))
       (= (memory* (+ result 1 index)) c))))
 
 (def to-arc-string (string-address)
