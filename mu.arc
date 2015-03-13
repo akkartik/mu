@@ -2470,6 +2470,14 @@
   (reply result:stream-address)
 )
 
+(init-fn rewind-stream
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:stream-address <- next-input)
+  (x:integer-address <- get-address in:stream-address/deref pointer:offset)
+  (x:integer-address/deref <- copy 0:literal)
+  (reply in:stream-address/same-as-arg:0)
+)
+
 (init-fn read-line
   (default-space:space-address <- new space:literal 30:literal)
   (in:stream-address <- next-input)
@@ -2488,6 +2496,16 @@
 ;?   ($print idx:integer-address/deref) ;? 1
 ;?   ($print (("\n" literal))) ;? 1
   (reply result:string-address)
+)
+
+(init-fn read-character
+  (default-space:space-address <- new space:literal 30:literal)
+  (in:stream-address <- next-input)
+  (idx:integer-address <- get-address in:stream-address/deref pointer:offset)
+  (s:string-address <- get in:stream-address/deref data:offset)
+  (c:character <- index s:string-address/deref idx:integer-address/deref)
+  (idx:integer-address/deref <- add idx:integer-address/deref 1:literal)
+  (reply c:character)
 )
 
 (init-fn end-of-stream?

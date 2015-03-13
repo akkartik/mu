@@ -21,6 +21,23 @@
   (default-space:space-address <- new space:literal 30:literal)
 ;?   ($print (("parse-traces\n" literal))) ;? 2
   (in:stream-address <- next-input)
+  ; check input size
+  (n:integer <- copy 0:literal)
+  { begin
+    (done?:boolean <- end-of-stream? in:stream-address)
+    (break-if done?:boolean)
+    (c:character <- read-character in:stream-address)
+    { begin
+      (newline?:boolean <- equal c:character ((#\newline literal)))
+      (break-unless newline?:boolean)
+      (n:integer <- add n:integer 1:literal)
+    }
+    (loop)
+  }
+  ($print n:integer)
+  ($print ((" lines\n" literal)))
+  (in:stream-address <- rewind-stream in:stream-address)
+  ; prepare result
   (result:buffer-address <- init-buffer 30:literal)
   (curr-tail:instruction-trace-address <- copy nil:literal)
   (ch:buffer-address <- init-buffer 5:literal)  ; accumulator for traces between instructions
@@ -1012,9 +1029,10 @@
 
 (function browse-trace [
   (default-space:space-address <- new space:literal 30:literal/capacity)
-  ($print (("parsing trace... (might take a while, depending on how long the trace is\n" literal)))
+  ($print (("parsing trace... (might take a while, depending on how long the trace is)\n" literal)))
   (x:string-address <- next-input)
   (screen-height:integer <- next-input)
+;?   (print-string nil:literal/terminal x:string-address) ;? 1
   (s:stream-address <- init-stream x:string-address)
   (traces:instruction-trace-address-array-address <- parse-traces s:stream-address)
   (0:space-address/names:browser-state <- browser-state traces:instruction-trace-address-array-address screen-height:integer)
