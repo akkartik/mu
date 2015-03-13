@@ -132,8 +132,7 @@
 ;   at compile time: mapping names to locations
 (on-init
   (= type* (table))  ; name -> type info
-  (= memory* ($.make-vector 1000000))  ; address -> value
-;?   (= memory* ($.make-vector 1000000000))  ; address -> value
+  (= memory* (table))  ; address -> value  (make this a vector?)
   (= function* (table))  ; name -> [instructions]
   ; transforming mu programs
   (= location* (table))  ; function -> {name -> index into default-space}
@@ -1154,13 +1153,8 @@
 (def deref (operand)
   (assert (pos '(deref) metadata.operand))
   (assert address?.operand)
-  (if (isa v.operand 'int)
-    (cons `(,(memory* v.operand) ,@typeinfo.operand!elem)
-          (drop-one '(deref) metadata.operand))
-    ; non-numeric address should only happen during freezing
-    ; no address available, and type can't be an array
-    (cons `(abcfoo ,@typeinfo.operand!elem)
-          (drop-one '(deref) metadata.operand))))
+  (cons `(,(memory* v.operand) ,@typeinfo.operand!elem)
+        (drop-one '(deref) metadata.operand)))
 
 (def drop-one (f x)
   (when acons.x  ; proper lists only
@@ -1373,7 +1367,6 @@
 ;?           (tr "about to rename args: @op")
           (when (in op 'get 'get-address)
             ; special case: map field offset by looking up type table
-            (prn args.0)
             (with (basetype  (typeof args.0)
                    field  (v args.1))
 ;?               (tr 111 " " args.0 " " basetype)
@@ -1652,7 +1645,7 @@
     (while change
       (= change nil)
       (each (name body)  canon.function-table
-        (prn name)
+;?         (prn name) ;? 1
         (when (no location*.name)
           (= change t))
         (or= location*.name (assign-names-to-location body name)))))
