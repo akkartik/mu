@@ -1,5 +1,5 @@
 // It's often convenient to express recipes in a textual fashion.
-:(scenarios add_recipe)
+:(scenarios add_recipes)
 :(scenario first_recipe)
 recipe main [
   1:integer <- copy 23:literal
@@ -9,10 +9,15 @@ recipe main [
 +parse:   product: {name: "1", type: 1}
 
 :(code)
-int add_recipe(string form) {
+int add_recipes(string form) {
   istringstream in(form);
   in >> std::noskipws;
+  int result = add_recipe(in);
+  while (!in.eof()) add_recipe(in);
+  return result;
+}
 
+int add_recipe(istringstream& in) {
   skip_comments_and_newlines(in);
   string _recipe = next_word(in);
   if (_recipe != "recipe")
@@ -20,8 +25,11 @@ int add_recipe(string form) {
 
   string recipe_name = next_word(in);
   if (recipe_name.empty())
-    raise << "empty recipe name in " << form << '\n';
-  int r = Recipe_number[recipe_name] = Next_recipe_number++;
+    raise << "empty recipe name in " << in.str() << '\n';
+  if (Recipe_number.find(recipe_name) == Recipe_number.end())
+    Recipe_number[recipe_name] = Next_recipe_number++;
+  int r = Recipe_number[recipe_name];
+//?   cout << recipe_name << ": adding recipe " << r << '\n'; //? 2
 
   if (next_word(in) != "[")
     raise << "recipe body must begin with '['\n";
@@ -33,6 +41,7 @@ int add_recipe(string form) {
     Recipe[r].steps.push_back(curr);
   }
   Recipe[r].name = recipe_name;
+//?   cout << "recipe " << recipe_name << " has " << Recipe[r].steps.size() << " steps.\n"; //? 1
   return r;
 }
 
@@ -51,6 +60,12 @@ bool next_instruction(istream& in, instruction* curr) {
   }
   skip_comments_and_newlines(in);  if (in.eof()) return false;
 
+//?   if (words.size() == 1) cout << words[0] << ' ' << words[0].size() << '\n'; //? 1
+  if (words.size() == 1 && words[0] == "]") {
+//?     cout << "AAA\n"; //? 1
+    return false;  // end of recipe
+  }
+
   if (words.size() == 1 && *(words[0].end()-1) == ':') {
     curr->is_label = true;
     words[0].erase(words[0].end()-1);
@@ -68,6 +83,8 @@ bool next_instruction(istream& in, instruction* curr) {
     ++p;  // skip <-
   }
 
+  if (Recipe_number.find(*p) == Recipe_number.end())
+    Recipe_number[*p] = Next_recipe_number++;
   curr->operation = Recipe_number[*p];  ++p;
 
   for (; p != words.end(); ++p) {
