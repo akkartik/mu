@@ -27,6 +27,7 @@
   { begin
     (done?:boolean <- end-of-stream? in:stream-address)
     (break-if done?:boolean)
+;?     ($start-tracing) ;? 1
     (c:character <- read-character in:stream-address)
     { begin
       (newline?:boolean <- equal c:character ((#\newline literal)))
@@ -40,6 +41,7 @@
         ($print (("\n" literal)))
       }
     }
+;?     ($quit) ;? 1
     (loop)
   }
   ($print n:integer)
