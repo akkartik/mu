@@ -36,3 +36,43 @@ case NEXT_INGREDIENT: {
   }
   break;
 }
+
+:(scenario "reply")
+recipe main [
+  3:integer, 4:integer <- f 2:literal
+]
+recipe f [
+  12:integer <- next_ingredient
+  13:integer <- add 1:literal, 12:integer
+  reply 12:integer, 13:integer
+]
++run: instruction main/0
++run: result 0 is 1[2...]
++mem: storing in location 3
++run: result 1 is 1[3...]
++mem: storing in location 4
+
+:(before "End Globals")
+const int REPLY = 23;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["reply"] = REPLY;
+assert(Next_recipe_number == REPLY);
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case REPLY: {
+  vector<vector<int> > callee_results;
+  for (size_t i = 0; i < instructions[pc].ingredients.size(); ++i) {
+    callee_results.push_back(read_memory(instructions[pc].ingredients[i]));
+  }
+  rr.calls.pop();
+  size_t& new_pc = rr.calls.top().pc;
+//?   cout << new_pc << ": " << instructions[new_pc].products.size() << " <=> " << callee_results.size(); //? 2
+  assert(instructions[new_pc].products.size() <= callee_results.size());
+  for (size_t i = 0; i < instructions[new_pc].products.size(); ++i) {
+//?     cout << "AAA " << i << '\n'; //? 1
+    trace("run") << "result " << i << " is " << callee_results[i].size() << "[" << callee_results[i][0] << "...]";
+    write_memory(instructions[new_pc].products[i], callee_results[i]);
+  }
+  ++new_pc;
+  break;
+}
