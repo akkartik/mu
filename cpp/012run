@@ -23,6 +23,8 @@ recipe main [
 struct call {
   recipe_number running_recipe;
   size_t pc;
+  vector<int> incoming_atoms;
+  vector<int> outgoing_atoms;
   call(recipe_number r) :running_recipe(r), pc(0) {}
 };
 typedef stack<call> call_stack;
@@ -38,7 +40,7 @@ struct routine {
 
 :(code)
 void run(string form) {
-  recipe_number r = add_recipe(form);
+  recipe_number r = add_recipes(form);
   routine rr;
   rr.calls.push(call(r));
   run(rr);
@@ -57,6 +59,7 @@ void run(routine rr) {
       ++rr.calls.top().pc;
     }
     size_t& pc = rr.calls.top().pc;
+//?     cout << "instruction " << TOP_RECIPE.name << '/' << pc << '\n'; //? 1
     trace("run") << "instruction " << TOP_RECIPE.name << '/' << pc;
     switch (instructions[pc].operation) {
     // Primitive Recipe Implementations.
@@ -67,9 +70,15 @@ void run(routine rr) {
       break;
     }
     // End Primitive Recipe Implementations.
-    default:
-      raise << "undefined operation " << instructions[pc].operation;
-    }
+    default: {
+      if (Recipe.find(instructions[pc].operation) == Recipe.end()) {
+        raise << "undefined operation " << instructions[pc].operation << '\n';
+        break;
+      }
+//?       cout << "calling " << instructions[pc].operation << '\n'; //? 1
+      rr.calls.push(call(instructions[pc].operation));
+      // todo: push incoming atoms
+    }}
     ++pc;
   }
 #undef TOP_RECIPE
