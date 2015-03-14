@@ -3148,6 +3148,15 @@
   (reply result:terminal-address)
 )
 
+(init-fn divides?
+  (default-space:space-address <- new space:literal 30:literal/capacity)
+  (x:integer <- next-input)
+  (y:integer <- next-input)
+  (_ remainder:integer <- divide-with-remainder x:integer y:integer)
+  (result:boolean <- equal remainder:integer 0:literal)
+  (reply result:boolean)
+)
+
 ; after all system software is loaded:
 ;? (= dump-trace* (obj whitelist '("cn0" "cn1")))
 (freeze system-function*)
@@ -3186,7 +3195,8 @@
 (when (no cdr.argv)
   (add-code:readfile "trace.mu")
   (wipe function*!main)
-  (add-code:readfile "chessboard.mu")
+  (add-code:readfile "factorial.mu")
+;?   (add-code:readfile "chessboard.mu")  ; takes too long
   (wipe function*!main)
   (freeze function*)
   (load-system-functions)
