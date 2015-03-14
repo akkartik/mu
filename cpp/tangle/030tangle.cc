@@ -76,6 +76,19 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
       return;
     }
 
+    if (next_tangle_token(directive_stream) == "then") {
+      string pat2 = next_tangle_token(directive_stream);
+      if (pat2 == "") {
+        RAISE << "No target for then directive following " << cmd << ".\n" << die();
+        return;
+      }
+      target = find_substr(out, target, pat2);
+      if (target == out.end()) {
+        RAISE << "Couldn't find target " << pat << " then " << pat2 << '\n' << die();
+        return;
+      }
+    }
+
     indent_all(hunk, target);
 
     if (cmd == "before") {
@@ -259,6 +272,13 @@ string expected_not_in_trace(const string& line) {
 
 list<string>::iterator find_substr(list<string>& in, const string& pat) {
   for (list<string>::iterator p = in.begin(); p != in.end(); ++p)
+    if (p->find(pat) != NOT_FOUND)
+      return p;
+  return in.end();
+}
+
+list<string>::iterator find_substr(list<string>& in, list<string>::iterator p, const string& pat) {
+  for (; p != in.end(); ++p)
     if (p->find(pat) != NOT_FOUND)
       return p;
   return in.end();
