@@ -498,6 +498,7 @@
 ($:define (reset) (tput 'sgr0))
 
 (= new-string-foo* nil)
+(= last-print* 0)
 
 ; run instructions from 'routine*' for 'time-slice'
 (def run-for-time-slice (time-slice)
@@ -512,6 +513,11 @@
           (die "No results returned: @(tostring:pr (body.routine* pc.routine*))"))
         (++ pc.routine*))
       (++ curr-cycle*)
+      (when (no ($.current-charterm))
+        (let curr (seconds)
+          (when (~is curr last-print*)
+            (prn curr " " curr-cycle* " " len.running-routines*)
+            (= last-print* curr))))
 ;?       (trace "run" "-- " int-canon.memory*) ;? 1
 ;?       (trace "run" curr-cycle*)
       (trace "run" label.routine* " " pc.routine* ": " (body.routine* pc.routine*))
