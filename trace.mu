@@ -22,6 +22,7 @@
 ;?   ($print (("parse-traces\n" literal))) ;? 2
   (in:stream-address <- next-input)
   ; check input size
+  ($print (("counting lines\n" literal)))
   (n:integer <- copy 0:literal)
   { begin
     (done?:boolean <- end-of-stream? in:stream-address)
@@ -31,6 +32,13 @@
       (newline?:boolean <- equal c:character ((#\newline literal)))
       (break-unless newline?:boolean)
       (n:integer <- add n:integer 1:literal)
+      { begin
+;?         (print?:boolean <- divides? n:integer 100:literal)
+;?         (break-unless print?:boolean)
+        ($print ((" " literal)))
+        ($print n:integer)
+        ($print (("\n" literal)))
+      }
     }
     (loop)
   }
@@ -42,6 +50,8 @@
   (curr-tail:instruction-trace-address <- copy nil:literal)
   (ch:buffer-address <- init-buffer 5:literal)  ; accumulator for traces between instructions
   (run:string-address/const <- new "run")
+  ($print (("parsing\n" literal)))
+  (n:integer <- copy 0:literal)
   ; reading each line from 'in'
   { begin
     next-line
@@ -51,6 +61,14 @@
     (break-if done?:boolean)
     ; parse next line as a generic trace
     (line:string-address <- read-line in:stream-address)
+    { begin
+      (n:integer <- add n:integer 1:literal)
+      (print?:boolean <- divides? n:integer 100:literal)
+      (break-unless print?:boolean)
+      ($print ((" " literal)))
+      ($print n:integer)
+      ($print (("\n" literal)))
+    }
 ;?     (print-string nil:literal/terminal line:string-address) ;? 1
     (f:trace-address <- parse-trace line:string-address)
     (l:string-address <- get f:trace-address/deref label:offset)
