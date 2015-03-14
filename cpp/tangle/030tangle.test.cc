@@ -76,6 +76,13 @@ void test_tangle_replace_tracks_old_lines() {
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "b {");
 }
 
+void test_tangle_nested_patterns() {
+  istringstream in("a\nc\nb\nc\nd\n:(after \"b\" then \"c\")\ne");
+  list<string> dummy;
+  tangle(in, dummy);
+  CHECK_TRACE_CONTENTS("tangle", "acbced");
+}
+
 // todo: include line numbers in tangle errors
 
 
