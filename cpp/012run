@@ -84,6 +84,21 @@ void run(routine rr) {
 #undef instructions
 }
 
+:(before "End Main")
+if (argc > 1) {
+  setup();
+  for (int i = 1; i < argc; ++i) {
+    ifstream fin(argv[i]);
+    while (!fin.eof()) add_recipe(fin);
+    fin.close();
+  }
+
+  recipe_number r = Recipe_number[string("main")];
+  if (r) run(r);
+  dump_memory();
+}
+
+:(code)
 vector<int> read_memory(reagent x) {
 //?   cout << "read_memory: " << x.to_string() << '\n'; //? 1
   vector<int> result;
