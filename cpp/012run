@@ -51,8 +51,8 @@ void run(recipe_number r) {
 void run(routine rr) {
 // #defines save us the trouble of updating aliases when dependent variables
 // change.
-#define instructions Recipe[rr.calls.top().running_recipe].steps
   while (!rr.calls.empty()) {
+    vector<instruction>& instructions = Recipe[rr.calls.top().running_recipe].steps;
     while (rr.calls.top().pc >= instructions.size()) {
       rr.calls.pop();
       if (rr.calls.empty()) return;
@@ -76,7 +76,6 @@ void run(routine rr) {
     }
     ++pc;
   }
-#undef instructions
 }
 
 :(before "End Main")
