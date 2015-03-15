@@ -65,54 +65,10 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
   }
 
   if (cmd == "before" || cmd == "after" || cmd == "replace" || cmd == "replace{}" || cmd == "delete" || cmd == "delete{}") {
-    string pat = next_tangle_token(directive_stream);
-    if (pat == "") {
-      RAISE << "No target for " << cmd << " directive.\n" << die();
+    list<string>::iterator target = locate_target(out, directive_stream);
+    if (target == out.end()) {
+      RAISE << "Couldn't find target " << directive << '\n' << die();
       return;
-    }
-
-    list<string>::iterator target = out.begin();
-    string next_token = next_tangle_token(directive_stream);
-    if (next_token == "") {
-      target = find_substr(out, pat);
-      if (target == out.end()) {
-        RAISE << "Couldn't find target " << pat << '\n' << die();
-        return;
-      }
-    }
-    else if (next_token == "following") {
-      string pat2 = next_tangle_token(directive_stream);
-      if (pat2 == "") {
-        RAISE << "No target for 'following' in " << directive << ".\n" << die();
-        return;
-      }
-      target = find_substr(out, pat2);
-      if (target == out.end()) {
-        RAISE << "Couldn't find target " << pat2 << die();
-        return;
-      }
-      target = find_substr(out, target, pat);
-      if (target == out.end()) {
-        RAISE << "Couldn't find target " << pat << '\n' << die();
-        return;
-      }
-    }
-    else if (next_token == "then") {
-      target = find_substr(out, pat);
-      if (target == out.end()) {
-        RAISE << "Couldn't find target " << pat << '\n' << die();
-        return;
-      }
-      string pat2 = next_tangle_token(directive_stream);
-      if (pat2 == "") {
-        RAISE << "No target for then directive following " << cmd << ".\n" << die();
-        return;
-      }
-      target = find_substr(out, target, pat2);
-      if (target == out.end()) {
-        RAISE << "Couldn't find target " << pat << " then " << pat2 << '\n' << die();
-        return;
-      }
     }
 
     indent_all(hunk, target);
@@ -150,6 +106,34 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
   }
 
   RAISE << "unknown directive " << cmd << '\n';
+}
+
+list<string>::iterator locate_target(list<string>& out, istream& directive_stream) {
+  string pat = next_tangle_token(directive_stream);
+  if (pat == "") return out.end();
+
+  string next_token = next_tangle_token(directive_stream);
+  if (next_token == "") {
+    return find_substr(out, pat);
+  }
+  // first way to do nested pattern: pattern 'following' intermediate
+  else if (next_token == "following") {
+    string pat2 = next_tangle_token(directive_stream);
+    if (pat2 == "") return out.end();
+    list<string>::iterator intermediate = find_substr(out, pat2);
+    if (intermediate == out.end()) return out.end();
+    return find_substr(out, intermediate, pat);
+  }
+  // second way to do nested pattern: intermediate 'then' pattern
+  else if (next_token == "then") {
+    list<string>::iterator intermediate = find_substr(out, pat);
+    if (intermediate == out.end()) return out.end();
+    string pat2 = next_tangle_token(directive_stream);
+    if (pat2 == "") return out.end();
+    return find_substr(out, intermediate, pat2);
+  }
+  RAISE << "unknown keyword in directive: " << next_token << '\n';
+  return out.end();
 }
 
 // indent all lines in l like indentation at exemplar
