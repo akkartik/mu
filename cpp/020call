@@ -7,6 +7,23 @@ recipe f [
 ]
 +mem: storing in location 3
 
+:(replace{} "End Primitive Recipe Implementations." then "default:")
+default: {
+  // unknown op = try to call a defined recipe
+  if (Recipe.find(instructions[pc].operation) == Recipe.end()) {
+    raise << "undefined operation " << instructions[pc].operation << '\n';
+    break;
+  }
+//?   cout << "calling " << instructions[pc].operation << '\n'; //? 2
+  call callee(instructions[pc].operation);
+  for (vector<reagent>::iterator p = instructions[pc].ingredients.begin(); p != instructions[pc].ingredients.end(); ++p) {
+//?     cout << "push back: " << p->to_string() << '\n'; //? 1
+    callee.incoming_atoms.push_back(read_memory(*p));
+  }
+  rr.calls.push(callee);
+  continue;  // not done with caller; don't increment pc
+}
+
 :(scenario "next_ingredient")
 recipe main [
   f 2:literal
