@@ -1,3 +1,4 @@
+// So far the recipes we define can't run each other. Let's change that.
 :(scenario "calling_recipe")
 recipe main [
   f
@@ -7,11 +8,37 @@ recipe f [
 ]
 +mem: storing in location 3
 
-:(before "End Call Fields")
-vector<vector<int> > ingredient_atoms;
-size_t next_ingredient_to_process;
-:(replace{} "call(recipe_number r)")
-call(recipe_number r) :running_recipe(r), pc(0), next_ingredient_to_process(0) {}
+:(before "struct routine {")
+// Everytime a recipe runs another, we interrupt it and start running the new
+// recipe. When that finishes, we continue this one where we left off.
+// This requires maintaining a 'stack' of interrupted recipes or 'calls'.
+struct call {
+  recipe_number running_recipe;
+  size_t pc;
+  // End Call Fields
+  call(recipe_number r) :running_recipe(r), pc(0) {}
+};
+typedef stack<call> call_stack;
+
+:(replace{} "struct routine")
+struct routine {
+  call_stack calls;
+  routine(recipe_number r) {
+    calls.push(call(r));
+  }
+};
+:(replace{} "inline size_t& running_at(routine& rr)")
+inline size_t& running_at(routine& rr) {
+  return rr.calls.top().pc;
+}
+:(replace{} "inline string recipe_name(routine& rr)")
+inline string recipe_name(routine& rr) {
+  return Recipe[rr.calls.top().running_recipe].name;
+}
+:(replace{} "inline vector<instruction>& steps(routine& rr)")
+inline vector<instruction>& steps(routine& rr) {
+  return Recipe[rr.calls.top().running_recipe].steps;
+}
 
 :(replace{} "default:" following "End Primitive Recipe Implementations.")
 default: {
@@ -20,79 +47,21 @@ default: {
     raise << "undefined operation " << instructions[pc].operation << '\n';
     break;
   }
-  call callee(instructions[pc].operation);
-  for (vector<reagent>::iterator p = instructions[pc].ingredients.begin(); p != instructions[pc].ingredients.end(); ++p) {
-    callee.ingredient_atoms.push_back(read_memory(*p));
-  }
-  rr.calls.push(callee);
+  rr.calls.push(call(instructions[pc].operation));
   continue;  // not done with caller; don't increment pc
 }
 
-:(scenario "next_ingredient")
-recipe main [
-  f 2:literal
-]
-recipe f [
-  12:integer <- next_ingredient
-  13:integer <- add 1:literal, 12:integer
-]
-+run: instruction f/1
-+mem: location 12 is 2
-+mem: storing in location 13
-
-:(before "End Globals")
-const int NEXT_INGREDIENT = 22;
-:(before "End Primitive Recipe Numbers")
-Recipe_number["next_ingredient"] = NEXT_INGREDIENT;
-assert(Next_recipe_number == NEXT_INGREDIENT);
-Next_recipe_number++;
-:(before "End Primitive Recipe Implementations")
-case NEXT_INGREDIENT: {
-  if (rr.calls.top().next_ingredient_to_process < rr.calls.top().ingredient_atoms.size()) {
-    trace("run") << "product 0 is "
-        << rr.calls.top().ingredient_atoms[rr.calls.top().next_ingredient_to_process][0];
-    write_memory(instructions[pc].products[0],
-        rr.calls.top().ingredient_atoms[rr.calls.top().next_ingredient_to_process]);
-    ++rr.calls.top().next_ingredient_to_process;
-  }
-  break;
+:(replace{} "inline bool done(routine& rr)")
+inline bool done(routine& rr) {
+  return rr.calls.empty();
 }
 
-:(scenario "reply")
-recipe main [
-  3:integer, 4:integer <- f 2:literal
-]
-recipe f [
-  12:integer <- next_ingredient
-  13:integer <- add 1:literal, 12:integer
-  reply 12:integer, 13:integer
-]
-+run: instruction main/0
-+run: result 0 is 1[2...]
-+mem: storing in location 3
-+run: result 1 is 1[3...]
-+mem: storing in location 4
-
-:(before "End Globals")
-const int REPLY = 23;
-:(before "End Primitive Recipe Numbers")
-Recipe_number["reply"] = REPLY;
-assert(Next_recipe_number == REPLY);
-Next_recipe_number++;
-:(before "End Primitive Recipe Implementations")
-case REPLY: {
-  vector<vector<int> > callee_results;
-  for (size_t i = 0; i < instructions[pc].ingredients.size(); ++i) {
-    callee_results.push_back(read_memory(instructions[pc].ingredients[i]));
-  }
+:(before "Running one instruction.")
+// when we reach the end of one call, we may reach the end of the one below
+// it, and the one below that, and so on
+while (running_at(rr) >= steps(rr).size()) {
   rr.calls.pop();
-  size_t& caller_pc = rr.calls.top().pc;
-  instruction& caller_instruction = Recipe[rr.calls.top().running_recipe].steps[caller_pc];
-  assert(caller_instruction.products.size() <= callee_results.size());
-  for (size_t i = 0; i < caller_instruction.products.size(); ++i) {
-    trace("run") << "result " << i << " is " << callee_results[i].size() << "[" << callee_results[i][0] << "...]";
-    write_memory(caller_instruction.products[i], callee_results[i]);
-  }
-  ++caller_pc;
-  break;
+  if (rr.calls.empty()) return;
+  // todo: no results returned warning
+  ++running_at(rr);
 }
