@@ -72,22 +72,9 @@ void run(routine rr) {
     }
     // End Primitive Recipe Implementations.
     default: {
-      // unknown op = try to call a defined recipe
-      // TODO: this should be later, in the same layer as next_ingredient
-//?       cout << "non primitive op: " << instructions[pc].operation << '\n'; //? 1
-      if (Recipe.find(instructions[pc].operation) == Recipe.end()) {
-        raise << "undefined operation " << instructions[pc].operation << '\n';
-        break;
-      }
-//?       cout << "calling " << instructions[pc].operation << '\n'; //? 2
-      call callee(instructions[pc].operation);
-      for (vector<reagent>::iterator p = instructions[pc].ingredients.begin(); p != instructions[pc].ingredients.end(); ++p) {
-//?         cout << "push back: " << p->to_string() << '\n'; //? 1
-        callee.incoming_atoms.push_back(read_memory(*p));
-      }
-      rr.calls.push(callee);
-      continue;  // not done with caller; don't increment pc
-    }}
+      cout << "non primitive op: " << instructions[pc].operation << '\n';
+    }
+    }
     ++pc;
   }
 #undef TOP_RECIPE
