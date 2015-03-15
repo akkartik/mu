@@ -1,0 +1,44 @@
+// Calls can take ingredients just like primitives. To access a recipe's
+// ingredients, use 'next_ingredient'.
+:(scenario "next_ingredient")
+recipe main [
+  f 2:literal
+]
+recipe f [
+  12:integer <- next_ingredient
+  13:integer <- add 1:literal, 12:integer
+]
++run: instruction f/1
++mem: location 12 is 2
++mem: storing in location 13
+
+:(before "End Call Fields")
+vector<vector<int> > ingredient_atoms;
+size_t next_ingredient_to_process;
+:(replace{} "call(recipe_number r)")
+call(recipe_number r) :running_recipe(r), pc(0), next_ingredient_to_process(0) {}
+
+:(replace "rr.calls.push(call(instructions[pc].operation))" following "End Primitive Recipe Implementations")
+call callee(instructions[pc].operation);
+for (vector<reagent>::iterator p = instructions[pc].ingredients.begin(); p != instructions[pc].ingredients.end(); ++p) {
+  callee.ingredient_atoms.push_back(read_memory(*p));
+}
+rr.calls.push(callee);
+
+:(before "End Globals")
+const int NEXT_INGREDIENT = 22;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["next_ingredient"] = NEXT_INGREDIENT;
+assert(Next_recipe_number == NEXT_INGREDIENT);
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case NEXT_INGREDIENT: {
+  if (rr.calls.top().next_ingredient_to_process < rr.calls.top().ingredient_atoms.size()) {
+    trace("run") << "product 0 is "
+        << rr.calls.top().ingredient_atoms[rr.calls.top().next_ingredient_to_process][0];
+    write_memory(instructions[pc].products[0],
+        rr.calls.top().ingredient_atoms[rr.calls.top().next_ingredient_to_process]);
+    ++rr.calls.top().next_ingredient_to_process;
+  }
+  break;
+}
