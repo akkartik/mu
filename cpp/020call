@@ -82,14 +82,14 @@ case REPLY: {
     callee_results.push_back(read_memory(instructions[pc].ingredients[i]));
   }
   rr.calls.pop();
-  size_t& new_pc = rr.calls.top().pc;
-//?   cout << new_pc << ": " << instructions[new_pc].products.size() << " <=> " << callee_results.size(); //? 2
-  assert(instructions[new_pc].products.size() <= callee_results.size());
-  for (size_t i = 0; i < instructions[new_pc].products.size(); ++i) {
+  size_t& caller_pc = rr.calls.top().pc;
+//?   cout << caller_pc << ": " << instructions[caller_pc].products.size() << " <=> " << callee_results.size(); //? 2
+  assert(instructions[caller_pc].products.size() <= callee_results.size());
+  for (size_t i = 0; i < instructions[caller_pc].products.size(); ++i) {
 //?     cout << "AAA " << i << '\n'; //? 1
     trace("run") << "result " << i << " is " << callee_results[i].size() << "[" << callee_results[i][0] << "...]";
-    write_memory(instructions[new_pc].products[i], callee_results[i]);
+    write_memory(instructions[caller_pc].products[i], callee_results[i]);
   }
-  ++new_pc;
+  ++caller_pc;
   break;
 }
