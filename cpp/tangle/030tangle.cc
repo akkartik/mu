@@ -70,13 +70,39 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
       RAISE << "No target for " << cmd << " directive.\n" << die();
       return;
     }
-    list<string>::iterator target = find_substr(out, pat);
-    if (target == out.end()) {
-      RAISE << "Couldn't find target " << pat << '\n' << die();
-      return;
-    }
 
-    if (next_tangle_token(directive_stream) == "then") {
+    list<string>::iterator target = out.begin();
+    string next_token = next_tangle_token(directive_stream);
+    if (next_token == "") {
+      target = find_substr(out, pat);
+      if (target == out.end()) {
+        RAISE << "Couldn't find target " << pat << '\n' << die();
+        return;
+      }
+    }
+    else if (next_token == "following") {
+      string pat2 = next_tangle_token(directive_stream);
+      if (pat2 == "") {
+        RAISE << "No target for 'following' in " << directive << ".\n" << die();
+        return;
+      }
+      target = find_substr(out, pat2);
+      if (target == out.end()) {
+        RAISE << "Couldn't find target " << pat2 << die();
+        return;
+      }
+      target = find_substr(out, target, pat);
+      if (target == out.end()) {
+        RAISE << "Couldn't find target " << pat << '\n' << die();
+        return;
+      }
+    }
+    else if (next_token == "then") {
+      target = find_substr(out, pat);
+      if (target == out.end()) {
+        RAISE << "Couldn't find target " << pat << '\n' << die();
+        return;
+      }
       string pat2 = next_tangle_token(directive_stream);
       if (pat2 == "") {
         RAISE << "No target for then directive following " << cmd << ".\n" << die();
