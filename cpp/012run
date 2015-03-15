@@ -19,7 +19,7 @@ recipe main [
 
 :(before "End Types")
 // Each recipe can be 'called' many many times in a program. Each call needs a
-// little extra information.
+// little extra information. TODO: move this into the call layer somehow
 struct call {
   recipe_number running_recipe;
   size_t pc;
@@ -28,6 +28,7 @@ struct call {
 };
 typedef stack<call> call_stack;
 
+// TODO: move this into the scheduler layer somehow
 struct routine {
   size_t alloc;
   size_t alloc_max;
@@ -51,6 +52,7 @@ void run(recipe_number r) {
 void run(routine rr) {
   while (!rr.calls.empty()) {
     vector<instruction>& instructions = Recipe[rr.calls.top().running_recipe].steps;
+    // TODO: move this into the call layer somehow
     while (rr.calls.top().pc >= instructions.size()) {
       rr.calls.pop();
       if (rr.calls.empty()) return;
