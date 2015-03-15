@@ -18,24 +18,12 @@ recipe main [
 +mem: storing in location 2
 
 :(before "End Types")
-// Each recipe can be 'called' many many times in a program. Each call needs a
-// little extra information. TODO: move this into the call layer somehow
-struct call {
-  recipe_number running_recipe;
-  size_t pc;
-  // End Call Fields
-  call(recipe_number r) :running_recipe(r), pc(0) {}
-};
-typedef stack<call> call_stack;
-
-// TODO: move this into the scheduler layer somehow
+// Book-keeping while running a recipe.
+// Later layers will change this.
 struct routine {
-  size_t alloc;
-  size_t alloc_max;
-  call_stack calls;
-  size_t limit;
-  size_t running_since;
-  // todo: sleep conditions
+  recipe_number running_recipe;
+  size_t running_at;
+  routine(recipe_number r) :running_recipe(r), running_at(0) {}
 };
 
 :(code)
@@ -44,23 +32,15 @@ void run(string form) {
 }
 
 void run(recipe_number r) {
-  routine rr;
-  rr.calls.push(call(r));
-  run(rr);
+  run(routine(r));
 }
 
 void run(routine rr) {
-  while (!rr.calls.empty()) {
-    vector<instruction>& instructions = Recipe[rr.calls.top().running_recipe].steps;
-    // TODO: move this into the call layer somehow
-    while (rr.calls.top().pc >= instructions.size()) {
-      rr.calls.pop();
-      if (rr.calls.empty()) return;
-      // todo: no results returned warning
-      ++rr.calls.top().pc;
-    }
-    size_t& pc = rr.calls.top().pc;
-    trace("run") << "instruction " << Recipe[rr.calls.top().running_recipe].name << '/' << pc;
+  while (!done(rr)) {
+    vector<instruction>& instructions = steps(rr);
+    size_t& pc = running_at(rr);
+    // Running one instruction.
+    trace("run") << "instruction " << recipe_name(rr) << '/' << pc;
     switch (instructions[pc].operation) {
       // Primitive Recipe Implementations.
       case COPY: {
@@ -76,6 +56,25 @@ void run(routine rr) {
     }
     ++pc;
   }
+}
+
+// Some helpers.
+// We'll need to override these later as we change the definition of routine.
+// Important that they return referrences into the routine.
+inline size_t& running_at(routine& rr) {
+  return rr.running_at;
+}
+
+inline string recipe_name(routine& rr) {
+  return Recipe[rr.running_recipe].name;
+}
+
+inline vector<instruction>& steps(routine& rr) {
+  return Recipe[rr.running_recipe].steps;
+}
+
+inline bool done(routine& rr) {
+  return running_at(rr) >= steps(rr).size();
 }
 
 :(before "End Main")
