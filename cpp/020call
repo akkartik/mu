@@ -7,18 +7,20 @@ recipe f [
 ]
 +mem: storing in location 3
 
+:(before "End Call Fields")
+vector<vector<int> > ingredient_atoms;
+size_t next_ingredient_to_process;
+
 :(replace{} "End Primitive Recipe Implementations." then "default:")
 default: {
-  // unknown op = try to call a defined recipe
+  // not a primitive; try to look for a matching recipe
   if (Recipe.find(instructions[pc].operation) == Recipe.end()) {
     raise << "undefined operation " << instructions[pc].operation << '\n';
     break;
   }
-//?   cout << "calling " << instructions[pc].operation << '\n'; //? 2
   call callee(instructions[pc].operation);
   for (vector<reagent>::iterator p = instructions[pc].ingredients.begin(); p != instructions[pc].ingredients.end(); ++p) {
-//?     cout << "push back: " << p->to_string() << '\n'; //? 1
-    callee.incoming_atoms.push_back(read_memory(*p));
+    callee.ingredient_atoms.push_back(read_memory(*p));
   }
   rr.calls.push(callee);
   continue;  // not done with caller; don't increment pc
@@ -44,11 +46,11 @@ assert(Next_recipe_number == NEXT_INGREDIENT);
 Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
 case NEXT_INGREDIENT: {
-  if (rr.calls.top().next_ingredient_to_process < rr.calls.top().incoming_atoms.size()) {
+  if (rr.calls.top().next_ingredient_to_process < rr.calls.top().ingredient_atoms.size()) {
     trace("run") << "product 0 is "
-        << rr.calls.top().incoming_atoms[rr.calls.top().next_ingredient_to_process][0];
+        << rr.calls.top().ingredient_atoms[rr.calls.top().next_ingredient_to_process][0];
     write_memory(instructions[pc].products[0],
-        rr.calls.top().incoming_atoms[rr.calls.top().next_ingredient_to_process]);
+        rr.calls.top().ingredient_atoms[rr.calls.top().next_ingredient_to_process]);
     ++rr.calls.top().next_ingredient_to_process;
   }
   break;
