@@ -16,20 +16,23 @@ int add_recipes(string form) {
   return result;
 }
 
-int add_recipe(istringstream& in) {
+int add_recipe(istream& in) {
   in >> std::noskipws;
   skip_comments_and_newlines(in);
   string _recipe = next_word(in);
+//?   cout << _recipe; //? 1
   if (_recipe != "recipe")
     raise << "top-level forms must be of the form 'recipe _name_ [ _instruction_ ... ]'\n";
 
   string recipe_name = next_word(in);
+//?   cout << "recipe name: ^" << recipe_name << "$\n"; //? 1
   if (recipe_name.empty())
-    raise << "empty recipe name in " << in.str() << '\n';
+    raise << "empty recipe name\n";
+//?     raise << "empty recipe name in " << in.str() << '\n';
   if (Recipe_number.find(recipe_name) == Recipe_number.end())
     Recipe_number[recipe_name] = Next_recipe_number++;
   int r = Recipe_number[recipe_name];
-//?   cout << recipe_name << ": adding recipe " << r << '\n'; //? 2
+//?   cout << recipe_name << ": adding recipe " << r << '\n'; //? 3
 
   if (next_word(in) != "[")
     raise << "recipe body must begin with '['\n";
