@@ -97,9 +97,26 @@
 int main(int argc, char* argv[]) {
   if (argc > 1) {
     // Commandline Options
+    if (!is_equal(argv[1], "test")) {
+      setup();
+      for (int i = 1; i < argc; ++i) {
+        ifstream fin(argv[i]);
+        while (!fin.eof()) add_recipe(fin);
+        fin.close();
+      }
+    }
   }
 
-  setup();
+//?   setup();
+//?   for (unordered_map<string, int>::iterator p = Recipe_number.begin(); p != Recipe_number.end(); ++p) { //? 1
+//?     cout << p->first << ": " << p->second << '\n'; //? 1
+//?   } //? 1
+  recipe_number r = Recipe_number[string("main")];
+//?   cout << "recipe " << r << '\n'; //? 1
+//?   START_TRACING_UNTIL_END_OF_SCOPE //? 1
+//?   DUMP(""); //? 1
+  if (r) run(r);
+  dump_memory();
   return 0;  // End Main
 }
 
