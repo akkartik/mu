@@ -83,6 +83,13 @@ void test_tangle_nested_patterns() {
   CHECK_TRACE_CONTENTS("tangle", "acbced");
 }
 
+void test_tangle_nested_patterns2() {
+  istringstream in("a\nc\nb\nc\nd\n:(after \"c\" following \"b\")\ne");
+  list<string> dummy;
+  tangle(in, dummy);
+  CHECK_TRACE_CONTENTS("tangle", "acbced");
+}
+
 // todo: include line numbers in tangle errors
 
 
