@@ -1,6 +1,6 @@
 mu: makefile tangle/tangle mu.cc
 	g++ -g -Wall -Wextra -fno-strict-aliasing mu.cc -o mu
-	-@./mu test
+	./mu test
 
 # To see what the program looks like after all layers have been applied, read
 # mu.cc
