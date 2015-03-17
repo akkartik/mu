@@ -76,7 +76,7 @@ void transform_braces(const recipe_number r) {
       }
       else {
         reagent ing(0);  // literal
-        ing.value = index - matching_brace(open_braces.top(), braces) - 1;
+        ing.value = matching_brace(open_braces.top(), braces) - index - 1;
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump " << ing.value << ":offset";
       }
@@ -90,10 +90,11 @@ void transform_braces(const recipe_number r) {
 size_t matching_brace(size_t index, const list<pair<int, size_t> >& braces) {
   int stacksize;
   for (list<pair<int, size_t> >::const_iterator p = braces.begin(); p != braces.end(); ++p) {
-    if (p->second <= index) continue;
+    if (p->second < index) continue;
     stacksize += (p->first ? 1 : -1);
-    if (stacksize == -1) return p->second;
+    if (stacksize == 0) return p->second;
   }
+  assert(false);
   return -1;
 }
 
