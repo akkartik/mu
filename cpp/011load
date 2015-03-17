@@ -109,6 +109,8 @@ string next_word(istream& in) {
   ostringstream out;
   skip_whitespace(in);
   slurp_word(in, out);
+  skip_whitespace(in);
+  skip_comment(in);
   return out.str();
 }
 
@@ -144,11 +146,67 @@ void skip_comments_and_newlines(istream& in) {
   }
 }
 
+void skip_comment(istream& in) {
+  if (in.peek() == '#') {
+    in.get();
+    while (in.peek() != '\n') in.get();
+  }
+}
+
 void skip_comma(istream& in) {
   skip_whitespace(in);
   if (in.peek() == ',') in.get();
   skip_whitespace(in);
 }
+
+:(scenario parse_comment_outside_recipe)
+# comment
+recipe main [
+  1:integer <- copy 23:literal
+]
++parse: instruction: 1
++parse:   ingredient: {name: "23", type: 0}
++parse:   product: {name: "1", type: 1}
+
+:(scenario parse_comment_amongst_instruction)
+recipe main [
+  # comment
+  1:integer <- copy 23:literal
+]
++parse: instruction: 1
++parse:   ingredient: {name: "23", type: 0}
++parse:   product: {name: "1", type: 1}
+
+:(scenario parse_comment_amongst_instruction2)
+recipe main [
+  # comment
+  1:integer <- copy 23:literal
+  # comment
+]
++parse: instruction: 1
++parse:   ingredient: {name: "23", type: 0}
++parse:   product: {name: "1", type: 1}
+
+:(scenario parse_comment_amongst_instruction3)
+recipe main [
+  1:integer <- copy 23:literal
+  # comment
+  2:integer <- copy 23:literal
+]
++parse: instruction: 1
++parse:   ingredient: {name: "23", type: 0}
++parse:   product: {name: "1", type: 1}
++parse: instruction: 1
++parse:   ingredient: {name: "23", type: 0}
++parse:   product: {name: "2", type: 1}
+
+:(scenario parse_comment_after_instruction)
+recipe main [
+  1:integer <- copy 23:literal # comment
+]
++parse: instruction: 1
++parse:   ingredient: {name: "23", type: 0}
++parse:   product: {name: "1", type: 1}
 
 :(scenario parse_label)
 recipe main [
