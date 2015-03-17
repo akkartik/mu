@@ -112,10 +112,10 @@ vector<int> read_memory(reagent x) {
 //?   cout << "read_memory: " << x.to_string() << '\n'; //? 1
   vector<int> result;
   if (x.types[0] == 0) {  // literal
-    result.push_back(to_int(x.name));
+    result.push_back(x.value);
     return result;
   }
-  int base = to_int(x.name);
+  int base = x.value;
   for (size_t offset = 0; offset < Type[x.types[0]].size; ++offset) {
     int val = Memory[base+offset];
     trace("mem") << "location " << base+offset << " is " << val;
@@ -135,13 +135,6 @@ void write_memory(reagent x, vector<int> data) {
 }
 
 :(code)
-int to_int(string n) {
-  char* end = NULL;
-  int result = strtol(n.c_str(), &end, /*any base*/0);
-  assert(*end == '\0');
-  return result;
-}
-
 size_t size_of(reagent r) {
   type_info t = Type[r.types[0]];
   if (!t.is_record && !t.is_array) return t.size;
