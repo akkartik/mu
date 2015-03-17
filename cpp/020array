@@ -29,13 +29,10 @@ recipe main [
 
 :(before "End size_of Cases")
 if (t.is_array) {
-  assert(!r.name.empty());
-  int base = to_int(r.name);
+  int base = r.value;
   if (Memory[base] == 0) return 0;
-  ostringstream out;
-  out << base+1;
-  reagent x(out.str());
-  x.types.push_back(t.element[0]);
+  reagent x(t.element[0]);
+  x.value = base+1;
   return 1 + Memory[base]*size_of(x);
 }
 
@@ -50,19 +47,17 @@ Next_recipe_number++;
 case INDEX: {
   trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
   reagent base = canonize(instructions[pc].ingredients[0]);
-  int base_address = to_int(base.name);
+  int base_address = base.value;
   int base_type = base.types[0];
   assert(Type[base_type].is_array);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
-  size_t offset = to_int(instructions[pc].ingredients[1].name);
+  size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address + 1 + offset*size_of(reagent(Type[base_type].element[0]));
   trace("run") << "address to copy is " << src;
   int src_type = Type[base_type].element[0];
   trace("run") << "its type is " << src_type;
-  ostringstream s;
-  s << src;
-  reagent tmp(s.str());
-  tmp.types.push_back(src_type);
+  reagent tmp(src_type);
+  tmp.value = src;
   vector<int> result(read_memory(tmp));
   trace("run") << "product 0 is " << result[0];
   write_memory(instructions[pc].products[0], result);
@@ -97,11 +92,11 @@ Next_recipe_number++;
 case INDEX_ADDRESS: {
   trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
   reagent base = canonize(instructions[pc].ingredients[0]);
-  int base_address = to_int(base.name);
+  int base_address = base.value;
   int base_type = base.types[0];
   assert(Type[base_type].is_array);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
-  size_t offset = to_int(instructions[pc].ingredients[1].name);
+  size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address + 1 + offset*size_of(reagent(Type[base_type].element[0]));
   trace("run") << "address to copy is " << src;
   vector<int> result;

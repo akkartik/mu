@@ -139,7 +139,7 @@ void setup_recipes() {
   void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
 
   // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
-  reagent::reagent(string s) {
+  reagent::reagent(string s) :value(0) {
     istringstream in(s);
     // properties
     while (!in.eof()) {
@@ -152,12 +152,11 @@ void setup_recipes() {
     }
     // structures for the first row of properties
     name = properties[0].first;
-    value = to_int(name);
     for (size_t i = 0; i < properties[0].second.size(); ++i) {
       types.push_back(Type_number[properties[0].second[i]]);
     }
   }
-  reagent::reagent(type_number t) {
+  reagent::reagent(type_number t) :value(0) {
     types.push_back(t);
   }
   string reagent::to_string() {

@@ -38,6 +38,7 @@ void run(routine rr) {
     // Running one instruction.
     if (instructions[pc].is_label) { ++pc; continue; }
     trace("run") << "instruction " << recipe_name(rr) << '/' << pc;
+//?     cout << instructions[pc].operation << '\n'; //? 1
     switch (instructions[pc].operation) {
       // Primitive Recipe Implementations.
       case COPY: {
@@ -127,7 +128,7 @@ vector<int> read_memory(reagent x) {
 }
 
 void write_memory(reagent x, vector<int> data) {
-  int base = to_int(x.name);
+  int base = x.value;
   size_t size = size_of(x);
   if (size != data.size()) raise << "size mismatch in storing to " << x.to_string();
   for (size_t offset = 0; offset < size; ++offset) {
@@ -139,6 +140,7 @@ void write_memory(reagent x, vector<int> data) {
 :(code)
 size_t size_of(reagent r) {
   type_info t = Type[r.types[0]];
+  if (!t.is_record && !t.is_array) return t.size;
   // End size_of Cases.
   return t.size;
 }

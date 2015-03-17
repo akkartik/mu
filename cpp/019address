@@ -16,11 +16,11 @@ recipe main [
 vector<int> read_memory(reagent x) {
   vector<int> result;
   if (x.types[0] == 0) {  // literal
-    result.push_back(to_int(x.name));
+    result.push_back(x.value);
     return result;
   }
   x = canonize(x);
-  int base = to_int(x.name);
+  int base = x.value;
   size_t size = size_of(x);
   for (size_t offset = 0; offset < size; ++offset) {
     int val = Memory[base+offset];
@@ -44,7 +44,7 @@ recipe main [
 :(replace{} "void write_memory(reagent x, vector<int> data)")
 void write_memory(reagent x, vector<int> data) {
   x = canonize(x);
-  int base = to_int(x.name);
+  int base = x.value;
   if (!Type[x.types[0]].is_array && size_of(x) != data.size())
     raise << "size mismatch in storing to " << x.to_string();
   for (size_t offset = 0; offset < data.size(); ++offset) {
@@ -72,11 +72,9 @@ reagent deref(reagent x) {
   reagent result("");
   assert(x.types[0] == 2);  // address
 
-  // compute name
-  ostringstream out;
-  out << Memory[to_int(x.name)];
-  result.name = out.str();
-  trace("mem") << "location " << x.name << " is " << result.name;
+  // compute value
+  result.value = Memory[x.value];
+  trace("mem") << "location " << x.value << " is " << result.value;
 
   // populate types
   copy(++x.types.begin(), x.types.end(), inserter(result.types, result.types.begin()));
@@ -112,15 +110,16 @@ recipe main [
 
 :(replace{} "case GET:")
 case GET: {
+  trace("run") << "foo: ingredient 0 is " << instructions[pc].ingredients[0].name << "/" << instructions[pc].ingredients[0].value;
   trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
   reagent base = canonize(instructions[pc].ingredients[0]);
-  int base_address = to_int(base.name);
+  int base_address = base.value;
   int base_type = base.types[0];
   assert(Type[base_type].is_record);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
   assert(instructions[pc].ingredients[1].types.size() == 1);
   assert(instructions[pc].ingredients[1].types[0] == 0);  // must be literal
-  size_t offset = to_int(instructions[pc].ingredients[1].name);
+  size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
     src += size_of(reagent(Type[base_type].elements[i][0]));
@@ -130,9 +129,8 @@ case GET: {
   assert(Type[base_type].elements.size() > offset);
   int src_type = Type[base_type].elements[offset][0];
   trace("run") << "its type is " << src_type;
-  ostringstream s;
-  s << src;
-  reagent tmp(s.str());
+  reagent tmp(src_type);
+  tmp.value = src;
   tmp.types.push_back(src_type);
   vector<int> result(read_memory(tmp));
   trace("run") << "product 0 is " << result[0];
@@ -156,13 +154,13 @@ recipe main [
 case GET_ADDRESS: {
   trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
   reagent base = canonize(instructions[pc].ingredients[0]);
-  int base_address = to_int(base.name);
+  int base_address = base.value;
   int base_type = base.types[0];
   assert(Type[base_type].is_record);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
   assert(instructions[pc].ingredients[1].types.size() == 1);
   assert(instructions[pc].ingredients[1].types[0] == 0);  // must be literal
-  size_t offset = to_int(instructions[pc].ingredients[1].name);
+  size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
     src += size_of(reagent(Type[base_type].elements[i][0]));
