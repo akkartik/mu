@@ -19,7 +19,7 @@ recipe main [
 
 :(before "End Types")
 // Book-keeping while running a recipe.
-// Later layers will change this.
+//: Later layers will change this.
 struct routine {
   recipe_number running_recipe;
   size_t running_at;
@@ -27,11 +27,6 @@ struct routine {
 };
 
 :(code)
-void run(string form) {
-  vector<recipe_number> recipes_added = add_recipes(form);
-  run(recipes_added.front());
-}
-
 void run(recipe_number r) {
   run(routine(r));
 }
@@ -59,9 +54,9 @@ void run(routine rr) {
   }
 }
 
-// Some helpers.
-// We'll need to override these later as we change the definition of routine.
-// Important that they return referrences into the routine.
+//: Some helpers.
+//: We'll need to override these later as we change the definition of routine.
+//: Important that they return referrences into the routine.
 inline size_t& running_at(routine& rr) {
   return rr.running_at;
 }
@@ -91,6 +86,25 @@ if (argc > 1) {
   if (r) run(r);
   dump_memory();
 }
+
+//: helper for tests
+
+:(before "End Globals")
+vector<recipe_number> recipes_added_by_test;
+
+:(code)
+void run(string form) {
+  vector<recipe_number> tmp = add_recipes(form);
+  recipes_added_by_test.insert(recipes_added_by_test.end(), tmp.begin(), tmp.end());
+  run(recipes_added_by_test.front());
+}
+
+:(before "End Setup")
+for (size_t i = 0; i < recipes_added_by_test.size(); ++i) {
+  Recipe_number.erase(Recipe[recipes_added_by_test[i]].name);
+  Recipe.erase(recipes_added_by_test[i]);
+}
+recipes_added_by_test.clear();
 
 :(code)
 vector<int> read_memory(reagent x) {

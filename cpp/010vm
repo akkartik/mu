@@ -56,7 +56,7 @@ unordered_map<int, int> Memory;
   Memory.clear();
 
 :(after "Types")
-// Types encode how the numbers stored in different parts of memory are
+// Mu types encode how the numbers stored in different parts of memory are
 // interpreted. A location tagged as a 'character' type will interpret the
 // number 97 as the letter 'a', while a different location of type 'integer'
 // would not.
@@ -74,14 +74,14 @@ void setup_types() {
   Type.clear();  Type_number.clear();
   Type_number["literal"] = 0;
   Next_type_number = 1;
-  // Mu Types.
+  // Mu Types Initialization.
   int integer = Type_number["integer"] = Next_type_number++;
   Type[integer].size = 1;
   int address = Type_number["address"] = Next_type_number++;
   Type[address].size = 1;
   int boolean = Type_number["boolean"] = Next_type_number++;
   Type[boolean].size = 1;
-  // End Mu Types.
+  // End Mu Types Initialization.
 }
 :(before "End Setup")
   setup_types();
@@ -127,8 +127,10 @@ void setup_recipes() {
 
 
 
+//: Helpers
+
 :(code)
-// Helpers
+// indent members to avoid generating prototypes for them
   instruction::instruction() :is_label(false), operation(IDLE) {}
   void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
 
