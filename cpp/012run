@@ -36,6 +36,7 @@ void run(routine rr) {
     vector<instruction>& instructions = steps(rr);
     size_t& pc = running_at(rr);
     // Running one instruction.
+    if (instructions[pc].is_label) { ++pc; continue; }
     trace("run") << "instruction " << recipe_name(rr) << '/' << pc;
     switch (instructions[pc].operation) {
       // Primitive Recipe Implementations.
@@ -140,3 +141,12 @@ size_t size_of(reagent r) {
   if (!t.is_record && !t.is_array) return t.size;
   return t.size;  // TODO
 }
+
+:(scenario run_label)
+recipe main [
+  +foo
+  1:integer <- copy 23:literal
+  2:integer <- copy 1:integer
+]
++run: instruction main/1
++run: instruction main/2
