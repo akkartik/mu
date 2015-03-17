@@ -30,8 +30,6 @@ string flag_value(const string& flag, int argc, const char* argv[]) {
 //// test harness
 
 int run_tests() {
-  time_t t; time(&t);
-  cerr << "C tests: " << ctime(&t);
   for (unsigned long i=0; i < sizeof(Tests)/sizeof(Tests[0]); ++i) {
     START_TRACING_UNTIL_END_OF_SCOPE;
     setup();
