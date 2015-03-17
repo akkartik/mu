@@ -40,8 +40,25 @@ long Num_failures = 0;
   }
 
 :(before "End Main")
-if (argc > 1 && is_equal(argv[1], "test")) {
+if (argc == 2 && is_equal(argv[1], "test")) {
   run_tests();
+  cerr << '\n';
+  if (Num_failures > 0)
+    cerr << Num_failures << " failure"
+         << (Num_failures > 1 ? "s" : "")
+         << '\n';
+  return 0;
+}
+// pass in a set of line numbers in test_file to run just those tests
+if (argc > 2 && is_equal(argv[1], "test")) {
+  for (int i = 2; i < argc; ++i) {
+    run_test(to_int(argv[i])-1);
+  }
+  cerr << '\n';
+  if (Num_failures > 0)
+    cerr << Num_failures << " failure"
+         << (Num_failures > 1 ? "s" : "")
+         << '\n';
   return 0;
 }
 
@@ -50,23 +67,28 @@ void run_tests() {
   time_t t; time(&t);
   cerr << "C tests: " << ctime(&t);
   for (unsigned long i=0; i < sizeof(Tests)/sizeof(Tests[0]); ++i) {
-    setup();
-    // End Test Setup
-    (*Tests[i])();
-    if (Passed) cerr << ".";
-    // Test Teardown
-    // End Test Teardown
+    run_test(i);
   }
+}
 
-  cerr << '\n';
-  if (Num_failures > 0)
-    cerr << Num_failures << " failure"
-         << (Num_failures > 1 ? "s" : "")
-         << '\n';
+void run_test(int i) {
+  setup();
+  // End Test Setup
+  (*Tests[i])();
+  if (Passed) cerr << ".";
+  // Test Teardown
+  // End Test Teardown
 }
 
 bool is_equal(char* s, const char* lit) {
   return strncmp(s, lit, strlen(lit)) == 0;
+}
+
+int to_int(string n) {
+  char* end = NULL;
+  int result = strtol(n.c_str(), &end, /*any base*/0);
+  assert(*end == '\0');
+  return result;
 }
 
 :(before "End Includes")
