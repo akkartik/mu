@@ -1,0 +1,61 @@
+#!/usr/bin/env zsh
+# Helper to change the numerical prefixes across the repo, say if you want to
+# create room between 023 and 024, and so on.
+
+setopt extendedglob
+
+if [[ $# -eq 0 && `git diff HEAD |wc -l` -gt 0 ]]
+then
+  echo "Uncommitted changes"
+  exit
+fi
+
+if [[ $# -gt 0 ]] # dry run
+then
+  git() {
+    echo $*
+  }
+fi
+
+#
+
+index=0
+ls [0-9]* |grep -v "^002trace.tests$" |sort -n |perl -pwe 's/\..*//' |
+  while read file
+  do
+    echo $file >&2
+    while [[ $file != `printf "%03d" $index`* ]]
+    do
+      echo
+      index=$(($index+1))
+    done
+    echo $file
+    index=$(($index+1))
+  done > .layout
+
+vim -c "set nu" .layout
+
+#
+
+root() {
+  echo $1 |perl -pwe 's/^[0-9]*//' |perl -pwe 's/\..*//'
+}
+
+index=0
+cat .layout |
+  while read file
+  do
+    if [ ! -z $file ]
+    then
+      newfile=`printf "%03d" $index``root $file`
+      if [[ $newfile != $file ]]
+      then
+        git mv $file $newfile
+      fi
+    fi
+    index=$(($index+1))
+  done
+
+#
+
+rm .layout
