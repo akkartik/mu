@@ -24,7 +24,8 @@ struct recipe {
 struct instruction {
   bool is_label;
   string label;  // only if is_label
-  recipe_number operation;  // only if !is_label
+  string name;  // only if !is_label
+  recipe_number operation;  // Recipe_number[name]
   vector<reagent> ingredients;  // only if !is_label
   vector<reagent> products;  // only if !is_label
   instruction();
@@ -37,9 +38,10 @@ struct instruction {
 // us how to interpret them. They also can contain arbitrary other lists of
 // properties besides types, but we're getting ahead of ourselves.
 struct reagent {
+  vector<pair<string, vector<string> > > properties;
   string name;
+  int value;
   vector<type_number> types;
-  vector<pair<string, property> > properties;
   reagent(string s);
   reagent(type_number t);
   string to_string();
@@ -74,6 +76,7 @@ int Next_type_number = 1;
 void setup_types() {
   Type.clear();  Type_number.clear();
   Type_number["literal"] = 0;
+  Type_number["offset"] = 0;
   Next_type_number = 1;
   // Mu Types Initialization.
   int integer = Type_number["integer"] = Next_type_number++;
@@ -138,16 +141,20 @@ void setup_recipes() {
   // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
   reagent::reagent(string s) {
     istringstream in(s);
-    name = slurp_until(in, ':');
-    istringstream ts(slurp_until(in, '/'));
-    string t;
-    while (!(t = slurp_until(ts, ':')).empty())
-      types.push_back(Type_number[t]);
     // properties
     while (!in.eof()) {
-      istringstream prop(slurp_until(in, '/'));
-      string name = slurp_until(prop, ':');
-      properties.push_back(pair<string, property>(name, property()));
+      istringstream row(slurp_until(in, '/'));
+      string name = slurp_until(row, ':');
+      vector<string> values;
+      while (!row.eof())
+        values.push_back(slurp_until(row, ':'));
+      properties.push_back(pair<string, vector<string> >(name, values));
+    }
+    // structures for the first row of properties
+    name = properties[0].first;
+    value = to_int(name);
+    for (size_t i = 0; i < properties[0].second.size(); ++i) {
+      types.push_back(Type_number[properties[0].second[i]]);
     }
   }
   reagent::reagent(type_number t) {
@@ -155,19 +162,21 @@ void setup_recipes() {
   }
   string reagent::to_string() {
     ostringstream out;
-    out << "{name: \"" << name << "\", type: ";
+    out << "{name: \"" << name << "\", value: " << value << ", type: ";
     for (size_t i = 0; i < types.size(); ++i) {
       out << types[i];
       if (i < types.size()-1) out << "-";
     }
     if (!properties.empty()) {
-      out << ", property: ";
+      out << ", properties: [";
       for (size_t i = 0; i < properties.size(); ++i) {
-        out << properties[i].first << ":";
-        for (size_t j = 0; j < properties[i].second.values.size(); ++j) {
-          out << properties[i].second.values[j];
-          if (j < properties[i].second.values.size()-1) out << ":";
+        out << properties[i].first << ": ";
+        for (size_t j = 0; j < properties[i].second.size(); ++j) {
+          out << properties[i].second[j];
+          if (j < properties[i].second.size()-1) out << ":";
         }
+        if (i < properties.size()-1) out << ", ";
+        else out << "]";
       }
     }
     out << "}";
@@ -191,4 +200,11 @@ void dump_memory() {
   for (unordered_map<int, int>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
     cout << p->first << ": " << p->second << '\n';
   }
+}
+
+int to_int(string n) {
+  char* end = NULL;
+  int result = strtol(n.c_str(), &end, /*any base*/0);
+  assert(*end == '\0');
+  return result;
 }
