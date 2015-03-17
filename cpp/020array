@@ -27,32 +27,16 @@ recipe main [
 +mem: storing in location 7
 +mem: storing in location 8
 
-:(replace{} "size_t size_of(reagent r)")
-size_t size_of(reagent r) {
-  type_info t = Type[r.types[0]];
-  if (t.is_record) {
-    int result = 0;
-    for (size_t i = 0; i < t.size; ++i) {
-      ostringstream out;
-      out << result;
-      reagent x(out.str());
-      copy(t.elements[i].begin(), t.elements[i].end(), inserter(x.types, x.types.begin()));
-      result += size_of(x);
-    }
-    return result;
-  }
-  if (t.is_array) {
-    assert(!r.name.empty());
-    int base = to_int(r.name);
-    if (Memory[base] == 0) return 0;
-    ostringstream out;
-    out << base+1;
-    reagent x(out.str());
-    x.types.push_back(t.element[0]);
-    return 1 + Memory[base]*size_of(x);
-  }
-  // scalar
-  return t.size;
+:(before "End size_of Cases")
+if (t.is_array) {
+  assert(!r.name.empty());
+  int base = to_int(r.name);
+  if (Memory[base] == 0) return 0;
+  ostringstream out;
+  out << base+1;
+  reagent x(out.str());
+  x.types.push_back(t.element[0]);
+  return 1 + Memory[base]*size_of(x);
 }
 
 :(before "End Globals")
