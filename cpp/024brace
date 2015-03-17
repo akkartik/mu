@@ -109,6 +109,32 @@ void transform_braces(const recipe_number r) {
         trace("after-brace") << "jump-if " << inst.ingredients[0].name << ", " << ing.value << ":offset";
       }
     }
+    else if (inst.operation == Recipe_number["loop-unless"]) {
+      inst.operation = Recipe_number["jump-unless"];
+      if (inst.ingredients.size() > 1 && inst.ingredients[1].types[0] == 0) {
+        // explicit target; a later phase will handle it
+        trace("after-brace") << "jump " << inst.ingredients[1].name << ":offset";
+      }
+      else {
+        reagent ing(0);  // literal
+        ing.value = open_braces.top()-index;
+        inst.ingredients.push_back(ing);
+        trace("after-brace") << "jump-unless " << inst.ingredients[0].name << ", " << ing.value << ":offset";
+      }
+    }
+    else if (inst.operation == Recipe_number["break-unless"]) {
+      inst.operation = Recipe_number["jump-unless"];
+      if (inst.ingredients.size() > 1 && inst.ingredients[1].types[0] == 0) {
+        // explicit target; a later phase will handle it
+        trace("after-brace") << "jump " << inst.ingredients[1].name << ":offset";
+      }
+      else {
+        reagent ing(0);  // literal
+        ing.value = matching_brace(open_braces.top(), braces) - index - 1;
+        inst.ingredients.push_back(ing);
+        trace("after-brace") << "jump-unless " << inst.ingredients[0].name << ", " << ing.value << ":offset";
+      }
+    }
     else {
       trace("after-brace") << inst.name << " ...";
     }
@@ -252,3 +278,33 @@ recipe main [
   }
 ]
 +after-brace: jump +foo:offset
+
+:(scenario "break_unless")
+recipe main [
+  1:integer <- copy 0:literal
+  2:integer <- copy 0:literal
+  {
+    break-unless 2:integer
+    3:integer <- copy 0:literal
+  }
+]
++after-brace: recipe main
++after-brace: copy ...
++after-brace: copy ...
++after-brace: jump-unless 2, 1:offset
++after-brace: copy ...
+
+:(scenario "loop_unless")
+recipe main [
+  1:integer <- copy 0:literal
+  2:integer <- copy 0:literal
+  {
+    loop-unless 2:integer
+    3:integer <- copy 0:literal
+  }
+]
++after-brace: recipe main
++after-brace: copy ...
++after-brace: copy ...
++after-brace: jump-unless 2, -1:offset
++after-brace: copy ...
