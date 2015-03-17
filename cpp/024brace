@@ -112,3 +112,48 @@ recipe main [
 +after-brace: copy ...
 +after-brace: copy ...
 +after-brace: jump -2:offset
+
+:(scenario "break_empty_block")
+recipe main [
+  1:integer <- copy 0:literal
+  {
+    break
+  }
+]
++after-brace: recipe main
++after-brace: copy ...
++after-brace: jump 0:offset
+
+:(scenario "break_cascading")
+recipe main [
+  1:integer <- copy 0:literal
+  {
+    break
+  }
+  {
+    break
+  }
+]
++after-brace: recipe main
++after-brace: copy ...
++after-brace: jump 0:offset
++after-brace: jump 0:offset
+
+:(scenario "break_cascading2")
+recipe main [
+  1:integer <- copy 0:literal
+  2:integer <- copy 0:literal
+  {
+    break
+    3:integer <- copy 0:literal
+  }
+  {
+    break
+  }
+]
++after-brace: recipe main
++after-brace: copy ...
++after-brace: copy ...
++after-brace: jump 1:offset
++after-brace: copy ...
++after-brace: jump 0:offset
