@@ -1,0 +1,113 @@
+//: Structured programming
+//:
+//: Our jump operators are quite inconvenient to use, so mu provides a
+//: lightweight tool called 'transform_braces' to work in a slightly more
+//: convenient format with nested braces:
+//:
+//:   {
+//:     some instructions
+//:     {
+//:       more instructions
+//:     }
+//:   }
+//:
+//: Braces are just labels, they require no special parsing. The operations
+//: 'loop' and 'break' jump to just after the enclosing '{' and '}'
+//: respectively.
+//:
+//: Conditional and unconditional 'loop' and 'break' should give us 80% of the
+//: benefits of the control-flow primitives we're used to in other languages,
+//: like 'if', 'while', 'for', etc.
+
+:(scenario "brace_conversion")
+recipe main [
+  {
+    break
+    1:integer <- copy 0:literal
+  }
+]
++after-brace: recipe main
++after-brace: jump 1:offset
++after-brace: copy ...
+
+//: one-time setup
+:(after "int main")
+Transform.push_back(transform_braces);
+
+:(code)
+void transform_braces(const recipe_number r) {
+  const int OPEN = 0, CLOSE = 1;
+  list<pair<int/*OPEN/CLOSE*/, size_t/*step index*/> > braces;
+  for (size_t index = 0; index < Recipe[r].steps.size(); ++index) {
+    const instruction& inst = Recipe[r].steps[index];
+    if (inst.label == "{") {
+      trace("brace") << r << ": push (open, " << index << ")";
+      braces.push_back(pair<int,size_t>(OPEN, index));
+    }
+    if (inst.label == "}") {
+      trace("brace") << "push (close, " << index << ")";
+      braces.push_back(pair<int,size_t>(CLOSE, index));
+    }
+  }
+  stack<size_t/*step index*/> open_braces;
+  trace("after-brace") << "recipe " << Recipe[r].name;
+  for (size_t index = 0; index < Recipe[r].steps.size(); ++index) {
+    instruction& inst = Recipe[r].steps[index];
+    if (inst.label == "{") open_braces.push(index);
+    else if (inst.label == "}") open_braces.pop();
+    else if (inst.operation == Recipe_number["loop"]) {
+      inst.operation = Recipe_number["jump"];
+      if (inst.ingredients.size() > 0 && inst.ingredients[0].types[0] == 0) {
+        // explicit target; a later phase will handle it
+        ;
+      }
+      else {
+        reagent ing(0);  // literal
+        ing.value = open_braces.top()-index;
+        inst.ingredients.push_back(ing);
+        trace("after-brace") << "jump " << ing.value << ":offset";
+      }
+    }
+    else if (inst.operation == Recipe_number["break"]) {
+      inst.operation = Recipe_number["jump"];
+      if (inst.ingredients.size() > 0 && inst.ingredients[0].types[0] == 0) {
+        // explicit target; a later phase will handle it
+        ;
+      }
+      else {
+        reagent ing(0);  // literal
+        ing.value = index - matching_brace(open_braces.top(), braces) - 1;
+        inst.ingredients.push_back(ing);
+        trace("after-brace") << "jump " << ing.value << ":offset";
+      }
+    }
+    else {
+      trace("after-brace") << inst.name << " ...";
+    }
+  }
+}
+
+size_t matching_brace(size_t index, const list<pair<int, size_t> >& braces) {
+  int stacksize;
+  for (list<pair<int, size_t> >::const_iterator p = braces.begin(); p != braces.end(); ++p) {
+    if (p->second <= index) continue;
+    stacksize += (p->first ? 1 : -1);
+    if (stacksize == -1) return p->second;
+  }
+  return -1;
+}
+
+:(scenario "loop")
+recipe main [
+  1:integer <- copy 0:literal
+  2:integer <- copy 0:literal
+  {
+    3:integer <- copy 0:literal
+    loop
+  }
+]
++after-brace: recipe main
++after-brace: copy ...
++after-brace: copy ...
++after-brace: copy ...
++after-brace: jump -2:offset
