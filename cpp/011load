@@ -70,9 +70,8 @@ bool next_instruction(istream& in, instruction* curr) {
     return false;  // end of recipe
   }
 
-  if (words.size() == 1 && *(words[0].end()-1) == ':') {
+  if (words.size() == 1 && !isalnum(words[0][0])) {
     curr->is_label = true;
-    words[0].erase(words[0].end()-1);
     curr->label = words[0];
     trace("parse") << "label: " << curr->label;
     return !in.eof();
@@ -153,9 +152,9 @@ void skip_comma(istream& in) {
 
 :(scenario parse_label)
 recipe main [
-  foo:
+  +foo
 ]
-+parse: label: foo
++parse: label: +foo
 -parse: instruction: 1
 
 :(scenario parse_multiple_products)
