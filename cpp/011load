@@ -9,14 +9,15 @@ recipe main [
 +parse:   product: {name: "1", type: 1}
 
 :(code)
-int add_recipes(string form) {
+vector<recipe_number> add_recipes(string form) {
   istringstream in(form);
-  int result = add_recipe(in);
-  while (!in.eof()) add_recipe(in);
+  vector<recipe_number> result;
+  while (!in.eof())
+    result.push_back(add_recipe(in));
   return result;
 }
 
-int add_recipe(istream& in) {
+recipe_number add_recipe(istream& in) {
   in >> std::noskipws;
   skip_comments_and_newlines(in);
   string _recipe = next_word(in);
@@ -31,7 +32,7 @@ int add_recipe(istream& in) {
 //?     raise << "empty recipe name in " << in.str() << '\n';
   if (Recipe_number.find(recipe_name) == Recipe_number.end())
     Recipe_number[recipe_name] = Next_recipe_number++;
-  int r = Recipe_number[recipe_name];
+  recipe_number r = Recipe_number[recipe_name];
 //?   cout << recipe_name << ": adding recipe " << r << '\n'; //? 3
 
   if (next_word(in) != "[")
