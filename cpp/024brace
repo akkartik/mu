@@ -19,6 +19,7 @@
 //: benefits of the control-flow primitives we're used to in other languages,
 //: like 'if', 'while', 'for', etc.
 
+:(scenarios transform_test)
 :(scenario "brace_conversion")
 recipe main [
   {
@@ -66,8 +67,11 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = open_braces.top()-index;
+        ing.name.clear();
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump " << ing.value << ":offset";
+        trace("after-brace") << index << ": " << ing.to_string();
+        trace("after-brace") << index << ": " << Recipe[r].steps[index].ingredients[0].to_string();
       }
     }
     else if (inst.operation == Recipe_number["break"]) {
@@ -79,6 +83,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = matching_brace(open_braces.top(), braces) - index - 1;
+        ing.name.clear();
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump " << ing.value << ":offset";
       }
@@ -92,6 +97,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = open_braces.top()-index;
+        ing.name.clear();
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-if " << inst.ingredients[0].name << ", " << ing.value << ":offset";
       }
@@ -105,6 +111,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = matching_brace(open_braces.top(), braces) - index - 1;
+        ing.name.clear();
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-if " << inst.ingredients[0].name << ", " << ing.value << ":offset";
       }
@@ -118,6 +125,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = open_braces.top()-index;
+        ing.name.clear();
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-unless " << inst.ingredients[0].name << ", " << ing.value << ":offset";
       }
@@ -131,6 +139,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = matching_brace(open_braces.top(), braces) - index - 1;
+        ing.name.clear();
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-unless " << inst.ingredients[0].name << ", " << ing.value << ":offset";
       }
@@ -150,6 +159,13 @@ size_t matching_brace(size_t index, const list<pair<int, size_t> >& braces) {
   }
   assert(false);
   return -1;
+}
+
+// temporarily suppress run
+void transform_test(string form) {
+  vector<recipe_number> tmp = add_recipes(form);
+  recipes_added_by_test.insert(recipes_added_by_test.end(), tmp.begin(), tmp.end());
+  transform_all();
 }
 
 :(scenario "loop")
@@ -308,3 +324,45 @@ recipe main [
 +after-brace: copy ...
 +after-brace: jump-unless 2, -1:offset
 +after-brace: copy ...
+
+:(scenario "loop_nested")
+recipe main [
+  1:integer <- copy 0:literal
+  {
+    2:integer <- copy 0:literal
+    {
+      3:integer <- copy 0:literal
+    }
+    loop-if 4:boolean
+    5:integer <- copy 0:literal
+  }
+]
++after-brace: recipe main
++after-brace: jump-if 4, -5:offset
+
+:(scenario "loop_label")
+recipe main [
+  1:integer <- copy 0:literal
+  +foo
+  2:integer <- copy 0:literal
+]
++after-brace: recipe main
++after-brace: copy ...
++after-brace: copy ...
+
+//: test how things actually run
+:(scenarios run)
+:(scenario "factorial")
+recipe factorial [
+  1:integer <- copy 5:literal
+  2:integer <- copy 1:literal
+  {
+    3:boolean <- equal 1:integer 1:literal
+    break-if 3:boolean
+    2:integer <- multiply 2:integer, 1:integer
+    1:integer <- subtract 1:integer, 1:literal
+    loop
+  }
+  4:integer <- copy 2:integer  # trigger a read
+]
++mem: location 2 is 120
