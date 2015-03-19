@@ -17,5 +17,7 @@ endfunction
 call HighlightTangledFile()
 autocmd BufReadPost,BufNewFile 0* call HighlightTangledFile()
 
+set isk+=-
+syntax keyword muControl next-ingredient reply jump jump-if jump-unless loop loop-if loop-unless break-if break-unless | highlight link muControl Identifier
 syntax match muAssign "<-" | highlight link muAssign SpecialChar
 syntax match muAssign "\<raw\>"
