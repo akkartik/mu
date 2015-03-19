@@ -67,7 +67,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = open_braces.top()-index;
-        ing.name.clear();
+        ing.initialized = true;
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump " << ing.value << ":offset";
         trace("after-brace") << index << ": " << ing.to_string();
@@ -83,7 +83,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = matching_brace(open_braces.top(), braces) - index - 1;
-        ing.name.clear();
+        ing.initialized = true;
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump " << ing.value << ":offset";
       }
@@ -97,7 +97,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = open_braces.top()-index;
-        ing.name.clear();
+        ing.initialized = true;
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-if " << inst.ingredients[0].name << ", " << ing.value << ":offset";
       }
@@ -111,7 +111,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = matching_brace(open_braces.top(), braces) - index - 1;
-        ing.name.clear();
+        ing.initialized = true;
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-if " << inst.ingredients[0].name << ", " << ing.value << ":offset";
       }
@@ -125,7 +125,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = open_braces.top()-index;
-        ing.name.clear();
+        ing.initialized = true;
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-unless " << inst.ingredients[0].name << ", " << ing.value << ":offset";
       }
@@ -139,7 +139,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing(0);  // literal
         ing.value = matching_brace(open_braces.top(), braces) - index - 1;
-        ing.name.clear();
+        ing.initialized = true;
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-unless " << inst.ingredients[0].name << ", " << ing.value << ":offset";
       }
@@ -359,6 +359,7 @@ recipe factorial [
   {
     3:boolean <- equal 1:integer 1:literal
     break-if 3:boolean
+#    $print 1:integer
     2:integer <- multiply 2:integer, 1:integer
     1:integer <- subtract 1:integer, 1:literal
     loop

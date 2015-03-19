@@ -41,6 +41,7 @@ struct reagent {
   vector<pair<string, vector<string> > > properties;
   string name;
   int value;
+  bool initialized;
   vector<type_number> types;
   reagent(string s);
   reagent(type_number t);
@@ -139,7 +140,7 @@ void setup_recipes() {
   void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
 
   // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
-  reagent::reagent(string s) :value(0) {
+  reagent::reagent(string s) :value(0), initialized(false) {
     istringstream in(s);
     // properties
     while (!in.eof()) {
@@ -156,7 +157,7 @@ void setup_recipes() {
       types.push_back(Type_number[properties[0].second[i]]);
     }
   }
-  reagent::reagent(type_number t) :value(0) {
+  reagent::reagent(type_number t) :value(0), initialized(false) {
     types.push_back(t);
   }
   string reagent::to_string() {
