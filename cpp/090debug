@@ -1,0 +1,13 @@
+:(before "End Globals")
+// Operator to look at fields of records.
+const int _PRINT = 99;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["$print"] = _PRINT;
+assert(Next_recipe_number < _PRINT);
+:(before "End Primitive Recipe Implementations")
+//: beware: overridden in later layers
+case _PRINT: {
+  vector<int> result(read_memory(instructions[pc].ingredients[0]));
+  cout << result[0] << '\n';
+  break;
+}
