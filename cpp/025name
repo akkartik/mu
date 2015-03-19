@@ -1,0 +1,56 @@
+//: A big convenience high-level languages provide is the ability to name memory
+//: locations. In mu, a lightweight tool called 'convert-names' provides this
+//: convenience.
+
+:(scenarios run)
+:(scenario "convert_names")
+recipe main [
+  x:integer <- copy 0:literal
+]
++name: assign x 1
++run: instruction main/0
++mem: storing in location 1
+
+:(after "int main")
+Transform.push_back(transform_names);
+
+:(before "End Globals")
+unordered_map<recipe_number, unordered_map<string, int> > Name;
+
+:(code)
+void transform_names(const recipe_number r) {
+  unordered_map<string, int>& names = Name[r];
+  int curr_idx = 1;
+//?   cout << "Recipe " << r << '\n'; //? 2
+//?   cout << Recipe[r].steps.size(); //? 1
+  for (size_t i = 0; i < Recipe[r].steps.size(); ++i) {
+//?     cout << "instruction " << i << '\n'; //? 2
+    instruction& inst = Recipe[r].steps[i];
+    for (size_t in = 0; in < inst.ingredients.size(); ++in) {
+//?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 1
+      if (inst.ingredients[in].types[0]
+          && inst.ingredients[in].name.find_first_not_of("0123456789-.") != string::npos) {
+        if (names.find(inst.ingredients[in].name) == names.end()) {
+          // todo: test
+          cerr << "user before set: " << inst.ingredients[in].name << " in " << Recipe[r].name << '\n';
+        }
+        inst.ingredients[in].value = names[inst.ingredients[in].name];
+        inst.ingredients[in].initialized = true;
+      }
+    }
+    for (size_t out = 0; out < inst.products.size(); ++out) {
+//?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products[out].name << '\n'; //? 2
+//?       cout << inst.products[out].types[0] << '\n'; //? 1
+      if (inst.products[out].types[0]
+          && inst.products[out].name.find_first_not_of("0123456789-.") != string::npos) {
+        if (names.find(inst.products[out].name) == names.end()) {
+          trace("name") << "assign " << inst.products[out].name << " " << curr_idx;
+          names[inst.products[out].name] = curr_idx;
+          ++curr_idx;
+        }
+        inst.products[out].value = names[inst.products[out].name];
+        inst.products[out].initialized = true;
+      }
+    }
+  }
+}
