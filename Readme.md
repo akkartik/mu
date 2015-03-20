@@ -146,9 +146,9 @@ will be unique (other variables won't clobber it) and consistent (all mentions
 of the name will map to the same address inside a function).
 
 Things get more complicated when your functions call other functions. Mu
-doesn't preserve uniqueness of names across functions, so you need to organize
-your names into spaces. At the start of each function (like `factorial`
-above), set its *default space*:
+doesn't preserve uniqueness of addresses across functions, so you need to
+organize your names into spaces. At the start of each function (like
+`factorial` above), set its *default space*:
 
   ```lisp
     default-space:space-address <- new space:literal, 30:literal
