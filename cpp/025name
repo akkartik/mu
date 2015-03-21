@@ -31,7 +31,7 @@ void transform_names(const recipe_number r) {
     // map names to addresses
     for (size_t in = 0; in < inst.ingredients.size(); ++in) {
 //?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 1
-      if (!inst.ingredients[in].types.empty()
+      if (inst.ingredients[in].name != "default_space"
           && inst.ingredients[in].types[0]
           && inst.ingredients[in].name.find_first_not_of("0123456789-.") != string::npos) {
         if (names.find(inst.ingredients[in].name) == names.end()) {
@@ -46,7 +46,8 @@ void transform_names(const recipe_number r) {
     for (size_t out = 0; out < inst.products.size(); ++out) {
 //?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products[out].name << '\n'; //? 3
 //?       cout << inst.products[out].types[0] << '\n'; //? 1
-      if (!inst.products[out].types.empty()
+      if (inst.products[out].name != "_"
+          && inst.products[out].name != "default_space"
           && inst.products[out].types[0]
           && inst.products[out].name.find_first_not_of("0123456789-.") != string::npos) {
         if (names.find(inst.products[out].name) == names.end()) {
@@ -68,3 +69,11 @@ recipe main [
 ]
 +name: assign x 1
 -name: assign _ 1
+
+//: One reserved word that we'll need later.
+:(scenario "convert_names_passes_default_space")
+recipe main [
+  default_space:integer, x:integer <- copy 0:literal
+]
++name: assign x 1
+-name: assign default_space 1
