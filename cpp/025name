@@ -42,8 +42,9 @@ void transform_names(const recipe_number r) {
       inst.ingredients[1].initialized = true;
       trace("name") << "field " << inst.ingredients[1].name << " of type " << Type[record].name << " is at offset " << inst.ingredients[1].value;
     }
-    // 2: map names to addresses
+    // 2: map names to addresses if necessary
     for (size_t in = 0; in < inst.ingredients.size(); ++in) {
+      if (is_raw(inst.ingredients[in])) continue;
 //?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 1
       if (inst.ingredients[in].name != "default_space"
           && inst.ingredients[in].types[0]
@@ -56,8 +57,8 @@ void transform_names(const recipe_number r) {
         inst.ingredients[in].initialized = true;
       }
     }
-    // 3: replace names with addresses
     for (size_t out = 0; out < inst.products.size(); ++out) {
+      if (is_raw(inst.products[out])) continue;
 //?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products[out].name << '\n'; //? 3
 //?       cout << inst.products[out].types[0] << '\n'; //? 1
       if (inst.products[out].name != "_"
@@ -94,6 +95,13 @@ int find_element_name(const type_number t, const string& name) {
   return -1;
 }
 
+bool is_raw(const reagent& r) {
+  for (size_t i = /*skip value+type*/1; i < r.properties.size(); ++i) {
+    if (r.properties[i].first == "raw") return true;
+  }
+  return false;
+}
+
 :(scenario "convert_names_passes_dummy")
 # _ is just a dummy result that never gets consumed
 recipe main [
@@ -102,13 +110,20 @@ recipe main [
 +name: assign x 1
 -name: assign _ 1
 
-//: One reserved word that we'll need later.
+//: one reserved word that we'll need later
 :(scenario "convert_names_passes_default_space")
 recipe main [
   default_space:integer, x:integer <- copy 0:literal
 ]
 +name: assign x 1
 -name: assign default_space 1
+
+//: an escape hatch to suppress name conversion that we'll use later
+:(scenario "convert_names_passes_raw")
+recipe main [
+  x:integer/raw <- copy 0:literal
+]
+-name: assign x 1
 
 //: update our running example record for the next test
 :(before "End Mu Types Initialization")
