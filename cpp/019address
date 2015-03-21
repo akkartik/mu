@@ -56,6 +56,7 @@ void write_memory(reagent x, vector<int> data) {
 
 :(code)
 reagent canonize(reagent x) {
+//?   cout << "canonize\n"; //? 1
   reagent r = x;
   while (has_property(r, "deref"))
     r = deref(r);
@@ -70,6 +71,7 @@ bool has_property(reagent x, string name) {
 }
 
 reagent deref(reagent x) {
+//?   cout << "deref\n"; //? 1
   reagent result("");
   assert(x.types[0] == 2);  // address
 
@@ -83,14 +85,12 @@ reagent deref(reagent x) {
   // drop-one 'deref'
   int i = 0;
   int len = x.properties.size();
-  while (true) {
-    assert(i < len);
+  for (i = 0; i < len; ++i) {
     if (x.properties[i].first == "deref") break;
     result.properties.push_back(x.properties[i]);
-    ++i;
   }
   ++i;  // skip first deref
-  while (i < len) {
+  for (; i < len; ++i) {
     result.properties.push_back(x.properties[i]);
   }
   return result;
@@ -103,6 +103,18 @@ recipe main [
   2:integer <- copy 34:literal
   3:integer <- copy 35:literal
   4:integer <- get 1:address:point/deref, 0:offset
+]
++run: instruction main/3
++run: address to copy is 2
++run: product 0 is 34
++mem: storing in location 4
+
+:(scenario "include_nonderef_properties")
+recipe main [
+  1:integer <- copy 2:literal
+  2:integer <- copy 34:literal
+  3:integer <- copy 35:literal
+  4:integer <- get 1:address:point/deref/foo, 0:offset
 ]
 +run: instruction main/3
 +run: address to copy is 2
