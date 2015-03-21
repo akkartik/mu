@@ -43,6 +43,7 @@ recipe main [
 
 :(replace{} "void write_memory(reagent x, vector<int> data)")
 void write_memory(reagent x, vector<int> data) {
+  if (x.name == "_") return;  // dummy results are never stored
   x = canonize(x);
   int base = x.value;
   if (!Type[x.types[0]].is_array && size_of(x) != data.size())
