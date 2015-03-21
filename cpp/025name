@@ -68,7 +68,7 @@ void transform_names(const recipe_number r) {
         if (names.find(inst.products[out].name) == names.end()) {
           trace("name") << "assign " << inst.products[out].name << " " << curr_idx;
           names[inst.products[out].name] = curr_idx;
-          ++curr_idx;
+          curr_idx += size_of(inst.products[out]);
         }
         inst.products[out].value = names[inst.products[out].name];
         inst.products[out].initialized = true;
@@ -136,3 +136,13 @@ recipe main [
 ]
 +name: field y of type point is at offset 1
 +name: field x of type point is at offset 0
+
+//: this test is actually illegal so can't call run
+:(scenarios transform_test)
+:(scenario "convert_names_handles_records")
+recipe main [
+  a:point <- copy 0:literal
+  b:integer <- copy 0:literal
+]
++name: assign a 1
++name: assign b 3
