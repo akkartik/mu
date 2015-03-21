@@ -130,7 +130,7 @@ vector<int> read_memory(reagent x) {
 
 //: beware: overridden in later layers
 void write_memory(reagent x, vector<int> data) {
-  if (x.name == "_") return;  // dummy results are never stored
+  if (is_dummy(x)) return;
   int base = x.value;
   size_t size = size_of(x);
   if (size != data.size()) raise << "size mismatch in storing to " << x.to_string();
@@ -141,11 +141,15 @@ void write_memory(reagent x, vector<int> data) {
 }
 
 :(code)
-size_t size_of(reagent r) {
+size_t size_of(const reagent& r) {
   type_info t = Type[r.types[0]];
   if (!t.is_record && !t.is_array) return t.size;
   // End size_of Cases.
   return t.size;
+}
+
+bool is_dummy(const reagent& x) {
+  return x.name == "_";
 }
 
 :(scenario run_label)
