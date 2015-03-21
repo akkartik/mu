@@ -28,7 +28,21 @@ void transform_names(const recipe_number r) {
   for (size_t i = 0; i < Recipe[r].steps.size(); ++i) {
 //?     cout << "instruction " << i << '\n'; //? 2
     instruction& inst = Recipe[r].steps[i];
-    // map names to addresses
+    // 1: replace element names of records with offsets
+    if (inst.operation == Recipe_number["get"]
+        || inst.operation == Recipe_number["get-address"]) {
+      // at least 2 args, and second arg is offset
+      assert(inst.ingredients.size() >= 2);
+      assert(!inst.ingredients[1].types.empty());
+      assert(inst.ingredients[1].types[0] == 0);
+      if (inst.ingredients[1].name.find_first_not_of("0123456789") == string::npos) continue;
+      // since first non-address in base type must be a record, we don't have to canonize
+      type_number record = skip_addresses(inst.ingredients[0].types);
+      inst.ingredients[1].value = find_element_name(record, inst.ingredients[1].name);
+      inst.ingredients[1].initialized = true;
+      trace("name") << "field " << inst.ingredients[1].name << " of type " << Type[record].name << " is at offset " << inst.ingredients[1].value;
+    }
+    // 2: map names to addresses
     for (size_t in = 0; in < inst.ingredients.size(); ++in) {
 //?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 1
       if (inst.ingredients[in].name != "default_space"
@@ -42,7 +56,7 @@ void transform_names(const recipe_number r) {
         inst.ingredients[in].initialized = true;
       }
     }
-    // replace names with addresses
+    // 3: replace names with addresses
     for (size_t out = 0; out < inst.products.size(); ++out) {
 //?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products[out].name << '\n'; //? 3
 //?       cout << inst.products[out].types[0] << '\n'; //? 1
@@ -62,6 +76,24 @@ void transform_names(const recipe_number r) {
   }
 }
 
+type_number skip_addresses(const vector<type_number>& types) {
+  for (size_t i = 0; i < types.size(); ++i) {
+    if (types[i] != Type_number["address"]) return types[i];
+  }
+  raise << "expected a record" << '\n' << die();
+  return -1;
+}
+
+int find_element_name(const type_number t, const string& name) {
+  const type_info& record = Type[t];
+//?   cout << "looking for field " << name << " in type " << record.name << " with " << record.element_names.size() << " fields\n"; //? 1
+  for (size_t i = 0; i < record.element_names.size(); ++i) {
+    if (record.element_names[i] == name) return i;
+  }
+  raise << "unknown element " << name << " in record " << t << '\n' << die();
+  return -1;
+}
+
 :(scenario "convert_names_passes_dummy")
 # _ is just a dummy result that never gets consumed
 recipe main [
@@ -77,3 +109,15 @@ recipe main [
 ]
 +name: assign x 1
 -name: assign default_space 1
+
+//: update our running example record for the next test
+:(before "End Mu Types Initialization")
+Type[point].element_names.push_back("x");
+Type[point].element_names.push_back("y");
+:(scenario "convert_names_transforms_record_elements")
+recipe main [
+  a:integer <- get 0:point, y:offset
+  b:integer <- get 0:point, x:offset
+]
++name: field y of type point is at offset 1
++name: field x of type point is at offset 0

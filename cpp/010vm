@@ -82,10 +82,13 @@ void setup_types() {
   // Mu Types Initialization.
   int integer = Type_number["integer"] = Next_type_number++;
   Type[integer].size = 1;
+  Type[integer].name = "integer";
   int address = Type_number["address"] = Next_type_number++;
   Type[address].size = 1;
+  Type[address].name = "address";
   int boolean = Type_number["boolean"] = Next_type_number++;
   Type[boolean].size = 1;
+  Type[boolean].name = "boolean";
   // End Mu Types Initialization.
 }
 :(before "End Setup")
@@ -99,10 +102,12 @@ void setup_types() {
 //  storing bank balance next to a person's name might require a record, and
 //  high scores in a game might need an array of numbers.
 struct type_info {
+  string name;
   size_t size;
   bool is_record;
   bool is_array;
   vector<vector<type_number> > elements;  // only if is_record
+  vector<string> element_names;  // only if is_record
   vector<type_number> element;  // only if is_array
   // End type_info Fields.
   type_info() :size(0), is_record(false), is_array(false) {}
