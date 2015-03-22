@@ -21,6 +21,7 @@ vector<int> read_memory(reagent x) {
   }
   x = canonize(x);
   int base = x.value;
+//?   cout << "base: " << base << '\n'; //? 1
   size_t size = size_of(x);
   for (size_t offset = 0; offset < size; ++offset) {
     int val = Memory[base+offset];
@@ -45,6 +46,7 @@ recipe main [
 void write_memory(reagent x, vector<int> data) {
   if (x.name == "_") return;  // dummy results are never stored
   x = canonize(x);
+//?   cout << x.to_string() << '\n'; //? 1
   int base = x.value;
   if (!Type[x.types[0]].is_array && size_of(x) != data.size())
     raise << "size mismatch in storing to " << x.to_string();
@@ -58,6 +60,7 @@ void write_memory(reagent x, vector<int> data) {
 reagent canonize(reagent x) {
 //?   cout << "canonize\n"; //? 1
   reagent r = x;
+//?   cout << x.to_string() << " => " << r.to_string() << '\n'; //? 1
   while (has_property(r, "deref"))
     r = deref(r);
   return r;
@@ -76,7 +79,7 @@ reagent deref(reagent x) {
   assert(x.types[0] == 2);  // address
 
   // compute value
-  result.value = Memory[x.value];
+  result.set_value(Memory[x.value]);
   trace("mem") << "location " << x.value << " is " << result.value;
 
   // populate types
@@ -142,7 +145,7 @@ case GET: {
   int src_type = Type[base_type].elements[offset][0];
   trace("run") << "its type is " << src_type;
   reagent tmp(src_type);
-  tmp.value = src;
+  tmp.set_value(src);
   tmp.types.push_back(src_type);
   vector<int> result(read_memory(tmp));
   trace("run") << "product 0 is " << result[0];
