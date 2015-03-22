@@ -1,0 +1,42 @@
+//: Spaces help isolate functions from each other. You can create them at will,
+//: and all addresses in arguments are implicitly based on the 'default-space'
+//: (unless they have the /raw property)
+
+:(scenarios run)
+:(scenario "set_default_space")
+recipe main [
+  default-space:address:space <- copy 10:literal
+  1:integer <- copy 12:literal
+]
++mem: storing in location 11
+
+:(before "End Call Fields")
+size_t default_space;
+:(replace "call(recipe_number r) :running_recipe(r)")
+call(recipe_number r) :running_recipe(r), pc(0), next_ingredient_to_process(0), default_space(0) {}
+
+:(replace "reagent r = x" following "reagent canonize(reagent x)")
+reagent r = absolutize(x);
+:(code)
+reagent absolutize(reagent x) {
+//?   cout << "absolutize " << x.to_string() << '\n'; //? 1
+  if (is_raw(x) || is_dummy(x)) return x;
+//?   cout << "not raw: " << x.to_string() << '\n'; //? 1
+  assert(x.initialized);
+  reagent r = x;
+  r.set_value(r.value + Current_routine.calls.top().default_space);
+//?   cout << "after absolutize: " << r.value << '\n'; //? 1
+  if (r.properties.empty())
+    r.properties.push_back(pair<string, vector<string> >("", vector<string>()));
+  r.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
+  assert(is_raw(r));
+  return r;
+}
+
+:(after "void write_memory(reagent x, vector<int> data)")
+  if (x.name == "default-space") {
+    assert(data.size() == 1);
+    Current_routine.calls.top().default_space = data[0];
+//?     cout << "AAA " << Current_routine.calls.top().default_space << '\n'; //? 1
+    return;
+  }

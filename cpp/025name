@@ -38,14 +38,15 @@ void transform_names(const recipe_number r) {
       if (inst.ingredients[1].name.find_first_not_of("0123456789") == string::npos) continue;
       // since first non-address in base type must be a record, we don't have to canonize
       type_number record = skip_addresses(inst.ingredients[0].types);
-      inst.ingredients[1].value = find_element_name(record, inst.ingredients[1].name);
-      inst.ingredients[1].initialized = true;
+      inst.ingredients[1].set_value(find_element_name(record, inst.ingredients[1].name));
       trace("name") << "field " << inst.ingredients[1].name << " of type " << Type[record].name << " is at offset " << inst.ingredients[1].value;
     }
     // 2: map names to addresses if necessary
     for (size_t in = 0; in < inst.ingredients.size(); ++in) {
       if (is_raw(inst.ingredients[in])) continue;
 //?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 1
+      if (inst.ingredients[in].name == "default_space")
+        inst.ingredients[in].initialized = true;
       if (inst.ingredients[in].name != "default_space"
           && inst.ingredients[in].types[0]
           && inst.ingredients[in].name.find_first_not_of("0123456789-.") != string::npos) {
@@ -53,14 +54,15 @@ void transform_names(const recipe_number r) {
           // todo: test
           cerr << "user before set: " << inst.ingredients[in].name << " in " << Recipe[r].name << '\n';
         }
-        inst.ingredients[in].value = names[inst.ingredients[in].name];
-        inst.ingredients[in].initialized = true;
+        inst.ingredients[in].set_value(names[inst.ingredients[in].name]);
       }
     }
     for (size_t out = 0; out < inst.products.size(); ++out) {
       if (is_raw(inst.products[out])) continue;
 //?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products[out].name << '\n'; //? 3
 //?       cout << inst.products[out].types[0] << '\n'; //? 1
+      if (inst.products[out].name == "default_space")
+        inst.products[out].initialized = true;
       if (inst.products[out].name != "_"
           && inst.products[out].name != "default_space"
           && inst.products[out].types[0]
@@ -70,8 +72,7 @@ void transform_names(const recipe_number r) {
           names[inst.products[out].name] = curr_idx;
           curr_idx += size_of(inst.products[out]);
         }
-        inst.products[out].value = names[inst.products[out].name];
-        inst.products[out].initialized = true;
+        inst.products[out].set_value(names[inst.products[out].name]);
       }
     }
   }
