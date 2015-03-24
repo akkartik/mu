@@ -5,7 +5,7 @@ recipe main [
 ]
 +run: instruction main/0
 +run: ingredient 0 is 23
-+mem: storing in location 1
++mem: storing 23 in location 1
 
 :(scenario copy)
 recipe main [
@@ -15,7 +15,7 @@ recipe main [
 +run: instruction main/1
 +run: ingredient 0 is 1
 +mem: location 1 is 23
-+mem: storing in location 2
++mem: storing 23 in location 2
 
 :(before "End Types")
 // Book-keeping while running a recipe.
@@ -139,7 +139,7 @@ void write_memory(reagent x, vector<int> data) {
   size_t size = size_of(x);
   if (size != data.size()) raise << "size mismatch in storing to " << x.to_string();
   for (size_t offset = 0; offset < size; ++offset) {
-    trace("mem") << "storing in location " << base+offset;
+    trace("mem") << "storing " << data[offset] << " in location " << base+offset;
     Memory[base+offset] = data[offset];
   }
 }
