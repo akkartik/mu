@@ -10,7 +10,7 @@ recipe main [
 +run: instruction main/2
 +mem: location 1 is 2
 +mem: location 2 is 34
-+mem: storing in location 3
++mem: storing 34 in location 3
 
 :(replace{} "vector<int> read_memory(reagent x)")
 vector<int> read_memory(reagent x) {
@@ -40,7 +40,7 @@ recipe main [
 ]
 +run: instruction main/1
 +mem: location 1 is 2
-+mem: storing in location 2
++mem: storing 34 in location 2
 
 :(replace{} "void write_memory(reagent x, vector<int> data)")
 void write_memory(reagent x, vector<int> data) {
@@ -51,7 +51,7 @@ void write_memory(reagent x, vector<int> data) {
   if (!Type[x.types[0]].is_array && size_of(x) != data.size())
     raise << "size mismatch in storing to " << x.to_string();
   for (size_t offset = 0; offset < data.size(); ++offset) {
-    trace("mem") << "storing in location " << base+offset;
+    trace("mem") << "storing " << data[offset] << " in location " << base+offset;
     Memory[base+offset] = data[offset];
   }
 }
@@ -110,7 +110,7 @@ recipe main [
 +run: instruction main/3
 +run: address to copy is 2
 +run: product 0 is 34
-+mem: storing in location 4
++mem: storing 34 in location 4
 
 :(scenario "include_nonderef_properties")
 recipe main [
@@ -122,7 +122,7 @@ recipe main [
 +run: instruction main/3
 +run: address to copy is 2
 +run: product 0 is 34
-+mem: storing in location 4
++mem: storing 34 in location 4
 
 :(replace{} "case GET:")
 case GET: {
