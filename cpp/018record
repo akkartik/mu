@@ -44,14 +44,17 @@ case GET: {
   size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
-    src += size_of(reagent(Type[base_type].elements[i][0]));
+    reagent tmp;
+    tmp.types.push_back(Type[base_type].elements[i][0]);
+    src += size_of(tmp);
   }
   trace("run") << "address to copy is " << src;
   assert(Type[base_type].elements.size() > offset);
   int src_type = Type[base_type].elements[offset][0];
   trace("run") << "its type is " << src_type;
-  reagent tmp(src_type);
+  reagent tmp;
   tmp.set_value(src);
+  tmp.types.push_back(src_type);
   vector<int> result(read_memory(tmp));
   trace("run") << "product 0 is " << result[0];
   write_memory(instructions[pc].products[0], result);
@@ -120,7 +123,9 @@ case GET_ADDRESS: {
   size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
-    src += size_of(reagent(Type[base_type].elements[i][0]));
+    reagent tmp;
+    tmp.types.push_back(Type[base_type].elements[i][0]);
+    src += size_of(tmp);
   }
   trace("run") << "address to copy is " << src;
   vector<int> result;
