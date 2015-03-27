@@ -86,6 +86,8 @@ void setup_types() {
   Type[address].name = "address";
   int boolean = Type_number["boolean"] = Next_type_number++;
   Type[boolean].name = "boolean";
+  int array = Type_number["array"] = Next_type_number++;
+  Type[array].name = "array";
   // End Mu Types Initialization.
 }
 :(before "End Setup")
@@ -101,13 +103,11 @@ void setup_types() {
 struct type_info {
   string name;
   bool is_record;
-  bool is_array;
   size_t size;  // only if is_record; primitives and addresses have size 1 while arrays are dynamic
   vector<vector<type_number> > elements;  // only if is_record
   vector<string> element_names;  // only if is_record
-  vector<type_number> element;  // only if is_array
   // End type_info Fields.
-  type_info() :is_record(false), is_array(false), size(0) {}
+  type_info() :is_record(false), size(0) {}
 };
 
 :(before "End Globals")
