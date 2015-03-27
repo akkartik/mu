@@ -124,7 +124,8 @@ vector<int> read_memory(reagent x) {
     return result;
   }
   int base = x.value;
-  for (size_t offset = 0; offset < Type[x.types[0]].size; ++offset) {
+  size_t size = size_of(x);
+  for (size_t offset = 0; offset < size; ++offset) {
     int val = Memory[base+offset];
     trace("mem") << "location " << base+offset << " is " << val;
     result.push_back(val);
@@ -136,9 +137,9 @@ vector<int> read_memory(reagent x) {
 void write_memory(reagent x, vector<int> data) {
   if (is_dummy(x)) return;
   int base = x.value;
-  size_t size = size_of(x);
-  if (size != data.size()) raise << "size mismatch in storing to " << x.to_string();
-  for (size_t offset = 0; offset < size; ++offset) {
+  if (size_of(x) != data.size())
+    raise << "size mismatch in storing to " << x.to_string();
+  for (size_t offset = 0; offset < data.size(); ++offset) {
     trace("mem") << "storing " << data[offset] << " in location " << base+offset;
     Memory[base+offset] = data[offset];
   }
