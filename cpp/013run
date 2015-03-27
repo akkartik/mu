@@ -118,9 +118,8 @@ recipes_added_by_test.clear();
 //: beware: overridden in later layers
 vector<int> read_memory(reagent x) {
 //?   cout << "read_memory: " << x.to_string() << '\n'; //? 1
-  static const int LITERAL = Type_number["literal"];
   vector<int> result;
-  if (x.types[0] == LITERAL) {
+  if (isa_literal(x)) {
     result.push_back(x.value);
     return result;
   }
@@ -155,6 +154,10 @@ size_t size_of(const reagent& r) {
 
 bool is_dummy(const reagent& x) {
   return x.name == "_";
+}
+
+bool isa_literal(const reagent& r) {
+  return r.types.size() == 1 && r.types[0] == 0;
 }
 
 :(scenario run_label)
