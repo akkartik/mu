@@ -1,6 +1,7 @@
-//: Support for records.
+//: Records are compound types with multiple elements of potentially different
+//: types.
 :(before "End Mu Types Initialization")
-// We'll use this record as a running example, with two integer fields
+//: We'll use this record as a running example, with two integer elements
 int point = Type_number["point"] = Next_type_number++;
 Type[point].size = 2;
 Type[point].is_record = true;
@@ -24,8 +25,54 @@ recipe main [
 +mem: storing 34 in location 3
 +mem: storing 35 in location 4
 
+:(before "End Mu Types Initialization")
+// A more complex record, containing another record.
+int point_integer = Type_number["point-integer"] = Next_type_number++;
+Type[point_integer].size = 2;
+Type[point_integer].is_record = true;
+Type[point_integer].name = "point-integer";
+vector<type_number> p2;
+p2.push_back(point);
+Type[point_integer].elements.push_back(p2);
+vector<type_number> i2;
+i2.push_back(integer);
+Type[point_integer].elements.push_back(i2);
+
+:(scenario "copy_handles_nested_record_elements")
+recipe main [
+  12:integer <- copy 34:literal
+  13:integer <- copy 35:literal
+  14:integer <- copy 36:literal
+  15:point-integer <- copy 12:point-integer
+]
++mem: storing 36 in location 17
+
+:(before "End size_of Cases")
+if (t.is_record) {
+  size_t result = 0;
+  for (size_t i = 0; i < t.elements.size(); ++i) {
+    result += size_of(t.elements[i]);
+  }
+  return result;
+}
+
+//: To access elements of a record, use 'get'
+:(scenario "get")
+recipe main [
+  12:integer <- copy 34:literal
+  13:integer <- copy 35:literal
+  15:integer <- get 12:point, 1:offset
+]
++run: instruction main/2
++run: ingredient 0 is 12
++run: ingredient 1 is 1
++run: address to copy is 13
++run: its type is 1
++mem: location 13 is 35
++run: product 0 is 35
++mem: storing 35 in location 15
+
 :(before "End Globals")
-// Operator to look at fields of records.
 const int GET = 18;
 :(before "End Primitive Recipe Numbers")
 Recipe_number["get"] = GET;
@@ -58,33 +105,11 @@ case GET: {
   break;
 }
 
-:(scenario "get")
-recipe main [
-  12:integer <- copy 34:literal
-  13:integer <- copy 35:literal
-  15:integer <- get 12:point, 1:offset
-]
-+run: instruction main/2
-+run: ingredient 0 is 12
-+run: ingredient 1 is 1
-+run: address to copy is 13
-+run: its type is 1
-+mem: location 13 is 35
-+run: product 0 is 35
-+mem: storing 35 in location 15
-
+//: 'get' requires a literal in ingredient 1. We'll use a synonym called
+//: 'offset'
 :(before "End Mu Types Initialization")
-// A more complex record, containing another record.
-int point_integer = Type_number["point-integer"] = Next_type_number++;
-Type[point_integer].size = 2;
-Type[point_integer].is_record = true;
-Type[point_integer].name = "point-integer";
-vector<type_number> p2;
-p2.push_back(point);
-Type[point_integer].elements.push_back(p2);
-vector<type_number> i2;
-i2.push_back(integer);
-Type[point_integer].elements.push_back(i2);
+Type_number["offset"] = 0;
+
 :(scenario "get_handles_nested_record_elements")
 recipe main [
   12:integer <- copy 34:literal
@@ -140,21 +165,3 @@ recipe main [
 +run: ingredient 1 is 1
 +run: address to copy is 13
 +mem: storing 13 in location 15
-
-:(scenario "copy_handles_nested_record_elements")
-recipe main [
-  12:integer <- copy 34:literal
-  13:integer <- copy 35:literal
-  14:integer <- copy 36:literal
-  15:point-integer <- copy 12:point-integer
-]
-+mem: storing 36 in location 17
-
-:(before "End size_of Cases")
-if (t.is_record) {
-  size_t result = 0;
-  for (size_t i = 0; i < t.elements.size(); ++i) {
-    result += size_of(t.elements[i]);
-  }
-  return result;
-}
