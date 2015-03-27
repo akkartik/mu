@@ -144,3 +144,23 @@ recipe main [
 +run: ingredient 1 is 1
 +run: address to copy is 13
 +mem: storing 13 in location 15
+
+:(scenario "copy_handles_nested_record_elements")
+recipe main [
+  12:integer <- copy 34:literal
+  13:integer <- copy 35:literal
+  14:integer <- copy 36:literal
+  15:point-integer <- copy 12:point-integer
+]
++mem: storing 36 in location 17
+
+:(before "End size_of Cases")
+if (t.is_record) {
+  size_t result = 0;
+  for (size_t i = 0; i < t.elements.size(); ++i) {
+    reagent x;
+    x.types.push_back(t.elements[i][0]);
+    result += size_of(x);
+  }
+  return result;
+}
