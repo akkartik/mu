@@ -32,15 +32,12 @@ recipe main [
 +mem: storing 15 in location 7
 +mem: storing 16 in location 8
 
-:(before "End size_of Cases")
-if (t.is_array) {
-  int base = r.value;
-  if (Memory[base] == 0) return 0;
-  reagent x;
-  x.set_value(base+1);
-  x.types.push_back(t.element[0]);
-  return 1 + Memory[base]*size_of(x);
-}
+:(after "size_t size_of(const reagent& r)")
+  const type_info& t = Type[r.types[0]];
+  if (t.is_array) {
+    int base = r.value;
+    return 1 + Memory[base]*size_of(t.element);
+  }
 
 :(before "End Globals")
 // Operator to look at elements of arrays.
@@ -58,9 +55,7 @@ case INDEX: {
   assert(Type[base_type].is_array);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
   size_t offset = instructions[pc].ingredients[1].value;
-  reagent elem;
-  elem.types.push_back(Type[base_type].element[0]);
-  int src = base_address + 1 + offset*size_of(elem);
+  int src = base_address + 1 + offset*size_of(Type[base_type].element);
   trace("run") << "address to copy is " << src;
   int src_type = Type[base_type].element[0];
   trace("run") << "its type is " << src_type;
@@ -106,9 +101,7 @@ case INDEX_ADDRESS: {
   assert(Type[base_type].is_array);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
   size_t offset = instructions[pc].ingredients[1].value;
-  reagent elem;
-  elem.types.push_back(Type[base_type].element[0]);
-  int src = base_address + 1 + offset*size_of(elem);
+  int src = base_address + 1 + offset*size_of(Type[base_type].element);
   trace("run") << "address to copy is " << src;
   vector<int> result;
   result.push_back(src);

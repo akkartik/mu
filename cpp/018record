@@ -43,9 +43,7 @@ case GET: {
   size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
-    reagent tmp;
-    tmp.types.push_back(Type[base_type].elements[i][0]);
-    src += size_of(tmp);
+    src += size_of(Type[base_type].elements[i]);
   }
   trace("run") << "address to copy is " << src;
   assert(Type[base_type].elements.size() > offset);
@@ -121,9 +119,7 @@ case GET_ADDRESS: {
   size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
-    reagent tmp;
-    tmp.types.push_back(Type[base_type].elements[i][0]);
-    src += size_of(tmp);
+    src += size_of(Type[base_type].elements[i]);
   }
   trace("run") << "address to copy is " << src;
   vector<int> result;
@@ -158,9 +154,7 @@ recipe main [
 if (t.is_record) {
   size_t result = 0;
   for (size_t i = 0; i < t.elements.size(); ++i) {
-    reagent x;
-    x.types.push_back(t.elements[i][0]);
-    result += size_of(x);
+    result += size_of(t.elements[i]);
   }
   return result;
 }
