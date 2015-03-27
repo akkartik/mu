@@ -49,7 +49,7 @@ bool has_property(reagent x, string name) {
 reagent deref(reagent x) {
 //?   cout << "deref\n"; //? 1
   static const int ADDRESS = Type_number["address"];
-  reagent result("");
+  reagent result;
   assert(x.types[0] == ADDRESS);
 
   // compute value
@@ -110,9 +110,7 @@ case GET: {
   size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
-    reagent tmp;
-    tmp.types.push_back(Type[base_type].elements[i][0]);
-    src += size_of(tmp);
+    src += size_of(Type[base_type].elements[i]);
   }
   trace("run") << "address to copy is " << src;
   assert(Type[base_type].is_record);
@@ -152,9 +150,7 @@ case GET_ADDRESS: {
   size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
-    reagent tmp;
-    tmp.types.push_back(Type[base_type].elements[i][0]);
-    src += size_of(tmp);
+    src += size_of(Type[base_type].elements[i]);
   }
   trace("run") << "address to copy is " << src;
   vector<int> result;
