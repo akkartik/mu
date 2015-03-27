@@ -28,19 +28,8 @@ void transform_names(const recipe_number r) {
   for (size_t i = 0; i < Recipe[r].steps.size(); ++i) {
 //?     cout << "instruction " << i << '\n'; //? 2
     instruction& inst = Recipe[r].steps[i];
-    // 1: replace element names of records with offsets
-    if (inst.operation == Recipe_number["get"]
-        || inst.operation == Recipe_number["get-address"]) {
-      // at least 2 args, and second arg is offset
-      assert(inst.ingredients.size() >= 2);
-      assert(isa_literal(inst.ingredients[1]));
-      if (inst.ingredients[1].name.find_first_not_of("0123456789") == string::npos) continue;
-      // since first non-address in base type must be a record, we don't have to canonize
-      type_number record = skip_addresses(inst.ingredients[0].types);
-      inst.ingredients[1].set_value(find_element_name(record, inst.ingredients[1].name));
-      trace("name") << "field " << inst.ingredients[1].name << " of type " << Type[record].name << " is at offset " << inst.ingredients[1].value;
-    }
-    // 2: map names to addresses if necessary
+    // Per-recipe Transforms Go Here
+    // map names to addresses
     for (size_t in = 0; in < inst.ingredients.size(); ++in) {
       if (is_raw(inst.ingredients[in])) continue;
 //?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 1
@@ -136,6 +125,20 @@ recipe main [
 ]
 +name: field y of type point is at offset 1
 +name: field x of type point is at offset 0
+
+:(after "Per-recipe Transforms")
+// replace element names of records with offsets
+if (inst.operation == Recipe_number["get"]
+    || inst.operation == Recipe_number["get-address"]) {
+  // at least 2 args, and second arg is offset
+  assert(inst.ingredients.size() >= 2);
+  assert(isa_literal(inst.ingredients[1]));
+  if (inst.ingredients[1].name.find_first_not_of("0123456789") == string::npos) continue;
+  // since first non-address in base type must be a record, we don't have to canonize
+  type_number record = skip_addresses(inst.ingredients[0].types);
+  inst.ingredients[1].set_value(find_element_name(record, inst.ingredients[1].name));
+  trace("name") << "field " << inst.ingredients[1].name << " of type " << Type[record].name << " is at offset " << inst.ingredients[1].value;
+}
 
 //: this test is actually illegal so can't call run
 :(scenarios transform_test)
