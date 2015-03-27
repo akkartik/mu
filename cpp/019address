@@ -15,7 +15,7 @@ recipe main [
 :(replace{} "vector<int> read_memory(reagent x)")
 vector<int> read_memory(reagent x) {
   vector<int> result;
-  if (x.types[0] == 0) {  // literal
+  if (isa_literal(x)) {
     result.push_back(x.value);
     return result;
   }
@@ -133,8 +133,7 @@ case GET: {
   int base_type = base.types[0];
   assert(Type[base_type].is_record);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
-  assert(instructions[pc].ingredients[1].types.size() == 1);
-  assert(instructions[pc].ingredients[1].types[0] == 0);  // must be literal
+  assert(isa_literal(instructions[pc].ingredients[1]));
   size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
@@ -176,8 +175,7 @@ case GET_ADDRESS: {
   int base_type = base.types[0];
   assert(Type[base_type].is_record);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
-  assert(instructions[pc].ingredients[1].types.size() == 1);
-  assert(instructions[pc].ingredients[1].types[0] == 0);  // must be literal
+  assert(isa_literal(instructions[pc].ingredients[1]));
   size_t offset = instructions[pc].ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
