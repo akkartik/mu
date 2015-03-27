@@ -82,13 +82,10 @@ void setup_types() {
   Next_type_number = 1;
   // Mu Types Initialization.
   int integer = Type_number["integer"] = Next_type_number++;
-  Type[integer].size = 1;
   Type[integer].name = "integer";
   int address = Type_number["address"] = Next_type_number++;
-  Type[address].size = 1;
   Type[address].name = "address";
   int boolean = Type_number["boolean"] = Next_type_number++;
-  Type[boolean].size = 1;
   Type[boolean].name = "boolean";
   // End Mu Types Initialization.
 }
@@ -104,14 +101,14 @@ void setup_types() {
 //  high scores in a game might need an array of numbers.
 struct type_info {
   string name;
-  size_t size;
   bool is_record;
   bool is_array;
+  size_t size;  // only if is_record
   vector<vector<type_number> > elements;  // only if is_record
   vector<string> element_names;  // only if is_record
   vector<type_number> element;  // only if is_array
   // End type_info Fields.
-  type_info() :size(0), is_record(false), is_array(false) {}
+  type_info() :is_record(false), is_array(false), size(0) {}
 };
 
 :(before "End Globals")
