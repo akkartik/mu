@@ -6,6 +6,10 @@ Type[integer_array].is_array = true;
 Type[integer_array].element.push_back(integer);
 Type[integer_array].name = "integer-array";
 
+//: update size mismatch check
+:(replace "if (size_of(x) != data.size())" following "void write_memory(reagent x, vector<int> data)")
+if (!Type[x.types[0]].is_array && size_of(x) != data.size())
+
 //: Arrays can be copied around with a single instruction just like integers,
 //: no matter how large they are.
 
