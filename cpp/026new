@@ -1,0 +1,52 @@
+//: A simple memory allocator to create space for new variables at runtime.
+
+:(scenarios run)
+:(scenario "new")
+# call new two times with identical arguments; you should get back different results
+recipe main [
+  1:address:integer/raw <- new integer:type
+  2:address:integer/raw <- new integer:type
+  3:boolean/raw <- equal 1:address:integer/raw, 2:address:integer/raw
+]
++mem: storing 0 in location 3
+
+:(before "End Globals")
+const size_t Alloc_init = 1000;
+:(before "End Routine Fields")
+size_t alloc;
+:(replace{} "routine::routine(recipe_number r)")
+  routine::routine(recipe_number r) :alloc(Alloc_init) {
+    calls.push(call(r));
+  }
+
+//: first handle 'type' operands
+:(before "End Mu Types Initialization")
+Type_number["type"] = 0;
+:(after "Per-recipe Transforms")
+// replace type names with type_numbers
+if (inst.operation == Recipe_number["new"]) {
+  // first arg must be of type 'type'
+  assert(inst.ingredients.size() >= 1);
+  assert(isa_literal(inst.ingredients[0]));
+  assert(inst.ingredients[0].properties[0].second[0] == "type");
+  inst.ingredients[0].value = Type_number[inst.ingredients[0].name];
+  trace("new") << inst.ingredients[0].name << " -> " << inst.ingredients[0].value;
+}
+
+:(before "End Globals")
+// Operator to look at elements of arrays.
+const int NEW = 24;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["new"] = NEW;
+assert(Next_recipe_number == NEW);
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case NEW: {
+  vector<int> result;
+  result.push_back(Current_routine.alloc);
+  write_memory(instructions[pc].products[0], result);
+  vector<int> types;
+  types.push_back(instructions[pc].ingredients[0].value);
+  Current_routine.alloc += size_of(types);
+  break;
+}
