@@ -1,5 +1,4 @@
-//: Records are compound types with multiple elements of potentially different
-//: types.
+//: Records contain a fixed number of elements of different types.
 :(before "End Mu Types Initialization")
 //: We'll use this record as a running example, with two integer elements
 int point = Type_number["point"] = Next_type_number++;
@@ -47,7 +46,8 @@ recipe main [
 ]
 +mem: storing 36 in location 17
 
-:(before "End size_of Cases")
+:(before "End size_of(types) Cases")
+type_info t = Type[types[0]];
 if (t.is_record) {
   size_t result = 0;
   for (size_t i = 0; i < t.elements.size(); ++i) {

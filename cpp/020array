@@ -1,25 +1,13 @@
-//: Support for arrays.
-:(before "End Mu Types Initialization")
-//: We'll use this array as a running example:
-int integer_array = Type_number["integer-array"] = Next_type_number++;
-Type[integer_array].is_array = true;
-Type[integer_array].element.push_back(integer);
-Type[integer_array].name = "integer-array";
-
-//: update size mismatch check
-:(replace "if (size_of(x) != data.size())" following "void write_memory(reagent x, vector<int> data)")
-if (!Type[x.types[0]].is_array && size_of(x) != data.size())
-
-//: Arrays can be copied around with a single instruction just like integers,
-//: no matter how large they are.
-
+//: Arrays contain a variable number of elements of the same type.
 :(scenario copy_array)
+# Arrays can be copied around with a single instruction just like integers,
+# no matter how large they are.
 recipe main [
   1:integer <- copy 3:literal
   2:integer <- copy 14:literal
   3:integer <- copy 15:literal
   4:integer <- copy 16:literal
-  5:integer-array <- copy 1:integer-array
+  5:array:integer <- copy 1:array:integer
 ]
 +run: instruction main/4
 +run: ingredient 0 is 1
@@ -32,49 +20,25 @@ recipe main [
 +mem: storing 15 in location 7
 +mem: storing 16 in location 8
 
+//: disable the size mismatch check since the destination array need not be initialized
+:(replace "if (size_of(x) != data.size())" following "void write_memory(reagent x, vector<int> data)")
+if (x.types[0] != Type_number["array"] && size_of(x) != data.size())
 :(after "size_t size_of(const reagent& r)")
-  const type_info& t = Type[r.types[0]];
-  if (t.is_array) {
-    int base = r.value;
-    return 1 + Memory[base]*size_of(t.element);
+  static const int ARRAY = Type_number["array"];
+  if (r.types[0] == ARRAY) {
+    assert(r.types.size() > 1);
+    // skip the 'array' type to get at the element type
+    return 1 + Memory[r.value]*size_of(array_element(r.types));
   }
 
-:(before "End Globals")
-// Operator to look at elements of arrays.
-const int INDEX = 20;
-:(before "End Primitive Recipe Numbers")
-Recipe_number["index"] = INDEX;
-assert(Next_recipe_number == INDEX);
-Next_recipe_number++;
-:(before "End Primitive Recipe Implementations")
-case INDEX: {
-  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
-  reagent base = canonize(instructions[pc].ingredients[0]);
-  int base_address = base.value;
-  int base_type = base.types[0];
-  assert(Type[base_type].is_array);
-  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
-  size_t offset = instructions[pc].ingredients[1].value;
-  int src = base_address + 1 + offset*size_of(Type[base_type].element);
-  trace("run") << "address to copy is " << src;
-  int src_type = Type[base_type].element[0];
-  trace("run") << "its type is " << src_type;
-  reagent tmp;
-  tmp.set_value(src);
-  tmp.types.push_back(src_type);
-  vector<int> result(read_memory(tmp));
-  trace("run") << "product 0 is " << result[0];
-  write_memory(instructions[pc].products[0], result);
-  break;
-}
-
+//: array elements are accessed using 'index'
 :(scenario "index")
 recipe main [
   1:integer <- copy 3:literal
   2:integer <- copy 14:literal
   3:integer <- copy 15:literal
   4:integer <- copy 16:literal
-  5:integer <- index 1:integer-array, 0:literal
+  5:integer <- index 1:array:integer, 0:literal
 ]
 +run: instruction main/4
 +run: ingredient 0 is 1
@@ -86,28 +50,37 @@ recipe main [
 +mem: storing 14 in location 5
 
 :(before "End Globals")
-// To write to fields of records, you need their address.
-const int INDEX_ADDRESS = 21;
+// Operator to look at elements of arrays.
+const int INDEX = 20;
 :(before "End Primitive Recipe Numbers")
-Recipe_number["index-address"] = INDEX_ADDRESS;
-assert(Next_recipe_number == INDEX_ADDRESS);
+Recipe_number["index"] = INDEX;
+assert(Next_recipe_number == INDEX);
 Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
-case INDEX_ADDRESS: {
+case INDEX: {
+  static const int ARRAY = Type_number["array"];
   trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
   reagent base = canonize(instructions[pc].ingredients[0]);
   int base_address = base.value;
-  int base_type = base.types[0];
-  assert(Type[base_type].is_array);
+  assert(base.types[0] == ARRAY);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
   size_t offset = instructions[pc].ingredients[1].value;
-  int src = base_address + 1 + offset*size_of(Type[base_type].element);
+  vector<type_number> element_type = array_element(base.types);
+  int src = base_address + 1 + offset*size_of(element_type);
   trace("run") << "address to copy is " << src;
-  vector<int> result;
-  result.push_back(src);
+  trace("run") << "its type is " << element_type[0];
+  reagent tmp;
+  tmp.set_value(src);
+  copy(element_type.begin(), element_type.end(), inserter(tmp.types, tmp.types.begin()));
+  vector<int> result(read_memory(tmp));
   trace("run") << "product 0 is " << result[0];
   write_memory(instructions[pc].products[0], result);
   break;
+}
+
+:(code)
+vector<type_number> array_element(const vector<type_number>& types) {
+  return vector<type_number>(++types.begin(), types.end());
 }
 
 :(scenario "index_address")
@@ -116,10 +89,36 @@ recipe main [
   2:integer <- copy 14:literal
   3:integer <- copy 15:literal
   4:integer <- copy 16:literal
-  5:integer <- index-address 1:integer-array, 0:literal
+  5:integer <- index-address 1:array:integer, 0:literal
 ]
 +run: instruction main/4
 +run: ingredient 0 is 1
 +run: ingredient 1 is 0
 +run: address to copy is 2
 +mem: storing 2 in location 5
+
+:(before "End Globals")
+// To write to fields of records, you need their address.
+const int INDEX_ADDRESS = 21;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["index-address"] = INDEX_ADDRESS;
+assert(Next_recipe_number == INDEX_ADDRESS);
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case INDEX_ADDRESS: {
+  static const int ARRAY = Type_number["array"];
+  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
+  reagent base = canonize(instructions[pc].ingredients[0]);
+  int base_address = base.value;
+  assert(base.types[0] == ARRAY);
+  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
+  size_t offset = instructions[pc].ingredients[1].value;
+  vector<type_number> element_type = array_element(base.types);
+  int src = base_address + 1 + offset*size_of(element_type);
+  trace("run") << "address to copy is " << src;
+  vector<int> result;
+  result.push_back(src);
+  trace("run") << "product 0 is " << result[0];
+  write_memory(instructions[pc].products[0], result);
+  break;
+}
