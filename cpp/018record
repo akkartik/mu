@@ -79,11 +79,11 @@ Recipe_number["get"] = GET;
 assert(Next_recipe_number == GET);
 Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
-//: beware: overridden in later layers
 case GET: {
   trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
-  int base_address = instructions[pc].ingredients[0].value;
-  int base_type = instructions[pc].ingredients[0].types[0];
+  reagent base = instructions[pc].ingredients[0];
+  int base_address = base.value;
+  int base_type = base.types[0];
   assert(Type[base_type].is_record);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
   assert(isa_literal(instructions[pc].ingredients[1]));
@@ -93,6 +93,7 @@ case GET: {
     src += size_of(Type[base_type].elements[i]);
   }
   trace("run") << "address to copy is " << src;
+  assert(Type[base_type].is_record);
   assert(Type[base_type].elements.size() > offset);
   int src_type = Type[base_type].elements[offset][0];
   trace("run") << "its type is " << src_type;
@@ -136,8 +137,9 @@ Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
 case GET_ADDRESS: {
   trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
-  int base_address = instructions[pc].ingredients[0].value;
-  int base_type = instructions[pc].ingredients[0].types[0];
+  reagent base = instructions[pc].ingredients[0];
+  int base_address = base.value;
+  int base_type = base.types[0];
   assert(Type[base_type].is_record);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
   assert(isa_literal(instructions[pc].ingredients[1]));

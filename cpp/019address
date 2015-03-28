@@ -98,33 +98,8 @@ recipe main [
 +run: product 0 is 34
 +mem: storing 34 in location 4
 
-:(replace{} "case GET:")
-case GET: {
-  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
-  reagent base = canonize(instructions[pc].ingredients[0]);
-  int base_address = base.value;
-  int base_type = base.types[0];
-  assert(Type[base_type].is_record);
-  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
-  assert(isa_literal(instructions[pc].ingredients[1]));
-  size_t offset = instructions[pc].ingredients[1].value;
-  int src = base_address;
-  for (size_t i = 0; i < offset; ++i) {
-    src += size_of(Type[base_type].elements[i]);
-  }
-  trace("run") << "address to copy is " << src;
-  assert(Type[base_type].is_record);
-  assert(Type[base_type].elements.size() > offset);
-  int src_type = Type[base_type].elements[offset][0];
-  trace("run") << "its type is " << src_type;
-  reagent tmp;
-  tmp.set_value(src);
-  tmp.types.push_back(src_type);
-  vector<int> result(read_memory(tmp));
-  trace("run") << "product 0 is " << result[0];
-  write_memory(instructions[pc].products[0], result);
-  break;
-}
+:(after "reagent base = " following "case GET:")
+base = canonize(base);
 
 :(scenario "get_address_indirect")
 # 'get' can read from record address
@@ -138,24 +113,5 @@ recipe main [
 +run: address to copy is 2
 +run: product 0 is 2
 
-:(replace{} "case GET_ADDRESS:")
-case GET_ADDRESS: {
-  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
-  reagent base = canonize(instructions[pc].ingredients[0]);
-  int base_address = base.value;
-  int base_type = base.types[0];
-  assert(Type[base_type].is_record);
-  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
-  assert(isa_literal(instructions[pc].ingredients[1]));
-  size_t offset = instructions[pc].ingredients[1].value;
-  int src = base_address;
-  for (size_t i = 0; i < offset; ++i) {
-    src += size_of(Type[base_type].elements[i]);
-  }
-  trace("run") << "address to copy is " << src;
-  vector<int> result;
-  result.push_back(src);
-  trace("run") << "product 0 is " << result[0];
-  write_memory(instructions[pc].products[0], result);
-  break;
-}
+:(after "reagent base = " following "case GET_ADDRESS:")
+base = canonize(base);
