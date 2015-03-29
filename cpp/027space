@@ -4,11 +4,13 @@
 
 :(scenarios run)
 :(scenario "set_default_space")
+# if default-space is 10, the array of locals begins at location 10
+# and so location 1 is really location 12
 recipe main [
   default-space:address:space <- copy 10:literal
-  1:integer <- copy 12:literal
+  1:integer <- copy 23:literal
 ]
-+mem: storing 12 in location 11
++mem: storing 23 in location 12
 
 :(before "End Call Fields")
 size_t default_space;
@@ -24,13 +26,18 @@ reagent absolutize(reagent x) {
 //?   cout << "not raw: " << x.to_string() << '\n'; //? 1
   assert(x.initialized);
   reagent r = x;
-  r.set_value(r.value + Current_routine.calls.top().default_space);
+  r.set_value(address(r.value, Current_routine.calls.top().default_space));
 //?   cout << "after absolutize: " << r.value << '\n'; //? 1
   if (r.properties.empty())
     r.properties.push_back(pair<string, vector<string> >("", vector<string>()));
   r.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
   assert(is_raw(r));
   return r;
+}
+
+int address(int offset, int base) {
+  if (base == 0) return offset;  // raw
+  return base+offset+1;
 }
 
 :(after "void write_memory(reagent x, vector<int> data)")
