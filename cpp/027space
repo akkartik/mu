@@ -26,13 +26,17 @@ reagent absolutize(reagent x) {
 //?   cout << "not raw: " << x.to_string() << '\n'; //? 1
   assert(x.initialized);
   reagent r = x;
-  r.set_value(address(r.value, Current_routine.calls.top().default_space));
+  r.set_value(address(r.value, space(r)));
 //?   cout << "after absolutize: " << r.value << '\n'; //? 1
   if (r.properties.empty())
     r.properties.push_back(pair<string, vector<string> >("", vector<string>()));
   r.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
   assert(is_raw(r));
   return r;
+}
+
+int space(const reagent& x) {
+  return Current_routine.calls.top().default_space;
 }
 
 int address(int offset, int base) {
