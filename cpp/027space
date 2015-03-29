@@ -4,9 +4,10 @@
 
 :(scenarios run)
 :(scenario "set_default_space")
-# if default-space is 10, the array of locals begins at location 11
-# and so location 1 is really location 12
+# if default-space is 10, and if an array of 5 locals lies from location 11 to 15 (inclusive),
+# then location 0 is really location 11, location 1 is really location 12, and so on.
 recipe main [
+  10:integer <- copy 5:literal  # pretend array; in practice we'll use new
   default-space:address:space <- copy 10:literal
   1:integer <- copy 23:literal
 ]
@@ -41,7 +42,11 @@ int space(const reagent& x) {
 
 int address(int offset, int base) {
   if (base == 0) return offset;  // raw
-  return base+offset+1;
+  if (offset >= Memory[base]) {
+    // todo: test
+    raise << "location " << offset << " is out of bounds " << Memory[base] << '\n';
+  }
+  return base+1 + offset;
 }
 
 :(after "void write_memory(reagent x, vector<int> data)")
