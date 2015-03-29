@@ -122,3 +122,15 @@ case INDEX_ADDRESS: {
   write_memory(instructions[pc].products[0], result);
   break;
 }
+
+:(scenario "index_indirect")
+recipe main [
+  1:integer <- copy 3:literal
+  2:integer <- copy 14:literal
+  3:integer <- copy 15:literal
+  4:integer <- copy 16:literal
+  5:address:array:integer <- copy 1:literal
+  6:integer <- index 5:address:array:integer/deref, 1:literal
+]
++run: instruction main/5
++mem: storing 15 in location 6
