@@ -47,6 +47,22 @@ case NEW: {
   write_memory(instructions[pc].products[0], result);
   vector<int> types;
   types.push_back(instructions[pc].ingredients[0].value);
-  Current_routine.alloc += size_of(types);
+  if (instructions[pc].ingredients.size() > 1) {
+    // array
+    vector<int> capacity = read_memory(instructions[pc].ingredients[1]);
+    Current_routine.alloc += capacity[0]*size_of(types);
+  }
+  else {
+    // scalar
+    Current_routine.alloc += size_of(types);
+  }
   break;
 }
+
+:(scenario "new_array")
+recipe main [
+  1:address:array:integer/raw <- new integer:type, 5:literal
+  2:address:integer/raw <- new integer:type
+  3:integer/raw <- subtract 2:address:integer/raw, 1:address:array:integer/raw
+]
++mem: storing 5 in location 3
