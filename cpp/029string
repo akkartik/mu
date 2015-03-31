@@ -1,8 +1,9 @@
 //: Some instructions can take string literals for convenience.
 //:
 //: Instead of quotes, we'll use [] to delimit strings. That'll reduce the
-//: need for escaping. And we can also imagine that 'recipe' might one day
-//: itself be defined in mu, doing its own parsing.
+//: need for escaping since we can support nested brackets. And we can also
+//: imagine that 'recipe' might one day itself be defined in mu, doing its own
+//: parsing.
 
 //: First extend the mu parser to support string literals.
 :(scenario "string_literal")
@@ -34,6 +35,12 @@ string slurp_quoted(istream& in) {
   }
   return out.str();
 }
+
+:(scenario "string_literal_nested")
+recipe main [
+  1:address:array:character <- new [abc [def]]
+]
++parse:   ingredient: {name: "abc [def]", value: 0, type: 0, properties: ["abc [def]": "literal-string"]}
 
 //: Next, extend 'new' to handle a string literal argument.
 :(scenario "new_string")
