@@ -1,6 +1,13 @@
+//: Some instructions can take string literals for convenience.
+//:
+//: Instead of quotes, we'll use [] to delimit strings. That'll reduce the
+//: need for escaping. And we can also imagine that 'recipe' might one day
+//: itself be defined in mu, doing its own parsing.
+
+//: First extend the mu parser to support string literals.
 :(scenario "string_literal")
 recipe main [
-  s:address:array:character <- new [abc def]
+  1:address:array:character <- new [abc def]
 ]
 +parse:   ingredient: {name: "abc def", value: 0, type: 0, properties: ["abc def": "literal-string"]}
 
@@ -26,4 +33,31 @@ string slurp_quoted(istream& in) {
 //?     cout << out.str() << "$\n"; //? 1
   }
   return out.str();
+}
+
+//: Next, extend 'new' to handle a string literal argument.
+:(scenario "new_string")
+recipe main [
+  1:address:array:character <- new [abc def]
+  2:character <- index 1:address:array:character/deref, 5:literal
+]
+# integer code for 'e'
++mem: storing 101 in location 2
+
+:(before "End Mu Types Initialization")
+Type_number["character"] = Next_type_number++;
+
+:(after "case NEW" following "Primitive Recipe Implementations")
+if (instructions[pc].ingredients[0].properties[0].second[0] == "literal-string") {
+  // allocate an array just large enough for it
+  vector<int> result;
+  result.push_back(Current_routine.alloc);
+  write_memory(instructions[pc].products[0], result);
+  // assume that all characters fit in a single location
+  Memory[Current_routine.alloc++] = instructions[0].name.size();
+  for (size_t i = 0; i < instructions[pc].ingredients[0].name.size(); ++i) {
+    Memory[Current_routine.alloc++] = instructions[pc].ingredients[0].name[i];
+  }
+  // mu strings are not null-terminated in memory
+  break;
 }
