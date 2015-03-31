@@ -9,9 +9,9 @@ recipe f [
   reply 12:integer, 13:integer
 ]
 +run: instruction main/0
-+run: result 0 is 1[2...]
++run: result 0 is 2
 +mem: storing 2 in location 3
-+run: result 1 is 1[3...]
++run: result 1 is 3
 +mem: storing 3 in location 4
 
 :(before "End Globals")
@@ -31,9 +31,41 @@ case REPLY: {
   instruction& caller_instruction = Recipe[rr.calls.top().running_recipe].steps[caller_pc];
   assert(caller_instruction.products.size() <= callee_results.size());
   for (size_t i = 0; i < caller_instruction.products.size(); ++i) {
-    trace("run") << "result " << i << " is " << callee_results[i].size() << "[" << callee_results[i][0] << "...]";
+    trace("run") << "result " << i << " is " << to_string(callee_results[i]);
     write_memory(caller_instruction.products[i], callee_results[i]);
   }
   ++caller_pc;
   break;
+}
+
+//: Results can include records and arrays.
+:(scenario "reply_record")
+recipe main [
+  3:point <- f 2:literal
+]
+recipe f [
+  12:integer <- next-ingredient
+  13:integer <- copy 35:literal
+  reply 12:point
+]
++run: instruction main/0
++run: result 0 is [2, 35]
++mem: storing 2 in location 3
++mem: storing 35 in location 4
+
+:(code)
+string to_string(const vector<int>& in) {
+  if (in.empty()) return "[]";
+  ostringstream out;
+  if (in.size() == 1) {
+    out << in[0];
+    return out.str();
+  }
+  out << "[";
+  for (size_t i = 0; i < in.size(); ++i) {
+    if (i > 0) out << ", ";
+    out << in[i];
+  }
+  out << "]";
+  return out.str();
 }
