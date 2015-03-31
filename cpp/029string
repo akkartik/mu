@@ -1,0 +1,29 @@
+:(scenario "string_literal")
+recipe main [
+  s:address:array:character <- new [abc def]
+]
++parse:   ingredient: {name: "abc def", value: 0, type: 0, properties: [abc def: literal-string]}
+
+:(before "End Mu Types Initialization")
+Type_number["literal-string"] = 0;
+
+:(after "string next_word(istream& in)")
+if (in.peek() == '[') return slurp_quoted(in);
+
+:(code)
+string slurp_quoted(istream& in) {
+  assert(!in.eof());
+  assert(in.get() == '[');
+  ostringstream out;
+  int size = 1;
+  while (!in.eof()) {
+    char c = in.get();
+    if (c == '[') ++size;
+    if (c == ']') --size;
+    if (size == 0) break;
+//?     cout << c << '\n'; //? 1
+    out << c;
+//?     cout << out.str() << "$\n"; //? 1
+  }
+  return out.str();
+}

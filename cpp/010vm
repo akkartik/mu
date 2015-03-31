@@ -148,9 +148,11 @@ void setup_recipes() {
   // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
   reagent::reagent(string s) :value(0), initialized(false) {
     istringstream in(s);
+    in >> std::noskipws;
     // properties
     while (!in.eof()) {
       istringstream row(slurp_until(in, '/'));
+      row >> std::noskipws;
       string name = slurp_until(row, ':');
       vector<string> values;
       while (!row.eof())
@@ -161,6 +163,14 @@ void setup_recipes() {
     name = properties[0].first;
     for (size_t i = 0; i < properties[0].second.size(); ++i) {
       types.push_back(Type_number[properties[0].second[i]]);
+    }
+    if (name == "_" && types.empty()) {
+      types.push_back(0);
+      properties[0].second.push_back("dummy");
+    }
+    else if (types.empty()) {  // hacky test for string
+      types.push_back(0);
+      properties[0].second.push_back("literal-string");
     }
   }
   reagent::reagent() :value(0), initialized(false) {}
