@@ -1,0 +1,25 @@
+:(scenario "array_length")
+recipe main [
+  1:integer <- copy 3:literal
+  2:integer <- copy 14:literal
+  3:integer <- copy 15:literal
+  4:integer <- copy 16:literal
+  5:integer <- length 1:array:integer
+]
++run: instruction main/4
++mem: storing 3 in location 5
+
+:(before "End Globals")
+const int LENGTH = 25;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["length"] = LENGTH;
+assert(Next_recipe_number == LENGTH);
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case LENGTH: {
+  reagent x = canonize(instructions[pc].ingredients[0]);
+  vector<int> result;
+  result.push_back(Memory[x.value]);
+  write_memory(instructions[pc].products[0], result);
+  break;
+}
