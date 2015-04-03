@@ -6,7 +6,14 @@ Recipe_number["$print"] = _PRINT;
 assert(Next_recipe_number < _PRINT);
 :(before "End Primitive Recipe Implementations")
 case _PRINT: {
+  if (isa_literal(instructions[pc].ingredients[0])) {
+    cout << instructions[pc].ingredients[0].name << '\n';
+    break;
+  }
   vector<int> result(read_memory(instructions[pc].ingredients[0]));
-  cout << result[0] << '\n';
+  for (size_t i = 0; i < result.size(); ++i) {
+    cout << result[i] << " ";
+  }
+  cout << '\n';
   break;
 }
