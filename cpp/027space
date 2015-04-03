@@ -13,6 +13,19 @@ recipe main [
 ]
 +mem: storing 23 in location 12
 
+:(scenario "deref_sidesteps_default_space")
+recipe main [
+  # pretend pointer from outside
+  7:integer <- copy 34:literal
+  # pretend array
+  10:integer <- copy 5:literal
+  # actual start of this function
+  default-space:address:space <- copy 10:literal
+  1:address:integer <- copy 7:literal
+  8:integer/raw <- copy 1:address:integer/deref
+]
++mem: storing 34 in location 8
+
 :(before "End Call Fields")
 size_t default_space;
 :(replace "call(recipe_number r) :running_recipe(r)")
@@ -22,7 +35,8 @@ call(recipe_number r) :running_recipe(r), pc(0), next_ingredient_to_process(0), 
 reagent r = absolutize(x);
 :(code)
 reagent absolutize(reagent x) {
-//?   cout << "absolutize " << x.to_string() << '\n'; //? 1
+//?   cout << "absolutize " << x.to_string() << '\n'; //? 2
+//?   cout << is_raw(x) << '\n'; //? 1
   if (is_raw(x) || is_dummy(x)) return x;
 //?   cout << "not raw: " << x.to_string() << '\n'; //? 1
   assert(x.initialized);
@@ -33,7 +47,10 @@ reagent absolutize(reagent x) {
   assert(is_raw(r));
   return r;
 }
+:(before "return result" following "reagent deref(reagent x)")
+result.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
 
+:(code)
 int space(const reagent& x) {
   return Current_routine.calls.top().default_space;
 }
