@@ -41,8 +41,9 @@ void run(routine rr) {
     size_t& pc = running_at(rr);
     // Running one instruction.
     if (instructions[pc].is_label) { ++pc; continue; }
+//?     cout << "AAA " << Trace_stream << " ^" << Trace_stream->dump_layer << "$\n"; //? 1
     trace("run") << "instruction " << recipe_name(rr) << '/' << pc;
-//?     cout << instructions[pc].operation << '\n'; //? 1
+//?     cout << "operation " << instructions[pc].operation << '\n'; //? 3
     switch (instructions[pc].operation) {
       // Primitive Recipe Implementations.
       case COPY: {
@@ -88,6 +89,9 @@ if (argc > 1) {
     fin.close();
   }
 
+  Trace_stream = new trace_stream;
+//?   Trace_stream->dump_layer = "all"; //? 1
+  transform_all();
   recipe_number r = Recipe_number[string("main")];
   if (r) run(r);
   dump_memory();
