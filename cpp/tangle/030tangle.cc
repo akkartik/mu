@@ -203,10 +203,7 @@ list<string>::iterator balancing_curly(list<string>::iterator orig) {
 void emit_test(const string& name, list<string>& lines, list<string>& result) {
   result.push_back("TEST("+name+")");
   while (any_non_input_line(lines)) {
-    if (!any_line_starts_with(lines, "=>"))
-      emit_session(lines, result);  // simpler version; no need to check result
-    else
-      emit_result_checking_session(lines, result);
+    result.push_back("  "+Toplevel+"(\""+input_lines(lines)+"\");");
     if (!lines.empty() && lines.front()[0] == '+')
       result.push_back("  CHECK_TRACE_CONTENTS(\""+expected_in_trace(lines)+"\");");
     while (!lines.empty() && lines.front()[0] == '-') {
@@ -231,23 +228,6 @@ void emit_test(const string& name, list<string>& lines, list<string>& result) {
     cerr << lines.size() << " unprocessed lines in scenario.\n";
     exit(1);
   }
-}
-
-void emit_session(list<string>& lines, list<string>& result) {
-  result.push_back("  "+Toplevel+"(\""+input_lines(lines)+"\");");
-}
-
-void emit_result_checking_session(list<string>& lines, list<string>& result) {
-  result.push_back("{");
-  result.push_back("  ostringstream os;");
-  result.push_back("  TEMP(tmp, "+Toplevel+"(\""+input_lines(lines)+"\"));");
-  result.push_back("  os << tmp;");
-  if (!lines.empty() && starts_with(lines.front(), "=>")) {
-    size_t pos = lines.front().find("=>")+2;  // length of '=>'
-    result.push_back("  CHECK_EQ(os.str(), \""+trim(string(lines.front(), pos))+"\");");
-    lines.pop_front();
-  }
-  result.push_back("}");
 }
 
 bool is_input(const string& line) {
