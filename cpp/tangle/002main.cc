@@ -1,14 +1,7 @@
-string Last_file = "";
 int main(int argc, const char* argv[]) {
-  Last_file = flag_value("--until", argc, argv);
   if (flag("test", argc, argv))
     return run_tests();
-  return tangle_files_in_cwd();
-}
-
-bool eof(istream& in) {
-  in.peek();
-  return in.eof();
+  return tangle(argc, argv);
 }
 
 bool flag(const string& flag, int argc, const char* argv[]) {
