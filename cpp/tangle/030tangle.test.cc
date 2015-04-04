@@ -189,43 +189,6 @@ void test_tangle_can_check_for_absence_at_end_of_scenarios2() {
   CHECK(lines.empty());
 }
 
-void test_tangle_can_check_return_values_of_scenarios() {
-  istringstream in(":(scenario does_bar)\nabc def\n=> pqr");
-  list<string> lines;
-  tangle(in, lines);
-  CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
-  CHECK_EQ(lines.front(), "{");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  ostringstream os;");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  TEMP(tmp, run(\"abc def\\n\"));");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  os << tmp;");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  CHECK_EQ(os.str(), \"pqr\");");  lines.pop_front();
-  CHECK_EQ(lines.front(), "}");  lines.pop_front();
-  CHECK_EQ(lines.front(), "}");  lines.pop_front();
-  CHECK(lines.empty());
-}
-
-void test_tangle_can_check_return_values_of_multiple_scenarios() {
-  istringstream in(":(scenario does_bar)\nabc\n=> pqr\n+layer1: pqr\ndef\n=> xyz\n");
-  list<string> lines;
-  tangle(in, lines);
-  CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
-  CHECK_EQ(lines.front(), "{");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  ostringstream os;");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  TEMP(tmp, run(\"abc\\n\"));");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  os << tmp;");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  CHECK_EQ(os.str(), \"pqr\");");  lines.pop_front();
-  CHECK_EQ(lines.front(), "}");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  CHECK_TRACE_CONTENTS(\"layer1: pqr\");");  lines.pop_front();
-  CHECK_EQ(lines.front(), "{");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  ostringstream os;");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  TEMP(tmp, run(\"def\\n\"));");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  os << tmp;");  lines.pop_front();
-  CHECK_EQ(lines.front(), "  CHECK_EQ(os.str(), \"xyz\");");  lines.pop_front();
-  CHECK_EQ(lines.front(), "}");  lines.pop_front();
-  CHECK_EQ(lines.front(), "}");  lines.pop_front();
-  CHECK(lines.empty());
-}
-
 
 
 void test_trim() {
