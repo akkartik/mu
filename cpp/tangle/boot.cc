@@ -1,7 +1,3 @@
-// C++ style:
-//  no pointers except cell*
-//  use long as the default integer type; it's always large enough to hold pointers
-
 #define unused __attribute__((unused))
 
 #include<cstdio>
@@ -48,16 +44,10 @@ using std::ofstream;
 
 
 
-// interpreter decls
-
 #include "type_list"
 
 #include "function_list"
 
-// interpreter impl
-
 #include "file_list"
-
-// interpreter tests
 
 #include "test_file_list"
