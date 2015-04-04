@@ -203,6 +203,10 @@ list<string>::iterator balancing_curly(list<string>::iterator orig) {
 void emit_test(const string& name, list<string>& lines, list<string>& result) {
   result.push_back("TEST("+name+")");
   while (any_non_input_line(lines)) {
+    if (is_warn(lines.front())) {
+      result.push_back("  Hide_warnings = true;");
+      lines.pop_front();
+    }
     result.push_back("  "+Toplevel+"(\""+input_lines(lines)+"\");");
     if (!lines.empty() && lines.front()[0] == '+')
       result.push_back("  CHECK_TRACE_CONTENTS(\""+expected_in_trace(lines)+"\");");
@@ -232,6 +236,10 @@ void emit_test(const string& name, list<string>& lines, list<string>& result) {
 
 bool is_input(const string& line) {
   return line != "===" && line[0] != '+' && line[0] != '-' && !starts_with(line, "=>");
+}
+
+bool is_warn(const string& line) {
+  return line == "hide warnings";
 }
 
 string input_lines(list<string>& hunk) {
