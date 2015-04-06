@@ -13,18 +13,20 @@ vector<recipe_number> add_recipes(string form) {
   istringstream in(form);
   in >> std::noskipws;
   vector<recipe_number> result;
-  while (!in.eof())
-    result.push_back(add_recipe(in));
+  while (!in.eof()) {
+    skip_comments_and_newlines(in);
+    if (in.eof()) break;
+    string command = next_word(in);
+    // Command Handlers
+    if (command == "recipe")
+      result.push_back(add_recipe(in));
+    // End Command Handlers
+  }
   return result;
 }
 
 recipe_number add_recipe(istream& in) {
   skip_comments_and_newlines(in);
-  string _recipe = next_word(in);
-//?   cout << _recipe; //? 1
-  if (_recipe != "recipe")
-    raise << "top-level forms must be of the form 'recipe _name_ [ _instruction_ ... ]'\n";
-
   string recipe_name = next_word(in);
 //?   cout << "recipe name: ^" << recipe_name << "$\n"; //? 1
   if (recipe_name.empty())
