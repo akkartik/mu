@@ -83,10 +83,9 @@ inline bool done(routine& rr) {
 :(before "End Main")
 if (argc > 1) {
   setup();
+  load("core.mu");
   for (int i = 1; i < argc; ++i) {
-    ifstream fin(argv[i]);
-    while (!fin.eof()) add_recipe(fin);
-    fin.close();
+    load(argv[i]);
   }
 
   Trace_stream = new trace_stream;
@@ -95,6 +94,13 @@ if (argc > 1) {
   recipe_number r = Recipe_number[string("main")];
   if (r) run(r);
   dump_memory();
+}
+
+:(code)
+void load(string filename) {
+  ifstream fin(filename.c_str());
+  while (!fin.eof()) add_recipe(fin);
+  fin.close();
 }
 
 //: helper for tests
