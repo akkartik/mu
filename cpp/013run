@@ -80,10 +80,11 @@ inline bool done(routine& rr) {
   return running_at(rr) >= steps(rr).size();
 }
 
+:(after "int main")
+  load("core.mu");
 :(before "End Main")
 if (argc > 1) {
   setup();
-  load("core.mu");
   for (int i = 1; i < argc; ++i) {
     load(argv[i]);
   }
@@ -99,6 +100,7 @@ if (argc > 1) {
 :(code)
 void load(string filename) {
   ifstream fin(filename.c_str());
+  fin >> std::noskipws;
   add_recipes(fin);
   fin.close();
 }
