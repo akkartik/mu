@@ -20,14 +20,13 @@ set cpo&vim
 
 setlocal iskeyword=@,48-57,?,!,_,$,-
 
-syntax match muComment /;.*$/
+syntax match muComment /#.*$/
 highlight link muComment Comment
-syntax match muSalientComment /;;.*$/
+syntax match muSalientComment /##.*$/
 highlight link muSalientComment SalientComment
-set comments-=:;
-set comments+=n:;
-syntax match CommentedCode ";? .*"
-let b:cmt_head = ";? "
+set comments+=n:#
+syntax match CommentedCode "#? .*"
+let b:cmt_head = "#? "
 
 syntax region muString start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=@Spell
 highlight link muString String
