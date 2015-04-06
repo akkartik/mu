@@ -27,3 +27,38 @@ recipe string-equal [
   }
   reply 1:literal
 ]
+
+scenario string-equal-reflexive [
+  run [
+    default-space:address:space <- new location:type, 30:literal
+    x:address:array:character <- new [abc]
+    3:boolean/raw <- string-equal x:address:array:character, x:address:array:character
+  ]
+  memory should contain [
+    3 <- 1  # x == x for all x
+  ]
+]
+
+scenario string-equal [
+  run [
+    default-space:address:space <- new location:type, 30:literal
+    x:address:array:character <- new [abc]
+    y:address:array:character <- new [abc]
+    3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
+  ]
+  memory should contain [
+    3 <- 1  # abc == abd
+  ]
+]
+
+scenario string-equal2 [
+  run [
+    default-space:address:space <- new location:type, 30:literal
+    x:address:array:character <- new [abc]
+    y:address:array:character <- new [abcd]
+    3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
+  ]
+  memory should contain [
+    3 <- 0  # abc != abd
+  ]
+]

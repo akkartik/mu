@@ -1,0 +1,53 @@
+:(before "End Types")
+struct scenario {
+  string name;
+  string to_run;
+  map<int, int> memory_expectations;
+};
+
+:(before "End Globals")
+vector<scenario> Scenarios;
+
+:(before "End Tests")
+//? cout << "AAA\n"; //? 1
+for (size_t i = 0; i < Scenarios.size(); ++i) {
+//?   cout << "BBB\n"; //? 1
+  run(Scenarios[i].to_run);
+  for (map<int, int>::iterator p = Scenarios[i].memory_expectations.begin();
+       p != Scenarios[i].memory_expectations.end();
+       ++p) {
+    if (Memory[p->first] != p->second) {
+      cerr << Scenarios[i].name << ": Expected location " << p->first << " to contain " << p->second << " but saw " << Memory[p->first] << '\n';
+      Passed = false;
+    }
+  }
+  if (Passed) cerr << ".";
+}
+
+:(before "End Command Handlers")
+else if (command == "scenario") {
+//?   cout << "AAA scenario\n"; //? 1
+  Scenarios.push_back(parse_scenario(in));
+}
+
+:(code)
+scenario parse_scenario(istream& in) {
+  scenario x;
+  x.name = next_word(in);
+//?   cout << "AAA scenario name " << x.name << '\n'; //? 1
+  skip_whitespace(in);  skip_comments_and_newlines(in);  skip_whitespace(in);
+  assert(in.get() == '[');
+  int brace_depth = 1;
+  char c;
+  while (in >> c) {
+    x.to_run += c;
+    if (c == '[') ++brace_depth;
+    if (c == ']') --brace_depth;
+    if (brace_depth == 0) break;
+  }
+  x.to_run = "recipe main [\n"
+             "  1:integer/raw <- add 3:literal, 3:literal\n"
+             "]";
+  x.memory_expectations[1] = 6;
+  return x;
+}

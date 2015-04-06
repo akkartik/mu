@@ -22,9 +22,13 @@ vector<recipe_number> add_recipes(istream& in) {
     if (in.eof()) break;
     string command = next_word(in);
     // Command Handlers
-    if (command == "recipe")
+    if (command == "recipe") {
       result.push_back(add_recipe(in));
+    }
     // End Command Handlers
+    else {
+      raise << "unknown top-level command: " << command;
+    }
   }
   return result;
 }
@@ -32,7 +36,7 @@ vector<recipe_number> add_recipes(istream& in) {
 recipe_number add_recipe(istream& in) {
   skip_comments_and_newlines(in);
   string recipe_name = next_word(in);
-//?   cout << "recipe name: ^" << recipe_name << "$\n"; //? 1
+//?   cout << "recipe name: ^" << recipe_name << "$\n"; //? 2
   if (recipe_name.empty())
     raise << "empty recipe name\n";
 //?     raise << "empty recipe name in " << in.str() << '\n';
@@ -114,6 +118,7 @@ bool next_instruction(istream& in, instruction* curr) {
 }
 
 string next_word(istream& in) {
+//?   cout << "AAA next_word\n"; //? 1
   ostringstream out;
   skip_whitespace(in);
   slurp_word(in, out);
@@ -123,6 +128,7 @@ string next_word(istream& in) {
 }
 
 void slurp_word(istream& in, ostream& out) {
+//?   cout << "AAA slurp_word\n"; //? 1
   char c;
   if (in.peek() == ',') {
     in >> c;
@@ -130,6 +136,7 @@ void slurp_word(istream& in, ostream& out) {
     return;
   }
   while (in >> c) {
+//?     cout << c << '\n'; //? 1
     if (isspace(c) || c == ',') {
       in.putback(c);
       break;
