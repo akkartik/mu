@@ -12,7 +12,13 @@ vector<scenario> Scenarios;
 //? cout << "AAA\n"; //? 1
 for (size_t i = 0; i < Scenarios.size(); ++i) {
 //?   cout << "BBB\n"; //? 1
+  setup();
+  Trace_stream = new trace_stream;
+//?   Trace_stream->dump_layer = "all"; //? 1
+//?   cout << "Before:\n";  dump_memory(); //? 1
+//?   cout << Scenarios[i].to_run; //? 1
   run(Scenarios[i].to_run);
+//?   cout << "After:\n";  dump_memory(); //? 1
   for (map<int, int>::iterator p = Scenarios[i].memory_expectations.begin();
        p != Scenarios[i].memory_expectations.end();
        ++p) {
@@ -34,20 +40,92 @@ else if (command == "scenario") {
 scenario parse_scenario(istream& in) {
   scenario x;
   x.name = next_word(in);
-//?   cout << "AAA scenario name " << x.name << '\n'; //? 1
-  skip_whitespace(in);  skip_comments_and_newlines(in);  skip_whitespace(in);
-  assert(in.get() == '[');
-  int brace_depth = 1;
+  trace("parse") << "reading scenario " << x.name;
+  skip_bracket(in, "'scenario' must begin with '['");
+  ostringstream buffer;
+  slurp_until_matching_bracket(in, buffer);
+//?   cout << "inner buffer: ^" << buffer.str() << "$\n"; //? 1
+  istringstream inner(buffer.str());
+  inner >> std::noskipws;
+  while (!inner.eof()) {
+    skip_whitespace_and_comments(inner);
+    string scenario_command = next_word(inner);
+    if (scenario_command.empty() && inner.eof()) break;
+    // Scenario Command Handlers
+    if (scenario_command == "run") {
+      handle_scenario_run_directive(inner, x);
+      trace("parse") << "scenario will run: " << x.to_run;
+    }
+    else if (scenario_command == "memory") {
+      handle_scenario_memory_directive(inner, x);
+    }
+    // End Scenario Command Handlers
+    else {
+      raise << "unknown command in scenario: ^" << scenario_command << "$";
+    }
+  }
+  return x;
+}
+
+void handle_scenario_run_directive(istream& in, scenario& result) {
+  skip_bracket(in, "'run' inside scenario must begin with '['");
+  ostringstream buffer;
+  slurp_until_matching_bracket(in, buffer);
+  result.to_run = "recipe test-"+result.name+" [" + buffer.str() + "]";
+}
+
+void handle_scenario_memory_directive(istream& in, scenario& out) {
+  if (next_word(in) != "should") {
+    raise << "'memory' directive inside scenario must continue 'memory should'";
+  }
+  if (next_word(in) != "contain") {
+    raise << "'memory' directive inside scenario must continue 'memory should contain'";
+  }
+  skip_whitespace_and_comments(in);
+  if (in.get() != '[') {
+    raise << "'memory' directive inside scenario must begin with 'memory should contain ['";
+  }
+  while (true) {
+    skip_whitespace_and_comments(in);
+    if (in.eof()) break;
+//?     cout << "a: " << in.peek() << '\n'; //? 1
+    if (in.peek() == ']') break;
+    int address = 0;  in >> address;
+//?     cout << "address: " << address << '\n'; //? 2
+//?     cout << "b: " << in.peek() << '\n'; //? 1
+    skip_whitespace_and_comments(in);
+//?     cout << "c: " << in.peek() << '\n'; //? 1
+    string _assign;  in >> _assign;  assert(_assign == "<-");
+    skip_whitespace_and_comments(in);
+    int value = 0;  in >> value;
+    out.memory_expectations[address] = value;
+    trace("parse") << "memory expectation: *" << address << " == " << value;
+  }
+  skip_whitespace(in);
+  assert(in.get() == ']');
+}
+
+void slurp_until_matching_bracket(istream& in, ostream& out) {
+  int brace_depth = 1;  // just scanned '['
   char c;
   while (in >> c) {
-    x.to_run += c;
     if (c == '[') ++brace_depth;
     if (c == ']') --brace_depth;
-    if (brace_depth == 0) break;
+    if (brace_depth == 0) break;  // drop final ']'
+    out << c;
   }
-  x.to_run = "recipe main [\n"
-             "  1:integer/raw <- add 3:literal, 3:literal\n"
-             "]";
-  x.memory_expectations[1] = 6;
-  return x;
+}
+
+void skip_bracket(istream& in, string message) {
+  skip_whitespace(in);  skip_comments_and_newlines(in);  skip_whitespace(in);
+  if (in.get() != '[')
+    raise << message;
+}
+
+void skip_whitespace_and_comments(istream& in) {
+  while (true) {
+    if (isspace(in.peek())) in.get();
+    else if (in.peek() == '#') skip_comment(in);
+    else break;
+  }
 }

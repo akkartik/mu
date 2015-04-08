@@ -39,7 +39,7 @@ scenario string-equal-reflexive [
   ]
 ]
 
-scenario string-equal [
+scenario string-equal-identical [
   run [
     default-space:address:space <- new location:type, 30:literal
     x:address:array:character <- new [abc]
@@ -47,15 +47,39 @@ scenario string-equal [
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
   ]
   memory should contain [
-    3 <- 1  # abc == abd
+    3 <- 1  # abc == abc
   ]
 ]
 
-scenario string-equal2 [
+scenario string-equal-distinct-lengths [
   run [
     default-space:address:space <- new location:type, 30:literal
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abcd]
+    3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
+  ]
+  memory should contain [
+    3 <- 0  # abc != abcd
+  ]
+]
+
+scenario string-equal-with-empty [
+  run [
+    default-space:address:space <- new location:type, 30:literal
+    x:address:array:character <- new []
+    y:address:array:character <- new [abcd]
+    3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
+  ]
+  memory should contain [
+    3 <- 0  # "" != abcd
+  ]
+]
+
+scenario string-equal-common-lengths-but-distinct [
+  run [
+    default-space:address:space <- new location:type, 30:literal
+    x:address:array:character <- new [abc]
+    y:address:array:character <- new [abd]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
   ]
   memory should contain [
