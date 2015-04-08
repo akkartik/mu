@@ -23,8 +23,12 @@ Transform.push_back(transform_names);
 
 :(before "End Globals")
 unordered_map<recipe_number, unordered_map<string, int> > Name;
-:(before "End Setup")
+:(before "End One-time Setup")
 Name.clear();
+:(before "recipes_added_by_test.clear()")
+for (size_t i = 0; i < recipes_added_by_test.size(); ++i) {
+  Name.erase(recipes_added_by_test[i]);
+}
 
 :(code)
 void transform_names(const recipe_number r) {
