@@ -24,7 +24,6 @@ vector<recipe_number> add_recipes(istream& in) {
     // Command Handlers
     if (command == "recipe") {
       result.push_back(add_recipe(in));
-      recipes_added_by_test.push_back(result.back());
     }
     // End Command Handlers
     else {
@@ -65,6 +64,8 @@ recipe_number add_recipe(istream& in) {
   }
   Recipe[r].name = recipe_name;
 //?   cout << "recipe " << recipe_name << " has " << Recipe[r].steps.size() << " steps.\n"; //? 1
+  // track added recipes because we may need to undo them in tests; see below
+  recently_added_recipes.push_back(r);
   return r;
 }
 
@@ -186,6 +187,18 @@ void skip_comma(istream& in) {
   if (in.peek() == ',') in.get();
   skip_whitespace(in);
 }
+
+//: Recipes added for tests should be easy to remove as well.
+:(before "End Globals")
+vector<recipe_number> recently_added_recipes;
+:(before "End Setup")
+for (size_t i = 0; i < recently_added_recipes.size(); ++i) {
+//?   cout << "AAA clearing " << Recipe[recently_added_recipes[i]].name << '\n'; //? 2
+  Recipe_number.erase(Recipe[recently_added_recipes[i]].name);
+  Recipe.erase(recently_added_recipes[i]);
+}
+// Clear state for recently_added_recipes
+recently_added_recipes.clear();
 
 :(scenario parse_comment_outside_recipe)
 # comment
