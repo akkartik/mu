@@ -24,6 +24,7 @@ vector<recipe_number> add_recipes(istream& in) {
     // Command Handlers
     if (command == "recipe") {
       result.push_back(add_recipe(in));
+      recipes_added_by_test.push_back(result.back());
     }
     // End Command Handlers
     else {
@@ -36,7 +37,7 @@ vector<recipe_number> add_recipes(istream& in) {
 recipe_number add_recipe(istream& in) {
   skip_comments_and_newlines(in);
   string recipe_name = next_word(in);
-//?   cout << "recipe name: ^" << recipe_name << "$\n"; //? 2
+//?   cout << "recipe name: ^" << recipe_name << "$\n"; //? 3
   if (recipe_name.empty())
     raise << "empty recipe name\n";
 //?     raise << "empty recipe name in " << in.str() << '\n';
@@ -45,6 +46,10 @@ recipe_number add_recipe(istream& in) {
 //?     cout << "AAA: " << recipe_name << " is now " << Recipe_number[recipe_name] << '\n'; //? 1
   }
   recipe_number r = Recipe_number[recipe_name];
+  if (Recipe.find(r) != Recipe.end()) {
+    raise << "redefining recipe " << Recipe[r].name << "\n";
+    Recipe.erase(r);
+  }
 //?   cout << recipe_name << ": adding recipe " << r << '\n'; //? 3
 
   skip_whitespace(in);

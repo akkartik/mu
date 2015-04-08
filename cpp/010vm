@@ -132,11 +132,17 @@ void setup_recipes() {
   assert(Next_recipe_number == COPY);
   Next_recipe_number++;
   // End Primitive Recipe Numbers.
+}
+//: We could just reset the recipe table after every test, but that gets slow
+//: all too quickly. Instead, initialize the common stuff just once at
+//: startup, and carefully undo each test's additions after itself.
+:(before "End One-time Setup")
+  setup_recipes();
+  load("core.mu");
   assert(Next_recipe_number < 100);
   Next_recipe_number = 100;
-}
 :(before "End Setup")
-  setup_recipes();
+  Next_recipe_number = 100;  // consistent new numbers for each test
 
 
 
