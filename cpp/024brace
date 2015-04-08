@@ -11,8 +11,8 @@
 //:     }
 //:   }
 //:
-//: Braces are just labels, they require no special parsing. The operations
-//: 'loop' and 'break' jump to just after the enclosing '{' and '}'
+//: Braces are just labels, they require no special parsing. The pseudo
+//: recipes 'loop' and 'break' jump to just after the enclosing '{' and '}'
 //: respectively.
 //:
 //: Conditional and unconditional 'loop' and 'break' should give us 80% of the
@@ -37,6 +37,8 @@ Transform.push_back(transform_braces);
 
 :(code)
 void transform_braces(const recipe_number r) {
+//?   cout << "AAA transform_braces\n"; //? 1
+//?   exit(0); //? 1
   const int OPEN = 0, CLOSE = 1;
   list<pair<int/*OPEN/CLOSE*/, size_t/*step index*/> > braces;
   for (size_t index = 0; index < Recipe[r].steps.size(); ++index) {
@@ -54,6 +56,7 @@ void transform_braces(const recipe_number r) {
   trace("after-brace") << "recipe " << Recipe[r].name;
   for (size_t index = 0; index < Recipe[r].steps.size(); ++index) {
     instruction& inst = Recipe[r].steps[index];
+//?     cout << "AAA " << inst.name << ": " << inst.operation << '\n'; //? 1
     if (inst.label == "{") open_braces.push(index);
     else if (inst.label == "}") open_braces.pop();
     else if (inst.is_label)
@@ -126,6 +129,7 @@ void transform_braces(const recipe_number r) {
       }
     }
     else if (inst.operation == Recipe_number["break-unless"]) {
+//?       cout << "AAA break-unless\n"; //? 1
       inst.operation = Recipe_number["jump-unless"];
       if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients[1])) {
         // explicit target; a later phase will handle it
@@ -157,10 +161,42 @@ size_t matching_brace(size_t index, const list<pair<int, size_t> >& braces) {
 
 // temporarily suppress run
 void transform_test(string form) {
+//?   cout << "AAA transform_test {\n"; //? 1
   vector<recipe_number> tmp = add_recipes(form);
+//?   cout << "AAA done adding recipes\n"; //? 1
   recipes_added_by_test.insert(recipes_added_by_test.end(), tmp.begin(), tmp.end());
   transform_all();
+//?   cout << "AAA }\n"; //? 1
 }
+
+//: Make sure these pseudo recipes get consistent numbers, even though they aren't
+//: implemented.
+:(before "End Globals")
+const int BREAK = 24;
+const int BREAK_IF = 25;
+const int BREAK_UNLESS = 26;
+const int LOOP = 27;
+const int LOOP_IF = 28;
+const int LOOP_UNLESS = 29;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["break"] = BREAK;
+assert(Next_recipe_number == BREAK);
+Next_recipe_number++;
+Recipe_number["break-if"] = BREAK_IF;
+assert(Next_recipe_number == BREAK_IF);
+Next_recipe_number++;
+Recipe_number["break-unless"] = BREAK_UNLESS;
+assert(Next_recipe_number == BREAK_UNLESS);
+Next_recipe_number++;
+Recipe_number["loop"] = LOOP;
+assert(Next_recipe_number == LOOP);
+Next_recipe_number++;
+Recipe_number["loop-if"] = LOOP_IF;
+assert(Next_recipe_number == LOOP_IF);
+Next_recipe_number++;
+Recipe_number["loop-unless"] = LOOP_UNLESS;
+assert(Next_recipe_number == LOOP_UNLESS);
+Next_recipe_number++;
 
 :(scenario "loop")
 recipe main [

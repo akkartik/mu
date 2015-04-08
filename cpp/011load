@@ -40,8 +40,10 @@ recipe_number add_recipe(istream& in) {
   if (recipe_name.empty())
     raise << "empty recipe name\n";
 //?     raise << "empty recipe name in " << in.str() << '\n';
-  if (Recipe_number.find(recipe_name) == Recipe_number.end())
+  if (Recipe_number.find(recipe_name) == Recipe_number.end()) {
     Recipe_number[recipe_name] = Next_recipe_number++;
+//?     cout << "AAA: " << recipe_name << " is now " << Recipe_number[recipe_name] << '\n'; //? 1
+  }
   recipe_number r = Recipe_number[recipe_name];
 //?   cout << recipe_name << ": adding recipe " << r << '\n'; //? 3
 
@@ -98,8 +100,13 @@ bool next_instruction(istream& in, instruction* curr) {
   }
 
   curr->name = *p;
-  if (Recipe_number.find(*p) == Recipe_number.end())
+  if (Recipe_number.find(*p) == Recipe_number.end()) {
     Recipe_number[*p] = Next_recipe_number++;
+//?     cout << "AAA: " << *p << " is now " << Recipe_number[*p] << '\n'; //? 1
+  }
+  if (Recipe_number[*p] == 0) {
+    raise << "Recipe " << *p << " has number 0, which is reserved for IDLE.\n" << die();
+  }
   curr->operation = Recipe_number[*p];  ++p;
 
   for (; p != words.end(); ++p) {
