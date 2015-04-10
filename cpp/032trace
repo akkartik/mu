@@ -1,0 +1,21 @@
+:(scenario "trace")
+recipe main [
+  trace [foo], [this is a trace in mu]
+]
++foo: this is a trace in mu
+
+:(before "End Globals")
+const int TRACE = 32;
+:(before "End Primitive Recipe Numbers")
+Recipe_number["trace"] = TRACE;
+assert(Next_recipe_number == TRACE);
+Next_recipe_number++;
+:(before "End Primitive Recipe Implementations")
+case TRACE: {
+  assert(isa_literal(instructions[pc].ingredients[0]));
+  string label = instructions[pc].ingredients[0].name;
+  assert(isa_literal(instructions[pc].ingredients[1]));
+  string message = instructions[pc].ingredients[1].name;
+  trace(label) << message;
+  break;
+}
