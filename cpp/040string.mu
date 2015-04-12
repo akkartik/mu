@@ -6,11 +6,13 @@ recipe string-equal [
   b-len:integer <- length b:address:array:character/deref
   # compare lengths
   {
+    trace [string-equal], [comparing lengths]
     length-equal?:boolean <- equal a-len:integer, b-len:integer
     break-if length-equal?:boolean
     reply 0:literal
   }
   # compare each corresponding character
+  trace [string-equal], [comparing characters]
   i:integer <- copy 0:literal
   {
     done?:boolean <- greater-or-equal i:integer, a-len:integer
