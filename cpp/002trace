@@ -111,10 +111,12 @@ struct trace_stream {
   // be sure to call this before messing with curr_stream or curr_layer or frame
   void newline() {
     if (!curr_stream) return;
-    past_lines.push_back(pair<string, pair<int, string> >(curr_layer, pair<int, string>(frame[curr_layer], curr_stream->str())));
+    string curr_contents = curr_stream->str();
+    curr_contents.erase(curr_contents.find_last_not_of("\r\n")+1);
+    past_lines.push_back(pair<string, pair<int, string> >(curr_layer, pair<int, string>(frame[curr_layer], curr_contents)));
     if (curr_layer == dump_layer || curr_layer == "dump" || dump_layer == "all" ||
         (!Hide_warnings && curr_layer == "warn"))
-      cerr << curr_layer << '/' << frame[curr_layer] << ": " << with_newline(curr_stream->str());
+      cerr << curr_layer << '/' << frame[curr_layer] << ": " << curr_contents << '\n';
     delete curr_stream;
     curr_stream = NULL;
   }
@@ -127,7 +129,7 @@ struct trace_stream {
     parse_layer_and_frame(layer, &real_layer, &frame);
     for (vector<pair<string, pair<int, string> > >::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
       if (layer.empty() || prefix_match(real_layer, p->first))
-        output << p->first << "/" << p->second.first << ": " << with_newline(p->second.second);
+        output << p->first << "/" << p->second.first << ": " << p->second.second << '\n';
     return output.str();
   }
 
@@ -144,11 +146,6 @@ struct trace_stream {
       dump << "</div>\n";
     }
     dump.close();
-  }
-
-  string with_newline(string s) {
-    if (s[s.size()-1] != '\n') return s+'\n';
-    return s;
   }
 };
 
