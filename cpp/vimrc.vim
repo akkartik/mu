@@ -1,8 +1,6 @@
 " Highlighting literate directives in C++ sources.
 function! HighlightTangledFile()
-  if &ft == ""
-    set ft=cpp
-  endif
+  set ft=cpp
   syntax region tangleDirective start=+:(+ skip=+".*"+ end=+)+
   highlight link tangleDirective Delimiter
   syntax region traceContains start="^+" end="$"
