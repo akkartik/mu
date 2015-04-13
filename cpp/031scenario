@@ -62,7 +62,7 @@ scenario parse_scenario(istream& in) {
     }
     // End Scenario Command Handlers
     else {
-      raise << "unknown command in scenario: ^" << scenario_command << "$";
+      raise << "unknown command in scenario: ^" << scenario_command << "$\n";
     }
   }
   return x;
@@ -77,15 +77,12 @@ void handle_scenario_run_directive(istream& in, scenario& result) {
 
 void handle_scenario_memory_directive(istream& in, scenario& out) {
   if (next_word(in) != "should") {
-    raise << "'memory' directive inside scenario must continue 'memory should'";
+    raise << "'memory' directive inside scenario must continue 'memory should'\n";
   }
   if (next_word(in) != "contain") {
-    raise << "'memory' directive inside scenario must continue 'memory should contain'";
+    raise << "'memory' directive inside scenario must continue 'memory should contain'\n";
   }
-  skip_whitespace_and_comments(in);
-  if (in.get() != '[') {
-    raise << "'memory' directive inside scenario must begin with 'memory should contain ['";
-  }
+  skip_bracket(in, "'memory' directive inside scenario must begin with 'memory should contain ['\n");
   while (true) {
     skip_whitespace_and_comments(in);
     if (in.eof()) break;
@@ -120,7 +117,7 @@ void slurp_until_matching_bracket(istream& in, ostream& out) {
 void skip_bracket(istream& in, string message) {
   skip_whitespace(in);  skip_comments_and_newlines(in);  skip_whitespace(in);
   if (in.get() != '[')
-    raise << message;
+    raise << message << '\n';
 }
 
 void skip_whitespace_and_comments(istream& in) {
