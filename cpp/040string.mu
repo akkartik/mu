@@ -63,6 +63,12 @@ scenario string-equal-distinct-lengths [
   memory should contain [
     3 <- 0  # abc != abcd
   ]
+  trace should contain [
+    string-equal: comparing lengths
+  ]
+  trace should not contain [
+    string-equal: comparing characters
+  ]
 ]
 
 scenario string-equal-with-empty [
