@@ -44,8 +44,8 @@ void transform_names(const recipe_number r) {
 //?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 1
       if (inst.ingredients[in].name == "default-space")
         inst.ingredients[in].initialized = true;
-      if (inst.ingredients[in].name != "default-space"
-          && inst.ingredients[in].types[0]
+      if (inst.ingredients[in].types[0]  // not a literal
+          && !inst.ingredients[in].initialized
           && inst.ingredients[in].name.find_first_not_of("0123456789-.") != string::npos) {
         if (names.find(inst.ingredients[in].name) == names.end()) {
           raise << "use before set: " << inst.ingredients[in].name << " in " << Recipe[r].name << '\n';
@@ -59,9 +59,8 @@ void transform_names(const recipe_number r) {
 //?       cout << inst.products[out].types[0] << '\n'; //? 1
       if (inst.products[out].name == "default-space")
         inst.products[out].initialized = true;
-      if (inst.products[out].name != "_"
-          && inst.products[out].name != "default-space"
-          && inst.products[out].types[0]
+      if (inst.products[out].types[0]  // not a literal
+          && !inst.products[out].initialized
           && inst.products[out].name.find_first_not_of("0123456789-.") != string::npos) {
         if (names.find(inst.products[out].name) == names.end()) {
           trace("name") << "assign " << inst.products[out].name << " " << curr_idx;
