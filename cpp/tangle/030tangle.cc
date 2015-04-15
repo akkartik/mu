@@ -1,9 +1,13 @@
 #include<sys/param.h>
 
+size_t Line_number = 0;
+string Filename;
+
 int tangle(int argc, const char* argv[]) {
   list<string> result;
   for (int i = 1; i < argc; ++i) {
     ifstream in(argv[i]);
+    Filename = argv[i];
     tangle(in, result);
   }
   for (list<string>::iterator p = result.begin(); p != result.end(); ++p)
@@ -12,9 +16,11 @@ int tangle(int argc, const char* argv[]) {
 }
 
 void tangle(istream& in, list<string>& out) {
+  Line_number = 1;
   string curr_line;
   while (!in.eof()) {
     getline(in, curr_line);
+    Line_number++;
     if (starts_with(curr_line, ":("))
       process_next_hunk(in, trim(curr_line), out);
     else
@@ -27,6 +33,14 @@ string Toplevel = "run";
 
 void process_next_hunk(istream& in, const string& directive, list<string>& out) {
   list<string> hunk;
+  {
+    ostringstream line_directive;
+    if (Filename.empty())
+      line_directive << "#line " << Line_number;
+    else
+      line_directive << "#line " << Line_number << " \"" << Filename << '"';
+    hunk.push_back(line_directive.str());
+  }
   string curr_line;
   while (!in.eof()) {
     std::streampos old = in.tellg();
@@ -36,6 +50,7 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
       break;
     }
     else {
+      ++Line_number;
       hunk.push_back(curr_line);
     }
   }
@@ -56,6 +71,8 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
   if (cmd == "scenario") {
     list<string> result;
     string name = next_tangle_token(directive_stream);
+    result.push_back(hunk.front());  // line number directive
+    hunk.pop_front();
     emit_test(name, hunk, result);
     out.insert(out.end(), result.begin(), result.end());
     return;
