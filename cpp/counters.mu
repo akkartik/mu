@@ -23,9 +23,9 @@ recipe main [
   bres:integer <- increment-counter b:address:space, 2:literal
   ares:integer <- increment-counter a:address:space, 1:literal
   # check results
-  $print [Contents of counters a ]
+  $print [Contents of counters a: ]
   $print ares:integer
-  $print [ b ]
+  $print [ b: ]
   $print bres:integer
   $print [
 ]

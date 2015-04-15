@@ -12,6 +12,12 @@ recipe main [
 ]
 +parse:   ingredient: {name: "abc def", value: 0, type: 0, properties: ["abc def": "literal-string"]}
 
+:(scenario "string_literal_with_colons")
+recipe main [
+  1:address:array:character <- new [abc:def/ghi]
+]
++parse:   ingredient: {name: "abc:def/ghi", value: 0, type: 0, properties: ["abc:def/ghi": "literal-string"]}
+
 :(before "End Mu Types Initialization")
 Type_number["literal-string"] = 0;
 
@@ -21,20 +27,34 @@ if (in.peek() == '[') return slurp_quoted(in);
 :(code)
 string slurp_quoted(istream& in) {
   assert(!in.eof());
-  assert(in.get() == '[');
+  assert(in.peek() == '[');
   ostringstream out;
-  int size = 1;
+  int size = 0;
   while (!in.eof()) {
     char c = in.get();
-    if (c == '[') ++size;
-    if (c == ']') --size;
-    if (size == 0) break;
 //?     cout << c << '\n'; //? 1
     out << c;
 //?     cout << out.str() << "$\n"; //? 1
+    if (c == '[') ++size;
+    if (c == ']') --size;
+    if (size == 0) break;
   }
   return out.str();
 }
+
+:(after "reagent::reagent(string s)")
+//?   cout << s[0] << '\n'; //? 1
+  if (s[0] == '[') {
+    assert(s[s.size()-1] == ']');
+    // delete [] delimiters
+    s.erase(0, 1);
+    s.erase(s.size()-1, s.size());
+    name = s;
+    types.push_back(0);
+    properties.push_back(pair<string, vector<string> >(name, vector<string>()));
+    properties.back().second.push_back("literal-string");
+    return;
+  }
 
 :(scenario "string_literal_nested")
 recipe main [
