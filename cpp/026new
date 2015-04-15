@@ -45,7 +45,7 @@ Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
 case NEW: {
   vector<int> result;
-  result.push_back(Current_routine.alloc);
+  result.push_back(Current_routine->alloc);
   write_memory(instructions[pc].products[0], result);
   vector<int> types;
   types.push_back(instructions[pc].ingredients[0].value);
@@ -53,12 +53,12 @@ case NEW: {
     // array
     vector<int> capacity = read_memory(instructions[pc].ingredients[1]);
     trace("mem") << "array size is " << capacity[0];
-    Memory[Current_routine.alloc] = capacity[0];
-    Current_routine.alloc += capacity[0]*size_of(types);
+    Memory[Current_routine->alloc] = capacity[0];
+    Current_routine->alloc += capacity[0]*size_of(types);
   }
   else {
     // scalar
-    Current_routine.alloc += size_of(types);
+    Current_routine->alloc += size_of(types);
   }
   break;
 }

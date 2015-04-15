@@ -27,7 +27,7 @@ struct routine {
 };
 
 :(before "End Globals")
-routine Current_routine(0);
+routine* Current_routine = NULL;
 
 :(code)
 void run(recipe_number r) {
@@ -35,7 +35,7 @@ void run(recipe_number r) {
 }
 
 void run(routine rr) {
-  Current_routine = rr;
+  Current_routine = &rr;
   while (!done(rr)) {
     vector<instruction>& instructions = steps(rr);
     size_t& pc = running_at(rr);
@@ -59,6 +59,7 @@ void run(routine rr) {
     }
     ++pc;
   }
+  Current_routine = NULL;
 }
 
 //: Some helpers.
