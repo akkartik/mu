@@ -40,6 +40,7 @@ void transform_names(const recipe_number r) {
     // Per-recipe Transforms
     // map names to addresses
     for (size_t in = 0; in < inst.ingredients.size(); ++in) {
+//?       cout << "ingredients\n"; //? 1
       if (is_raw(inst.ingredients[in])) continue;
 //?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 1
       if (inst.ingredients[in].name == "default-space")
@@ -47,13 +48,15 @@ void transform_names(const recipe_number r) {
       if (inst.ingredients[in].types[0]  // not a literal
           && !inst.ingredients[in].initialized
           && inst.ingredients[in].name.find_first_not_of("0123456789-.") != string::npos) {
-        if (names.find(inst.ingredients[in].name) == names.end()) {
+        if (!already_transformed(inst.ingredients[in], names)) {
           raise << "use before set: " << inst.ingredients[in].name << " in " << Recipe[r].name << '\n';
         }
-        inst.ingredients[in].set_value(names[inst.ingredients[in].name]);
+        inst.ingredients[in].set_value(lookup_name(inst.ingredients[in], r));
+//?         cout << "lookup ingredient " << Recipe[r].name << "/" << i << ": " << inst.ingredients[in].to_string() << '\n'; //? 1
       }
     }
     for (size_t out = 0; out < inst.products.size(); ++out) {
+//?       cout << "products\n"; //? 1
       if (is_raw(inst.products[out])) continue;
 //?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products[out].name << '\n'; //? 4
 //?       cout << inst.products[out].types[0] << '\n'; //? 1
@@ -67,10 +70,19 @@ void transform_names(const recipe_number r) {
           names[inst.products[out].name] = curr_idx;
           curr_idx += size_of(inst.products[out]);
         }
-        inst.products[out].set_value(names[inst.products[out].name]);
+        inst.products[out].set_value(lookup_name(inst.products[out], r));
+//?         cout << "lookup product " << Recipe[r].name << "/" << i << ": " << inst.products[out].to_string() << '\n'; //? 1
       }
     }
   }
+}
+
+bool already_transformed(const reagent& r, const unordered_map<string, int>& names) {
+  return names.find(r.name) != names.end();
+}
+
+size_t lookup_name(const reagent& r, const recipe_number default_recipe) {
+  return Name[default_recipe][r.name];
 }
 
 type_number skip_addresses(const vector<type_number>& types) {

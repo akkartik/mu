@@ -7,11 +7,13 @@ assert(Next_recipe_number < _PRINT);
 :(before "End Primitive Recipe Implementations")
 case _PRINT: {
   if (isa_literal(instructions[pc].ingredients[0])) {
+    trace("run") << "$print: " << instructions[pc].ingredients[0].name;
     cout << instructions[pc].ingredients[0].name << '\n';
     break;
   }
   vector<int> result(read_memory(instructions[pc].ingredients[0]));
   for (size_t i = 0; i < result.size(); ++i) {
+    trace("run") << "$print: " << result[i];
     cout << result[i] << " ";
   }
   cout << '\n';
