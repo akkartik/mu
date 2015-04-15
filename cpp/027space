@@ -52,7 +52,7 @@ result.properties.push_back(pair<string, vector<string> >("raw", vector<string>(
 
 :(code)
 int space(const reagent& x) {
-  return Current_routine.calls.top().default_space;
+  return Current_routine->calls.top().default_space;
 }
 
 int address(int offset, int base) {
@@ -67,8 +67,8 @@ int address(int offset, int base) {
 :(after "void write_memory(reagent x, vector<int> data)")
   if (x.name == "default-space") {
     assert(data.size() == 1);
-    Current_routine.calls.top().default_space = data[0];
-//?     cout << "AAA " << Current_routine.calls.top().default_space << '\n'; //? 1
+    Current_routine->calls.top().default_space = data[0];
+//?     cout << "AAA " << Current_routine->calls.top().default_space << '\n'; //? 1
     return;
   }
 
@@ -82,6 +82,6 @@ recipe main [
 :(after "vector<int> read_memory(reagent x)")
   if (x.name == "default-space") {
     vector<int> result;
-    result.push_back(Current_routine.calls.top().default_space);
+    result.push_back(Current_routine->calls.top().default_space);
     return result;
   }
