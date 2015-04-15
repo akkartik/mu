@@ -10,7 +10,7 @@ recipe main [
   10:integer <- copy 5:literal  # pretend array
   20:integer <- copy 5:literal  # pretend array
   default-space:address:space <- copy 10:literal
-  0:address:space <- copy 20:literal
+  0:address:space/names:dummy <- copy 20:literal  # later layers will explain the /names: property
   1:integer <- copy 32:literal
   1:integer/space:1 <- copy 33:literal
 ]
@@ -25,14 +25,20 @@ recipe main [
 //: lifetime, surrounding allows managing shorter lifetimes inside a longer
 //: one.
 
-:(replace{} "int space(const reagent& x)")
-int space(const reagent& x) {
-  return space(x, space_index(x), Current_routine->calls.top().default_space);
+:(replace{} "int space_base(const reagent& x)")
+int space_base(const reagent& x) {
+  return space_base(x, space_index(x), Current_routine->calls.top().default_space);
 }
 
-int space(const reagent& x, int space_index, int base) {
-  if (space_index == 0) return base;
-  return space(x, space_index-1, Memory[base+1]);
+int space_base(const reagent& x, int space_index, int base) {
+//?   trace("foo") << "base of space " << space_index << '\n'; //? 1
+  if (space_index == 0) {
+//?     trace("foo") << "base of space " << space_index << " is " << base << '\n'; //? 1
+    return base;
+  }
+//?   trace("foo") << "base of space " << space_index << " is " << Memory[base+1] << '\n'; //? 1
+  int result = space_base(x, space_index-1, Memory[base+1]);
+  return result;
 }
 
 int space_index(const reagent& x) {

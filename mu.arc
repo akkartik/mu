@@ -1134,12 +1134,12 @@
           (die "routine has no globals: @operand"))
       :else
         (iflet base rep.routine*!call-stack.0!default-space
-          (lookup-space (rem [caris _ 'space] operand)
-                        base
-                        space.operand)
+          (space-base (rem [caris _ 'space] operand)
+                      base
+                      space.operand)
           operand)))
 
-(def lookup-space (operand base space)
+(def space-base (operand base space)
 ;?   (prn operand " " base) ;? 1
   (if (is 0 space)
     ; base case
@@ -1149,8 +1149,8 @@
         (raw))
       (die "no room for var @operand in routine of size @memory*.base"))
     ; recursive case
-    (lookup-space operand (memory* (+ base 1))  ; location 0 points to next space
-                  (- space 1))))
+    (space-base operand (memory* (+ base 1))  ; location 0 points to next space
+                (- space 1))))
 
 (def space (operand)
   (or (alref metadata.operand 'space)
