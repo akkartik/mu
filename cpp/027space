@@ -71,3 +71,17 @@ int address(int offset, int base) {
 //?     cout << "AAA " << Current_routine.calls.top().default_space << '\n'; //? 1
     return;
   }
+
+:(scenario "get_default_space")
+recipe main [
+  default-space:address:space <- copy 10:literal
+  1:integer/raw <- copy default-space:address:space
+]
++mem: storing 10 in location 1
+
+:(after "vector<int> read_memory(reagent x)")
+  if (x.name == "default-space") {
+    vector<int> result;
+    result.push_back(Current_routine.calls.top().default_space);
+    return result;
+  }
