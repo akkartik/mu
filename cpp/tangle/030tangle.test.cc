@@ -5,6 +5,22 @@ void test_tangle() {
   CHECK_TRACE_CONTENTS("tangle", "adbc");
 }
 
+void test_tangle_with_linenumber() {
+  istringstream in("a\nb\nc\n:(before b)\nd\n");
+  list<string> dummy;
+  tangle(in, dummy);
+  CHECK_TRACE_CONTENTS("tangle", "a#line 5dbc");
+}
+
+void test_tangle_with_filename() {
+  istringstream in("a\nb\nc\n:(before b)\nd\n");
+  list<string> dummy;
+  Filename = "foo";
+  tangle(in, dummy);
+  Filename = "";
+  CHECK_TRACE_CONTENTS("tangle", "a#line 5 \"foo\"dbc");
+}
+
 void test_tangle2() {
   istringstream in("a\nb\nc\n:(after b)\nd\n");
   list<string> dummy;
@@ -98,6 +114,7 @@ void test_tangle_supports_scenarios() {
   istringstream in(":(scenario does_bar)\nabc def\n+layer1: pqr\n+layer2: xyz");
   list<string> lines;
   tangle(in, lines);
+  CHECK_EQ(lines.front(), "#line 2");  lines.pop_front();
   CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
   CHECK_EQ(lines.front(), "  run(\"abc def\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front(), "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: xyz\");");  lines.pop_front();
@@ -109,6 +126,7 @@ void test_tangle_supports_configurable_toplevel() {
   istringstream in(":(scenarios foo)\n:(scenario does_bar)\nabc def\n+layer1: pqr");
   list<string> lines;
   tangle(in, lines);
+  CHECK_EQ(lines.front(), "#line 3");  lines.pop_front();
   CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
   CHECK_EQ(lines.front(), "  foo(\"abc def\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front(), "  CHECK_TRACE_CONTENTS(\"layer1: pqr\");");  lines.pop_front();
@@ -123,6 +141,7 @@ void test_tangle_can_hide_warnings_in_scenarios() {
   istringstream in(":(scenario does_bar)\nhide warnings\nabc def\n+layer1: pqr\n+layer2: xyz");
   list<string> lines;
   tangle(in, lines);
+  CHECK_EQ(lines.front(), "#line 2");  lines.pop_front();
   CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
   CHECK_EQ(lines.front(), "  Hide_warnings = true;");  lines.pop_front();
   CHECK_EQ(lines.front(), "  run(\"abc def\\n\");");  lines.pop_front();
@@ -135,6 +154,7 @@ void test_tangle_supports_strings_in_scenarios() {
   istringstream in(":(scenario does_bar)\nabc \"def\"\n+layer1: pqr\n+layer2: \"xyz\"");
   list<string> lines;
   tangle(in, lines);
+  CHECK_EQ(lines.front(), "#line 2");  lines.pop_front();
   CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
   CHECK_EQ(lines.front(), "  run(\"abc \\\"def\\\"\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front(), "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: \\\"xyz\\\"\");");  lines.pop_front();
@@ -146,6 +166,7 @@ void test_tangle_supports_strings_in_scenarios2() {
   istringstream in(":(scenario does_bar)\nabc \"\"\n+layer1: pqr\n+layer2: \"\"");
   list<string> lines;
   tangle(in, lines);
+  CHECK_EQ(lines.front(), "#line 2");  lines.pop_front();
   CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
   CHECK_EQ(lines.front(), "  run(\"abc \\\"\\\"\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front(), "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: \\\"\\\"\");");  lines.pop_front();
@@ -157,6 +178,7 @@ void test_tangle_supports_multiline_input_in_scenarios() {
   istringstream in(":(scenario does_bar)\nabc def\n  efg\n+layer1: pqr\n+layer2: \"\"");
   list<string> lines;
   tangle(in, lines);
+  CHECK_EQ(lines.front(), "#line 2");  lines.pop_front();
   CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
   CHECK_EQ(lines.front(), "  run(\"abc def\\n  efg\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front(), "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: \\\"\\\"\");");  lines.pop_front();
@@ -168,6 +190,7 @@ void test_tangle_supports_reset_in_scenarios() {
   istringstream in(":(scenario does_bar)\nabc def\n===\nefg\n+layer1: pqr\n+layer2: \"\"");
   list<string> lines;
   tangle(in, lines);
+  CHECK_EQ(lines.front(), "#line 2");  lines.pop_front();
   CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
   CHECK_EQ(lines.front(), "  run(\"abc def\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front(), "  CLEAR_TRACE;");  lines.pop_front();
@@ -181,6 +204,7 @@ void test_tangle_can_check_for_absence_at_end_of_scenarios() {
   istringstream in(":(scenario does_bar)\nabc def\n  efg\n+layer1: pqr\n-layer1: xyz");
   list<string> lines;
   tangle(in, lines);
+  CHECK_EQ(lines.front(), "#line 2");  lines.pop_front();
   CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
   CHECK_EQ(lines.front(), "  run(\"abc def\\n  efg\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front(), "  CHECK_TRACE_CONTENTS(\"layer1: pqr\");");  lines.pop_front();
@@ -193,6 +217,7 @@ void test_tangle_can_check_for_absence_at_end_of_scenarios2() {
   istringstream in(":(scenario does_bar)\nabc def\n  efg\n-layer1: pqr\n-layer1: xyz");
   list<string> lines;
   tangle(in, lines);
+  CHECK_EQ(lines.front(), "#line 2");  lines.pop_front();
   CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
   CHECK_EQ(lines.front(), "  run(\"abc def\\n  efg\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front(), "  CHECK_TRACE_DOESNT_CONTAIN(\"layer1: pqr\");");  lines.pop_front();
