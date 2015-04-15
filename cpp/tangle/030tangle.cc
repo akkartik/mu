@@ -1,3 +1,4 @@
+#include<assert.h>
 #include<sys/param.h>
 
 size_t Line_number = 0;
@@ -17,6 +18,7 @@ int tangle(int argc, const char* argv[]) {
 
 void tangle(istream& in, list<string>& out) {
   Line_number = 1;
+  out.push_back(line_directive(Line_number, Filename));
   string curr_line;
   while (!in.eof()) {
     getline(in, curr_line);
@@ -33,14 +35,7 @@ string Toplevel = "run";
 
 void process_next_hunk(istream& in, const string& directive, list<string>& out) {
   list<string> hunk;
-  {
-    ostringstream line_directive;
-    if (Filename.empty())
-      line_directive << "#line " << Line_number;
-    else
-      line_directive << "#line " << Line_number << " \"" << Filename << '"';
-    hunk.push_back(line_directive.str());
-  }
+  hunk.push_back(line_directive(Line_number, Filename));
   string curr_line;
   while (!in.eof()) {
     std::streampos old = in.tellg();
@@ -85,20 +80,29 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
       return;
     }
 
+    size_t end_line_number = 0;
+    string end_filename;
+    scan_up_to_last_line_directive(target, out.begin(), end_line_number, end_filename);
+
     indent_all(hunk, target);
 
     if (cmd == "before") {
+      hunk.push_back(line_directive(end_line_number, end_filename));
       out.splice(target, hunk);
     }
     else if (cmd == "after") {
+      ++end_line_number;
+      hunk.push_back(line_directive(end_line_number, end_filename));
       ++target;
       out.splice(target, hunk);
     }
     else if (cmd == "replace" || cmd == "delete") {
+      hunk.push_back(line_directive(end_line_number, end_filename));
       out.splice(target, hunk);
       out.erase(target);
     }
     else if (cmd == "replace{}" || cmd == "delete{}") {
+      hunk.push_back(line_directive(end_line_number, end_filename));
       if (find_trim(hunk, ":OLD_CONTENTS") == hunk.end()) {
         out.splice(target, hunk);
         out.erase(target, balancing_curly(target));
@@ -368,4 +372,45 @@ string trim(const string& s) {
     --last;
   ++last;
   return string(first, last);
+}
+
+string line_directive(size_t line_number, string filename) {
+  ostringstream result;
+  if (filename.empty())
+    result << "#line " << line_number;
+  else
+    result << "#line " << line_number << " \"" << filename << '"';
+  return result.str();
+}
+
+void scan_up_to_last_line_directive(list<string>::iterator p, list<string>::iterator begin, size_t& line_number, string& filename) {
+//?   cout << "scan: " << *p << " until " << *begin << '\n'; //? 1
+  int delta = 0;
+  if (p != begin) {
+    for (--p; p != begin; --p) {
+//?       cout << "  " << *p << ' ' << delta << '\n'; //? 1
+      if (starts_with(*p, "#line")) continue;
+//?       cout << "incrementing\n"; //? 1
+      ++delta;
+    }
+//?     cout << "delta: " << delta << '\n'; //? 1
+  }
+  if (p == begin) {
+    assert(starts_with(*p, "#line"));
+//?     cout << "hit begin\n";
+//?     line_number = delta;
+//?     return;
+  }
+  istringstream in(*p);
+  string directive_;
+  in >> directive_;
+  assert(directive_ == "#line");
+  in >> line_number;
+  line_number += delta;
+//?   cout << line_number << '\n'; //? 1
+  if (in.eof()) return;
+  in >> filename;
+  if (filename[0] == '"') filename.erase(0, 1);
+  if (filename[filename.size()-1] == '"') filename.erase(filename.size()-1);
+//?   cout << filename << '\n'; //? 1
 }
