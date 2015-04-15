@@ -154,62 +154,61 @@ Next_recipe_number = 1000;  // consistent new numbers for each test
 //: Helpers
 
 :(code)
-// indent methods to avoid generating prototypes for them
-  instruction::instruction() :is_label(false), operation(IDLE) {}
-  void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
+instruction::instruction() :is_label(false), operation(IDLE) {}
+void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
 
-  // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
-  reagent::reagent(string s) :value(0), initialized(false) {
-    istringstream in(s);
-    in >> std::noskipws;
-    // properties
-    while (!in.eof()) {
-      istringstream row(slurp_until(in, '/'));
-      row >> std::noskipws;
-      string name = slurp_until(row, ':');
-      vector<string> values;
-      while (!row.eof())
-        values.push_back(slurp_until(row, ':'));
-      properties.push_back(pair<string, vector<string> >(name, values));
-    }
-    // structures for the first row of properties
-    name = properties[0].first;
-    for (size_t i = 0; i < properties[0].second.size(); ++i) {
-      types.push_back(Type_number[properties[0].second[i]]);
-    }
-    if (name == "_" && types.empty()) {
-      types.push_back(0);
-      properties[0].second.push_back("dummy");
-    }
+// Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
+reagent::reagent(string s) :value(0), initialized(false) {
+  istringstream in(s);
+  in >> std::noskipws;
+  // properties
+  while (!in.eof()) {
+    istringstream row(slurp_until(in, '/'));
+    row >> std::noskipws;
+    string name = slurp_until(row, ':');
+    vector<string> values;
+    while (!row.eof())
+      values.push_back(slurp_until(row, ':'));
+    properties.push_back(pair<string, vector<string> >(name, values));
   }
-  reagent::reagent() :value(0), initialized(false) {
-    // The first property is special, so ensure we always have it.
-    // Other properties can be pushed back, but the first must always be
-    // assigned to.
-    properties.push_back(pair<string, vector<string> >("", vector<string>()));
+  // structures for the first row of properties
+  name = properties[0].first;
+  for (size_t i = 0; i < properties[0].second.size(); ++i) {
+    types.push_back(Type_number[properties[0].second[i]]);
   }
-  string reagent::to_string() const {
-    ostringstream out;
-    out << "{name: \"" << name << "\", value: " << value << ", type: ";
-    for (size_t i = 0; i < types.size(); ++i) {
-      out << types[i];
-      if (i < types.size()-1) out << "-";
-    }
-    if (!properties.empty()) {
-      out << ", properties: [";
-      for (size_t i = 0; i < properties.size(); ++i) {
-        out << "\"" << properties[i].first << "\": ";
-        for (size_t j = 0; j < properties[i].second.size(); ++j) {
-          out << "\"" << properties[i].second[j] << "\"";
-          if (j < properties[i].second.size()-1) out << ":";
-        }
-        if (i < properties.size()-1) out << ", ";
-        else out << "]";
+  if (name == "_" && types.empty()) {
+    types.push_back(0);
+    properties[0].second.push_back("dummy");
+  }
+}
+reagent::reagent() :value(0), initialized(false) {
+  // The first property is special, so ensure we always have it.
+  // Other properties can be pushed back, but the first must always be
+  // assigned to.
+  properties.push_back(pair<string, vector<string> >("", vector<string>()));
+}
+string reagent::to_string() const {
+  ostringstream out;
+  out << "{name: \"" << name << "\", value: " << value << ", type: ";
+  for (size_t i = 0; i < types.size(); ++i) {
+    out << types[i];
+    if (i < types.size()-1) out << "-";
+  }
+  if (!properties.empty()) {
+    out << ", properties: [";
+    for (size_t i = 0; i < properties.size(); ++i) {
+      out << "\"" << properties[i].first << "\": ";
+      for (size_t j = 0; j < properties[i].second.size(); ++j) {
+        out << "\"" << properties[i].second[j] << "\"";
+        if (j < properties[i].second.size()-1) out << ":";
       }
+      if (i < properties.size()-1) out << ", ";
+      else out << "]";
     }
-    out << "}";
-    return out.str();
   }
+  out << "}";
+  return out.str();
+}
 
 string slurp_until(istream& in, char delim) {
   ostringstream out;
