@@ -1,9 +1,9 @@
-//: Records contain a fixed number of elements of different types.
+//: Containers contain a fixed number of elements of different types.
 :(before "End Mu Types Initialization")
-//: We'll use this record as a running example, with two integer elements
+//: We'll use this container as a running example, with two integer elements.
 int point = Type_number["point"] = Next_type_number++;
 Type[point].size = 2;
-Type[point].is_record = true;
+Type[point].kind = container;
 Type[point].name = "point";
 vector<type_number> i;
 i.push_back(integer);
@@ -11,7 +11,7 @@ Type[point].elements.push_back(i);
 Type[point].elements.push_back(i);
 
 :(scenario copy_multiple_locations)
-# Records can be copied around with a single instruction just like integers,
+# Containers can be copied around with a single instruction just like integers,
 # no matter how large they are.
 recipe main [
   1:integer <- copy 34:literal
@@ -25,10 +25,11 @@ recipe main [
 +mem: storing 35 in location 4
 
 :(before "End Mu Types Initialization")
-// A more complex record, containing another record.
+// A more complex container, containing another container as one of its
+// elements.
 int point_integer = Type_number["point-integer"] = Next_type_number++;
 Type[point_integer].size = 2;
-Type[point_integer].is_record = true;
+Type[point_integer].kind = container;
 Type[point_integer].name = "point-integer";
 vector<type_number> p2;
 p2.push_back(point);
@@ -37,7 +38,7 @@ vector<type_number> i2;
 i2.push_back(integer);
 Type[point_integer].elements.push_back(i2);
 
-:(scenario "copy_handles_nested_record_elements")
+:(scenario "copy_handles_nested_container_elements")
 recipe main [
   12:integer <- copy 34:literal
   13:integer <- copy 35:literal
@@ -48,7 +49,7 @@ recipe main [
 
 :(before "End size_of(types) Cases")
 type_info t = Type[types[0]];
-if (t.is_record) {
+if (t.kind == container) {
   size_t result = 0;
   for (size_t i = 0; i < t.elements.size(); ++i) {
     result += size_of(t.elements[i]);
@@ -56,7 +57,7 @@ if (t.is_record) {
   return result;
 }
 
-//: To access elements of a record, use 'get'
+//: To access elements of a container, use 'get'
 :(scenario "get")
 recipe main [
   12:integer <- copy 34:literal
@@ -84,7 +85,7 @@ case GET: {
   reagent base = instructions[pc].ingredients[0];
   int base_address = base.value;
   int base_type = base.types[0];
-  assert(Type[base_type].is_record);
+  assert(Type[base_type].kind == container);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
   assert(isa_literal(instructions[pc].ingredients[1]));
   size_t offset = instructions[pc].ingredients[1].value;
@@ -93,7 +94,7 @@ case GET: {
     src += size_of(Type[base_type].elements[i]);
   }
   trace("run") << "address to copy is " << src;
-  assert(Type[base_type].is_record);
+  assert(Type[base_type].kind == container);
   assert(Type[base_type].elements.size() > offset);
   int src_type = Type[base_type].elements[offset][0];
   trace("run") << "its type is " << src_type;
@@ -111,7 +112,7 @@ case GET: {
 :(before "End Mu Types Initialization")
 Type_number["offset"] = 0;
 
-:(scenario "get_handles_nested_record_elements")
+:(scenario "get_handles_nested_container_elements")
 recipe main [
   12:integer <- copy 34:literal
   13:integer <- copy 35:literal
@@ -128,7 +129,7 @@ recipe main [
 +mem: storing 36 in location 15
 
 :(before "End Globals")
-// To write to fields of records, you need their address.
+// To write to elements of containers, you need their address.
 const int GET_ADDRESS = 19;
 :(before "End Primitive Recipe Numbers")
 Recipe_number["get-address"] = GET_ADDRESS;
@@ -140,7 +141,7 @@ case GET_ADDRESS: {
   reagent base = instructions[pc].ingredients[0];
   int base_address = base.value;
   int base_type = base.types[0];
-  assert(Type[base_type].is_record);
+  assert(Type[base_type].kind == container);
   trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
   assert(isa_literal(instructions[pc].ingredients[1]));
   size_t offset = instructions[pc].ingredients[1].value;

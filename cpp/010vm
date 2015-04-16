@@ -89,6 +89,8 @@ void setup_types() {
   Type[boolean].name = "boolean";
   int character = Type_number["character"] = Next_type_number++;
   Type[character].name = "character";
+  // Array types are a special modifier to any other type. For example,
+  // array:integer or array:address:boolean.
   int array = Type_number["array"] = Next_type_number++;
   Type[array].name = "array";
   // End Mu Types Initialization
@@ -97,20 +99,30 @@ void setup_types() {
 setup_types();
 
 :(before "End Types")
-// You can construct arbitrary new types. Types are either 'records', containing
-// 'fields' of other types, or 'array's of a single type repeated over and over.
+// You can construct arbitrary new types. New types are either 'containers'
+// with multiple 'elements' of other types, or 'exclusive containers' containing
+// one of multiple 'variants'. (These are similar to C structs and unions,
+// respectively, though exclusive containers implicitly include a tag element
+// recording which variant they should be interpreted as.)
 //
-// For example:
-//  storing bank balance next to a person's name might require a record, and
-//  high scores in a game might need an array of numbers.
+// For example, storing bank balance and name for an account might require a
+// container, but if bank accounts may be either for individuals or groups,
+// with different properties for each, that may require an exclusive container
+// whose variants are individual-account and joint-account containers.
+enum kind_of_type {
+  primitive,
+  container,
+  exclusive_container
+};
+
 struct type_info {
   string name;
-  bool is_record;
-  size_t size;  // only if is_record; primitives and addresses have size 1 while arrays are dynamic
-  vector<vector<type_number> > elements;  // only if is_record
-  vector<string> element_names;  // only if is_record
+  kind_of_type kind;
+  size_t size;  // only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)
+  vector<vector<type_number> > elements;
+  vector<string> element_names;
   // End type_info Fields
-  type_info() :is_record(false), size(0) {}
+  type_info() :kind(primitive), size(0) {}
 };
 
 :(before "End Globals")
