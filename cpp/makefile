@@ -22,6 +22,7 @@ test: mu
 	./mu test
 
 function_list: mu.cc
+                                # skip methods
 	@grep -h "^[^ #].*) {" mu.cc |grep -v ":.*(" |perl -pwe 's/ {.*/;/' > function_list
 	@grep -h "^[[:space:]]*TEST(" mu.cc |perl -pwe 's/^\s*TEST\((.*)\)$$/void test_$$1();/' >> function_list
 
