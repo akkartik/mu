@@ -48,6 +48,22 @@ void test_tangle_with_multiple_filenames_after() {
 //?   exit(0); //? 1
 }
 
+void test_tangle_skip_tanglecomments() {
+  istringstream in("a\nb\nc\n//: 1\n//: 2\nd\n");
+  list<string> dummy;
+  tangle(in, dummy);
+  CHECK_TRACE_CONTENTS("tangle", "abcd");
+  CHECK_TRACE_DOESNT_CONTAIN("tangle", "//: 1");
+}
+
+void test_tangle_with_tanglecomments_and_directive() {
+  istringstream in("a\n//: 1\nb\nc\n:(before b)\nd\n:(code)\ne\n");
+  list<string> dummy;
+  tangle(in, dummy);
+  CHECK_TRACE_CONTENTS("tangle", "a#line 6d#line 3bc#line 8e");
+  CHECK_TRACE_DOESNT_CONTAIN("tangle", "//: 1");
+}
+
 void test_tangle2() {
   istringstream in("a\nb\nc\n:(after b)\nd\n");
   list<string> dummy;

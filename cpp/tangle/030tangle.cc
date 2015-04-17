@@ -1,3 +1,7 @@
+// Reorder a file based on directives starting with ':(' (tangle directives).
+// Insert #line directives to preserve line numbers in the original.
+// Clear lines starting with '//:' (tangle comments).
+
 #include<assert.h>
 #include<sys/param.h>
 
@@ -27,6 +31,10 @@ void tangle(istream& in, list<string>& out) {
       process_next_hunk(in, trim(curr_line), out);
     else
       out.push_back(curr_line);
+  }
+  for (list<string>::iterator p = out.begin(); p != out.end(); ++p) {
+    if (starts_with(*p, "//:"))
+      p->clear();  // leave the empty lines around so as to not mess up #line numbers
   }
   trace_all("tangle", out);
 }
