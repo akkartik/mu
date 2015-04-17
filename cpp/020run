@@ -1,3 +1,14 @@
+//: Once a recipe is loaded, we need to run it.
+//:
+//: So far we've seen recipes as lists of instructions, and instructions point
+//: at other recipes. To kick things off mu needs to know how to run certain
+//: 'primitive' recipes. That will then give the ability to run recipes
+//: containing these primitives.
+//:
+//: This layer defines a skeleton with just two primitive recipes: IDLE which
+//: does nothing, and COPY, which can copy numbers from one memory location to
+//: another. Later layers will add more primitives.
+
 :(scenarios run)
 :(scenario copy_literal)
 recipe main [
@@ -66,6 +77,7 @@ void run(routine rr) {
 //: Some helpers.
 //: We'll need to override these later as we change the definition of routine.
 //: Important that they return referrences into the routine.
+
 inline size_t& running_at(routine& rr) {
   return rr.running_at;
 }
@@ -115,9 +127,8 @@ void load(string filename) {
 load("core.mu");
 recently_added_recipes.clear();  // freeze everything so it doesn't get cleared by tests
 
-//: helper for tests
-
 :(code)
+// helper for tests
 void run(string form) {
   vector<recipe_number> tmp = add_recipes(form);
   transform_all();

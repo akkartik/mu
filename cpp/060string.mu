@@ -1,3 +1,5 @@
+# Some useful helpers for dealing with strings
+
 recipe string-equal [
   default-space:address:space <- new location:type, 30:literal
   a:address:array:character <- next-ingredient
