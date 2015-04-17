@@ -1,6 +1,9 @@
 #!/usr/bin/env zsh
 # Helper to change the numerical prefixes across the repo, say if you want to
 # create room between 023 and 024, and so on.
+#
+# Assumes there's only ever one file with any numeric prefix. If you move
+# 002trace.tests you might need to do some manual patch-up.
 
 setopt extendedglob
 
@@ -20,7 +23,7 @@ fi
 #
 
 index=0
-ls [0-9]* |grep -v "^002trace.tests$" |sort -n |perl -pwe 's/\..*//' |
+ls [0-9]* |grep -v "^002trace.tests$" |sort -n
   while read file
   do
     echo $file >&2
@@ -38,7 +41,7 @@ vim -c "set nu" .layout
 #
 
 root() {
-  echo $1 |perl -pwe 's/^[0-9]*//' |perl -pwe 's/\..*//'
+  echo $1 |perl -pwe 's/^[0-9]*//'
 }
 
 index=0
