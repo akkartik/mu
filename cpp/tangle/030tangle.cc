@@ -2,9 +2,6 @@
 // Insert #line directives to preserve line numbers in the original.
 // Clear lines starting with '//:' (tangle comments).
 
-#include<assert.h>
-#include<sys/param.h>
-
 size_t Line_number = 0;
 string Filename;
 
@@ -84,7 +81,7 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
   if (cmd == "before" || cmd == "after" || cmd == "replace" || cmd == "replace{}" || cmd == "delete" || cmd == "delete{}") {
     list<string>::iterator target = locate_target(out, directive_stream);
     if (target == out.end()) {
-      RAISE << "Couldn't find target " << directive << '\n' << die();
+      raise << "Couldn't find target " << directive << '\n' << die();
       return;
     }
 
@@ -131,7 +128,7 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
     return;
   }
 
-  RAISE << "unknown directive " << cmd << '\n';
+  raise << "unknown directive " << cmd << '\n';
 }
 
 list<string>::iterator locate_target(list<string>& out, istream& directive_stream) {
@@ -158,7 +155,7 @@ list<string>::iterator locate_target(list<string>& out, istream& directive_strea
     if (pat2 == "") return out.end();
     return find_substr(out, intermediate, pat2);
   }
-  RAISE << "unknown keyword in directive: " << next_token << '\n';
+  raise << "unknown keyword in directive: " << next_token << '\n';
   return out.end();
 }
 
@@ -339,9 +336,6 @@ bool any_non_input_line(const list<string>& lines) {
     if (!is_input(*p)) return true;
   return false;
 }
-
-#include <locale>
-using std::isspace;  // unicode-aware
 
 // does s start with pat, after skipping whitespace?
 // pat can't start with whitespace

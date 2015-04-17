@@ -1,9 +1,11 @@
 #define unused __attribute__((unused))
 
+#include<assert.h>
 #include<cstdio>
 #include<cstring>
 #include<cstdlib>
 #include<errno.h>
+#include<sys/param.h>
 #include<time.h>
 #include<math.h>
 #include<vector>
@@ -41,6 +43,9 @@ using std::ostringstream;
 #include<fstream>
 using std::ifstream;
 using std::ofstream;
+
+#include <locale>
+using std::isspace;  // unicode-aware
 
 
 
