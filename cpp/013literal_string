@@ -61,31 +61,3 @@ recipe main [
   1:address:array:character <- new [abc [def]]
 ]
 +parse:   ingredient: {name: "abc [def]", value: 0, type: 0, properties: ["abc [def]": "literal-string"]}
-
-//: Next, extend 'new' to handle a string literal argument.
-:(scenario "new_string")
-recipe main [
-  1:address:array:character <- new [abc def]
-  2:character <- index 1:address:array:character/deref, 5:literal
-]
-# integer code for 'e'
-+mem: storing 101 in location 2
-
-:(before "End Mu Types Initialization")
-Type_number["character"] = Next_type_number++;
-
-:(after "case NEW" following "Primitive Recipe Implementations")
-if (instructions[pc].ingredients[0].properties[0].second[0] == "literal-string") {
-  // allocate an array just large enough for it
-  vector<int> result;
-  result.push_back(Current_routine->alloc);
-  write_memory(instructions[pc].products[0], result);
-  // assume that all characters fit in a single location
-//?   cout << "new string literal: " << instructions[pc].ingredients[0].name << '\n'; //? 1
-  Memory[Current_routine->alloc++] = instructions[pc].ingredients[0].name.size();
-  for (size_t i = 0; i < instructions[pc].ingredients[0].name.size(); ++i) {
-    Memory[Current_routine->alloc++] = instructions[pc].ingredients[0].name[i];
-  }
-  // mu strings are not null-terminated in memory
-  break;
-}
