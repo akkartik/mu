@@ -31,7 +31,7 @@ if (x.types[0] != Type_number["array"] && size_of(x) != data.size())
     return 1 + Memory[r.value]*size_of(array_element(r.types));
   }
 
-//: array elements are accessed using 'index'
+//: To access elements of an array, use 'index'
 :(scenario "index")
 recipe main [
   1:integer <- copy 3:literal
@@ -47,7 +47,6 @@ recipe main [
 +run: product 0 is 14
 +mem: storing 14 in location 5
 
-//: array elements are accessed using 'index'
 :(scenario "index_direct_offset")
 recipe main [
   1:integer <- copy 3:literal
@@ -64,13 +63,10 @@ recipe main [
 +run: product 0 is 14
 +mem: storing 14 in location 6
 
-:(before "End Globals")
-// Operator to look at elements of arrays.
-const int INDEX = 20;
+:(before "End Primitive Recipe Declarations")
+INDEX,
 :(before "End Primitive Recipe Numbers")
 Recipe_number["index"] = INDEX;
-assert(Next_recipe_number == INDEX);
-Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
   static const int ARRAY = Type_number["array"];
@@ -116,13 +112,25 @@ recipe main [
 +run: address to copy is 2
 +mem: storing 2 in location 5
 
-:(before "End Globals")
-// To write to elements of containers, you need their address.
-const int INDEX_ADDRESS = 21;
+//: To write to elements of containers, you need their address.
+
+:(scenario "index_indirect")
+recipe main [
+  1:integer <- copy 3:literal
+  2:integer <- copy 14:literal
+  3:integer <- copy 15:literal
+  4:integer <- copy 16:literal
+  5:address:array:integer <- copy 1:literal
+  6:integer <- index 5:address:array:integer/deref, 1:literal
+]
++run: instruction main/5
++mem: storing 15 in location 6
+// vim:ft=cpp
+
+:(before "End Primitive Recipe Declarations")
+INDEX_ADDRESS,
 :(before "End Primitive Recipe Numbers")
 Recipe_number["index-address"] = INDEX_ADDRESS;
-assert(Next_recipe_number == INDEX_ADDRESS);
-Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
   static const int ARRAY = Type_number["array"];
@@ -142,16 +150,3 @@ case INDEX_ADDRESS: {
   write_memory(instructions[pc].products[0], result);
   break;
 }
-
-:(scenario "index_indirect")
-recipe main [
-  1:integer <- copy 3:literal
-  2:integer <- copy 14:literal
-  3:integer <- copy 15:literal
-  4:integer <- copy 16:literal
-  5:address:array:integer <- copy 1:literal
-  6:integer <- index 5:address:array:integer/deref, 1:literal
-]
-+run: instruction main/5
-+mem: storing 15 in location 6
-// vim:ft=cpp
