@@ -73,12 +73,10 @@ recipe main [
 +run: product 0 is 35
 +mem: storing 35 in location 15
 
-:(before "End Globals")
-const int GET = 18;
+:(before "End Primitive Recipe Declarations")
+GET,
 :(before "End Primitive Recipe Numbers")
 Recipe_number["get"] = GET;
-assert(Next_recipe_number == GET);
-Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
 case GET: {
   trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
@@ -128,13 +126,24 @@ recipe main [
 +run: product 0 is 36
 +mem: storing 36 in location 15
 
-:(before "End Globals")
-// To write to elements of containers, you need their address.
-const int GET_ADDRESS = 19;
+//: To write to elements of containers, you need their address.
+
+:(scenario "get_address")
+recipe main [
+  12:integer <- copy 34:literal
+  13:integer <- copy 35:literal
+  15:address:integer <- get-address 12:point, 1:offset
+]
++run: instruction main/2
++run: ingredient 0 is 12
++run: ingredient 1 is 1
++run: address to copy is 13
++mem: storing 13 in location 15
+
+:(before "End Primitive Recipe Declarations")
+GET_ADDRESS,
 :(before "End Primitive Recipe Numbers")
 Recipe_number["get-address"] = GET_ADDRESS;
-assert(Next_recipe_number == GET_ADDRESS);
-Next_recipe_number++;
 :(before "End Primitive Recipe Implementations")
 case GET_ADDRESS: {
   trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
@@ -156,15 +165,3 @@ case GET_ADDRESS: {
   write_memory(instructions[pc].products[0], result);
   break;
 }
-
-:(scenario "get_address")
-recipe main [
-  12:integer <- copy 34:literal
-  13:integer <- copy 35:literal
-  15:address:integer <- get-address 12:point, 1:offset
-]
-+run: instruction main/2
-+run: ingredient 0 is 12
-+run: ingredient 1 is 1
-+run: address to copy is 13
-+mem: storing 13 in location 15

@@ -125,9 +125,12 @@ struct type_info {
   type_info() :kind(primitive), size(0) {}
 };
 
-:(before "End Globals")
-const int IDLE = 0;  // always the first entry in the recipe book
-const int COPY = 1;
+enum primitive_recipes {
+  IDLE = 0,
+  COPY,
+  // End Primitive Recipe Declarations
+  MAX_PRIMITIVE_RECIPES,
+};
 :(code)
 // It's all very well to construct recipes out of other recipes, but we need
 // to know how to do *something* out of the box. For the following
@@ -135,14 +138,9 @@ const int COPY = 1;
 // what to do for them.
 void setup_recipes() {
   Recipe.clear();  Recipe_number.clear();
-  Next_recipe_number = 0;
   Recipe_number["idle"] = IDLE;
-  assert(Next_recipe_number == IDLE);
-  Next_recipe_number++;
   // Primitive Recipe Numbers
   Recipe_number["copy"] = COPY;
-  assert(Next_recipe_number == COPY);
-  Next_recipe_number++;
   // End Primitive Recipe Numbers
 }
 //: We could just reset the recipe table after every test, but that gets slow
@@ -151,7 +149,7 @@ void setup_recipes() {
 //: itself.
 :(before "End One-time Setup")
 setup_recipes();
-assert(Next_recipe_number < 100);  // level 0 is primitives; until 99
+assert(MAX_PRIMITIVE_RECIPES < 100);  // level 0 is primitives; until 99
 Next_recipe_number = 100;
 // End Load Recipes
 // give tests a consistent starting point
