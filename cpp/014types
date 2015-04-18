@@ -31,10 +31,8 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   t.name = name;
   t.kind = kind;
   while (!in.eof()) {
-    skip_comments_and_newlines(in);
-    skip_whitespace(in);
+    skip_whitespace_and_comments(in);
     string element = next_word(in);
-    skip_comments_and_newlines(in);
     if (element == "]") break;
     istringstream inner(element);
     t.element_names.push_back(slurp_until(inner, ':'));
@@ -81,9 +79,24 @@ for (size_t i = 0; i < recently_added_types.size(); ++i) {
   Type.erase(recently_added_types[i]);
 }
 recently_added_types.clear();
+//: lastly, ensure scenarios are consistent by always starting them at the
+//: same type number.
 Next_type_number = 1000;
 :(before "End One-time Setup")
 assert(Next_type_number < 1000);
 Next_type_number = 1000;
 
-//: lastly, ensure scenarios are consistent by always starting 
+:(code)
+void skip_bracket(istream& in, string message) {
+  skip_whitespace(in);  skip_comments_and_newlines(in);  skip_whitespace(in);
+  if (in.get() != '[')
+    raise << message << '\n';
+}
+
+void skip_whitespace_and_comments(istream& in) {
+  while (true) {
+    if (isspace(in.peek())) in.get();
+    else if (in.peek() == '#') skip_comment(in);
+    else break;
+  }
+}
