@@ -22,6 +22,8 @@ setlocal iskeyword=@,48-57,?,!,_,$,-
 
 syntax match muComment /#.*$/ | highlight link muComment Comment
 syntax match muSalientComment /##.*$/ | highlight link muSalientComment SalientComment
+syntax match muComment /;.*$/ | highlight link muComment Comment
+syntax match muSalientComment /;;.*$/ | highlight link muSalientComment SalientComment
 set comments+=n:#
 syntax match CommentedCode "#? .*"
 let b:cmt_head = "#? "
