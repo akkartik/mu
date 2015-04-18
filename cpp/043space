@@ -52,6 +52,8 @@ reagent absolutize(reagent x) {
 :(before "return result" following "reagent deref(reagent x)")
 result.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
 
+//:: fix 'get'
+
 :(scenario "deref_sidesteps_default_space_in_get")
 recipe main [
   # pretend pointer to container from outside
@@ -68,6 +70,8 @@ recipe main [
 
 :(after "reagent tmp" following "case GET:")
 tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
+
+//:: fix 'index'
 
 :(scenario "deref_sidesteps_default_space_in_index")
 recipe main [
@@ -86,6 +90,8 @@ recipe main [
 
 :(after "reagent tmp" following "case INDEX:")
 tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
+
+//:: helpers
 
 :(code)
 int space_base(const reagent& x) {
