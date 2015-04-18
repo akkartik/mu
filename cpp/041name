@@ -134,6 +134,8 @@ recipe main [
 ]
 -name: assign x 1
 
+//: Support element names for containers in 'get' and 'get-address'.
+
 //: update our running example container for the next test
 :(before "End Mu Types Initialization")
 Type[point].element_names.push_back("x");
@@ -156,9 +158,9 @@ if (inst.operation == Recipe_number["get"]
   assert(isa_literal(inst.ingredients[1]));
   if (inst.ingredients[1].name.find_first_not_of("0123456789") == string::npos) continue;
   // since first non-address in base type must be a container, we don't have to canonize
-  type_number container = skip_addresses(inst.ingredients[0].types);
-  inst.ingredients[1].set_value(find_element_name(container, inst.ingredients[1].name));
-  trace("name") << "element " << inst.ingredients[1].name << " of type " << Type[container].name << " is at offset " << inst.ingredients[1].value;
+  type_number base_type = skip_addresses(inst.ingredients[0].types);
+  inst.ingredients[1].set_value(find_element_name(base_type, inst.ingredients[1].name));
+  trace("name") << "element " << inst.ingredients[1].name << " of type " << Type[base_type].name << " is at offset " << inst.ingredients[1].value;
 }
 
 //: this test is actually illegal so can't call run
@@ -170,3 +172,29 @@ recipe main [
 ]
 +name: assign a 1
 +name: assign b 3
+
+//: Support variant names for exclusive containers in 'maybe-convert'.
+
+:(scenarios run)
+:(scenario "maybe_convert_named")
+recipe main [
+  12:integer <- copy 1:literal
+  13:integer <- copy 35:literal
+  14:integer <- copy 36:literal
+  20:address:point <- maybe-convert 12:integer-or-point, p:variant
+]
++name: variant p of type integer-or-point has tag 1
++mem: storing 13 in location 20
+
+:(after "Per-recipe Transforms")
+// convert variant names of exclusive containers
+if (inst.operation == Recipe_number["maybe-convert"]) {
+  // at least 2 args, and second arg is offset
+  assert(inst.ingredients.size() >= 2);
+  assert(isa_literal(inst.ingredients[1]));
+  if (inst.ingredients[1].name.find_first_not_of("0123456789") == string::npos) continue;
+  // since first non-address in base type must be an exclusive container, we don't have to canonize
+  type_number base_type = skip_addresses(inst.ingredients[0].types);
+  inst.ingredients[1].set_value(find_element_name(base_type, inst.ingredients[1].name));
+  trace("name") << "variant " << inst.ingredients[1].name << " of type " << Type[base_type].name << " has tag " << inst.ingredients[1].value;
+}
