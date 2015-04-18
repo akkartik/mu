@@ -96,3 +96,20 @@ scenario string-equal-common-lengths-but-distinct [
     3 <- 0  # abc != abd
   ]
 ]
+
+# A new type to help incrementally construct strings.
+container buffer [
+  length:integer
+  data:address:array:character
+]
+
+recipe init-buffer [
+  default-space:address:space <- new location:type, 30:literal
+  result:address:buffer <- new buffer:type
+  len:address:integer <- get-address result:address:buffer/deref, length:offset
+  len:address:integer/deref <- copy 0:literal
+  s:address:address:array:character <- get-address result:address:buffer/deref, data:offset
+  capacity:integer <- next-ingredient
+  s:address:address:array:character/deref <- new character:type, capacity:integer
+  reply result:address:buffer
+]
