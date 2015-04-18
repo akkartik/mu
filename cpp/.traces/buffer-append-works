@@ -32,12 +32,35 @@ parse/0:   product: {name: "1", value: 0, type: 3, properties: ["1": "boolean", 
 parse/0: instruction: 1
 parse/0:   ingredient: {name: "s2", value: 0, type: 2-5-4, properties: ["s2": "address":"array":"character", "deref": ]}
 parse/0:   product: {name: "2", value: 0, type: 5-4, properties: ["2": "array":"character", "raw": ]}
+parse/0: label: +buffer-filled
+parse/0: instruction: 104
+parse/0:   ingredient: {name: "x", value: 0, type: 2-9, properties: ["x": "address":"buffer"]}
+parse/0:   ingredient: {name: "100", value: 0, type: 0, properties: ["100": "literal"]}
+parse/0:   product: {name: "x", value: 0, type: 2-9, properties: ["x": "address":"buffer"]}
+parse/0: instruction: 19
+parse/0:   ingredient: {name: "x", value: 0, type: 2-9, properties: ["x": "address":"buffer", "deref": ]}
+parse/0:   ingredient: {name: "data", value: 0, type: 0, properties: ["data": "offset"]}
+parse/0:   product: {name: "s3", value: 0, type: 2-5-4, properties: ["s3": "address":"array":"character"]}
+parse/0: instruction: 13
+parse/0:   ingredient: {name: "s1", value: 0, type: 2-5-4, properties: ["s1": "address":"array":"character"]}
+parse/0:   ingredient: {name: "s3", value: 0, type: 2-5-4, properties: ["s3": "address":"array":"character"]}
+parse/0:   product: {name: "10", value: 0, type: 3, properties: ["10": "boolean", "raw": ]}
+parse/0: instruction: 19
+parse/0:   ingredient: {name: "x", value: 0, type: 2-9, properties: ["x": "address":"buffer", "deref": ]}
+parse/0:   ingredient: {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
+parse/0:   product: {name: "11", value: 0, type: 1, properties: ["11": "integer", "raw": ]}
+parse/0: instruction: 1
+parse/0:   ingredient: {name: "s3", value: 0, type: 2-5-4, properties: ["s3": "address":"array":"character", "deref": ]}
+parse/0:   product: {name: "12", value: 0, type: 5-4, properties: ["12": "array":"character", "raw": ]}
 new/0: location -> 1
 name/0: assign x 1
 name/0: element data of type buffer is at offset 1
 name/0: assign s1 2
 name/0: element data of type buffer is at offset 1
 name/0: assign s2 3
+name/0: element data of type buffer is at offset 1
+name/0: assign s3 4
+name/0: element length of type buffer is at offset 0
 after-brace/0: recipe test-buffer-append-works
 after-brace/0: new ...
 after-brace/0: init-buffer ...
@@ -47,6 +70,11 @@ after-brace/0: buffer-append ...
 after-brace/0: buffer-append ...
 after-brace/0: get ...
 after-brace/0: equal ...
+after-brace/0: copy ...
+after-brace/0: buffer-append ...
+after-brace/0: get ...
+after-brace/0: equal ...
+after-brace/0: get ...
 after-brace/0: copy ...
 run/0: instruction test-buffer-append-works/0
 mem/0: new alloc: 1000
@@ -419,3 +447,330 @@ mem/0: storing 3 in location 2
 mem/0: storing 97 in location 3
 mem/0: storing 98 in location 4
 mem/0: storing 99 in location 5
+run/0: instruction test-buffer-append-works/10
+mem/0: location 1002 is 1060
+run/0: instruction buffer-append/0
+mem/0: new alloc: 1245
+mem/0: array size is 30
+run/0: instruction buffer-append/1
+run/0: product 0 is 1060
+mem/0: storing 1060 in location 1247
+run/0: instruction buffer-append/2
+run/0: product 0 is 100
+mem/0: storing 100 in location 1248
+run/0: instruction buffer-append/4
+mem/0: location 1247 is 1060
+run/0: instruction buffer-full?/0
+mem/0: new alloc: 1275
+mem/0: array size is 30
+run/0: instruction buffer-full?/1
+run/0: product 0 is 1060
+mem/0: storing 1060 in location 1277
+run/0: instruction buffer-full?/2
+run/0: ingredient 0 is in
+mem/0: location 1277 is 1060
+run/0: ingredient 1 is length
+run/0: address to copy is 1060
+run/0: its type is 1
+mem/0: location 1060 is 3
+run/0: product 0 is 3
+mem/0: storing 3 in location 1278
+run/0: instruction buffer-full?/3
+run/0: ingredient 0 is in
+mem/0: location 1277 is 1060
+run/0: ingredient 1 is data
+run/0: address to copy is 1061
+run/0: its type is 2
+mem/0: location 1061 is 1062
+run/0: product 0 is 1062
+mem/0: storing 1062 in location 1279
+run/0: instruction buffer-full?/4
+mem/0: location 1279 is 1062
+mem/0: storing 3 in location 1280
+run/0: instruction buffer-full?/5
+run/0: ingredient 0 is len
+mem/0: location 1278 is 3
+run/0: ingredient 1 is capacity
+mem/0: location 1280 is 3
+run/0: product 0 is 1
+mem/0: storing 1 in location 1281
+run/0: instruction buffer-full?/6
+mem/0: location 1281 is 1
+run/0: result 0 is 1
+mem/0: storing 1 in location 1249
+run/0: instruction buffer-append/5
+mem/0: location 1249 is 1
+run/0: ingredient 0 is 1
+run/0: jump-unless fell through
+run/0: instruction buffer-append/6
+mem/0: location 1247 is 1060
+run/0: instruction grow-buffer/0
+mem/0: new alloc: 1305
+mem/0: array size is 30
+run/0: instruction grow-buffer/1
+run/0: product 0 is 1060
+mem/0: storing 1060 in location 1307
+run/0: instruction grow-buffer/2
+run/0: ingredient 0 is in
+mem/0: location 1307 is 1060
+run/0: ingredient 1 is data
+run/0: address to copy is 1061
+run/0: product 0 is 1061
+mem/0: storing 1061 in location 1308
+run/0: instruction grow-buffer/3
+mem/0: location 1308 is 1061
+mem/0: location 1061 is 1062
+mem/0: storing 3 in location 1309
+run/0: instruction grow-buffer/4
+run/0: ingredient 0 is oldlen
+mem/0: location 1309 is 3
+run/0: ingredient 1 is 2
+run/0: ingredient 1 is 2
+run/0: product 0 is 6
+mem/0: storing 6 in location 1310
+run/0: instruction grow-buffer/5
+run/0: ingredient 0 is x
+mem/0: location 1308 is 1061
+mem/0: location 1061 is 1062
+mem/0: storing 1062 in location 1311
+run/0: instruction grow-buffer/6
+mem/0: new alloc: 1335
+mem/0: location 1308 is 1061
+mem/0: storing 1335 in location 1061
+mem/0: location 1310 is 6
+mem/0: array size is 6
+run/0: instruction grow-buffer/7
+run/0: ingredient 0 is 0
+mem/0: storing 0 in location 1312
+run/0: instruction grow-buffer/9
+run/0: ingredient 0 is i
+mem/0: location 1312 is 0
+run/0: ingredient 1 is oldlen
+mem/0: location 1309 is 3
+run/0: product 0 is 0
+mem/0: storing 0 in location 1313
+run/0: instruction grow-buffer/10
+mem/0: location 1313 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction grow-buffer/11
+run/0: ingredient 0 is {name: "olddata", value: 5, type: 2-5-4, properties: ["olddata": "address":"array":"character", "deref": ]}
+mem/0: location 1311 is 1062
+run/0: ingredient 1 is {name: "i", value: 6, type: 1, properties: ["i": "integer"]}
+mem/0: location 1312 is 0
+run/0: address to copy is 1063
+run/0: its type is 4
+mem/0: location 1063 is 97
+run/0: product 0 is 97
+mem/0: storing 97 in location 1314
+run/0: instruction grow-buffer/12
+run/0: ingredient 0 is x
+mem/0: location 1308 is 1061
+mem/0: location 1061 is 1335
+run/0: ingredient 1 is {name: "i", value: 6, type: 1, properties: ["i": "integer"]}
+mem/0: location 1312 is 0
+run/0: address to copy is 1336
+run/0: product 0 is 1336
+mem/0: storing 1336 in location 1315
+run/0: instruction grow-buffer/13
+run/0: ingredient 0 is src
+mem/0: location 1314 is 97
+mem/0: location 1315 is 1336
+mem/0: storing 97 in location 1336
+run/0: instruction grow-buffer/14
+run/0: ingredient 0 is i
+mem/0: location 1312 is 0
+run/0: ingredient 1 is 1
+run/0: product 0 is 1
+mem/0: storing 1 in location 1312
+run/0: instruction grow-buffer/15
+run/0: ingredient 0 is -7
+run/0: pc now 8
+run/0: instruction grow-buffer/9
+run/0: ingredient 0 is i
+mem/0: location 1312 is 1
+run/0: ingredient 1 is oldlen
+mem/0: location 1309 is 3
+run/0: product 0 is 0
+mem/0: storing 0 in location 1313
+run/0: instruction grow-buffer/10
+mem/0: location 1313 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction grow-buffer/11
+run/0: ingredient 0 is {name: "olddata", value: 5, type: 2-5-4, properties: ["olddata": "address":"array":"character", "deref": ]}
+mem/0: location 1311 is 1062
+run/0: ingredient 1 is {name: "i", value: 6, type: 1, properties: ["i": "integer"]}
+mem/0: location 1312 is 1
+run/0: address to copy is 1064
+run/0: its type is 4
+mem/0: location 1064 is 98
+run/0: product 0 is 98
+mem/0: storing 98 in location 1314
+run/0: instruction grow-buffer/12
+run/0: ingredient 0 is x
+mem/0: location 1308 is 1061
+mem/0: location 1061 is 1335
+run/0: ingredient 1 is {name: "i", value: 6, type: 1, properties: ["i": "integer"]}
+mem/0: location 1312 is 1
+run/0: address to copy is 1337
+run/0: product 0 is 1337
+mem/0: storing 1337 in location 1315
+run/0: instruction grow-buffer/13
+run/0: ingredient 0 is src
+mem/0: location 1314 is 98
+mem/0: location 1315 is 1337
+mem/0: storing 98 in location 1337
+run/0: instruction grow-buffer/14
+run/0: ingredient 0 is i
+mem/0: location 1312 is 1
+run/0: ingredient 1 is 1
+run/0: product 0 is 2
+mem/0: storing 2 in location 1312
+run/0: instruction grow-buffer/15
+run/0: ingredient 0 is -7
+run/0: pc now 8
+run/0: instruction grow-buffer/9
+run/0: ingredient 0 is i
+mem/0: location 1312 is 2
+run/0: ingredient 1 is oldlen
+mem/0: location 1309 is 3
+run/0: product 0 is 0
+mem/0: storing 0 in location 1313
+run/0: instruction grow-buffer/10
+mem/0: location 1313 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction grow-buffer/11
+run/0: ingredient 0 is {name: "olddata", value: 5, type: 2-5-4, properties: ["olddata": "address":"array":"character", "deref": ]}
+mem/0: location 1311 is 1062
+run/0: ingredient 1 is {name: "i", value: 6, type: 1, properties: ["i": "integer"]}
+mem/0: location 1312 is 2
+run/0: address to copy is 1065
+run/0: its type is 4
+mem/0: location 1065 is 99
+run/0: product 0 is 99
+mem/0: storing 99 in location 1314
+run/0: instruction grow-buffer/12
+run/0: ingredient 0 is x
+mem/0: location 1308 is 1061
+mem/0: location 1061 is 1335
+run/0: ingredient 1 is {name: "i", value: 6, type: 1, properties: ["i": "integer"]}
+mem/0: location 1312 is 2
+run/0: address to copy is 1338
+run/0: product 0 is 1338
+mem/0: storing 1338 in location 1315
+run/0: instruction grow-buffer/13
+run/0: ingredient 0 is src
+mem/0: location 1314 is 99
+mem/0: location 1315 is 1338
+mem/0: storing 99 in location 1338
+run/0: instruction grow-buffer/14
+run/0: ingredient 0 is i
+mem/0: location 1312 is 2
+run/0: ingredient 1 is 1
+run/0: product 0 is 3
+mem/0: storing 3 in location 1312
+run/0: instruction grow-buffer/15
+run/0: ingredient 0 is -7
+run/0: pc now 8
+run/0: instruction grow-buffer/9
+run/0: ingredient 0 is i
+mem/0: location 1312 is 3
+run/0: ingredient 1 is oldlen
+mem/0: location 1309 is 3
+run/0: product 0 is 1
+mem/0: storing 1 in location 1313
+run/0: instruction grow-buffer/10
+mem/0: location 1313 is 1
+run/0: ingredient 0 is 1
+run/0: ingredient 1 is 
+run/0: jumping to instruction 16
+run/0: instruction grow-buffer/17
+mem/0: location 1307 is 1060
+run/0: result 0 is 1060
+mem/0: storing 1060 in location 1247
+run/0: instruction buffer-append/8
+run/0: ingredient 0 is in
+mem/0: location 1247 is 1060
+run/0: ingredient 1 is length
+run/0: address to copy is 1060
+run/0: product 0 is 1060
+mem/0: storing 1060 in location 1250
+run/0: instruction buffer-append/9
+run/0: ingredient 0 is in
+mem/0: location 1247 is 1060
+run/0: ingredient 1 is data
+run/0: address to copy is 1061
+run/0: its type is 2
+mem/0: location 1061 is 1335
+run/0: product 0 is 1335
+mem/0: storing 1335 in location 1251
+run/0: instruction buffer-append/10
+run/0: ingredient 0 is s
+mem/0: location 1251 is 1335
+run/0: ingredient 1 is {name: "len", value: 4, type: 2-1, properties: ["len": "address":"integer", "deref": ]}
+mem/0: location 1250 is 1060
+mem/0: location 1060 is 3
+run/0: address to copy is 1339
+run/0: product 0 is 1339
+mem/0: storing 1339 in location 1252
+run/0: instruction buffer-append/11
+run/0: ingredient 0 is c
+mem/0: location 1248 is 100
+mem/0: location 1252 is 1339
+mem/0: storing 100 in location 1339
+run/0: instruction buffer-append/12
+run/0: ingredient 0 is len
+mem/0: location 1250 is 1060
+mem/0: location 1060 is 3
+run/0: ingredient 1 is 1
+run/0: product 0 is 4
+mem/0: location 1250 is 1060
+mem/0: storing 4 in location 1060
+run/0: instruction buffer-append/13
+mem/0: location 1247 is 1060
+run/0: result 0 is 1060
+mem/0: storing 1060 in location 1002
+run/0: instruction test-buffer-append-works/11
+run/0: ingredient 0 is x
+mem/0: location 1002 is 1060
+run/0: ingredient 1 is data
+run/0: address to copy is 1061
+run/0: its type is 2
+mem/0: location 1061 is 1335
+run/0: product 0 is 1335
+mem/0: storing 1335 in location 1005
+run/0: instruction test-buffer-append-works/12
+run/0: ingredient 0 is s1
+mem/0: location 1003 is 1062
+run/0: ingredient 1 is s3
+mem/0: location 1005 is 1335
+run/0: product 0 is 0
+mem/0: storing 0 in location 10
+run/0: instruction test-buffer-append-works/13
+run/0: ingredient 0 is x
+mem/0: location 1002 is 1060
+run/0: ingredient 1 is length
+run/0: address to copy is 1060
+run/0: its type is 1
+mem/0: location 1060 is 4
+run/0: product 0 is 4
+mem/0: storing 4 in location 11
+run/0: instruction test-buffer-append-works/14
+run/0: ingredient 0 is s3
+mem/0: location 1005 is 1335
+mem/0: location 1335 is 6
+mem/0: location 1336 is 97
+mem/0: location 1337 is 98
+mem/0: location 1338 is 99
+mem/0: location 1339 is 100
+mem/0: location 1340 is 0
+mem/0: location 1341 is 0
+mem/0: storing 6 in location 12
+mem/0: storing 97 in location 13
+mem/0: storing 98 in location 14
+mem/0: storing 99 in location 15
+mem/0: storing 100 in location 16
+mem/0: storing 0 in location 17
+mem/0: storing 0 in location 18

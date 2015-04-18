@@ -204,12 +204,29 @@ scenario buffer-append-works [
 #?     $print [
 #? ]
     2:array:character/raw <- copy s2:address:array:character/deref
+    +buffer-filled
+    x:address:buffer <- buffer-append x:address:buffer, 100:literal  # 'd'
+    s3:address:array:character <- get x:address:buffer/deref, data:offset
+    10:boolean/raw <- equal s1:address:array:character, s3:address:array:character
+    11:integer/raw <- get x:address:buffer/deref, length:offset
+    12:array:character/raw <- copy s3:address:array:character/deref
   ]
   memory should contain [
+    # before +buffer-filled
     1 <- 1   # no change in data pointer
     2 <- 3   # size of data
     3 <- 97  # data
     4 <- 98
     5 <- 99
+    # in the end
+    10 <- 0   # data pointer has grown
+    11 <- 4   # final length
+    12 <- 6   # but data's capacity has doubled
+    13 <- 97  # data
+    14 <- 98
+    15 <- 99
+    16 <- 100
+    17 <- 0
+    18 <- 0
   ]
 ]
