@@ -53,7 +53,55 @@ if (t.kind == exclusive_container) {
   return result+1;
 }
 
+//: To access variants of an exclusive container, use 'maybe-convert'.
+//: It always returns an address (so that you can modify it) or null (to
+//: signal that the conversion failed (because the container contains a
+//: different variant).
+
+//: 'maybe-convert' requires a literal in ingredient 1. We'll use a synonym
+//: called 'variant'.
+:(before "End Mu Types Initialization")
+Type_number["variant"] = 0;
+
+:(scenario "maybe_convert")
+recipe main [
+  12:integer <- copy 1:literal
+  13:integer <- copy 35:literal
+  14:integer <- copy 36:literal
+  20:address:point <- maybe-convert 12:integer-or-point, 1:variant
+]
++mem: storing 13 in location 20
+
+:(scenario "maybe_convert_fail")
+recipe main [
+  12:integer <- copy 1:literal
+  13:integer <- copy 35:literal
+  14:integer <- copy 36:literal
+  20:address:point <- maybe-convert 12:integer-or-point, 0:variant
+]
++mem: storing 0 in location 20
+
 :(before "End Primitive Recipe Declarations")
 MAYBE_CONVERT,
 :(before "End Primitive Recipe Numbers")
 Recipe_number["maybe-convert"] = MAYBE_CONVERT;
+:(before "End Primitive Recipe Implementations")
+case MAYBE_CONVERT: {
+  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
+  reagent base = canonize(instructions[pc].ingredients[0]);
+  int base_address = base.value;
+  int base_type = base.types[0];
+  assert(Type[base_type].kind == exclusive_container);
+  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
+  assert(isa_literal(instructions[pc].ingredients[1]));
+  size_t tag = instructions[pc].ingredients[1].value;
+  vector<int> result;
+  if (tag == static_cast<size_t>(Memory[base_address])) {
+    result.push_back(base_address+1);
+  }
+  else {
+    result.push_back(0);
+  }
+  write_memory(instructions[pc].products[0], result);
+  break;
+}
