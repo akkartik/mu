@@ -19,6 +19,7 @@ function! HighlightTangledFile()
   " regular comments.
   syntax match muComment /#.*$/ | highlight link muComment Comment
   syntax match muSalientComment /##.*$/ | highlight link muSalientComment SalientComment
+  syntax match muCommentedCode /#? .*$/ | highlight link muCommentedCode CommentedCode
   " Tangled comments only make sense in the sources and are stripped out of
   " the generated .cc file. They're highlighted same as regular comments.
   syntax match tangledComment /\/\/:.*/ | highlight link tangledComment Comment
