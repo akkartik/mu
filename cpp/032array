@@ -25,6 +25,26 @@ recipe main [
 +mem: storing 15 in location 7
 +mem: storing 16 in location 8
 
+:(scenario copy_array_indirect)
+recipe main [
+  1:integer <- copy 3:literal
+  2:integer <- copy 14:literal
+  3:integer <- copy 15:literal
+  4:integer <- copy 16:literal
+  5:address:array:integer <- copy 1:literal
+  6:array:integer <- copy 5:address:array:integer/deref
+]
++run: instruction main/5
++run: ingredient 0 is 5
++mem: location 1 is 3
++mem: location 2 is 14
++mem: location 3 is 15
++mem: location 4 is 16
++mem: storing 3 in location 6
++mem: storing 14 in location 7
++mem: storing 15 in location 8
++mem: storing 16 in location 9
+
 //: disable the size mismatch check since the destination array need not be initialized
 :(replace "if (size_of(x) != data.size())" following "void write_memory(reagent x, vector<int> data)")
 if (x.types[0] != Type_number["array"] && size_of(x) != data.size())
