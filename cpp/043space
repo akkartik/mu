@@ -16,12 +16,12 @@ recipe main [
 :(scenario "deref_sidesteps_default_space")
 recipe main [
   # pretend pointer from outside
-  7:integer <- copy 34:literal
+  3:integer <- copy 34:literal
   # pretend array
-  10:integer <- copy 5:literal
+  1000:integer <- copy 5:literal
   # actual start of this function
-  default-space:address:space <- copy 10:literal
-  1:address:integer <- copy 7:literal
+  default-space:address:space <- copy 1000:literal
+  1:address:integer <- copy 3:literal
   8:integer/raw <- copy 1:address:integer/deref
 ]
 +mem: storing 34 in location 8
@@ -37,7 +37,7 @@ reagent r = absolutize(x);
 reagent absolutize(reagent x) {
 //?   if (Recipe_number.find("increment-counter") != Recipe_number.end()) //? 1
 //?     cout << "AAA " << "increment-counter/2: " << Recipe[Recipe_number["increment-counter"]].steps[2].products[0].to_string() << '\n'; //? 1
-//?   cout << "absolutize " << x.to_string() << '\n'; //? 3
+//?   cout << "absolutize " << x.to_string() << '\n'; //? 4
 //?   cout << is_raw(x) << '\n'; //? 1
   if (is_raw(x) || is_dummy(x)) return x;
 //?   cout << "not raw: " << x.to_string() << '\n'; //? 1
@@ -51,6 +51,41 @@ reagent absolutize(reagent x) {
 }
 :(before "return result" following "reagent deref(reagent x)")
 result.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
+
+:(scenario "deref_sidesteps_default_space_in_get")
+recipe main [
+  # pretend pointer to container from outside
+  12:integer <- copy 34:literal
+  13:integer <- copy 35:literal
+  # pretend array
+  1000:integer <- copy 5:literal
+  # actual start of this function
+  default-space:address:space <- copy 1000:literal
+  1:address:point <- copy 12:literal
+  9:integer/raw <- get 1:address:point/deref, 1:offset
+]
++mem: storing 35 in location 9
+
+:(after "reagent tmp" following "case GET:")
+tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
+
+:(scenario "deref_sidesteps_default_space_in_index")
+recipe main [
+  # pretend pointer to array from outside
+  12:integer <- copy 2:literal
+  13:integer <- copy 34:literal
+  14:integer <- copy 35:literal
+  # pretend array
+  1000:integer <- copy 5:literal
+  # actual start of this function
+  default-space:address:space <- copy 1000:literal
+  1:address:array:integer <- copy 12:literal
+  9:integer/raw <- index 1:address:array:integer/deref, 1:literal
+]
++mem: storing 35 in location 9
+
+:(after "reagent tmp" following "case INDEX:")
+tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
 
 :(code)
 int space_base(const reagent& x) {
