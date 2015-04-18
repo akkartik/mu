@@ -32,7 +32,8 @@ syntax region muString start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=@Spell
 highlight link muString String
 
 syntax match muDelimiter "[{}\[\]]" | highlight link muDelimiter Delimiter
-syntax match muAssign "<-" | highlight link muAssign SpecialChar
+syntax match muLabel " [^a-zA-Z0-9 \[][a-zA-Z0-9-]\+" | highlight link muLabel Function
+syntax match muAssign " <- " | highlight link muAssign SpecialChar
 syntax match muAssign "\<raw\>"
 syntax keyword muControl reply jump jump-if jump-unless loop loop-if loop-unless break-if break-unless | highlight link muControl Function
 " common keywords
