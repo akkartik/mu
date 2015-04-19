@@ -230,3 +230,96 @@ scenario buffer-append-works [
     18 <- 0
   ]
 ]
+
+# result:address:array:character <- integer-to-decimal-string n:integer
+recipe integer-to-decimal-string [
+  default-space:address:space <- new location:type, 30:literal
+  n:integer <- next-ingredient
+  # is it zero?
+  {
+    break-if n:integer
+    result:address:array:character <- new [0]
+    reply result:address:array:character
+  }
+  # save sign
+  negate-result:boolean <- copy 0:literal
+  {
+    negative?:boolean <- less-than n:integer, 0:literal
+    break-unless negative?:boolean
+    negate-result:boolean <- copy 1:literal
+    n:integer <- multiply n:integer -1:literal
+  }
+  # add digits from right to left into intermediate buffer
+  tmp:address:buffer <- init-buffer 30:literal
+  digit-base:integer <- copy 48:literal  # '0'
+  {
+    done?:boolean <- equal n:integer, 0:literal
+    break-if done?:boolean
+    n:integer, digit:integer <- divide-with-remainder n:integer, 10:literal
+    c:character <- add digit-base:integer, digit:integer
+    tmp:address:buffer <- buffer-append tmp:address:buffer, c:character
+    loop
+  }
+  # add sign
+  {
+    break-unless negate-result:boolean
+    tmp:address:buffer <- buffer-append tmp:address:buffer, 45:literal  # '-'
+  }
+  # reverse buffer into string result
+  len:integer <- get tmp:address:buffer/deref, length:offset
+  buf:address:array:character <- get tmp:address:buffer/deref data:offset
+  result:address:array:character <- new character:type, len:integer
+  i:integer <- subtract len:integer, 1:literal
+  j:integer <- copy 0:literal
+  {
+    # while i >= 0
+    done?:boolean <- less-than i:integer, 0:literal
+    break-if done?:boolean
+    # result[j] = tmp[i]
+    src:character <- index buf:address:array:character/deref, i:integer
+    dest:address:character <- index-address result:address:array:character/deref, j:integer
+    dest:address:character/deref <- copy src:character
+    # ++i
+    i:integer <- subtract i:integer, 1:literal
+    # --j
+    j:integer <- add j:integer, 1:literal
+    loop
+  }
+  reply result:address:array:character
+]
+
+scenario integer-to-decimal-digit-zero [
+  run [
+    1:address:array:character/raw <- integer-to-decimal-string 0:literal
+    2:array:character/raw <- copy 1:address:array:character/deref/raw
+  ]
+  memory should contain [
+    2 <- 1
+    3 <- 48  # '0'
+  ]
+]
+
+scenario integer-to-decimal-digit-positive [
+  run [
+    1:address:array:character/raw <- integer-to-decimal-string 234:literal
+    2:array:character/raw <- copy 1:address:array:character/deref/raw
+  ]
+  memory should contain [
+    2 <- 3
+    3 <- 50  # '2'
+    4 <- 51  # '3'
+    5 <- 52  # '4'
+  ]
+]
+
+scenario integer-to-decimal-digit-negative [
+  run [
+    1:address:array:character/raw <- integer-to-decimal-string -1:literal
+    2:array:character/raw <- copy 1:address:array:character/deref/raw
+  ]
+  memory should contain [
+    2 <- 2
+    3 <- 45  # '-'
+    4 <- 49  # '1'
+  ]
+]
