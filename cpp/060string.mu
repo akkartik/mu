@@ -1,7 +1,7 @@
 # Some useful helpers for dealing with strings.
 
 recipe string-equal [
-  default-space:address:space <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30:literal
   a:address:array:character <- next-ingredient
   a-len:integer <- length a:address:array:character/deref
   b:address:array:character <- next-ingredient
@@ -34,7 +34,7 @@ recipe string-equal [
 
 scenario string-equal-reflexive [
   run [
-    default-space:address:space <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30:literal
     x:address:array:character <- new [abc]
     3:boolean/raw <- string-equal x:address:array:character, x:address:array:character
   ]
@@ -45,7 +45,7 @@ scenario string-equal-reflexive [
 
 scenario string-equal-identical [
   run [
-    default-space:address:space <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30:literal
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abc]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
@@ -57,7 +57,7 @@ scenario string-equal-identical [
 
 scenario string-equal-distinct-lengths [
   run [
-    default-space:address:space <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30:literal
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abcd]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
@@ -75,7 +75,7 @@ scenario string-equal-distinct-lengths [
 
 scenario string-equal-with-empty [
   run [
-    default-space:address:space <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30:literal
     x:address:array:character <- new []
     y:address:array:character <- new [abcd]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
@@ -87,7 +87,7 @@ scenario string-equal-with-empty [
 
 scenario string-equal-common-lengths-but-distinct [
   run [
-    default-space:address:space <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30:literal
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abd]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
@@ -104,8 +104,8 @@ container buffer [
 ]
 
 recipe init-buffer [
-  default-space:address:space <- new location:type, 30:literal
-#?   $print default-space:address:space
+  default-space:address:array:location <- new location:type, 30:literal
+#?   $print default-space:address:array:location
 #?   $print [
 #? ]
   result:address:buffer <- new buffer:type
@@ -121,7 +121,7 @@ recipe init-buffer [
 ]
 
 recipe grow-buffer [
-  default-space:address:space <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30:literal
   in:address:buffer <- next-ingredient
   # double buffer size
   x:address:address:array:character <- get-address in:address:buffer/deref, data:offset
@@ -144,7 +144,7 @@ recipe grow-buffer [
 ]
 
 recipe buffer-full? [
-  default-space:address:space <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30:literal
   in:address:buffer <- next-ingredient
   len:integer <- get in:address:buffer/deref, length:offset
   s:address:array:character <- get in:address:buffer/deref, data:offset
@@ -155,7 +155,7 @@ recipe buffer-full? [
 
 # in:address:buffer <- buffer-append in:address:buffer, c:character
 recipe buffer-append [
-  default-space:address:space <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30:literal
   in:address:buffer <- next-ingredient
   c:character <- next-ingredient
   {
@@ -174,7 +174,7 @@ recipe buffer-append [
 
 scenario buffer-append-works [
   run [
-    default-space:address:space <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30:literal
     x:address:buffer <- init-buffer 3:literal
     s1:address:array:character <- get x:address:buffer/deref, data:offset
     x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
@@ -233,7 +233,7 @@ scenario buffer-append-works [
 
 # result:address:array:character <- integer-to-decimal-string n:integer
 recipe integer-to-decimal-string [
-  default-space:address:space <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30:literal
   n:integer <- next-ingredient
   # is it zero?
   {
@@ -325,7 +325,7 @@ scenario integer-to-decimal-digit-negative [
 ]
 
 recipe string-append [
-  default-space:address:space <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30:literal
   # result = new string[a.length + b.length]
   a:address:array:character <- next-ingredient
   a-len:integer <- length a:address:array:character/deref

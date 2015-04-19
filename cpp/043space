@@ -8,7 +8,7 @@
 # then location 0 is really location 11, location 1 is really location 12, and so on.
 recipe main [
   10:integer <- copy 5:literal  # pretend array; in practice we'll use new
-  default-space:address:space <- copy 10:literal
+  default-space:address:array:location <- copy 10:literal
   1:integer <- copy 23:literal
 ]
 +mem: storing 23 in location 12
@@ -20,7 +20,7 @@ recipe main [
   # pretend array
   1000:integer <- copy 5:literal
   # actual start of this function
-  default-space:address:space <- copy 1000:literal
+  default-space:address:array:location <- copy 1000:literal
   1:address:integer <- copy 3:literal
   8:integer/raw <- copy 1:address:integer/deref
 ]
@@ -62,7 +62,7 @@ recipe main [
   # pretend array
   1000:integer <- copy 5:literal
   # actual start of this function
-  default-space:address:space <- copy 1000:literal
+  default-space:address:array:location <- copy 1000:literal
   1:address:point <- copy 12:literal
   9:integer/raw <- get 1:address:point/deref, 1:offset
 ]
@@ -82,7 +82,7 @@ recipe main [
   # pretend array
   1000:integer <- copy 5:literal
   # actual start of this function
-  default-space:address:space <- copy 1000:literal
+  default-space:address:array:location <- copy 1000:literal
   1:address:array:integer <- copy 12:literal
   9:integer/raw <- index 1:address:array:integer/deref, 1:literal
 ]
@@ -118,8 +118,8 @@ int address(int offset, int base) {
 
 :(scenario "get_default_space")
 recipe main [
-  default-space:address:space <- copy 10:literal
-  1:integer/raw <- copy default-space:address:space
+  default-space:address:array:location <- copy 10:literal
+  1:integer/raw <- copy default-space:address:array:location
 ]
 +mem: storing 10 in location 1
 

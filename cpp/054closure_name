@@ -5,24 +5,24 @@
 
 :(scenario "closure")
 recipe main [
-  default-space:address:space <- new location:type, 30:literal
-  1:address:space/names:init-counter <- init-counter
+  default-space:address:array:location <- new location:type, 30:literal
+  1:address:array:location/names:init-counter <- init-counter
 #?   $print [AAAAAAAAAAAAAAAA]
-#?   $print 1:address:space
-  2:integer/raw <- increment-counter 1:address:space/names:init-counter
-  3:integer/raw <- increment-counter 1:address:space/names:init-counter
+#?   $print 1:address:array:location
+  2:integer/raw <- increment-counter 1:address:array:location/names:init-counter
+  3:integer/raw <- increment-counter 1:address:array:location/names:init-counter
 ]
 
 recipe init-counter [
-  default-space:address:space <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30:literal
   x:integer <- copy 23:literal
   y:integer <- copy 3:literal  # variable that will be incremented
-  reply default-space:address:space
+  reply default-space:address:array:location
 ]
 
 recipe increment-counter [
-  default-space:address:space <- new space:literal, 30:literal
-  0:address:space/names:init-counter <- next-ingredient  # outer space must be created by 'init-counter' above
+  default-space:address:array:location <- new space:literal, 30:literal
+  0:address:array:location/names:init-counter <- next-ingredient  # outer space must be created by 'init-counter' above
   y:integer/space:1 <- add y:integer/space:1, 1:literal  # increment
   y:integer <- copy 234:literal  # dummy
   reply y:integer/space:1
@@ -48,10 +48,11 @@ void collect_surrounding_spaces(const recipe_number r) {
     for (size_t j = 0; j < inst.products.size(); ++j) {
       if (isa_literal(inst.products[j])) continue;
       if (inst.products[j].name != "0") continue;
-      if (inst.products[j].types.size() != 2
+      if (inst.products[j].types.size() != 3
           || inst.products[j].types[0] != Type_number["address"]
-          || inst.products[j].types[1] != Type_number["space"]) {
-        raise << "slot 0 should always have type address:space, but is " << inst.products[j].to_string() << '\n';
+          || inst.products[j].types[1] != Type_number["array"]
+          || inst.products[j].types[2] != Type_number["location"]) {
+        raise << "slot 0 should always have type address:array:location, but is " << inst.products[j].to_string() << '\n';
         continue;
       }
       vector<string> s = property(inst.products[j], "names");
