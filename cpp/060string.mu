@@ -323,3 +323,73 @@ scenario integer-to-decimal-digit-negative [
     4 <- 49  # '1'
   ]
 ]
+
+recipe string-append [
+  default-space:address:space <- new location:type, 30:literal
+  # result = new string[a.length + b.length]
+  a:address:array:character <- next-ingredient
+  a-len:integer <- length a:address:array:character/deref
+  b:address:array:character <- next-ingredient
+  b-len:integer <- length b:address:array:character/deref
+  result-len:integer <- add a-len:integer, b-len:integer
+  result:address:array:character <- new character:type, result-len:integer
+  # copy a into result
+  result-idx:integer <- copy 0:literal
+  i:integer <- copy 0:literal
+  {
+    # while i < a.length
+    a-done?:boolean <- greater-or-equal i:integer, a-len:integer
+    break-if a-done?:boolean
+    # result[result-idx] = a[i]
+    out:address:character <- index-address result:address:array:character/deref, result-idx:integer
+    in:character <- index a:address:array:character/deref, i:integer
+    out:address:character/deref <- copy in:character
+    # ++i
+    i:integer <- add i:integer, 1:literal
+    # ++result-idx
+    result-idx:integer <- add result-idx:integer, 1:literal
+    loop
+  }
+  # copy b into result
+  i:integer <- copy 0:literal
+  {
+    # while i < b.length
+    b-done?:boolean <- greater-or-equal i:integer, b-len:integer
+    break-if b-done?:boolean
+    # result[result-idx] = a[i]
+    out:address:character <- index-address result:address:array:character/deref, result-idx:integer
+    in:character <- index b:address:array:character/deref, i:integer
+    out:address:character/deref <- copy in:character
+    # ++i
+    i:integer <- add i:integer, 1:literal
+    # ++result-idx
+    result-idx:integer <- add result-idx:integer, 1:literal
+    loop
+  }
+  reply result:address:array:character
+]
+
+scenario string-append-1 [
+  run [
+    1:address:array:character/raw <- new [hello,]
+    2:address:array:character/raw <- new [ world!]
+    3:address:array:character/raw <- string-append 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ]
+  memory should contain [
+    4 <- 13
+    5 <- 104  # 'h'
+    6 <- 101  # 'e'
+    7 <- 108  # 'l'
+    8 <- 108  # 'l'
+    9 <- 111  # 'o'
+    10 <- 44  # ','
+    11 <- 32  # ' '
+    12 <- 119  # 'w'
+    13 <- 111  # 'o'
+    14 <- 114  # 'r'
+    15 <- 108  # 'l'
+    16 <- 100  # 'd'
+    17 <- 33  # '!'
+  ]
+]
