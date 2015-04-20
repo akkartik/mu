@@ -233,6 +233,11 @@ void emit_test(const string& name, list<string>& lines, list<string>& result) {
       result.push_back("  Hide_warnings = true;");
       lines.pop_front();
     }
+    if (starts_with(lines.front(), "dump ")) {
+      string line = lines.front().substr(strlen("dump "));
+      result.push_back("  Trace_stream->dump_layer = \""+line+"\";");
+      lines.pop_front();
+    }
     result.push_back("  "+Toplevel+"(\""+input_lines(lines)+"\");");
     if (!lines.empty() && lines.front()[0] == '+')
       result.push_back("  CHECK_TRACE_CONTENTS(\""+expected_in_trace(lines)+"\");");
@@ -266,6 +271,10 @@ bool is_input(const string& line) {
 
 bool is_warn(const string& line) {
   return line == "hide warnings";
+}
+
+bool is_dump(const string& line) {
+  return starts_with(line, "dump ");
 }
 
 string input_lines(list<string>& hunk) {
