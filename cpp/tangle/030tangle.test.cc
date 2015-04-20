@@ -196,6 +196,20 @@ void test_tangle_can_hide_warnings_in_scenarios() {
   CHECK(lines.empty());
 }
 
+void test_tangle_can_dump_traces_in_scenarios() {
+  istringstream in(":(scenario does_bar)\ndump foo\nabc def\n+layer1: pqr\n+layer2: xyz");
+  list<string> lines;
+  tangle(in, lines);
+  CHECK_EQ(lines.front(), "#line 1");  lines.pop_front();
+  CHECK_EQ(lines.front(), "#line 2");  lines.pop_front();
+  CHECK_EQ(lines.front(), "TEST(does_bar)");  lines.pop_front();
+  CHECK_EQ(lines.front(), "  Trace_stream->dump_layer = \"foo\";");  lines.pop_front();
+  CHECK_EQ(lines.front(), "  run(\"abc def\\n\");");  lines.pop_front();
+  CHECK_EQ(lines.front(), "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: xyz\");");  lines.pop_front();
+  CHECK_EQ(lines.front(), "}");  lines.pop_front();
+  CHECK(lines.empty());
+}
+
 void test_tangle_supports_strings_in_scenarios() {
   istringstream in(":(scenario does_bar)\nabc \"def\"\n+layer1: pqr\n+layer2: \"xyz\"");
   list<string> lines;
