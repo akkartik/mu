@@ -12,6 +12,8 @@ struct scenario {
 :(before "End Globals")
 vector<scenario> Scenarios;
 
+//: How we check Scenarios.
+
 :(before "End Tests")
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
@@ -37,6 +39,20 @@ for (size_t i = 0; i < Scenarios.size(); ++i) {
   if (Passed) cerr << ".";
 }
 
+//: How we create Scenarios.
+
+:(scenarios "parse_scenario")
+:(scenario "parse_scenario_memory_expectation")
+scenario foo [
+  run [
+    a <- b
+  ]
+  memory should contain [
+    1 <- 0
+  ]
+]
++parse: scenario will run: a <- b
+
 :(before "End Command Handlers")
 else if (command == "scenario") {
 //?   cout << "AAA scenario\n"; //? 1
@@ -61,7 +77,6 @@ scenario parse_scenario(istream& in) {
     // Scenario Command Handlers
     if (scenario_command == "run") {
       handle_scenario_run_directive(inner, x);
-      trace("parse") << "scenario will run: " << x.to_run;
     }
     else if (scenario_command == "memory") {
       handle_scenario_memory_directive(inner, x);
@@ -82,6 +97,9 @@ void handle_scenario_run_directive(istream& in, scenario& result) {
   skip_bracket(in, "'run' inside scenario must begin with '['");
   ostringstream buffer;
   slurp_until_matching_bracket(in, buffer);
+  string trace_result = buffer.str();  // temporary copy
+  trace("parse") << "scenario will run: " << trim(trace_result);
+//?   cout << buffer.str() << '\n'; //? 1
   result.to_run = "recipe test-"+result.name+" [" + buffer.str() + "]";
 }
 
@@ -123,3 +141,30 @@ void slurp_until_matching_bracket(istream& in, ostream& out) {
     out << c;
   }
 }
+
+// for tests
+void parse_scenario(const string& s) {
+  istringstream in(s);
+  in >> std::noskipws;
+  skip_whitespace_and_comments(in);
+  string _scenario = next_word(in);
+//?   cout << _scenario << '\n'; //? 1
+  assert(_scenario == "scenario");
+  parse_scenario(in);
+}
+
+string &trim(string &s) {
+  return ltrim(rtrim(s));
+}
+
+string &ltrim(string &s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(isspace))));
+  return s;
+}
+
+string &rtrim(string &s) {
+  s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(isspace))).base(), s.end());
+  return s;
+}
+
+:(scenarios run)
