@@ -4,12 +4,15 @@
 
 size_t Line_number = 0;
 string Filename;
+string Toplevel = "run";
 
 int tangle(int argc, const char* argv[]) {
   list<string> result;
   for (int i = 1; i < argc; ++i) {
+//?     cerr << "new file " << argv[i] << '\n'; //? 1
     ifstream in(argv[i]);
     Filename = argv[i];
+    Toplevel = "run";
     tangle(in, result);
   }
   for (list<string>::iterator p = result.begin(); p != result.end(); ++p)
@@ -35,8 +38,6 @@ void tangle(istream& in, list<string>& out) {
   }
   trace_all("tangle", out);
 }
-
-string Toplevel = "run";
 
 void process_next_hunk(istream& in, const string& directive, list<string>& out) {
   list<string> hunk;
