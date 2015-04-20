@@ -53,6 +53,19 @@ scenario foo [
 ]
 +parse: scenario will run: a <- b
 
+:(scenario "parse_scenario_memory_expectation_duplicate")
+hide warnings
+scenario foo [
+  run [
+    a <- b
+  ]
+  memory should contain [
+    1 <- 0
+    1 <- 1
+  ]
+]
++warn: duplicate expectation for location 1: 0 -> 1
+
 :(before "End Command Handlers")
 else if (command == "scenario") {
 //?   cout << "AAA scenario\n"; //? 1
@@ -124,6 +137,8 @@ void handle_scenario_memory_directive(istream& in, scenario& out) {
     string _assign;  in >> _assign;  assert(_assign == "<-");
     skip_whitespace_and_comments(in);
     int value = 0;  in >> value;
+    if (out.memory_expectations.find(address) != out.memory_expectations.end())
+      raise << "duplicate expectation for location " << address << ": " << out.memory_expectations[address] << " -> " << value << '\n';
     out.memory_expectations[address] = value;
     trace("parse") << "memory expectation: *" << address << " == " << value;
   }
