@@ -62,3 +62,68 @@ case NEXT_INGREDIENT: {
   }
   break;
 }
+
+:(scenario "rewind_ingredients")
+recipe main [
+  f 2:literal
+]
+recipe f [
+  12:integer <- next-ingredient  # consume ingredient
+  _, 1:boolean <- next-ingredient  # will not find any ingredients
+  rewind-ingredients
+  13:integer, 2:boolean <- next-ingredient  # will find ingredient again
+]
++mem: storing 2 in location 12
++mem: storing 0 in location 1
++mem: storing 2 in location 13
++mem: storing 1 in location 2
+
+:(before "End Primitive Recipe Declarations")
+REWIND_INGREDIENTS,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["rewind-ingredients"] = REWIND_INGREDIENTS;
+:(before "End Primitive Recipe Implementations")
+case REWIND_INGREDIENTS: {
+  rr.calls.top().next_ingredient_to_process = 0;
+  break;
+}
+
+:(scenario "ingredient")
+recipe main [
+  f 1:literal, 2:literal
+]
+recipe f [
+  12:integer <- ingredient 1:literal  # consume second ingredient first
+  13:integer, 1:boolean <- next-ingredient  # next-ingredient tries to scan past that
+]
++mem: storing 2 in location 12
++mem: storing 0 in location 1
+
+:(before "End Primitive Recipe Declarations")
+INGREDIENT,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["ingredient"] = INGREDIENT;
+:(before "End Primitive Recipe Implementations")
+case INGREDIENT: {
+  if (static_cast<size_t>(instructions[pc].ingredients[0].value) < rr.calls.top().ingredient_atoms.size()) {
+    rr.calls.top().next_ingredient_to_process = instructions[pc].ingredients[0].value;
+    trace("run") << "product 0 is "
+        << rr.calls.top().ingredient_atoms[rr.calls.top().next_ingredient_to_process][0];
+    write_memory(instructions[pc].products[0],
+        rr.calls.top().ingredient_atoms[rr.calls.top().next_ingredient_to_process]);
+    if (instructions[pc].products.size() > 1) {
+      vector<int> ingredient_exists;
+      ingredient_exists.push_back(1);
+      write_memory(instructions[pc].products[1], ingredient_exists);
+    }
+    ++rr.calls.top().next_ingredient_to_process;
+  }
+  else {
+    if (instructions[pc].products.size() > 1) {
+      vector<int> no_ingredient;
+      no_ingredient.push_back(0);
+      write_memory(instructions[pc].products[1], no_ingredient);
+    }
+  }
+  break;
+}
