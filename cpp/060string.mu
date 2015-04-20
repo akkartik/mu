@@ -393,3 +393,160 @@ scenario string-append-1 [
     17 <- 33  # '!'
   ]
 ]
+
+# replace underscores in first with remaining args
+# result:address:array:character <- interpolate template:address:array:character, ...
+recipe interpolate [
+  default-space:array:address:location <- new location:type, 60:literal
+  template:address:array:character <- next-ingredient
+  # compute result-len, space to allocate for result
+  tem-len:integer <- length template:address:array:character/deref
+  result-len:integer <- copy tem-len:integer
+  {
+    # while arg received
+    a:address:array:character, arg-received?:boolean <- next-ingredient
+    break-unless arg-received?:boolean
+    # result-len = result-len + arg.length - 1 for the 'underscore' being replaced
+    a-len:integer <- length a:address:array:character/deref
+    result-len:integer <- add result-len:integer, a-len:integer
+    result-len:integer <- subtract result-len:integer, 1:literal
+    loop
+  }
+#?   $print tem-len:integer #? 1
+#?   $print [ ] #? 1
+#?   $print result-len:integer #? 1
+#?   $print [ #? 1
+#? ] #? 1
+  rewind-ingredients
+  _ <- next-ingredient  # skip template
+  # result = new array:character[result-len]
+  result:address:array:character <- new character:type, result-len:integer
+  # repeatedly copy sections of template and 'holes' into result
+  result-idx:integer <- copy 0:literal
+  i:integer <- copy 0:literal
+  {
+    # while arg received
+    a:address:array:character, arg-received?:boolean <- next-ingredient
+    break-unless arg-received?:boolean
+    # copy template into result until '_'
+    {
+      # while i < template.length
+      tem-done?:boolean <- greater-or-equal i:integer, tem-len:integer
+      break-if tem-done?:boolean, 2:blocks
+      # while template[i] != '_'
+      in:character <- index template:address:array:character/deref, i:integer
+      underscore?:boolean <- equal in:character, 95:literal  # '_'
+      break-if underscore?:boolean
+      # result[result-idx] = template[i]
+      out:address:character <- index-address result:address:array:character/deref, result-idx:integer
+      out:address:character/deref <- copy in:character
+      # ++i
+      i:integer <- add i:integer, 1:literal
+      # ++result-idx
+      result-idx:integer <- add result-idx:integer, 1:literal
+      loop
+    }
+    # copy 'a' into result
+    j:integer <- copy 0:literal
+    {
+      # while j < a.length
+      arg-done?:boolean <- greater-or-equal j:integer, a-len:integer
+      break-if arg-done?:boolean
+      # result[result-idx] = a[j]
+      in:character <- index a:address:array:character/deref, j:integer
+      out:address:character <- index-address result:address:array:character/deref, result-idx:integer
+      out:address:character/deref <- copy in:character
+      # ++j
+      j:integer <- add j:integer, 1:literal
+      # ++result-idx
+      result-idx:integer <- add result-idx:integer, 1:literal
+      loop
+    }
+    # skip '_' in template
+    i:integer <- add i:integer, 1:literal
+    loop  # interpolate next arg
+  }
+  # done with holes; copy rest of template directly into result
+  {
+    # while i < template.length
+    tem-done?:boolean <- greater-or-equal i:integer, tem-len:integer
+    break-if tem-done?:boolean
+    # result[result-idx] = template[i]
+    in:character <- index template:address:array:character/deref, i:integer
+    out:address:character <- index-address result:address:array:character/deref, result-idx:integer
+    out:address:character/deref <- copy in:character
+    # ++i
+    i:integer <- add i:integer, 1:literal
+    # ++result-idx
+    result-idx:integer <- add result-idx:integer, 1:literal
+    loop
+  }
+  reply result:address:array:character
+]
+
+scenario interpolate-works [
+#?   dump run #? 1
+  run [
+    1:address:array:character/raw <- new [abc _]
+    2:address:array:character/raw <- new [def]
+    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ]
+  memory should contain [
+    4 <- 7  # length
+    5 <- 97  # 'a'
+    6 <- 98  # 'b'
+    7 <- 99  # 'c'
+    8 <- 32  # ' '
+    9 <- 100  # 'd'
+    10 <- 101  # 'e'
+    11 <- 102  # 'f'
+  ]
+]
+
+scenario interpolate-at-start [
+  run [
+    1:address:array:character/raw <- new [_, hello!]
+    2:address:array:character/raw <- new [abc]
+    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ]
+  memory should contain [
+    4 <- 11  # length
+    5 <- 97  # 'a'
+    6 <- 98  # 'b'
+    7 <- 99  # 'c'
+    8 <- 44  # ','
+    9 <- 32  # ' '
+    10 <- 104  # 'h'
+    11 <- 101  # 'e'
+    12 <- 108  # 'l'
+    13 <- 108  # 'l'
+    14 <- 111  # 'o'
+    15 <- 33  # '!'
+    16 <- 0  # out of bounds
+  ]
+]
+
+scenario interpolate-at-end [
+  run [
+    1:address:array:character/raw <- new [hello, _]
+    2:address:array:character/raw <- new [abc]
+    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ]
+  memory should contain [
+    4 <- 10  # length
+    5 <- 104  # 'h'
+    6 <- 101  # 'e'
+    7 <- 108  # 'l'
+    8 <- 108  # 'l'
+    9 <- 111  # 'o'
+    10 <- 44  # ','
+    11 <- 32  # ' '
+    12 <- 97  # 'a'
+    13 <- 98  # 'b'
+    14 <- 99  # 'c'
+    15 <- 0  # out of bounds
+  ]
+]
