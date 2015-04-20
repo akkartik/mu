@@ -1,5 +1,5 @@
 mu: makefile enumerate/enumerate tangle/tangle mu.cc
-	g++ -g -Wall -Wextra -fno-strict-aliasing mu.cc -o mu
+	g++ -g -Wall -Wextra -fno-strict-aliasing mu.cc -lncurses -o mu
 
 # To see what the program looks like after all layers have been applied, read
 # mu.cc
