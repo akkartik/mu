@@ -13,6 +13,15 @@ recipe f [
 +mem: location 12 is 2
 +mem: storing 3 in location 13
 
+:(scenario "next_ingredient_missing")
+recipe main [
+  f
+]
+recipe f [
+  _, 12:integer <- next-ingredient
+]
++mem: storing 0 in location 12
+
 :(before "End call Fields")
 vector<vector<int> > ingredient_atoms;
 size_t next_ingredient_to_process;
@@ -37,7 +46,19 @@ case NEXT_INGREDIENT: {
         << rr.calls.top().ingredient_atoms[rr.calls.top().next_ingredient_to_process][0];
     write_memory(instructions[pc].products[0],
         rr.calls.top().ingredient_atoms[rr.calls.top().next_ingredient_to_process]);
+    if (instructions[pc].products.size() > 1) {
+      vector<int> ingredient_exists;
+      ingredient_exists.push_back(1);
+      write_memory(instructions[pc].products[1], ingredient_exists);
+    }
     ++rr.calls.top().next_ingredient_to_process;
+  }
+  else {
+    if (instructions[pc].products.size() > 1) {
+      vector<int> no_ingredient;
+      no_ingredient.push_back(0);
+      write_memory(instructions[pc].products[1], no_ingredient);
+    }
   }
   break;
 }
