@@ -20,7 +20,9 @@ struct trace_stream {
   // be sure to call this before messing with curr_stream or curr_layer or frame
   void newline() {
     if (!curr_stream) return;
-    past_lines.push_back(pair<string, pair<int, string> >(curr_layer, pair<int, string>(frame[curr_layer], curr_stream->str())));
+    string curr_contents = curr_stream->str();
+    curr_contents.erase(curr_contents.find_last_not_of("\r\n")+1);
+    past_lines.push_back(pair<string, pair<int, string> >(curr_layer, pair<int, string>(frame[curr_layer], curr_contents)));
     if (curr_layer == "dump")
       cerr << with_newline(curr_stream->str());
     else if ((!dump_layer.empty() && prefix_match(dump_layer, curr_layer))

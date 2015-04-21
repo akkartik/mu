@@ -2,46 +2,91 @@
 // Insert #line directives to preserve line numbers in the original.
 // Clear lines starting with '//:' (tangle comments).
 
-size_t Line_number = 0;
-string Filename;
+//// Preliminaries regarding line number management
+
+struct Line {
+  string filename;
+  size_t line_number;
+  string contents;
+  Line() :line_number(0) {}
+};
+
+// Emit a list of line contents, inserting directives just at discontinuities.
+// Needs to be a macro because 'out' can have the side effect of creating a
+// new trace in Trace_stream.
+#define EMIT(lines, out) if (!lines.empty()) { \
+  string last_file = lines.begin()->filename; \
+  size_t last_line = lines.begin()->line_number-1; \
+  out << line_directive(lines.begin()->line_number, lines.begin()->filename) << '\n'; \
+  for (list<Line>::const_iterator p = lines.begin(); p != lines.end(); ++p) { \
+    if (last_file != p->filename || last_line != p->line_number-1) \
+      out << line_directive(p->line_number, p->filename) << '\n'; \
+    out << p->contents << '\n'; \
+    last_file = p->filename; \
+    last_line = p->line_number; \
+  } \
+}
+
+string line_directive(size_t line_number, string filename) {
+  ostringstream result;
+  if (filename.empty())
+    result << "#line " << line_number;
+  else
+    result << "#line " << line_number << " \"" << filename << '"';
+  return result.str();
+}
+
+//// Tangle
+
 string Toplevel = "run";
 
 int tangle(int argc, const char* argv[]) {
-  list<string> result;
+  list<Line> result;
   for (int i = 1; i < argc; ++i) {
 //?     cerr << "new file " << argv[i] << '\n'; //? 1
-    ifstream in(argv[i]);
-    Filename = argv[i];
     Toplevel = "run";
-    tangle(in, result);
+    ifstream in(argv[i]);
+    tangle(in, argv[i], result);
   }
-  for (list<string>::iterator p = result.begin(); p != result.end(); ++p)
-    cout << *p << '\n';
+
+  EMIT(result, cout);
   return 0;
 }
 
-void tangle(istream& in, list<string>& out) {
-  Line_number = 1;
-  out.push_back(line_directive(Line_number, Filename));
+void tangle(istream& in, const string& filename, list<Line>& out) {
   string curr_line;
+  size_t line_number = 1;
   while (!in.eof()) {
     getline(in, curr_line);
-    Line_number++;
-    if (starts_with(curr_line, ":("))
-      process_next_hunk(in, trim(curr_line), out);
-    else
-      out.push_back(curr_line);
+    if (starts_with(curr_line, ":(")) {
+      ++line_number;
+      process_next_hunk(in, trim(curr_line), filename, line_number, out);
+      continue;
+    }
+    if (starts_with(curr_line, "//:")) {
+      ++line_number;
+      continue;
+    }
+    Line curr;
+    curr.filename = filename;
+    curr.line_number = line_number;
+    curr.contents = curr_line;
+    out.push_back(curr);
+    ++line_number;
   }
-  for (list<string>::iterator p = out.begin(); p != out.end(); ++p) {
-    if (starts_with(*p, "//:"))
-      p->clear();  // leave the empty lines around so as to not mess up #line numbers
-  }
-  trace_all("tangle", out);
+
+  // Trace all line contents, inserting directives just at discontinuities.
+  if (!Trace_stream) return;
+  EMIT(out, Trace_stream->stream("tangle"));
 }
 
-void process_next_hunk(istream& in, const string& directive, list<string>& out) {
-  list<string> hunk;
-  hunk.push_back(line_directive(Line_number, Filename));
+// just for tests
+void tangle(istream& in, list<Line>& out) {
+  tangle(in, "", out);
+}
+
+void process_next_hunk(istream& in, const string& directive, const string& filename, size_t& line_number, list<Line>& out) {
+  list<Line> hunk;
   string curr_line;
   while (!in.eof()) {
     std::streampos old = in.tellg();
@@ -51,8 +96,12 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
       break;
     }
     else {
-      ++Line_number;
-      hunk.push_back(curr_line);
+      Line curr;
+      curr.line_number = line_number;
+      curr.filename = filename;
+      curr.contents = curr_line;
+      hunk.push_back(curr);
+      ++line_number;
     }
   }
 
@@ -70,56 +119,47 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
   }
 
   if (cmd == "scenario") {
-    list<string> result;
+    list<Line> result;
     string name = next_tangle_token(directive_stream);
-    result.push_back(hunk.front());  // line number directive
-    hunk.pop_front();
     emit_test(name, hunk, result);
+//?     cerr << out.size() << " " << result.size() << '\n'; //? 1
     out.insert(out.end(), result.begin(), result.end());
+//?     cerr << out.size() << " " << result.size() << '\n'; //? 1
     return;
   }
 
   if (cmd == "before" || cmd == "after" || cmd == "replace" || cmd == "replace{}" || cmd == "delete" || cmd == "delete{}") {
-    list<string>::iterator target = locate_target(out, directive_stream);
+    list<Line>::iterator target = locate_target(out, directive_stream);
     if (target == out.end()) {
       raise << "Couldn't find target " << directive << '\n' << die();
       return;
     }
 
-    size_t end_line_number = 0;
-    string end_filename;
-    scan_up_to_last_line_directive(target, out.begin(), end_line_number, end_filename);
-
     indent_all(hunk, target);
 
     if (cmd == "before") {
-      hunk.push_back(line_directive(end_line_number, end_filename));
       out.splice(target, hunk);
     }
     else if (cmd == "after") {
-      ++end_line_number;
-      hunk.push_back(line_directive(end_line_number, end_filename));
       ++target;
       out.splice(target, hunk);
     }
     else if (cmd == "replace" || cmd == "delete") {
-      hunk.push_back(line_directive(end_line_number, end_filename));
       out.splice(target, hunk);
       out.erase(target);
     }
     else if (cmd == "replace{}" || cmd == "delete{}") {
-      hunk.push_back(line_directive(end_line_number, end_filename));
       if (find_trim(hunk, ":OLD_CONTENTS") == hunk.end()) {
         out.splice(target, hunk);
         out.erase(target, balancing_curly(target));
       }
       else {
-        list<string>::iterator next = balancing_curly(target);
-        list<string> old_version;
+        list<Line>::iterator next = balancing_curly(target);
+        list<Line> old_version;
         old_version.splice(old_version.begin(), out, target, next);
         old_version.pop_back();  old_version.pop_front();  // contents only please, not surrounding curlies
 
-        list<string>::iterator new_pos = find_trim(hunk, ":OLD_CONTENTS");
+        list<Line>::iterator new_pos = find_trim(hunk, ":OLD_CONTENTS");
         indent_all(old_version, new_pos);
         hunk.splice(new_pos, old_version);
         hunk.erase(new_pos);
@@ -132,7 +172,7 @@ void process_next_hunk(istream& in, const string& directive, list<string>& out) 
   raise << "unknown directive " << cmd << '\n';
 }
 
-list<string>::iterator locate_target(list<string>& out, istream& directive_stream) {
+list<Line>::iterator locate_target(list<Line>& out, istream& directive_stream) {
   string pat = next_tangle_token(directive_stream);
   if (pat == "") return out.end();
 
@@ -144,13 +184,13 @@ list<string>::iterator locate_target(list<string>& out, istream& directive_strea
   else if (next_token == "following") {
     string pat2 = next_tangle_token(directive_stream);
     if (pat2 == "") return out.end();
-    list<string>::iterator intermediate = find_substr(out, pat2);
+    list<Line>::iterator intermediate = find_substr(out, pat2);
     if (intermediate == out.end()) return out.end();
     return find_substr(out, intermediate, pat);
   }
   // second way to do nested pattern: intermediate 'then' pattern
   else if (next_token == "then") {
-    list<string>::iterator intermediate = find_substr(out, pat);
+    list<Line>::iterator intermediate = find_substr(out, pat);
     if (intermediate == out.end()) return out.end();
     string pat2 = next_tangle_token(directive_stream);
     if (pat2 == "") return out.end();
@@ -161,11 +201,11 @@ list<string>::iterator locate_target(list<string>& out, istream& directive_strea
 }
 
 // indent all lines in l like indentation at exemplar
-void indent_all(list<string>& l, list<string>::iterator exemplar) {
-  string curr_indent = indent(*exemplar);
-  for (list<string>::iterator p = l.begin(); p != l.end(); ++p)
-    if (!p->empty())
-      p->insert(p->begin(), curr_indent.begin(), curr_indent.end());
+void indent_all(list<Line>& l, list<Line>::iterator exemplar) {
+  string curr_indent = indent(exemplar->contents);
+  for (list<Line>::iterator p = l.begin(); p != l.end(); ++p)
+    if (!p->contents.empty())
+      p->contents.insert(p->contents.begin(), curr_indent.begin(), curr_indent.end());
 }
 
 string next_tangle_token(istream& in) {
@@ -207,16 +247,15 @@ void skip_whitespace(istream& in) {
     in.get();
 }
 
-list<string>::iterator balancing_curly(list<string>::iterator orig) {
-  list<string>::iterator curr = orig;
+list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
   long open_curlies = 0;
   do {
-    for (string::iterator p = curr->begin(); p != curr->end(); ++p) {
+    for (string::iterator p = curr->contents.begin(); p != curr->contents.end(); ++p) {
       if (*p == '{') ++open_curlies;
       if (*p == '}') --open_curlies;
     }
     ++curr;
-    // no guard so far against unbalanced curly
+    // no guard so far against unbalanced curly, including inside comments or strings
   } while (open_curlies != 0);
   return curr;
 }
@@ -227,38 +266,62 @@ list<string>::iterator balancing_curly(list<string>::iterator orig) {
 //  followed by one or more lines expected in trace in order ('+')
 //  followed by one or more lines trace shouldn't include ('-')
 // Remember to update is_input below if you add to this format.
-void emit_test(const string& name, list<string>& lines, list<string>& result) {
-  result.push_back("TEST("+name+")");
+void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
+  Line tmp;
+  tmp.line_number = front(lines).line_number-1;  // line number of directive
+  tmp.filename = front(lines).filename;
+  tmp.contents = "TEST("+name+")";
+  result.push_back(tmp);
+#define SHIFT(new_contents) { \
+  Line tmp; \
+  tmp.line_number = front(lines).line_number; \
+  tmp.filename = front(lines).filename; \
+  tmp.contents = new_contents; \
+  result.push_back(tmp); \
+  lines.pop_front(); \
+}
   while (any_non_input_line(lines)) {
-    if (is_warn(lines.front())) {
-      result.push_back("  Hide_warnings = true;");
+    if (front(lines).contents == "hide warnings") {
+      SHIFT("  Hide_warnings = true;");
+    }
+    if (starts_with(front(lines).contents, "dump ")) {
+      string line = front(lines).contents.substr(strlen("dump "));
+      SHIFT("  Trace_stream->dump_layer = \""+line+"\";");
+    }
+    result.push_back(input_lines(lines));
+    if (!lines.empty() && !front(lines).contents.empty() && front(lines).contents[0] == '+')
+      result.push_back(expected_in_trace(lines));
+    while (!lines.empty() && !front(lines).contents.empty() && front(lines).contents[0] == '-') {
+      result.push_back(expected_not_in_trace(front(lines)));
       lines.pop_front();
     }
-    if (starts_with(lines.front(), "dump ")) {
-      string line = lines.front().substr(strlen("dump "));
-      result.push_back("  Trace_stream->dump_layer = \""+line+"\";");
+    if (!lines.empty() && front(lines).contents == "===") {
+      Line tmp;
+      tmp.line_number = front(lines).line_number;
+      tmp.filename = front(lines).filename;
+      tmp.contents = "  CLEAR_TRACE;";
+      result.push_back(tmp);
       lines.pop_front();
     }
-    result.push_back("  "+Toplevel+"(\""+input_lines(lines)+"\");");
-    if (!lines.empty() && lines.front()[0] == '+')
-      result.push_back("  CHECK_TRACE_CONTENTS(\""+expected_in_trace(lines)+"\");");
-    while (!lines.empty() && lines.front()[0] == '-') {
-      result.push_back("  CHECK_TRACE_DOESNT_CONTAIN(\""+expected_not_in_trace(lines.front())+"\");");
-      lines.pop_front();
-    }
-    if (!lines.empty() && lines.front() == "===") {
-      result.push_back("  CLEAR_TRACE;");
-      lines.pop_front();
-    }
-    if (!lines.empty() && lines.front() == "?") {
-      result.push_back("  DUMP(\"\");");
+    if (!lines.empty() && front(lines).contents == "?") {
+      Line tmp;
+      tmp.line_number = front(lines).line_number;
+      tmp.filename = front(lines).filename;
+      tmp.contents = "  DUMP(\"\");";
+      result.push_back(tmp);
       lines.pop_front();
     }
   }
-  result.push_back("}");
+  Line tmp2;
+  if (!lines.empty()) {
+    tmp2.line_number = front(lines).line_number;
+    tmp2.filename = front(lines).filename;
+  }
+  tmp2.contents = "}";
+  result.push_back(tmp2);
 
   while (!lines.empty() &&
-         (trim(lines.front()).empty() || starts_with(lines.front(), "//")))
+         (trim(front(lines).contents).empty() || starts_with(front(lines).contents, "//")))
     lines.pop_front();
   if (!lines.empty()) {
     cerr << lines.size() << " unprocessed lines in scenario.\n";
@@ -267,57 +330,60 @@ void emit_test(const string& name, list<string>& lines, list<string>& result) {
 }
 
 bool is_input(const string& line) {
+  if (line.empty()) return true;
   return line != "===" && line[0] != '+' && line[0] != '-' && !starts_with(line, "=>");
 }
 
-bool is_warn(const string& line) {
-  return line == "hide warnings";
-}
-
-bool is_dump(const string& line) {
-  return starts_with(line, "dump ");
-}
-
-string input_lines(list<string>& hunk) {
-  string result;
-  while (!hunk.empty() && is_input(hunk.front())) {
-    result += hunk.front()+"";  // temporary delimiter; replace with escaped newline after escaping other backslashes
+Line input_lines(list<Line>& hunk) {
+  Line result;
+  result.line_number = hunk.front().line_number;
+  result.filename = hunk.front().filename;
+  while (!hunk.empty() && is_input(hunk.front().contents)) {
+    result.contents += hunk.front().contents+"";  // temporary delimiter; replace with escaped newline after escaping other backslashes
     hunk.pop_front();
   }
-  return escape(result);
+  result.contents = "  "+Toplevel+"(\""+escape(result.contents)+"\");";
+  return result;
 }
 
-string expected_in_trace(list<string>& hunk) {
-  string result;
-  while (!hunk.empty() && hunk.front()[0] == '+') {
-    hunk.front().erase(0, 1);
-    result += hunk.front()+"";
+Line expected_in_trace(list<Line>& hunk) {
+  Line result;
+  result.line_number = hunk.front().line_number;
+  result.filename = hunk.front().filename;
+  while (!hunk.empty() && !front(hunk).contents.empty() && front(hunk).contents[0] == '+') {
+    hunk.front().contents.erase(0, 1);
+    result.contents += hunk.front().contents+"";
     hunk.pop_front();
   }
-  return escape(result);
+  result.contents = "  CHECK_TRACE_CONTENTS(\""+escape(result.contents)+"\");";
+  return result;
 }
 
-string expected_not_in_trace(const string& line) {
-  return escape(line.substr(1));
+Line expected_not_in_trace(const Line& line) {
+  Line result;
+  result.line_number = line.line_number;
+  result.filename = line.filename;
+  result.contents = "  CHECK_TRACE_DOESNT_CONTAIN(\""+escape(line.contents.substr(1))+"\");";
+  return result;
 }
 
-list<string>::iterator find_substr(list<string>& in, const string& pat) {
-  for (list<string>::iterator p = in.begin(); p != in.end(); ++p)
-    if (p->find(pat) != NOT_FOUND)
+list<Line>::iterator find_substr(list<Line>& in, const string& pat) {
+  for (list<Line>::iterator p = in.begin(); p != in.end(); ++p)
+    if (p->contents.find(pat) != NOT_FOUND)
       return p;
   return in.end();
 }
 
-list<string>::iterator find_substr(list<string>& in, list<string>::iterator p, const string& pat) {
+list<Line>::iterator find_substr(list<Line>& in, list<Line>::iterator p, const string& pat) {
   for (; p != in.end(); ++p)
-    if (p->find(pat) != NOT_FOUND)
+    if (p->contents.find(pat) != NOT_FOUND)
       return p;
   return in.end();
 }
 
-list<string>::iterator find_trim(list<string>& in, const string& pat) {
-  for (list<string>::iterator p = in.begin(); p != in.end(); ++p)
-    if (trim(*p) == pat)
+list<Line>::iterator find_trim(list<Line>& in, const string& pat) {
+  for (list<Line>::iterator p = in.begin(); p != in.end(); ++p)
+    if (trim(p->contents) == pat)
       return p;
   return in.end();
 }
@@ -335,15 +401,15 @@ string replace_all(string s, const string& a, const string& b) {
   return s;
 }
 
-bool any_line_starts_with(const list<string>& lines, const string& pat) {
-  for (list<string>::const_iterator p = lines.begin(); p != lines.end(); ++p)
-    if (starts_with(*p, pat)) return true;
+bool any_line_starts_with(const list<Line>& lines, const string& pat) {
+  for (list<Line>::const_iterator p = lines.begin(); p != lines.end(); ++p)
+    if (starts_with(p->contents, pat)) return true;
   return false;
 }
 
-bool any_non_input_line(const list<string>& lines) {
-  for (list<string>::const_iterator p = lines.begin(); p != lines.end(); ++p)
-    if (!is_input(*p)) return true;
+bool any_non_input_line(const list<Line>& lines) {
+  for (list<Line>::const_iterator p = lines.begin(); p != lines.end(); ++p)
+    if (!is_input(p->contents)) return true;
   return false;
 }
 
@@ -386,43 +452,7 @@ string trim(const string& s) {
   return string(first, last);
 }
 
-string line_directive(size_t line_number, string filename) {
-  ostringstream result;
-  if (filename.empty())
-    result << "#line " << line_number;
-  else
-    result << "#line " << line_number << " \"" << filename << '"';
-  return result.str();
-}
-
-void scan_up_to_last_line_directive(list<string>::iterator p, list<string>::iterator begin, size_t& line_number, string& filename) {
-//?   cout << "scan: " << *p << " until " << *begin << '\n'; //? 1
-  int delta = 0;
-  if (p != begin) {
-    for (--p; p != begin; --p) {
-//?       cout << "  " << *p << ' ' << delta << '\n'; //? 1
-      if (starts_with(*p, "#line")) continue;
-//?       cout << "incrementing\n"; //? 1
-      ++delta;
-    }
-//?     cout << "delta: " << delta << '\n'; //? 1
-  }
-  if (p == begin) {
-    assert(starts_with(*p, "#line"));
-//?     cout << "hit begin\n";
-//?     line_number = delta;
-//?     return;
-  }
-  istringstream in(*p);
-  string directive_;
-  in >> directive_;
-  assert(directive_ == "#line");
-  in >> line_number;
-  line_number += delta;
-//?   cout << line_number << '\n'; //? 1
-  if (in.eof()) return;
-  in >> filename;
-  if (filename[0] == '"') filename.erase(0, 1);
-  if (filename[filename.size()-1] == '"') filename.erase(filename.size()-1);
-//?   cout << filename << '\n'; //? 1
+const Line& front(const list<Line>& l) {
+  assert(!l.empty());
+  return l.front();
 }
