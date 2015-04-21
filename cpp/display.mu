@@ -1,5 +1,5 @@
 recipe main [
-  cursor-mode 0:literal/screen
+  switch-to-display
   print-character-to-display 97:literal
   1:integer/raw, 2:integer/raw <- cursor-position-on-display
   $print 1:integer/raw
@@ -15,5 +15,5 @@ recipe main [
   move-cursor-on-display 0:literal, 0:literal
   clear-line-on-display
   wait-for-key-from-keyboard
-  retro-mode 0:literal/screen
+  return-to-console
 ]

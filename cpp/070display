@@ -1,4 +1,8 @@
 //: Text-mode cursor primitives. Currently thin wrappers around ncurses calls.
+//: Mu starts out at the 'console' where lines wrap and scrolling is
+//: automatic, where keys aren't read until pressing <enter>.
+//: This file provides mechanisms for opening a 'display' and taking raw
+//: charge of the cursor and keyboard.
 
 :(before "End Includes")
 #include<ncurses.h>
@@ -6,21 +10,21 @@
 //:: Display management
 
 :(before "End Primitive Recipe Declarations")
-CURSOR_MODE,
+SWITCH_TO_DISPLAY,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["cursor-mode"] = CURSOR_MODE;
+Recipe_number["switch-to-display"] = SWITCH_TO_DISPLAY;
 :(before "End Primitive Recipe Implementations")
-case CURSOR_MODE: {
+case SWITCH_TO_DISPLAY: {
   initscr();
   break;
 }
 
 :(before "End Primitive Recipe Declarations")
-RETRO_MODE,
+RETURN_TO_CONSOLE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["retro-mode"] = RETRO_MODE;
+Recipe_number["return-to-console"] = RETURN_TO_CONSOLE;
 :(before "End Primitive Recipe Implementations")
-case RETRO_MODE: {
+case RETURN_TO_CONSOLE: {
   endwin();
   break;
 }
