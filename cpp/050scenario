@@ -31,6 +31,7 @@ for (size_t i = 0; i < Scenarios.size(); ++i) {
        p != Scenarios[i].memory_expectations.end();
        ++p) {
     if (Memory[p->first] != p->second) {
+      // todo: unit tests for the test parsing infrastructure; use raise?
       cerr << Scenarios[i].name << ": Expected location " << p->first << " to contain " << p->second << " but saw " << Memory[p->first] << '\n';
       Passed = false;
     }
@@ -129,7 +130,12 @@ void handle_scenario_memory_directive(istream& in, scenario& out) {
     if (in.eof()) break;
 //?     cout << "a: " << in.peek() << '\n'; //? 1
     if (in.peek() == ']') break;
-    int address = 0;  in >> address;
+    string lhs = next_word(in);
+    if (!is_number(lhs)) {
+      handle_type(lhs, in, out);
+      continue;
+    }
+    int address = to_int(lhs);
 //?     cout << "address: " << address << '\n'; //? 2
 //?     cout << "b: " << in.peek() << '\n'; //? 1
     skip_whitespace_and_comments(in);
@@ -144,6 +150,31 @@ void handle_scenario_memory_directive(istream& in, scenario& out) {
   }
   skip_whitespace(in);
   assert(in.get() == ']');
+}
+
+void handle_type(const string& lhs, istream& in, scenario& out) {
+  reagent x(lhs);
+  if (x.properties[0].second[0] == "string") {
+    x.set_value(to_int(x.name));
+//?     cerr << x.name << ' ' << x.value << '\n'; //? 1
+    skip_whitespace_and_comments(in);
+    string _assign = next_word(in);
+//?     cerr << _assign << '\n'; //? 1
+    assert(_assign == "<-");
+    skip_whitespace_and_comments(in);
+    string literal = next_word(in);
+//?     cerr << literal << '\n'; //? 1
+    size_t address = x.value;
+    out.memory_expectations[address] = literal.size()-2;  // exclude quoting brackets
+    ++address;
+    for (size_t i = 1; i < literal.size()-1; ++i) {
+//?       cerr << "checking " << address << ": " << literal[i] << '\n'; //? 1
+      out.memory_expectations[address] = literal[i];
+      ++address;
+    }
+    return;
+  }
+  raise << "scenario doesn't know how to parse memory expectation on " << lhs << '\n';
 }
 
 void slurp_until_matching_bracket(istream& in, ostream& out) {

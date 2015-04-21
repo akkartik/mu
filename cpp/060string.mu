@@ -294,8 +294,7 @@ scenario integer-to-decimal-digit-zero [
     2:array:character/raw <- copy 1:address:array:character/deref/raw
   ]
   memory should contain [
-    2 <- 1
-    3 <- 48  # '0'
+    2:string <- [0]
   ]
 ]
 
@@ -305,10 +304,7 @@ scenario integer-to-decimal-digit-positive [
     2:array:character/raw <- copy 1:address:array:character/deref/raw
   ]
   memory should contain [
-    2 <- 3
-    3 <- 50  # '2'
-    4 <- 51  # '3'
-    5 <- 52  # '4'
+    2:string <- [234]
   ]
 ]
 
@@ -377,20 +373,7 @@ scenario string-append-1 [
     4:array:character/raw <- copy 3:address:array:character/raw/deref
   ]
   memory should contain [
-    4 <- 13
-    5 <- 104  # 'h'
-    6 <- 101  # 'e'
-    7 <- 108  # 'l'
-    8 <- 108  # 'l'
-    9 <- 111  # 'o'
-    10 <- 44  # ','
-    11 <- 32  # ' '
-    12 <- 119  # 'w'
-    13 <- 111  # 'o'
-    14 <- 114  # 'r'
-    15 <- 108  # 'l'
-    16 <- 100  # 'd'
-    17 <- 33  # '!'
+    4:string <- [hello, world!]
   ]
 ]
 
@@ -493,14 +476,7 @@ scenario interpolate-works [
     4:array:character/raw <- copy 3:address:array:character/raw/deref
   ]
   memory should contain [
-    4 <- 7  # length
-    5 <- 97  # 'a'
-    6 <- 98  # 'b'
-    7 <- 99  # 'c'
-    8 <- 32  # ' '
-    9 <- 100  # 'd'
-    10 <- 101  # 'e'
-    11 <- 102  # 'f'
+    4:string <- [abc def]
   ]
 ]
 
@@ -512,18 +488,7 @@ scenario interpolate-at-start [
     4:array:character/raw <- copy 3:address:array:character/raw/deref
   ]
   memory should contain [
-    4 <- 11  # length
-    5 <- 97  # 'a'
-    6 <- 98  # 'b'
-    7 <- 99  # 'c'
-    8 <- 44  # ','
-    9 <- 32  # ' '
-    10 <- 104  # 'h'
-    11 <- 101  # 'e'
-    12 <- 108  # 'l'
-    13 <- 108  # 'l'
-    14 <- 111  # 'o'
-    15 <- 33  # '!'
+    4:string <- [abc, hello!]
     16 <- 0  # out of bounds
   ]
 ]
@@ -536,17 +501,6 @@ scenario interpolate-at-end [
     4:array:character/raw <- copy 3:address:array:character/raw/deref
   ]
   memory should contain [
-    4 <- 10  # length
-    5 <- 104  # 'h'
-    6 <- 101  # 'e'
-    7 <- 108  # 'l'
-    8 <- 108  # 'l'
-    9 <- 111  # 'o'
-    10 <- 44  # ','
-    11 <- 32  # ' '
-    12 <- 97  # 'a'
-    13 <- 98  # 'b'
-    14 <- 99  # 'c'
-    15 <- 0  # out of bounds
+    4:string <- [hello, abc]
   ]
 ]
