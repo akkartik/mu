@@ -47,7 +47,7 @@ void transform_names(const recipe_number r) {
       assert(!inst.ingredients[in].types.empty());
       if (inst.ingredients[in].types[0]  // not a literal
           && !inst.ingredients[in].initialized
-          && inst.ingredients[in].name.find_first_not_of("0123456789-.") != string::npos) {
+          && !is_number(inst.ingredients[in].name)) {
         if (!already_transformed(inst.ingredients[in], names)) {
           raise << "use before set: " << inst.ingredients[in].name << " in " << Recipe[r].name << '\n';
         }
@@ -64,7 +64,7 @@ void transform_names(const recipe_number r) {
         inst.products[out].initialized = true;
       if (inst.products[out].types[0]  // not a literal
           && !inst.products[out].initialized
-          && inst.products[out].name.find_first_not_of("0123456789-.") != string::npos) {
+          && !is_number(inst.products[out].name)) {
         if (names.find(inst.products[out].name) == names.end()) {
           trace("name") << "assign " << inst.products[out].name << " " << curr_idx;
           names[inst.products[out].name] = curr_idx;
@@ -108,6 +108,10 @@ bool is_raw(const reagent& r) {
     if (r.properties[i].first == "raw") return true;
   }
   return false;
+}
+
+bool is_number(const string& s) {
+  return s.find_first_not_of("0123456789-.") == string::npos;
 }
 
 :(scenario "convert_names_passes_dummy")
