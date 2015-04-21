@@ -3,6 +3,8 @@
 :(before "End Includes")
 #include<ncurses.h>
 
+//:: Display management
+
 :(before "End Primitive Recipe Declarations")
 CURSOR_MODE,
 :(before "End Primitive Recipe Numbers")
@@ -22,6 +24,68 @@ case RETRO_MODE: {
   endwin();
   break;
 }
+
+:(before "End Primitive Recipe Declarations")
+CLEAR_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["clear-display"] = CLEAR_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case CLEAR_DISPLAY: {
+  clear();
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+CLEAR_LINE_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["clear-line-on-display"] = CLEAR_LINE_ON_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case CLEAR_LINE_ON_DISPLAY: {
+  clrtoeol();
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+PRINT_CHARACTER_TO_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["print-character-to-display"] = PRINT_CHARACTER_TO_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case PRINT_CHARACTER_TO_DISPLAY: {
+  vector<int> arg = read_memory(instructions[pc].ingredients[0]);
+  addch(arg[0]);
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+CURSOR_POSITION_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["cursor-position-on-display"] = CURSOR_POSITION_ON_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case CURSOR_POSITION_ON_DISPLAY: {
+  size_t cursor_row = 0, cursor_column = 0;
+  getyx(stdscr, cursor_row, cursor_column);
+  vector<int> row;
+  row.push_back(cursor_row);
+  write_memory(instructions[pc].products[0], row);
+  vector<int> column;
+  column.push_back(cursor_column);
+  write_memory(instructions[pc].products[1], column);
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+MOVE_CURSOR_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case MOVE_CURSOR_ON_DISPLAY: {
+  vector<int> row = read_memory(instructions[pc].ingredients[0]);
+  vector<int> column = read_memory(instructions[pc].ingredients[1]);
+  move(row[0], column[0]);
+  break;
+}
+
+//:: Keyboard management
 
 :(before "End Primitive Recipe Declarations")
 WAIT_FOR_KEY_FROM_KEYBOARD,
