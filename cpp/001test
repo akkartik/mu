@@ -38,30 +38,40 @@ long Num_failures = 0;
   }
 
 :(before "End Main")
-if (argc == 2 && is_equal(argv[1], "test")) {
-  run_tests();
-  cerr << '\n';
-  if (Num_failures > 0)
-    cerr << Num_failures << " failure"
-         << (Num_failures > 1 ? "s" : "")
-         << '\n';
+if (argc <= 1 || is_equal(argv[1], "--help")) {
+  // need some way to distribute this across layers
+  cerr << "To load files and run 'main': mu file1.mu file2.mu ...\n"
+       << "To run all core tests: mu test\n"
+       << "To load files and run tests defined in them: mu test file1.mu file2.mu ...\n"
+       << "To run just some C++ tests in `test_list` file: mu test n1 n2 ...\n"
+       << "  (look up n1 n2 ... by running `grep -n` on test_list`)\n"
+       ;
   return 0;
 }
-// pass in a set of line numbers in test_file to run just those tests
-if (argc > 2 && is_equal(argv[1], "test") && is_number(argv[2])) {
-  assert(Next_recipe_number < 1000);  // see vm layer
-  for (int i = 2; i < argc; ++i) {
-    run_test(to_int(argv[i])-1);
+if (argc > 1 && is_equal(argv[1], "test")) {
+  // End Test Run Initialization
+  if (argc == 2) {
+    run_tests();
+    cerr << '\n';
+    if (Num_failures > 0)
+      cerr << Num_failures << " failure"
+           << (Num_failures > 1 ? "s" : "")
+           << '\n';
+    return 0;
   }
-  cerr << '\n';
-  if (Num_failures > 0)
-    cerr << Num_failures << " failure"
-         << (Num_failures > 1 ? "s" : "")
-         << '\n';
-  return 0;
-}
+  if (is_number(argv[2])) {
+    // all args are line numbers in test_file specifying tests to run
+    run_tests(argc, argv);
+    cerr << '\n';
+    if (Num_failures > 0)
+      cerr << Num_failures << " failure"
+           << (Num_failures > 1 ? "s" : "")
+           << '\n';
+    return 0;
+  }
 
-// End Test Runs
+  // End Test Runs
+}
 
 :(code)
 void run_tests() {
@@ -71,6 +81,12 @@ void run_tests() {
     run_test(i);
   }
   // End Tests
+}
+
+void run_tests(int argc, char* argv[]) {
+  for (int i = 2; i < argc; ++i) {
+    run_test(to_int(argv[i])-1);
+  }
 }
 
 void run_test(size_t i) {
