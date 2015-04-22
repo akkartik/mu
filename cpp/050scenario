@@ -21,6 +21,7 @@ run_mu_tests();
 
 :(code)
 void run_mu_tests() {
+  assert(Next_recipe_number < 1000);  // don't load into test space
   for (size_t i = 0; i < Scenarios.size(); ++i) {
     setup();
     Trace_file = Scenarios[i].name;
@@ -199,7 +200,6 @@ void slurp_until_matching_bracket(istream& in, ostream& out) {
 :(before "End Test Runs")
 if (argc > 2 && is_equal(argv[1], "test") && file_exists(argv[2])) {
   Scenarios.clear();  // ignore core.mu
-  assert(Next_recipe_number < 1000);  // don't load into test space
   for (int i = 2; i < argc; ++i) {
     load(argv[i]);
   }
