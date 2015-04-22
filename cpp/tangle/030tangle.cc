@@ -95,14 +95,12 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
       in.seekg(old);
       break;
     }
-    else {
-      Line curr;
-      curr.line_number = line_number;
-      curr.filename = filename;
-      curr.contents = curr_line;
-      hunk.push_back(curr);
-      ++line_number;
-    }
+    Line curr;
+    curr.line_number = line_number;
+    curr.filename = filename;
+    curr.contents = curr_line;
+    hunk.push_back(curr);
+    ++line_number;
   }
 
   istringstream directive_stream(directive.substr(2));  // length of ":("
