@@ -48,7 +48,7 @@ if (argc == 2 && is_equal(argv[1], "test")) {
   return 0;
 }
 // pass in a set of line numbers in test_file to run just those tests
-if (argc > 2 && is_equal(argv[1], "test")) {
+if (argc > 2 && is_equal(argv[1], "test") && is_number(argv[2])) {
   for (int i = 2; i < argc; ++i) {
     run_test(to_int(argv[i])-1);
   }
@@ -85,6 +85,10 @@ void run_test(size_t i) {
 
 bool is_equal(char* s, const char* lit) {
   return strncmp(s, lit, strlen(lit)) == 0;
+}
+
+bool is_number(const string& s) {
+  return s.find_first_not_of("0123456789-.") == string::npos;
 }
 
 int to_int(string n) {
