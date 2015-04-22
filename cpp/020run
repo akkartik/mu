@@ -104,6 +104,7 @@ if (argc > 1) {
 //?   Trace_stream->dump_layer = "all"; //? 2
   transform_all();
   recipe_number r = Recipe_number[string("main")];
+//?   Trace_stream->dump_layer = "all"; //? 1
   if (r) run(r);
   dump_memory();
 }
@@ -119,14 +120,14 @@ void load(string filename) {
   add_recipes(fin);
   transform_all();
   fin.close();
+  // freeze everything so it doesn't get cleared by tests
+  recently_added_recipes.clear();
+  recently_added_types.clear();
 }
 
 //:: On startup, load everything in core.mu
 :(before "End Load Recipes")
 load("core.mu");
-// freeze everything so it doesn't get cleared by tests
-recently_added_recipes.clear();
-recently_added_types.clear();
 
 :(code)
 // helper for tests
