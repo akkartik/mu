@@ -936,6 +936,9 @@
                         (if (len> caller-args.routine* idx)
                           (list caller-args.routine*.idx t)
                           (list nil nil))))
+                rewind-inputs
+                  (do1 nil
+                       (= caller-arg-idx.routine* 0))
                 ; type and otype won't always easily compile. be careful.
                 type
                   (ty (caller-operands.routine* (v arg.0)))
@@ -1933,6 +1936,37 @@
   ; return new-list.cdr
   (result:list-address <- list-next result:list-address)  ; memory leak
   (reply result:list-address))
+
+; create an array out of a list of scalar args
+; only integers for now
+(init-fn init-array
+  (default-space:space-address <- new space:literal 30:literal)
+  (capacity:integer <- copy 0:literal)
+  { begin
+    ; while read curr-value
+    (curr-value:integer exists?:boolean <- next-input)
+    (break-unless exists?:boolean)
+    (capacity:integer <- add capacity:integer 1:literal)
+    (loop)
+  }
+  (result:integer-array-address <- new integer-array:literal capacity:integer)
+  (rewind-inputs)
+;?   (xxx:integer <- next-input) ;? 1
+;?   ($print xxx:integer) ;? 1
+;?   (rewind-inputs) ;? 1
+  (i:integer <- copy 0:literal)
+  { begin
+    ; while read curr-value
+    (done?:boolean <- greater-or-equal i:integer capacity:integer)
+    (break-if done?:boolean)
+    (curr-value:integer exists?:boolean <- next-input)
+    (assert exists?:boolean)
+    (tmp:integer-address <- index-address result:integer-array-address/deref i:integer)
+    (tmp:integer-address/deref <- copy curr-value:integer)
+    (i:integer <- add i:integer 1:literal)
+    (loop)
+  }
+  (reply result:integer-array-address))
 
 (init-fn list-length
   (default-space:space-address <- new space:literal 30:literal)
