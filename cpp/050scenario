@@ -183,6 +183,8 @@ void handle_type(const string& lhs, istream& in, scenario& out) {
   raise << "scenario doesn't know how to parse memory expectation on " << lhs << '\n';
 }
 
+//:: Helpers
+
 void slurp_until_matching_bracket(istream& in, ostream& out) {
   int brace_depth = 1;  // just scanned '['
   char c;
@@ -192,23 +194,6 @@ void slurp_until_matching_bracket(istream& in, ostream& out) {
     if (brace_depth == 0) break;  // drop final ']'
     out << c;
   }
-}
-
-//:: Run tests for loaded mu files (rather than running 'main').
-
-:(before "End Test Runs")
-if (argc > 2 && is_equal(argv[1], "test") && file_exists(argv[2])) {
-  Scenarios.clear();  // ignore core.mu
-  for (int i = 2; i < argc; ++i) {
-    load(argv[i]);
-  }
-  run_mu_tests();
-  cerr << '\n';
-  if (Num_failures > 0)
-    cerr << Num_failures << " failure"
-         << (Num_failures > 1 ? "s" : "")
-         << '\n';
-  return 0;
 }
 
 :(code)

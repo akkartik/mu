@@ -16,6 +16,7 @@ const test_fn Tests[] = {
   #include "test_list"  // auto-generated; see makefile
 };
 
+bool Run_tests = false;
 bool Passed = true;  // set this to false inside any test to indicate failure
 long Num_failures = 0;
 
@@ -36,40 +37,24 @@ long Num_failures = 0;
     return;  /* Currently we stop at the very first failure. */ \
   }
 
-:(before "End Main")
-if (argc <= 1 || is_equal(argv[1], "--help")) {
-  // need some way to distribute this across layers
-  cerr << "To load files and run 'main': mu file1.mu file2.mu ...\n"
-       << "To run all core tests: mu test\n"
-       << "To load files and run tests defined in them: mu test file1.mu file2.mu ...\n"
-       << "To run just some C++ tests in `test_list` file: mu test n1 n2 ...\n"
-       << "  (look up n1 n2 ... by running `grep -n` on test_list`)\n"
-       ;
-  return 0;
-}
+:(before "End Commandline Parsing")
 if (argc > 1 && is_equal(argv[1], "test")) {
-  // End Test Run Initialization
-  if (argc == 2) {
-    run_tests();
-    cerr << '\n';
-    if (Num_failures > 0)
-      cerr << Num_failures << " failure"
-           << (Num_failures > 1 ? "s" : "")
-           << '\n';
-    return 0;
-  }
-  if (is_number(argv[2])) {
-    // all args are line numbers in test_file specifying tests to run
-    run_tests(argc, argv);
-    cerr << '\n';
-    if (Num_failures > 0)
-      cerr << Num_failures << " failure"
-           << (Num_failures > 1 ? "s" : "")
-           << '\n';
-    return 0;
-  }
+  Run_tests = true;  --argc;  ++argv;  // shift 'test' out of commandline args
+}
 
-  // End Test Runs
+:(before "End Main")
+if (Run_tests) {
+  // Test Runs
+  // we run some tests and then exit; assume no state need be maintained afterward
+
+  // End Test Run Initialization
+  run_tests();
+  cerr << '\n';
+  if (Num_failures > 0)
+    cerr << Num_failures << " failure"
+         << (Num_failures > 1 ? "s" : "")
+         << '\n';
+  return 0;
 }
 
 :(code)
@@ -80,12 +65,6 @@ void run_tests() {
     run_test(i);
   }
   // End Tests
-}
-
-void run_tests(int argc, char* argv[]) {
-  for (int i = 2; i < argc; ++i) {
-    run_test(to_int(argv[i])-1);
-  }
 }
 
 void run_test(size_t i) {
@@ -102,10 +81,6 @@ void run_test(size_t i) {
   // End Test Teardown
 }
 
-bool is_equal(char* s, const char* lit) {
-  return strncmp(s, lit, strlen(lit)) == 0;
-}
-
 bool is_number(const string& s) {
   return s.find_first_not_of("0123456789-.") == string::npos;
 }
@@ -120,16 +95,3 @@ int to_int(string n) {
 :(before "End Includes")
 #include<assert.h>
 #include<cstdlib>
-
-#include<iostream>
-using std::istream;
-using std::ostream;
-using std::iostream;
-using std::cin;
-using std::cout;
-using std::cerr;
-
-#include<cstring>
-#include<string>
-using std::string;
-#define NOT_FOUND string::npos  // macro doesn't complain about redef

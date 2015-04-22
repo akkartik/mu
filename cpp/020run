@@ -93,13 +93,16 @@ inline bool done(routine& rr) {
   return running_at(rr) >= steps(rr).size();
 }
 
-:(before "End Main")
+:(before "End Commandline Parsing")
 if (argc > 1) {
-  setup();
   for (int i = 1; i < argc; ++i) {
     load(argv[i]);
   }
+}
 
+:(before "End Main")
+if (!Run_tests) {
+  setup();
   Trace_stream = new trace_stream;
 //?   Trace_stream->dump_layer = "all"; //? 2
   transform_all();
