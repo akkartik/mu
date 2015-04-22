@@ -95,6 +95,10 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
       in.seekg(old);
       break;
     }
+    if (starts_with(curr_line, "//:")) {
+      ++line_number;
+      continue;
+    }
     Line curr;
     curr.line_number = line_number;
     curr.filename = filename;
