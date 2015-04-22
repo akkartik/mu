@@ -69,6 +69,14 @@ void test_tangle_with_tanglecomments_and_directive() {
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "//: 1");
 }
 
+void test_tangle_with_tanglecomments_inside_directive() {
+  istringstream in("a\n//: 1\nb\nc\n:(before b)\n//: abc\nd\n:(code)\ne\n");
+  list<Line> dummy;
+  tangle(in, dummy);
+  CHECK_TRACE_CONTENTS("tangle", "a#line 7d#line 3bc#line 9e");
+  CHECK_TRACE_DOESNT_CONTAIN("tangle", "//: 1");
+}
+
 void test_tangle2() {
   istringstream in("a\nb\nc\n:(after b)\nd\n");
   list<Line> dummy;
