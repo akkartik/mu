@@ -12,35 +12,41 @@ struct scenario {
 :(before "End Globals")
 vector<scenario> Scenarios;
 
-//: How we check Scenarios.
+//:: How we check Scenarios.
 
 :(before "End Tests")
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
-for (size_t i = 0; i < Scenarios.size(); ++i) {
-  setup();
-  Trace_file = Scenarios[i].name;
-  START_TRACING_UNTIL_END_OF_SCOPE
-  if (!Scenarios[i].dump_layer.empty())
-    Trace_stream->dump_layer = Scenarios[i].dump_layer;
-//?   cout << Scenarios[i].to_run; //? 2
-  run(Scenarios[i].to_run);
-//?   cout << "after: " << Memory[1] << '\n'; //? 1
-//?   cout << "After:\n";  dump_memory(); //? 1
-  for (map<int, int>::iterator p = Scenarios[i].memory_expectations.begin();
-       p != Scenarios[i].memory_expectations.end();
-       ++p) {
-    if (Memory[p->first] != p->second) {
-      // todo: unit tests for the test parsing infrastructure; use raise?
-      cerr << Scenarios[i].name << ": Expected location " << p->first << " to contain " << p->second << " but saw " << Memory[p->first] << '\n';
-      Passed = false;
+run_mu_tests();
+
+:(code)
+void run_mu_tests() {
+  for (size_t i = 0; i < Scenarios.size(); ++i) {
+    setup();
+    Trace_file = Scenarios[i].name;
+    START_TRACING_UNTIL_END_OF_SCOPE
+    if (!Scenarios[i].dump_layer.empty())
+      Trace_stream->dump_layer = Scenarios[i].dump_layer;
+//?     cerr << "AAA " << Scenarios[i].name << '\n'; //? 1
+//?     cout << Scenarios[i].to_run; //? 2
+    run(Scenarios[i].to_run);
+//?     cout << "after: " << Memory[1] << '\n'; //? 1
+//?     cout << "After:\n";  dump_memory(); //? 1
+    for (map<int, int>::iterator p = Scenarios[i].memory_expectations.begin();
+         p != Scenarios[i].memory_expectations.end();
+         ++p) {
+      if (Memory[p->first] != p->second) {
+        // todo: unit tests for the test parsing infrastructure; use raise?
+        cerr << Scenarios[i].name << ": Expected location " << p->first << " to contain " << p->second << " but saw " << Memory[p->first] << '\n';
+        Passed = false;
+      }
     }
+    // End Scenario Checks
+    if (Passed) cerr << ".";
   }
-  // End Scenario Checks
-  if (Passed) cerr << ".";
 }
 
-//: How we create Scenarios.
+//:: How we create Scenarios.
 
 :(scenarios "parse_scenario")
 :(scenario "parse_scenario_memory_expectation")
@@ -188,6 +194,25 @@ void slurp_until_matching_bracket(istream& in, ostream& out) {
   }
 }
 
+//:: Run tests for loaded mu files (rather than running 'main').
+
+:(before "End Test Runs")
+if (argc > 2 && is_equal(argv[1], "test") && file_exists(argv[2])) {
+  Scenarios.clear();  // ignore core.mu
+  assert(Next_recipe_number < 1000);  // don't load into test space
+  for (int i = 2; i < argc; ++i) {
+    load(argv[i]);
+  }
+  run_mu_tests();
+  cerr << '\n';
+  if (Num_failures > 0)
+    cerr << Num_failures << " failure"
+         << (Num_failures > 1 ? "s" : "")
+         << '\n';
+  return 0;
+}
+
+:(code)
 // for tests
 void parse_scenario(const string& s) {
   istringstream in(s);
@@ -211,4 +236,12 @@ string &ltrim(string &s) {
 string &rtrim(string &s) {
   s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(isspace))).base(), s.end());
   return s;
+}
+
+:(before "End Includes")
+#include <sys/stat.h>
+:(code)
+bool file_exists(const string& filename) {
+  struct stat buffer;
+  return stat(filename.c_str(), &buffer) == 0;
 }
