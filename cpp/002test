@@ -48,7 +48,12 @@ if (Run_tests) {
   // we run some tests and then exit; assume no state need be maintained afterward
 
   // End Test Run Initialization
-  run_tests();
+  time_t t; time(&t);
+  cerr << "C tests: " << ctime(&t);
+  for (size_t i=0; i < sizeof(Tests)/sizeof(Tests[0]); ++i) {
+    run_test(i);
+  }
+  // End Tests
   cerr << '\n';
   if (Num_failures > 0)
     cerr << Num_failures << " failure"
@@ -58,15 +63,6 @@ if (Run_tests) {
 }
 
 :(code)
-void run_tests() {
-  time_t t; time(&t);
-  cerr << "C tests: " << ctime(&t);
-  for (size_t i=0; i < sizeof(Tests)/sizeof(Tests[0]); ++i) {
-    run_test(i);
-  }
-  // End Tests
-}
-
 void run_test(size_t i) {
   if (i >= sizeof(Tests)/sizeof(Tests[0])) {
     cerr << "no test " << i << '\n';
@@ -77,8 +73,6 @@ void run_test(size_t i) {
   // End Test Setup
   (*Tests[i])();
   if (Passed) cerr << ".";
-  // Test Teardown
-  // End Test Teardown
 }
 
 bool is_number(const string& s) {
