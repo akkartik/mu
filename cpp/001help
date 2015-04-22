@@ -1,0 +1,32 @@
+:(before "End Commandline Parsing")
+if (argc <= 1 || is_equal(argv[1], "--help")) {
+  // this is the functionality later layers will provide
+  // currently no automated tests for commandline arg parsing
+  cerr << "To load files and run 'main':\n"
+       << "  mu file1.mu file2.mu ...\n"
+       << "To run all tests:\n"
+       << "  mu test\n"
+       << "To load files and then run all tests:\n"
+       << "  mu test file1.mu file2.mu ...\n"
+       ;
+  return 0;
+}
+
+:(code)
+bool is_equal(char* s, const char* lit) {
+  return strncmp(s, lit, strlen(lit)) == 0;
+}
+
+:(before "End Includes")
+#include<iostream>
+using std::istream;
+using std::ostream;
+using std::iostream;
+using std::cin;
+using std::cout;
+using std::cerr;
+
+#include<cstring>
+#include<string>
+using std::string;
+#define NOT_FOUND string::npos  // macro doesn't complain about redef
