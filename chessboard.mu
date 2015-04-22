@@ -9,19 +9,21 @@
 
 (function init-board [
   (default-space:space-address <- new space:literal 30:literal)
-  (initial-position:list-address <- next-input)
+  (initial-position:integer-array-address <- next-input)
   ; assert(length(initial-position) == 64)
-  (len:integer <- list-length initial-position:list-address)
+;?   ($print initial-position:integer-array-address/deref) ;? 1
+  (len:integer <- length initial-position:integer-array-address/deref)
+;?   ($print len:integer) ;? 1
+;?   ($print (("\n" literal))) ;? 1
   (correct-length?:boolean <- equal len:integer 64:literal)
   (assert correct-length?:boolean (("chessboard had incorrect size" literal)))
   (b:board-address <- new board:literal 8:literal)
   (col:integer <- copy 0:literal)
-  (curr:list-address <- copy initial-position:list-address)
   { begin
     (done?:boolean <- equal col:integer 8:literal)
     (break-if done?:boolean)
     (file:file-address-address <- index-address b:board-address/deref col:integer)
-    (file:file-address-address/deref curr:list-address <- init-file curr:list-address)
+    (file:file-address-address/deref <- init-file initial-position:integer-array-address col:integer)
     (col:integer <- add col:integer 1:literal)
     (loop)
   }
@@ -30,20 +32,21 @@
 
 (function init-file [
   (default-space:space-address <- new space:literal 30:literal)
-  (cursor:list-address <- next-input)
+  (position:integer-array-address <- next-input)
+  (index:integer <- next-input)
+  (index:integer <- multiply index:integer 8:literal)
   (result:file-address <- new file:literal 8:literal)
   (row:integer <- copy 0:literal)
   { begin
     (done?:boolean <- equal row:integer 8:literal)
     (break-if done?:boolean)
-    (src:tagged-value-address <- list-value-address cursor:list-address)
     (dest:square-address <- index-address result:file-address/deref row:integer)
-    (dest:square-address/deref <- get src:tagged-value-address/deref payload:offset)  ; unsafe typecast
-    (cursor:list-address <- list-next cursor:list-address)
+    (dest:square-address/deref <- index position:integer-array-address/deref index:integer)
     (row:integer <- add row:integer 1:literal)
+    (index:integer <- add index:integer 1:literal)
     (loop)
   }
-  (reply result:file-address cursor:list-address)
+  (reply result:file-address)
 ])
 
 (function print-board [
@@ -206,15 +209,15 @@
 
 (function chessboard [
   (default-space:space-address <- new space:literal 30:literal)
-  (initial-position:list-address <- init-list ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal))
-                                              ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
-                                              ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
-                                              ((#\Q literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\q literal))
-                                              ((#\K literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\k literal))
-                                              ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
-                                              ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
-                                              ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal)))
-  (b:board-address <- init-board initial-position:list-address)
+  (initial-position:integer-array-address <- init-array ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal))
+                                                        ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                                        ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                                        ((#\Q literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\q literal))
+                                                        ((#\K literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\k literal))
+                                                        ((#\B literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\b literal))
+                                                        ((#\N literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\n literal))
+                                                        ((#\R literal)) ((#\P literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\_ literal)) ((#\p literal)) ((#\r literal)))
+  (b:board-address <- init-board initial-position:integer-array-address)
   (cursor-mode)
   ; hook up stdin
   (stdin:channel-address <- init-channel 1:literal)
