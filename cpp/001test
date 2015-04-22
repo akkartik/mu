@@ -16,8 +16,7 @@ const test_fn Tests[] = {
   #include "test_list"  // auto-generated; see makefile
 };
 
-bool Passed = true;
-
+bool Passed = true;  // set this to false inside any test to indicate failure
 long Num_failures = 0;
 
 #define CHECK(X) \
@@ -25,7 +24,7 @@ long Num_failures = 0;
     ++Num_failures; \
     cerr << "\nF " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): " << #X << '\n'; \
     Passed = false; \
-    return; \
+    return;  /* Currently we stop at the very first failure. */ \
   }
 
 #define CHECK_EQ(X, Y) \
@@ -34,7 +33,7 @@ long Num_failures = 0;
     cerr << "\nF " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): " << #X << " == " << #Y << '\n'; \
     cerr << "  got " << (X) << '\n';  /* BEWARE: multiple eval */ \
     Passed = false; \
-    return; \
+    return;  /* Currently we stop at the very first failure. */ \
   }
 
 :(before "End Main")
@@ -95,6 +94,7 @@ void run_test(size_t i) {
     return;
   }
   setup();
+  Passed = true;
   // End Test Setup
   (*Tests[i])();
   if (Passed) cerr << ".";
