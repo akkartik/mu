@@ -2,13 +2,6 @@
 
 #include <stdint.h>
 
-/* for shared objects */
-#if __GNUC__ >= 4
- #define SO_IMPORT __attribute__((visibility("default")))
-#else
- #define SO_IMPORT
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -171,8 +164,8 @@ struct tb_event {
  * other functions. After successful initialization, the library must be
  * finalized using the tb_shutdown() function.
  */
-SO_IMPORT int tb_init(void);
-SO_IMPORT void tb_shutdown(void);
+int tb_init(void);
+void tb_shutdown(void);
 
 /* Returns the size of the internal back buffer (which is the same as
  * terminal's window size in characters). The internal buffer can be resized
@@ -180,17 +173,17 @@ SO_IMPORT void tb_shutdown(void);
  * unspecified negative value when called before tb_init() or after
  * tb_shutdown().
  */
-SO_IMPORT int tb_width(void);
-SO_IMPORT int tb_height(void);
+int tb_width(void);
+int tb_height(void);
 
 /* Clears the internal back buffer using TB_DEFAULT color or the
  * color/attributes set by tb_set_clear_attributes() function.
  */
-SO_IMPORT void tb_clear(void);
-SO_IMPORT void tb_set_clear_attributes(uint16_t fg, uint16_t bg);
+void tb_clear(void);
+void tb_set_clear_attributes(uint16_t fg, uint16_t bg);
 
 /* Synchronizes the internal back buffer with the terminal. */
-SO_IMPORT void tb_present(void);
+void tb_present(void);
 
 #define TB_HIDE_CURSOR -1
 
@@ -198,20 +191,20 @@ SO_IMPORT void tb_present(void);
  * TB_HIDE_CURSOR as both coordinates, then the cursor will be hidden. Cursor
  * is hidden by default.
  */
-SO_IMPORT void tb_set_cursor(int cx, int cy);
+void tb_set_cursor(int cx, int cy);
 
 /* Changes cell's parameters in the internal back buffer at the specified
  * position.
  */
-SO_IMPORT void tb_put_cell(int x, int y, const struct tb_cell *cell);
-SO_IMPORT void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
+void tb_put_cell(int x, int y, const struct tb_cell *cell);
+void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
 
 /* Returns a pointer to internal cell back buffer. You can get its dimensions
  * using tb_width() and tb_height() functions. The pointer stays valid as long
  * as no tb_clear() and tb_present() calls are made. The buffer is
  * one-dimensional buffer containing lines of cells starting from the top.
  */
-SO_IMPORT struct tb_cell *tb_cell_buffer();
+struct tb_cell *tb_cell_buffer();
 
 #define TB_INPUT_CURRENT 0 /* 000 */
 #define TB_INPUT_ESC     1 /* 001 */
@@ -228,7 +221,7 @@ SO_IMPORT struct tb_cell *tb_cell_buffer();
  *
  * If 'mode' is TB_INPUT_CURRENT, it returns the current input mode.
  */
-SO_IMPORT int tb_select_input_mode(int mode);
+int tb_select_input_mode(int mode);
 
 #define TB_OUTPUT_CURRENT   0
 #define TB_OUTPUT_NORMAL    1
@@ -269,26 +262,26 @@ SO_IMPORT int tb_select_input_mode(int mode);
  *
  * If 'mode' is TB_OUTPUT_CURRENT, it returns the current output mode.
  */
-SO_IMPORT int tb_select_output_mode(int mode);
+int tb_select_output_mode(int mode);
 
 /* Wait for an event up to 'timeout' milliseconds and fill the 'event'
  * structure with it, when the event is available. Returns the type of the
  * event (one of TB_EVENT_* constants) or -1 if there was an error or 0 in case
  * there were no event during 'timeout' period.
  */
-SO_IMPORT int tb_peek_event(struct tb_event *event, int timeout);
+int tb_peek_event(struct tb_event *event, int timeout);
 
 /* Wait for an event forever and fill the 'event' structure with it, when the
  * event is available. Returns the type of the event (one of TB_EVENT_*
  * constants) or -1 if there was an error.
  */
-SO_IMPORT int tb_poll_event(struct tb_event *event);
+int tb_poll_event(struct tb_event *event);
 
 /* Utility utf8 functions. */
 #define TB_EOF -1
-SO_IMPORT int tb_utf8_char_length(char c);
-SO_IMPORT int tb_utf8_char_to_unicode(uint32_t *out, const char *c);
-SO_IMPORT int tb_utf8_unicode_to_char(char *out, uint32_t c);
+int tb_utf8_char_length(char c);
+int tb_utf8_char_to_unicode(uint32_t *out, const char *c);
+int tb_utf8_unicode_to_char(char *out, uint32_t c);
 
 #ifdef __cplusplus
 }
