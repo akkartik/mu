@@ -9,6 +9,24 @@ recipe f [
 ]
 +mem: storing 4 in location 3
 
+:(scenario "return_on_fallthrough")
+recipe main [
+  f
+  1:integer <- copy 34:literal
+  2:integer <- copy 34:literal
+  3:integer <- copy 34:literal
+]
+recipe f [
+  4:integer <- copy 34:literal
+  5:integer <- copy 34:literal
+]
++run: instruction main/0
++run: instruction f/0
++run: instruction f/1
++run: instruction main/1
++run: instruction main/2
++run: instruction main/3
+
 :(before "struct routine {")
 // Everytime a recipe runs another, we interrupt it and start running the new
 // recipe. When that finishes, we continue this one where we left off.
@@ -65,15 +83,18 @@ inline bool done(routine& rr) {
   return rr.calls.empty();
 }
 
-:(before "Running one instruction")
+:(before "Running One Instruction")
 // when we reach the end of one call, we may reach the end of the one below
 // it, and the one below that, and so on
+//? trace("foo") << "0: " << pc << " " << &pc; //? 1
 while (running_at(rr) >= steps(rr).size()) {
+//?   trace("foo") << "pop"; //? 1
   rr.calls.pop();
   if (rr.calls.empty()) return;
   // todo: no results returned warning
   ++running_at(rr);
 }
+//? trace("foo") << "1: " << pc << " " << &pc; //? 1
 
 :(before "End Includes")
 #include <stack>
