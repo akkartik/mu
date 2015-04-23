@@ -133,9 +133,9 @@ extern "C" {
  *  - 'bg' background color and attributes
  */
 struct tb_cell {
-	uint32_t ch;
-	uint16_t fg;
-	uint16_t bg;
+  uint32_t ch;
+  uint16_t fg;
+  uint16_t bg;
 };
 
 #define TB_EVENT_KEY    1
@@ -148,14 +148,14 @@ struct tb_cell {
  * TB_EVENT_MOUSE.
  */
 struct tb_event {
-	uint8_t type;
-	uint8_t mod;
-	uint16_t key;
-	uint32_t ch;
-	int32_t w;
-	int32_t h;
-	int32_t x;
-	int32_t y;
+  uint8_t type;
+  uint8_t mod;
+  uint16_t key;
+  uint32_t ch;
+  int32_t w;
+  int32_t h;
+  int32_t x;
+  int32_t y;
 };
 
 /* Error codes returned by tb_init(). All of them are self-explanatory, except
