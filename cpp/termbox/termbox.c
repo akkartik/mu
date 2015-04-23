@@ -40,7 +40,6 @@ static struct bytebuffer input_buffer;
 static int termw = -1;
 static int termh = -1;
 
-static int inputmode = TB_INPUT_ESC;
 static int outputmode = TB_OUTPUT_NORMAL;
 
 static int inout;
@@ -267,21 +266,6 @@ void tb_clear(void)
     buffer_size_change_request = 0;
   }
   cellbuf_clear(&back_buffer);
-}
-
-int tb_select_input_mode(int mode)
-{
-  if (mode) {
-    inputmode = mode;
-    if (mode&TB_INPUT_MOUSE) {
-      bytebuffer_puts(&output_buffer, funcs[T_ENTER_MOUSE]);
-      bytebuffer_flush(&output_buffer, inout);
-    } else {
-      bytebuffer_puts(&output_buffer, funcs[T_EXIT_MOUSE]);
-      bytebuffer_flush(&output_buffer, inout);
-    }
-  }
-  return inputmode;
 }
 
 int tb_select_output_mode(int mode)
@@ -597,7 +581,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 
   // try to extract event from input buffer, return on success
   event->type = TB_EVENT_KEY;
-  if (extract_event(event, &input_buffer, inputmode))
+  if (extract_event(event, &input_buffer))
     return event->type;
 
   // it looks like input buffer is incomplete, let's try the short path,
@@ -605,7 +589,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
   int n = read_up_to(ENOUGH_DATA_FOR_PARSING);
   if (n < 0)
     return -1;
-  if (n > 0 && extract_event(event, &input_buffer, inputmode))
+  if (n > 0 && extract_event(event, &input_buffer))
     return event->type;
 
   // n == 0, or not enough data, let's go to select
@@ -627,7 +611,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
       if (n == 0)
         continue;
 
-      if (extract_event(event, &input_buffer, inputmode))
+      if (extract_event(event, &input_buffer))
         return event->type;
     }
     if (FD_ISSET(winch_fds[0], &events)) {

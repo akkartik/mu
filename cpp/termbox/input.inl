@@ -1,20 +1,3 @@
-/* Sets the termbox input mode. Termbox has two input modes:
- * 1. Esc input mode.
- *    When ESC sequence is in the buffer and it doesn't match any known
- *    ESC sequence => ESC means TB_KEY_ESC.
- * 2. Alt input mode.
- *    When ESC sequence is in the buffer and it doesn't match any known
- *    sequence => ESC enables TB_MOD_ALT modifier for the next keyboard event.
- *
- * If 'mode' is TB_INPUT_CURRENT, it returns the current input mode.
- */
-int tb_select_input_mode(int mode);
-/* Possible values for mode. */
-#define TB_INPUT_CURRENT 0x0
-#define TB_INPUT_ESC     0x1
-#define TB_INPUT_ALT     0x2
-#define TB_INPUT_MOUSE   0x4
-
 // if s1 starts with s2 returns true, else false
 // len is the length of s1
 // s2 should be null-terminated
@@ -78,7 +61,7 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
   return 0;
 }
 
-static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf, int inputmode)
+static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf)
 {
   const char *buf = inbuf->buf;
   const int len = inbuf->len;
@@ -96,25 +79,11 @@ static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf, int 
       bytebuffer_truncate(inbuf, n);
       return success;
     } else {
-      // it's not escape sequence, then it's ALT or ESC,
-      // check inputmode
-      if (inputmode&TB_INPUT_ESC) {
-        // if we're in escape mode, fill ESC event, pop
-        // buffer, return success
-        event->ch = 0;
-        event->key = TB_KEY_ESC;
-        event->mod = 0;
-        bytebuffer_truncate(inbuf, 1);
-        return true;
-      }
-      if (inputmode&TB_INPUT_ALT) {
-        // if we're in alt mode, set ALT modifier to
-        // event and redo parsing
-        event->mod = TB_MOD_ALT;
-        bytebuffer_truncate(inbuf, 1);
-        return extract_event(event, inbuf, inputmode);
-      }
-      assert(!"never got here");
+      // it's not escape sequence; assume it's esc
+      event->ch = 0;
+      event->key = TB_KEY_ESC;
+      bytebuffer_truncate(inbuf, 1);
+      return true;
     }
   }
 
