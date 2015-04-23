@@ -47,11 +47,13 @@ void run(recipe_number r) {
 void run(routine rr) {
   Current_routine = &rr;
   while (!done(rr)) {
+    // Running One Instruction.
     vector<instruction>& instructions = steps(rr);
     size_t& pc = running_at(rr);
-    // Running one instruction.
+//?     trace("foo") << "2: " << pc << " " << &pc; //? 1
     if (instructions[pc].is_label) { ++pc; continue; }
 //?     cout << "AAA " << Trace_stream << " ^" << Trace_stream->dump_layer << "$\n"; //? 1
+//?     trace("foo") << "2.5: " << pc << " " << &pc; //? 1
     trace("run") << "instruction " << recipe_name(rr) << '/' << pc;
 //?     cout << "operation " << instructions[pc].operation << '\n'; //? 3
 //?     if (!instructions[pc].products.empty()) trace("foo") << "AAA product 0 is " << instructions[pc].products[0].to_string(); //? 1
@@ -68,6 +70,7 @@ void run(routine rr) {
         cout << "not a primitive op: " << instructions[pc].operation << '\n';
       }
     }
+//?     trace("foo") << "3: " << pc << " " << &pc; //? 1
     ++pc;
   }
   Current_routine = NULL;
