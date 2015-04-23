@@ -206,14 +206,6 @@ SO_IMPORT void tb_set_cursor(int cx, int cy);
 SO_IMPORT void tb_put_cell(int x, int y, const struct tb_cell *cell);
 SO_IMPORT void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
 
-/* Copies the buffer from 'cells' at the specified position, assuming the
- * buffer is a two-dimensional array of size ('w' x 'h'), represented as a
- * one-dimensional buffer containing lines of cells starting from the top.
- *
- * (DEPRECATED: use tb_cell_buffer() instead and copy memory on your own)
- */
-SO_IMPORT void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells);
-
 /* Returns a pointer to internal cell back buffer. You can get its dimensions
  * using tb_width() and tb_height() functions. The pointer stays valid as long
  * as no tb_clear() and tb_present() calls are made. The buffer is

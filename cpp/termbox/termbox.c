@@ -237,40 +237,6 @@ void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
   tb_put_cell(x, y, &c);
 }
 
-void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells)
-{
-  if (x + w < 0 || x >= back_buffer.width)
-    return;
-  if (y + h < 0 || y >= back_buffer.height)
-    return;
-  int xo = 0, yo = 0, ww = w, hh = h;
-  if (x < 0) {
-    xo = -x;
-    ww -= xo;
-    x = 0;
-  }
-  if (y < 0) {
-    yo = -y;
-    hh -= yo;
-    y = 0;
-  }
-  if (ww > back_buffer.width - x)
-    ww = back_buffer.width - x;
-  if (hh > back_buffer.height - y)
-    hh = back_buffer.height - y;
-
-  int sy;
-  struct tb_cell *dst = &CELL(&back_buffer, x, y);
-  const struct tb_cell *src = cells + yo * w + xo;
-  size_t size = sizeof(struct tb_cell) * ww;
-
-  for (sy = 0; sy < hh; ++sy) {
-    memcpy(dst, src, size);
-    dst += back_buffer.width;
-    src += w;
-  }
-}
-
 struct tb_cell *tb_cell_buffer()
 {
   return back_buffer.cells;
