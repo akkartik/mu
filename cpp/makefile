@@ -25,13 +25,13 @@ test: mu
 	./mu test
 
 function_list: mu.cc
-                                # skip methods
-	@grep -h "^[^ #].*) {" mu.cc |grep -v ":.*(" |perl -pwe 's/ {.*/;/' > function_list
-	@grep -h "^[[:space:]]*TEST(" mu.cc |perl -pwe 's/^\s*TEST\((.*)\)$$/void test_$$1();/' >> function_list
+	# declarations for lines starting with non-space and ending with ') {', except methods
+	@grep -h "^[^[:space:]#].*) {" mu.cc |grep -v ":.*(" |perl -pwe 's/ {.*/;/' > function_list
+	@grep -h "^\s*TEST(" mu.cc |perl -pwe 's/^\s*TEST\((.*)\)$$/void test_$$1();/' >> function_list
 
 test_list: mu.cc
-	@grep -h "^[[:space:]]*void test_" mu.cc |perl -pwe 's/^\s*void (.*)\(\) {.*/$$1,/' > test_list
-	@grep -h "^[[:space:]]*TEST(" mu.cc |perl -pwe 's/^\s*TEST\((.*)\)$$/test_$$1,/' >> test_list
+	@grep -h "^\s*void test_" mu.cc |perl -pwe 's/^\s*void (.*)\(\) {.*/$$1,/' > test_list
+	@grep -h "^\s*TEST(" mu.cc |perl -pwe 's/^\s*TEST\((.*)\)$$/test_$$1,/' >> test_list
 
 clena: clean
 clean:
