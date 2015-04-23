@@ -222,19 +222,14 @@ void tb_set_cursor(int cx, int cy)
     write_cursor(cursor_x, cursor_y);
 }
 
-void tb_put_cell(int x, int y, const struct tb_cell *cell)
+void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
 {
   if ((unsigned)x >= (unsigned)back_buffer.width)
     return;
   if ((unsigned)y >= (unsigned)back_buffer.height)
     return;
-  CELL(&back_buffer, x, y) = *cell;
-}
-
-void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
-{
   struct tb_cell c = {ch, fg, bg};
-  tb_put_cell(x, y, &c);
+  CELL(&back_buffer, x, y) = c;
 }
 
 struct tb_cell *tb_cell_buffer()

@@ -6,7 +6,103 @@
 extern "C" {
 #endif
 
-/* Key constants. See also struct tb_event's key field.
+/*** 1. Controlling the screen. */
+
+/* The screen is a 2D array of cells. */
+struct tb_cell {
+  uint32_t ch;  /* unicode character */
+  uint16_t fg;  /* foreground color and attributes */
+  uint16_t bg;  /* background color and attributes */
+};
+
+/* Possible colors in tb_cell.fg and tb_cell.bg. */
+#define TB_DEFAULT 0x00
+#define TB_BLACK   0x01
+#define TB_RED     0x02
+#define TB_GREEN   0x03
+#define TB_YELLOW  0x04
+#define TB_BLUE    0x05
+#define TB_MAGENTA 0x06
+#define TB_CYAN    0x07
+#define TB_WHITE   0x08
+
+/* Colors in tb_cell can be combined using bitwise-OR with multiple
+ * of the following attributes. */
+#define TB_BOLD      0x0100
+#define TB_UNDERLINE 0x0200
+#define TB_REVERSE   0x0400
+
+/* Initialize screen and keyboard. */
+int tb_init(void);
+/* Possible error codes returned by tb_init() */
+#define TB_EUNSUPPORTED_TERMINAL -1
+#define TB_EFAILED_TO_OPEN_TTY   -2
+/* Termbox uses unix pipes in order to deliver a message from a signal handler
+ * (SIGWINCH) to the main event reading loop. */
+#define TB_EPIPE_TRAP_ERROR      -3
+
+/* Restore terminal mode. */
+void tb_shutdown(void);
+
+/* Size of the screen. Return negative values before tb_init() or after
+ * tb_shutdown() */
+int tb_width(void);
+int tb_height(void);
+
+/* Update the screen with internal state. Most methods below modify just the
+ * internal state of the screen. Changes won't be visible until you call
+ * tb_present(). */
+void tb_present(void);
+
+/* Returns a pointer to the internal screen state: a 1D array of cells in
+ * raster order. You'll need to call tb_width() and tb_height() for the
+ * array's dimensions. The array stays valid until tb_clear() or tb_present()
+ * are called. */
+struct tb_cell *tb_cell_buffer();
+
+/* Clear the internal screen state using either TB_DEFAULT or the
+ * color/attributes set by tb_set_clear_attributes(). */
+void tb_clear(void);
+void tb_set_clear_attributes(uint16_t fg, uint16_t bg);
+
+/* Move the cursor. Upper-left character is (0, 0).
+ */
+void tb_set_cursor(int cx, int cy);
+/* To hide the cursor, call tb_set_cursor(TB_HIDE_CURSOR, TB_HIDE_CURSOR).
+ * Cursor starts out hidden. */
+#define TB_HIDE_CURSOR -1
+
+/* Modify a specific cell of the screen. Don't forget to call tb_present() to
+ * commit your changes. */
+void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
+
+
+
+/*** 2. Controlling keyboard events. */
+
+struct tb_event {
+  uint8_t type;
+  /* fields for type TB_EVENT_KEY */
+  uint8_t mod;
+  uint16_t key;
+  uint32_t ch;
+  /* fields for type TB_EVENT_RESIZE */
+  int32_t w;
+  int32_t h;
+  /* fields for type TB_EVENT_MOUSE */
+  int32_t x;
+  int32_t y;
+};
+
+/* Possible values for tb_event.type. */
+#define TB_EVENT_KEY    1
+#define TB_EVENT_RESIZE 2
+#define TB_EVENT_MOUSE  3
+
+/* Possible values for tb_event.mod. */
+#define TB_MOD_ALT 0x01
+
+/* Possible values for tb_event.key.
  *
  * These are a safe subset of terminfo keys, which exist on all popular
  * terminals. Termbox uses only them to stay truly portable.
@@ -39,7 +135,6 @@ extern "C" {
 #define TB_KEY_MOUSE_RELEASE    (0xFFFF-25)
 #define TB_KEY_MOUSE_WHEEL_UP   (0xFFFF-26)
 #define TB_KEY_MOUSE_WHEEL_DOWN (0xFFFF-27)
-
 /* These are all ASCII code points below SPACE character and a BACKSPACE key. */
 #define TB_KEY_CTRL_TILDE       0x00
 #define TB_KEY_CTRL_2           0x00 /* clash with 'CTRL_TILDE' */
@@ -86,183 +181,12 @@ extern "C" {
 #define TB_KEY_SPACE            0x20
 #define TB_KEY_BACKSPACE2       0x7F
 #define TB_KEY_CTRL_8           0x7F /* clash with 'DELETE' */
-
 /* These are non-existing ones.
  *
  * #define TB_KEY_CTRL_1 clash with '1'
  * #define TB_KEY_CTRL_9 clash with '9'
  * #define TB_KEY_CTRL_0 clash with '0'
  */
-
-/* Currently there is only one modifier. See also struct tb_event's mod
- * field.
- */
-#define TB_MOD_ALT 0x01
-
-/* Colors (see struct tb_cell's fg and bg fields). */
-#define TB_DEFAULT 0x00
-#define TB_BLACK   0x01
-#define TB_RED     0x02
-#define TB_GREEN   0x03
-#define TB_YELLOW  0x04
-#define TB_BLUE    0x05
-#define TB_MAGENTA 0x06
-#define TB_CYAN    0x07
-#define TB_WHITE   0x08
-
-/* Attributes, it is possible to use multiple attributes by combining them
- * using bitwise OR ('|'). Although, colors cannot be combined. But you can
- * combine attributes and a single color. See also struct tb_cell's fg and bg
- * fields.
- */
-#define TB_BOLD      0x0100
-#define TB_UNDERLINE 0x0200
-#define TB_REVERSE   0x0400
-
-/* A cell, single conceptual entity on the terminal screen. The terminal screen
- * is basically a 2d array of cells. It has the following fields:
- *  - 'ch' is a unicode character
- *  - 'fg' foreground color and attributes
- *  - 'bg' background color and attributes
- */
-struct tb_cell {
-  uint32_t ch;
-  uint16_t fg;
-  uint16_t bg;
-};
-
-#define TB_EVENT_KEY    1
-#define TB_EVENT_RESIZE 2
-#define TB_EVENT_MOUSE  3
-
-/* This struct represents a termbox event. The 'mod', 'key' and 'ch' fields are
- * valid if 'type' is TB_EVENT_KEY. The 'w' and 'h' fields are valid if 'type'
- * is TB_EVENT_RESIZE. The 'x' and 'y' fields are valid if 'type' is
- * TB_EVENT_MOUSE.
- */
-struct tb_event {
-  uint8_t type;
-  uint8_t mod;
-  uint16_t key;
-  uint32_t ch;
-  int32_t w;
-  int32_t h;
-  int32_t x;
-  int32_t y;
-};
-
-/* Error codes returned by tb_init(). All of them are self-explanatory, except
- * the pipe trap error. Termbox uses unix pipes in order to deliver a message
- * from a signal handler (SIGWINCH) to the main event reading loop. Honestly in
- * most cases you should just check the returned code as < 0.
- */
-#define TB_EUNSUPPORTED_TERMINAL -1
-#define TB_EFAILED_TO_OPEN_TTY   -2
-#define TB_EPIPE_TRAP_ERROR      -3
-
-/* Initializes the termbox library. This function should be called before any
- * other functions. After successful initialization, the library must be
- * finalized using the tb_shutdown() function.
- */
-int tb_init(void);
-void tb_shutdown(void);
-
-/* Returns the size of the internal back buffer (which is the same as
- * terminal's window size in characters). The internal buffer can be resized
- * after tb_clear() or tb_present() function calls. Both dimensions have an
- * unspecified negative value when called before tb_init() or after
- * tb_shutdown().
- */
-int tb_width(void);
-int tb_height(void);
-
-/* Clears the internal back buffer using TB_DEFAULT color or the
- * color/attributes set by tb_set_clear_attributes() function.
- */
-void tb_clear(void);
-void tb_set_clear_attributes(uint16_t fg, uint16_t bg);
-
-/* Synchronizes the internal back buffer with the terminal. */
-void tb_present(void);
-
-#define TB_HIDE_CURSOR -1
-
-/* Sets the position of the cursor. Upper-left character is (0, 0). If you pass
- * TB_HIDE_CURSOR as both coordinates, then the cursor will be hidden. Cursor
- * is hidden by default.
- */
-void tb_set_cursor(int cx, int cy);
-
-/* Changes cell's parameters in the internal back buffer at the specified
- * position.
- */
-void tb_put_cell(int x, int y, const struct tb_cell *cell);
-void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
-
-/* Returns a pointer to internal cell back buffer. You can get its dimensions
- * using tb_width() and tb_height() functions. The pointer stays valid as long
- * as no tb_clear() and tb_present() calls are made. The buffer is
- * one-dimensional buffer containing lines of cells starting from the top.
- */
-struct tb_cell *tb_cell_buffer();
-
-#define TB_INPUT_CURRENT 0 /* 000 */
-#define TB_INPUT_ESC     1 /* 001 */
-#define TB_INPUT_ALT     2 /* 010 */
-#define TB_INPUT_MOUSE   4 /* 100 */
-
-/* Sets the termbox input mode. Termbox has two input modes:
- * 1. Esc input mode.
- *    When ESC sequence is in the buffer and it doesn't match any known
- *    ESC sequence => ESC means TB_KEY_ESC.
- * 2. Alt input mode.
- *    When ESC sequence is in the buffer and it doesn't match any known
- *    sequence => ESC enables TB_MOD_ALT modifier for the next keyboard event.
- *
- * If 'mode' is TB_INPUT_CURRENT, it returns the current input mode.
- */
-int tb_select_input_mode(int mode);
-
-#define TB_OUTPUT_CURRENT   0
-#define TB_OUTPUT_NORMAL    1
-#define TB_OUTPUT_256       2
-#define TB_OUTPUT_216       3
-#define TB_OUTPUT_GRAYSCALE 4
-
-/* Sets the termbox output mode. Termbox has three output options:
- * 1. TB_OUTPUT_NORMAL     => [1..8]
- *    This mode provides 8 different colors:
- *      black, red, green, yellow, blue, magenta, cyan, white
- *    Shortcut: TB_BLACK, TB_RED, ...
- *    Attributes: TB_BOLD, TB_UNDERLINE, TB_REVERSE
- *
- *    Example usage:
- *        tb_change_cell(x, y, '@', TB_BLACK | TB_BOLD, TB_RED);
- *
- * 2. TB_OUTPUT_256        => [0..256]
- *    In this mode you can leverage the 256 terminal mode:
- *    0x00 - 0x07: the 8 colors as in TB_OUTPUT_NORMAL
- *    0x08 - 0x0f: TB_* | TB_BOLD
- *    0x10 - 0xe7: 216 different colors
- *    0xe8 - 0xff: 24 different shades of grey
- *
- *    Example usage:
- *        tb_change_cell(x, y, '@', 184, 240);
- *        tb_change_cell(x, y, '@', 0xb8, 0xf0);
- *
- * 2. TB_OUTPUT_216        => [0..216]
- *    This mode supports the 3rd range of the 256 mode only.
- *    But you don't need to provide an offset.
- *
- * 3. TB_OUTPUT_GRAYSCALE  => [0..23]
- *    This mode supports the 4th range of the 256 mode only.
- *    But you dont need to provide an offset.
- *
- * Execute build/src/demo/output to see its impact on your terminal.
- *
- * If 'mode' is TB_OUTPUT_CURRENT, it returns the current output mode.
- */
-int tb_select_output_mode(int mode);
 
 /* Wait for an event up to 'timeout' milliseconds and fill the 'event'
  * structure with it, when the event is available. Returns the type of the
@@ -277,7 +201,9 @@ int tb_peek_event(struct tb_event *event, int timeout);
  */
 int tb_poll_event(struct tb_event *event);
 
-/* Utility utf8 functions. */
+
+
+/*** 3. Utility utf8 functions. */
 #define TB_EOF -1
 int tb_utf8_char_length(char c);
 int tb_utf8_char_to_unicode(uint32_t *out, const char *c);
