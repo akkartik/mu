@@ -17,7 +17,7 @@ int snprintf(char *str, size_t size, const char *format, ...);  // until we enab
 #include "termbox.h"
 
 #include "bytebuffer.inl"
-#include "term.inl"
+#include "output.inl"
 #include "input.inl"
 
 struct cellbuf {
