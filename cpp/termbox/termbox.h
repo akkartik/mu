@@ -83,7 +83,6 @@ void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
 struct tb_event {
   uint8_t type;
   /* fields for type TB_EVENT_KEY */
-  uint8_t mod;
   uint16_t key;
   uint32_t ch;
   /* fields for type TB_EVENT_RESIZE */
@@ -98,9 +97,6 @@ struct tb_event {
 #define TB_EVENT_KEY    1
 #define TB_EVENT_RESIZE 2
 #define TB_EVENT_MOUSE  3
-
-/* Possible values for tb_event.mod. */
-#define TB_MOD_ALT 0x01
 
 /* Possible values for tb_event.key.
  *
