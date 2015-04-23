@@ -1,3 +1,20 @@
+/* Sets the termbox input mode. Termbox has two input modes:
+ * 1. Esc input mode.
+ *    When ESC sequence is in the buffer and it doesn't match any known
+ *    ESC sequence => ESC means TB_KEY_ESC.
+ * 2. Alt input mode.
+ *    When ESC sequence is in the buffer and it doesn't match any known
+ *    sequence => ESC enables TB_MOD_ALT modifier for the next keyboard event.
+ *
+ * If 'mode' is TB_INPUT_CURRENT, it returns the current input mode.
+ */
+int tb_select_input_mode(int mode);
+/* Possible values for mode. */
+#define TB_INPUT_CURRENT 0x0
+#define TB_INPUT_ESC     0x1
+#define TB_INPUT_ALT     0x2
+#define TB_INPUT_MOUSE   0x4
+
 // if s1 starts with s2 returns true, else false
 // len is the length of s1
 // s2 should be null-terminated
