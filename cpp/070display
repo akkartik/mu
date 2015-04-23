@@ -1,13 +1,9 @@
-//: Text-mode cursor primitives. Currently thin wrappers around ncurses calls.
-//: Mu starts out at the 'console' where lines wrap and scrolling is
-//: automatic, where keys aren't read until pressing <enter>.
-//: This file provides mechanisms for opening a 'display' and taking raw
-//: charge of the cursor and keyboard.
-
-:(before "End Includes")
-#include<ncurses.h>
+//: Take charge of the text-mode display and keyboard.
 
 //:: Display management
+
+:(before "End Globals")
+size_t Display_row = 0, Display_column = 0;
 
 :(before "End Primitive Recipe Declarations")
 SWITCH_TO_DISPLAY,
@@ -15,7 +11,8 @@ SWITCH_TO_DISPLAY,
 Recipe_number["switch-to-display"] = SWITCH_TO_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case SWITCH_TO_DISPLAY: {
-  initscr();
+  tb_init();
+  Display_row = Display_column = 0;
   break;
 }
 
@@ -25,7 +22,7 @@ RETURN_TO_CONSOLE,
 Recipe_number["return-to-console"] = RETURN_TO_CONSOLE;
 :(before "End Primitive Recipe Implementations")
 case RETURN_TO_CONSOLE: {
-  endwin();
+  tb_shutdown();
   break;
 }
 
@@ -35,7 +32,8 @@ CLEAR_DISPLAY,
 Recipe_number["clear-display"] = CLEAR_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case CLEAR_DISPLAY: {
-  clear();
+  tb_clear();
+  Display_row = Display_column = 0;
   break;
 }
 
@@ -45,7 +43,12 @@ CLEAR_LINE_ON_DISPLAY,
 Recipe_number["clear-line-on-display"] = CLEAR_LINE_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case CLEAR_LINE_ON_DISPLAY: {
-  clrtoeol();
+  size_t width = tb_width();
+  for (size_t x = Display_column; x < width; ++x) {
+    tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_DEFAULT);
+  }
+  tb_set_cursor(Display_column, Display_row);
+  tb_present();
   break;
 }
 
@@ -56,7 +59,24 @@ Recipe_number["print-character-to-display"] = PRINT_CHARACTER_TO_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case PRINT_CHARACTER_TO_DISPLAY: {
   vector<int> arg = read_memory(instructions[pc].ingredients[0]);
-  addch(arg[0]);
+  int h=tb_height(), w=tb_width();
+  size_t height = (h >= 0) ? h : 0;
+  size_t width = (w >= 0) ? w : 0;
+  if (arg[0] == '\n') {
+    if (Display_row < height) {
+      Display_column = 0;
+      ++Display_row;
+      tb_set_cursor(Display_column, Display_row);
+      tb_present();
+    }
+    break;
+  }
+  tb_change_cell(Display_column, Display_row, arg[0], TB_WHITE, TB_DEFAULT);
+  if (Display_column < width) {
+    Display_column++;
+    tb_set_cursor(Display_column, Display_row);
+  }
+  tb_present();
   break;
 }
 
@@ -66,13 +86,11 @@ CURSOR_POSITION_ON_DISPLAY,
 Recipe_number["cursor-position-on-display"] = CURSOR_POSITION_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case CURSOR_POSITION_ON_DISPLAY: {
-  size_t cursor_row = 0, cursor_column = 0;
-  getyx(stdscr, cursor_row, cursor_column);
   vector<int> row;
-  row.push_back(cursor_row);
+  row.push_back(Display_row);
   write_memory(instructions[pc].products[0], row);
   vector<int> column;
-  column.push_back(cursor_column);
+  column.push_back(Display_column);
   write_memory(instructions[pc].products[1], column);
   break;
 }
@@ -85,7 +103,10 @@ Recipe_number["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
 case MOVE_CURSOR_ON_DISPLAY: {
   vector<int> row = read_memory(instructions[pc].ingredients[0]);
   vector<int> column = read_memory(instructions[pc].ingredients[1]);
-  move(row[0], column[0]);
+  Display_row = row[0];
+  Display_column = column[0];
+  tb_set_cursor(Display_column, Display_row);
+  tb_present();
   break;
 }
 
@@ -97,6 +118,10 @@ WAIT_FOR_KEY_FROM_KEYBOARD,
 Recipe_number["wait-for-key-from-keyboard"] = WAIT_FOR_KEY_FROM_KEYBOARD;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_KEY_FROM_KEYBOARD: {
-  getch();
+  struct tb_event event;
+  tb_poll_event(&event);
   break;
 }
+
+:(before "End Includes")
+#include"termbox/termbox.h"
