@@ -17,7 +17,7 @@ function! HighlightTangledFile()
   highlight traceAbsent ctermfg=darkred
   " Our C++ files can have mu code in scenarios, so highlight mu comments like
   " regular comments.
-  syntax match muComment /#.*$/ | highlight link muComment Comment
+  syntax match muComment /# .*$/ | highlight link muComment Comment
   syntax match muSalientComment /##.*$/ | highlight link muSalientComment SalientComment
   syntax match muCommentedCode /#? .*$/ | highlight link muCommentedCode CommentedCode
   " Tangled comments only make sense in the sources and are stripped out of
