@@ -244,7 +244,7 @@ recipe integer-to-decimal-string [
   # save sign
   negate-result:boolean <- copy 0:literal
   {
-    negative?:boolean <- less-than n:integer, 0:literal
+    negative?:boolean <- lesser-than n:integer, 0:literal
     break-unless negative?:boolean
     negate-result:boolean <- copy 1:literal
     n:integer <- multiply n:integer -1:literal
@@ -273,7 +273,7 @@ recipe integer-to-decimal-string [
   j:integer <- copy 0:literal
   {
     # while i >= 0
-    done?:boolean <- less-than i:integer, 0:literal
+    done?:boolean <- lesser-than i:integer, 0:literal
     break-if done?:boolean
     # result[j] = tmp[i]
     src:character <- index buf:address:array:character/deref, i:integer

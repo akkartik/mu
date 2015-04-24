@@ -93,11 +93,11 @@ recipe main [
 +mem: storing 0 in location 3
 
 :(before "End Primitive Recipe Declarations")
-LESS_THAN,
+LESSER_THAN,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["less-than"] = LESS_THAN;
+Recipe_number["lesser-than"] = LESSER_THAN;
 :(before "End Primitive Recipe Implementations")
-case LESS_THAN: {
+case LESSER_THAN: {
   trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
   vector<int> arg0 = read_memory(instructions[pc].ingredients[0]);
   assert(arg0.size() == 1);
@@ -111,11 +111,11 @@ case LESS_THAN: {
   break;
 }
 
-:(scenario less_than)
+:(scenario lesser_than)
 recipe main [
   1:integer <- copy 32:literal
   2:integer <- copy 33:literal
-  3:integer <- less-than 1:integer, 2:integer
+  3:integer <- lesser-than 1:integer, 2:integer
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -125,11 +125,11 @@ recipe main [
 +run: product 0 is 1
 +mem: storing 1 in location 3
 
-:(scenario less_than2)
+:(scenario lesser_than2)
 recipe main [
   1:integer <- copy 34:literal
   2:integer <- copy 33:literal
-  3:integer <- less-than 1:integer, 2:integer
+  3:integer <- lesser-than 1:integer, 2:integer
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
