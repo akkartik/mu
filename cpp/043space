@@ -2,7 +2,7 @@
 //: and all addresses in arguments are implicitly based on the 'default-space'
 //: (unless they have the /raw property)
 
-:(scenario "set_default_space")
+:(scenario set_default_space)
 # if default-space is 10, and if an array of 5 locals lies from location 11 to 15 (inclusive),
 # then location 0 is really location 11, location 1 is really location 12, and so on.
 recipe main [
@@ -12,7 +12,7 @@ recipe main [
 ]
 +mem: storing 23 in location 12
 
-:(scenario "deref_sidesteps_default_space")
+:(scenario deref_sidesteps_default_space)
 recipe main [
   # pretend pointer from outside
   3:integer <- copy 34:literal
@@ -53,7 +53,7 @@ result.properties.push_back(pair<string, vector<string> >("raw", vector<string>(
 
 //:: fix 'get'
 
-:(scenario "deref_sidesteps_default_space_in_get")
+:(scenario deref_sidesteps_default_space_in_get)
 recipe main [
   # pretend pointer to container from outside
   12:integer <- copy 34:literal
@@ -72,7 +72,7 @@ tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()))
 
 //:: fix 'index'
 
-:(scenario "deref_sidesteps_default_space_in_index")
+:(scenario deref_sidesteps_default_space_in_index)
 recipe main [
   # pretend pointer to array from outside
   12:integer <- copy 2:literal
@@ -115,7 +115,7 @@ int address(int offset, int base) {
     return;
   }
 
-:(scenario "get_default_space")
+:(scenario get_default_space)
 recipe main [
   default-space:address:array:location <- copy 10:literal
   1:integer/raw <- copy default-space:address:array:location
