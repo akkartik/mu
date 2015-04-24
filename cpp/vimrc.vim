@@ -24,6 +24,9 @@ function! HighlightTangledFile()
   " the generated .cc file. They're highlighted same as regular comments.
   syntax match tangledComment /\/\/:.*/ | highlight link tangledComment Comment
   syntax match tangledSalientComment /\/\/::.*/ | highlight link tangledSalientComment SalientComment
+  " Include some bare-bones mu highlighting even in the C++ sources.
+  syntax match muAssign " <- " | highlight link muAssign SpecialChar
+  syntax match muAssign "\<raw\>"
 endfunction
 call HighlightTangledFile()
 autocmd BufRead,BufNewFile *.mu set ft=mu
