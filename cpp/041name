@@ -2,7 +2,7 @@
 //: locations. In mu, a transform called 'convert-names' provides this
 //: convenience.
 
-:(scenario "convert_names")
+:(scenario convert_names)
 recipe main [
   x:integer <- copy 0:literal
 ]
@@ -10,7 +10,7 @@ recipe main [
 +run: instruction main/0
 +mem: storing 0 in location 1
 
-:(scenario "convert_names_warns")
+:(scenario convert_names_warns)
 hide warnings
 recipe main [
   x:integer <- copy y:integer
@@ -110,7 +110,7 @@ bool is_raw(const reagent& r) {
   return false;
 }
 
-:(scenario "convert_names_passes_dummy")
+:(scenario convert_names_passes_dummy)
 # _ is just a dummy result that never gets consumed
 recipe main [
   _, x:integer <- copy 0:literal
@@ -119,7 +119,7 @@ recipe main [
 -name: assign _ 1
 
 //: one reserved word that we'll need later
-:(scenario "convert_names_passes_default_space")
+:(scenario convert_names_passes_default_space)
 recipe main [
   default-space:integer, x:integer <- copy 0:literal
 ]
@@ -127,7 +127,7 @@ recipe main [
 -name: assign default-space 1
 
 //: an escape hatch to suppress name conversion that we'll use later
-:(scenario "convert_names_passes_raw")
+:(scenario convert_names_passes_raw)
 recipe main [
   x:integer/raw <- copy 0:literal
 ]
@@ -139,7 +139,7 @@ recipe main [
 :(before "End Mu Types Initialization")
 Type[point].element_names.push_back("x");
 Type[point].element_names.push_back("y");
-:(scenario "convert_names_transforms_container_elements")
+:(scenario convert_names_transforms_container_elements)
 recipe main [
   a:integer <- get 0:point, y:offset
   b:integer <- get 0:point, x:offset
@@ -164,7 +164,7 @@ if (inst.operation == Recipe_number["get"]
 
 //: this test is actually illegal so can't call run
 :(scenarios transform)
-:(scenario "convert_names_handles_containers")
+:(scenario convert_names_handles_containers)
 recipe main [
   a:point <- copy 0:literal
   b:integer <- copy 0:literal
@@ -175,7 +175,7 @@ recipe main [
 //:: Support variant names for exclusive containers in 'maybe-convert'.
 
 :(scenarios run)
-:(scenario "maybe_convert_named")
+:(scenario maybe_convert_named)
 recipe main [
   12:integer <- copy 1:literal
   13:integer <- copy 35:literal
