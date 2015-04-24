@@ -101,7 +101,7 @@ inline bool done(routine& rr) {
 :(before "End Commandline Parsing")
 if (argc > 1) {
   for (int i = 1; i < argc; ++i) {
-    load_and_transform(argv[i]);
+    load_permanently(argv[i]);
   }
 }
 
@@ -118,7 +118,7 @@ if (!Run_tests) {
 }
 
 :(code)
-void load_and_transform(string filename) {
+void load_permanently(string filename) {
   ifstream fin(filename.c_str());
   if (!fin) {
     raise << "no such file " << filename << '\n';
@@ -135,7 +135,7 @@ void load_and_transform(string filename) {
 
 //:: On startup, load everything in core.mu
 :(before "End Load Recipes")
-load_and_transform("core.mu");
+load_permanently("core.mu");
 
 :(code)
 // helper for tests
