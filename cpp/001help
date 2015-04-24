@@ -1,3 +1,6 @@
+//: Everything this project/binary supports.
+//: This should give you a sense for what to look forward to in later layers.
+
 :(before "End Commandline Parsing")
 if (argc <= 1 || is_equal(argv[1], "--help")) {
   // this is the functionality later layers will provide
@@ -12,6 +15,15 @@ if (argc <= 1 || is_equal(argv[1], "--help")) {
   return 0;
 }
 
+//:: Helper function used by the above fragment of code (and later layers too,
+//:: who knows?).
+//: The :(code) directive appends function definitions to the end of the
+//: project. Regardless of where functions are defined, we can call them
+//: anywhere we like as long as we format the function header in a specific
+//: way: put it all on a single line without indent, end the line with ') {'
+//: and no trailing whitespace. As long as functions uniformly start this
+//: way, our makefile contains a little command to automatically generate
+//: declarations for them.
 :(code)
 bool is_equal(char* s, const char* lit) {
   return strncmp(s, lit, strlen(lit)) == 0;
