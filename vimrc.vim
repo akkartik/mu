@@ -5,5 +5,4 @@ function! HighlightMuInArc()
   syntax keyword muHack begin | highlight link muHack CommentedCode
   syntax match muHack "[()]" | highlight link muHack CommentedCode
 endfunction
-call HighlightMuInArc()
 autocmd BufRead,BufNewFile *.mu call HighlightMuInArc()
