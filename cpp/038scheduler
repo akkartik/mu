@@ -1,0 +1,19 @@
+//: Run multiple routines concurrently, without any guarantees on how the
+//: operations in each are interleaved with each other.
+
+:(before "End Globals")
+size_t Scheduling_interval = 500;
+
+//: first, add a deadline to run()
+//: todo: these changes are ugly and brittle
+:(replace{} "void run(recipe_number r)")
+void run(recipe_number r) {
+  run(routine(r), Scheduling_interval);
+}
+:(replace "void run(routine rr)")
+void run(routine rr, size_t time_slice)
+:(replace "while (!done(rr))" following "void run(routine rr, size_t time_slice)")
+size_t ninstrs = 0;
+while (!done(rr) && ninstrs < time_slice)
+:(after "Running One Instruction")
+ninstrs++;
