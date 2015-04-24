@@ -1,6 +1,6 @@
-//: It's often convenient to express recipes in a textual fashion.
+//: Phase 1 of running mu code: load it from a textual representation.
 
-:(scenarios add_recipes)
+:(scenarios load)
 :(scenario first_recipe)
 recipe main [
   1:integer <- copy 23:literal
@@ -10,13 +10,13 @@ recipe main [
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
 
 :(code)
-vector<recipe_number> add_recipes(string form) {
+vector<recipe_number> load(string form) {
   istringstream in(form);
   in >> std::noskipws;
-  return add_recipes(in);
+  return load(in);
 }
 
-vector<recipe_number> add_recipes(istream& in) {
+vector<recipe_number> load(istream& in) {
   vector<recipe_number> result;
   while (!in.eof()) {
     skip_comments_and_newlines(in);
