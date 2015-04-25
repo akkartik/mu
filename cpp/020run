@@ -34,6 +34,7 @@ struct routine {
   recipe_number running_recipe;
   size_t running_at;
   routine(recipe_number r) :running_recipe(r), running_at(0) {}
+  bool completed() const;
 };
 
 :(before "End Globals")
@@ -48,7 +49,7 @@ void run(recipe_number r) {
 
 void run_current_routine()
 {  // curly on a separate line, because later layers will modify header
-  while (!done())  // later layers will modify condition
+  while (!Current_routine->completed())  // later layers will modify condition
   {
     // Running One Instruction.
     vector<instruction>& instructions = steps();
@@ -95,8 +96,8 @@ inline vector<instruction>& steps() {
   return Recipe[Current_routine->running_recipe].steps;
 }
 
-inline bool done() {
-  return running_at() >= steps().size();
+inline bool routine::completed() const {
+  return running_step_index >= Recipe[running_recipe].steps.size();
 }
 
 :(before "End Commandline Parsing")

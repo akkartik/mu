@@ -44,6 +44,7 @@ struct routine {
   call_stack calls;
   // End routine Fields
   routine(recipe_number r);
+  bool completed() const;
 };
 :(code)
   routine::routine(recipe_number r) {
@@ -78,9 +79,9 @@ default: {
 
 //:: finally, we need to fix the termination conditions for the run loop
 
-:(replace{} "inline bool done()")
-inline bool done() {
-  return Current_routine->calls.empty();
+:(replace{} "inline bool routine::completed() const")
+inline bool routine::completed() const {
+  return calls.empty();
 }
 
 :(before "Running One Instruction")
