@@ -53,8 +53,8 @@ struct routine {
 
 //:: now update routine's helpers
 
-:(replace{} "inline size_t& running_at()")
-inline size_t& running_at() {
+:(replace{} "inline size_t& current_step_index()")
+inline size_t& current_step_index() {
   return Current_routine->calls.top().pc;
 }
 :(replace{} "inline string recipe_name()")
@@ -92,12 +92,12 @@ inline bool routine::completed() const {
 // when we reach the end of one call, we may reach the end of the one below
 // it, and the one below that, and so on
 //? trace("foo") << "0: " << pc << " " << &pc; //? 1
-while (running_at() >= steps().size()) {
+while (current_step_index() >= steps().size()) {
 //?   trace("foo") << "pop"; //? 1
   Current_routine->calls.pop();
   if (Current_routine->calls.empty()) return;
   // todo: no results returned warning
-  ++running_at();
+  ++current_step_index();
 }
 //? trace("foo") << "1: " << pc << " " << &pc; //? 1
 
