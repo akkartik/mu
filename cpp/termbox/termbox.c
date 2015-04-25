@@ -5,7 +5,6 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
-int snprintf(char *str, size_t size, const char *format, ...);  // until we enable gnu99
 #include <stdbool.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
