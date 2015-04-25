@@ -70,7 +70,6 @@ void run_current_routine()
     }
     ++current_step_index();
   }
-  Current_routine = NULL;
 }
 
 //: Some helpers.

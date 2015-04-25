@@ -1,7 +1,7 @@
 //: Run a second routine concurrently using fork, without any guarantees on
 //: how the operations in each are interleaved with each other.
 
-:(scenario run_multiple)
+:(scenario scheduler)
 recipe f1 [
   run f2:recipe
   1:integer <- copy 3:literal
@@ -26,6 +26,8 @@ ninstrs++;
 :(before "End Globals")
 list<routine*> Running_routines, Completed_routines;
 size_t Scheduling_interval = 500;
+:(before "End Setup")
+Scheduling_interval = 500;
 :(replace{} "void run(recipe_number r)")
 void run(recipe_number r) {
   Running_routines.push_back(new routine(r));
@@ -38,6 +40,7 @@ void run(recipe_number r) {
       Completed_routines.push_back(Current_routine);
     else
       Running_routines.push_back(Current_routine);
+    Current_routine = NULL;
   }
 }
 
@@ -60,3 +63,25 @@ case RUN: {
   Running_routines.push_back(new routine(Recipe_number[current_instruction().ingredients[0].name]));
   break;
 }
+
+:(scenario scheduler_interleaves_routines)
+% Scheduling_interval = 1;
+recipe f1 [
+  run f2:recipe
+  1:integer <- copy 0:literal
+  2:integer <- copy 0:literal
+]
+recipe f2 [
+  3:integer <- copy 4:literal
+  4:integer <- copy 4:literal
+]
++schedule: f1
++run: instruction f1/0
++schedule: f2
++run: instruction f2/0
++schedule: f1
++run: instruction f1/1
++schedule: f2
++run: instruction f2/1
++schedule: f1
++run: instruction f1/2
