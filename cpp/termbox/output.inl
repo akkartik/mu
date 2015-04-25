@@ -162,16 +162,17 @@ static char *read_file(const char *file) {
 
 static char *terminfo_try_path(const char *path, const char *term) {
   char tmp[4096];
-  snprintf(tmp, sizeof(tmp), "%s/%c/%s", path, term[0], term);
-  tmp[sizeof(tmp)-1] = '\0';
+  // snprintf guarantee for older compilers
+  assert(sizeof(tmp) > sizeof(path)+sizeof("/x/")+sizeof(term)+1;
+  sprintf(tmp, "%s/%c/%s", path, term[0], term);
   char *data = read_file(tmp);
   if (data) {
     return data;
   }
 
   // fallback to darwin specific dirs structure
-  snprintf(tmp, sizeof(tmp), "%s/%x/%s", path, term[0], term);
-  tmp[sizeof(tmp)-1] = '\0';
+  // snprintf guarantee above still applies
+  sprintf(tmp, "%s/%x/%s", path, term[0], term);
   return read_file(tmp);
 }
 
@@ -191,8 +192,10 @@ static char *load_terminfo(void) {
   // next, consider ~/.terminfo
   const char *home = getenv("HOME");
   if (home) {
-    snprintf(tmp, sizeof(tmp), "%s/.terminfo", home);
-    tmp[sizeof(tmp)-1] = '\0';
+    // snprintf guarantee for older compilers
+    assert(sizeof(tmp) > sizeof(home)+sizeof("/.terminfo")+1);
+    strncpy(tmp, home, sizeof(home));
+    strcat(tmp, "/.terminfo");
     char *data = terminfo_try_path(tmp, term);
     if (data)
       return data;
@@ -201,8 +204,9 @@ static char *load_terminfo(void) {
   // next, TERMINFO_DIRS
   const char *dirs = getenv("TERMINFO_DIRS");
   if (dirs) {
-    snprintf(tmp, sizeof(tmp), "%s", dirs);
-    tmp[sizeof(tmp)-1] = '\0';
+    // snprintf guarantee for older compilers
+    assert(sizeof(tmp) > sizeof(dirs));
+    strncpy(tmp, dirs, sizeof(tmp));
     char *dir = strtok(tmp, ":");
     while (dir) {
       const char *cdir = dir;
