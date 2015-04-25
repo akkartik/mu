@@ -20,4 +20,4 @@ test_list: [0-9]*.cc
 	@grep -h "^[[:space:]]*void test_" [0-9]*.cc |perl -pwe 's/^\s*void (.*)\(\) {$$/$$1,/' > test_list
 
 clean:
-	rm -rf tangle *_list
+	-rm tangle *_list
