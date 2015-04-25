@@ -4,10 +4,6 @@
 #include<cstdio>
 #include<cstring>
 #include<cstdlib>
-#include<errno.h>
-#include<sys/param.h>
-#include<time.h>
-#include<math.h>
 
 #include<vector>
 using std::vector;
@@ -34,7 +30,6 @@ using std::cout;
 using std::cerr;
 
 #include<sstream>
-using std::stringstream;
 using std::istringstream;
 using std::ostringstream;
 
