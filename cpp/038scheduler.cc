@@ -1,7 +1,7 @@
 //: Run a second routine concurrently using fork, without any guarantees on
 //: how the operations in each are interleaved with each other.
 
-:(scenario run)
+:(scenario run_multiple)
 recipe f1 [
   run f2:recipe
   1:integer <- copy 3:literal
