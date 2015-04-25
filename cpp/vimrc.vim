@@ -1,8 +1,5 @@
 " Highlighting literate directives in C++ sources.
 function! HighlightTangledFile()
-  if &ft == "" || &ft == "cpp"
-    set ft=cpp
-  endif
   set comments-=://
   set comments-=n://
   set comments+=n://:,n://
