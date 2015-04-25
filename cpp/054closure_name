@@ -35,7 +35,7 @@ recipe increment-counter [
 //: surrounding space of each recipe. This must happen before transform_names.
 
 :(before "End Globals")
-unordered_map<recipe_number, recipe_number> Surrounding_space;
+map<recipe_number, recipe_number> Surrounding_space;
 
 :(after "int main")
   Transform.push_back(collect_surrounding_spaces);
@@ -130,8 +130,8 @@ recipe_number lookup_surrounding_recipe(const recipe_number r, size_t n) {
 }
 
 //: weaken use-before-set warnings just a tad
-:(replace{} "bool already_transformed(const reagent& r, const unordered_map<string, int>& names)")
-bool already_transformed(const reagent& r, const unordered_map<string, int>& names) {
+:(replace{} "bool already_transformed(const reagent& r, const map<string, int>& names)")
+bool already_transformed(const reagent& r, const map<string, int>& names) {
   if (has_property(r, "space")) {
     vector<string> p = property(r, "space");
     assert(p.size() == 1);
@@ -139,7 +139,3 @@ bool already_transformed(const reagent& r, const unordered_map<string, int>& nam
   }
   return names.find(r.name) != names.end();
 }
-
-:(before "End Includes")
-#include<set>
-using std::set;
