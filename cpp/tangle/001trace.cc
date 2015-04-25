@@ -2,7 +2,7 @@ bool Hide_warnings = false;
 
 struct trace_stream {
   vector<pair<string, pair<int, string> > > past_lines;  // [(layer label, frame, line)]
-  unordered_map<string, int> frame;
+  map<string, int> frame;
   // accumulator for current line
   ostringstream* curr_stream;
   string curr_layer;
