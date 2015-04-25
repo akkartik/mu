@@ -12,12 +12,16 @@ recipe main [
 
 :(before "End Globals")
 size_t Memory_allocated_until = 1000;
+size_t Initial_memory_per_routine = 100000;
 :(before "End Setup")
 Memory_allocated_until = 1000;
+Initial_memory_per_routine = 100000;
 :(before "End routine Fields")
 size_t alloc;
 :(replace{} "routine::routine(recipe_number r)")
 routine::routine(recipe_number r) :alloc(Memory_allocated_until) {
+  alloc = Memory_allocated_until;
+  Memory_allocated_until += Initial_memory_per_routine;
   calls.push(call(r));
 }
 
@@ -117,10 +121,3 @@ recipe f2 [
   3:boolean <- equal 1:address:integer, 2:address:integer
 ]
 +mem: storing 0 in location 3
-
-:(before "End Globals")
-size_t Initial_memory_per_routine = 100000;
-:(before "End Setup")
-Initial_memory_per_routine = 100000;
-:(after "routine::routine(recipe_number r)")
-  Memory_allocated_until += Initial_memory_per_routine;
