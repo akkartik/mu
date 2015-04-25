@@ -6,4 +6,4 @@ libtermbox.a: utf8.o termbox.o
 termbox.o: termbox.c input.inl output.inl bytebuffer.inl
 
 clean:
-	rm *.o libtermbox.a
+	-rm *.o libtermbox.a

@@ -49,4 +49,4 @@ clean:
 	cd enumerate && make clean
 	cd tangle && make clean
 	cd termbox && make clean
-	rm -rf mu.cc core.mu mu *_list
+	-rm mu.cc core.mu mu *_list
