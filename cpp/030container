@@ -81,14 +81,14 @@ GET,
 Recipe_number["get"] = GET;
 :(before "End Primitive Recipe Implementations")
 case GET: {
-  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
-  reagent base = instructions[pc].ingredients[0];
+  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
+  reagent base = current_instruction().ingredients[0];
   int base_address = base.value;
   int base_type = base.types[0];
   assert(Type[base_type].kind == container);
-  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
-  assert(isa_literal(instructions[pc].ingredients[1]));
-  size_t offset = instructions[pc].ingredients[1].value;
+  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
+  assert(isa_literal(current_instruction().ingredients[1]));
+  size_t offset = current_instruction().ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements[i]);
@@ -103,7 +103,7 @@ case GET: {
   tmp.types.push_back(src_type);
   vector<int> result(read_memory(tmp));
   trace("run") << "product 0 is " << result[0];
-  write_memory(instructions[pc].products[0], result);
+  write_memory(current_instruction().products[0], result);
   break;
 }
 
@@ -148,14 +148,14 @@ GET_ADDRESS,
 Recipe_number["get-address"] = GET_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case GET_ADDRESS: {
-  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
-  reagent base = instructions[pc].ingredients[0];
+  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
+  reagent base = current_instruction().ingredients[0];
   int base_address = base.value;
   int base_type = base.types[0];
   assert(Type[base_type].kind == container);
-  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].name;
-  assert(isa_literal(instructions[pc].ingredients[1]));
-  size_t offset = instructions[pc].ingredients[1].value;
+  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
+  assert(isa_literal(current_instruction().ingredients[1]));
+  size_t offset = current_instruction().ingredients[1].value;
   int src = base_address;
   for (size_t i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements[i]);
@@ -164,6 +164,6 @@ case GET_ADDRESS: {
   vector<int> result;
   result.push_back(src);
   trace("run") << "product 0 is " << result[0];
-  write_memory(instructions[pc].products[0], result);
+  write_memory(current_instruction().products[0], result);
   break;
 }

@@ -52,26 +52,25 @@ void run_current_routine()
   while (!Current_routine->completed())  // later layers will modify condition
   {
     // Running One Instruction.
-    vector<instruction>& instructions = steps();
     size_t& pc = running_at();
 //?     trace("foo") << "2: " << pc << " " << &pc; //? 1
-    if (instructions[pc].is_label) { ++pc; continue; }
+    if (current_instruction().is_label) { ++pc; continue; }
 //?     cout << "AAA " << Trace_stream << " ^" << Trace_stream->dump_layer << "$\n"; //? 1
 //?     trace("foo") << "2.5: " << pc << " " << &pc; //? 1
     trace("run") << "instruction " << recipe_name() << '/' << pc;
-//?     cout << "operation " << instructions[pc].operation << '\n'; //? 3
-//?     if (!instructions[pc].products.empty()) trace("foo") << "AAA product 0 is " << instructions[pc].products[0].to_string(); //? 1
-    switch (instructions[pc].operation) {
+//?     cout << "operation " << current_instruction().operation << '\n'; //? 3
+//?     if (!current_instruction().products.empty()) trace("foo") << "AAA product 0 is " << current_instruction().products[0].to_string(); //? 1
+    switch (current_instruction().operation) {
       // Primitive Recipe Implementations
       case COPY: {
-        trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
-        vector<int> data = read_memory(instructions[pc].ingredients[0]);
-        write_memory(instructions[pc].products[0], data);
+        trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
+        vector<int> data = read_memory(current_instruction().ingredients[0]);
+        write_memory(current_instruction().products[0], data);
         break;
       }
       // End Primitive Recipe Implementations
       default: {
-        cout << "not a primitive op: " << instructions[pc].operation << '\n';
+        cout << "not a primitive op: " << current_instruction().operation << '\n';
       }
     }
 //?     trace("foo") << "3: " << pc << " " << &pc; //? 1
@@ -96,8 +95,12 @@ inline vector<instruction>& steps() {
   return Recipe[Current_routine->running_recipe].steps;
 }
 
+inline const instruction& current_instruction() {
+  return Recipe[Current_routine->running_recipe].steps[Current_routine->running_at];
+}
+
 inline bool routine::completed() const {
-  return running_step_index >= Recipe[running_recipe].steps.size();
+  return Current_routine->running_at >= Recipe[running_recipe].steps.size();
 }
 
 :(before "End Commandline Parsing")

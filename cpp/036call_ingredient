@@ -28,9 +28,9 @@ size_t next_ingredient_to_process;
 :(replace{} "call(recipe_number r)")
 call(recipe_number r) :running_recipe(r), pc(0), next_ingredient_to_process(0) {}
 
-:(replace "Current_routine->calls.push(call(instructions[pc].operation))" following "End Primitive Recipe Implementations")
-call callee(instructions[pc].operation);
-for (vector<reagent>::iterator p = instructions[pc].ingredients.begin(); p != instructions[pc].ingredients.end(); ++p) {
+:(replace "Current_routine->calls.push(call(current_instruction().operation))" following "End Primitive Recipe Implementations")
+call callee(current_instruction().operation);
+for (vector<reagent>::const_iterator p = current_instruction().ingredients.begin(); p != current_instruction().ingredients.end(); ++p) {
   callee.ingredient_atoms.push_back(read_memory(*p));
 }
 Current_routine->calls.push(callee);
@@ -44,20 +44,20 @@ case NEXT_INGREDIENT: {
   if (Current_routine->calls.top().next_ingredient_to_process < Current_routine->calls.top().ingredient_atoms.size()) {
     trace("run") << "product 0 is "
         << Current_routine->calls.top().ingredient_atoms[Current_routine->calls.top().next_ingredient_to_process][0];
-    write_memory(instructions[pc].products[0],
+    write_memory(current_instruction().products[0],
         Current_routine->calls.top().ingredient_atoms[Current_routine->calls.top().next_ingredient_to_process]);
-    if (instructions[pc].products.size() > 1) {
+    if (current_instruction().products.size() > 1) {
       vector<int> ingredient_exists;
       ingredient_exists.push_back(1);
-      write_memory(instructions[pc].products[1], ingredient_exists);
+      write_memory(current_instruction().products[1], ingredient_exists);
     }
     ++Current_routine->calls.top().next_ingredient_to_process;
   }
   else {
-    if (instructions[pc].products.size() > 1) {
+    if (current_instruction().products.size() > 1) {
       vector<int> no_ingredient;
       no_ingredient.push_back(0);
-      write_memory(instructions[pc].products[1], no_ingredient);
+      write_memory(current_instruction().products[1], no_ingredient);
     }
   }
   break;
@@ -105,24 +105,24 @@ INGREDIENT,
 Recipe_number["ingredient"] = INGREDIENT;
 :(before "End Primitive Recipe Implementations")
 case INGREDIENT: {
-  if (static_cast<size_t>(instructions[pc].ingredients[0].value) < Current_routine->calls.top().ingredient_atoms.size()) {
-    Current_routine->calls.top().next_ingredient_to_process = instructions[pc].ingredients[0].value;
+  if (static_cast<size_t>(current_instruction().ingredients[0].value) < Current_routine->calls.top().ingredient_atoms.size()) {
+    Current_routine->calls.top().next_ingredient_to_process = current_instruction().ingredients[0].value;
     trace("run") << "product 0 is "
         << Current_routine->calls.top().ingredient_atoms[Current_routine->calls.top().next_ingredient_to_process][0];
-    write_memory(instructions[pc].products[0],
+    write_memory(current_instruction().products[0],
         Current_routine->calls.top().ingredient_atoms[Current_routine->calls.top().next_ingredient_to_process]);
-    if (instructions[pc].products.size() > 1) {
+    if (current_instruction().products.size() > 1) {
       vector<int> ingredient_exists;
       ingredient_exists.push_back(1);
-      write_memory(instructions[pc].products[1], ingredient_exists);
+      write_memory(current_instruction().products[1], ingredient_exists);
     }
     ++Current_routine->calls.top().next_ingredient_to_process;
   }
   else {
-    if (instructions[pc].products.size() > 1) {
+    if (current_instruction().products.size() > 1) {
       vector<int> no_ingredient;
       no_ingredient.push_back(0);
-      write_memory(instructions[pc].products[1], no_ingredient);
+      write_memory(current_instruction().products[1], no_ingredient);
     }
   }
   break;

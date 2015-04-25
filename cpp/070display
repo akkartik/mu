@@ -58,7 +58,7 @@ PRINT_CHARACTER_TO_DISPLAY,
 Recipe_number["print-character-to-display"] = PRINT_CHARACTER_TO_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case PRINT_CHARACTER_TO_DISPLAY: {
-  vector<int> arg = read_memory(instructions[pc].ingredients[0]);
+  vector<int> arg = read_memory(current_instruction().ingredients[0]);
   int h=tb_height(), w=tb_width();
   size_t height = (h >= 0) ? h : 0;
   size_t width = (w >= 0) ? w : 0;
@@ -88,10 +88,10 @@ Recipe_number["cursor-position-on-display"] = CURSOR_POSITION_ON_DISPLAY;
 case CURSOR_POSITION_ON_DISPLAY: {
   vector<int> row;
   row.push_back(Display_row);
-  write_memory(instructions[pc].products[0], row);
+  write_memory(current_instruction().products[0], row);
   vector<int> column;
   column.push_back(Display_column);
-  write_memory(instructions[pc].products[1], column);
+  write_memory(current_instruction().products[1], column);
   break;
 }
 
@@ -101,8 +101,8 @@ MOVE_CURSOR_ON_DISPLAY,
 Recipe_number["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_ON_DISPLAY: {
-  vector<int> row = read_memory(instructions[pc].ingredients[0]);
-  vector<int> column = read_memory(instructions[pc].ingredients[1]);
+  vector<int> row = read_memory(current_instruction().ingredients[0]);
+  vector<int> column = read_memory(current_instruction().ingredients[1]);
   Display_row = row[0];
   Display_column = column[0];
   tb_set_cursor(Display_column, Display_row);

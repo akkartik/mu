@@ -65,15 +65,19 @@ inline string recipe_name() {
 inline vector<instruction>& steps() {
   return Recipe[Current_routine->calls.top().running_recipe].steps;
 }
+:(replace{} "inline const instruction& current_instruction()")
+inline const instruction& current_instruction() {
+  return Recipe[Current_routine->calls.top().running_recipe].steps[Current_routine->calls.top().pc];
+}
 
 :(replace{} "default:" following "End Primitive Recipe Implementations")
 default: {
   // not a primitive; try to look up the book of recipes
-  if (Recipe.find(instructions[pc].operation) == Recipe.end()) {
-    raise << "undefined operation " << instructions[pc].operation << ": " << instructions[pc].name << '\n';
+  if (Recipe.find(current_instruction().operation) == Recipe.end()) {
+    raise << "undefined operation " << current_instruction().operation << ": " << current_instruction().name << '\n';
     break;
   }
-  Current_routine->calls.push(call(instructions[pc].operation));
+  Current_routine->calls.push(call(current_instruction().operation));
   continue;  // not done with caller; don't increment pc
 }
 
