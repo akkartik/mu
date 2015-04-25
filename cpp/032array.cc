@@ -1,4 +1,5 @@
-//: Arrays contain a variable number of elements of the same type.
+//: Arrays contain a variable number of elements of the same type. Their value
+//: starts with the length of the array.
 //:
 //: You can create arrays of containers, but containers can only contain
 //: elements of a fixed size, so you can't create containers containing arrays.
