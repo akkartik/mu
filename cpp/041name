@@ -21,7 +21,7 @@ recipe main [
   Transform.push_back(transform_names);
 
 :(before "End Globals")
-unordered_map<recipe_number, unordered_map<string, int> > Name;
+map<recipe_number, map<string, int> > Name;
 :(after "Clear Other State For recently_added_recipes")
 for (size_t i = 0; i < recently_added_recipes.size(); ++i) {
   Name.erase(recently_added_recipes[i]);
@@ -29,7 +29,7 @@ for (size_t i = 0; i < recently_added_recipes.size(); ++i) {
 
 :(code)
 void transform_names(const recipe_number r) {
-  unordered_map<string, int>& names = Name[r];
+  map<string, int>& names = Name[r];
   int curr_idx = 1;
 //?   cout << "Recipe " << r << '\n'; //? 2
 //?   cout << Recipe[r].steps.size(); //? 1
@@ -77,7 +77,7 @@ void transform_names(const recipe_number r) {
   }
 }
 
-bool already_transformed(const reagent& r, const unordered_map<string, int>& names) {
+bool already_transformed(const reagent& r, const map<string, int>& names) {
   return names.find(r.name) != names.end();
 }
 
