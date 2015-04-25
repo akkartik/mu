@@ -45,6 +45,7 @@ struct routine {
   // End routine Fields
   routine(recipe_number r);
   bool completed() const;
+  const vector<instruction>& steps() const;
 };
 :(code)
   routine::routine(recipe_number r) {
@@ -60,10 +61,6 @@ inline size_t& current_step_index() {
 :(replace{} "inline const string& current_recipe_name()")
 inline const string& current_recipe_name() {
   return Recipe[Current_routine->calls.top().running_recipe].name;
-}
-:(replace{} "inline vector<instruction>& steps()")
-inline vector<instruction>& steps() {
-  return Recipe[Current_routine->calls.top().running_recipe].steps;
 }
 :(replace{} "inline const instruction& current_instruction()")
 inline const instruction& current_instruction() {
@@ -88,10 +85,14 @@ inline bool routine::completed() const {
   return calls.empty();
 }
 
+inline const vector<instruction>& routine::steps() const {
+  return Recipe[calls.top().running_recipe].steps;
+}
+
 :(before "Running One Instruction")
 // when we reach the end of one call, we may reach the end of the one below
 // it, and the one below that, and so on
-while (current_step_index() >= steps().size()) {
+while (current_step_index() >= Current_routine->steps().size()) {
   Current_routine->calls.pop();
   if (Current_routine->calls.empty()) return;
   // todo: no results returned warning
