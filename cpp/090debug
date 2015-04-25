@@ -6,12 +6,12 @@ _PRINT,
 Recipe_number["$print"] = _PRINT;
 :(before "End Primitive Recipe Implementations")
 case _PRINT: {
-  if (isa_literal(instructions[pc].ingredients[0])) {
-    trace("run") << "$print: " << instructions[pc].ingredients[0].name;
-    cout << instructions[pc].ingredients[0].name;
+  if (isa_literal(current_instruction().ingredients[0])) {
+    trace("run") << "$print: " << current_instruction().ingredients[0].name;
+    cout << current_instruction().ingredients[0].name;
     break;
   }
-  vector<int> result(read_memory(instructions[pc].ingredients[0]));
+  vector<int> result(read_memory(current_instruction().ingredients[0]));
   for (size_t i = 0; i < result.size(); ++i) {
     trace("run") << "$print: " << result[i];
     if (i > 0) cout << " ";

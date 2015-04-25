@@ -97,13 +97,13 @@ Recipe_number["index"] = INDEX;
 case INDEX: {
   static const int ARRAY = Type_number["array"];
 //?   if (Trace_stream) Trace_stream->dump_layer = "run"; //? 1
-  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].to_string();
-  reagent base = canonize(instructions[pc].ingredients[0]);
+  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].to_string();
+  reagent base = canonize(current_instruction().ingredients[0]);
 //?   trace("run") << "ingredient 0 after canonize: " << base.to_string(); //? 1
   int base_address = base.value;
   assert(base.types[0] == ARRAY);
-  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].to_string();
-  reagent offset = canonize(instructions[pc].ingredients[1]);
+  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].to_string();
+  reagent offset = canonize(current_instruction().ingredients[1]);
 //?   trace("run") << "ingredient 1 after canonize: " << offset.to_string(); //? 1
   vector<int> offset_val(read_memory(offset));
   vector<type_number> element_type = array_element(base.types);
@@ -118,7 +118,7 @@ case INDEX: {
 //?   trace("run") << "AAA: " << tmp.to_string() << '\n'; //? 3
   vector<int> result(read_memory(tmp));
   trace("run") << "product 0 is " << result[0];
-  write_memory(instructions[pc].products[0], result);
+  write_memory(current_instruction().products[0], result);
 //?   if (Trace_stream) Trace_stream->dump_layer = ""; //? 1
   break;
 }
@@ -162,12 +162,12 @@ Recipe_number["index-address"] = INDEX_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
   static const int ARRAY = Type_number["array"];
-  trace("run") << "ingredient 0 is " << instructions[pc].ingredients[0].name;
-  reagent base = canonize(instructions[pc].ingredients[0]);
+  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
+  reagent base = canonize(current_instruction().ingredients[0]);
   int base_address = base.value;
   assert(base.types[0] == ARRAY);
-  trace("run") << "ingredient 1 is " << instructions[pc].ingredients[1].to_string();
-  reagent offset = canonize(instructions[pc].ingredients[1]);
+  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].to_string();
+  reagent offset = canonize(current_instruction().ingredients[1]);
   vector<int> offset_val(read_memory(offset));
   vector<type_number> element_type = array_element(base.types);
   int src = base_address + 1 + offset_val[0]*size_of(element_type);
@@ -175,6 +175,6 @@ case INDEX_ADDRESS: {
   vector<int> result;
   result.push_back(src);
   trace("run") << "product 0 is " << result[0];
-  write_memory(instructions[pc].products[0], result);
+  write_memory(current_instruction().products[0], result);
   break;
 }

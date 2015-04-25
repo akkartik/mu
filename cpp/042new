@@ -47,12 +47,12 @@ case NEW: {
   vector<int> result;
   trace("mem") << "new alloc: " << Current_routine->alloc;
   result.push_back(Current_routine->alloc);
-  write_memory(instructions[pc].products[0], result);
+  write_memory(current_instruction().products[0], result);
   vector<int> types;
-  types.push_back(instructions[pc].ingredients[0].value);
-  if (instructions[pc].ingredients.size() > 1) {
+  types.push_back(current_instruction().ingredients[0].value);
+  if (current_instruction().ingredients.size() > 1) {
     // array
-    vector<int> capacity = read_memory(instructions[pc].ingredients[1]);
+    vector<int> capacity = read_memory(current_instruction().ingredients[1]);
     trace("mem") << "array size is " << capacity[0];
     Memory[Current_routine->alloc] = capacity[0];
     Current_routine->alloc += capacity[0]*size_of(types);
@@ -87,16 +87,16 @@ recipe main [
 +mem: storing 101 in location 2
 
 :(after "case NEW" following "Primitive Recipe Implementations")
-if (instructions[pc].ingredients[0].properties[0].second[0] == "literal-string") {
+if (current_instruction().ingredients[0].properties[0].second[0] == "literal-string") {
   // allocate an array just large enough for it
   vector<int> result;
   result.push_back(Current_routine->alloc);
-  write_memory(instructions[pc].products[0], result);
+  write_memory(current_instruction().products[0], result);
   // assume that all characters fit in a single location
-//?   cout << "new string literal: " << instructions[pc].ingredients[0].name << '\n'; //? 1
-  Memory[Current_routine->alloc++] = instructions[pc].ingredients[0].name.size();
-  for (size_t i = 0; i < instructions[pc].ingredients[0].name.size(); ++i) {
-    Memory[Current_routine->alloc++] = instructions[pc].ingredients[0].name[i];
+//?   cout << "new string literal: " << current_instruction().ingredients[0].name << '\n'; //? 1
+  Memory[Current_routine->alloc++] = current_instruction().ingredients[0].name.size();
+  for (size_t i = 0; i < current_instruction().ingredients[0].name.size(); ++i) {
+    Memory[Current_routine->alloc++] = current_instruction().ingredients[0].name[i];
   }
   // mu strings are not null-terminated in memory
   break;
