@@ -91,15 +91,12 @@ inline bool routine::completed() const {
 :(before "Running One Instruction")
 // when we reach the end of one call, we may reach the end of the one below
 // it, and the one below that, and so on
-//? trace("foo") << "0: " << pc << " " << &pc; //? 1
 while (current_step_index() >= steps().size()) {
-//?   trace("foo") << "pop"; //? 1
   Current_routine->calls.pop();
   if (Current_routine->calls.empty()) return;
   // todo: no results returned warning
   ++current_step_index();
 }
-//? trace("foo") << "1: " << pc << " " << &pc; //? 1
 
 :(before "End Includes")
 #include <stack>
