@@ -50,23 +50,37 @@ NEW,
 Recipe_number["new"] = NEW;
 :(before "End Primitive Recipe Implementations")
 case NEW: {
-  vector<int> result;
-  trace("mem") << "new alloc: " << Current_routine->alloc;
-  result.push_back(Current_routine->alloc);
-  write_memory(current_instruction().products[0], result);
-  vector<int> types;
-  types.push_back(current_instruction().ingredients[0].value);
+  // compute the space we need
+  size_t size = 0;
+  size_t array_length = 0;
+  {
+    vector<int> type;
+    type.push_back(current_instruction().ingredients[0].value);
+    if (current_instruction().ingredients.size() > 1) {
+      // array
+      vector<int> capacity = read_memory(current_instruction().ingredients[1]);
+      array_length = capacity[0];
+      trace("mem") << "array size is " << array_length;
+      size = array_length*size_of(type);
+    }
+    else {
+      // scalar
+      size = size_of(type);
+    }
+  }
+  // compute the resulting location
+  const size_t result = Current_routine->alloc;
+  trace("mem") << "new alloc: " << result;
   if (current_instruction().ingredients.size() > 1) {
-    // array
-    vector<int> capacity = read_memory(current_instruction().ingredients[1]);
-    trace("mem") << "array size is " << capacity[0];
-    Memory[Current_routine->alloc] = capacity[0];
-    Current_routine->alloc += capacity[0]*size_of(types);
+    // initialize array
+    Memory[result] = array_length;
   }
-  else {
-    // scalar
-    Current_routine->alloc += size_of(types);
-  }
+  // write result to memory
+  vector<int> tmp;
+  tmp.push_back(Current_routine->alloc);
+  write_memory(current_instruction().products[0], tmp);
+  // bump
+  Current_routine->alloc += size;
   break;
 }
 
