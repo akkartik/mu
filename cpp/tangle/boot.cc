@@ -8,6 +8,7 @@
 #include<sys/param.h>
 #include<time.h>
 #include<math.h>
+
 #include<vector>
 using std::vector;
 #include<list>
@@ -16,11 +17,8 @@ using std::list;
 using std::stack;
 #include<utility>
 using std::pair;
-
-#include<tr1/unordered_map>
-using std::tr1::unordered_map;
-#include<tr1/unordered_set>
-using std::tr1::unordered_set;
+#include<map>
+using std::map;
 #include<algorithm>
 
 #include<string>
