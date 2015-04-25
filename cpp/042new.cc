@@ -82,6 +82,19 @@ recipe main [
 +run: instruction main/2
 +mem: storing 5 in location 3
 
+//: Make sure that each routine gets a different alloc to start.
+:(scenario new_concurrent)
+recipe f1 [
+  run f2:recipe
+  1:address:integer/raw <- new integer:type
+]
+recipe f2 [
+  2:address:integer/raw <- new integer:type
+  # hack: assumes scheduler implementation
+  3:boolean/raw <- equal 1:address:integer/raw, 2:address:integer/raw
+]
++mem: storing 0 in location 3
+
 //:: Next, extend 'new' to handle a string literal argument.
 
 :(scenario new_string)
@@ -107,17 +120,3 @@ if (current_instruction().ingredients[0].properties[0].second[0] == "literal-str
   // mu strings are not null-terminated in memory
   break;
 }
-
-//:: Make sure that each routine gets a different alloc to start.
-
-:(scenario new_concurrent)
-recipe f1 [
-  run f2:recipe
-  1:address:integer <- new integer:type
-]
-recipe f2 [
-  2:address:integer <- new integer:type
-  # hack: assumes scheduler implementation
-  3:boolean <- equal 1:address:integer, 2:address:integer
-]
-+mem: storing 0 in location 3
