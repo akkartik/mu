@@ -283,12 +283,9 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
   lines.pop_front(); \
 }
   while (any_non_input_line(lines)) {
-    if (front(lines).contents == "hide warnings") {
-      SHIFT("  Hide_warnings = true;");
-    }
-    if (starts_with(front(lines).contents, "dump ")) {
-      string line = front(lines).contents.substr(strlen("dump "));
-      SHIFT("  Trace_stream->dump_layer = \""+line+"\";");
+    while (!lines.empty() && starts_with(front(lines).contents, "% ")) {
+      string line = front(lines).contents.substr(strlen("% "));
+      SHIFT("  "+line);
     }
     result.push_back(input_lines(lines));
     if (!lines.empty() && !front(lines).contents.empty() && front(lines).contents[0] == '+')
