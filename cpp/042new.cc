@@ -71,6 +71,15 @@ case NEW: {
     }
   }
   // compute the resulting location
+  // really crappy at the moment
+  assert(size <= Initial_memory_per_routine);
+  if (Current_routine->alloc + size >= Current_routine->alloc_max) {
+    // waste the remaining space and create a new chunk
+    Current_routine->alloc = Memory_allocated_until;
+    Memory_allocated_until += Initial_memory_per_routine;
+    Current_routine->alloc_max = Memory_allocated_until;
+    trace("new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max;
+  }
   const size_t result = Current_routine->alloc;
   trace("mem") << "new alloc: " << result;
   if (current_instruction().ingredients.size() > 1) {
@@ -83,6 +92,8 @@ case NEW: {
   write_memory(current_instruction().products[0], tmp);
   // bump
   Current_routine->alloc += size;
+  // no support for reclaiming memory
+  assert(Current_routine->alloc <= Current_routine->alloc_max);
   break;
 }
 
@@ -110,6 +121,16 @@ recipe f2 [
   3:boolean/raw <- equal 1:address:integer/raw, 2:address:integer/raw
 ]
 +mem: storing 0 in location 3
+
+//: If a routine runs out of its initial allocation, it should allocate more.
+:(scenario new_overflow)
+% Initial_memory_per_routine = 2;
+recipe main [
+  1:address:integer/raw <- new integer:type
+  2:address:point/raw <- new point:type  # not enough room in initial page
+]
++new: routine allocated memory from 1000 to 1002
++new: routine allocated memory from 1002 to 1004
 
 //:: Next, extend 'new' to handle a string literal argument.
 
