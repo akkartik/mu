@@ -163,7 +163,7 @@ static char *read_file(const char *file) {
 static char *terminfo_try_path(const char *path, const char *term) {
   char tmp[4096];
   // snprintf guarantee for older compilers
-  assert(sizeof(tmp) > sizeof(path)+sizeof("/x/")+sizeof(term)+1;
+  assert(sizeof(tmp) > sizeof(path)+sizeof("/x/")+sizeof(term)+1);
   sprintf(tmp, "%s/%c/%s", path, term[0], term);
   char *data = read_file(tmp);
   if (data) {
@@ -194,7 +194,7 @@ static char *load_terminfo(void) {
   if (home) {
     // snprintf guarantee for older compilers
     assert(sizeof(tmp) > sizeof(home)+sizeof("/.terminfo")+1);
-    strncpy(tmp, home, sizeof(home));
+    strncpy(tmp, home, sizeof(tmp));
     strcat(tmp, "/.terminfo");
     char *data = terminfo_try_path(tmp, term);
     if (data)
