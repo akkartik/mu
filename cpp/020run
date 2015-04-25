@@ -41,22 +41,23 @@ routine* Current_routine = NULL;
 
 :(code)
 void run(recipe_number r) {
-  run(routine(r));
+  routine rr(r);
+  Current_routine = &rr;
+  run_current_routine();
 }
 
-void run(routine rr)
+void run_current_routine()
 {  // curly on a separate line, because later layers will modify header
-  Current_routine = &rr;
-  while (!done(rr))  // later layers will modify condition
+  while (!done())  // later layers will modify condition
   {
     // Running One Instruction.
-    vector<instruction>& instructions = steps(rr);
-    size_t& pc = running_at(rr);
+    vector<instruction>& instructions = steps();
+    size_t& pc = running_at();
 //?     trace("foo") << "2: " << pc << " " << &pc; //? 1
     if (instructions[pc].is_label) { ++pc; continue; }
 //?     cout << "AAA " << Trace_stream << " ^" << Trace_stream->dump_layer << "$\n"; //? 1
 //?     trace("foo") << "2.5: " << pc << " " << &pc; //? 1
-    trace("run") << "instruction " << recipe_name(rr) << '/' << pc;
+    trace("run") << "instruction " << recipe_name() << '/' << pc;
 //?     cout << "operation " << instructions[pc].operation << '\n'; //? 3
 //?     if (!instructions[pc].products.empty()) trace("foo") << "AAA product 0 is " << instructions[pc].products[0].to_string(); //? 1
     switch (instructions[pc].operation) {
@@ -82,20 +83,20 @@ void run(routine rr)
 //: We'll need to override these later as we change the definition of routine.
 //: Important that they return referrences into the routine.
 
-inline size_t& running_at(routine& rr) {
-  return rr.running_at;
+inline size_t& running_at() {
+  return Current_routine->running_at;
 }
 
-inline string recipe_name(routine& rr) {
-  return Recipe[rr.running_recipe].name;
+inline string recipe_name() {
+  return Recipe[Current_routine->running_recipe].name;
 }
 
-inline vector<instruction>& steps(routine& rr) {
-  return Recipe[rr.running_recipe].steps;
+inline vector<instruction>& steps() {
+  return Recipe[Current_routine->running_recipe].steps;
 }
 
-inline bool done(routine& rr) {
-  return running_at(rr) >= steps(rr).size();
+inline bool done() {
+  return running_at() >= steps().size();
 }
 
 :(before "End Commandline Parsing")

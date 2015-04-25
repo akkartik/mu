@@ -52,17 +52,17 @@ struct routine {
 
 //:: now update routine's helpers
 
-:(replace{} "inline size_t& running_at(routine& rr)")
-inline size_t& running_at(routine& rr) {
-  return rr.calls.top().pc;
+:(replace{} "inline size_t& running_at()")
+inline size_t& running_at() {
+  return Current_routine->calls.top().pc;
 }
-:(replace{} "inline string recipe_name(routine& rr)")
-inline string recipe_name(routine& rr) {
-  return Recipe[rr.calls.top().running_recipe].name;
+:(replace{} "inline string recipe_name()")
+inline string recipe_name() {
+  return Recipe[Current_routine->calls.top().running_recipe].name;
 }
-:(replace{} "inline vector<instruction>& steps(routine& rr)")
-inline vector<instruction>& steps(routine& rr) {
-  return Recipe[rr.calls.top().running_recipe].steps;
+:(replace{} "inline vector<instruction>& steps()")
+inline vector<instruction>& steps() {
+  return Recipe[Current_routine->calls.top().running_recipe].steps;
 }
 
 :(replace{} "default:" following "End Primitive Recipe Implementations")
@@ -72,27 +72,27 @@ default: {
     raise << "undefined operation " << instructions[pc].operation << ": " << instructions[pc].name << '\n';
     break;
   }
-  rr.calls.push(call(instructions[pc].operation));
+  Current_routine->calls.push(call(instructions[pc].operation));
   continue;  // not done with caller; don't increment pc
 }
 
 //:: finally, we need to fix the termination conditions for the run loop
 
-:(replace{} "inline bool done(routine& rr)")
-inline bool done(routine& rr) {
-  return rr.calls.empty();
+:(replace{} "inline bool done()")
+inline bool done() {
+  return Current_routine->calls.empty();
 }
 
 :(before "Running One Instruction")
 // when we reach the end of one call, we may reach the end of the one below
 // it, and the one below that, and so on
 //? trace("foo") << "0: " << pc << " " << &pc; //? 1
-while (running_at(rr) >= steps(rr).size()) {
+while (running_at() >= steps().size()) {
 //?   trace("foo") << "pop"; //? 1
-  rr.calls.pop();
-  if (rr.calls.empty()) return;
+  Current_routine->calls.pop();
+  if (Current_routine->calls.empty()) return;
   // todo: no results returned warning
-  ++running_at(rr);
+  ++running_at();
 }
 //? trace("foo") << "1: " << pc << " " << &pc; //? 1
 

@@ -8,12 +8,14 @@ size_t Scheduling_interval = 500;
 //: todo: these changes are ugly and brittle
 :(replace{} "void run(recipe_number r)")
 void run(recipe_number r) {
-  run(routine(r), Scheduling_interval);
+  routine rr(r);
+  Current_routine = &rr;
+  run_current_routine(Scheduling_interval);
 }
-:(replace "void run(routine rr)")
-void run(routine rr, size_t time_slice)
-:(replace "while (!done(rr))" following "void run(routine rr, size_t time_slice)")
+:(replace "void run_current_routine()")
+void run_current_routine(size_t time_slice)
+:(replace "while (!done())" following "void run_current_routine(size_t time_slice)")
 size_t ninstrs = 0;
-while (!done(rr) && ninstrs < time_slice)
+while (!done() && ninstrs < time_slice)
 :(after "Running One Instruction")
 ninstrs++;
