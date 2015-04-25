@@ -32,8 +32,8 @@ recipe main [
 //: Later layers will change this.
 struct routine {
   recipe_number running_recipe;
-  size_t running_at;
-  routine(recipe_number r) :running_recipe(r), running_at(0) {}
+  size_t running_step_index;
+  routine(recipe_number r) :running_recipe(r), running_step_index(0) {}
   bool completed() const;
 };
 
@@ -52,7 +52,7 @@ void run_current_routine()
   while (!Current_routine->completed())  // later layers will modify condition
   {
     // Running One Instruction.
-    size_t& pc = running_at();
+    size_t& pc = current_step_index();
 //?     trace("foo") << "2: " << pc << " " << &pc; //? 1
     if (current_instruction().is_label) { ++pc; continue; }
 //?     cout << "AAA " << Trace_stream << " ^" << Trace_stream->dump_layer << "$\n"; //? 1
@@ -83,8 +83,8 @@ void run_current_routine()
 //: We'll need to override these later as we change the definition of routine.
 //: Important that they return referrences into the routine.
 
-inline size_t& running_at() {
-  return Current_routine->running_at;
+inline size_t& current_step_index() {
+  return Current_routine->running_step_index;
 }
 
 inline string recipe_name() {
@@ -96,11 +96,11 @@ inline vector<instruction>& steps() {
 }
 
 inline const instruction& current_instruction() {
-  return Recipe[Current_routine->running_recipe].steps[Current_routine->running_at];
+  return Recipe[Current_routine->running_recipe].steps[Current_routine->running_step_index];
 }
 
 inline bool routine::completed() const {
-  return Current_routine->running_at >= Recipe[running_recipe].steps.size();
+  return Current_routine->running_step_index >= Recipe[running_recipe].steps.size();
 }
 
 :(before "End Commandline Parsing")
