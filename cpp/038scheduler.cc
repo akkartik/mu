@@ -36,7 +36,7 @@ void run(recipe_number r) {
     Running_routines.pop_front();
     trace("schedule") << current_recipe_name();
     run_current_routine(Scheduling_interval);
-    if (Current_routine->calls.empty())
+    if (Current_routine->completed())
       Completed_routines.push_back(Current_routine);
     else
       Running_routines.push_back(Current_routine);
