@@ -18,7 +18,7 @@ recipe f2 [
 void run_current_routine(size_t time_slice)
 :(replace "while (!Current_routine->completed())" following "void run_current_routine(size_t time_slice)")
 size_t ninstrs = 0;
-while (!Current_routine->completed() && ninstrs < time_slice)
+while (Current_routine->state == RUNNING && ninstrs < time_slice)
 :(after "Running One Instruction")
 ninstrs++;
 
@@ -28,7 +28,7 @@ ninstrs++;
 enum routine_state {
   RUNNING,
   COMPLETED,
-  // End Routine States
+  // End routine States
 };
 :(before "End routine Fields")
 enum routine_state state;
