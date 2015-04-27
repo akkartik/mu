@@ -4,8 +4,6 @@ function! HighlightTangledFile()
   set comments-=n://
   set comments+=n://:,n://
 
-  set isk+=-
-
   syntax region tangleDirective start=+:(+ skip=+".*"+ end=+)+
   highlight link tangleDirective Delimiter
   syntax match traceContains /^+.*/
