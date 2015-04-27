@@ -23,34 +23,67 @@ while (!Current_routine->completed() && ninstrs < time_slice)
 ninstrs++;
 
 //: now the rest of the scheduler is clean
+
+:(before "struct routine")
+enum routine_state {
+  RUNNING,
+  COMPLETED,
+  // End Routine States
+};
+:(before "End routine Fields")
+enum routine_state state;
+:(before "End routine Constructor")
+state = RUNNING;
+
 :(before "End Globals")
-list<routine*> Running_routines, Completed_routines;
+vector<routine*> Routines;
+size_t Current_routine_index = 0;
 size_t Scheduling_interval = 500;
 :(before "End Setup")
 Scheduling_interval = 500;
 :(replace{} "void run(recipe_number r)")
 void run(recipe_number r) {
-  Running_routines.push_back(new routine(r));
-  while (!Running_routines.empty()) {
-    Current_routine = Running_routines.front();
-    Running_routines.pop_front();
+  Routines.push_back(new routine(r));
+  Current_routine_index = 0, Current_routine = Routines[0];
+  while (!all_routines_done()) {
+    assert(Current_routine);
+    assert(Current_routine->state == RUNNING);
     trace("schedule") << current_recipe_name();
     run_current_routine(Scheduling_interval);
     if (Current_routine->completed())
-      Completed_routines.push_back(Current_routine);
-    else
-      Running_routines.push_back(Current_routine);
-    Current_routine = NULL;
+      Current_routine->state = COMPLETED;
+    // End Scheduler State Transitions
+    skip_to_next_routine();
+  }
+}
+
+:(code)
+bool all_routines_done() {
+  for (size_t i = 0; i < Routines.size(); ++i) {
+    if (Routines[i]->state == RUNNING) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// skip Current_routine_index past non-RUNNING routines
+void skip_to_next_routine() {
+  assert(!Routines.empty());
+  assert(Current_routine_index < Routines.size());
+  for (size_t i = (Current_routine_index+1)%Routines.size();  i != Current_routine_index;  i = (i+1)%Routines.size()) {
+    if (Routines[i]->state == RUNNING) {
+      Current_routine_index = i;
+      Current_routine = Routines[i];
+      return;
+    }
   }
 }
 
 :(before "End Teardown")
-for (list<routine*>::iterator p = Running_routines.begin(); p != Running_routines.end(); ++p)
-  delete *p;
-Running_routines.clear();
-for (list<routine*>::iterator p = Completed_routines.begin(); p != Completed_routines.end(); ++p)
-  delete *p;
-Completed_routines.clear();
+for (size_t i = 0; i < Routines.size(); ++i)
+  delete Routines[i];
+Routines.clear();
 
 :(before "End Primitive Recipe Declarations")
 RUN,
@@ -60,7 +93,7 @@ Recipe_number["run"] = RUN;
 case RUN: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
   assert(!current_instruction().ingredients[0].initialized);
-  Running_routines.push_back(new routine(Recipe_number[current_instruction().ingredients[0].name]));
+  Routines.push_back(new routine(Recipe_number[current_instruction().ingredients[0].name]));
   break;
 }
 
