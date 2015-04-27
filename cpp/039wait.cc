@@ -3,7 +3,7 @@
 //: basic technique for orchestrating the order in which different routines
 //: operate.
 
-:(scenario "stalled_routine")
+:(scenario "wait_for_location")
 recipe f1 [
   1:integer <- copy 0:literal
   run f2:recipe
