@@ -50,6 +50,7 @@ struct routine {
 :(code)
 routine::routine(recipe_number r) {
   calls.push(call(r));
+  // End routine Constructor
 }
 
 //:: now update routine's helpers

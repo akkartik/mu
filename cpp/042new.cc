@@ -18,14 +18,11 @@ Memory_allocated_until = 1000;
 Initial_memory_per_routine = 100000;
 :(before "End routine Fields")
 size_t alloc, alloc_max;
-:(replace{} "routine::routine(recipe_number r)")
-routine::routine(recipe_number r) :alloc(Memory_allocated_until) {
-  alloc = Memory_allocated_until;
-  Memory_allocated_until += Initial_memory_per_routine;
-  alloc_max = Memory_allocated_until;
-  trace("new") << "routine allocated memory from " << alloc << " to " << alloc_max;
-  calls.push(call(r));
-}
+:(before "End routine Constructor")
+alloc = Memory_allocated_until;
+Memory_allocated_until += Initial_memory_per_routine;
+alloc_max = Memory_allocated_until;
+trace("new") << "routine allocated memory from " << alloc << " to " << alloc_max;
 
 //:: First handle 'type' operands.
 
