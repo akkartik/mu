@@ -56,7 +56,7 @@ struct property {
 
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
-map<int, int> Memory;
+map<size_t, int> Memory;
 :(before "End Setup")
 Memory.clear();
 
