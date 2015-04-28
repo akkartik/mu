@@ -247,7 +247,7 @@ recipe integer-to-decimal-string [
     negative?:boolean <- lesser-than n:integer, 0:literal
     break-unless negative?:boolean
     negate-result:boolean <- copy 1:literal
-    n:integer <- multiply n:integer -1:literal
+    n:integer <- multiply n:integer, -1:literal
   }
   # add digits from right to left into intermediate buffer
   tmp:address:buffer <- init-buffer 30:literal
@@ -267,7 +267,7 @@ recipe integer-to-decimal-string [
   }
   # reverse buffer into string result
   len:integer <- get tmp:address:buffer/deref, length:offset
-  buf:address:array:character <- get tmp:address:buffer/deref data:offset
+  buf:address:array:character <- get tmp:address:buffer/deref, data:offset
   result:address:array:character <- new character:type, len:integer
   i:integer <- subtract len:integer, 1:literal
   j:integer <- copy 0:literal
