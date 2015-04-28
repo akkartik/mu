@@ -169,7 +169,7 @@ recipe buffer-append [
   dest:address:character <- index-address s:address:array:character/deref, len:address:integer/deref
   dest:address:character/deref <- copy c:character
   len:address:integer/deref <- add len:address:integer/deref, 1:literal
-  reply in:address:buffer/same-as-arg:0
+  reply in:address:buffer/same-as-ingredient:0
 ]
 
 scenario buffer-append-works [
