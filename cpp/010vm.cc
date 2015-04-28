@@ -81,7 +81,7 @@ void setup_types() {
   Next_type_number = 1;
   // Mu Types Initialization
   int integer = Type_number["integer"] = Next_type_number++;
-  Type_number["location"] = Type_number["integer"];  // wildcard type
+  Type_number["location"] = Type_number["integer"];  // wildcard type: either a pointer or a scalar
   Type[integer].name = "integer";
   int address = Type_number["address"] = Next_type_number++;
   Type[address].name = "address";
