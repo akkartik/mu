@@ -31,8 +31,8 @@ for (size_t i = 0; i < recently_added_recipes.size(); ++i) {
 void transform_names(const recipe_number r) {
   map<string, int>& names = Name[r];
   int curr_idx = 1;
-//?   cout << "Recipe " << r << '\n'; //? 2
-//?   cout << Recipe[r].steps.size(); //? 1
+//?   cout << "Recipe " << r << ": " << Recipe[r].name << '\n'; //? 3
+//?   cout << Recipe[r].steps.size() << '\n'; //? 2
   for (size_t i = 0; i < Recipe[r].steps.size(); ++i) {
 //?     cout << "instruction " << i << '\n'; //? 2
     instruction& inst = Recipe[r].steps[i];
@@ -41,7 +41,8 @@ void transform_names(const recipe_number r) {
     for (size_t in = 0; in < inst.ingredients.size(); ++in) {
 //?       cout << "ingredients\n"; //? 2
       if (is_raw(inst.ingredients[in])) continue;
-//?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 2
+//?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 3
+//?       cout << "ingredient " << inst.ingredients[in].to_string() << '\n'; //? 1
       if (inst.ingredients[in].name == "default-space")
         inst.ingredients[in].initialized = true;
       assert(!inst.ingredients[in].types.empty());

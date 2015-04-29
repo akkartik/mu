@@ -71,14 +71,6 @@ void collect_surrounding_spaces(const recipe_number r) {
   }
 }
 
-vector<string> property(const reagent& r, const string& name) {
-  for (size_t p = 0; p != r.properties.size(); ++p) {
-    if (r.properties[p].first == name)
-      return r.properties[p].second;
-  }
-  return vector<string>();
-}
-
 //: Once surrounding spaces are available, transform_names uses them to handle
 //: /space properties.
 
