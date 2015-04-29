@@ -110,6 +110,54 @@ case MOVE_CURSOR_ON_DISPLAY: {
   break;
 }
 
+:(before "End Primitive Recipe Declarations")
+MOVE_CURSOR_DOWN_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["move-cursor-down-on-display"] = MOVE_CURSOR_DOWN_ON_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case MOVE_CURSOR_DOWN_ON_DISPLAY: {
+  Display_row++;
+  tb_set_cursor(Display_column, Display_row);
+  tb_present();
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+MOVE_CURSOR_UP_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["move-cursor-up-on-display"] = MOVE_CURSOR_UP_ON_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case MOVE_CURSOR_UP_ON_DISPLAY: {
+  Display_row--;
+  tb_set_cursor(Display_column, Display_row);
+  tb_present();
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+MOVE_CURSOR_RIGHT_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["move-cursor-right-on-display"] = MOVE_CURSOR_RIGHT_ON_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
+  Display_column++;
+  tb_set_cursor(Display_column, Display_row);
+  tb_present();
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+MOVE_CURSOR_LEFT_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["move-cursor-left-on-display"] = MOVE_CURSOR_LEFT_ON_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case MOVE_CURSOR_LEFT_ON_DISPLAY: {
+  Display_column--;
+  tb_set_cursor(Display_column, Display_row);
+  tb_present();
+  break;
+}
+
 //:: Keyboard management
 
 :(before "End Primitive Recipe Declarations")

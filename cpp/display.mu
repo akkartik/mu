@@ -10,5 +10,13 @@ recipe main [
   move-cursor-on-display 0:literal, 0:literal
   clear-line-on-display
   wait-for-key-from-keyboard
+  move-cursor-down-on-display
+  wait-for-key-from-keyboard
+  move-cursor-right-on-display
+  wait-for-key-from-keyboard
+  move-cursor-left-on-display
+  wait-for-key-from-keyboard
+  move-cursor-up-on-display
+  wait-for-key-from-keyboard
   return-to-console
 ]
