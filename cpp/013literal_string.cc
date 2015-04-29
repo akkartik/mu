@@ -8,13 +8,13 @@
 :(scenarios load)
 :(scenario string_literal)
 recipe main [
-  1:address:array:character <- new [abc def]
+  1:address:array:character <- copy [abc def]  # copy can't really take a string
 ]
 +parse:   ingredient: {name: "abc def", value: 0, type: 0, properties: ["abc def": "literal-string"]}
 
 :(scenario string_literal_with_colons)
 recipe main [
-  1:address:array:character <- new [abc:def/ghi]
+  1:address:array:character <- copy [abc:def/ghi]
 ]
 +parse:   ingredient: {name: "abc:def/ghi", value: 0, type: 0, properties: ["abc:def/ghi": "literal-string"]}
 
@@ -58,6 +58,6 @@ string slurp_quoted(istream& in) {
 
 :(scenario string_literal_nested)
 recipe main [
-  1:address:array:character <- new [abc [def]]
+  1:address:array:character <- copy [abc [def]]
 ]
 +parse:   ingredient: {name: "abc [def]", value: 0, type: 0, properties: ["abc [def]": "literal-string"]}
