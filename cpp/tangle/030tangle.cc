@@ -95,25 +95,34 @@ void tangle(istream& in, list<Line>& out) {
 }
 
 void process_next_hunk(istream& in, const string& directive, const string& filename, size_t& line_number, list<Line>& out) {
-  list<Line> hunk;
-  string curr_line;
-  while (!in.eof()) {
-    std::streampos old = in.tellg();
-    getline(in, curr_line);
-    if (starts_with(curr_line, ":(")) {
-      in.seekg(old);
-      break;
-    }
-    if (starts_with(curr_line, "//:")) {
-      ++line_number;
-      continue;
-    }
-    hunk.push_back(Line(curr_line, filename, line_number));
-    ++line_number;
-  }
-
   istringstream directive_stream(directive.substr(2));  // length of ":("
   string cmd = next_tangle_token(directive_stream);
+
+  // first slurp all lines until next directive
+  list<Line> hunk;
+  {
+    string curr_line;
+    while (!in.eof()) {
+      std::streampos old = in.tellg();
+      getline(in, curr_line);
+      if (starts_with(curr_line, ":(")) {
+        in.seekg(old);
+        break;
+      }
+      if (starts_with(curr_line, "//:")) {
+        // tangle comments
+        ++line_number;
+        continue;
+      }
+      if (cmd == "scenario" && starts_with(curr_line, "#")) {
+        // scenarios can contain mu comments
+        ++line_number;
+        continue;
+      }
+      hunk.push_back(Line(curr_line, filename, line_number));
+      ++line_number;
+    }
+  }
 
   if (cmd == "code") {
     out.insert(out.end(), hunk.begin(), hunk.end());

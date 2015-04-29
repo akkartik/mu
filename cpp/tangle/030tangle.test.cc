@@ -291,6 +291,19 @@ void test_tangle_can_check_for_count_in_scenario() {
   CHECK(lines.empty());
 }
 
+void test_tangle_can_handle_mu_comments_in_scenario() {
+  istringstream in(":(scenario does_bar)\nabc def\n# comment1\n  efg\n  # indented comment 2\n+layer1: pqr\n# comment inside expected_trace\n+layer1: xyz\n# comment after expected trace\n-layer1: z\n# comment before trace count\n$layer1: 2\n# comment at end\n\n");
+  list<Line> lines;
+  tangle(in, lines);
+  CHECK_EQ(lines.front().contents, "TEST(does_bar)");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  run(\"abc def\\n  efg\\n\");");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer1: xyz\");");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_DOESNT_CONTAIN(\"layer1: z\");");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_EQ(trace_count(\"layer1\"), 2);");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
+  CHECK(lines.empty());
+}
+
 
 
 void test_trim() {
