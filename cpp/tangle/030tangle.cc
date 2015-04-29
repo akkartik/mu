@@ -9,6 +9,19 @@ struct Line {
   size_t line_number;
   string contents;
   Line() :line_number(0) {}
+  Line(const string& text) :line_number(0) {
+    contents = text;
+  }
+  Line(const string& text, const string& f, const size_t& l) {
+    contents = text;
+    filename = f;
+    line_number = l;
+  }
+  Line(const string& text, const Line& origin) {
+    contents = text;
+    filename = origin.filename;
+    line_number = origin.line_number;
+  }
 };
 
 // Emit a list of line contents, inserting directives just at discontinuities.
@@ -67,11 +80,7 @@ void tangle(istream& in, const string& filename, list<Line>& out) {
       ++line_number;
       continue;
     }
-    Line curr;
-    curr.filename = filename;
-    curr.line_number = line_number;
-    curr.contents = curr_line;
-    out.push_back(curr);
+    out.push_back(Line(curr_line, filename, line_number));
     ++line_number;
   }
 
@@ -99,11 +108,7 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
       ++line_number;
       continue;
     }
-    Line curr;
-    curr.line_number = line_number;
-    curr.filename = filename;
-    curr.contents = curr_line;
-    hunk.push_back(curr);
+    hunk.push_back(Line(curr_line, filename, line_number));
     ++line_number;
   }
 
@@ -270,23 +275,11 @@ list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
 //  followed by one or more lines expressing counts of specific layers emitted in trace ('$')
 // Remember to update is_input below if you add to this format.
 void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
-  Line tmp;
-  tmp.line_number = front(lines).line_number-1;  // line number of directive
-  tmp.filename = front(lines).filename;
-  tmp.contents = "TEST("+name+")";
-  result.push_back(tmp);
-#define SHIFT(new_contents) { \
-  Line tmp; \
-  tmp.line_number = front(lines).line_number; \
-  tmp.filename = front(lines).filename; \
-  tmp.contents = new_contents; \
-  result.push_back(tmp); \
-  lines.pop_front(); \
-}
+  result.push_back(Line("TEST("+name+")", front(lines).filename, front(lines).line_number-1));  // use line number of directive
   while (any_non_input_line(lines)) {
     while (!lines.empty() && starts_with(front(lines).contents, "% ")) {
-      string line = front(lines).contents.substr(strlen("% "));
-      SHIFT("  "+line);
+      result.push_back(Line("  "+front(lines).contents.substr(strlen("% ")), front(lines)));
+      lines.pop_front();
     }
     result.push_back(input_lines(lines));
     if (!lines.empty() && !front(lines).contents.empty() && front(lines).contents[0] == '+')
@@ -300,37 +293,22 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
       size_t pos = in.find(": ");
       string layer = in.substr(1, pos-1);
       string count = in.substr(pos+2);
-      Line tmp;
-      tmp.line_number = front(lines).line_number;
-      tmp.filename = front(lines).filename;
-      tmp.contents = "  CHECK_EQ(trace_count(\""+layer+"\"), "+count+");";
-      result.push_back(tmp);
+      result.push_back(Line("  CHECK_EQ(trace_count(\""+layer+"\"), "+count+");", front(lines)));
       lines.pop_front();
     }
     if (!lines.empty() && front(lines).contents == "===") {
-      Line tmp;
-      tmp.line_number = front(lines).line_number;
-      tmp.filename = front(lines).filename;
-      tmp.contents = "  CLEAR_TRACE;";
-      result.push_back(tmp);
+      result.push_back(Line("  CLEAR_TRACE;", front(lines)));
       lines.pop_front();
     }
     if (!lines.empty() && front(lines).contents == "?") {
-      Line tmp;
-      tmp.line_number = front(lines).line_number;
-      tmp.filename = front(lines).filename;
-      tmp.contents = "  DUMP(\"\");";
-      result.push_back(tmp);
+      result.push_back(Line("  DUMP(\"\");", front(lines)));
       lines.pop_front();
     }
   }
-  Line tmp2;
-  if (!lines.empty()) {
-    tmp2.line_number = front(lines).line_number;
-    tmp2.filename = front(lines).filename;
-  }
-  tmp2.contents = "}";
-  result.push_back(tmp2);
+  if (lines.empty())
+    result.push_back(Line("}"));
+  else
+    result.push_back(Line("}", front(lines)));
 
   while (!lines.empty() &&
          (trim(front(lines).contents).empty() || starts_with(front(lines).contents, "//")))
