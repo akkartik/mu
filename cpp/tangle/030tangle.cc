@@ -267,6 +267,7 @@ list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
 //  followed by a return value ('=>')
 //  followed by one or more lines expected in trace in order ('+')
 //  followed by one or more lines trace shouldn't include ('-')
+//  followed by one or more lines expressing counts of specific layers emitted in trace ('$')
 // Remember to update is_input below if you add to this format.
 void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
   Line tmp;
@@ -292,6 +293,18 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
       result.push_back(expected_in_trace(lines));
     while (!lines.empty() && !front(lines).contents.empty() && front(lines).contents[0] == '-') {
       result.push_back(expected_not_in_trace(front(lines)));
+      lines.pop_front();
+    }
+    if (!lines.empty() && front(lines).contents[0] == '$') {
+      const string& in = front(lines).contents;
+      size_t pos = in.find(": ");
+      string layer = in.substr(1, pos-1);
+      string count = in.substr(pos+2);
+      Line tmp;
+      tmp.line_number = front(lines).line_number;
+      tmp.filename = front(lines).filename;
+      tmp.contents = "  CHECK_EQ(trace_count(\""+layer+"\"), "+count+");";
+      result.push_back(tmp);
       lines.pop_front();
     }
     if (!lines.empty() && front(lines).contents == "===") {
@@ -330,7 +343,7 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
 
 bool is_input(const string& line) {
   if (line.empty()) return true;
-  return line != "===" && line[0] != '+' && line[0] != '-' && !starts_with(line, "=>");
+  return line != "===" && line[0] != '+' && line[0] != '-' && !starts_with(line, "=>") && line[0] != '$' && line[0] != '?';
 }
 
 Line input_lines(list<Line>& hunk) {

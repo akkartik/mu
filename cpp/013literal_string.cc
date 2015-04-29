@@ -22,7 +22,12 @@ recipe main [
 Type_number["literal-string"] = 0;
 
 :(after "string next_word(istream& in)")
-if (in.peek() == '[') return slurp_quoted(in);
+  if (in.peek() == '[') {
+    string result = slurp_quoted(in);
+    skip_whitespace(in);
+    skip_comment(in);
+    return result;
+  }
 
 :(code)
 string slurp_quoted(istream& in) {
@@ -61,3 +66,12 @@ recipe main [
   1:address:array:character <- copy [abc [def]]
 ]
 +parse:   ingredient: {name: "abc [def]", value: 0, type: 0, properties: ["abc [def]": "literal-string"]}
+
+:(scenario string_literal_and_comment)
+recipe main [
+  1:address:array:character <- copy [abc]  # comment
+]
++parse: instruction: 1
++parse:   ingredient: {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
++parse:   product: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character"]}
+$parse: 3
