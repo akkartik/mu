@@ -154,6 +154,31 @@ recipe move-cursor [
   reply x:address:screen/same-as-ingredient:0
 ]
 
+scenario clear-line-erases-printed-characters [
+  run [
+#?     $start-tracing #? 3
+    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    # print a character
+    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    # move cursor to start of line
+    1:address:screen <- move-cursor 1:address:screen, 0:literal/row, 0:literal/column
+    # clear line
+    1:address:screen <- clear-line 1:address:screen
+    2:address:array:character <- get 1:address:screen/deref, data:offset
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+  # screen should be blank
+  memory should contain [
+    3 <- 6  # width*height
+    4 <- 0
+    5 <- 0
+    6 <- 0
+    7 <- 0
+    8 <- 0
+    9 <- 0
+  ]
+]
+
 recipe cursor-down [
   default-space:address:array:location <- new location:type, 30:literal
   x:address:screen <- next-ingredient
