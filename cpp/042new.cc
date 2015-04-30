@@ -60,7 +60,7 @@ case NEW: {
       vector<int> capacity = read_memory(current_instruction().ingredients[1]);
       array_length = capacity[0];
       trace("mem") << "array size is " << array_length;
-      size = array_length*size_of(type);
+      size = array_length*size_of(type) + /*space for length*/1;
     }
     else {
       // scalar
@@ -104,7 +104,7 @@ recipe main [
 +mem: array size is 5
 +run: instruction main/1
 +run: instruction main/2
-+mem: storing 5 in location 3
++mem: storing 6 in location 3
 
 //: Make sure that each routine gets a different alloc to start.
 :(scenario new_concurrent)

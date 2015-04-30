@@ -91,7 +91,7 @@ bool next_instruction(istream& in, instruction* curr) {
     return false;  // end of recipe
   }
 
-  if (words.size() == 1 && !isalnum(words[0][0])) {
+  if (words.size() == 1 && !isalnum(words[0][0]) && words[0][0] != '$') {
     curr->is_label = true;
     curr->label = words[0];
     trace("parse") << "label: " << curr->label;
@@ -255,6 +255,12 @@ recipe main [
   +foo
 ]
 +parse: label: +foo
+
+:(scenario parse_dollar_as_recipe_name)
+recipe main [
+  $foo
+]
++parse: instruction: $foo
 
 :(scenario parse_multiple_properties)
 recipe main [
