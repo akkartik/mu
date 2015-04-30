@@ -40,8 +40,8 @@ recipe clear-screen [
     {
       done?:boolean <- greater-or-equal i:integer, max:integer
       break-if done?:boolean
-      x:address:character <- index-address buf:address:array:character/deref, i:integer
-      x:address:character/deref <- copy [ ]
+      c:address:character <- index-address buf:address:array:character/deref, i:integer
+      c:address:character/deref <- copy [ ]
       i:integer <- add i:integer, 1:literal
       loop
     }
@@ -79,6 +79,21 @@ recipe print-character [
   # otherwise, real screen
   print-character-to-display c:character
   reply x:address:screen/same-as-ingredient:0
+]
+
+scenario print-character-at-top-left [
+  run [
+#?     $start-tracing #? 3
+    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    2:address:array:character <- get 1:address:screen/deref, data:offset
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+  memory should contain [
+    3 <- 6  # width*height
+    4 <- 97  # 'a'
+    5 <- 0
+  ]
 ]
 
 recipe clear-line [

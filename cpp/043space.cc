@@ -99,7 +99,7 @@ int space_base(const reagent& x) {
 
 int address(int offset, int base) {
   if (base == 0) return offset;  // raw
-//?   cout << base << '\n'; //? 1
+//?   cout << base << '\n'; //? 2
   if (offset >= Memory[base]) {
     // todo: test
     raise << "location " << offset << " is out of bounds " << Memory[base] << '\n';
