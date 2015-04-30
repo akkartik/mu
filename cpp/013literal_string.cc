@@ -71,7 +71,7 @@ recipe main [
 recipe main [
   1:address:array:character <- copy [abc]  # comment
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
 +parse:   product: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character"]}
 # no other ingredients
