@@ -5,7 +5,7 @@
 recipe main [
   1:integer <- copy 23:literal
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
 
@@ -122,7 +122,7 @@ bool next_instruction(istream& in, instruction* curr) {
     curr->ingredients.push_back(reagent(*p));
   }
 
-  trace("parse") << "instruction: " << curr->operation;
+  trace("parse") << "instruction: " << curr->name;
   for (vector<reagent>::iterator p = curr->ingredients.begin(); p != curr->ingredients.end(); ++p) {
     trace("parse") << "  ingredient: " << p->to_string();
   }
@@ -206,7 +206,7 @@ recently_added_recipes.clear();
 recipe main [
   1:integer <- copy 23:literal
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
 
@@ -215,7 +215,7 @@ recipe main [
   # comment
   1:integer <- copy 23:literal
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
 
@@ -225,7 +225,7 @@ recipe main [
   1:integer <- copy 23:literal
   # comment
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
 
@@ -235,10 +235,10 @@ recipe main [
   # comment
   2:integer <- copy 23:literal
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
 +parse:   product: {name: "2", value: 0, type: 1, properties: ["2": "integer"]}
 
@@ -246,7 +246,7 @@ recipe main [
 recipe main [
   1:integer <- copy 23:literal  # comment
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
 
@@ -255,13 +255,12 @@ recipe main [
   +foo
 ]
 +parse: label: +foo
--parse: instruction: 1
 
 :(scenario parse_multiple_properties)
 recipe main [
   1:integer <- copy 23:literal/foo:bar:baz
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal", "foo": "bar":"baz"]}
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
 
@@ -269,7 +268,7 @@ recipe main [
 recipe main [
   1:integer, 2:integer <- copy 23:literal
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
 +parse:   product: {name: "2", value: 0, type: 1, properties: ["2": "integer"]}
@@ -278,7 +277,7 @@ recipe main [
 recipe main [
   1:integer, 2:integer <- copy 23:literal, 4:integer
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
 +parse:   ingredient: {name: "4", value: 0, type: 1, properties: ["4": "integer"]}
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
@@ -288,7 +287,7 @@ recipe main [
 recipe main [
   1:integer, 2:address:integer <- copy 23:literal, 4:integer
 ]
-+parse: instruction: 1
++parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
 +parse:   ingredient: {name: "4", value: 0, type: 1, properties: ["4": "integer"]}
 +parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
