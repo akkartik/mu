@@ -30,6 +30,7 @@ struct instruction {
   vector<reagent> products;  // only if !is_label
   instruction();
   void clear();
+  string to_string() const;
 };
 
 :(before "struct instruction")
@@ -215,6 +216,22 @@ string reagent::to_string() const {
     }
   }
   out << "}";
+  return out.str();
+}
+
+string instruction::to_string() const {
+  if (is_label) return label;
+  ostringstream out;
+  for (size_t i = 0; i < products.size(); ++i) {
+    if (i > 0) out << ", ";
+    out << products[i].to_string();
+  }
+  if (!products.empty()) out << " <- ";
+  out << name << ' ';
+  for (size_t i = 0; i < ingredients.size(); ++i) {
+    if (i > 0) out << ", ";
+    out << ingredients[i].to_string();
+  }
   return out.str();
 }
 
