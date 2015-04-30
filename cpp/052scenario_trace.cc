@@ -1,5 +1,23 @@
-//: Support a scenario [ ... ] form at the top level so we can start creating
-//: scenarios in mu just like we do in C++.
+//: Support a trace block inside scenario blocks.
+//: Allows two kinds of assertions:
+//:   trace must contain [ ... ]
+//:   trace must not contain [ ... ]
+
+:(scenarios "parse_scenario")
+:(scenario scenario_trace_block)
+scenario foo [
+  trace should contain [
+    bar: baz
+    bar: floo
+  ]
+  trace should not contain [
+    bar: abc
+  ]
+
+]
++scenario: +bar: baz
++scenario: +bar: floo
++scenario: -bar: abc
 
 :(before "End scenario Fields")
 vector<pair<string, string> > trace_checks;
@@ -43,7 +61,7 @@ void handle_scenario_trace_directive(istream& in, scenario& out) {
     }
     string message = slurp_rest(tmp);
     out.trace_checks.push_back(pair<string, string>(label, message));
-    trace("scenario") << "trace: " << label << ": " << message << '\n';
+    trace("scenario") << '+' << label << ": " << message << '\n';
   }
   skip_whitespace(in);
   assert(in.get() == ']');
@@ -70,7 +88,7 @@ void handle_scenario_trace_negative_directive(istream& in, scenario& out) {
     }
     string message = slurp_rest(tmp);
     out.trace_negative_checks.push_back(pair<string, string>(label, message));
-    trace("scenario") << "trace: " << label << ": " << message << '\n';
+    trace("scenario") << '-' << label << ": " << message << '\n';
   }
   skip_whitespace(in);
   assert(in.get() == ']');

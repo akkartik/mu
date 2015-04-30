@@ -1,4 +1,5 @@
-//: Allow tests to be written in mu files.
+//: Support a scenario [ ... ] form at the top level so we can start creating
+//: scenarios in mu files just like we do in C++.
 
 :(before "End Types")
 struct scenario {
