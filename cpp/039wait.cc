@@ -6,7 +6,7 @@
 :(scenario "wait_for_location")
 recipe f1 [
   1:integer <- copy 0:literal
-  run f2:recipe
+  start-running f2:recipe
   wait-for-location 1:integer
   # now wait for f2 to run and modify location 1 before using its value
   2:integer <- copy 1:integer
