@@ -3,7 +3,7 @@
 
 :(scenario scheduler)
 recipe f1 [
-  run f2:recipe
+  start-running f2:recipe
   1:integer <- copy 3:literal
 ]
 recipe f2 [
@@ -86,11 +86,11 @@ for (size_t i = 0; i < Routines.size(); ++i)
 Routines.clear();
 
 :(before "End Primitive Recipe Declarations")
-RUN,
+START_RUNNING,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["run"] = RUN;
+Recipe_number["start-running"] = START_RUNNING;
 :(before "End Primitive Recipe Implementations")
-case RUN: {
+case START_RUNNING: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
   assert(!current_instruction().ingredients[0].initialized);
   Routines.push_back(new routine(Recipe_number[current_instruction().ingredients[0].name]));
@@ -100,7 +100,7 @@ case RUN: {
 :(scenario scheduler_interleaves_routines)
 % Scheduling_interval = 1;
 recipe f1 [
-  run f2:recipe
+  start-running f2:recipe
   1:integer <- copy 0:literal
   2:integer <- copy 0:literal
 ]

@@ -109,7 +109,7 @@ recipe main [
 //: Make sure that each routine gets a different alloc to start.
 :(scenario new_concurrent)
 recipe f1 [
-  run f2:recipe
+  start-running f2:recipe
   1:address:integer/raw <- new integer:type
 ]
 recipe f2 [
