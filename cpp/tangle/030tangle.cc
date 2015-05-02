@@ -100,6 +100,7 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
 
   // first slurp all lines until next directive
   list<Line> hunk;
+  bool end_of_scenario_input = false;
   {
     string curr_line;
     while (!in.eof()) {
@@ -114,15 +115,21 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
         ++line_number;
         continue;
       }
-      if (cmd == "scenario" && starts_with(curr_line, "#")) {
-        // scenarios can contain mu comments
-        ++line_number;
-        continue;
-      }
-      if (cmd == "scenario" && trim(curr_line).empty()) {
-        // ignore empty lines in scenarios
-        ++line_number;
-        continue;
+      if (cmd == "scenario") {
+        // ignore mu comments in scenarios, but only after the end of input
+        if (!starts_with(curr_line, "#") && !is_input(curr_line)) {
+          // remaining lines are checks
+          end_of_scenario_input = true;
+        }
+        else if (end_of_scenario_input && starts_with(curr_line, "#")) {
+          ++line_number;
+          continue;
+        }
+        if (trim(curr_line).empty()) {
+          // ignore empty lines in scenarios, whether in input of after
+          ++line_number;
+          continue;
+        }
       }
       hunk.push_back(Line(curr_line, filename, line_number));
       ++line_number;
@@ -282,15 +289,23 @@ list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
 }
 
 // A scenario is one or more sessions separated by calls to CLEAR_TRACE ('===')
-//  A session is one or more lines of input, followed optionally by (in order):
-//   one or more lines expected in trace in order ('+')
-//   one or more lines trace shouldn't include ('-')
-//   one or more lines expressing counts of specific layers emitted in trace ('$')
-//   a directive to print the trace just for debugging ('?')
+//   A session is:
+//     one or more lines of escaped setup in C/C++ ('%')
+//   followed by one or more lines of input,
+//   followed optionally by (in order):
+//     one or more lines expected in trace in order ('+')
+//     one or more lines trace shouldn't include ('-')
+//     one or more lines expressing counts of specific layers emitted in trace ('$')
+//     a directive to print the trace just for debugging ('?')
 // Remember to update is_input below if you add to this format.
 void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
   result.push_back(Line("TEST("+name+")", front(lines).filename, front(lines).line_number-1));  // use line number of directive
   while (!lines.empty()) {
+    // hack: drop mu comments at the start, just in case there's a '%' line after them
+    // So the tangler only passes through mu comments inside scenarios between
+    // the first input line and the last input line.
+    while (!lines.empty() && starts_with(front(lines).contents, "#"))
+      lines.pop_front();
     while (!lines.empty() && starts_with(front(lines).contents, "% ")) {
       result.push_back(Line("  "+front(lines).contents.substr(strlen("% ")), front(lines)));
       lines.pop_front();

@@ -202,7 +202,9 @@ for (size_t i = 0; i < recently_added_recipes.size(); ++i) {
 recently_added_recipes.clear();
 
 :(scenario parse_comment_outside_recipe)
-# comment
+# this comment will be dropped by the tangler, so we need a dummy recipe to stop that
+recipe f1 [ ]
+# this comment will go through to 'load'
 recipe main [
   1:integer <- copy 23:literal
 ]
