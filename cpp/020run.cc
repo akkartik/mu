@@ -137,6 +137,7 @@ load_permanently("core.mu");
 // helper for tests
 void run(string form) {
   vector<recipe_number> tmp = load(form);
+  if (tmp.empty()) return;
   transform_all();
   run(tmp.front());
 }
