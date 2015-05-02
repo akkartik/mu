@@ -251,3 +251,62 @@ recipe main [
   ]
 ]
 -warn: missing [b] in trace layer a
+
+:(scenario trace_negative_check_warns_on_failure)
+% Hide_warnings = true;
+recipe main [
+  run [
+    trace [a], [b]
+  ]
+  trace-should-not-contain [
+    a: b
+  ]
+]
++warn: unexpected [b] in trace layer a
+
+:(before "End Primitive Recipe Declarations")
+TRACE_SHOULD_NOT_CONTAIN,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["trace-should-not-contain"] = TRACE_SHOULD_NOT_CONTAIN;
+:(before "End Primitive Recipe Implementations")
+case TRACE_SHOULD_NOT_CONTAIN: {
+  check_trace_missing(current_instruction().ingredients[0].name);
+  break;
+}
+
+:(code)
+// simplified version of check_trace_contents() that emits warnings rather
+// than just printing to stderr
+bool check_trace_missing(const string& in) {
+  Trace_stream->newline();
+  vector<pair<string, string> > lines = parse_trace(in);
+  for (size_t i = 0; i < lines.size(); ++i) {
+    if (trace_count(lines[i].first, lines[i].second) != 0) {
+      raise << "unexpected [" << lines[i].second << "] in trace layer " << lines[i].first << '\n';
+      return false;
+    }
+  }
+  return true;
+}
+
+:(scenario trace_negative_check_passes_silently)
+% Hide_warnings = true;
+recipe main [
+  trace-should-not-contain [
+    a: b
+  ]
+]
+-warn: unexpected [b] in trace layer a
+
+:(scenario trace_negative_check_warns_on_any_unexpected_line)
+% Hide_warnings = true;
+recipe main [
+  run [
+    trace [a], [d]
+  ]
+  trace-should-not-contain [
+    a: b
+    a: d
+  ]
+]
++warn: unexpected [d] in trace layer a
