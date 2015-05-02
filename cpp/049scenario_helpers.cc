@@ -1,6 +1,8 @@
 //: Some pseudo-primitives to support writing tests in mu.
 //: When we throw out the C layer these will require more work.
 
+//:: 'run' can interpret a string as a set of instructions
+
 :(scenario run)
 #? % Trace_stream->dump_layer = "all";
 recipe main [
@@ -42,6 +44,9 @@ recipe main [
 ]
 +mem: storing 13 in location 1
 +mem: storing 13 in location 2
+
+//:: memory-should-contain can raise warnings if specific locations aren't as
+//:: expected.
 
 :(scenario memory_check)
 % Hide_warnings = true;
