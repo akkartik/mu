@@ -12,6 +12,15 @@ recipe main [
 ]
 +mem: storing 13 in location 1
 
+:(scenario run_handles_comments)
+recipe main [
+  run [
+    # comment
+    1:integer <- copy 13:literal
+  ]
+]
++mem: storing 13 in location 1
+
 :(before "End Globals")
 size_t Num_temporary_recipes = 0;
 :(before "End Setup")
@@ -26,6 +35,7 @@ case RUN: {
 //?   cout << "recipe " << current_instruction().ingredients[0].name << '\n'; //? 1
   ostringstream tmp;
   tmp << "recipe tmp" << Num_temporary_recipes++ << " [ " << current_instruction().ingredients[0].name << " ]";
+//?   Show_rest_of_stream = true; //? 1
   vector<recipe_number> tmp_recipe = load(tmp.str());
   transform_all();
 //?   cout << tmp_recipe[0] << ' ' << Recipe_number["main"] << '\n'; //? 1

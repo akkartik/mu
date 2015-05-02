@@ -19,7 +19,7 @@ vector<recipe_number> load(string form) {
 vector<recipe_number> load(istream& in) {
   vector<recipe_number> result;
   while (!in.eof()) {
-    skip_comments_and_newlines(in);
+    skip_whitespace_and_comments(in);
     if (in.eof()) break;
     string command = next_word(in);
     // Command Handlers
@@ -35,7 +35,7 @@ vector<recipe_number> load(istream& in) {
 }
 
 recipe_number add_recipe(istream& in) {
-  skip_comments_and_newlines(in);
+  skip_whitespace_and_comments(in);
   string recipe_name = next_word(in);
 //?   cout << "recipe name: ^" << recipe_name << "$\n"; //? 3
   if (recipe_name.empty())
@@ -56,7 +56,9 @@ recipe_number add_recipe(istream& in) {
   if (in.get() != '[')
     raise << "recipe body must begin with '['\n";
 
-  skip_comments_and_newlines(in);
+//?   show_rest_of_stream(in); //? 1
+  skip_whitespace_and_comments(in);
+//?   show_rest_of_stream(in); //? 1
 
   instruction curr;
   while (next_instruction(in, &curr)) {
@@ -73,17 +75,21 @@ recipe_number add_recipe(istream& in) {
 bool next_instruction(istream& in, instruction* curr) {
   curr->clear();
   if (in.eof()) return false;
+//?   show_rest_of_stream(in); //? 1
   skip_whitespace(in);  if (in.eof()) return false;
-  skip_comments_and_newlines(in);  if (in.eof()) return false;
+//?   show_rest_of_stream(in); //? 1
+  skip_whitespace_and_comments(in);  if (in.eof()) return false;
 
   vector<string> words;
+//?   show_rest_of_stream(in); //? 1
   while (in.peek() != '\n') {
     skip_whitespace(in);  if (in.eof()) return false;
+//?     show_rest_of_stream(in); //? 1
     string word = next_word(in);  if (in.eof()) return false;
     words.push_back(word);
     skip_whitespace(in);  if (in.eof()) return false;
   }
-  skip_comments_and_newlines(in);  if (in.eof()) return false;
+  skip_whitespace_and_comments(in);  if (in.eof()) return false;
 
 //?   if (words.size() == 1) cout << words[0] << ' ' << words[0].size() << '\n'; //? 1
   if (words.size() == 1 && words[0] == "]") {
@@ -166,13 +172,11 @@ void skip_whitespace(istream& in) {
   }
 }
 
-void skip_comments_and_newlines(istream& in) {
-  while (in.peek() == '\n' || in.peek() == '#') {
-    if (in.peek() == '#') {
-      in.get();
-      while (in.peek() != '\n') in.get();
-    }
-    in.get();
+void skip_whitespace_and_comments(istream& in) {
+  while (true) {
+    if (isspace(in.peek())) in.get();
+    else if (in.peek() == '#') skip_comment(in);
+    else break;
   }
 }
 
@@ -187,6 +191,21 @@ void skip_comma(istream& in) {
   skip_whitespace(in);
   if (in.peek() == ',') in.get();
   skip_whitespace(in);
+}
+
+// for debugging
+:(before "End Globals")
+bool Show_rest_of_stream = false;
+:(code)
+void show_rest_of_stream(istream& in) {
+  if (!Show_rest_of_stream) return;
+  cerr << '^';
+  char c;
+  while (in >> c) {
+    cerr << c;
+  }
+  cerr << "$\n";
+  exit(0);
 }
 
 //: Have tests clean up any recipes they added.

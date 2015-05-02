@@ -90,15 +90,7 @@ Next_type_number = 1000;
 
 :(code)
 void skip_bracket(istream& in, string message) {
-  skip_whitespace(in);  skip_comments_and_newlines(in);  skip_whitespace(in);
+  skip_whitespace_and_comments(in);
   if (in.get() != '[')
     raise << message << '\n';
-}
-
-void skip_whitespace_and_comments(istream& in) {
-  while (true) {
-    if (isspace(in.peek())) in.get();
-    else if (in.peek() == '#') skip_comment(in);
-    else break;
-  }
 }
