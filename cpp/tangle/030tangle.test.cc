@@ -177,6 +177,17 @@ void test_tangle_supports_scenarios() {
   CHECK(lines.empty());
 }
 
+void test_tangle_ignores_empty_lines_in_scenarios() {
+  istringstream in(":(scenario does_bar)\nabc def\n+layer1: pqr\n  \n+layer2: xyz");
+  list<Line> lines;
+  tangle(in, lines);
+  CHECK_EQ(lines.front().contents, "TEST(does_bar)");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  run(\"abc def\\n\");");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: xyz\");");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
+  CHECK(lines.empty());
+}
+
 void test_tangle_handles_empty_lines_in_scenarios() {
   istringstream in(":(scenario does_bar)\nabc def\n\n+layer1: pqr\n+layer2: xyz");
   list<Line> lines;

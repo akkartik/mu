@@ -119,6 +119,11 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
         ++line_number;
         continue;
       }
+      if (cmd == "scenario" && trim(curr_line).empty()) {
+        // ignore empty lines in scenarios
+        ++line_number;
+        continue;
+      }
       hunk.push_back(Line(curr_line, filename, line_number));
       ++line_number;
     }
