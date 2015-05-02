@@ -283,7 +283,6 @@ list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
 
 // A scenario is one or more sessions separated by calls to CLEAR_TRACE ('===')
 //  A session is one or more lines of input
-//  followed by a return value ('=>')
 //  followed by one or more lines expected in trace in order ('+')
 //  followed by one or more lines trace shouldn't include ('-')
 //  followed by one or more lines expressing counts of specific layers emitted in trace ('$')
@@ -335,7 +334,7 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
 
 bool is_input(const string& line) {
   if (line.empty()) return true;
-  return line != "===" && line[0] != '+' && line[0] != '-' && !starts_with(line, "=>") && line[0] != '$' && line[0] != '?';
+  return line != "===" && line[0] != '+' && line[0] != '-' && line[0] != '$' && line[0] != '?';
 }
 
 Line input_lines(list<Line>& hunk) {
