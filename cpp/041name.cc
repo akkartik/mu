@@ -45,6 +45,8 @@ void transform_names(const recipe_number r) {
 //?       cout << "ingredient " << inst.ingredients[in].to_string() << '\n'; //? 1
       if (inst.ingredients[in].name == "default-space")
         inst.ingredients[in].initialized = true;
+      if (inst.ingredients[in].types.empty())
+        raise << "missing type in " << inst.to_string() << '\n';
       assert(!inst.ingredients[in].types.empty());
       if (inst.ingredients[in].types[0]  // not a literal
           && !inst.ingredients[in].initialized
