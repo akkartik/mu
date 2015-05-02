@@ -218,7 +218,6 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
     ++curr_expected_line;
   if (curr_expected_line == expected_lines.size()) return true;
   Trace_stream->newline();
-  ostringstream output;
   string layer, frame, contents;
   parse_layer_frame_contents(expected_lines[curr_expected_line], &layer, &frame, &contents);
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
@@ -285,7 +284,6 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
     ++curr_expected_line;
   if (curr_expected_line == expected_lines.size()) return true;
   Trace_stream->newline();
-  ostringstream output;
   vector<string> layers = split(layer, ",");
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (!layer.empty() && !any_prefix_match(layers, p->first))
@@ -385,7 +383,6 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
     ++curr_expected_line;
   if (curr_expected_line == expected_lines.size()) return true;
   Trace_stream->newline();
-  ostringstream output;
   vector<string> layers = split(layer, ",");
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (!layer.empty() && !any_prefix_match(layers, p->first))

@@ -156,3 +156,98 @@ recipe main [
 +run: checking location 2
 +run: checking location 3
 +run: checking location 4
+
+//:: trace-should-contain and trace-should-not-contain raise warnings if the
+//:: trace doesn't meet given conditions
+
+:(scenario trace_check_warns_on_failure)
+% Hide_warnings = true;
+recipe main [
+  trace-should-contain [
+    a: b
+    a: d
+  ]
+]
++warn: missing [b] in trace layer a
+
+:(before "End Primitive Recipe Declarations")
+TRACE_SHOULD_CONTAIN,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["trace-should-contain"] = TRACE_SHOULD_CONTAIN;
+:(before "End Primitive Recipe Implementations")
+case TRACE_SHOULD_CONTAIN: {
+  check_trace(current_instruction().ingredients[0].name);
+  break;
+}
+
+:(code)
+// simplified version of check_trace_contents() that emits warnings rather
+// than just printing to stderr
+bool check_trace(const string& expected) {
+  Trace_stream->newline();
+  vector<pair<string, string> > expected_lines = parse_trace(expected);
+  if (expected_lines.empty()) return true;
+  size_t curr_expected_line = 0;
+  for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+    if (expected_lines[curr_expected_line].first != p->first) continue;
+    if (expected_lines[curr_expected_line].second != p->second.second) continue;
+    // match
+    ++curr_expected_line;
+    if (curr_expected_line == expected_lines.size()) return true;
+  }
+
+  raise << "missing [" << expected_lines[curr_expected_line].second << "] "
+        << "in trace layer " << expected_lines[curr_expected_line].first << '\n';
+  return false;
+}
+
+vector<pair<string, string> > parse_trace(const string& expected) {
+  vector<string> buf = split(expected, "\n");
+  vector<pair<string, string> > result;
+  for (size_t i = 0; i < buf.size(); ++i) {
+    buf[i] = trim(buf[i]);
+    if (buf[i].empty()) continue;
+    size_t delim = buf[i].find(": ");
+    result.push_back(pair<string, string>(buf[i].substr(0, delim), buf[i].substr(delim+2)));
+  }
+  return result;
+}
+
+// see tests for this function in tangle/030tangle.test.cc
+string trim(const string& s) {
+  string::const_iterator first = s.begin();
+  while (first != s.end() && isspace(*first))
+    ++first;
+  if (first == s.end()) return "";
+
+  string::const_iterator last = --s.end();
+  while (last != s.begin() && isspace(*last))
+    --last;
+  ++last;
+  return string(first, last);
+}
+
+:(scenario trace_check_warns_on_failure_in_later_line)
+% Hide_warnings = true;
+recipe main [
+  run [
+    trace [a], [b]
+  ]
+  trace-should-contain [
+    a: b
+    a: d
+  ]
+]
++warn: missing [d] in trace layer a
+
+:(scenario trace_check_passes_silently)
+% Hide_warnings = true;
+recipe main [
+  run [
+    trace [a], [b]
+  ]
+  trace-should-contain [
+    a: b
+  ]
+]
+-warn: missing [b] in trace layer a

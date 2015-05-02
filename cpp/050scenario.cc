@@ -210,20 +210,6 @@ void parse_scenario(const string& s) {
   parse_scenario(in);
 }
 
-string &trim(string &s) {
-  return ltrim(rtrim(s));
-}
-
-string &ltrim(string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(isspace))));
-  return s;
-}
-
-string &rtrim(string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(isspace))).base(), s.end());
-  return s;
-}
-
 :(before "End Includes")
 #include <sys/stat.h>
 :(code)
