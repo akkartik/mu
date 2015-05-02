@@ -1,3 +1,46 @@
+parse/0: instruction: run
+parse/0:   ingredient: {name: "
+#?     $start-tracing #? 3
+    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    2:address:array:character <- get 1:address:screen/deref, data:offset
+    3:array:character <- copy 2:address:array:character/deref
+  ", value: 0, type: 0, properties: ["
+#?     $start-tracing #? 3
+    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    2:address:array:character <- get 1:address:screen/deref, data:offset
+    3:array:character <- copy 2:address:array:character/deref
+  ": "literal-string"]}
+parse/0: instruction: memory-should-contain
+parse/0:   ingredient: {name: "
+    3 <- 6  # width*height
+    4 <- 97  # 'a'
+    5 <- 0
+  ", value: 0, type: 0, properties: ["
+    3 <- 6  # width*height
+    4 <- 97  # 'a'
+    5 <- 0
+  ": "literal-string"]}
+after-brace/0: recipe print-character-at-top-left
+after-brace/0: run ...
+after-brace/0: memory-should-contain ...
+new/0: routine allocated memory from 1000 to 101000
+schedule/0: print-character-at-top-left
+run/0: instruction print-character-at-top-left/0
+run/0: run {name: "
+#?     $start-tracing #? 3
+    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    2:address:array:character <- get 1:address:screen/deref, data:offset
+    3:array:character <- copy 2:address:array:character/deref
+  ", value: 0, type: 0, properties: ["
+#?     $start-tracing #? 3
+    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    2:address:array:character <- get 1:address:screen/deref, data:offset
+    3:array:character <- copy 2:address:array:character/deref
+  ": "literal-string"]}
 parse/0: instruction: init-fake-screen
 parse/0:   ingredient: {name: "3", value: 0, type: 0, properties: ["3": "literal", "width": ]}
 parse/0:   ingredient: {name: "2", value: 0, type: 0, properties: ["2": "literal", "height": ]}
@@ -14,14 +57,12 @@ parse/0: instruction: copy
 parse/0:   ingredient: {name: "2", value: 0, type: 2-5-4, properties: ["2": "address":"array":"character", "deref": ]}
 parse/0:   product: {name: "3", value: 0, type: 5-4, properties: ["3": "array":"character"]}
 name/0: element data of type screen is at offset 4
-after-brace/0: recipe test-print-character-at-top-left
+after-brace/0: recipe tmp0
 after-brace/0: init-fake-screen ...
 after-brace/0: print-character ...
 after-brace/0: get ...
 after-brace/0: copy ...
-new/0: routine allocated memory from 1000 to 101000
-schedule/0: test-print-character-at-top-left
-run/0: instruction test-print-character-at-top-left/0
+run/0: instruction tmp0/0
 run/0: {name: "1", value: 1, type: 2-11, properties: ["1": "address":"screen"]} <- init-fake-screen {name: "3", value: 3, type: 0, properties: ["3": "literal", "width": ]}, {name: "2", value: 2, type: 0, properties: ["2": "literal", "height": ]}
 run/0: instruction init-fake-screen/0
 run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal", "capacity": ]}
@@ -393,7 +434,7 @@ run/0: reply {name: "result", value: 1, type: 2-11, properties: ["result": "addr
 mem/0: location 1002 is 1031
 run/0: result 0 is 1031
 mem/0: storing 1031 in location 1
-run/0: instruction test-print-character-at-top-left/1
+run/0: instruction tmp0/1
 run/0: {name: "1", value: 1, type: 2-11, properties: ["1": "address":"screen"]} <- print-character {name: "1", value: 1, type: 2-11, properties: ["1": "address":"screen"]}, {name: "97", value: 97, type: 0, properties: ["97": "literal"]}
 mem/0: location 1 is 1031
 run/0: instruction print-character/0
@@ -511,7 +552,7 @@ run/0: reply {name: "x", value: 1, type: 2-11, properties: ["x": "address":"scre
 mem/0: location 1076 is 1031
 run/0: result 0 is 1031
 mem/0: storing 1031 in location 1
-run/0: instruction test-print-character-at-top-left/2
+run/0: instruction tmp0/2
 run/0: {name: "2", value: 2, type: 2-5-4, properties: ["2": "address":"array":"character"]} <- get {name: "1", value: 1, type: 2-11, properties: ["1": "address":"screen", "deref": ]}, {name: "data", value: 4, type: 0, properties: ["data": "offset"]}
 run/0: ingredient 0 is 1
 mem/0: location 1 is 1031
@@ -521,7 +562,7 @@ run/0: its type is 2
 mem/0: location 1035 is 1036
 run/0: product 0 is 1036
 mem/0: storing 1036 in location 2
-run/0: instruction test-print-character-at-top-left/3
+run/0: instruction tmp0/3
 run/0: {name: "3", value: 3, type: 5-4, properties: ["3": "array":"character"]} <- copy {name: "2", value: 2, type: 2-5-4, properties: ["2": "address":"array":"character", "deref": ]}
 run/0: ingredient 0 is 2
 mem/0: location 2 is 1036
@@ -539,3 +580,16 @@ mem/0: storing 0 in location 6
 mem/0: storing 0 in location 7
 mem/0: storing 0 in location 8
 mem/0: storing 0 in location 9
+run/0: instruction print-character-at-top-left/1
+run/0: memory-should-contain {name: "
+    3 <- 6  # width*height
+    4 <- 97  # 'a'
+    5 <- 0
+  ", value: 0, type: 0, properties: ["
+    3 <- 6  # width*height
+    4 <- 97  # 'a'
+    5 <- 0
+  ": "literal-string"]}
+run/0: checking location 3
+run/0: checking location 4
+run/0: checking location 5

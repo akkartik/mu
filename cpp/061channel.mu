@@ -14,7 +14,7 @@ scenario channel [
     1:address:channel <- write 1:address:channel, 34:literal
     2:integer, 1:address:channel <- read 1:address:channel
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 34
   ]
 ]
@@ -112,7 +112,7 @@ scenario channel-initialization [
     2:integer <- get 1:address:channel/deref, first-full:offset
     3:integer <- get 1:address:channel/deref, first-free:offset
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 0  # first-full
     3 <- 0  # first-free
   ]
@@ -125,7 +125,7 @@ scenario channel-write-increments-free [
     2:integer <- get 1:address:channel/deref, first-full:offset
     3:integer <- get 1:address:channel/deref, first-free:offset
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 0  # first-full
     3 <- 1  # first-free
   ]
@@ -139,7 +139,7 @@ scenario channel-read-increments-full [
     2:integer <- get 1:address:channel/deref, first-full:offset
     3:integer <- get 1:address:channel/deref, first-free:offset
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 1  # first-full
     3 <- 1  # first-free
   ]
@@ -162,7 +162,7 @@ scenario channel-wrap [
     _, 1:address:channel <- read 1:address:channel
     5:integer <- get 1:address:channel/deref, first-full:offset
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 1  # first-free after first write
     3 <- 1  # first-full after first read
     4 <- 0  # first-free after second write, wrapped
@@ -219,7 +219,7 @@ scenario channel-new-empty-not-full [
     2:integer <- channel-empty? 1:address:channel
     3:integer <- channel-full? 1:address:channel
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 1  # empty?
     3 <- 0  # full?
   ]
@@ -232,7 +232,7 @@ scenario channel-write-not-empty [
     2:integer <- channel-empty? 1:address:channel
     3:integer <- channel-full? 1:address:channel
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 0  # empty?
     3 <- 0  # full?
   ]
@@ -245,7 +245,7 @@ scenario channel-write-full [
     2:integer <- channel-empty? 1:address:channel
     3:integer <- channel-full? 1:address:channel
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 0  # empty?
     3 <- 1  # full?
   ]
@@ -259,7 +259,7 @@ scenario channel-read-not-full [
     2:integer <- channel-empty? 1:address:channel
     3:integer <- channel-full? 1:address:channel
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 1  # empty?
     3 <- 0  # full?
   ]

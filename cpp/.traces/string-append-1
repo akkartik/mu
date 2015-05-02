@@ -1,3 +1,38 @@
+parse/0: instruction: run
+parse/0:   ingredient: {name: "
+    1:address:array:character/raw <- new [hello,]
+    2:address:array:character/raw <- new [ world!]
+    3:address:array:character/raw <- string-append 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ", value: 0, type: 0, properties: ["
+    1:address:array:character/raw <- new [hello,]
+    2:address:array:character/raw <- new [ world!]
+    3:address:array:character/raw <- string-append 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ": "literal-string"]}
+parse/0: instruction: memory-should-contain
+parse/0:   ingredient: {name: "
+    4:string <- [hello, world!]
+  ", value: 0, type: 0, properties: ["
+    4:string <- [hello, world!]
+  ": "literal-string"]}
+after-brace/0: recipe string-append-1
+after-brace/0: run ...
+after-brace/0: memory-should-contain ...
+new/0: routine allocated memory from 1000 to 101000
+schedule/0: string-append-1
+run/0: instruction string-append-1/0
+run/0: run {name: "
+    1:address:array:character/raw <- new [hello,]
+    2:address:array:character/raw <- new [ world!]
+    3:address:array:character/raw <- string-append 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ", value: 0, type: 0, properties: ["
+    1:address:array:character/raw <- new [hello,]
+    2:address:array:character/raw <- new [ world!]
+    3:address:array:character/raw <- string-append 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ": "literal-string"]}
 parse/0: instruction: new
 parse/0:   ingredient: {name: "hello,", value: 0, type: 0, properties: ["hello,": "literal-string"]}
 parse/0:   product: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]}
@@ -13,20 +48,18 @@ parse/0:   ingredient: {name: "3", value: 0, type: 2-5-4, properties: ["3": "add
 parse/0:   product: {name: "4", value: 0, type: 5-4, properties: ["4": "array":"character", "raw": ]}
 new/0: hello, -> 0
 new/0:  world! -> 0
-after-brace/0: recipe test-string-append-1
+after-brace/0: recipe tmp0
 after-brace/0: new ...
 after-brace/0: new ...
 after-brace/0: string-append ...
 after-brace/0: copy ...
-new/0: routine allocated memory from 1000 to 101000
-schedule/0: test-string-append-1
-run/0: instruction test-string-append-1/0
+run/0: instruction tmp0/0
 run/0: {name: "1", value: 1, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]} <- new {name: "hello,", value: 0, type: 0, properties: ["hello,": "literal-string"]}
 mem/0: storing 1000 in location 1
-run/0: instruction test-string-append-1/1
+run/0: instruction tmp0/1
 run/0: {name: "2", value: 2, type: 2-5-4, properties: ["2": "address":"array":"character", "raw": ]} <- new {name: " world!", value: 0, type: 0, properties: [" world!": "literal-string"]}
 mem/0: storing 1007 in location 2
-run/0: instruction test-string-append-1/2
+run/0: instruction tmp0/2
 run/0: {name: "3", value: 3, type: 2-5-4, properties: ["3": "address":"array":"character", "raw": ]} <- string-append {name: "1", value: 1, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]}, {name: "2", value: 2, type: 2-5-4, properties: ["2": "address":"array":"character", "raw": ]}
 mem/0: location 1 is 1000
 mem/0: location 2 is 1007
@@ -850,7 +883,7 @@ run/0: reply {name: "result", value: 6, type: 2-5-4, properties: ["result": "add
 mem/0: location 1022 is 1046
 run/0: result 0 is 1046
 mem/0: storing 1046 in location 3
-run/0: instruction test-string-append-1/3
+run/0: instruction tmp0/3
 run/0: {name: "4", value: 4, type: 5-4, properties: ["4": "array":"character", "raw": ]} <- copy {name: "3", value: 3, type: 2-5-4, properties: ["3": "address":"array":"character", "raw": , "deref": ]}
 run/0: ingredient 0 is 3
 mem/0: location 3 is 1046
@@ -882,3 +915,23 @@ mem/0: storing 114 in location 14
 mem/0: storing 108 in location 15
 mem/0: storing 100 in location 16
 mem/0: storing 33 in location 17
+run/0: instruction string-append-1/1
+run/0: memory-should-contain {name: "
+    4:string <- [hello, world!]
+  ", value: 0, type: 0, properties: ["
+    4:string <- [hello, world!]
+  ": "literal-string"]}
+run/0: checking array length at 4
+run/0: checking location 5
+run/0: checking location 6
+run/0: checking location 7
+run/0: checking location 8
+run/0: checking location 9
+run/0: checking location 10
+run/0: checking location 11
+run/0: checking location 12
+run/0: checking location 13
+run/0: checking location 14
+run/0: checking location 15
+run/0: checking location 16
+run/0: checking location 17

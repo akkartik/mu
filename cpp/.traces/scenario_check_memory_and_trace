@@ -1,0 +1,76 @@
+parse/0: instruction: run
+parse/0:   ingredient: {name: "
+    1:integer <- copy 13:literal
+    trace [a], [a b c]
+  ", value: 0, type: 0, properties: ["
+    1:integer <- copy 13:literal
+    trace [a], [a b c]
+  ": "literal-string"]}
+parse/0: instruction: memory-should-contain
+parse/0:   ingredient: {name: "
+    1 <- 13
+  ", value: 0, type: 0, properties: ["
+    1 <- 13
+  ": "literal-string"]}
+parse/0: instruction: trace-should-contain
+parse/0:   ingredient: {name: "
+    a: a b c
+  ", value: 0, type: 0, properties: ["
+    a: a b c
+  ": "literal-string"]}
+parse/0: instruction: trace-should-not-contain
+parse/0:   ingredient: {name: "
+    a: x y z
+  ", value: 0, type: 0, properties: ["
+    a: x y z
+  ": "literal-string"]}
+after-brace/0: recipe foo
+after-brace/0: run ...
+after-brace/0: memory-should-contain ...
+after-brace/0: trace-should-contain ...
+after-brace/0: trace-should-not-contain ...
+new/0: routine allocated memory from 1000 to 101000
+schedule/0: foo
+run/0: instruction foo/0
+run/0: run {name: "
+    1:integer <- copy 13:literal
+    trace [a], [a b c]
+  ", value: 0, type: 0, properties: ["
+    1:integer <- copy 13:literal
+    trace [a], [a b c]
+  ": "literal-string"]}
+parse/0: instruction: copy
+parse/0:   ingredient: {name: "13", value: 0, type: 0, properties: ["13": "literal"]}
+parse/0:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
+parse/0: instruction: trace
+parse/0:   ingredient: {name: "a", value: 0, type: 0, properties: ["a": "literal-string"]}
+parse/0:   ingredient: {name: "a b c", value: 0, type: 0, properties: ["a b c": "literal-string"]}
+after-brace/0: recipe tmp0
+after-brace/0: copy ...
+after-brace/0: trace ...
+run/0: instruction tmp0/0
+run/0: {name: "1", value: 1, type: 1, properties: ["1": "integer"]} <- copy {name: "13", value: 13, type: 0, properties: ["13": "literal"]}
+run/0: ingredient 0 is 13
+mem/0: storing 13 in location 1
+run/0: instruction tmp0/1
+run/0: trace {name: "a", value: 0, type: 0, properties: ["a": "literal-string"]}, {name: "a b c", value: 0, type: 0, properties: ["a b c": "literal-string"]}
+a/0: a b c
+run/0: instruction foo/1
+run/0: memory-should-contain {name: "
+    1 <- 13
+  ", value: 0, type: 0, properties: ["
+    1 <- 13
+  ": "literal-string"]}
+run/0: checking location 1
+run/0: instruction foo/2
+run/0: trace-should-contain {name: "
+    a: a b c
+  ", value: 0, type: 0, properties: ["
+    a: a b c
+  ": "literal-string"]}
+run/0: instruction foo/3
+run/0: trace-should-not-contain {name: "
+    a: x y z
+  ", value: 0, type: 0, properties: ["
+    a: x y z
+  ": "literal-string"]}

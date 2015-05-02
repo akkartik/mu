@@ -89,7 +89,7 @@ scenario print-character-at-top-left [
     2:address:array:character <- get 1:address:screen/deref, data:offset
     3:array:character <- copy 2:address:array:character/deref
   ]
-  memory should contain [
+  memory-should-contain [
     3 <- 6  # width*height
     4 <- 97  # 'a'
     5 <- 0
@@ -168,7 +168,7 @@ scenario clear-line-erases-printed-characters [
     3:array:character <- copy 2:address:array:character/deref
   ]
   # screen should be blank
-  memory should contain [
+  memory-should-contain [
     3 <- 6  # width*height
     4 <- 0
     5 <- 0

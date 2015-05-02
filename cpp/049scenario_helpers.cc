@@ -12,15 +12,6 @@ recipe main [
 ]
 +mem: storing 13 in location 1
 
-:(scenario run_handles_comments)
-recipe main [
-  run [
-    # comment
-    1:integer <- copy 13:literal
-  ]
-]
-+mem: storing 13 in location 1
-
 :(before "End Globals")
 size_t Num_temporary_recipes = 0;
 :(before "End Setup")
@@ -208,6 +199,7 @@ bool check_trace(const string& expected) {
 
   raise << "missing [" << expected_lines[curr_expected_line].second << "] "
         << "in trace layer " << expected_lines[curr_expected_line].first << '\n';
+  Passed = false;
   return false;
 }
 
@@ -293,6 +285,7 @@ bool check_trace_missing(const string& in) {
   for (size_t i = 0; i < lines.size(); ++i) {
     if (trace_count(lines[i].first, lines[i].second) != 0) {
       raise << "unexpected [" << lines[i].second << "] in trace layer " << lines[i].first << '\n';
+      Passed = false;
       return false;
     }
   }

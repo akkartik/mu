@@ -38,7 +38,7 @@ scenario string-equal-reflexive [
     x:address:array:character <- new [abc]
     3:boolean/raw <- string-equal x:address:array:character, x:address:array:character
   ]
-  memory should contain [
+  memory-should-contain [
     3 <- 1  # x == x for all x
   ]
 ]
@@ -50,7 +50,7 @@ scenario string-equal-identical [
     y:address:array:character <- new [abc]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
   ]
-  memory should contain [
+  memory-should-contain [
     3 <- 1  # abc == abc
   ]
 ]
@@ -62,13 +62,13 @@ scenario string-equal-distinct-lengths [
     y:address:array:character <- new [abcd]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
   ]
-  memory should contain [
+  memory-should-contain [
     3 <- 0  # abc != abcd
   ]
-  trace should contain [
+  trace-should-contain [
     string-equal: comparing lengths
   ]
-  trace should not contain [
+  trace-should-not-contain [
     string-equal: comparing characters
   ]
 ]
@@ -80,7 +80,7 @@ scenario string-equal-with-empty [
     y:address:array:character <- new [abcd]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
   ]
-  memory should contain [
+  memory-should-contain [
     3 <- 0  # "" != abcd
   ]
 ]
@@ -92,7 +92,7 @@ scenario string-equal-common-lengths-but-distinct [
     y:address:array:character <- new [abd]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
   ]
-  memory should contain [
+  memory-should-contain [
     3 <- 0  # abc != abd
   ]
 ]
@@ -211,7 +211,7 @@ scenario buffer-append-works [
     11:integer/raw <- get x:address:buffer/deref, length:offset
     12:array:character/raw <- copy s3:address:array:character/deref
   ]
-  memory should contain [
+  memory-should-contain [
     # before +buffer-filled
     1 <- 1   # no change in data pointer
     2 <- 3   # size of data
@@ -293,7 +293,7 @@ scenario integer-to-decimal-digit-zero [
     1:address:array:character/raw <- integer-to-decimal-string 0:literal
     2:array:character/raw <- copy 1:address:array:character/deref/raw
   ]
-  memory should contain [
+  memory-should-contain [
     2:string <- [0]
   ]
 ]
@@ -303,7 +303,7 @@ scenario integer-to-decimal-digit-positive [
     1:address:array:character/raw <- integer-to-decimal-string 234:literal
     2:array:character/raw <- copy 1:address:array:character/deref/raw
   ]
-  memory should contain [
+  memory-should-contain [
     2:string <- [234]
   ]
 ]
@@ -313,7 +313,7 @@ scenario integer-to-decimal-digit-negative [
     1:address:array:character/raw <- integer-to-decimal-string -1:literal
     2:array:character/raw <- copy 1:address:array:character/deref/raw
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 2
     3 <- 45  # '-'
     4 <- 49  # '1'
@@ -372,7 +372,7 @@ scenario string-append-1 [
     3:address:array:character/raw <- string-append 1:address:array:character/raw, 2:address:array:character/raw
     4:array:character/raw <- copy 3:address:array:character/raw/deref
   ]
-  memory should contain [
+  memory-should-contain [
     4:string <- [hello, world!]
   ]
 ]
@@ -475,7 +475,7 @@ scenario interpolate-works [
     3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
     4:array:character/raw <- copy 3:address:array:character/raw/deref
   ]
-  memory should contain [
+  memory-should-contain [
     4:string <- [abc def]
   ]
 ]
@@ -487,7 +487,7 @@ scenario interpolate-at-start [
     3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
     4:array:character/raw <- copy 3:address:array:character/raw/deref
   ]
-  memory should contain [
+  memory-should-contain [
     4:string <- [abc, hello!]
     16 <- 0  # out of bounds
   ]
@@ -500,7 +500,7 @@ scenario interpolate-at-end [
     3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
     4:array:character/raw <- copy 3:address:array:character/raw/deref
   ]
-  memory should contain [
+  memory-should-contain [
     4:string <- [hello, abc]
   ]
 ]

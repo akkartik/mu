@@ -1,3 +1,38 @@
+parse/0: instruction: run
+parse/0:   ingredient: {name: "
+    1:integer <- copy 3:literal
+    2:character <- copy 97:literal  # 'a'
+    3:character <- copy 98:literal  # 'b'
+    4:character <- copy 99:literal  # 'c'
+  ", value: 0, type: 0, properties: ["
+    1:integer <- copy 3:literal
+    2:character <- copy 97:literal  # 'a'
+    3:character <- copy 98:literal  # 'b'
+    4:character <- copy 99:literal  # 'c'
+  ": "literal-string"]}
+parse/0: instruction: memory-should-contain
+parse/0:   ingredient: {name: "
+    1:string <- [abc]
+  ", value: 0, type: 0, properties: ["
+    1:string <- [abc]
+  ": "literal-string"]}
+after-brace/0: recipe check_string_in_memory
+after-brace/0: run ...
+after-brace/0: memory-should-contain ...
+new/0: routine allocated memory from 1000 to 101000
+schedule/0: check_string_in_memory
+run/0: instruction check_string_in_memory/0
+run/0: run {name: "
+    1:integer <- copy 3:literal
+    2:character <- copy 97:literal  # 'a'
+    3:character <- copy 98:literal  # 'b'
+    4:character <- copy 99:literal  # 'c'
+  ", value: 0, type: 0, properties: ["
+    1:integer <- copy 3:literal
+    2:character <- copy 97:literal  # 'a'
+    3:character <- copy 98:literal  # 'b'
+    4:character <- copy 99:literal  # 'c'
+  ": "literal-string"]}
 parse/0: instruction: copy
 parse/0:   ingredient: {name: "3", value: 0, type: 0, properties: ["3": "literal"]}
 parse/0:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
@@ -10,26 +45,34 @@ parse/0:   product: {name: "3", value: 0, type: 4, properties: ["3": "character"
 parse/0: instruction: copy
 parse/0:   ingredient: {name: "99", value: 0, type: 0, properties: ["99": "literal"]}
 parse/0:   product: {name: "4", value: 0, type: 4, properties: ["4": "character"]}
-after-brace/0: recipe test-check_string_in_memory
+after-brace/0: recipe tmp0
 after-brace/0: copy ...
 after-brace/0: copy ...
 after-brace/0: copy ...
 after-brace/0: copy ...
-new/0: routine allocated memory from 1000 to 101000
-schedule/0: test-check_string_in_memory
-run/0: instruction test-check_string_in_memory/0
+run/0: instruction tmp0/0
 run/0: {name: "1", value: 1, type: 1, properties: ["1": "integer"]} <- copy {name: "3", value: 3, type: 0, properties: ["3": "literal"]}
 run/0: ingredient 0 is 3
 mem/0: storing 3 in location 1
-run/0: instruction test-check_string_in_memory/1
+run/0: instruction tmp0/1
 run/0: {name: "2", value: 2, type: 4, properties: ["2": "character"]} <- copy {name: "97", value: 97, type: 0, properties: ["97": "literal"]}
 run/0: ingredient 0 is 97
 mem/0: storing 97 in location 2
-run/0: instruction test-check_string_in_memory/2
+run/0: instruction tmp0/2
 run/0: {name: "3", value: 3, type: 4, properties: ["3": "character"]} <- copy {name: "98", value: 98, type: 0, properties: ["98": "literal"]}
 run/0: ingredient 0 is 98
 mem/0: storing 98 in location 3
-run/0: instruction test-check_string_in_memory/3
+run/0: instruction tmp0/3
 run/0: {name: "4", value: 4, type: 4, properties: ["4": "character"]} <- copy {name: "99", value: 99, type: 0, properties: ["99": "literal"]}
 run/0: ingredient 0 is 99
 mem/0: storing 99 in location 4
+run/0: instruction check_string_in_memory/1
+run/0: memory-should-contain {name: "
+    1:string <- [abc]
+  ", value: 0, type: 0, properties: ["
+    1:string <- [abc]
+  ": "literal-string"]}
+run/0: checking array length at 1
+run/0: checking location 2
+run/0: checking location 3
+run/0: checking location 4
