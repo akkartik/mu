@@ -46,6 +46,8 @@ void run(recipe_number r) {
   Routines.push_back(new routine(r));
   Current_routine_index = 0, Current_routine = Routines[0];
   while (!all_routines_done()) {
+    skip_to_next_routine();
+//?     cout << "scheduler: " << Current_routine_index << '\n'; //? 1
     assert(Current_routine);
     assert(Current_routine->state == RUNNING);
     trace("schedule") << current_recipe_name();
@@ -53,13 +55,14 @@ void run(recipe_number r) {
     if (Current_routine->completed())
       Current_routine->state = COMPLETED;
     // End Scheduler State Transitions
-    skip_to_next_routine();
   }
+//?   cout << "done with run\n"; //? 1
 }
 
 :(code)
 bool all_routines_done() {
   for (size_t i = 0; i < Routines.size(); ++i) {
+//?     cout << "routine " << i << ' ' << Routines[i]->state << '\n'; //? 1
     if (Routines[i]->state == RUNNING) {
       return false;
     }
@@ -73,11 +76,13 @@ void skip_to_next_routine() {
   assert(Current_routine_index < Routines.size());
   for (size_t i = (Current_routine_index+1)%Routines.size();  i != Current_routine_index;  i = (i+1)%Routines.size()) {
     if (Routines[i]->state == RUNNING) {
+//?       cout << "switching to " << i << '\n'; //? 1
       Current_routine_index = i;
       Current_routine = Routines[i];
       return;
     }
   }
+//?   cout << "all done\n"; //? 1
 }
 
 :(before "End Teardown")
@@ -96,6 +101,17 @@ case START_RUNNING: {
   Routines.push_back(new routine(Recipe_number[current_instruction().ingredients[0].name]));
   break;
 }
+
+:(scenario scheduler_runs_single_routine)
+% Scheduling_interval = 1;
+recipe f1 [
+  1:integer <- copy 0:literal
+  2:integer <- copy 0:literal
+]
++schedule: f1
++run: instruction f1/0
++schedule: f1
++run: instruction f1/1
 
 :(scenario scheduler_interleaves_routines)
 % Scheduling_interval = 1;
@@ -118,3 +134,34 @@ recipe f2 [
 +run: instruction f2/1
 +schedule: f1
 +run: instruction f1/2
+
+:(scenario scheduler_skips_completed_routines)
+# this scenario will require some careful setup in escaped C++
+# (straining our tangle capabilities to near-breaking point)
+% recipe_number f1 = load("recipe f1 [\n1:integer <- copy 0:literal\n]").front();
+% recipe_number f2 = load("recipe f2 [\n2:integer <- copy 0:literal\n]").front();
+% Routines.push_back(new routine(f1));  // f1 meant to run
+% Routines.push_back(new routine(f2));
+% Routines.back()->state = COMPLETED;  // f2 not meant to run
+#? % Trace_stream->dump_layer = "all";
+# must have at least one routine without escaping
+recipe f3 [
+  3:integer <- copy 0:literal
+]
+# by interleaving '+' lines with '-' lines, we allow f1 and f3 to run in any order
++schedule: f1
++mem: storing 0 in location 1
+-schedule: f2
+-mem: storing 0 in location 2
++schedule: f3
++mem: storing 0 in location 3
+
+:(scenario scheduler_starts_at_middle_of_routines)
+% Routines.push_back(new routine(COPY));
+% Routines.back()->state = COMPLETED;
+recipe f1 [
+  1:integer <- copy 0:literal
+  2:integer <- copy 0:literal
+]
++schedule: f1
+-run: idle
