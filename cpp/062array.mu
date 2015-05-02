@@ -3,7 +3,7 @@ scenario array-from-args [
     1:address:array:location <- init-array 0:literal, 1:literal, 2:literal
     2:array:location <- copy 1:address:array:location/deref
   ]
-  memory should contain [
+  memory-should-contain [
     2 <- 3  # array length
     3 <- 0
     4 <- 1

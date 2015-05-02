@@ -1,3 +1,84 @@
+parse/0: instruction: run
+parse/0:   ingredient: {name: "
+    # channel with just 1 slot
+    1:address:channel <- init-channel 1:literal/capacity
+    # write and read a value
+    1:address:channel <- write 1:address:channel, 34:literal
+    _, 1:address:channel <- read 1:address:channel
+    # first-free will now be 1
+    2:integer <- get 1:address:channel/deref, first-free:offset
+    3:integer <- get 1:address:channel/deref, first-free:offset
+    # write second value, verify that first-free wraps
+    1:address:channel <- write 1:address:channel, 34:literal
+    4:integer <- get 1:address:channel/deref, first-free:offset
+    # read second value, verify that first-full wraps
+    _, 1:address:channel <- read 1:address:channel
+    5:integer <- get 1:address:channel/deref, first-full:offset
+  ", value: 0, type: 0, properties: ["
+    # channel with just 1 slot
+    1:address:channel <- init-channel 1:literal/capacity
+    # write and read a value
+    1:address:channel <- write 1:address:channel, 34:literal
+    _, 1:address:channel <- read 1:address:channel
+    # first-free will now be 1
+    2:integer <- get 1:address:channel/deref, first-free:offset
+    3:integer <- get 1:address:channel/deref, first-free:offset
+    # write second value, verify that first-free wraps
+    1:address:channel <- write 1:address:channel, 34:literal
+    4:integer <- get 1:address:channel/deref, first-free:offset
+    # read second value, verify that first-full wraps
+    _, 1:address:channel <- read 1:address:channel
+    5:integer <- get 1:address:channel/deref, first-full:offset
+  ": "literal-string"]}
+parse/0: instruction: memory-should-contain
+parse/0:   ingredient: {name: "
+    2 <- 1  # first-free after first write
+    3 <- 1  # first-full after first read
+    4 <- 0  # first-free after second write, wrapped
+    5 <- 0  # first-full after second read, wrapped
+  ", value: 0, type: 0, properties: ["
+    2 <- 1  # first-free after first write
+    3 <- 1  # first-full after first read
+    4 <- 0  # first-free after second write, wrapped
+    5 <- 0  # first-full after second read, wrapped
+  ": "literal-string"]}
+after-brace/0: recipe channel-wrap
+after-brace/0: run ...
+after-brace/0: memory-should-contain ...
+new/0: routine allocated memory from 1000 to 101000
+schedule/0: channel-wrap
+run/0: instruction channel-wrap/0
+run/0: run {name: "
+    # channel with just 1 slot
+    1:address:channel <- init-channel 1:literal/capacity
+    # write and read a value
+    1:address:channel <- write 1:address:channel, 34:literal
+    _, 1:address:channel <- read 1:address:channel
+    # first-free will now be 1
+    2:integer <- get 1:address:channel/deref, first-free:offset
+    3:integer <- get 1:address:channel/deref, first-free:offset
+    # write second value, verify that first-free wraps
+    1:address:channel <- write 1:address:channel, 34:literal
+    4:integer <- get 1:address:channel/deref, first-free:offset
+    # read second value, verify that first-full wraps
+    _, 1:address:channel <- read 1:address:channel
+    5:integer <- get 1:address:channel/deref, first-full:offset
+  ", value: 0, type: 0, properties: ["
+    # channel with just 1 slot
+    1:address:channel <- init-channel 1:literal/capacity
+    # write and read a value
+    1:address:channel <- write 1:address:channel, 34:literal
+    _, 1:address:channel <- read 1:address:channel
+    # first-free will now be 1
+    2:integer <- get 1:address:channel/deref, first-free:offset
+    3:integer <- get 1:address:channel/deref, first-free:offset
+    # write second value, verify that first-free wraps
+    1:address:channel <- write 1:address:channel, 34:literal
+    4:integer <- get 1:address:channel/deref, first-free:offset
+    # read second value, verify that first-full wraps
+    _, 1:address:channel <- read 1:address:channel
+    5:integer <- get 1:address:channel/deref, first-full:offset
+  ": "literal-string"]}
 parse/0: instruction: init-channel
 parse/0:   ingredient: {name: "1", value: 0, type: 0, properties: ["1": "literal", "capacity": ]}
 parse/0:   product: {name: "1", value: 0, type: 2-10, properties: ["1": "address":"channel"]}
@@ -37,7 +118,7 @@ name/0: element first-free of type channel is at offset 1
 name/0: element first-free of type channel is at offset 1
 name/0: element first-free of type channel is at offset 1
 name/0: element first-full of type channel is at offset 0
-after-brace/0: recipe test-channel-wrap
+after-brace/0: recipe tmp0
 after-brace/0: init-channel ...
 after-brace/0: write ...
 after-brace/0: read ...
@@ -47,9 +128,7 @@ after-brace/0: write ...
 after-brace/0: get ...
 after-brace/0: read ...
 after-brace/0: get ...
-new/0: routine allocated memory from 1000 to 101000
-schedule/0: test-channel-wrap
-run/0: instruction test-channel-wrap/0
+run/0: instruction tmp0/0
 run/0: {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]} <- init-channel {name: "1", value: 1, type: 0, properties: ["1": "literal", "capacity": ]}
 run/0: instruction init-channel/0
 run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
@@ -116,7 +195,7 @@ run/0: reply {name: "result", value: 1, type: 2-10, properties: ["result": "addr
 mem/0: location 1002 is 1031
 run/0: result 0 is 1031
 mem/0: storing 1031 in location 1
-run/0: instruction test-channel-wrap/1
+run/0: instruction tmp0/1
 run/0: {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]} <- write {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]}, {name: "34", value: 34, type: 0, properties: ["34": "literal"]}
 mem/0: location 1 is 1031
 run/0: instruction write/0
@@ -299,7 +378,7 @@ run/0: reply {name: "chan", value: 1, type: 2-10, properties: ["chan": "address"
 mem/0: location 1039 is 1031
 run/0: result 0 is 1031
 mem/0: storing 1031 in location 1
-run/0: instruction test-channel-wrap/2
+run/0: instruction tmp0/2
 run/0: {name: "_", value: 0, type: 0, properties: ["_": "dummy"]}, {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]} <- read {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]}
 mem/0: location 1 is 1031
 run/0: instruction read/0
@@ -425,7 +504,7 @@ mem/0: location 1132 is 1031
 run/0: result 0 is 34
 run/0: result 1 is 1031
 mem/0: storing 1031 in location 1
-run/0: instruction test-channel-wrap/3
+run/0: instruction tmp0/3
 run/0: {name: "2", value: 2, type: 1, properties: ["2": "integer"]} <- get {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
 run/0: ingredient 0 is 1
 mem/0: location 1 is 1031
@@ -435,7 +514,7 @@ run/0: its type is 1
 mem/0: location 1032 is 1
 run/0: product 0 is 1
 mem/0: storing 1 in location 2
-run/0: instruction test-channel-wrap/4
+run/0: instruction tmp0/4
 run/0: {name: "3", value: 3, type: 1, properties: ["3": "integer"]} <- get {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
 run/0: ingredient 0 is 1
 mem/0: location 1 is 1031
@@ -445,7 +524,7 @@ run/0: its type is 1
 mem/0: location 1032 is 1
 run/0: product 0 is 1
 mem/0: storing 1 in location 3
-run/0: instruction test-channel-wrap/5
+run/0: instruction tmp0/5
 run/0: {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]} <- write {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]}, {name: "34", value: 34, type: 0, properties: ["34": "literal"]}
 mem/0: location 1 is 1031
 run/0: instruction write/0
@@ -635,7 +714,7 @@ run/0: reply {name: "chan", value: 1, type: 2-10, properties: ["chan": "address"
 mem/0: location 1194 is 1031
 run/0: result 0 is 1031
 mem/0: storing 1031 in location 1
-run/0: instruction test-channel-wrap/6
+run/0: instruction tmp0/6
 run/0: {name: "4", value: 4, type: 1, properties: ["4": "integer"]} <- get {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
 run/0: ingredient 0 is 1
 mem/0: location 1 is 1031
@@ -645,7 +724,7 @@ run/0: its type is 1
 mem/0: location 1032 is 0
 run/0: product 0 is 0
 mem/0: storing 0 in location 4
-run/0: instruction test-channel-wrap/7
+run/0: instruction tmp0/7
 run/0: {name: "_", value: 0, type: 0, properties: ["_": "dummy"]}, {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]} <- read {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]}
 mem/0: location 1 is 1031
 run/0: instruction read/0
@@ -775,7 +854,7 @@ mem/0: location 1287 is 1031
 run/0: result 0 is 34
 run/0: result 1 is 1031
 mem/0: storing 1031 in location 1
-run/0: instruction test-channel-wrap/8
+run/0: instruction tmp0/8
 run/0: {name: "5", value: 5, type: 1, properties: ["5": "integer"]} <- get {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
 run/0: ingredient 0 is 1
 mem/0: location 1 is 1031
@@ -785,3 +864,19 @@ run/0: its type is 1
 mem/0: location 1031 is 0
 run/0: product 0 is 0
 mem/0: storing 0 in location 5
+run/0: instruction channel-wrap/1
+run/0: memory-should-contain {name: "
+    2 <- 1  # first-free after first write
+    3 <- 1  # first-full after first read
+    4 <- 0  # first-free after second write, wrapped
+    5 <- 0  # first-full after second read, wrapped
+  ", value: 0, type: 0, properties: ["
+    2 <- 1  # first-free after first write
+    3 <- 1  # first-full after first read
+    4 <- 0  # first-free after second write, wrapped
+    5 <- 0  # first-full after second read, wrapped
+  ": "literal-string"]}
+run/0: checking location 2
+run/0: checking location 3
+run/0: checking location 4
+run/0: checking location 5

@@ -1,3 +1,52 @@
+parse/0: instruction: run
+parse/0:   ingredient: {name: "
+    default-space:address:array:location <- new location:type, 30:literal
+    x:address:array:character <- new [abc]
+    y:address:array:character <- new [abcd]
+    3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
+  ", value: 0, type: 0, properties: ["
+    default-space:address:array:location <- new location:type, 30:literal
+    x:address:array:character <- new [abc]
+    y:address:array:character <- new [abcd]
+    3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
+  ": "literal-string"]}
+parse/0: instruction: memory-should-contain
+parse/0:   ingredient: {name: "
+    3 <- 0  # abc != abcd
+  ", value: 0, type: 0, properties: ["
+    3 <- 0  # abc != abcd
+  ": "literal-string"]}
+parse/0: instruction: trace-should-contain
+parse/0:   ingredient: {name: "
+    string-equal: comparing lengths
+  ", value: 0, type: 0, properties: ["
+    string-equal: comparing lengths
+  ": "literal-string"]}
+parse/0: instruction: trace-should-not-contain
+parse/0:   ingredient: {name: "
+    string-equal: comparing characters
+  ", value: 0, type: 0, properties: ["
+    string-equal: comparing characters
+  ": "literal-string"]}
+after-brace/0: recipe string-equal-distinct-lengths
+after-brace/0: run ...
+after-brace/0: memory-should-contain ...
+after-brace/0: trace-should-contain ...
+after-brace/0: trace-should-not-contain ...
+new/0: routine allocated memory from 1000 to 101000
+schedule/0: string-equal-distinct-lengths
+run/0: instruction string-equal-distinct-lengths/0
+run/0: run {name: "
+    default-space:address:array:location <- new location:type, 30:literal
+    x:address:array:character <- new [abc]
+    y:address:array:character <- new [abcd]
+    3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
+  ", value: 0, type: 0, properties: ["
+    default-space:address:array:location <- new location:type, 30:literal
+    x:address:array:character <- new [abc]
+    y:address:array:character <- new [abcd]
+    3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
+  ": "literal-string"]}
 parse/0: instruction: new
 parse/0:   ingredient: {name: "location", value: 0, type: 0, properties: ["location": "type"]}
 parse/0:   ingredient: {name: "30", value: 0, type: 0, properties: ["30": "literal"]}
@@ -17,24 +66,22 @@ new/0: abc -> 0
 name/0: assign x 1
 new/0: abcd -> 0
 name/0: assign y 2
-after-brace/0: recipe test-string-equal-distinct-lengths
+after-brace/0: recipe tmp0
 after-brace/0: new ...
 after-brace/0: new ...
 after-brace/0: new ...
 after-brace/0: string-equal ...
-new/0: routine allocated memory from 1000 to 101000
-schedule/0: test-string-equal-distinct-lengths
-run/0: instruction test-string-equal-distinct-lengths/0
+run/0: instruction tmp0/0
 run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
 mem/0: array size is 30
 mem/0: new alloc: 1000
-run/0: instruction test-string-equal-distinct-lengths/1
+run/0: instruction tmp0/1
 run/0: {name: "x", value: 1, type: 2-5-4, properties: ["x": "address":"array":"character"]} <- new {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
 mem/0: storing 1031 in location 1002
-run/0: instruction test-string-equal-distinct-lengths/2
+run/0: instruction tmp0/2
 run/0: {name: "y", value: 2, type: 2-5-4, properties: ["y": "address":"array":"character"]} <- new {name: "abcd", value: 0, type: 0, properties: ["abcd": "literal-string"]}
 mem/0: storing 1035 in location 1003
-run/0: instruction test-string-equal-distinct-lengths/3
+run/0: instruction tmp0/3
 run/0: {name: "3", value: 3, type: 3, properties: ["3": "boolean", "raw": ]} <- string-equal {name: "x", value: 1, type: 2-5-4, properties: ["x": "address":"array":"character"]}, {name: "y", value: 2, type: 2-5-4, properties: ["y": "address":"array":"character"]}
 mem/0: location 1002 is 1031
 mem/0: location 1003 is 1035
@@ -78,3 +125,22 @@ run/0: instruction string-equal/9
 run/0: reply {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
 run/0: result 0 is 0
 mem/0: storing 0 in location 3
+run/0: instruction string-equal-distinct-lengths/1
+run/0: memory-should-contain {name: "
+    3 <- 0  # abc != abcd
+  ", value: 0, type: 0, properties: ["
+    3 <- 0  # abc != abcd
+  ": "literal-string"]}
+run/0: checking location 3
+run/0: instruction string-equal-distinct-lengths/2
+run/0: trace-should-contain {name: "
+    string-equal: comparing lengths
+  ", value: 0, type: 0, properties: ["
+    string-equal: comparing lengths
+  ": "literal-string"]}
+run/0: instruction string-equal-distinct-lengths/3
+run/0: trace-should-not-contain {name: "
+    string-equal: comparing characters
+  ", value: 0, type: 0, properties: ["
+    string-equal: comparing characters
+  ": "literal-string"]}

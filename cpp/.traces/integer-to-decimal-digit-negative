@@ -1,15 +1,44 @@
+parse/0: instruction: run
+parse/0:   ingredient: {name: "
+    1:address:array:character/raw <- integer-to-decimal-string -1:literal
+    2:array:character/raw <- copy 1:address:array:character/deref/raw
+  ", value: 0, type: 0, properties: ["
+    1:address:array:character/raw <- integer-to-decimal-string -1:literal
+    2:array:character/raw <- copy 1:address:array:character/deref/raw
+  ": "literal-string"]}
+parse/0: instruction: memory-should-contain
+parse/0:   ingredient: {name: "
+    2 <- 2
+    3 <- 45  # '-'
+    4 <- 49  # '1'
+  ", value: 0, type: 0, properties: ["
+    2 <- 2
+    3 <- 45  # '-'
+    4 <- 49  # '1'
+  ": "literal-string"]}
+after-brace/0: recipe integer-to-decimal-digit-negative
+after-brace/0: run ...
+after-brace/0: memory-should-contain ...
+new/0: routine allocated memory from 1000 to 101000
+schedule/0: integer-to-decimal-digit-negative
+run/0: instruction integer-to-decimal-digit-negative/0
+run/0: run {name: "
+    1:address:array:character/raw <- integer-to-decimal-string -1:literal
+    2:array:character/raw <- copy 1:address:array:character/deref/raw
+  ", value: 0, type: 0, properties: ["
+    1:address:array:character/raw <- integer-to-decimal-string -1:literal
+    2:array:character/raw <- copy 1:address:array:character/deref/raw
+  ": "literal-string"]}
 parse/0: instruction: integer-to-decimal-string
 parse/0:   ingredient: {name: "-1", value: 0, type: 0, properties: ["-1": "literal"]}
 parse/0:   product: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]}
 parse/0: instruction: copy
 parse/0:   ingredient: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character", "deref": , "raw": ]}
 parse/0:   product: {name: "2", value: 0, type: 5-4, properties: ["2": "array":"character", "raw": ]}
-after-brace/0: recipe test-integer-to-decimal-digit-negative
+after-brace/0: recipe tmp0
 after-brace/0: integer-to-decimal-string ...
 after-brace/0: copy ...
-new/0: routine allocated memory from 1000 to 101000
-schedule/0: test-integer-to-decimal-digit-negative
-run/0: instruction test-integer-to-decimal-digit-negative/0
+run/0: instruction tmp0/0
 run/0: {name: "1", value: 1, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]} <- integer-to-decimal-string {name: "-1", value: -1, type: 0, properties: ["-1": "literal"]}
 run/0: instruction integer-to-decimal-string/0
 run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
@@ -557,7 +586,7 @@ run/0: reply {name: "result", value: 2, type: 2-5-4, properties: ["result": "add
 mem/0: location 1003 is 1219
 run/0: result 0 is 1219
 mem/0: storing 1219 in location 1
-run/0: instruction test-integer-to-decimal-digit-negative/1
+run/0: instruction tmp0/1
 run/0: {name: "2", value: 2, type: 5-4, properties: ["2": "array":"character", "raw": ]} <- copy {name: "1", value: 1, type: 2-5-4, properties: ["1": "address":"array":"character", "deref": , "raw": ]}
 run/0: ingredient 0 is 1
 mem/0: location 1 is 1219
@@ -567,3 +596,16 @@ mem/0: location 1221 is 49
 mem/0: storing 2 in location 2
 mem/0: storing 45 in location 3
 mem/0: storing 49 in location 4
+run/0: instruction integer-to-decimal-digit-negative/1
+run/0: memory-should-contain {name: "
+    2 <- 2
+    3 <- 45  # '-'
+    4 <- 49  # '1'
+  ", value: 0, type: 0, properties: ["
+    2 <- 2
+    3 <- 45  # '-'
+    4 <- 49  # '1'
+  ": "literal-string"]}
+run/0: checking location 2
+run/0: checking location 3
+run/0: checking location 4
