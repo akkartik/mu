@@ -282,14 +282,15 @@ list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
 }
 
 // A scenario is one or more sessions separated by calls to CLEAR_TRACE ('===')
-//  A session is one or more lines of input
-//  followed by one or more lines expected in trace in order ('+')
-//  followed by one or more lines trace shouldn't include ('-')
-//  followed by one or more lines expressing counts of specific layers emitted in trace ('$')
+//  A session is one or more lines of input, followed optionally by (in order):
+//   one or more lines expected in trace in order ('+')
+//   one or more lines trace shouldn't include ('-')
+//   one or more lines expressing counts of specific layers emitted in trace ('$')
+//   a directive to print the trace just for debugging ('?')
 // Remember to update is_input below if you add to this format.
 void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
   result.push_back(Line("TEST("+name+")", front(lines).filename, front(lines).line_number-1));  // use line number of directive
-  while (any_non_input_line(lines)) {
+  while (!lines.empty()) {
     while (!lines.empty() && starts_with(front(lines).contents, "% ")) {
       result.push_back(Line("  "+front(lines).contents.substr(strlen("% ")), front(lines)));
       lines.pop_front();
@@ -318,18 +319,7 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
       lines.pop_front();
     }
   }
-  if (lines.empty())
-    result.push_back(Line("}"));
-  else
-    result.push_back(Line("}", front(lines)));
-
-  while (!lines.empty() &&
-         (trim(front(lines).contents).empty() || starts_with(front(lines).contents, "//")))
-    lines.pop_front();
-  if (!lines.empty()) {
-    cerr << lines.size() << " unprocessed lines in scenario.\n";
-    exit(1);
-  }
+  result.push_back(Line("}"));
 }
 
 bool is_input(const string& line) {
