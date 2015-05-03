@@ -85,7 +85,7 @@ void run_mu_scenario(const scenario& s) {
   // Hackily simulate a conditional START_TRACING_UNTIL_END_OF_SCOPE.
   bool temporary_trace_file = Trace_file.empty();
   if (temporary_trace_file) Trace_file = s.name;
-  cerr << Trace_file << '\n';
+//?   cerr << Trace_file << '\n'; //? 1
   bool delete_trace_stream = !Trace_stream;
   if (delete_trace_stream) Trace_stream = new trace_stream;
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
