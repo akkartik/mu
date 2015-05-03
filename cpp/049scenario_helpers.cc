@@ -12,11 +12,6 @@ recipe main [
 ]
 +mem: storing 13 in location 1
 
-:(before "End Globals")
-size_t Num_temporary_recipes = 0;
-:(before "End Setup")
-Num_temporary_recipes = 0;
-
 :(before "End Primitive Recipe Declarations")
 RUN,
 :(before "End Primitive Recipe Numbers")
@@ -25,7 +20,7 @@ Recipe_number["run"] = RUN;
 case RUN: {
 //?   cout << "recipe " << current_instruction().ingredients[0].name << '\n'; //? 1
   ostringstream tmp;
-  tmp << "recipe tmp" << Num_temporary_recipes++ << " [ " << current_instruction().ingredients[0].name << " ]";
+  tmp << "recipe run" << Next_recipe_number << " [ " << current_instruction().ingredients[0].name << " ]";
 //?   Show_rest_of_stream = true; //? 1
   vector<recipe_number> tmp_recipe = load(tmp.str());
   transform_all();
