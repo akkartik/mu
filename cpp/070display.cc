@@ -167,7 +167,35 @@ Recipe_number["wait-for-key-from-keyboard"] = WAIT_FOR_KEY_FROM_KEYBOARD;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_KEY_FROM_KEYBOARD: {
   struct tb_event event;
-  tb_poll_event(&event);
+  do {
+    tb_poll_event(&event);
+  } while (event.type != TB_EVENT_KEY);
+  vector<int> result;
+  result.push_back(event.ch);
+  write_memory(current_instruction().products[0], result);
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+READ_KEY_FROM_KEYBOARD,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["read-key-from-keyboard"] = READ_KEY_FROM_KEYBOARD;
+:(before "End Primitive Recipe Implementations")
+case READ_KEY_FROM_KEYBOARD: {
+  struct tb_event event;
+  int event_type = tb_peek_event(&event, 5/*ms*/);
+  vector<int> result;
+  vector<int> found;
+  if (event_type != TB_EVENT_KEY) {
+    result.push_back(0);
+    found.push_back(false);
+  }
+  else {
+    result.push_back(event.ch);
+    found.push_back(true);
+  }
+  write_memory(current_instruction().products[0], result);
+  write_memory(current_instruction().products[1], found);
   break;
 }
 
