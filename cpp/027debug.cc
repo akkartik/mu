@@ -40,3 +40,13 @@ case _STOP_TRACING: {
   Trace_stream->dump_layer = "";
   break;
 }
+
+:(before "End Primitive Recipe Declarations")
+_EXIT,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["$exit"] = _EXIT;
+:(before "End Primitive Recipe Implementations")
+case _EXIT: {
+  exit(0);
+  break;
+}
