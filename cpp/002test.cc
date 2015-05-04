@@ -37,6 +37,9 @@ long Num_failures = 0;
     return;  /* Currently we stop at the very first failure. */ \
   }
 
+:(before "End Setup")
+Passed = true;
+
 :(before "End Commandline Parsing")
 if (argc > 1 && is_equal(argv[1], "test")) {
   Run_tests = true;  --argc;  ++argv;  // shift 'test' out of commandline args
@@ -69,7 +72,6 @@ void run_test(size_t i) {
     return;
   }
   setup();
-  Passed = true;
   // End Test Setup
   (*Tests[i])();
   teardown();

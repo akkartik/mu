@@ -23,7 +23,15 @@ case RUN: {
   tmp << "recipe run" << Next_recipe_number << " [ " << current_instruction().ingredients[0].name << " ]";
 //?   Show_rest_of_stream = true; //? 1
   vector<recipe_number> tmp_recipe = load(tmp.str());
+  // Predefined Scenario Locals
+//?   cout << "mapping local screen in recipe " << tmp_recipe[0] << '\n'; //? 1
+  Name[tmp_recipe[0]]["screen"] = Reserved_for_tests-1;
+  // End Predefined Scenario Locals
   transform_all();
+  // There's a restriction on the number of variables 'run' can use, so that
+  // it can avoid colliding with the dynamic allocator in case it doesn't
+  // initialize a default-space.
+  assert(Name[tmp_recipe[0]][""] < Reserved_for_tests-1);
 //?   cout << tmp_recipe[0] << ' ' << Recipe_number["main"] << '\n'; //? 1
   Current_routine->calls.push(call(tmp_recipe[0]));
   continue;  // not done with caller; don't increment current_step_index()
@@ -102,17 +110,25 @@ void check_type(const string& lhs, istream& in) {
     skip_whitespace_and_comments(in);
     string literal = next_word(in);
     size_t address = x.value;
-    trace("run") << "checking array length at " << address;
-    if (Memory[address] != static_cast<signed>(literal.size()-2))  // exclude quoting brackets
-      raise << "expected location " << address << " to contain length " << literal.size()-2 << " of string " << literal << " but saw " << Memory[address] << '\n';
-    for (size_t i = 1; i < literal.size()-1; ++i) {
-      trace("run") << "checking location " << address+i;
-      if (Memory[address+i] != literal[i])
-        raise << "expected location " << (address+i) << " to contain " << literal[i] << " but saw " << Memory[address+i] << '\n';
-    }
+    // exclude quoting brackets
+    assert(literal[0] == '[');  literal.erase(0, 1);
+    assert(literal[literal.size()-1] == ']');  literal.erase(literal.size()-1);
+    check_string(address, literal);
     return;
   }
   raise << "don't know how to check memory for " << lhs << '\n';
+}
+
+void check_string(size_t address, const string& literal) {
+  trace("run") << "checking string length at " << address;
+  if (Memory[address] != static_cast<signed>(literal.size()))
+    raise << "expected location " << address << " to contain length " << literal.size() << " of string [" << literal << "] but saw " << Memory[address] << '\n';
+  ++address;  // now skip length
+  for (size_t i = 0; i < literal.size(); ++i) {
+    trace("run") << "checking location " << address+i;
+    if (Memory[address+i] != literal[i])
+      raise << "expected location " << (address+i) << " to contain " << literal[i] << " but saw " << Memory[address+i] << '\n';
+  }
 }
 
 :(scenario memory_check_multiple)
@@ -148,7 +164,7 @@ recipe main [
     1:string <- [abc]
   ]
 ]
-+run: checking array length at 1
++run: checking string length at 1
 +run: checking location 2
 +run: checking location 3
 +run: checking location 4

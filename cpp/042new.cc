@@ -11,10 +11,11 @@ recipe main [
 +mem: storing 0 in location 3
 
 :(before "End Globals")
-size_t Memory_allocated_until = 1000;
+size_t Reserved_for_tests = 1000;
+size_t Memory_allocated_until = Reserved_for_tests;
 size_t Initial_memory_per_routine = 100000;
 :(before "End Setup")
-Memory_allocated_until = 1000;
+Memory_allocated_until = Reserved_for_tests;
 Initial_memory_per_routine = 100000;
 :(before "End routine Fields")
 size_t alloc, alloc_max;

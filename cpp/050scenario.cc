@@ -79,26 +79,22 @@ scenario parse_scenario(istream& in) {
 }
 
 void run_mu_scenario(const scenario& s) {
-  setup();
-  // In this layer we're writing tangle scenarios about mu scenarios.
-  // Don't need to set Trace_file and Trace_stream in that situation.
-  // Hackily simulate a conditional START_TRACING_UNTIL_END_OF_SCOPE.
-  bool temporary_trace_file = Trace_file.empty();
-  if (temporary_trace_file) Trace_file = s.name;
-//?   cerr << Trace_file << '\n'; //? 1
-  bool delete_trace_stream = !Trace_stream;
-  if (delete_trace_stream) Trace_stream = new trace_stream;
-//?   START_TRACING_UNTIL_END_OF_SCOPE;
+  bool not_already_inside_test = !Trace_stream;
+  if (not_already_inside_test) {
+    Trace_file = s.name;
+    Trace_stream = new trace_stream;
+    setup();
+  }
   run("recipe "+s.name+" [ " + s.to_run + " ]");
-  teardown();
-  if (delete_trace_stream) {
+  if (not_already_inside_test) {
+    teardown();
     ofstream fout((Trace_dir+Trace_file).c_str());
     fout << Trace_stream->readable_contents("");
     fout.close();
     delete Trace_stream;
     Trace_stream = NULL;
+    Trace_file = "";
   }
-  if (temporary_trace_file) Trace_file = "";
 }
 
 :(before "End Command Handlers")
@@ -110,6 +106,7 @@ else if (command == "scenario") {
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
 for (size_t i = 0; i < Scenarios.size(); ++i) {
+//?   cerr << Passed << '\n'; //? 1
   run_mu_scenario(Scenarios[i]);
   if (Passed) cerr << ".";
 }

@@ -30,7 +30,9 @@ for (size_t i = 0; i < recently_added_recipes.size(); ++i) {
 :(code)
 void transform_names(const recipe_number r) {
   map<string, int>& names = Name[r];
-  int curr_idx = 1;
+  // store the indices 'used' so far in the map
+  int& curr_idx = names[""];
+  ++curr_idx;  // avoid using index 0, benign skip in some other cases
 //?   cout << "Recipe " << r << ": " << Recipe[r].name << '\n'; //? 3
 //?   cout << Recipe[r].steps.size() << '\n'; //? 2
   for (size_t i = 0; i < Recipe[r].steps.size(); ++i) {
