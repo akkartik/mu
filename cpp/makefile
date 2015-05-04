@@ -5,8 +5,8 @@ mu: makefile enumerate/enumerate tangle/tangle mu.cc termbox/libtermbox.a
 # To see what the program looks like after all layers have been applied, read
 # mu.cc
 mu.cc: 0*
-	./tangle/tangle $$(./enumerate/enumerate --until 999 |grep -v '.mu$$') > mu.cc
-	cat $$(./enumerate/enumerate --until 999 |grep '.mu$$') > core.mu
+	./tangle/tangle $$(./enumerate/enumerate --until 9999 |grep -v '.mu$$') > mu.cc
+	cat $$(./enumerate/enumerate --until 9999 |grep '.mu$$') > core.mu
 
 enumerate/enumerate:
 	cd enumerate && make && ./enumerate test

@@ -9,8 +9,11 @@
 //: Location 0 - unused (since it can help uncover bugs)
 //: Locations 1-899 - reserved for tests
 //: Locations 900-999 - reserved for predefined globals in mu scenarios, like keyboard, screen, etc.
+:(before "End Setup")
+assert(Max_variables_in_scenarios == 900);
 //: Locations 1000 ('Reserved_for_tests') onward - available to the allocator in chunks of size Initial_memory_per_routine.
-//:
+assert(Reserved_for_tests == 1000);
+
 //:: Recipes
 //:
 //: 0 - unused (IDLE; do nothing)
