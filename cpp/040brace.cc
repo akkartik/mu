@@ -40,21 +40,21 @@ void transform_braces(const recipe_number r) {
 //?   cout << "AAA transform_braces\n"; //? 1
 //?   exit(0); //? 1
   const int OPEN = 0, CLOSE = 1;
-  list<pair<int/*OPEN/CLOSE*/, size_t/*step index*/> > braces;
-  for (size_t index = 0; index < Recipe[r].steps.size(); ++index) {
+  list<pair<int/*OPEN/CLOSE*/, /*step*/index_t> > braces;
+  for (index_t index = 0; index < Recipe[r].steps.size(); ++index) {
     const instruction& inst = Recipe[r].steps[index];
     if (inst.label == "{") {
       trace("brace") << r << ": push (open, " << index << ")";
-      braces.push_back(pair<int,size_t>(OPEN, index));
+      braces.push_back(pair<int,index_t>(OPEN, index));
     }
     if (inst.label == "}") {
       trace("brace") << "push (close, " << index << ")";
-      braces.push_back(pair<int,size_t>(CLOSE, index));
+      braces.push_back(pair<int,index_t>(CLOSE, index));
     }
   }
-  stack<size_t/*step index*/> open_braces;
+  stack</*step*/index_t> open_braces;
   trace("after-brace") << "recipe " << Recipe[r].name;
-  for (size_t index = 0; index < Recipe[r].steps.size(); ++index) {
+  for (index_t index = 0; index < Recipe[r].steps.size(); ++index) {
     instruction& inst = Recipe[r].steps[index];
 //?     cout << "AAA " << inst.name << ": " << inst.operation << '\n'; //? 1
     if (inst.label == "{") open_braces.push(index);
@@ -148,9 +148,9 @@ void transform_braces(const recipe_number r) {
   }
 }
 
-size_t matching_brace(size_t index, const list<pair<int, size_t> >& braces) {
+int matching_brace(index_t index, const list<pair<int, index_t> >& braces) {
   int stacksize = 0;
-  for (list<pair<int, size_t> >::const_iterator p = braces.begin(); p != braces.end(); ++p) {
+  for (list<pair<int, index_t> >::const_iterator p = braces.begin(); p != braces.end(); ++p) {
     if (p->second < index) continue;
     stacksize += (p->first ? 1 : -1);
     if (stacksize == 0) return p->second;

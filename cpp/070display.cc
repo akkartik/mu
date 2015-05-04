@@ -3,7 +3,7 @@
 //:: Display management
 
 :(before "End Globals")
-size_t Display_row = 0, Display_column = 0;
+index_t Display_row = 0, Display_column = 0;
 
 :(before "End Primitive Recipe Declarations")
 SWITCH_TO_DISPLAY,
@@ -44,7 +44,7 @@ Recipe_number["clear-line-on-display"] = CLEAR_LINE_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case CLEAR_LINE_ON_DISPLAY: {
   size_t width = tb_width();
-  for (size_t x = Display_column; x < width; ++x) {
+  for (index_t x = Display_column; x < width; ++x) {
     tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_DEFAULT);
   }
   tb_set_cursor(Display_column, Display_row);

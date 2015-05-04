@@ -21,26 +21,26 @@ recipe main [
   Transform.push_back(transform_names);
 
 :(before "End Globals")
-map<recipe_number, map<string, int> > Name;
+map<recipe_number, map<string, index_t> > Name;
 :(after "Clear Other State For recently_added_recipes")
-for (size_t i = 0; i < recently_added_recipes.size(); ++i) {
+for (index_t i = 0; i < recently_added_recipes.size(); ++i) {
   Name.erase(recently_added_recipes[i]);
 }
 
 :(code)
 void transform_names(const recipe_number r) {
-  map<string, int>& names = Name[r];
+  map<string, index_t>& names = Name[r];
   // store the indices 'used' so far in the map
-  int& curr_idx = names[""];
+  index_t& curr_idx = names[""];
   ++curr_idx;  // avoid using index 0, benign skip in some other cases
 //?   cout << "Recipe " << r << ": " << Recipe[r].name << '\n'; //? 3
 //?   cout << Recipe[r].steps.size() << '\n'; //? 2
-  for (size_t i = 0; i < Recipe[r].steps.size(); ++i) {
+  for (index_t i = 0; i < Recipe[r].steps.size(); ++i) {
 //?     cout << "instruction " << i << '\n'; //? 2
     instruction& inst = Recipe[r].steps[i];
     // Per-recipe Transforms
     // map names to addresses
-    for (size_t in = 0; in < inst.ingredients.size(); ++in) {
+    for (index_t in = 0; in < inst.ingredients.size(); ++in) {
 //?       cout << "ingredients\n"; //? 2
       if (is_raw(inst.ingredients[in])) continue;
 //?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 3
@@ -60,7 +60,7 @@ void transform_names(const recipe_number r) {
 //?         cout << "lookup ingredient " << Recipe[r].name << "/" << i << ": " << inst.ingredients[in].to_string() << '\n'; //? 1
       }
     }
-    for (size_t out = 0; out < inst.products.size(); ++out) {
+    for (index_t out = 0; out < inst.products.size(); ++out) {
 //?       cout << "products\n"; //? 1
       if (is_raw(inst.products[out])) continue;
 //?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products[out].name << '\n'; //? 4
@@ -82,16 +82,16 @@ void transform_names(const recipe_number r) {
   }
 }
 
-bool already_transformed(const reagent& r, const map<string, int>& names) {
+bool already_transformed(const reagent& r, const map<string, index_t>& names) {
   return names.find(r.name) != names.end();
 }
 
-size_t lookup_name(const reagent& r, const recipe_number default_recipe) {
+index_t lookup_name(const reagent& r, const recipe_number default_recipe) {
   return Name[default_recipe][r.name];
 }
 
 type_number skip_addresses(const vector<type_number>& types) {
-  for (size_t i = 0; i < types.size(); ++i) {
+  for (index_t i = 0; i < types.size(); ++i) {
     if (types[i] != Type_number["address"]) return types[i];
   }
   raise << "expected a container" << '\n' << die();
@@ -101,7 +101,7 @@ type_number skip_addresses(const vector<type_number>& types) {
 int find_element_name(const type_number t, const string& name) {
   const type_info& container = Type[t];
 //?   cout << "looking for element " << name << " in type " << container.name << " with " << container.element_names.size() << " elements\n"; //? 1
-  for (size_t i = 0; i < container.element_names.size(); ++i) {
+  for (index_t i = 0; i < container.element_names.size(); ++i) {
     if (container.element_names[i] == name) return i;
   }
   raise << "unknown element " << name << " in container " << t << '\n' << die();
@@ -109,7 +109,7 @@ int find_element_name(const type_number t, const string& name) {
 }
 
 bool is_raw(const reagent& r) {
-  for (size_t i = /*skip value+type*/1; i < r.properties.size(); ++i) {
+  for (index_t i = /*skip value+type*/1; i < r.properties.size(); ++i) {
     if (r.properties[i].first == "raw") return true;
   }
   return false;

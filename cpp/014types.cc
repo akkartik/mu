@@ -74,7 +74,7 @@ else if (command == "exclusive-container") {
 :(before "End Globals")
 vector<type_number> recently_added_types;
 :(before "End Setup")
-for (size_t i = 0; i < recently_added_types.size(); ++i) {
+for (index_t i = 0; i < recently_added_types.size(); ++i) {
 //?   cout << "erasing " << Type[recently_added_types[i]].name << '\n'; //? 1
   Type_number.erase(Type[recently_added_types[i]].name);
   Type.erase(recently_added_types[i]);

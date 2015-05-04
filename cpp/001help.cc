@@ -41,4 +41,5 @@ using std::cerr;
 #include<cstring>
 #include<string>
 using std::string;
-const size_t NOT_FOUND = string::npos;
+typedef size_t index_t;
+const index_t NOT_FOUND = string::npos;

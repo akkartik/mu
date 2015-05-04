@@ -42,7 +42,7 @@ int space_base(const reagent& x, int space_index, int base) {
 }
 
 int space_index(const reagent& x) {
-  for (size_t i = 0; i < x.properties.size(); ++i) {
+  for (index_t i = 0; i < x.properties.size(); ++i) {
     if (x.properties[i].first == "space")
       return to_int(x.properties[i].second[0]);
   }

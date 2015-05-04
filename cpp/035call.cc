@@ -33,7 +33,7 @@ recipe f [
 // This requires maintaining a 'stack' of interrupted recipes or 'calls'.
 struct call {
   recipe_number running_recipe;
-  size_t running_step_index;
+  index_t running_step_index;
   // End call Fields
   call(recipe_number r) :running_recipe(r), running_step_index(0) {}
 };
@@ -55,8 +55,8 @@ routine::routine(recipe_number r) {
 
 //:: now update routine's helpers
 
-:(replace{} "inline size_t& current_step_index()")
-inline size_t& current_step_index() {
+:(replace{} "inline index_t& current_step_index()")
+inline index_t& current_step_index() {
   return Current_routine->calls.top().running_step_index;
 }
 :(replace{} "inline const string& current_recipe_name()")

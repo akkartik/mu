@@ -42,10 +42,10 @@ map<recipe_number, recipe_number> Surrounding_space;
 
 :(code)
 void collect_surrounding_spaces(const recipe_number r) {
-  for (size_t i = 0; i < Recipe[r].steps.size(); ++i) {
+  for (index_t i = 0; i < Recipe[r].steps.size(); ++i) {
     const instruction& inst = Recipe[r].steps[i];
     if (inst.is_label) continue;
-    for (size_t j = 0; j < inst.products.size(); ++j) {
+    for (index_t j = 0; j < inst.products.size(); ++j) {
       if (isa_literal(inst.products[j])) continue;
       if (inst.products[j].name != "0") continue;
       if (inst.products[j].types.size() != 3
@@ -74,8 +74,8 @@ void collect_surrounding_spaces(const recipe_number r) {
 //: Once surrounding spaces are available, transform_names uses them to handle
 //: /space properties.
 
-:(replace{} "size_t lookup_name(const reagent& r, const recipe_number default_recipe)")
-size_t lookup_name(const reagent& x, const recipe_number default_recipe) {
+:(replace{} "index_t lookup_name(const reagent& r, const recipe_number default_recipe)")
+index_t lookup_name(const reagent& x, const recipe_number default_recipe) {
 //?   cout << "AAA " << default_recipe << " " << Recipe[default_recipe].name << '\n'; //? 2
 //?   cout << "AAA " << x.to_string() << '\n'; //? 1
   if (!has_property(x, "space")) {
@@ -94,11 +94,11 @@ size_t lookup_name(const reagent& x, const recipe_number default_recipe) {
 
 // If the recipe we need to lookup this name in doesn't have names done yet,
 // recursively call transform_names on it.
-size_t lookup_name(const reagent& x, const recipe_number r, set<recipe_number>& done, vector<recipe_number>& path) {
+index_t lookup_name(const reagent& x, const recipe_number r, set<recipe_number>& done, vector<recipe_number>& path) {
   if (!Name[r].empty()) return Name[r][x.name];
   if (done.find(r) != done.end()) {
     raise << "can't compute address of " << x.to_string() << " because ";
-    for (size_t i = 1; i < path.size(); ++i) {
+    for (index_t i = 1; i < path.size(); ++i) {
       raise << path[i-1] << " requires computing names of " << path[i] << '\n';
     }
     raise << path[path.size()-1] << " requires computing names of " << r << "..ad infinitum\n" << die();
@@ -111,7 +111,7 @@ size_t lookup_name(const reagent& x, const recipe_number r, set<recipe_number>& 
   return Name[r][x.name];
 }
 
-recipe_number lookup_surrounding_recipe(const recipe_number r, size_t n) {
+recipe_number lookup_surrounding_recipe(const recipe_number r, index_t n) {
   if (n == 0) return r;
   if (Surrounding_space.find(r) == Surrounding_space.end()) {
     raise << "don't know surrounding recipe of " << Recipe[r].name << '\n';
@@ -122,8 +122,8 @@ recipe_number lookup_surrounding_recipe(const recipe_number r, size_t n) {
 }
 
 //: weaken use-before-set warnings just a tad
-:(replace{} "bool already_transformed(const reagent& r, const map<string, int>& names)")
-bool already_transformed(const reagent& r, const map<string, int>& names) {
+:(replace{} "bool already_transformed(const reagent& r, const map<string, index_t>& names)")
+bool already_transformed(const reagent& r, const map<string, index_t>& names) {
   if (has_property(r, "space")) {
     vector<string> p = property(r, "space");
     assert(p.size() == 1);

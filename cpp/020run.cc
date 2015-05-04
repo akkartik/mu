@@ -32,7 +32,7 @@ recipe main [
 //: Later layers will change this.
 struct routine {
   recipe_number running_recipe;
-  size_t running_step_index;
+  index_t running_step_index;
   routine(recipe_number r) :running_recipe(r), running_step_index(0) {}
   bool completed() const;
 };
@@ -77,7 +77,7 @@ void run_current_routine()
 //: We'll need to override these later as we change the definition of routine.
 //: Important that they return referrences into the routine.
 
-inline size_t& current_step_index() {
+inline index_t& current_step_index() {
   return Current_routine->running_step_index;
 }
 
@@ -153,7 +153,7 @@ vector<int> read_memory(reagent x) {
   }
   int base = x.value;
   size_t size = size_of(x);
-  for (size_t offset = 0; offset < size; ++offset) {
+  for (index_t offset = 0; offset < size; ++offset) {
     int val = Memory[base+offset];
     trace("mem") << "location " << base+offset << " is " << val;
     result.push_back(val);
@@ -166,7 +166,7 @@ void write_memory(reagent x, vector<int> data) {
   int base = x.value;
   if (size_of(x) != data.size())
     raise << "size mismatch in storing to " << x.to_string() << '\n';
-  for (size_t offset = 0; offset < data.size(); ++offset) {
+  for (index_t offset = 0; offset < data.size(); ++offset) {
     trace("mem") << "storing " << data[offset] << " in location " << base+offset;
     Memory[base+offset] = data[offset];
   }

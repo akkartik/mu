@@ -213,7 +213,7 @@ void show_rest_of_stream(istream& in) {
 :(before "End Globals")
 vector<recipe_number> recently_added_recipes;
 :(before "End Setup")
-for (size_t i = 0; i < recently_added_recipes.size(); ++i) {
+for (index_t i = 0; i < recently_added_recipes.size(); ++i) {
 //?   cout << "AAA clearing " << Recipe[recently_added_recipes[i]].name << '\n'; //? 2
   Recipe_number.erase(Recipe[recently_added_recipes[i]].name);
   Recipe.erase(recently_added_recipes[i]);

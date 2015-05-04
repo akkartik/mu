@@ -105,7 +105,7 @@ else if (command == "scenario") {
 :(before "End Tests")
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
-for (size_t i = 0; i < Scenarios.size(); ++i) {
+for (index_t i = 0; i < Scenarios.size(); ++i) {
 //?   cerr << Passed << '\n'; //? 1
   run_mu_scenario(Scenarios[i]);
   if (Passed) cerr << ".";

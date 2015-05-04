@@ -53,7 +53,7 @@ if (Run_tests) {
   // End Test Run Initialization
   time_t t; time(&t);
   cerr << "C tests: " << ctime(&t);
-  for (size_t i=0; i < sizeof(Tests)/sizeof(Tests[0]); ++i) {
+  for (index_t i=0; i < sizeof(Tests)/sizeof(Tests[0]); ++i) {
     run_test(i);
   }
   // End Tests
@@ -66,7 +66,7 @@ if (Run_tests) {
 }
 
 :(code)
-void run_test(size_t i) {
+void run_test(index_t i) {
   if (i >= sizeof(Tests)/sizeof(Tests[0])) {
     cerr << "no test " << i << '\n';
     return;

@@ -12,7 +12,7 @@ case _PRINT: {
     break;
   }
   vector<int> result(read_memory(current_instruction().ingredients[0]));
-  for (size_t i = 0; i < result.size(); ++i) {
+  for (index_t i = 0; i < result.size(); ++i) {
     trace("run") << "$print: " << result[i];
     if (i > 0) cout << " ";
     cout << result[i];
