@@ -227,7 +227,7 @@ string instruction::to_string() const {
     out << products[i].to_string();
   }
   if (!products.empty()) out << " <- ";
-  out << name << ' ';
+  out << name << '/' << operation << ' ';
   for (size_t i = 0; i < ingredients.size(); ++i) {
     if (i > 0) out << ", ";
     out << ingredients[i].to_string();
