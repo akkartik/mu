@@ -26,7 +26,7 @@ function! HighlightTangledFile()
 endfunction
 call HighlightTangledFile()
 autocmd BufRead,BufNewFile *.mu set ft=mu
-autocmd BufRead,BufNewFile 0* call HighlightTangledFile()
+autocmd BufRead,BufNewFile [0-9]* call HighlightTangledFile()
 
 " Scenarios considered:
 "   opening or starting vim with a new or existing file without an extension (should interpret as C++)
