@@ -92,8 +92,11 @@ for (index_t i = 0; i < Scenarios.size(); ++i) {
   if (Passed) cerr << ".";
 }
 
+:(before "End Globals")
+const scenario* Current_scenario = NULL;
 :(code)
 void run_mu_scenario(const scenario& s) {
+  Current_scenario = &s;
   bool not_already_inside_test = !Trace_stream;
   if (not_already_inside_test) {
     Trace_file = s.name;
@@ -110,6 +113,7 @@ void run_mu_scenario(const scenario& s) {
     Trace_stream = NULL;
     Trace_file = "";
   }
+  Current_scenario = NULL;
 }
 
 //:: The special instructions we want to support inside scenarios.
@@ -203,8 +207,14 @@ void check_memory(const string& s) {
     if (locations_checked.find(address) != locations_checked.end())
       raise << "duplicate expectation for location " << address << '\n';
     trace("run") << "checking location " << address;
-    if (Memory[address] != value)
-      raise << "expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
+    if (Memory[address] != value) {
+      if (Current_scenario)
+        raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
+      else
+        raise << "expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
+      Passed = false;
+      return;
+    }
     locations_checked.insert(address);
   }
 }
