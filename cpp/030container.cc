@@ -53,7 +53,7 @@ type_info t = Type[types[0]];
 if (t.kind == container) {
   // size of a container is the sum of the sizes of its elements
   size_t result = 0;
-  for (size_t i = 0; i < t.elements.size(); ++i) {
+  for (index_t i = 0; i < t.elements.size(); ++i) {
     result += size_of(t.elements[i]);
   }
   return result;
@@ -88,9 +88,9 @@ case GET: {
   assert(Type[base_type].kind == container);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
   assert(isa_literal(current_instruction().ingredients[1]));
-  size_t offset = current_instruction().ingredients[1].value;
+  index_t offset = current_instruction().ingredients[1].value;
   int src = base_address;
-  for (size_t i = 0; i < offset; ++i) {
+  for (index_t i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements[i]);
   }
   trace("run") << "address to copy is " << src;
@@ -155,9 +155,9 @@ case GET_ADDRESS: {
   assert(Type[base_type].kind == container);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
   assert(isa_literal(current_instruction().ingredients[1]));
-  size_t offset = current_instruction().ingredients[1].value;
+  index_t offset = current_instruction().ingredients[1].value;
   int src = base_address;
-  for (size_t i = 0; i < offset; ++i) {
+  for (index_t i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements[i]);
   }
   trace("run") << "address to copy is " << src;

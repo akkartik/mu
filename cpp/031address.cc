@@ -115,14 +115,14 @@ base = canonize(base);
 
 :(code)
 bool has_property(reagent x, string name) {
-  for (size_t i = 0; i < x.properties.size(); ++i) {
+  for (index_t i = 0; i < x.properties.size(); ++i) {
     if (x.properties[i].first == name) return true;
   }
   return false;
 }
 
 vector<string> property(const reagent& r, const string& name) {
-  for (size_t p = 0; p != r.properties.size(); ++p) {
+  for (index_t p = 0; p != r.properties.size(); ++p) {
     if (r.properties[p].first == name)
       return r.properties[p].second;
   }

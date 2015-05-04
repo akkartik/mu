@@ -57,7 +57,7 @@ struct property {
 
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
-map<size_t, int> Memory;
+map<index_t, int> Memory;
 :(before "End Setup")
 Memory.clear();
 
@@ -182,7 +182,7 @@ reagent::reagent(string s) :value(0), initialized(false) {
   }
   // structures for the first row of properties
   name = properties[0].first;
-  for (size_t i = 0; i < properties[0].second.size(); ++i) {
+  for (index_t i = 0; i < properties[0].second.size(); ++i) {
     types.push_back(Type_number[properties[0].second[i]]);
   }
   if (name == "_" && types.empty()) {
@@ -199,15 +199,15 @@ reagent::reagent() :value(0), initialized(false) {
 string reagent::to_string() const {
   ostringstream out;
   out << "{name: \"" << name << "\", value: " << value << ", type: ";
-  for (size_t i = 0; i < types.size(); ++i) {
+  for (index_t i = 0; i < types.size(); ++i) {
     out << types[i];
     if (i < types.size()-1) out << "-";
   }
   if (!properties.empty()) {
     out << ", properties: [";
-    for (size_t i = 0; i < properties.size(); ++i) {
+    for (index_t i = 0; i < properties.size(); ++i) {
       out << "\"" << properties[i].first << "\": ";
-      for (size_t j = 0; j < properties[i].second.size(); ++j) {
+      for (index_t j = 0; j < properties[i].second.size(); ++j) {
         out << "\"" << properties[i].second[j] << "\"";
         if (j < properties[i].second.size()-1) out << ":";
       }
@@ -222,13 +222,13 @@ string reagent::to_string() const {
 string instruction::to_string() const {
   if (is_label) return label;
   ostringstream out;
-  for (size_t i = 0; i < products.size(); ++i) {
+  for (index_t i = 0; i < products.size(); ++i) {
     if (i > 0) out << ", ";
     out << products[i].to_string();
   }
   if (!products.empty()) out << " <- ";
   out << name << '/' << operation << ' ';
-  for (size_t i = 0; i < ingredients.size(); ++i) {
+  for (index_t i = 0; i < ingredients.size(); ++i) {
     if (i > 0) out << ", ";
     out << ingredients[i].to_string();
   }

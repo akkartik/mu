@@ -214,7 +214,7 @@ void trace_all(const string& label, const list<string>& in) {
 
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {  // missing layer == anywhere, frame, hierarchical layers
   vector<string> expected_lines = split(expected, "");
-  size_t curr_expected_line = 0;
+  index_t curr_expected_line = 0;
   while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
     ++curr_expected_line;
   if (curr_expected_line == expected_lines.size()) return true;
@@ -252,7 +252,7 @@ void parse_layer_frame_contents(const string& orig, string* layer, string* frame
 }
 
 void parse_contents(const string& s, const string& delim, string* prefix, string* contents) {
-  string::size_type pos = s.find(delim);
+  index_t pos = s.find(delim);
   if (pos == NOT_FOUND) {
     *prefix = "";
     *contents = s;
@@ -264,7 +264,7 @@ void parse_contents(const string& s, const string& delim, string* prefix, string
 }
 
 void parse_layer_and_frame(const string& orig, string* layer, string* frame) {
-  size_t last_slash = orig.rfind('/');
+  index_t last_slash = orig.rfind('/');
   if (last_slash == NOT_FOUND
       || orig.find_last_not_of("0123456789") != last_slash) {
     *layer = orig;
@@ -280,7 +280,7 @@ void parse_layer_and_frame(const string& orig, string* layer, string* frame) {
 
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, string expected) {  // empty layer == everything, multiple layers, hierarchical layers
   vector<string> expected_lines = split(expected, "");
-  size_t curr_expected_line = 0;
+  index_t curr_expected_line = 0;
   while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
     ++curr_expected_line;
   if (curr_expected_line == expected_lines.size()) return true;
@@ -379,7 +379,7 @@ struct lease_trace_frame {
 
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, int frame, string expected) {  // multiple layers, hierarchical layers
   vector<string> expected_lines = split(expected, "");  // hack: doesn't handle newlines in embedded in lines
-  size_t curr_expected_line = 0;
+  index_t curr_expected_line = 0;
   while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
     ++curr_expected_line;
   if (curr_expected_line == expected_lines.size()) return true;
@@ -411,7 +411,7 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
 
 vector<string> split(string s, string delim) {
   vector<string> result;
-  string::size_type begin=0, end=s.find(delim);
+  index_t begin=0, end=s.find(delim);
   while (true) {
     if (end == NOT_FOUND) {
       result.push_back(string(s, begin, NOT_FOUND));

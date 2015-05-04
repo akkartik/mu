@@ -22,7 +22,7 @@ Recipe_number["reply"] = REPLY;
 :(before "End Primitive Recipe Implementations")
 case REPLY: {
   vector<vector<int> > callee_results;
-  for (size_t i = 0; i < current_instruction().ingredients.size(); ++i) {
+  for (index_t i = 0; i < current_instruction().ingredients.size(); ++i) {
     callee_results.push_back(read_memory(current_instruction().ingredients[i]));
   }
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
@@ -30,7 +30,7 @@ case REPLY: {
   assert(!Current_routine->calls.empty());
   const instruction& caller_instruction = current_instruction();
   assert(caller_instruction.products.size() <= callee_results.size());
-  for (size_t i = 0; i < caller_instruction.products.size(); ++i) {
+  for (index_t i = 0; i < caller_instruction.products.size(); ++i) {
     trace("run") << "result " << i << " is " << to_string(callee_results[i]);
     // check that any reply ingredients with /same-as-ingredient connect up
     // the corresponding ingredient and product in the caller.
@@ -86,7 +86,7 @@ string to_string(const vector<int>& in) {
     return out.str();
   }
   out << "[";
-  for (size_t i = 0; i < in.size(); ++i) {
+  for (index_t i = 0; i < in.size(); ++i) {
     if (i > 0) out << ", ";
     out << in[i];
   }

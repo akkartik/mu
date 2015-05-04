@@ -26,7 +26,7 @@ recipe main [
 +mem: storing 34 in location 8
 
 :(before "End call Fields")
-size_t default_space;
+index_t default_space;
 :(replace "call(recipe_number r) :running_recipe(r)")
 call(recipe_number r) :running_recipe(r), running_step_index(0), next_ingredient_to_process(0), default_space(0) {}
 

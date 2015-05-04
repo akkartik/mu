@@ -63,11 +63,11 @@ case SCREEN_SHOULD_CONTAIN: {
 void check_screen(const string& contents) {
   static const int screen_variable = Reserved_for_tests-1;
   assert(!Current_routine->calls.top().default_space);  // not supported
-  size_t screen_location = Memory[screen_variable];
+  index_t screen_location = Memory[screen_variable];
   int data_offset = find_element_name(Type_number["screen"], "data");
   assert(data_offset >= 0);
-  size_t screen_data_location = screen_location+data_offset;  // type: address:array:character
-  size_t screen_data_start = Memory[screen_data_location];  // type: array:character
+  index_t screen_data_location = screen_location+data_offset;  // type: address:array:character
+  index_t screen_data_start = Memory[screen_data_location];  // type: array:character
   int width_offset = find_element_name(Type_number["screen"], "num-columns");
   size_t screen_width = Memory[screen_location+width_offset];
   int height_offset = find_element_name(Type_number["screen"], "num-rows");
@@ -75,11 +75,11 @@ void check_screen(const string& contents) {
   string expected_contents;
   istringstream in(contents);
   in >> std::noskipws;
-  for (size_t row = 0; row < screen_height; ++row) {
+  for (index_t row = 0; row < screen_height; ++row) {
     skip_whitespace_and_comments(in);
     assert(!in.eof());
     assert(in.get() == '.');
-    for (size_t column = 0; column < screen_width; ++column) {
+    for (index_t column = 0; column < screen_width; ++column) {
       assert(!in.eof());
       expected_contents += in.get();
     }
@@ -92,7 +92,7 @@ void check_screen(const string& contents) {
   if (Memory[screen_data_start] > static_cast<signed>(expected_contents.size()))
     raise << "expected contents are larger than screen size " << Memory[screen_data_start] << '\n';
   ++screen_data_start;  // now skip length
-  for (size_t i = 0; i < expected_contents.size(); ++i) {
+  for (index_t i = 0; i < expected_contents.size(); ++i) {
     trace("run") << "checking location " << screen_data_start+i;
     if ((!Memory[screen_data_start+i] && !isspace(expected_contents[i]))  // uninitialized memory => spaces
         || (Memory[screen_data_start+i] && Memory[screen_data_start+i] != expected_contents[i])) {

@@ -23,7 +23,7 @@ recipe f2 [
 WAITING,
 :(before "End routine Fields")
 // only if state == WAITING
-size_t waiting_on_location;
+index_t waiting_on_location;
 int old_value_of_wating_location;
 :(before "End routine Constructor")
 waiting_on_location = old_value_of_wating_location = 0;
@@ -47,7 +47,7 @@ case WAIT_FOR_LOCATION: {
 //: scheduler tweak to get routines out of that state
 
 :(before "End Scheduler State Transitions")
-for (size_t i = 0; i < Routines.size(); ++i) {
+for (index_t i = 0; i < Routines.size(); ++i) {
   if (Routines[i]->state != WAITING) continue;
   if (Memory[Routines[i]->waiting_on_location] != Routines[i]->old_value_of_wating_location) {
     trace("schedule") << "waking up routine\n";

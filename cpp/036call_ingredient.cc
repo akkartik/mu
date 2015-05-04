@@ -24,7 +24,7 @@ recipe f [
 
 :(before "End call Fields")
 vector<vector<int> > ingredient_atoms;
-size_t next_ingredient_to_process;
+index_t next_ingredient_to_process;
 :(replace{} "call(recipe_number r)")
 call(recipe_number r) :running_recipe(r), running_step_index(0), next_ingredient_to_process(0) {}
 
@@ -105,7 +105,7 @@ INGREDIENT,
 Recipe_number["ingredient"] = INGREDIENT;
 :(before "End Primitive Recipe Implementations")
 case INGREDIENT: {
-  if (static_cast<size_t>(current_instruction().ingredients[0].value) < Current_routine->calls.top().ingredient_atoms.size()) {
+  if (static_cast<index_t>(current_instruction().ingredients[0].value) < Current_routine->calls.top().ingredient_atoms.size()) {
     Current_routine->calls.top().next_ingredient_to_process = current_instruction().ingredients[0].value;
     trace("run") << "product 0 is "
         << Current_routine->calls.top().ingredient_atoms[Current_routine->calls.top().next_ingredient_to_process][0];

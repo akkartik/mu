@@ -45,7 +45,7 @@ if (t.kind == exclusive_container) {
 //?   cout << "point: " << Type_number["point"] << " " << Type[Type_number["point"]].name << " " << Type[Type_number["point"]].size << '\n'; //? 1
 //?   cout << t.name << ' ' << t.size << ' ' << t.elements.size() << '\n'; //? 1
   size_t result = 0;
-  for (size_t i = 0; i < t.size; ++i) {
+  for (index_t i = 0; i < t.size; ++i) {
     size_t tmp = size_of(t.elements[i]);
 //?     cout << i << ": " << t.elements[i][0] << ' ' << tmp << ' ' << result << '\n'; //? 1
     if (tmp > result) result = tmp;
@@ -95,9 +95,9 @@ case MAYBE_CONVERT: {
   assert(Type[base_type].kind == exclusive_container);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
   assert(isa_literal(current_instruction().ingredients[1]));
-  size_t tag = current_instruction().ingredients[1].value;
+  index_t tag = current_instruction().ingredients[1].value;
   vector<int> result;
-  if (tag == static_cast<size_t>(Memory[base_address])) {
+  if (tag == static_cast<index_t>(Memory[base_address])) {
     result.push_back(base_address+1);
   }
   else {

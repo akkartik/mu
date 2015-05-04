@@ -37,7 +37,7 @@ state = RUNNING;
 
 :(before "End Globals")
 vector<routine*> Routines;
-size_t Current_routine_index = 0;
+index_t Current_routine_index = 0;
 size_t Scheduling_interval = 500;
 :(before "End Setup")
 Scheduling_interval = 500;
@@ -61,7 +61,7 @@ void run(recipe_number r) {
 
 :(code)
 bool all_routines_done() {
-  for (size_t i = 0; i < Routines.size(); ++i) {
+  for (index_t i = 0; i < Routines.size(); ++i) {
 //?     cout << "routine " << i << ' ' << Routines[i]->state << '\n'; //? 1
     if (Routines[i]->state == RUNNING) {
       return false;
@@ -74,7 +74,7 @@ bool all_routines_done() {
 void skip_to_next_routine() {
   assert(!Routines.empty());
   assert(Current_routine_index < Routines.size());
-  for (size_t i = (Current_routine_index+1)%Routines.size();  i != Current_routine_index;  i = (i+1)%Routines.size()) {
+  for (index_t i = (Current_routine_index+1)%Routines.size();  i != Current_routine_index;  i = (i+1)%Routines.size()) {
     if (Routines[i]->state == RUNNING) {
 //?       cout << "switching to " << i << '\n'; //? 1
       Current_routine_index = i;
@@ -86,7 +86,7 @@ void skip_to_next_routine() {
 }
 
 :(before "End Teardown")
-for (size_t i = 0; i < Routines.size(); ++i)
+for (index_t i = 0; i < Routines.size(); ++i)
   delete Routines[i];
 Routines.clear();
 

@@ -12,13 +12,13 @@ recipe main [
 
 :(before "End Globals")
 size_t Reserved_for_tests = 1000;
-size_t Memory_allocated_until = Reserved_for_tests;
+index_t Memory_allocated_until = Reserved_for_tests;
 size_t Initial_memory_per_routine = 100000;
 :(before "End Setup")
 Memory_allocated_until = Reserved_for_tests;
 Initial_memory_per_routine = 100000;
 :(before "End routine Fields")
-size_t alloc, alloc_max;
+index_t alloc, alloc_max;
 :(before "End routine Constructor")
 alloc = Memory_allocated_until;
 Memory_allocated_until += Initial_memory_per_routine;
@@ -78,7 +78,7 @@ case NEW: {
     Current_routine->alloc_max = Memory_allocated_until;
     trace("new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max;
   }
-  const size_t result = Current_routine->alloc;
+  const index_t result = Current_routine->alloc;
   trace("mem") << "new alloc: " << result;
   if (current_instruction().ingredients.size() > 1) {
     // initialize array
@@ -149,7 +149,7 @@ if (current_instruction().ingredients[0].properties[0].second[0] == "literal-str
   // assume that all characters fit in a single location
 //?   cout << "new string literal: " << current_instruction().ingredients[0].name << '\n'; //? 1
   Memory[Current_routine->alloc++] = current_instruction().ingredients[0].name.size();
-  for (size_t i = 0; i < current_instruction().ingredients[0].name.size(); ++i) {
+  for (index_t i = 0; i < current_instruction().ingredients[0].name.size(); ++i) {
     Memory[Current_routine->alloc++] = current_instruction().ingredients[0].name[i];
   }
   // mu strings are not null-terminated in memory
