@@ -1,6 +1,9 @@
 //: Mu scenarios. This will get long, but these are the tests we want to
 //: support in this layer.
 
+//: You can use variable names in scenarios, but for the most part we'll use
+//: raw location numbers, because that lets us make assertions on memory.
+//: Tests should avoid abstraction as far as possible.
 :(scenarios run_mu_scenario)
 :(scenario scenario_block)
 scenario foo [
