@@ -138,10 +138,6 @@ case RUN: {
   // Predefined Scenario Locals In Run.
   // End Predefined Scenario Locals In Run.
   transform_all();
-  // There's a restriction on the number of variables 'run' can use, so that
-  // it can avoid colliding with the dynamic allocator in case it doesn't
-  // initialize a default-space.
-  assert(Name[tmp_recipe[0]][""] < Max_variables_in_scenarios);
 //?   cout << tmp_recipe[0] << ' ' << Recipe_number["main"] << '\n'; //? 1
   Current_routine->calls.push(call(tmp_recipe[0]));
   continue;  // not done with caller; don't increment current_step_index()

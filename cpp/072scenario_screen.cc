@@ -45,6 +45,11 @@ const size_t Max_variables_in_scenarios = Reserved_for_tests-100;
 size_t Next_predefined_global_for_scenarios = Max_variables_in_scenarios;
 :(before "End Setup")
 assert(Next_predefined_global_for_scenarios < Reserved_for_tests);
+:(after "transform_all()" following "case RUN:")
+// There's a restriction on the number of variables 'run' can use, so that
+// it can avoid colliding with the dynamic allocator in case it doesn't
+// initialize a default-space.
+assert(Name[tmp_recipe[0]][""] < Max_variables_in_scenarios);
 
 :(before "End Globals")
 // Scenario Globals.
