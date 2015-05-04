@@ -62,6 +62,7 @@ recipe_number add_recipe(istream& in) {
 
   instruction curr;
   while (next_instruction(in, &curr)) {
+    // End Rewrite Instruction(curr)
 //?     if (!curr.products.empty()) cout << curr.products[0].to_string() << '\n'; //? 1
     Recipe[r].steps.push_back(curr);
   }

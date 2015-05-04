@@ -56,9 +56,14 @@ recipe print-character [
   default-space:address:array:location <- new location:type, 30:literal
   x:address:screen <- next-ingredient
   c:character <- next-ingredient
+#?   $print x:address:character #? 1
+#?   $print [ print-character #? 1
+#? ] #? 1
   {
     # if x exists
     break-unless x:address:screen
+#?   $print [print-character2 #? 1
+#? ] #? 1
     # save character in fake screen
     row:address:integer <- get-address x:address:screen/deref, cursor-row:offset
     column:address:integer <- get-address x:address:screen/deref, cursor-column:offset
@@ -67,6 +72,9 @@ recipe print-character [
     index:integer <- add index:integer, column:address:integer/deref
     buf:address:array:character <- get x:address:screen/deref, data:offset
     cursor:address:character <- index-address buf:address:array:character/deref, index:integer
+#?     $print cursor:address:character #? 1
+#?     $print [ #? 1
+#? ] #? 1
     cursor:address:character/deref <- copy c:character  # todo: newline, etc.
     # increment column unless it's already all the way to the right
     {

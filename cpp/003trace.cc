@@ -88,6 +88,7 @@
 :(before "End Tracing")
 bool Hide_warnings = false;
 :(before "End Setup")
+//? cerr << "AAA setup\n"; //? 2
 Hide_warnings = false;
 
 :(before "End Tracing")
