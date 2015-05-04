@@ -135,15 +135,13 @@ case RUN: {
   tmp << "recipe run" << Next_recipe_number << " [ " << current_instruction().ingredients[0].name << " ]";
 //?   Show_rest_of_stream = true; //? 1
   vector<recipe_number> tmp_recipe = load(tmp.str());
-  // Predefined Scenario Locals
-//?   cout << "mapping local screen in recipe " << tmp_recipe[0] << '\n'; //? 1
-  Name[tmp_recipe[0]]["screen"] = Reserved_for_tests-1;
-  // End Predefined Scenario Locals
+  // Predefined Scenario Locals In Run.
+  // End Predefined Scenario Locals In Run.
   transform_all();
   // There's a restriction on the number of variables 'run' can use, so that
   // it can avoid colliding with the dynamic allocator in case it doesn't
   // initialize a default-space.
-  assert(Name[tmp_recipe[0]][""] < Reserved_for_tests-1);
+  assert(Name[tmp_recipe[0]][""] < Max_variables_in_scenarios);
 //?   cout << tmp_recipe[0] << ' ' << Recipe_number["main"] << '\n'; //? 1
   Current_routine->calls.push(call(tmp_recipe[0]));
   continue;  // not done with caller; don't increment current_step_index()
