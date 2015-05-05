@@ -54,7 +54,7 @@ case NEW: {
   size_t size = 0;
   size_t array_length = 0;
   {
-    vector<int> type;
+    vector<type_number> type;
     type.push_back(current_instruction().ingredients[0].value);
     if (current_instruction().ingredients.size() > 1) {
       // array
