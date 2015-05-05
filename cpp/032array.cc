@@ -50,7 +50,7 @@ recipe main [
 :(replace "if (size_of(x) != data.size())" following "void write_memory(reagent x, vector<int> data)")
 if (x.types[0] != Type_number["array"] && size_of(x) != data.size())
 :(after "size_t size_of(const reagent& r)")
-  static const int ARRAY = Type_number["array"];
+  static const type_number ARRAY = Type_number["array"];
   if (r.types[0] == ARRAY) {
     assert(r.types.size() > 1);
     // skip the 'array' type to get at the element type
@@ -96,7 +96,7 @@ INDEX,
 Recipe_number["index"] = INDEX;
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
-  static const int ARRAY = Type_number["array"];
+  static const type_number ARRAY = Type_number["array"];
 //?   if (Trace_stream) Trace_stream->dump_layer = "run"; //? 1
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].to_string();
   reagent base = canonize(current_instruction().ingredients[0]);
@@ -161,7 +161,7 @@ INDEX_ADDRESS,
 Recipe_number["index-address"] = INDEX_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
-  static const int ARRAY = Type_number["array"];
+  static const type_number ARRAY = Type_number["array"];
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
   reagent base = canonize(current_instruction().ingredients[0]);
   int base_address = base.value;

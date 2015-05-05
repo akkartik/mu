@@ -1,6 +1,6 @@
 :(after "Types")
 // A program is a book of 'recipes' (functions)
-typedef int recipe_number;
+typedef size_t recipe_number;
 :(before "End Globals")
 map<string, recipe_number> Recipe_number;
 map<recipe_number, recipe> Recipe;
@@ -70,7 +70,7 @@ Memory.clear();
 // Unlike most computers today, mu stores types in a single big table, shared
 // by all the mu programs on the computer. This is useful in providing a
 // seamless experience to help understand arbitrary mu programs.
-typedef int type_number;
+typedef size_t type_number;
 :(before "End Globals")
 map<string, type_number> Type_number;
 map<type_number, type_info> Type;
