@@ -1,3 +1,13 @@
+# example program: compute the factorial of 7
+
+recipe main [
+  default-space:address:space <- new location:type, 30:literal
+  x:integer <- factorial 7:literal
+  $print x:integer
+  $print [
+]
+]
+
 recipe factorial [
   default-space:address:array:location <- new location:type, 30:literal
   n:integer <- next-ingredient
@@ -14,16 +24,8 @@ recipe factorial [
   reply result:integer
 ]
 
-recipe main [
-  default-space:address:space <- new location:type, 30:literal
-  x:integer <- factorial 7:literal
-  $print x:integer
-  $print [
-]
-]
-
+# unit test
 scenario factorial-test [
-#?   dump all #? 1
   run [
     1:integer <- factorial 5:literal
   ]

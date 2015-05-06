@@ -109,7 +109,7 @@ if (!Run_tests) {
   recipe_number r = Recipe_number[string("main")];
 //?   Trace_stream->dump_layer = "all"; //? 1
   if (r) run(r);
-  dump_memory();
+//?   dump_memory(); //? 1
   teardown();
 }
 
