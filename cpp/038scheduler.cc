@@ -195,3 +195,38 @@ recipe f1 [
 ]
 +schedule: f1
 -run: idle
+
+//:: 'routine-state' can tell if a given routine id is running
+
+:(scenario routine_state_test)
+% Scheduling_interval = 2;
+recipe f1 [
+  1:integer/child-id <- start-running f2:recipe
+  12:integer <- copy 0:literal  # race condition since we don't care about location 12
+  # thanks to Scheduling_interval, f2's one instruction runs in between here and completes
+  2:integer/state <- routine-state 1:integer/child-id
+]
+recipe f2 [
+  12:integer <- copy 0:literal
+  # trying to run a second instruction marks routine as completed
+]
+# recipe f2 should be in state COMPLETED
++mem: storing 1 in location 2
+
+:(before "End Primitive Recipe Declarations")
+ROUTINE_STATE,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["routine-state"] = ROUTINE_STATE;
+:(before "End Primitive Recipe Implementations")
+case ROUTINE_STATE: {
+  vector<long long int> result;
+  index_t id = read_memory(current_instruction().ingredients[0])[0];
+  for (index_t i = 0; i < Routines.size(); ++i) {
+    if (Routines[i]->id == id) {
+      result.push_back(Routines[i]->state);
+      write_memory(current_instruction().products[0], result);
+      break;
+    }
+  }
+  break;
+}
