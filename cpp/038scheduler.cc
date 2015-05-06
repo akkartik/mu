@@ -113,6 +113,9 @@ case START_RUNNING: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
   assert(!current_instruction().ingredients[0].initialized);
   routine* new_routine = new routine(Recipe_number[current_instruction().ingredients[0].name]);
+  // populate ingredients
+  for (index_t i = 1; i < current_instruction().ingredients.size(); ++i)
+    new_routine->calls.top().ingredient_atoms.push_back(read_memory(current_instruction().ingredients[i]));
   Routines.push_back(new_routine);
   if (!current_instruction().products.empty()) {
     vector<long long int> result;
@@ -155,8 +158,17 @@ recipe f2 [
 +schedule: f1
 +run: instruction f1/2
 
+:(scenario start_running_takes_args)
+recipe f1 [
+  start-running f2:recipe, 3:literal
+]
+recipe f2 [
+  1:integer <- next-ingredient
+  2:integer <- add 1:integer, 1:literal
+]
++mem: storing 4 in location 2
+
 :(scenario start_running_returns_routine_id)
-% Scheduling_interval = 1;
 recipe f1 [
   1:integer <- start-running f2:recipe
 ]
