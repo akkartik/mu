@@ -42,7 +42,7 @@ if (curr.name == "assume-keyboard") {
   assert(curr.products.empty());
   curr.products.push_back(reagent("keyboard:address"));
   curr.products[0].set_value(KEYBOARD);
-  Recipe[r].steps.push_back(curr);  // hacky that "Rewrite Instruction" is converting to multiple instructions
+  result.steps.push_back(curr);  // hacky that "Rewrite Instruction" is converting to multiple instructions
   // leave second instruction in curr
   curr.clear();
   curr.operation = Recipe_number["init-fake-keyboard"];

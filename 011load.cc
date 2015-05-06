@@ -24,7 +24,21 @@ vector<recipe_number> load(istream& in) {
     string command = next_word(in);
     // Command Handlers
     if (command == "recipe") {
-      result.push_back(add_recipe(in));
+      string recipe_name = next_word(in);
+      if (recipe_name.empty())
+        raise << "empty recipe name\n";
+      if (Recipe_number.find(recipe_name) == Recipe_number.end()) {
+        Recipe_number[recipe_name] = Next_recipe_number++;
+      }
+      if (Recipe.find(Recipe_number[recipe_name]) != Recipe.end()) {
+        raise << "redefining recipe " << Recipe[Recipe_number[recipe_name]].name << "\n";
+        Recipe.erase(Recipe_number[recipe_name]);
+      }
+      Recipe[Recipe_number[recipe_name]] = slurp_recipe(in);
+      Recipe[Recipe_number[recipe_name]].name = recipe_name;
+      // track added recipes because we may need to undo them in tests; see below
+      recently_added_recipes.push_back(Recipe_number[recipe_name]);
+      result.push_back(Recipe_number[recipe_name]);
     }
     // End Command Handlers
     else {
@@ -34,43 +48,18 @@ vector<recipe_number> load(istream& in) {
   return result;
 }
 
-recipe_number add_recipe(istream& in) {
-  skip_whitespace_and_comments(in);
-  string recipe_name = next_word(in);
-//?   cout << "recipe name: ^" << recipe_name << "$\n"; //? 3
-  if (recipe_name.empty())
-    raise << "empty recipe name\n";
-//?     raise << "empty recipe name in " << in.str() << '\n';
-  if (Recipe_number.find(recipe_name) == Recipe_number.end()) {
-    Recipe_number[recipe_name] = Next_recipe_number++;
-//?     cout << "AAA: " << recipe_name << " is now " << Recipe_number[recipe_name] << '\n'; //? 1
-  }
-  recipe_number r = Recipe_number[recipe_name];
-  if (Recipe.find(r) != Recipe.end()) {
-    raise << "redefining recipe " << Recipe[r].name << "\n";
-    Recipe.erase(r);
-  }
-//?   cout << recipe_name << ": adding recipe " << r << '\n'; //? 3
-
+recipe slurp_recipe(istream& in) {
+  recipe result;
   skip_whitespace(in);
   if (in.get() != '[')
     raise << "recipe body must begin with '['\n";
-
-//?   show_rest_of_stream(in); //? 1
   skip_whitespace_and_comments(in);
-//?   show_rest_of_stream(in); //? 1
-
   instruction curr;
   while (next_instruction(in, &curr)) {
     // End Rewrite Instruction(curr)
-//?     if (!curr.products.empty()) cout << curr.products[0].to_string() << '\n'; //? 1
-    Recipe[r].steps.push_back(curr);
+    result.steps.push_back(curr);
   }
-  Recipe[r].name = recipe_name;
-//?   cout << "recipe " << recipe_name << " has " << Recipe[r].steps.size() << " steps.\n"; //? 1
-  // track added recipes because we may need to undo them in tests; see below
-  recently_added_recipes.push_back(r);
-  return r;
+  return result;
 }
 
 bool next_instruction(istream& in, instruction* curr) {
