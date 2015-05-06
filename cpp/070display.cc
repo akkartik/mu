@@ -1,5 +1,9 @@
 //: Take charge of the text-mode display and keyboard.
 
+// uncomment to debug console programs
+:(before "End Globals")
+//? ofstream LOG("log.txt");
+
 //:: Display management
 
 :(before "End Globals")
@@ -166,13 +170,18 @@ WAIT_FOR_KEY_FROM_KEYBOARD,
 Recipe_number["wait-for-key-from-keyboard"] = WAIT_FOR_KEY_FROM_KEYBOARD;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_KEY_FROM_KEYBOARD: {
+//? LOG << "AAA\n";  LOG.flush();
   struct tb_event event;
   do {
     tb_poll_event(&event);
   } while (event.type != TB_EVENT_KEY);
+//? LOG << "AAA 2\n";  LOG.flush();
   vector<long long int> result;
   result.push_back(event.ch);
-  write_memory(current_instruction().products[0], result);
+//? LOG << "AAA 3\n";  LOG.flush();
+  if (!current_instruction().products.empty())
+    write_memory(current_instruction().products[0], result);
+//? LOG << "AAA 9\n";  LOG.flush();
   break;
 }
 
