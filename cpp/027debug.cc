@@ -11,7 +11,7 @@ case _PRINT: {
     cout << current_instruction().ingredients[0].name;
     break;
   }
-  vector<int> result(read_memory(current_instruction().ingredients[0]));
+  vector<long long int> result(read_memory(current_instruction().ingredients[0]));
   for (index_t i = 0; i < result.size(); ++i) {
     trace("run") << "$print: " << result[i];
     if (i > 0) cout << " ";

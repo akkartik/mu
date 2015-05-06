@@ -90,13 +90,13 @@ Recipe_number["maybe-convert"] = MAYBE_CONVERT;
 case MAYBE_CONVERT: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
   reagent base = canonize(current_instruction().ingredients[0]);
-  int base_address = base.value;
-  int base_type = base.types[0];
+  index_t base_address = base.value;
+  type_number base_type = base.types[0];
   assert(Type[base_type].kind == exclusive_container);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
   assert(isa_literal(current_instruction().ingredients[1]));
   index_t tag = current_instruction().ingredients[1].value;
-  vector<int> result;
+  vector<long long int> result;
   if (tag == static_cast<index_t>(Memory[base_address])) {
     result.push_back(base_address+1);
   }

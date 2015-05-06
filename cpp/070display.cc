@@ -58,7 +58,7 @@ PRINT_CHARACTER_TO_DISPLAY,
 Recipe_number["print-character-to-display"] = PRINT_CHARACTER_TO_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case PRINT_CHARACTER_TO_DISPLAY: {
-  vector<int> arg = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg = read_memory(current_instruction().ingredients[0]);
   int h=tb_height(), w=tb_width();
   size_t height = (h >= 0) ? h : 0;
   size_t width = (w >= 0) ? w : 0;
@@ -86,10 +86,10 @@ CURSOR_POSITION_ON_DISPLAY,
 Recipe_number["cursor-position-on-display"] = CURSOR_POSITION_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case CURSOR_POSITION_ON_DISPLAY: {
-  vector<int> row;
+  vector<long long int> row;
   row.push_back(Display_row);
   write_memory(current_instruction().products[0], row);
-  vector<int> column;
+  vector<long long int> column;
   column.push_back(Display_column);
   write_memory(current_instruction().products[1], column);
   break;
@@ -101,8 +101,8 @@ MOVE_CURSOR_ON_DISPLAY,
 Recipe_number["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_ON_DISPLAY: {
-  vector<int> row = read_memory(current_instruction().ingredients[0]);
-  vector<int> column = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> row = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> column = read_memory(current_instruction().ingredients[1]);
   Display_row = row[0];
   Display_column = column[0];
   tb_set_cursor(Display_column, Display_row);
@@ -170,7 +170,7 @@ case WAIT_FOR_KEY_FROM_KEYBOARD: {
   do {
     tb_poll_event(&event);
   } while (event.type != TB_EVENT_KEY);
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(event.ch);
   write_memory(current_instruction().products[0], result);
   break;
@@ -184,8 +184,8 @@ Recipe_number["read-key-from-keyboard"] = READ_KEY_FROM_KEYBOARD;
 case READ_KEY_FROM_KEYBOARD: {
   struct tb_event event;
   int event_type = tb_peek_event(&event, 5/*ms*/);
-  vector<int> result;
-  vector<int> found;
+  vector<long long int> result;
+  vector<long long int> found;
   if (event_type != TB_EVENT_KEY) {
     result.push_back(0);
     found.push_back(false);

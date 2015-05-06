@@ -83,25 +83,25 @@ Recipe_number["get"] = GET;
 case GET: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
   reagent base = current_instruction().ingredients[0];
-  int base_address = base.value;
-  int base_type = base.types[0];
+  index_t base_address = base.value;
+  type_number base_type = base.types[0];
   assert(Type[base_type].kind == container);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
   assert(isa_literal(current_instruction().ingredients[1]));
   index_t offset = current_instruction().ingredients[1].value;
-  int src = base_address;
+  index_t src = base_address;
   for (index_t i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements[i]);
   }
   trace("run") << "address to copy is " << src;
   assert(Type[base_type].kind == container);
   assert(Type[base_type].elements.size() > offset);
-  int src_type = Type[base_type].elements[offset][0];
+  type_number src_type = Type[base_type].elements[offset][0];
   trace("run") << "its type is " << src_type;
   reagent tmp;
   tmp.set_value(src);
   tmp.types.push_back(src_type);
-  vector<int> result(read_memory(tmp));
+  vector<long long int> result(read_memory(tmp));
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);
   break;
@@ -150,18 +150,18 @@ Recipe_number["get-address"] = GET_ADDRESS;
 case GET_ADDRESS: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
   reagent base = current_instruction().ingredients[0];
-  int base_address = base.value;
-  int base_type = base.types[0];
+  index_t base_address = base.value;
+  type_number base_type = base.types[0];
   assert(Type[base_type].kind == container);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
   assert(isa_literal(current_instruction().ingredients[1]));
   index_t offset = current_instruction().ingredients[1].value;
-  int src = base_address;
+  index_t src = base_address;
   for (index_t i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements[i]);
   }
   trace("run") << "address to copy is " << src;
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(src);
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);

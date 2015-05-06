@@ -25,23 +25,23 @@ recipe main [
 //: lifetime, surrounding allows managing shorter lifetimes inside a longer
 //: one.
 
-:(replace{} "int space_base(const reagent& x)")
-int space_base(const reagent& x) {
+:(replace{} "index_t space_base(const reagent& x)")
+index_t space_base(const reagent& x) {
   return space_base(x, space_index(x), Current_routine->calls.top().default_space);
 }
 
-int space_base(const reagent& x, int space_index, int base) {
+index_t space_base(const reagent& x, index_t space_index, index_t base) {
 //?   trace("foo") << "base of space " << space_index << '\n'; //? 1
   if (space_index == 0) {
 //?     trace("foo") << "base of space " << space_index << " is " << base << '\n'; //? 1
     return base;
   }
 //?   trace("foo") << "base of space " << space_index << " is " << Memory[base+1] << '\n'; //? 1
-  int result = space_base(x, space_index-1, Memory[base+1]);
+  index_t result = space_base(x, space_index-1, Memory[base+1]);
   return result;
 }
 
-int space_index(const reagent& x) {
+index_t space_index(const reagent& x) {
   for (index_t i = 0; i < x.properties.size(); ++i) {
     if (x.properties[i].first == "space")
       return to_int(x.properties[i].second[0]);

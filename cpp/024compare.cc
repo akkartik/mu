@@ -7,10 +7,10 @@ Recipe_number["equal"] = EQUAL;
 :(before "End Primitive Recipe Implementations")
 case EQUAL: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<int> arg1 = read_memory(current_instruction().ingredients[1]);
-  vector<int> result;
+  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> result;
   result.push_back(equal(arg0.begin(), arg0.end(), arg1.begin()));
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);
@@ -52,12 +52,12 @@ Recipe_number["greater-than"] = GREATER_THAN;
 :(before "End Primitive Recipe Implementations")
 case GREATER_THAN: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<int> arg1 = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
   assert(arg1.size() == 1);
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(arg0[0] > arg1[0]);
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);
@@ -99,12 +99,12 @@ Recipe_number["lesser-than"] = LESSER_THAN;
 :(before "End Primitive Recipe Implementations")
 case LESSER_THAN: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<int> arg1 = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
   assert(arg1.size() == 1);
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(arg0[0] < arg1[0]);
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);
@@ -146,12 +146,12 @@ Recipe_number["greater-or-equal"] = GREATER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case GREATER_OR_EQUAL: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<int> arg1 = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
   assert(arg1.size() == 1);
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(arg0[0] >= arg1[0]);
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);
@@ -207,12 +207,12 @@ Recipe_number["lesser-or-equal"] = LESSER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case LESSER_OR_EQUAL: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<int> arg1 = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
   assert(arg1.size() == 1);
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(arg0[0] <= arg1[0]);
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);

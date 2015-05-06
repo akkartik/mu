@@ -23,7 +23,7 @@ recipe f [
 +mem: storing 0 in location 12
 
 :(before "End call Fields")
-vector<vector<int> > ingredient_atoms;
+vector<vector<long long int> > ingredient_atoms;
 index_t next_ingredient_to_process;
 :(replace{} "call(recipe_number r)")
 call(recipe_number r) :running_recipe(r), running_step_index(0), next_ingredient_to_process(0) {}
@@ -47,7 +47,7 @@ case NEXT_INGREDIENT: {
     write_memory(current_instruction().products[0],
         Current_routine->calls.top().ingredient_atoms[Current_routine->calls.top().next_ingredient_to_process]);
     if (current_instruction().products.size() > 1) {
-      vector<int> ingredient_exists;
+      vector<long long int> ingredient_exists;
       ingredient_exists.push_back(1);
       write_memory(current_instruction().products[1], ingredient_exists);
     }
@@ -55,7 +55,7 @@ case NEXT_INGREDIENT: {
   }
   else {
     if (current_instruction().products.size() > 1) {
-      vector<int> no_ingredient;
+      vector<long long int> no_ingredient;
       no_ingredient.push_back(0);
       write_memory(current_instruction().products[1], no_ingredient);
     }
@@ -112,7 +112,7 @@ case INGREDIENT: {
     write_memory(current_instruction().products[0],
         Current_routine->calls.top().ingredient_atoms[Current_routine->calls.top().next_ingredient_to_process]);
     if (current_instruction().products.size() > 1) {
-      vector<int> ingredient_exists;
+      vector<long long int> ingredient_exists;
       ingredient_exists.push_back(1);
       write_memory(current_instruction().products[1], ingredient_exists);
     }
@@ -120,7 +120,7 @@ case INGREDIENT: {
   }
   else {
     if (current_instruction().products.size() > 1) {
-      vector<int> no_ingredient;
+      vector<long long int> no_ingredient;
       no_ingredient.push_back(0);
       write_memory(current_instruction().products[1], no_ingredient);
     }

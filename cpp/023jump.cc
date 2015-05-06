@@ -39,7 +39,7 @@ JUMP_IF,
 Recipe_number["jump-if"] = JUMP_IF;
 :(before "End Primitive Recipe Implementations")
 case JUMP_IF: {
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 0 is " << arg0[0];
   if (!arg0[0]) {
@@ -79,7 +79,7 @@ JUMP_UNLESS,
 Recipe_number["jump-unless"] = JUMP_UNLESS;
 :(before "End Primitive Recipe Implementations")
 case JUMP_UNLESS: {
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 0 is " << arg0[0];
   if (arg0[0]) {
