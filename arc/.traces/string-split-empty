@@ -1,0 +1,52 @@
+c{0: 0 (((1 string-address)) <- ((new)) ) -- nil
+c{0: 1 (((2 string-address-array-address)) <- ((split)) ((1 string-address)) ((/ literal))) -- nil
+c{1: 0 ✓ (((1 string-address)) <- ((new)) )
+c{1: 1 ✓ (((2 string-address-array-address)) <- ((split)) ((1 string-address)) ((/ literal)))
+cn0: convert-names in main
+cn0: (((1 string-address)) <- ((new)) ) nil nil
+cn0: checking arg 
+cn0: checking oarg ((1 string-address))
+maybe-add: ((1 string-address))
+cn0: (((2 string-address-array-address)) <- ((split)) ((1 string-address)) ((/ literal))) nil nil
+cn0: checking arg ((1 string-address))
+maybe-add: ((1 string-address))
+cn0: checking arg ((/ literal))
+cn0: checking oarg ((2 string-address-array-address))
+maybe-add: ((2 string-address-array-address))
+cn1: (((1 string-address)) <- ((new)) )
+cn1: (((2 string-address-array-address)) <- ((split)) ((1 string-address)) ((/ literal)))
+schedule: main
+run: main 0: (((1 string-address)) <- ((new)) )
+run: main 0: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1 <= 1000
+run: main 1: (((2 string-address-array-address)) <- ((split)) ((1 string-address)) ((/ literal)))
+mem: ((1 string-address)) => 1000
+run: split/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: split/main 0: 1001 => ((default-space space-address))
+run: split/main 1: (((1 string-address)) <- ((next-input)))
+arg: nil 0 (1000 #\/)
+run: split/main 1: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1003 <= 1000
+run: split/main 2: (((2 character)) <- ((next-input)))
+arg: nil 1 (1000 #\/)
+run: split/main 2: #\/ => ((2 character))
+mem: ((2 character)): 1004 <= #\/
+run: split/main 3: (((3 integer)) <- ((length)) ((1 string-address) (deref)))
+array-len: ((1 string-address) (deref))
+mem: ((1000 integer) (raw)) => 0
+run: split/main 3: 0 => ((3 integer))
+mem: ((3 integer)): 1005 <= 0
+run: split/main 4: (((4 boolean)) <- ((equal)) ((3 integer)) ((0 literal)))
+mem: ((3 integer)) => 0
+run: split/main 4: t => ((4 boolean))
+mem: ((4 boolean)): 1006 <= t
+run: split/main 5: (((jump-unless)) ((4 boolean)) ((2 offset)))
+mem: ((4 boolean)) => t
+run: split/main 6: (((5 string-address-array-address)) <- ((new)) ((string-address-array literal)) ((0 literal)))
+run: split/main 6: 1032 => ((5 string-address-array-address))
+mem: ((5 string-address-array-address)): 1007 <= 1032
+run: split/main 7: (((reply)) ((5 string-address-array-address)))
+mem: ((5 string-address-array-address)) => 1032
+run: main 1: 1032 => ((2 string-address-array-address))
+mem: ((2 string-address-array-address)): 2 <= 1032
+schedule: done with routine nil

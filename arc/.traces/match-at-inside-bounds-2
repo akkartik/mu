@@ -1,0 +1,107 @@
+c{0: 0 (((1 string-address)) <- ((new)) abc) -- nil
+c{0: 1 (((2 string-address)) <- ((new)) bc) -- nil
+c{0: 2 (((3 boolean)) <- ((match-at)) ((1 string-address)) ((2 string-address)) ((0 literal))) -- nil
+c{1: 0 ✓ (((1 string-address)) <- ((new)) abc)
+c{1: 1 ✓ (((2 string-address)) <- ((new)) bc)
+c{1: 2 ✓ (((3 boolean)) <- ((match-at)) ((1 string-address)) ((2 string-address)) ((0 literal)))
+cn0: convert-names in main
+cn0: (((1 string-address)) <- ((new)) abc) nil nil
+cn0: checking arg abc
+cn0: checking oarg ((1 string-address))
+maybe-add: ((1 string-address))
+cn0: (((2 string-address)) <- ((new)) bc) nil nil
+cn0: checking arg bc
+cn0: checking oarg ((2 string-address))
+maybe-add: ((2 string-address))
+cn0: (((3 boolean)) <- ((match-at)) ((1 string-address)) ((2 string-address)) ((0 literal))) nil nil
+cn0: checking arg ((1 string-address))
+maybe-add: ((1 string-address))
+cn0: checking arg ((2 string-address))
+maybe-add: ((2 string-address))
+cn0: checking arg ((0 literal))
+cn0: checking oarg ((3 boolean))
+maybe-add: ((3 boolean))
+cn1: (((1 string-address)) <- ((new)) abc)
+cn1: (((2 string-address)) <- ((new)) bc)
+cn1: (((3 boolean)) <- ((match-at)) ((1 string-address)) ((2 string-address)) ((0 literal)))
+schedule: main
+run: main 0: (((1 string-address)) <- ((new)) abc)
+run: main 0: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1 <= 1000
+run: main 1: (((2 string-address)) <- ((new)) bc)
+run: main 1: 1004 => ((2 string-address))
+mem: ((2 string-address)): 2 <= 1004
+run: main 2: (((3 boolean)) <- ((match-at)) ((1 string-address)) ((2 string-address)) ((0 literal)))
+mem: ((1 string-address)) => 1000
+mem: ((2 string-address)) => 1004
+run: match-at/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: match-at/main 0: 1007 => ((default-space space-address))
+run: match-at/main 1: (((1 string-address)) <- ((next-input)))
+arg: nil 0 (1000 1004 0)
+run: match-at/main 1: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1009 <= 1000
+run: match-at/main 2: (((2 string-address)) <- ((next-input)))
+arg: nil 1 (1000 1004 0)
+run: match-at/main 2: 1004 => ((2 string-address))
+mem: ((2 string-address)): 1010 <= 1004
+run: match-at/main 3: (((3 integer)) <- ((next-input)))
+arg: nil 2 (1000 1004 0)
+run: match-at/main 3: 0 => ((3 integer))
+mem: ((3 integer)): 1011 <= 0
+run: match-at/main 4: (((4 integer)) <- ((length)) ((2 string-address) (deref)))
+array-len: ((2 string-address) (deref))
+mem: ((1004 integer) (raw)) => 2
+run: match-at/main 4: 2 => ((4 integer))
+mem: ((4 integer)): 1012 <= 2
+run: match-at/main 5: (((5 integer)) <- ((length)) ((1 string-address) (deref)))
+array-len: ((1 string-address) (deref))
+mem: ((1000 integer) (raw)) => 3
+run: match-at/main 5: 3 => ((5 integer))
+mem: ((5 integer)): 1013 <= 3
+run: match-at/main 6: (((5 integer)) <- ((subtract)) ((5 integer)) ((4 integer)))
+mem: ((5 integer)) => 3
+mem: ((4 integer)) => 2
+run: match-at/main 6: 1 => ((5 integer))
+mem: ((5 integer)): 1013 <= 1
+run: match-at/main 7: (((6 boolean)) <- ((lesser-or-equal)) ((3 integer)) ((5 integer)))
+mem: ((3 integer)) => 0
+mem: ((5 integer)) => 1
+run: match-at/main 7: t => ((6 boolean))
+mem: ((6 boolean)): 1014 <= t
+run: match-at/main 8: (((jump-if)) ((6 boolean)) ((1 offset)))
+mem: ((6 boolean)) => t
+run: match-at/main 10: (((7 integer)) <- ((copy)) ((0 literal)))
+run: match-at/main 10: 0 => ((7 integer))
+mem: ((7 integer)): 1015 <= 0
+run: match-at/main 11: (((8 boolean)) <- ((greater-or-equal)) ((7 integer)) ((4 integer)))
+mem: ((7 integer)) => 0
+mem: ((4 integer)) => 2
+run: match-at/main 11: nil => ((8 boolean))
+mem: ((8 boolean)): 1016 <= nil
+run: match-at/main 12: (((jump-if)) ((8 boolean)) ((8 offset)))
+mem: ((8 boolean)) => nil
+run: match-at/main 13: (((9 character)) <- ((index)) ((1 string-address) (deref)) ((3 integer)))
+mem: ((3 integer)) => 0
+array-len: ((1000 string) (raw))
+mem: ((1000 integer) (raw)) => 3
+mem: ((1001 byte) (raw)) => a
+run: match-at/main 13: #\a => ((9 character))
+mem: ((9 character)): 1017 <= #\a
+run: match-at/main 14: (((10 character)) <- ((index)) ((2 string-address) (deref)) ((7 integer)))
+mem: ((7 integer)) => 0
+array-len: ((1004 string) (raw))
+mem: ((1004 integer) (raw)) => 2
+mem: ((1005 byte) (raw)) => b
+run: match-at/main 14: #\b => ((10 character))
+mem: ((10 character)): 1018 <= #\b
+run: match-at/main 15: (((11 boolean)) <- ((equal)) ((9 character)) ((10 character)))
+mem: ((9 character)) => a
+mem: ((10 character)) => b
+run: match-at/main 15: nil => ((11 boolean))
+mem: ((11 boolean)): 1019 <= nil
+run: match-at/main 16: (((jump-if)) ((11 boolean)) ((1 offset)))
+mem: ((11 boolean)) => nil
+run: match-at/main 17: (((reply)) ((nil literal)))
+run: main 2: nil => ((3 boolean))
+mem: ((3 boolean)): 3 <= nil
+schedule: done with routine nil

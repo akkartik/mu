@@ -1,0 +1,344 @@
+c{0: 0 (((1 string-address)) <- ((new)) a/b) -- nil
+c{0: 1 (((2 string-address)) ((3 string-address)) <- ((split-first)) ((1 string-address)) ((/ literal))) -- nil
+c{1: 0 ✓ (((1 string-address)) <- ((new)) a/b)
+c{1: 1 ✓ (((2 string-address)) ((3 string-address)) <- ((split-first)) ((1 string-address)) ((/ literal)))
+cn0: convert-names in main
+cn0: (((1 string-address)) <- ((new)) a/b) nil nil
+cn0: checking arg a/b
+cn0: checking oarg ((1 string-address))
+maybe-add: ((1 string-address))
+cn0: (((2 string-address)) ((3 string-address)) <- ((split-first)) ((1 string-address)) ((/ literal))) nil nil
+cn0: checking arg ((1 string-address))
+maybe-add: ((1 string-address))
+cn0: checking arg ((/ literal))
+cn0: checking oarg ((2 string-address))
+maybe-add: ((2 string-address))
+cn0: checking oarg ((3 string-address))
+maybe-add: ((3 string-address))
+cn1: (((1 string-address)) <- ((new)) a/b)
+cn1: (((2 string-address)) ((3 string-address)) <- ((split-first)) ((1 string-address)) ((/ literal)))
+schedule: main
+run: main 0: (((1 string-address)) <- ((new)) a/b)
+run: main 0: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1 <= 1000
+run: main 1: (((2 string-address)) ((3 string-address)) <- ((split-first)) ((1 string-address)) ((/ literal)))
+mem: ((1 string-address)) => 1000
+run: split-first/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: split-first/main 0: 1004 => ((default-space space-address))
+run: split-first/main 1: (((1 string-address)) <- ((next-input)))
+arg: nil 0 (1000 #\/)
+run: split-first/main 1: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1006 <= 1000
+run: split-first/main 2: (((2 character)) <- ((next-input)))
+arg: nil 1 (1000 #\/)
+run: split-first/main 2: #\/ => ((2 character))
+mem: ((2 character)): 1007 <= #\/
+run: split-first/main 3: (((3 integer)) <- ((length)) ((1 string-address) (deref)))
+array-len: ((1 string-address) (deref))
+mem: ((1000 integer) (raw)) => 3
+run: split-first/main 3: 3 => ((3 integer))
+mem: ((3 integer)): 1008 <= 3
+run: split-first/main 4: (((4 boolean)) <- ((equal)) ((3 integer)) ((0 literal)))
+mem: ((3 integer)) => 3
+run: split-first/main 4: nil => ((4 boolean))
+mem: ((4 boolean)): 1009 <= nil
+run: split-first/main 5: (((jump-unless)) ((4 boolean)) ((3 offset)))
+mem: ((4 boolean)) => nil
+run: split-first/main 9: (((7 integer)) <- ((find-next)) ((1 string-address)) ((2 character)) ((0 literal)))
+mem: ((1 string-address)) => 1000
+mem: ((2 character)) => /
+run: find-next/split-first/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: find-next/split-first/main 0: 1035 => ((default-space space-address))
+run: find-next/split-first/main 1: (((1 string-address)) <- ((next-input)))
+arg: nil 0 (1000 #\/ 0)
+run: find-next/split-first/main 1: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1037 <= 1000
+run: find-next/split-first/main 2: (((2 character)) <- ((next-input)))
+arg: nil 1 (1000 #\/ 0)
+run: find-next/split-first/main 2: #\/ => ((2 character))
+mem: ((2 character)): 1038 <= #\/
+run: find-next/split-first/main 3: (((3 integer)) <- ((next-input)))
+arg: nil 2 (1000 #\/ 0)
+run: find-next/split-first/main 3: 0 => ((3 integer))
+mem: ((3 integer)): 1039 <= 0
+run: find-next/split-first/main 4: (((4 integer)) <- ((length)) ((1 string-address) (deref)))
+array-len: ((1 string-address) (deref))
+mem: ((1000 integer) (raw)) => 3
+run: find-next/split-first/main 4: 3 => ((4 integer))
+mem: ((4 integer)): 1040 <= 3
+run: find-next/split-first/main 5: (((5 boolean)) <- ((greater-or-equal)) ((3 integer)) ((4 integer)))
+mem: ((3 integer)) => 0
+mem: ((4 integer)) => 3
+run: find-next/split-first/main 5: nil => ((5 boolean))
+mem: ((5 boolean)): 1041 <= nil
+run: find-next/split-first/main 6: (((jump-if)) ((5 boolean)) ((5 offset)))
+mem: ((5 boolean)) => nil
+run: find-next/split-first/main 7: (((6 byte)) <- ((index)) ((1 string-address) (deref)) ((3 integer)))
+mem: ((3 integer)) => 0
+array-len: ((1000 string) (raw))
+mem: ((1000 integer) (raw)) => 3
+mem: ((1001 byte) (raw)) => a
+run: find-next/split-first/main 7: #\a => ((6 byte))
+mem: ((6 byte)): 1042 <= #\a
+run: find-next/split-first/main 8: (((7 boolean)) <- ((equal)) ((6 byte)) ((2 character)))
+mem: ((6 byte)) => a
+mem: ((2 character)) => /
+run: find-next/split-first/main 8: nil => ((7 boolean))
+mem: ((7 boolean)): 1043 <= nil
+run: find-next/split-first/main 9: (((jump-if)) ((7 boolean)) ((2 offset)))
+mem: ((7 boolean)) => nil
+run: find-next/split-first/main 10: (((3 integer)) <- ((add)) ((3 integer)) ((1 literal)))
+mem: ((3 integer)) => 0
+run: find-next/split-first/main 10: 1 => ((3 integer))
+mem: ((3 integer)): 1039 <= 1
+run: find-next/split-first/main 11: (((jump)) ((-7 offset)))
+run: find-next/split-first/main 5: (((5 boolean)) <- ((greater-or-equal)) ((3 integer)) ((4 integer)))
+mem: ((3 integer)) => 1
+mem: ((4 integer)) => 3
+run: find-next/split-first/main 5: nil => ((5 boolean))
+mem: ((5 boolean)): 1041 <= nil
+run: find-next/split-first/main 6: (((jump-if)) ((5 boolean)) ((5 offset)))
+mem: ((5 boolean)) => nil
+run: find-next/split-first/main 7: (((6 byte)) <- ((index)) ((1 string-address) (deref)) ((3 integer)))
+mem: ((3 integer)) => 1
+array-len: ((1000 string) (raw))
+mem: ((1000 integer) (raw)) => 3
+mem: ((1002 byte) (raw)) => /
+run: find-next/split-first/main 7: #\/ => ((6 byte))
+mem: ((6 byte)): 1042 <= #\/
+run: find-next/split-first/main 8: (((7 boolean)) <- ((equal)) ((6 byte)) ((2 character)))
+mem: ((6 byte)) => /
+mem: ((2 character)) => /
+run: find-next/split-first/main 8: t => ((7 boolean))
+mem: ((7 boolean)): 1043 <= t
+run: find-next/split-first/main 9: (((jump-if)) ((7 boolean)) ((2 offset)))
+mem: ((7 boolean)) => t
+run: find-next/split-first/main 12: (((reply)) ((3 integer)))
+mem: ((3 integer)) => 1
+run: split-first/main 9: 1 => ((7 integer))
+mem: ((7 integer)): 1012 <= 1
+run: split-first/main 10: (((5 string-address)) <- ((string-copy)) ((1 string-address)) ((0 literal)) ((7 integer)))
+mem: ((1 string-address)) => 1000
+mem: ((7 integer)) => 1
+run: string-copy/split-first/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: string-copy/split-first/main 0: 1066 => ((default-space space-address))
+run: string-copy/split-first/main 1: (((1 string-address)) <- ((next-input)))
+arg: nil 0 (1000 0 1)
+run: string-copy/split-first/main 1: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1068 <= 1000
+run: string-copy/split-first/main 2: (((2 integer)) <- ((next-input)))
+arg: nil 1 (1000 0 1)
+run: string-copy/split-first/main 2: 0 => ((2 integer))
+mem: ((2 integer)): 1069 <= 0
+run: string-copy/split-first/main 3: (((3 integer)) <- ((next-input)))
+arg: nil 2 (1000 0 1)
+run: string-copy/split-first/main 3: 1 => ((3 integer))
+mem: ((3 integer)): 1070 <= 1
+run: string-copy/split-first/main 4: (((4 integer)) <- ((length)) ((1 string-address) (deref)))
+array-len: ((1 string-address) (deref))
+mem: ((1000 integer) (raw)) => 3
+run: string-copy/split-first/main 4: 3 => ((4 integer))
+mem: ((4 integer)): 1071 <= 3
+run: string-copy/split-first/main 5: (((3 integer)) <- ((min)) ((4 integer)) ((3 integer)))
+mem: ((4 integer)) => 3
+mem: ((3 integer)) => 1
+run: min/string-copy/split-first/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: min/string-copy/split-first/main 0: 1097 => ((default-space space-address))
+run: min/string-copy/split-first/main 1: (((1 integer)) <- ((next-input)))
+arg: nil 0 (3 1)
+run: min/string-copy/split-first/main 1: 3 => ((1 integer))
+mem: ((1 integer)): 1099 <= 3
+run: min/string-copy/split-first/main 2: (((2 integer)) <- ((next-input)))
+arg: nil 1 (3 1)
+run: min/string-copy/split-first/main 2: 1 => ((2 integer))
+mem: ((2 integer)): 1100 <= 1
+run: min/string-copy/split-first/main 3: (((3 boolean)) <- ((less-than)) ((1 integer)) ((2 integer)))
+mem: ((1 integer)) => 3
+mem: ((2 integer)) => 1
+run: min/string-copy/split-first/main 3: nil => ((3 boolean))
+mem: ((3 boolean)): 1101 <= nil
+run: min/string-copy/split-first/main 4: (((jump-if)) ((3 boolean)) ((1 offset)))
+mem: ((3 boolean)) => nil
+run: min/string-copy/split-first/main 5: (((reply)) ((2 integer)))
+mem: ((2 integer)) => 1
+run: string-copy/split-first/main 5: 1 => ((3 integer))
+mem: ((3 integer)): 1070 <= 1
+run: string-copy/split-first/main 6: (((4 integer)) <- ((subtract)) ((3 integer)) ((2 integer)))
+mem: ((3 integer)) => 1
+mem: ((2 integer)) => 0
+run: string-copy/split-first/main 6: 1 => ((4 integer))
+mem: ((4 integer)): 1071 <= 1
+run: string-copy/split-first/main 7: (((5 string-address)) <- ((new)) ((string literal)) ((4 integer)))
+mem: ((4 integer)) => 1
+run: string-copy/split-first/main 7: 1128 => ((5 string-address))
+mem: ((5 string-address)): 1072 <= 1128
+run: string-copy/split-first/main 8: (((6 integer)) <- ((copy)) ((2 integer)))
+mem: ((2 integer)) => 0
+run: string-copy/split-first/main 8: 0 => ((6 integer))
+mem: ((6 integer)): 1073 <= 0
+run: string-copy/split-first/main 9: (((7 integer)) <- ((copy)) ((0 literal)))
+run: string-copy/split-first/main 9: 0 => ((7 integer))
+mem: ((7 integer)): 1074 <= 0
+run: string-copy/split-first/main 10: (((8 boolean)) <- ((greater-or-equal)) ((6 integer)) ((3 integer)))
+mem: ((6 integer)) => 0
+mem: ((3 integer)) => 1
+run: string-copy/split-first/main 10: nil => ((8 boolean))
+mem: ((8 boolean)): 1075 <= nil
+run: string-copy/split-first/main 11: (((jump-if)) ((8 boolean)) ((6 offset)))
+mem: ((8 boolean)) => nil
+run: string-copy/split-first/main 12: (((9 character)) <- ((index)) ((1 string-address) (deref)) ((6 integer)))
+mem: ((6 integer)) => 0
+array-len: ((1000 string) (raw))
+mem: ((1000 integer) (raw)) => 3
+mem: ((1001 byte) (raw)) => a
+run: string-copy/split-first/main 12: #\a => ((9 character))
+mem: ((9 character)): 1076 <= #\a
+run: string-copy/split-first/main 13: (((10 character-address)) <- ((index-address)) ((5 string-address) (deref)) ((7 integer)))
+mem: ((7 integer)) => 0
+array-len: ((1128 string) (raw))
+mem: ((1128 integer) (raw)) => 1
+run: string-copy/split-first/main 13: 1129 => ((10 character-address))
+mem: ((10 character-address)): 1077 <= 1129
+run: string-copy/split-first/main 14: (((10 character-address) (deref)) <- ((copy)) ((9 character)))
+mem: ((9 character)) => a
+run: string-copy/split-first/main 14: #\a => ((10 character-address) (deref))
+mem: ((10 character-address) (deref)): 1129 <= #\a
+run: string-copy/split-first/main 15: (((6 integer)) <- ((add)) ((6 integer)) ((1 literal)))
+mem: ((6 integer)) => 0
+run: string-copy/split-first/main 15: 1 => ((6 integer))
+mem: ((6 integer)): 1073 <= 1
+run: string-copy/split-first/main 16: (((7 integer)) <- ((add)) ((7 integer)) ((1 literal)))
+mem: ((7 integer)) => 0
+run: string-copy/split-first/main 16: 1 => ((7 integer))
+mem: ((7 integer)): 1074 <= 1
+run: string-copy/split-first/main 17: (((jump)) ((-8 offset)))
+run: string-copy/split-first/main 10: (((8 boolean)) <- ((greater-or-equal)) ((6 integer)) ((3 integer)))
+mem: ((6 integer)) => 1
+mem: ((3 integer)) => 1
+run: string-copy/split-first/main 10: t => ((8 boolean))
+mem: ((8 boolean)): 1075 <= t
+run: string-copy/split-first/main 11: (((jump-if)) ((8 boolean)) ((6 offset)))
+mem: ((8 boolean)) => t
+run: string-copy/split-first/main 18: (((reply)) ((5 string-address)))
+mem: ((5 string-address)) => 1128
+run: split-first/main 10: 1128 => ((5 string-address))
+mem: ((5 string-address)): 1010 <= 1128
+run: split-first/main 11: (((7 integer)) <- ((add)) ((7 integer)) ((1 literal)))
+mem: ((7 integer)) => 1
+run: split-first/main 11: 2 => ((7 integer))
+mem: ((7 integer)): 1012 <= 2
+run: split-first/main 12: (((6 string-address)) <- ((string-copy)) ((1 string-address)) ((7 integer)) ((3 integer)))
+mem: ((1 string-address)) => 1000
+mem: ((7 integer)) => 2
+mem: ((3 integer)) => 3
+run: string-copy/split-first/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: string-copy/split-first/main 0: 1130 => ((default-space space-address))
+run: string-copy/split-first/main 1: (((1 string-address)) <- ((next-input)))
+arg: nil 0 (1000 2 3)
+run: string-copy/split-first/main 1: 1000 => ((1 string-address))
+mem: ((1 string-address)): 1132 <= 1000
+run: string-copy/split-first/main 2: (((2 integer)) <- ((next-input)))
+arg: nil 1 (1000 2 3)
+run: string-copy/split-first/main 2: 2 => ((2 integer))
+mem: ((2 integer)): 1133 <= 2
+run: string-copy/split-first/main 3: (((3 integer)) <- ((next-input)))
+arg: nil 2 (1000 2 3)
+run: string-copy/split-first/main 3: 3 => ((3 integer))
+mem: ((3 integer)): 1134 <= 3
+run: string-copy/split-first/main 4: (((4 integer)) <- ((length)) ((1 string-address) (deref)))
+array-len: ((1 string-address) (deref))
+mem: ((1000 integer) (raw)) => 3
+run: string-copy/split-first/main 4: 3 => ((4 integer))
+mem: ((4 integer)): 1135 <= 3
+run: string-copy/split-first/main 5: (((3 integer)) <- ((min)) ((4 integer)) ((3 integer)))
+mem: ((4 integer)) => 3
+mem: ((3 integer)) => 3
+run: min/string-copy/split-first/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((30 literal)))
+run: min/string-copy/split-first/main 0: 1161 => ((default-space space-address))
+run: min/string-copy/split-first/main 1: (((1 integer)) <- ((next-input)))
+arg: nil 0 (3 3)
+run: min/string-copy/split-first/main 1: 3 => ((1 integer))
+mem: ((1 integer)): 1163 <= 3
+run: min/string-copy/split-first/main 2: (((2 integer)) <- ((next-input)))
+arg: nil 1 (3 3)
+run: min/string-copy/split-first/main 2: 3 => ((2 integer))
+mem: ((2 integer)): 1164 <= 3
+run: min/string-copy/split-first/main 3: (((3 boolean)) <- ((less-than)) ((1 integer)) ((2 integer)))
+mem: ((1 integer)) => 3
+mem: ((2 integer)) => 3
+run: min/string-copy/split-first/main 3: nil => ((3 boolean))
+mem: ((3 boolean)): 1165 <= nil
+run: min/string-copy/split-first/main 4: (((jump-if)) ((3 boolean)) ((1 offset)))
+mem: ((3 boolean)) => nil
+run: min/string-copy/split-first/main 5: (((reply)) ((2 integer)))
+mem: ((2 integer)) => 3
+run: string-copy/split-first/main 5: 3 => ((3 integer))
+mem: ((3 integer)): 1134 <= 3
+run: string-copy/split-first/main 6: (((4 integer)) <- ((subtract)) ((3 integer)) ((2 integer)))
+mem: ((3 integer)) => 3
+mem: ((2 integer)) => 2
+run: string-copy/split-first/main 6: 1 => ((4 integer))
+mem: ((4 integer)): 1135 <= 1
+run: string-copy/split-first/main 7: (((5 string-address)) <- ((new)) ((string literal)) ((4 integer)))
+mem: ((4 integer)) => 1
+run: string-copy/split-first/main 7: 1192 => ((5 string-address))
+mem: ((5 string-address)): 1136 <= 1192
+run: string-copy/split-first/main 8: (((6 integer)) <- ((copy)) ((2 integer)))
+mem: ((2 integer)) => 2
+run: string-copy/split-first/main 8: 2 => ((6 integer))
+mem: ((6 integer)): 1137 <= 2
+run: string-copy/split-first/main 9: (((7 integer)) <- ((copy)) ((0 literal)))
+run: string-copy/split-first/main 9: 0 => ((7 integer))
+mem: ((7 integer)): 1138 <= 0
+run: string-copy/split-first/main 10: (((8 boolean)) <- ((greater-or-equal)) ((6 integer)) ((3 integer)))
+mem: ((6 integer)) => 2
+mem: ((3 integer)) => 3
+run: string-copy/split-first/main 10: nil => ((8 boolean))
+mem: ((8 boolean)): 1139 <= nil
+run: string-copy/split-first/main 11: (((jump-if)) ((8 boolean)) ((6 offset)))
+mem: ((8 boolean)) => nil
+run: string-copy/split-first/main 12: (((9 character)) <- ((index)) ((1 string-address) (deref)) ((6 integer)))
+mem: ((6 integer)) => 2
+array-len: ((1000 string) (raw))
+mem: ((1000 integer) (raw)) => 3
+mem: ((1003 byte) (raw)) => b
+run: string-copy/split-first/main 12: #\b => ((9 character))
+mem: ((9 character)): 1140 <= #\b
+run: string-copy/split-first/main 13: (((10 character-address)) <- ((index-address)) ((5 string-address) (deref)) ((7 integer)))
+mem: ((7 integer)) => 0
+array-len: ((1192 string) (raw))
+mem: ((1192 integer) (raw)) => 1
+run: string-copy/split-first/main 13: 1193 => ((10 character-address))
+mem: ((10 character-address)): 1141 <= 1193
+run: string-copy/split-first/main 14: (((10 character-address) (deref)) <- ((copy)) ((9 character)))
+mem: ((9 character)) => b
+run: string-copy/split-first/main 14: #\b => ((10 character-address) (deref))
+mem: ((10 character-address) (deref)): 1193 <= #\b
+run: string-copy/split-first/main 15: (((6 integer)) <- ((add)) ((6 integer)) ((1 literal)))
+mem: ((6 integer)) => 2
+run: string-copy/split-first/main 15: 3 => ((6 integer))
+mem: ((6 integer)): 1137 <= 3
+run: string-copy/split-first/main 16: (((7 integer)) <- ((add)) ((7 integer)) ((1 literal)))
+mem: ((7 integer)) => 0
+run: string-copy/split-first/main 16: 1 => ((7 integer))
+mem: ((7 integer)): 1138 <= 1
+run: string-copy/split-first/main 17: (((jump)) ((-8 offset)))
+run: string-copy/split-first/main 10: (((8 boolean)) <- ((greater-or-equal)) ((6 integer)) ((3 integer)))
+mem: ((6 integer)) => 3
+mem: ((3 integer)) => 3
+run: string-copy/split-first/main 10: t => ((8 boolean))
+mem: ((8 boolean)): 1139 <= t
+run: string-copy/split-first/main 11: (((jump-if)) ((8 boolean)) ((6 offset)))
+mem: ((8 boolean)) => t
+run: string-copy/split-first/main 18: (((reply)) ((5 string-address)))
+mem: ((5 string-address)) => 1192
+run: split-first/main 12: 1192 => ((6 string-address))
+mem: ((6 string-address)): 1011 <= 1192
+run: split-first/main 13: (((reply)) ((5 string-address)) ((6 string-address)))
+mem: ((5 string-address)) => 1128
+mem: ((6 string-address)) => 1192
+run: main 1: 1128 => ((2 string-address))
+mem: ((2 string-address)): 2 <= 1128
+run: main 1: 1192 => ((3 string-address))
+mem: ((3 string-address)): 3 <= 1192
+schedule: done with routine nil

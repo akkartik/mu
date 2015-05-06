@@ -1,0 +1,90 @@
+c{0: 0 (((1 integer)) <- ((test1)) ((1 literal)) ((3 literal))) -- nil
+c{1: 0 ✓ (((1 integer)) <- ((test1)) ((1 literal)) ((3 literal)))
+c{0: 0 (((4 type)) <- ((otype)) ((0 offset))) -- nil
+c{0: 1 (((5 boolean)) <- ((equal)) ((4 type)) ((integer literal))) -- ((open 1))
+c{0: 2 (((break-unless)) ((5 boolean))) -- ((open 1))
+c{0: 3 (((6 integer)) <- ((next-input))) -- ((open 1))
+c{0: 4 (((7 integer)) <- ((next-input))) -- ((open 1))
+c{0: 5 (((8 integer)) <- ((add)) ((6 integer)) ((7 integer))) -- ((open 1))
+c{0: 6 (((reply)) ((8 integer))) -- ((close 6) (open 1))
+c{1: 0 ✓ (((4 type)) <- ((otype)) ((0 offset)))
+c{1: 1 ✓ (((5 boolean)) <- ((equal)) ((4 type)) ((integer literal)))
+c{1: 2 X (((break-unless)) ((5 boolean))) => (((jump-unless)) ((5 boolean)) ((3 offset)))
+c{1: 3 ✓ (((6 integer)) <- ((next-input)))
+c{1: 4 ✓ (((7 integer)) <- ((next-input)))
+c{1: 5 ✓ (((8 integer)) <- ((add)) ((6 integer)) ((7 integer)))
+c{1: 6 ✓ (((reply)) ((8 integer)))
+cn0: convert-names in main
+cn0: (((1 integer)) <- ((test1)) ((1 literal)) ((3 literal))) nil nil
+cn0: checking arg ((1 literal))
+cn0: checking arg ((3 literal))
+cn0: checking oarg ((1 integer))
+maybe-add: ((1 integer))
+cn0: convert-names in test1
+cn0: (((4 type)) <- ((otype)) ((0 offset))) nil nil
+cn0: checking arg ((0 offset))
+cn0: checking oarg ((4 type))
+maybe-add: ((4 type))
+cn0: (((5 boolean)) <- ((equal)) ((4 type)) ((integer literal))) nil nil
+cn0: checking arg ((4 type))
+maybe-add: ((4 type))
+cn0: checking arg ((integer literal))
+cn0: checking oarg ((5 boolean))
+maybe-add: ((5 boolean))
+cn0: (((jump-unless)) ((5 boolean)) ((3 offset))) nil nil
+cn0: checking arg ((5 boolean))
+maybe-add: ((5 boolean))
+cn0: checking arg ((3 offset))
+cn0: (((6 integer)) <- ((next-input))) nil nil
+cn0: checking oarg ((6 integer))
+maybe-add: ((6 integer))
+cn0: (((7 integer)) <- ((next-input))) nil nil
+cn0: checking oarg ((7 integer))
+maybe-add: ((7 integer))
+cn0: (((8 integer)) <- ((add)) ((6 integer)) ((7 integer))) nil nil
+cn0: checking arg ((6 integer))
+maybe-add: ((6 integer))
+cn0: checking arg ((7 integer))
+maybe-add: ((7 integer))
+cn0: checking oarg ((8 integer))
+maybe-add: ((8 integer))
+cn0: (((reply)) ((8 integer))) nil nil
+cn0: checking arg ((8 integer))
+maybe-add: ((8 integer))
+cn1: (((1 integer)) <- ((test1)) ((1 literal)) ((3 literal)))
+cn1: (((4 type)) <- ((otype)) ((0 offset)))
+cn1: (((5 boolean)) <- ((equal)) ((4 type)) ((integer literal)))
+cn1: (((jump-unless)) ((5 boolean)) ((3 offset)))
+cn1: (((6 integer)) <- ((next-input)))
+cn1: (((7 integer)) <- ((next-input)))
+cn1: (((8 integer)) <- ((add)) ((6 integer)) ((7 integer)))
+cn1: (((reply)) ((8 integer)))
+schedule: main
+run: main 0: (((1 integer)) <- ((test1)) ((1 literal)) ((3 literal)))
+run: test1/main 0: (((4 type)) <- ((otype)) ((0 offset)))
+run: test1/main 0: integer => ((4 type))
+mem: ((4 type)): 4 <= integer
+run: test1/main 1: (((5 boolean)) <- ((equal)) ((4 type)) ((integer literal)))
+mem: ((4 type)) => integer
+run: test1/main 1: t => ((5 boolean))
+mem: ((5 boolean)): 5 <= t
+run: test1/main 2: (((jump-unless)) ((5 boolean)) ((3 offset)))
+mem: ((5 boolean)) => t
+run: test1/main 3: (((6 integer)) <- ((next-input)))
+arg: nil 0 (1 3)
+run: test1/main 3: 1 => ((6 integer))
+mem: ((6 integer)): 6 <= 1
+run: test1/main 4: (((7 integer)) <- ((next-input)))
+arg: nil 1 (1 3)
+run: test1/main 4: 3 => ((7 integer))
+mem: ((7 integer)): 7 <= 3
+run: test1/main 5: (((8 integer)) <- ((add)) ((6 integer)) ((7 integer)))
+mem: ((6 integer)) => 1
+mem: ((7 integer)) => 3
+run: test1/main 5: 4 => ((8 integer))
+mem: ((8 integer)): 8 <= 4
+run: test1/main 6: (((reply)) ((8 integer)))
+mem: ((8 integer)) => 4
+run: main 0: 4 => ((1 integer))
+mem: ((1 integer)): 1 <= 4
+schedule: done with routine nil

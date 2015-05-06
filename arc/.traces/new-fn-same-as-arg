@@ -1,0 +1,78 @@
+c{0: 0 (((2 integer-address)) <- ((new)) ((integer literal))) -- nil
+c{0: 1 (((2 integer-address) (deref)) <- ((copy)) ((0 literal))) -- nil
+c{0: 2 (((3 integer-address)) <- ((test1)) ((2 integer-address))) -- nil
+c{1: 0 ✓ (((2 integer-address)) <- ((new)) ((integer literal)))
+c{1: 1 ✓ (((2 integer-address) (deref)) <- ((copy)) ((0 literal)))
+c{1: 2 ✓ (((3 integer-address)) <- ((test1)) ((2 integer-address)))
+c{0: 0 (((default-space space-address)) <- ((new)) ((space literal)) ((2 literal))) -- nil
+c{0: 1 (((x integer-address)) <- ((next-input))) -- nil
+c{0: 2 (((x integer-address) (deref)) <- ((add)) ((x integer-address) (deref)) ((1 literal))) -- nil
+c{0: 3 (((reply)) ((x integer-address) (same-as-arg 0))) -- nil
+c{1: 0 ✓ (((default-space space-address)) <- ((new)) ((space literal)) ((2 literal)))
+c{1: 1 ✓ (((x integer-address)) <- ((next-input)))
+c{1: 2 ✓ (((x integer-address) (deref)) <- ((add)) ((x integer-address) (deref)) ((1 literal)))
+c{1: 3 ✓ (((reply)) ((x integer-address) (same-as-arg 0)))
+cn0: convert-names in main
+cn0: (((2 integer-address)) <- ((new)) ((integer literal))) nil nil
+cn0: checking arg ((integer literal))
+cn0: checking oarg ((2 integer-address))
+maybe-add: ((2 integer-address))
+cn0: (((2 integer-address) (deref)) <- ((copy)) ((0 literal))) nil nil
+cn0: checking arg ((0 literal))
+cn0: checking oarg ((2 integer-address) (deref))
+maybe-add: ((2 integer-address) (deref))
+cn0: (((3 integer-address)) <- ((test1)) ((2 integer-address))) nil nil
+cn0: checking arg ((2 integer-address))
+maybe-add: ((2 integer-address))
+cn0: checking oarg ((3 integer-address))
+maybe-add: ((3 integer-address))
+cn0: convert-names in test1
+cn0: (((default-space space-address)) <- ((new)) ((space literal)) ((2 literal))) nil nil
+cn0: checking arg ((space literal))
+cn0: checking arg ((2 literal))
+cn0: checking oarg ((default-space space-address))
+maybe-add: ((default-space space-address))
+cn0: (((x integer-address)) <- ((next-input))) nil nil
+cn0: checking oarg ((x integer-address))
+maybe-add: ((x integer-address))
+cn0: location for oarg ((x integer-address)): 1
+cn0: (((x integer-address) (deref)) <- ((add)) ((x integer-address) (deref)) ((1 literal))) ((x 1)) nil
+cn0: checking arg ((x integer-address) (deref))
+maybe-add: ((x integer-address) (deref))
+cn0: checking arg ((1 literal))
+cn0: checking oarg ((x integer-address) (deref))
+maybe-add: ((x integer-address) (deref))
+cn0: (((reply)) ((x integer-address) (same-as-arg 0))) ((x 1)) nil
+cn0: checking arg ((x integer-address) (same-as-arg 0))
+maybe-add: ((x integer-address) (same-as-arg 0))
+cn1: (((2 integer-address)) <- ((new)) ((integer literal)))
+cn1: (((2 integer-address) (deref)) <- ((copy)) ((0 literal)))
+cn1: (((3 integer-address)) <- ((test1)) ((2 integer-address)))
+cn1: (((default-space space-address)) <- ((new)) ((space literal)) ((2 literal)))
+cn1: (((1 integer-address)) <- ((next-input)))
+cn1: (((1 integer-address) (deref)) <- ((add)) ((1 integer-address) (deref)) ((1 literal)))
+cn1: (((reply)) ((1 integer-address) (same-as-arg 0)))
+schedule: main
+run: main 0: (((2 integer-address)) <- ((new)) ((integer literal)))
+run: main 0: 1000 => ((2 integer-address))
+mem: ((2 integer-address)): 2 <= 1000
+run: main 1: (((2 integer-address) (deref)) <- ((copy)) ((0 literal)))
+run: main 1: 0 => ((2 integer-address) (deref))
+mem: ((2 integer-address) (deref)): 1000 <= 0
+run: main 2: (((3 integer-address)) <- ((test1)) ((2 integer-address)))
+mem: ((2 integer-address)) => 1000
+run: test1/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((2 literal)))
+run: test1/main 0: 1001 => ((default-space space-address))
+run: test1/main 1: (((1 integer-address)) <- ((next-input)))
+arg: nil 0 (1000)
+run: test1/main 1: 1000 => ((1 integer-address))
+mem: ((1 integer-address)): 1003 <= 1000
+run: test1/main 2: (((1 integer-address) (deref)) <- ((add)) ((1 integer-address) (deref)) ((1 literal)))
+mem: ((1 integer-address) (deref)) => 0
+run: test1/main 2: 1 => ((1 integer-address) (deref))
+mem: ((1 integer-address) (deref)): 1000 <= 1
+run: test1/main 3: (((reply)) ((1 integer-address) (same-as-arg 0)))
+mem: ((1 integer-address) (same-as-arg 0)) => 1000
+run: main 2: 1000 => ((3 integer-address))
+-: die: 'same-as-arg' output arg in (((1 integer-address) (same-as-arg 0))) can't bind to (((3 integer-address)))
+schedule: done with dead routine main
