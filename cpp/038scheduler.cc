@@ -90,6 +90,20 @@ for (index_t i = 0; i < Routines.size(); ++i)
   delete Routines[i];
 Routines.clear();
 
+//:: To schedule new routines to run, call 'start-scheduling'.
+
+//: 'start-scheduling' will return a unique id for the routine that was
+//: created.
+:(before "End routine Fields")
+index_t id;
+:(before "End Globals")
+index_t Next_routine_id = 1;
+:(before "End Setup")
+Next_routine_id = 1;
+:(before "End routine Constructor")
+id = Next_routine_id;
+Next_routine_id++;
+
 :(before "End Primitive Recipe Declarations")
 START_RUNNING,
 :(before "End Primitive Recipe Numbers")
@@ -98,7 +112,13 @@ Recipe_number["start-running"] = START_RUNNING;
 case START_RUNNING: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
   assert(!current_instruction().ingredients[0].initialized);
-  Routines.push_back(new routine(Recipe_number[current_instruction().ingredients[0].name]));
+  routine* new_routine = new routine(Recipe_number[current_instruction().ingredients[0].name]);
+  Routines.push_back(new_routine);
+  if (!current_instruction().products.empty()) {
+    vector<long long int> result;
+    result.push_back(new_routine->id);
+    write_memory(current_instruction().products[0], result);
+  }
   break;
 }
 
@@ -134,6 +154,16 @@ recipe f2 [
 +run: instruction f2/1
 +schedule: f1
 +run: instruction f1/2
+
+:(scenario start_running_returns_routine_id)
+% Scheduling_interval = 1;
+recipe f1 [
+  1:integer <- start-running f2:recipe
+]
+recipe f2 [
+  12:integer <- copy 44:literal
+]
++mem: storing 2 in location 1
 
 :(scenario scheduler_skips_completed_routines)
 # this scenario will require some careful setup in escaped C++
