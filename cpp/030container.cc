@@ -2,7 +2,7 @@
 
 :(before "End Mu Types Initialization")
 //: We'll use this container as a running example, with two integer elements.
-int point = Type_number["point"] = Next_type_number++;
+type_number point = Type_number["point"] = Next_type_number++;
 Type[point].size = 2;
 Type[point].kind = container;
 Type[point].name = "point";
@@ -28,7 +28,7 @@ recipe main [
 :(before "End Mu Types Initialization")
 // A more complex container, containing another container as one of its
 // elements.
-int point_integer = Type_number["point-integer"] = Next_type_number++;
+type_number point_integer = Type_number["point-integer"] = Next_type_number++;
 Type[point_integer].size = 2;
 Type[point_integer].kind = container;
 Type[point_integer].name = "point-integer";
