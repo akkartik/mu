@@ -224,19 +224,19 @@ inserting code at them.
     default-space:address:array:location <- new location:type, 30:literal
     n:integer <- next-ingredient
     {
-      base-case:
+      +base-case:
     }
-    recursive-case:
+    +recursive-case:
   ]
 
-  after base-case [
+  after +base-case [
     # if n=0 return 1
     zero?:boolean <- equal n:integer, 0:literal
     break-unless zero?:boolean
     reply 1:literal
   ]
 
-  after recursive-case [
+  after +recursive-case [
     # return n * factorial(n-1)
     x:integer <- subtract n:integer, 1:literal
     subresult:integer <- factorial x:integer
