@@ -17,5 +17,6 @@ assert(Reserved_for_tests == 1000);
 //:: Recipes
 //:
 //: 0 - unused (IDLE; do nothing)
-//: 1-999 - all fixed code
+//: 1-99 - primitives
+//: 100-999 - defined in .mu files as sequences of primitives
 //: 1000 onwards - reserved for tests, cleared between tests
