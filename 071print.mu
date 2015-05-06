@@ -66,6 +66,13 @@ recipe print-character [
 #? ] #? 1
     # save character in fake screen
     row:address:integer <- get-address x:address:screen/deref, cursor-row:offset
+#?     $print [CCC: ] #? 1
+#?     $print row:address:integer #? 1
+#?     $print [ -> ] #? 1
+#?     $print row:address:integer/deref #? 1
+#?     $print [ #? 1
+#? ] #? 1
+#?     $stop-tracing #? 1
     column:address:integer <- get-address x:address:screen/deref, cursor-column:offset
     width:integer <- get x:address:screen/deref, num-columns:offset
     index:integer <- multiply row:address:integer/deref, width:integer
@@ -137,10 +144,10 @@ recipe cursor-position [
     break-unless x:address:screen
     row:integer <- get x:address:screen/deref, cursor-row:offset
     column:integer <- get x:address:screen/deref, cursor-column:offset
-    reply row:integer, column:integer
+    reply row:integer, column:integer, x:address:screen/same-as-ingredient:0
   }
   row:integer, column:integer <- cursor-position-on-display
-  reply row:integer, column:integer
+  reply row:integer, column:integer, x:address:screen/same-as-ingredient:0
 ]
 
 recipe move-cursor [
@@ -200,7 +207,20 @@ recipe cursor-down [
       at-bottom?:boolean <- greater-or-equal row:address:integer/deref, height:integer
       break-if at-bottom?:boolean
       # row = row+1
-      row:address:integer/deref <- add row:address:integer, 1:literal
+#?       $print [AAA: ] #? 1
+#?       $print row:address:integer #? 1
+#?       $print [ -> ] #? 1
+#?       $print row:address:integer/deref #? 1
+#?       $print [ #? 1
+#? ] #? 1
+      row:address:integer/deref <- add row:address:integer/deref, 1:literal
+#?       $print [BBB: ] #? 1
+#?       $print row:address:integer #? 1
+#?       $print [ -> ] #? 1
+#?       $print row:address:integer/deref #? 1
+#?       $print [ #? 1
+#? ] #? 1
+#?       $start-tracing #? 1
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -221,7 +241,7 @@ recipe cursor-up [
       at-top?:boolean <- lesser-than row:address:integer/deref, 0:literal
       break-if at-top?:boolean
       # row = row-1
-      row:address:integer/deref <- subtract row:address:integer, 1:literal
+      row:address:integer/deref <- subtract row:address:integer/deref, 1:literal
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -243,7 +263,7 @@ recipe cursor-right [
       at-bottom?:boolean <- greater-or-equal column:address:integer/deref, width:integer
       break-if at-bottom?:boolean
       # column = column+1
-      column:address:integer/deref <- add column:address:integer, 1:literal
+      column:address:integer/deref <- add column:address:integer/deref, 1:literal
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -264,11 +284,55 @@ recipe cursor-left [
       at-top?:boolean <- lesser-than column:address:integer/deref, 0:literal
       break-if at-top?:boolean
       # column = column-1
-      column:address:integer/deref <- subtract column:address:integer, 1:literal
+      column:address:integer/deref <- subtract column:address:integer/deref, 1:literal
     }
     reply x:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
   move-cursor-left-on-display
+  reply x:address:screen/same-as-ingredient:0
+]
+
+recipe cursor-to-start-of-line [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:address:screen <- next-ingredient
+  row:integer, _, x:address:screen <- cursor-position x:address:screen
+  column:integer <- copy 0:literal
+  x:address:screen <- move-cursor x:address:screen, row:integer, column:integer
+  reply x:address:screen/same-as-ingredient:0
+]
+
+recipe cursor-to-next-line [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:address:screen <- next-ingredient
+  x:address:screen <- cursor-down x:address:screen
+  x:address:screen <- cursor-to-start-of-line x:address:screen
+  reply x:address:screen/same-as-ingredient:0
+]
+
+recipe print-string [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:address:screen <- next-ingredient
+  s:address:array:character <- next-ingredient
+  len:integer <- length s:address:array:character/deref
+  i:integer <- copy 0:literal
+  {
+    done?:boolean <- greater-or-equal i:integer, len:integer
+    break-if done?:boolean
+    c:character <- index s:address:array:character/deref, i:integer
+    print-character x:address:screen c:character
+    i:integer <- add i:integer, 1:literal
+    loop
+  }
+  reply x:address:screen/same-as-ingredient:0
+]
+
+recipe print-integer [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:address:screen <- next-ingredient
+  n:integer <- next-ingredient
+  # todo: other bases besides decimal
+  s:address:array:character <- integer-to-decimal-string n:integer
+  print-string x:address:screen, s:address:array:character
   reply x:address:screen/same-as-ingredient:0
 ]

@@ -117,6 +117,7 @@ void check_screen(const string& contents) {
   ++screen_data_start;  // now skip length
   for (index_t i = 0; i < expected_contents.size(); ++i) {
     trace("run") << "checking location " << screen_data_start+i;
+//?     cerr << "comparing " << i/screen_width << ", " << i%screen_width << ": " << Memory[screen_data_start+i] << " vs " << (int)expected_contents[i] << '\n'; //? 1
     if ((!Memory[screen_data_start+i] && !isspace(expected_contents[i]))  // uninitialized memory => spaces
         || (Memory[screen_data_start+i] && Memory[screen_data_start+i] != expected_contents[i])) {
 //?       cerr << "CCC " << Trace_stream << " " << Hide_warnings << '\n'; //? 1
