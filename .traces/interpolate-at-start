@@ -1,519 +1,925 @@
-c{0: 0 (((1 string-address)) <- ((new)) _, hello!) -- nil
-c{0: 1 (((2 string-address)) <- ((new)) abc) -- nil
-c{0: 2 (((3 string-address)) <- ((interpolate)) ((1 string-address)) ((2 string-address))) -- nil
-c{1: 0 ✓ (((1 string-address)) <- ((new)) _, hello!)
-c{1: 1 ✓ (((2 string-address)) <- ((new)) abc)
-c{1: 2 ✓ (((3 string-address)) <- ((interpolate)) ((1 string-address)) ((2 string-address)))
-cn0: convert-names in main
-cn0: (((1 string-address)) <- ((new)) _, hello!) nil nil
-cn0: checking arg _, hello!
-cn0: checking oarg ((1 string-address))
-maybe-add: ((1 string-address))
-cn0: (((2 string-address)) <- ((new)) abc) nil nil
-cn0: checking arg abc
-cn0: checking oarg ((2 string-address))
-maybe-add: ((2 string-address))
-cn0: (((3 string-address)) <- ((interpolate)) ((1 string-address)) ((2 string-address))) nil nil
-cn0: checking arg ((1 string-address))
-maybe-add: ((1 string-address))
-cn0: checking arg ((2 string-address))
-maybe-add: ((2 string-address))
-cn0: checking oarg ((3 string-address))
-maybe-add: ((3 string-address))
-cn1: (((1 string-address)) <- ((new)) _, hello!)
-cn1: (((2 string-address)) <- ((new)) abc)
-cn1: (((3 string-address)) <- ((interpolate)) ((1 string-address)) ((2 string-address)))
-schedule: main
-run: main 0: (((1 string-address)) <- ((new)) _, hello!)
-run: main 0: 1000 => ((1 string-address))
-mem: ((1 string-address)): 1 <= 1000
-run: main 1: (((2 string-address)) <- ((new)) abc)
-run: main 1: 1010 => ((2 string-address))
-mem: ((2 string-address)): 2 <= 1010
-run: main 2: (((3 string-address)) <- ((interpolate)) ((1 string-address)) ((2 string-address)))
-mem: ((1 string-address)) => 1000
-mem: ((2 string-address)) => 1010
-run: interpolate/main 0: (((default-space space-address)) <- ((new)) ((space literal)) ((60 literal)))
-run: interpolate/main 0: 1014 => ((default-space space-address))
-run: interpolate/main 1: (((1 string-address)) <- ((next-input)))
-arg: nil 0 (1000 1010)
-run: interpolate/main 1: 1000 => ((1 string-address))
-mem: ((1 string-address)): 1016 <= 1000
-run: interpolate/main 2: (((2 integer)) <- ((length)) ((1 string-address) (deref)))
-array-len: ((1 string-address) (deref))
-mem: ((1000 integer) (raw)) => 9
-run: interpolate/main 2: 9 => ((2 integer))
-mem: ((2 integer)): 1017 <= 9
-run: interpolate/main 3: (((3 integer)) <- ((copy)) ((2 integer)))
-mem: ((2 integer)) => 9
-run: interpolate/main 3: 9 => ((3 integer))
-mem: ((3 integer)): 1018 <= 9
-run: interpolate/main 4: (((4 string-address)) ((5 boolean)) <- ((next-input)))
-arg: nil 1 (1000 1010)
-run: interpolate/main 4: 1010 => ((4 string-address))
-mem: ((4 string-address)): 1019 <= 1010
-run: interpolate/main 4: t => ((5 boolean))
-mem: ((5 boolean)): 1020 <= t
-run: interpolate/main 5: (((jump-unless)) ((5 boolean)) ((4 offset)))
-mem: ((5 boolean)) => t
-run: interpolate/main 6: (((6 integer)) <- ((length)) ((4 string-address) (deref)))
-array-len: ((4 string-address) (deref))
-mem: ((1010 integer) (raw)) => 3
-run: interpolate/main 6: 3 => ((6 integer))
-mem: ((6 integer)): 1021 <= 3
-run: interpolate/main 7: (((3 integer)) <- ((add)) ((3 integer)) ((6 integer)))
-mem: ((3 integer)) => 9
-mem: ((6 integer)) => 3
-run: interpolate/main 7: 12 => ((3 integer))
-mem: ((3 integer)): 1018 <= 12
-run: interpolate/main 8: (((3 integer)) <- ((subtract)) ((3 integer)) ((1 literal)))
-mem: ((3 integer)) => 12
-run: interpolate/main 8: 11 => ((3 integer))
-mem: ((3 integer)): 1018 <= 11
-run: interpolate/main 9: (((jump)) ((-6 offset)))
-run: interpolate/main 4: (((4 string-address)) ((5 boolean)) <- ((next-input)))
-arg: nil 2 (1000 1010)
-run: interpolate/main 4: nil => ((4 string-address))
-mem: ((4 string-address)): 1019 <= nil
-run: interpolate/main 4: nil => ((5 boolean))
-mem: ((5 boolean)): 1020 <= nil
-run: interpolate/main 5: (((jump-unless)) ((5 boolean)) ((4 offset)))
-mem: ((5 boolean)) => nil
-run: interpolate/main 10: (_ <- ((input)) ((0 literal)))
-arg: (((0 literal))) 0 (1000 1010)
-run: interpolate/main 11: (((7 string-address)) <- ((new)) ((string literal)) ((3 integer)))
-mem: ((3 integer)) => 11
-run: interpolate/main 11: 1075 => ((7 string-address))
-mem: ((7 string-address)): 1022 <= 1075
-run: interpolate/main 12: (((8 integer)) <- ((copy)) ((0 literal)))
-run: interpolate/main 12: 0 => ((8 integer))
-mem: ((8 integer)): 1023 <= 0
-run: interpolate/main 13: (((9 integer)) <- ((copy)) ((0 literal)))
-run: interpolate/main 13: 0 => ((9 integer))
-mem: ((9 integer)): 1024 <= 0
-run: interpolate/main 14: (((4 string-address)) ((5 boolean)) <- ((next-input)))
-arg: nil 1 (1000 1010)
-run: interpolate/main 14: 1010 => ((4 string-address))
-mem: ((4 string-address)): 1019 <= 1010
-run: interpolate/main 14: t => ((5 boolean))
-mem: ((5 boolean)): 1020 <= t
-run: interpolate/main 15: (((jump-unless)) ((5 boolean)) ((21 offset)))
-mem: ((5 boolean)) => t
-run: interpolate/main 16: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((2 integer)))
-mem: ((9 integer)) => 0
-mem: ((2 integer)) => 9
-run: interpolate/main 16: nil => ((10 boolean))
-mem: ((10 boolean)): 1025 <= nil
-run: interpolate/main 17: (((jump-if)) ((10 boolean)) ((19 offset)))
-mem: ((10 boolean)) => nil
-run: interpolate/main 18: (((11 byte)) <- ((index)) ((1 string-address) (deref)) ((9 integer)))
-mem: ((9 integer)) => 0
-array-len: ((1000 string) (raw))
-mem: ((1000 integer) (raw)) => 9
-mem: ((1001 byte) (raw)) => _
-run: interpolate/main 18: #\_ => ((11 byte))
-mem: ((11 byte)): 1026 <= #\_
-run: interpolate/main 19: (((12 boolean)) <- ((equal)) ((11 byte)) ((_ literal)))
-mem: ((11 byte)) => _
-run: interpolate/main 19: t => ((12 boolean))
-mem: ((12 boolean)): 1027 <= t
-run: interpolate/main 20: (((jump-if)) ((12 boolean)) ((5 offset)))
-mem: ((12 boolean)) => t
-run: interpolate/main 26: (((14 integer)) <- ((copy)) ((0 literal)))
-run: interpolate/main 26: 0 => ((14 integer))
-mem: ((14 integer)): 1029 <= 0
-run: interpolate/main 27: (((15 boolean)) <- ((greater-or-equal)) ((14 integer)) ((6 integer)))
-mem: ((14 integer)) => 0
-mem: ((6 integer)) => 3
-run: interpolate/main 27: nil => ((15 boolean))
-mem: ((15 boolean)): 1030 <= nil
-run: interpolate/main 28: (((jump-if)) ((15 boolean)) ((6 offset)))
-mem: ((15 boolean)) => nil
-run: interpolate/main 29: (((11 byte)) <- ((index)) ((4 string-address) (deref)) ((14 integer)))
-mem: ((14 integer)) => 0
-array-len: ((1010 string) (raw))
-mem: ((1010 integer) (raw)) => 3
-mem: ((1011 byte) (raw)) => a
-run: interpolate/main 29: #\a => ((11 byte))
-mem: ((11 byte)): 1026 <= #\a
-run: interpolate/main 30: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 0
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 30: 1076 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1076
-run: interpolate/main 31: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) => a
-run: interpolate/main 31: #\a => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1076 <= #\a
-run: interpolate/main 32: (((14 integer)) <- ((add)) ((14 integer)) ((1 literal)))
-mem: ((14 integer)) => 0
-run: interpolate/main 32: 1 => ((14 integer))
-mem: ((14 integer)): 1029 <= 1
-run: interpolate/main 33: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 0
-run: interpolate/main 33: 1 => ((8 integer))
-mem: ((8 integer)): 1023 <= 1
-run: interpolate/main 34: (((jump)) ((-8 offset)))
-run: interpolate/main 27: (((15 boolean)) <- ((greater-or-equal)) ((14 integer)) ((6 integer)))
-mem: ((14 integer)) => 1
-mem: ((6 integer)) => 3
-run: interpolate/main 27: nil => ((15 boolean))
-mem: ((15 boolean)): 1030 <= nil
-run: interpolate/main 28: (((jump-if)) ((15 boolean)) ((6 offset)))
-mem: ((15 boolean)) => nil
-run: interpolate/main 29: (((11 byte)) <- ((index)) ((4 string-address) (deref)) ((14 integer)))
-mem: ((14 integer)) => 1
-array-len: ((1010 string) (raw))
-mem: ((1010 integer) (raw)) => 3
-mem: ((1012 byte) (raw)) => b
-run: interpolate/main 29: #\b => ((11 byte))
-mem: ((11 byte)): 1026 <= #\b
-run: interpolate/main 30: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 1
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 30: 1077 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1077
-run: interpolate/main 31: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) => b
-run: interpolate/main 31: #\b => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1077 <= #\b
-run: interpolate/main 32: (((14 integer)) <- ((add)) ((14 integer)) ((1 literal)))
-mem: ((14 integer)) => 1
-run: interpolate/main 32: 2 => ((14 integer))
-mem: ((14 integer)): 1029 <= 2
-run: interpolate/main 33: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 1
-run: interpolate/main 33: 2 => ((8 integer))
-mem: ((8 integer)): 1023 <= 2
-run: interpolate/main 34: (((jump)) ((-8 offset)))
-run: interpolate/main 27: (((15 boolean)) <- ((greater-or-equal)) ((14 integer)) ((6 integer)))
-mem: ((14 integer)) => 2
-mem: ((6 integer)) => 3
-run: interpolate/main 27: nil => ((15 boolean))
-mem: ((15 boolean)): 1030 <= nil
-run: interpolate/main 28: (((jump-if)) ((15 boolean)) ((6 offset)))
-mem: ((15 boolean)) => nil
-run: interpolate/main 29: (((11 byte)) <- ((index)) ((4 string-address) (deref)) ((14 integer)))
-mem: ((14 integer)) => 2
-array-len: ((1010 string) (raw))
-mem: ((1010 integer) (raw)) => 3
-mem: ((1013 byte) (raw)) => c
-run: interpolate/main 29: #\c => ((11 byte))
-mem: ((11 byte)): 1026 <= #\c
-run: interpolate/main 30: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 2
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 30: 1078 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1078
-run: interpolate/main 31: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) => c
-run: interpolate/main 31: #\c => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1078 <= #\c
-run: interpolate/main 32: (((14 integer)) <- ((add)) ((14 integer)) ((1 literal)))
-mem: ((14 integer)) => 2
-run: interpolate/main 32: 3 => ((14 integer))
-mem: ((14 integer)): 1029 <= 3
-run: interpolate/main 33: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 2
-run: interpolate/main 33: 3 => ((8 integer))
-mem: ((8 integer)): 1023 <= 3
-run: interpolate/main 34: (((jump)) ((-8 offset)))
-run: interpolate/main 27: (((15 boolean)) <- ((greater-or-equal)) ((14 integer)) ((6 integer)))
-mem: ((14 integer)) => 3
-mem: ((6 integer)) => 3
-run: interpolate/main 27: t => ((15 boolean))
-mem: ((15 boolean)): 1030 <= t
-run: interpolate/main 28: (((jump-if)) ((15 boolean)) ((6 offset)))
-mem: ((15 boolean)) => t
-run: interpolate/main 35: (((9 integer)) <- ((add)) ((9 integer)) ((1 literal)))
-mem: ((9 integer)) => 0
-run: interpolate/main 35: 1 => ((9 integer))
-mem: ((9 integer)): 1024 <= 1
-run: interpolate/main 36: (((jump)) ((-23 offset)))
-run: interpolate/main 14: (((4 string-address)) ((5 boolean)) <- ((next-input)))
-arg: nil 2 (1000 1010)
-run: interpolate/main 14: nil => ((4 string-address))
-mem: ((4 string-address)): 1019 <= nil
-run: interpolate/main 14: nil => ((5 boolean))
-mem: ((5 boolean)): 1020 <= nil
-run: interpolate/main 15: (((jump-unless)) ((5 boolean)) ((21 offset)))
-mem: ((5 boolean)) => nil
-run: interpolate/main 37: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((2 integer)))
-mem: ((9 integer)) => 1
-mem: ((2 integer)) => 9
-run: interpolate/main 37: nil => ((10 boolean))
-mem: ((10 boolean)): 1025 <= nil
-run: interpolate/main 38: (((jump-if)) ((10 boolean)) ((6 offset)))
-mem: ((10 boolean)) => nil
-run: interpolate/main 39: (((11 byte)) <- ((index)) ((1 string-address) (deref)) ((9 integer)))
-mem: ((9 integer)) => 1
-array-len: ((1000 string) (raw))
-mem: ((1000 integer) (raw)) => 9
-mem: ((1002 byte) (raw)) => ,
-run: interpolate/main 39: #\, => ((11 byte))
-mem: ((11 byte)): 1026 <= #\,
-run: interpolate/main 40: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 3
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 40: 1079 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1079
-run: interpolate/main 41: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) => ,
-run: interpolate/main 41: #\, => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1079 <= #\,
-run: interpolate/main 42: (((9 integer)) <- ((add)) ((9 integer)) ((1 literal)))
-mem: ((9 integer)) => 1
-run: interpolate/main 42: 2 => ((9 integer))
-mem: ((9 integer)): 1024 <= 2
-run: interpolate/main 43: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 3
-run: interpolate/main 43: 4 => ((8 integer))
-mem: ((8 integer)): 1023 <= 4
-run: interpolate/main 44: (((jump)) ((-8 offset)))
-run: interpolate/main 37: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((2 integer)))
-mem: ((9 integer)) => 2
-mem: ((2 integer)) => 9
-run: interpolate/main 37: nil => ((10 boolean))
-mem: ((10 boolean)): 1025 <= nil
-run: interpolate/main 38: (((jump-if)) ((10 boolean)) ((6 offset)))
-mem: ((10 boolean)) => nil
-run: interpolate/main 39: (((11 byte)) <- ((index)) ((1 string-address) (deref)) ((9 integer)))
-mem: ((9 integer)) => 2
-array-len: ((1000 string) (raw))
-mem: ((1000 integer) (raw)) => 9
-mem: ((1003 byte) (raw)) =>  
-run: interpolate/main 39: #\space => ((11 byte))
-mem: ((11 byte)): 1026 <= #\space
-run: interpolate/main 40: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 4
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 40: 1080 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1080
-run: interpolate/main 41: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) =>  
-run: interpolate/main 41: #\space => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1080 <= #\space
-run: interpolate/main 42: (((9 integer)) <- ((add)) ((9 integer)) ((1 literal)))
-mem: ((9 integer)) => 2
-run: interpolate/main 42: 3 => ((9 integer))
-mem: ((9 integer)): 1024 <= 3
-run: interpolate/main 43: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 4
-run: interpolate/main 43: 5 => ((8 integer))
-mem: ((8 integer)): 1023 <= 5
-run: interpolate/main 44: (((jump)) ((-8 offset)))
-run: interpolate/main 37: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((2 integer)))
-mem: ((9 integer)) => 3
-mem: ((2 integer)) => 9
-run: interpolate/main 37: nil => ((10 boolean))
-mem: ((10 boolean)): 1025 <= nil
-run: interpolate/main 38: (((jump-if)) ((10 boolean)) ((6 offset)))
-mem: ((10 boolean)) => nil
-run: interpolate/main 39: (((11 byte)) <- ((index)) ((1 string-address) (deref)) ((9 integer)))
-mem: ((9 integer)) => 3
-array-len: ((1000 string) (raw))
-mem: ((1000 integer) (raw)) => 9
-mem: ((1004 byte) (raw)) => h
-run: interpolate/main 39: #\h => ((11 byte))
-mem: ((11 byte)): 1026 <= #\h
-run: interpolate/main 40: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 5
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 40: 1081 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1081
-run: interpolate/main 41: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) => h
-run: interpolate/main 41: #\h => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1081 <= #\h
-run: interpolate/main 42: (((9 integer)) <- ((add)) ((9 integer)) ((1 literal)))
-mem: ((9 integer)) => 3
-run: interpolate/main 42: 4 => ((9 integer))
-mem: ((9 integer)): 1024 <= 4
-run: interpolate/main 43: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 5
-run: interpolate/main 43: 6 => ((8 integer))
-mem: ((8 integer)): 1023 <= 6
-run: interpolate/main 44: (((jump)) ((-8 offset)))
-run: interpolate/main 37: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((2 integer)))
-mem: ((9 integer)) => 4
-mem: ((2 integer)) => 9
-run: interpolate/main 37: nil => ((10 boolean))
-mem: ((10 boolean)): 1025 <= nil
-run: interpolate/main 38: (((jump-if)) ((10 boolean)) ((6 offset)))
-mem: ((10 boolean)) => nil
-run: interpolate/main 39: (((11 byte)) <- ((index)) ((1 string-address) (deref)) ((9 integer)))
-mem: ((9 integer)) => 4
-array-len: ((1000 string) (raw))
-mem: ((1000 integer) (raw)) => 9
-mem: ((1005 byte) (raw)) => e
-run: interpolate/main 39: #\e => ((11 byte))
-mem: ((11 byte)): 1026 <= #\e
-run: interpolate/main 40: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 6
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 40: 1082 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1082
-run: interpolate/main 41: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) => e
-run: interpolate/main 41: #\e => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1082 <= #\e
-run: interpolate/main 42: (((9 integer)) <- ((add)) ((9 integer)) ((1 literal)))
-mem: ((9 integer)) => 4
-run: interpolate/main 42: 5 => ((9 integer))
-mem: ((9 integer)): 1024 <= 5
-run: interpolate/main 43: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 6
-run: interpolate/main 43: 7 => ((8 integer))
-mem: ((8 integer)): 1023 <= 7
-run: interpolate/main 44: (((jump)) ((-8 offset)))
-run: interpolate/main 37: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((2 integer)))
-mem: ((9 integer)) => 5
-mem: ((2 integer)) => 9
-run: interpolate/main 37: nil => ((10 boolean))
-mem: ((10 boolean)): 1025 <= nil
-run: interpolate/main 38: (((jump-if)) ((10 boolean)) ((6 offset)))
-mem: ((10 boolean)) => nil
-run: interpolate/main 39: (((11 byte)) <- ((index)) ((1 string-address) (deref)) ((9 integer)))
-mem: ((9 integer)) => 5
-array-len: ((1000 string) (raw))
-mem: ((1000 integer) (raw)) => 9
-mem: ((1006 byte) (raw)) => l
-run: interpolate/main 39: #\l => ((11 byte))
-mem: ((11 byte)): 1026 <= #\l
-run: interpolate/main 40: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 7
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 40: 1083 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1083
-run: interpolate/main 41: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) => l
-run: interpolate/main 41: #\l => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1083 <= #\l
-run: interpolate/main 42: (((9 integer)) <- ((add)) ((9 integer)) ((1 literal)))
-mem: ((9 integer)) => 5
-run: interpolate/main 42: 6 => ((9 integer))
-mem: ((9 integer)): 1024 <= 6
-run: interpolate/main 43: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 7
-run: interpolate/main 43: 8 => ((8 integer))
-mem: ((8 integer)): 1023 <= 8
-run: interpolate/main 44: (((jump)) ((-8 offset)))
-run: interpolate/main 37: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((2 integer)))
-mem: ((9 integer)) => 6
-mem: ((2 integer)) => 9
-run: interpolate/main 37: nil => ((10 boolean))
-mem: ((10 boolean)): 1025 <= nil
-run: interpolate/main 38: (((jump-if)) ((10 boolean)) ((6 offset)))
-mem: ((10 boolean)) => nil
-run: interpolate/main 39: (((11 byte)) <- ((index)) ((1 string-address) (deref)) ((9 integer)))
-mem: ((9 integer)) => 6
-array-len: ((1000 string) (raw))
-mem: ((1000 integer) (raw)) => 9
-mem: ((1007 byte) (raw)) => l
-run: interpolate/main 39: #\l => ((11 byte))
-mem: ((11 byte)): 1026 <= #\l
-run: interpolate/main 40: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 8
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 40: 1084 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1084
-run: interpolate/main 41: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) => l
-run: interpolate/main 41: #\l => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1084 <= #\l
-run: interpolate/main 42: (((9 integer)) <- ((add)) ((9 integer)) ((1 literal)))
-mem: ((9 integer)) => 6
-run: interpolate/main 42: 7 => ((9 integer))
-mem: ((9 integer)): 1024 <= 7
-run: interpolate/main 43: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 8
-run: interpolate/main 43: 9 => ((8 integer))
-mem: ((8 integer)): 1023 <= 9
-run: interpolate/main 44: (((jump)) ((-8 offset)))
-run: interpolate/main 37: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((2 integer)))
-mem: ((9 integer)) => 7
-mem: ((2 integer)) => 9
-run: interpolate/main 37: nil => ((10 boolean))
-mem: ((10 boolean)): 1025 <= nil
-run: interpolate/main 38: (((jump-if)) ((10 boolean)) ((6 offset)))
-mem: ((10 boolean)) => nil
-run: interpolate/main 39: (((11 byte)) <- ((index)) ((1 string-address) (deref)) ((9 integer)))
-mem: ((9 integer)) => 7
-array-len: ((1000 string) (raw))
-mem: ((1000 integer) (raw)) => 9
-mem: ((1008 byte) (raw)) => o
-run: interpolate/main 39: #\o => ((11 byte))
-mem: ((11 byte)): 1026 <= #\o
-run: interpolate/main 40: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 9
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 40: 1085 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1085
-run: interpolate/main 41: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) => o
-run: interpolate/main 41: #\o => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1085 <= #\o
-run: interpolate/main 42: (((9 integer)) <- ((add)) ((9 integer)) ((1 literal)))
-mem: ((9 integer)) => 7
-run: interpolate/main 42: 8 => ((9 integer))
-mem: ((9 integer)): 1024 <= 8
-run: interpolate/main 43: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 9
-run: interpolate/main 43: 10 => ((8 integer))
-mem: ((8 integer)): 1023 <= 10
-run: interpolate/main 44: (((jump)) ((-8 offset)))
-run: interpolate/main 37: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((2 integer)))
-mem: ((9 integer)) => 8
-mem: ((2 integer)) => 9
-run: interpolate/main 37: nil => ((10 boolean))
-mem: ((10 boolean)): 1025 <= nil
-run: interpolate/main 38: (((jump-if)) ((10 boolean)) ((6 offset)))
-mem: ((10 boolean)) => nil
-run: interpolate/main 39: (((11 byte)) <- ((index)) ((1 string-address) (deref)) ((9 integer)))
-mem: ((9 integer)) => 8
-array-len: ((1000 string) (raw))
-mem: ((1000 integer) (raw)) => 9
-mem: ((1009 byte) (raw)) => !
-run: interpolate/main 39: #\! => ((11 byte))
-mem: ((11 byte)): 1026 <= #\!
-run: interpolate/main 40: (((13 byte-address)) <- ((index-address)) ((7 string-address) (deref)) ((8 integer)))
-mem: ((8 integer)) => 10
-array-len: ((1075 string) (raw))
-mem: ((1075 integer) (raw)) => 11
-run: interpolate/main 40: 1086 => ((13 byte-address))
-mem: ((13 byte-address)): 1028 <= 1086
-run: interpolate/main 41: (((13 byte-address) (deref)) <- ((copy)) ((11 byte)))
-mem: ((11 byte)) => !
-run: interpolate/main 41: #\! => ((13 byte-address) (deref))
-mem: ((13 byte-address) (deref)): 1086 <= #\!
-run: interpolate/main 42: (((9 integer)) <- ((add)) ((9 integer)) ((1 literal)))
-mem: ((9 integer)) => 8
-run: interpolate/main 42: 9 => ((9 integer))
-mem: ((9 integer)): 1024 <= 9
-run: interpolate/main 43: (((8 integer)) <- ((add)) ((8 integer)) ((1 literal)))
-mem: ((8 integer)) => 10
-run: interpolate/main 43: 11 => ((8 integer))
-mem: ((8 integer)): 1023 <= 11
-run: interpolate/main 44: (((jump)) ((-8 offset)))
-run: interpolate/main 37: (((10 boolean)) <- ((greater-or-equal)) ((9 integer)) ((2 integer)))
-mem: ((9 integer)) => 9
-mem: ((2 integer)) => 9
-run: interpolate/main 37: t => ((10 boolean))
-mem: ((10 boolean)): 1025 <= t
-run: interpolate/main 38: (((jump-if)) ((10 boolean)) ((6 offset)))
-mem: ((10 boolean)) => t
-run: interpolate/main 45: (((reply)) ((7 string-address)))
-mem: ((7 string-address)) => 1075
-run: main 2: 1075 => ((3 string-address))
-mem: ((3 string-address)): 3 <= 1075
-schedule: done with routine nil
+parse/0: instruction: run
+parse/0:   ingredient: {name: "
+    1:address:array:character/raw <- new [_, hello!]
+    2:address:array:character/raw <- new [abc]
+    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ", value: 0, type: 0, properties: ["
+    1:address:array:character/raw <- new [_, hello!]
+    2:address:array:character/raw <- new [abc]
+    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ": "literal-string"]}
+parse/0: instruction: memory-should-contain
+parse/0:   ingredient: {name: "
+    4:string <- [abc, hello!]
+    16 <- 0  # out of bounds
+  ", value: 0, type: 0, properties: ["
+    4:string <- [abc, hello!]
+    16 <- 0  # out of bounds
+  ": "literal-string"]}
+after-brace/0: recipe interpolate-at-start
+after-brace/0: run ...
+after-brace/0: memory-should-contain ...
+new/0: routine allocated memory from 1000 to 101000
+schedule/0: interpolate-at-start
+run/0: instruction interpolate-at-start/0
+run/0: run/45 {name: "
+    1:address:array:character/raw <- new [_, hello!]
+    2:address:array:character/raw <- new [abc]
+    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ", value: 0, type: 0, properties: ["
+    1:address:array:character/raw <- new [_, hello!]
+    2:address:array:character/raw <- new [abc]
+    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy 3:address:array:character/raw/deref
+  ": "literal-string"]}
+parse/0: instruction: new
+parse/0:   ingredient: {name: "_, hello!", value: 0, type: 0, properties: ["_, hello!": "literal-string"]}
+parse/0:   product: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]}
+parse/0: instruction: new
+parse/0:   ingredient: {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
+parse/0:   product: {name: "2", value: 0, type: 2-5-4, properties: ["2": "address":"array":"character", "raw": ]}
+parse/0: instruction: interpolate
+parse/0:   ingredient: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]}
+parse/0:   ingredient: {name: "2", value: 0, type: 2-5-4, properties: ["2": "address":"array":"character", "raw": ]}
+parse/0:   product: {name: "3", value: 0, type: 2-5-4, properties: ["3": "address":"array":"character", "raw": ]}
+parse/0: instruction: copy
+parse/0:   ingredient: {name: "3", value: 0, type: 2-5-4, properties: ["3": "address":"array":"character", "raw": , "deref": ]}
+parse/0:   product: {name: "4", value: 0, type: 5-4, properties: ["4": "array":"character", "raw": ]}
+new/0: _, hello! -> 0
+new/0: abc -> 0
+after-brace/0: recipe run1001
+after-brace/0: new ...
+after-brace/0: new ...
+after-brace/0: interpolate ...
+after-brace/0: copy ...
+run/0: instruction run1001/0
+run/0: {name: "1", value: 1, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]} <- new/44 {name: "_, hello!", value: 0, type: 0, properties: ["_, hello!": "literal-string"]}
+mem/0: storing 1000 in location 1
+run/0: instruction run1001/1
+run/0: {name: "2", value: 2, type: 2-5-4, properties: ["2": "address":"array":"character", "raw": ]} <- new/44 {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
+mem/0: storing 1010 in location 2
+run/0: instruction run1001/2
+run/0: {name: "3", value: 3, type: 2-5-4, properties: ["3": "address":"array":"character", "raw": ]} <- interpolate/107 {name: "1", value: 1, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]}, {name: "2", value: 2, type: 2-5-4, properties: ["2": "address":"array":"character", "raw": ]}
+mem/0: location 1 is 1000
+mem/0: location 2 is 1010
+run/0: instruction interpolate/0
+run/0: {name: "default-space", value: 0, type: 5-2-1, properties: ["default-space": "array":"address":"location"]} <- new/44 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "60", value: 60, type: 0, properties: ["60": "literal"]}
+mem/0: array size is 60
+mem/0: new alloc: 1014
+run/0: instruction interpolate/1
+run/0: {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character"]} <- next-ingredient/30 
+run/0: product 0 is 1000
+mem/0: storing 1000 in location 1016
+run/0: instruction interpolate/2
+run/0: {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]} <- length/28 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
+mem/0: location 1016 is 1000
+mem/0: storing 9 in location 1017
+run/0: instruction interpolate/3
+run/0: {name: "result-len", value: 3, type: 1, properties: ["result-len": "integer"]} <- copy/1 {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is tem-len
+mem/0: location 1017 is 9
+mem/0: storing 9 in location 1018
+run/0: instruction interpolate/5
+run/0: {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character"]}, {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]} <- next-ingredient/30 
+run/0: product 0 is 1010
+mem/0: storing 1010 in location 1019
+mem/0: storing 1 in location 1020
+run/0: instruction interpolate/6
+run/0: break-unless/12 {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]}, {name: "", value: 4, type: , properties: ["": ]}
+mem/0: location 1020 is 1
+run/0: ingredient 0 is 1
+run/0: jump-unless fell through
+run/0: instruction interpolate/7
+run/0: {name: "a-len", value: 6, type: 1, properties: ["a-len": "integer"]} <- length/28 {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}
+mem/0: location 1019 is 1010
+mem/0: storing 3 in location 1021
+run/0: instruction interpolate/8
+run/0: {name: "result-len", value: 3, type: 1, properties: ["result-len": "integer"]} <- add/2 {name: "result-len", value: 3, type: 1, properties: ["result-len": "integer"]}, {name: "a-len", value: 6, type: 1, properties: ["a-len": "integer"]}
+run/0: ingredient 0 is result-len
+mem/0: location 1018 is 9
+run/0: ingredient 1 is a-len
+mem/0: location 1021 is 3
+run/0: product 0 is 12
+mem/0: storing 12 in location 1018
+run/0: instruction interpolate/9
+run/0: {name: "result-len", value: 3, type: 1, properties: ["result-len": "integer"]} <- subtract/3 {name: "result-len", value: 3, type: 1, properties: ["result-len": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-len
+mem/0: location 1018 is 12
+run/0: ingredient 1 is 1
+run/0: product 0 is 11
+mem/0: storing 11 in location 1018
+run/0: instruction interpolate/10
+run/0: loop/10 {name: "", value: -6, type: , properties: ["": ]}
+run/0: ingredient 0 is -6
+run/0: jumping to instruction 5
+run/0: instruction interpolate/5
+run/0: {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character"]}, {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]} <- next-ingredient/30 
+mem/0: storing 0 in location 1020
+run/0: instruction interpolate/6
+run/0: break-unless/12 {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]}, {name: "", value: 4, type: , properties: ["": ]}
+mem/0: location 1020 is 0
+run/0: ingredient 0 is 0
+run/0: ingredient 1 is 
+run/0: jumping to instruction 11
+run/0: instruction interpolate/12
+run/0: rewind-ingredients/31 
+run/0: instruction interpolate/13
+run/0: {name: "_", value: 0, type: 0, properties: ["_": "dummy"]} <- next-ingredient/30 
+run/0: product 0 is 1000
+run/0: instruction interpolate/14
+run/0: {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character"]} <- new/44 {name: "character", value: 4, type: 0, properties: ["character": "type"]}, {name: "result-len", value: 3, type: 1, properties: ["result-len": "integer"]}
+mem/0: location 1018 is 11
+mem/0: array size is 11
+mem/0: new alloc: 1075
+mem/0: storing 1075 in location 1022
+run/0: instruction interpolate/15
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
+run/0: ingredient 0 is 0
+mem/0: storing 0 in location 1023
+run/0: instruction interpolate/16
+run/0: {name: "i", value: 9, type: 1, properties: ["i": "integer"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
+run/0: ingredient 0 is 0
+mem/0: storing 0 in location 1024
+run/0: instruction interpolate/18
+run/0: {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character"]}, {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]} <- next-ingredient/30 
+run/0: product 0 is 1010
+mem/0: storing 1010 in location 1019
+mem/0: storing 1 in location 1020
+run/0: instruction interpolate/19
+run/0: break-unless/12 {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]}, {name: "", value: 25, type: , properties: ["": ]}
+mem/0: location 1020 is 1
+run/0: ingredient 0 is 1
+run/0: jump-unless fell through
+run/0: instruction interpolate/21
+run/0: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 0
+run/0: ingredient 1 is tem-len
+mem/0: location 1017 is 9
+run/0: product 0 is 0
+mem/0: storing 0 in location 1025
+run/0: instruction interpolate/22
+run/0: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "2", value: 2, type: 0, properties: ["2": "blocks"]}
+mem/0: location 1025 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/23
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+run/0: ingredient 0 is {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
+mem/0: location 1016 is 1000
+run/0: ingredient 1 is {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+mem/0: location 1024 is 0
+run/0: address to copy is 1001
+run/0: its type is 4
+mem/0: location 1001 is 95
+run/0: product 0 is 95
+mem/0: storing 95 in location 1026
+run/0: instruction interpolate/24
+run/0: {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]} <- equal/13 {name: "in", value: 11, type: 4, properties: ["in": "character"]}, {name: "95", value: 95, type: 0, properties: ["95": "literal"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 95
+run/0: ingredient 1 is 95
+run/0: product 0 is 1
+mem/0: storing 1 in location 1027
+run/0: instruction interpolate/25
+run/0: break-if/11 {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]}, {name: "", value: 5, type: , properties: ["": ]}
+mem/0: location 1027 is 1
+run/0: ingredient 0 is 1
+run/0: ingredient 1 is 
+run/0: jumping to instruction 31
+run/0: instruction interpolate/32
+run/0: {name: "j", value: 14, type: 1, properties: ["j": "integer"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
+run/0: ingredient 0 is 0
+mem/0: storing 0 in location 1029
+run/0: instruction interpolate/34
+run/0: {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]} <- greater-or-equal/16 {name: "j", value: 14, type: 1, properties: ["j": "integer"]}, {name: "a-len", value: 6, type: 1, properties: ["a-len": "integer"]}
+run/0: ingredient 0 is j
+mem/0: location 1029 is 0
+run/0: ingredient 1 is a-len
+mem/0: location 1021 is 3
+run/0: product 0 is 0
+mem/0: storing 0 in location 1030
+run/0: instruction interpolate/35
+run/0: break-if/11 {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1030 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/36
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}, {name: "j", value: 14, type: 1, properties: ["j": "integer"]}
+run/0: ingredient 0 is {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}
+mem/0: location 1019 is 1010
+run/0: ingredient 1 is {name: "j", value: 14, type: 1, properties: ["j": "integer"]}
+mem/0: location 1029 is 0
+run/0: address to copy is 1011
+run/0: its type is 4
+mem/0: location 1011 is 97
+run/0: product 0 is 97
+mem/0: storing 97 in location 1026
+run/0: instruction interpolate/37
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 0
+run/0: address to copy is 1076
+run/0: product 0 is 1076
+mem/0: storing 1076 in location 1028
+run/0: instruction interpolate/38
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 97
+mem/0: location 1028 is 1076
+mem/0: storing 97 in location 1076
+run/0: instruction interpolate/39
+run/0: {name: "j", value: 14, type: 1, properties: ["j": "integer"]} <- add/2 {name: "j", value: 14, type: 1, properties: ["j": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is j
+mem/0: location 1029 is 0
+run/0: ingredient 1 is 1
+run/0: product 0 is 1
+mem/0: storing 1 in location 1029
+run/0: instruction interpolate/40
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 0
+run/0: ingredient 1 is 1
+run/0: product 0 is 1
+mem/0: storing 1 in location 1023
+run/0: instruction interpolate/41
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 34
+run/0: instruction interpolate/34
+run/0: {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]} <- greater-or-equal/16 {name: "j", value: 14, type: 1, properties: ["j": "integer"]}, {name: "a-len", value: 6, type: 1, properties: ["a-len": "integer"]}
+run/0: ingredient 0 is j
+mem/0: location 1029 is 1
+run/0: ingredient 1 is a-len
+mem/0: location 1021 is 3
+run/0: product 0 is 0
+mem/0: storing 0 in location 1030
+run/0: instruction interpolate/35
+run/0: break-if/11 {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1030 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/36
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}, {name: "j", value: 14, type: 1, properties: ["j": "integer"]}
+run/0: ingredient 0 is {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}
+mem/0: location 1019 is 1010
+run/0: ingredient 1 is {name: "j", value: 14, type: 1, properties: ["j": "integer"]}
+mem/0: location 1029 is 1
+run/0: address to copy is 1012
+run/0: its type is 4
+mem/0: location 1012 is 98
+run/0: product 0 is 98
+mem/0: storing 98 in location 1026
+run/0: instruction interpolate/37
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 1
+run/0: address to copy is 1077
+run/0: product 0 is 1077
+mem/0: storing 1077 in location 1028
+run/0: instruction interpolate/38
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 98
+mem/0: location 1028 is 1077
+mem/0: storing 98 in location 1077
+run/0: instruction interpolate/39
+run/0: {name: "j", value: 14, type: 1, properties: ["j": "integer"]} <- add/2 {name: "j", value: 14, type: 1, properties: ["j": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is j
+mem/0: location 1029 is 1
+run/0: ingredient 1 is 1
+run/0: product 0 is 2
+mem/0: storing 2 in location 1029
+run/0: instruction interpolate/40
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 1
+run/0: ingredient 1 is 1
+run/0: product 0 is 2
+mem/0: storing 2 in location 1023
+run/0: instruction interpolate/41
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 34
+run/0: instruction interpolate/34
+run/0: {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]} <- greater-or-equal/16 {name: "j", value: 14, type: 1, properties: ["j": "integer"]}, {name: "a-len", value: 6, type: 1, properties: ["a-len": "integer"]}
+run/0: ingredient 0 is j
+mem/0: location 1029 is 2
+run/0: ingredient 1 is a-len
+mem/0: location 1021 is 3
+run/0: product 0 is 0
+mem/0: storing 0 in location 1030
+run/0: instruction interpolate/35
+run/0: break-if/11 {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1030 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/36
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}, {name: "j", value: 14, type: 1, properties: ["j": "integer"]}
+run/0: ingredient 0 is {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}
+mem/0: location 1019 is 1010
+run/0: ingredient 1 is {name: "j", value: 14, type: 1, properties: ["j": "integer"]}
+mem/0: location 1029 is 2
+run/0: address to copy is 1013
+run/0: its type is 4
+mem/0: location 1013 is 99
+run/0: product 0 is 99
+mem/0: storing 99 in location 1026
+run/0: instruction interpolate/37
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 2
+run/0: address to copy is 1078
+run/0: product 0 is 1078
+mem/0: storing 1078 in location 1028
+run/0: instruction interpolate/38
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 99
+mem/0: location 1028 is 1078
+mem/0: storing 99 in location 1078
+run/0: instruction interpolate/39
+run/0: {name: "j", value: 14, type: 1, properties: ["j": "integer"]} <- add/2 {name: "j", value: 14, type: 1, properties: ["j": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is j
+mem/0: location 1029 is 2
+run/0: ingredient 1 is 1
+run/0: product 0 is 3
+mem/0: storing 3 in location 1029
+run/0: instruction interpolate/40
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 2
+run/0: ingredient 1 is 1
+run/0: product 0 is 3
+mem/0: storing 3 in location 1023
+run/0: instruction interpolate/41
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 34
+run/0: instruction interpolate/34
+run/0: {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]} <- greater-or-equal/16 {name: "j", value: 14, type: 1, properties: ["j": "integer"]}, {name: "a-len", value: 6, type: 1, properties: ["a-len": "integer"]}
+run/0: ingredient 0 is j
+mem/0: location 1029 is 3
+run/0: ingredient 1 is a-len
+mem/0: location 1021 is 3
+run/0: product 0 is 1
+mem/0: storing 1 in location 1030
+run/0: instruction interpolate/35
+run/0: break-if/11 {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1030 is 1
+run/0: ingredient 0 is 1
+run/0: ingredient 1 is 
+run/0: jumping to instruction 42
+run/0: instruction interpolate/43
+run/0: {name: "i", value: 9, type: 1, properties: ["i": "integer"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 0
+run/0: ingredient 1 is 1
+run/0: product 0 is 1
+mem/0: storing 1 in location 1024
+run/0: instruction interpolate/44
+run/0: loop/10 {name: "", value: -27, type: , properties: ["": ]}
+run/0: ingredient 0 is -27
+run/0: jumping to instruction 18
+run/0: instruction interpolate/18
+run/0: {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character"]}, {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]} <- next-ingredient/30 
+mem/0: storing 0 in location 1020
+run/0: instruction interpolate/19
+run/0: break-unless/12 {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]}, {name: "", value: 25, type: , properties: ["": ]}
+mem/0: location 1020 is 0
+run/0: ingredient 0 is 0
+run/0: ingredient 1 is 
+run/0: jumping to instruction 45
+run/0: instruction interpolate/47
+run/0: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 1
+run/0: ingredient 1 is tem-len
+mem/0: location 1017 is 9
+run/0: product 0 is 0
+mem/0: storing 0 in location 1025
+run/0: instruction interpolate/48
+run/0: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1025 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/49
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+run/0: ingredient 0 is {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
+mem/0: location 1016 is 1000
+run/0: ingredient 1 is {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+mem/0: location 1024 is 1
+run/0: address to copy is 1002
+run/0: its type is 4
+mem/0: location 1002 is 44
+run/0: product 0 is 44
+mem/0: storing 44 in location 1026
+run/0: instruction interpolate/50
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 3
+run/0: address to copy is 1079
+run/0: product 0 is 1079
+mem/0: storing 1079 in location 1028
+run/0: instruction interpolate/51
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 44
+mem/0: location 1028 is 1079
+mem/0: storing 44 in location 1079
+run/0: instruction interpolate/52
+run/0: {name: "i", value: 9, type: 1, properties: ["i": "integer"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 1
+run/0: ingredient 1 is 1
+run/0: product 0 is 2
+mem/0: storing 2 in location 1024
+run/0: instruction interpolate/53
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 3
+run/0: ingredient 1 is 1
+run/0: product 0 is 4
+mem/0: storing 4 in location 1023
+run/0: instruction interpolate/54
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 47
+run/0: instruction interpolate/47
+run/0: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 2
+run/0: ingredient 1 is tem-len
+mem/0: location 1017 is 9
+run/0: product 0 is 0
+mem/0: storing 0 in location 1025
+run/0: instruction interpolate/48
+run/0: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1025 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/49
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+run/0: ingredient 0 is {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
+mem/0: location 1016 is 1000
+run/0: ingredient 1 is {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+mem/0: location 1024 is 2
+run/0: address to copy is 1003
+run/0: its type is 4
+mem/0: location 1003 is 32
+run/0: product 0 is 32
+mem/0: storing 32 in location 1026
+run/0: instruction interpolate/50
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 4
+run/0: address to copy is 1080
+run/0: product 0 is 1080
+mem/0: storing 1080 in location 1028
+run/0: instruction interpolate/51
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 32
+mem/0: location 1028 is 1080
+mem/0: storing 32 in location 1080
+run/0: instruction interpolate/52
+run/0: {name: "i", value: 9, type: 1, properties: ["i": "integer"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 2
+run/0: ingredient 1 is 1
+run/0: product 0 is 3
+mem/0: storing 3 in location 1024
+run/0: instruction interpolate/53
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 4
+run/0: ingredient 1 is 1
+run/0: product 0 is 5
+mem/0: storing 5 in location 1023
+run/0: instruction interpolate/54
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 47
+run/0: instruction interpolate/47
+run/0: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 3
+run/0: ingredient 1 is tem-len
+mem/0: location 1017 is 9
+run/0: product 0 is 0
+mem/0: storing 0 in location 1025
+run/0: instruction interpolate/48
+run/0: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1025 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/49
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+run/0: ingredient 0 is {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
+mem/0: location 1016 is 1000
+run/0: ingredient 1 is {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+mem/0: location 1024 is 3
+run/0: address to copy is 1004
+run/0: its type is 4
+mem/0: location 1004 is 104
+run/0: product 0 is 104
+mem/0: storing 104 in location 1026
+run/0: instruction interpolate/50
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 5
+run/0: address to copy is 1081
+run/0: product 0 is 1081
+mem/0: storing 1081 in location 1028
+run/0: instruction interpolate/51
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 104
+mem/0: location 1028 is 1081
+mem/0: storing 104 in location 1081
+run/0: instruction interpolate/52
+run/0: {name: "i", value: 9, type: 1, properties: ["i": "integer"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 3
+run/0: ingredient 1 is 1
+run/0: product 0 is 4
+mem/0: storing 4 in location 1024
+run/0: instruction interpolate/53
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 5
+run/0: ingredient 1 is 1
+run/0: product 0 is 6
+mem/0: storing 6 in location 1023
+run/0: instruction interpolate/54
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 47
+run/0: instruction interpolate/47
+run/0: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 4
+run/0: ingredient 1 is tem-len
+mem/0: location 1017 is 9
+run/0: product 0 is 0
+mem/0: storing 0 in location 1025
+run/0: instruction interpolate/48
+run/0: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1025 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/49
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+run/0: ingredient 0 is {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
+mem/0: location 1016 is 1000
+run/0: ingredient 1 is {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+mem/0: location 1024 is 4
+run/0: address to copy is 1005
+run/0: its type is 4
+mem/0: location 1005 is 101
+run/0: product 0 is 101
+mem/0: storing 101 in location 1026
+run/0: instruction interpolate/50
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 6
+run/0: address to copy is 1082
+run/0: product 0 is 1082
+mem/0: storing 1082 in location 1028
+run/0: instruction interpolate/51
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 101
+mem/0: location 1028 is 1082
+mem/0: storing 101 in location 1082
+run/0: instruction interpolate/52
+run/0: {name: "i", value: 9, type: 1, properties: ["i": "integer"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 4
+run/0: ingredient 1 is 1
+run/0: product 0 is 5
+mem/0: storing 5 in location 1024
+run/0: instruction interpolate/53
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 6
+run/0: ingredient 1 is 1
+run/0: product 0 is 7
+mem/0: storing 7 in location 1023
+run/0: instruction interpolate/54
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 47
+run/0: instruction interpolate/47
+run/0: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 5
+run/0: ingredient 1 is tem-len
+mem/0: location 1017 is 9
+run/0: product 0 is 0
+mem/0: storing 0 in location 1025
+run/0: instruction interpolate/48
+run/0: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1025 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/49
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+run/0: ingredient 0 is {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
+mem/0: location 1016 is 1000
+run/0: ingredient 1 is {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+mem/0: location 1024 is 5
+run/0: address to copy is 1006
+run/0: its type is 4
+mem/0: location 1006 is 108
+run/0: product 0 is 108
+mem/0: storing 108 in location 1026
+run/0: instruction interpolate/50
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 7
+run/0: address to copy is 1083
+run/0: product 0 is 1083
+mem/0: storing 1083 in location 1028
+run/0: instruction interpolate/51
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 108
+mem/0: location 1028 is 1083
+mem/0: storing 108 in location 1083
+run/0: instruction interpolate/52
+run/0: {name: "i", value: 9, type: 1, properties: ["i": "integer"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 5
+run/0: ingredient 1 is 1
+run/0: product 0 is 6
+mem/0: storing 6 in location 1024
+run/0: instruction interpolate/53
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 7
+run/0: ingredient 1 is 1
+run/0: product 0 is 8
+mem/0: storing 8 in location 1023
+run/0: instruction interpolate/54
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 47
+run/0: instruction interpolate/47
+run/0: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 6
+run/0: ingredient 1 is tem-len
+mem/0: location 1017 is 9
+run/0: product 0 is 0
+mem/0: storing 0 in location 1025
+run/0: instruction interpolate/48
+run/0: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1025 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/49
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+run/0: ingredient 0 is {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
+mem/0: location 1016 is 1000
+run/0: ingredient 1 is {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+mem/0: location 1024 is 6
+run/0: address to copy is 1007
+run/0: its type is 4
+mem/0: location 1007 is 108
+run/0: product 0 is 108
+mem/0: storing 108 in location 1026
+run/0: instruction interpolate/50
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 8
+run/0: address to copy is 1084
+run/0: product 0 is 1084
+mem/0: storing 1084 in location 1028
+run/0: instruction interpolate/51
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 108
+mem/0: location 1028 is 1084
+mem/0: storing 108 in location 1084
+run/0: instruction interpolate/52
+run/0: {name: "i", value: 9, type: 1, properties: ["i": "integer"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 6
+run/0: ingredient 1 is 1
+run/0: product 0 is 7
+mem/0: storing 7 in location 1024
+run/0: instruction interpolate/53
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 8
+run/0: ingredient 1 is 1
+run/0: product 0 is 9
+mem/0: storing 9 in location 1023
+run/0: instruction interpolate/54
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 47
+run/0: instruction interpolate/47
+run/0: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 7
+run/0: ingredient 1 is tem-len
+mem/0: location 1017 is 9
+run/0: product 0 is 0
+mem/0: storing 0 in location 1025
+run/0: instruction interpolate/48
+run/0: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1025 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/49
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+run/0: ingredient 0 is {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
+mem/0: location 1016 is 1000
+run/0: ingredient 1 is {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+mem/0: location 1024 is 7
+run/0: address to copy is 1008
+run/0: its type is 4
+mem/0: location 1008 is 111
+run/0: product 0 is 111
+mem/0: storing 111 in location 1026
+run/0: instruction interpolate/50
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 9
+run/0: address to copy is 1085
+run/0: product 0 is 1085
+mem/0: storing 1085 in location 1028
+run/0: instruction interpolate/51
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 111
+mem/0: location 1028 is 1085
+mem/0: storing 111 in location 1085
+run/0: instruction interpolate/52
+run/0: {name: "i", value: 9, type: 1, properties: ["i": "integer"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 7
+run/0: ingredient 1 is 1
+run/0: product 0 is 8
+mem/0: storing 8 in location 1024
+run/0: instruction interpolate/53
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 9
+run/0: ingredient 1 is 1
+run/0: product 0 is 10
+mem/0: storing 10 in location 1023
+run/0: instruction interpolate/54
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 47
+run/0: instruction interpolate/47
+run/0: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 8
+run/0: ingredient 1 is tem-len
+mem/0: location 1017 is 9
+run/0: product 0 is 0
+mem/0: storing 0 in location 1025
+run/0: instruction interpolate/48
+run/0: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1025 is 0
+run/0: ingredient 0 is 0
+run/0: jump-if fell through
+run/0: instruction interpolate/49
+run/0: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/26 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+run/0: ingredient 0 is {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
+mem/0: location 1016 is 1000
+run/0: ingredient 1 is {name: "i", value: 9, type: 1, properties: ["i": "integer"]}
+mem/0: location 1024 is 8
+run/0: address to copy is 1009
+run/0: its type is 4
+mem/0: location 1009 is 33
+run/0: product 0 is 33
+mem/0: storing 33 in location 1026
+run/0: instruction interpolate/50
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/27 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+run/0: ingredient 0 is result
+mem/0: location 1022 is 1075
+run/0: ingredient 1 is {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}
+mem/0: location 1023 is 10
+run/0: address to copy is 1086
+run/0: product 0 is 1086
+mem/0: storing 1086 in location 1028
+run/0: instruction interpolate/51
+run/0: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
+run/0: ingredient 0 is in
+mem/0: location 1026 is 33
+mem/0: location 1028 is 1086
+mem/0: storing 33 in location 1086
+run/0: instruction interpolate/52
+run/0: {name: "i", value: 9, type: 1, properties: ["i": "integer"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 8
+run/0: ingredient 1 is 1
+run/0: product 0 is 9
+mem/0: storing 9 in location 1024
+run/0: instruction interpolate/53
+run/0: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
+run/0: ingredient 0 is result-idx
+mem/0: location 1023 is 10
+run/0: ingredient 1 is 1
+run/0: product 0 is 11
+mem/0: storing 11 in location 1023
+run/0: instruction interpolate/54
+run/0: loop/10 {name: "", value: -8, type: , properties: ["": ]}
+run/0: ingredient 0 is -8
+run/0: jumping to instruction 47
+run/0: instruction interpolate/47
+run/0: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "integer"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "integer"]}
+run/0: ingredient 0 is i
+mem/0: location 1024 is 9
+run/0: ingredient 1 is tem-len
+mem/0: location 1017 is 9
+run/0: product 0 is 1
+mem/0: storing 1 in location 1025
+run/0: instruction interpolate/48
+run/0: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "", value: 6, type: , properties: ["": ]}
+mem/0: location 1025 is 1
+run/0: ingredient 0 is 1
+run/0: ingredient 1 is 
+run/0: jumping to instruction 55
+run/0: instruction interpolate/56
+run/0: reply/33 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character"]}
+mem/0: location 1022 is 1075
+run/0: result 0 is 1075
+mem/0: storing 1075 in location 3
+run/0: instruction run1001/3
+run/0: {name: "4", value: 4, type: 5-4, properties: ["4": "array":"character", "raw": ]} <- copy/1 {name: "3", value: 3, type: 2-5-4, properties: ["3": "address":"array":"character", "raw": , "deref": ]}
+run/0: ingredient 0 is 3
+mem/0: location 3 is 1075
+mem/0: location 1075 is 11
+mem/0: location 1076 is 97
+mem/0: location 1077 is 98
+mem/0: location 1078 is 99
+mem/0: location 1079 is 44
+mem/0: location 1080 is 32
+mem/0: location 1081 is 104
+mem/0: location 1082 is 101
+mem/0: location 1083 is 108
+mem/0: location 1084 is 108
+mem/0: location 1085 is 111
+mem/0: location 1086 is 33
+mem/0: storing 11 in location 4
+mem/0: storing 97 in location 5
+mem/0: storing 98 in location 6
+mem/0: storing 99 in location 7
+mem/0: storing 44 in location 8
+mem/0: storing 32 in location 9
+mem/0: storing 104 in location 10
+mem/0: storing 101 in location 11
+mem/0: storing 108 in location 12
+mem/0: storing 108 in location 13
+mem/0: storing 111 in location 14
+mem/0: storing 33 in location 15
+run/0: instruction interpolate-at-start/1
+run/0: memory-should-contain/46 {name: "
+    4:string <- [abc, hello!]
+    16 <- 0  # out of bounds
+  ", value: 0, type: 0, properties: ["
+    4:string <- [abc, hello!]
+    16 <- 0  # out of bounds
+  ": "literal-string"]}
+run/0: checking string length at 4
+run/0: checking location 5
+run/0: checking location 6
+run/0: checking location 7
+run/0: checking location 8
+run/0: checking location 9
+run/0: checking location 10
+run/0: checking location 11
+run/0: checking location 12
+run/0: checking location 13
+run/0: checking location 14
+run/0: checking location 15
+run/0: checking location 16

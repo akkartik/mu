@@ -61,57 +61,53 @@ before we invest in the *visual* tools for making them concise.
 
 **Taking Mu for a spin**
 
-First install [Racket](http://racket-lang.org) (just for the initial
-prototype). Then:
-
 ```shell
   $ cd mu
-  $ git clone http://github.com/arclanguage/anarki
+  $ make test
 ```
 
 As a sneak peek, here's how you compute factorial in Mu:
 
-```lisp
-  function factorial [
-    ; allocate local variables
-    default-space:space-address <- new space:literal, 30:literal
-    ; receive inputs in a queue
-    n:integer <- next-input
+```python
+  recipe factorial [
+    default-space:address:array:location <- new location:type, 30:literal
+    n:integer <- next-ingredient
     {
-      ; if n=0 return 1
+      # if n=0 return 1
       zero?:boolean <- equal n:integer, 0:literal
       break-unless zero?:boolean
       reply 1:literal
     }
-    ; return n*factorial(n-1)
-    tmp1:integer <- subtract n:integer, 1:literal
-    tmp2:integer <- factorial tmp1:integer
-    result:integer <- multiply n:integer, tmp2:integer
+    # return n * factorial(n - 1)
+    x:integer <- subtract n:integer, 1:literal
+    subresult:integer <- factorial x:integer
+    result:integer <- multiply subresult:integer, n:integer
     reply result:integer
   ]
 ```
 
-Programs are lists of instructions, each on a line, sometimes grouped with
-brackets. Each instruction operates on some *operands* and returns some *results*.
+Mu functions or 'recipes' are lists of instructions, each on a line, sometimes
+grouped with brackets. Each instruction operates on some *ingredients* and
+returns some *results*.
 
 ```
-  [results] <- instruction [operands]
+  [results] <- instruction [ingredients]
 ```
 
-Result and operand values have to be simple; you can't nest operations. But
-you can have any number of values. In particular you can have any number of
+Result and ingredient *reagents* have to be simple; you can't nest operations.
+But you can have any number of them. In particular you can have any number of
 results. For example, you can perform integer division as follows:
 
 ```
   quotient:integer, remainder:integer <- divide-with-remainder 11:literal, 3:literal
 ```
 
-Each value provides its name as well as its type separated by a colon. Types
+Each reagent provides its name as well as its type separated by a colon. Types
 can be multiple words, like:
 
-```lisp
-  x:integer-array:3  ; x is an array of 3 integers
-  y:list:integer  ; y is a list of integers
+```python
+  x:array:integer:3  # x is an array of 3 integers
+  y:list:integer  # y is a list of integers
 ```
 
 Try out the factorial program now:
@@ -119,25 +115,21 @@ Try out the factorial program now:
 ```shell
   $ ./mu factorial.mu
   result: 120  # factorial of 5
-  ...  # ignore the memory dump for now
 ```
-
-(The code in `factorial.mu` has a few more parentheses than the idealized
-syntax above. We'll drop them when we build a real parser.)
 
 ---
 
-The name of a value is for humans, but what the computer needs to access it is
+The name of a reagent is for humans, but what the computer needs to access it is
 its address. Mu maps names to addresses for you like in other languages, but
 in a more transparent, lightweight, hackable manner. This instruction:
 
-```lisp
+```python
   z:integer <- add x:integer, y:integer
 ```
 
 might turn into this:
 
-```lisp
+```python
   3:integer <- add 1:integer, 2:integer
 ```
 
@@ -150,15 +142,15 @@ doesn't preserve uniqueness of addresses across functions, so you need to
 organize your names into spaces. At the start of each function (like
 `factorial` above), set its *default space*:
 
-  ```lisp
-    default-space:space-address <- new space:literal, 30:literal
+  ```python
+    default-space:address:array:location <- new location:type, 30:literal
   ```
 
 Without this line, all variables in the function will be *global*, something
 you rarely want. (Luckily, this is also the sort of mistake that will be
 easily caught by tests. Later we'll automatically generate this boilerplate.)
 *With* this line, all addresses in your function will by default refer to one
-of the 30 slots inside this local space.
+of the 30 slots inside this local space. (If you need more, mu will complain.)
 
 Spaces can do more than just implement local variables. You can string them
 together, pass them around, return them from functions, share them between
@@ -171,18 +163,18 @@ identical to it.)
 To string two spaces together, write one into slot 0 of the other. This
 instruction chains a space received from its caller:
 
-```lisp
-  0:space-address <- next-input
+```python
+  0:address:array:location <- next-ingredient
 ```
 
 Once you've chained spaces together, you can access variables in them by
-adding a 'space' property to values:
+adding a 'space' property:
 
-```lisp
+```python
   3:integer/space:1
 ```
 
-This value is the integer in slot 3 of the space chained in slot 0 of the
+This reagent is the integer in slot 3 of the space chained in slot 0 of the
 default space. We usually call it slot 3 in the 'next space'. `/space:2` would
 be the next space of the next space, and so on.
 
@@ -193,11 +185,11 @@ in Mu provide the same functionality.
 
 ---
 
-You can append arbitrary properties to values besides types and spaces. Just
+You can append arbitrary properties to reagents besides types and spaces. Just
 separate them with slashes.
 
-```lisp
-  x:integer-array:3/uninitialized
+```python
+  x:array:integer:3/uninitialized
   y:string/tainted:yes
   z:list:integer/assign-once:true/assigned:false
 ```
@@ -210,9 +202,9 @@ system permits and forces them to use, you'll learn to create new checks that
 make sense for your specific program. If it makes sense to perform different
 checks in different parts of your program, you'll be able to do that.
 
-To summarize: Mu instructions have multiple operand and result values. Values
-can have multiple rows separated by slashes, and rows can have multiple
-columns separated by colons. The address of a value is always in the very
+To summarize: Mu instructions have multiple ingredient and result reagents.
+Values can have multiple rows separated by slashes, and rows can have multiple
+columns separated by colons. The address of a reagent is always in the very
 first column of the first row of its 'table'. You can visualize the last
 example above as:
 
@@ -227,10 +219,10 @@ example above as:
 An alternative way to define factorial is by inserting *labels* and later
 inserting code at them.
 
-```lisp
-  function factorial [
-    default-space:space-address <- new space:literal, 30:literal
-    n:integer <- next-operand
+```python
+  recipe factorial [
+    default-space:address:array:location <- new location:type, 30:literal
+    n:integer <- next-ingredient
     {
       base-case:
     }
@@ -238,17 +230,17 @@ inserting code at them.
   ]
 
   after base-case [
-    ; if n=0 return 1
+    # if n=0 return 1
     zero?:boolean <- equal n:integer, 0:literal
     break-unless zero?:boolean
     reply 1:literal
   ]
 
   after recursive-case [
-    ; return n*factorial(n-1)
-    tmp1:integer <- subtract n:integer, 1:literal
-    tmp2:integer <- factorial tmp1:integer
-    result:integer <- multiply n:integer, tmp2:integer
+    # return n * factorial(n-1)
+    x:integer <- subtract n:integer, 1:literal
+    subresult:integer <- factorial x:integer
+    result:integer <- multiply subresult:integer, n:integer
     reply result:integer
   ]
 ```
@@ -289,8 +281,6 @@ Yet another example forks two 'routines' that communicate over a channel:
 
   # The exact order above might shift over time, but you'll never see a number
   # consumed before it's produced.
-
-  error - deadlock detected
 ```
 
 Channels are the unit of synchronization in Mu. Blocking on channels are the
@@ -304,20 +294,13 @@ random memory locations. Bounds checking is baked deeply into the semantics,
 and pointer arithmetic will be mostly forbidden (except inside the memory
 allocator and a few other places).
 
-Notice also the error at the end. Mu can detect deadlock when running tests:
-routines waiting on channels that nobody will ever write to.
-
 ---
 
 Try running the tests:
 
 ```shell
-  $ ./mu test mu.arc.t
-  $  # all tests passed!
+  $ ./mu test
 ```
-
-Now start reading `mu.arc.t` to see how it works. A colorized copy of it is at
-`mu.arc.t.html` and http://akkartik.github.io/mu.
 
 You might also want to peek in the `.traces` directory, which automatically
 includes logs for each test showing you just how it ran on my machine. If Mu
