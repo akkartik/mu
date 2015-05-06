@@ -30,8 +30,8 @@ call(recipe_number r) :running_recipe(r), running_step_index(0), next_ingredient
 
 :(replace "Current_routine->calls.push(call(current_instruction().operation))" following "End Primitive Recipe Implementations")
 call callee(current_instruction().operation);
-for (vector<reagent>::const_iterator p = current_instruction().ingredients.begin(); p != current_instruction().ingredients.end(); ++p) {
-  callee.ingredient_atoms.push_back(read_memory(*p));
+for (size_t i = 0; i < current_instruction().ingredients.size(); ++i) {
+  callee.ingredient_atoms.push_back(read_memory(current_instruction().ingredients[i]));
 }
 Current_routine->calls.push(callee);
 
