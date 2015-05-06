@@ -1474,27 +1474,24 @@
         (zap next-space-generator* name)))))
 
 (proc check-numeric-address (instrs name)
-;?   (prn name) ;? 2
-  (on instr instrs
-;?     (prn instr) ;? 2
-    (when acons.instr  ; not a label
-      (let (oargs op args)  (parse-instr instr)
-        (each arg oargs
-;?           (prn " " arg) ;? 2
-          (when (and acons.arg  ; not dummy _ or raw string
-                     (isa v.arg 'int)
-                     (~is v.arg 0)
-                     (~pos '(raw) metadata.arg)
-                     (~literal? arg))
-            (prn "using a raw integer address @arg in @name (instruction #@index)")))
-        (each arg args
-;?           (prn " " arg) ;? 2
-          (when (and acons.arg  ; not dummy _ or raw string
-                     (isa v.arg 'int)
-                     (~is v.arg 0)
-                     (~pos '(raw) metadata.arg)
-                     (~literal? arg))
-            (prn "using a raw integer address @arg in @name (instruction #@index)")))))))
+  (unless allow-raw-addresses*
+    (on instr instrs
+      (when acons.instr  ; not a label
+        (let (oargs op args)  (parse-instr instr)
+          (each arg oargs
+            (when (and acons.arg  ; not dummy _ or raw string
+                       (isa v.arg 'int)
+                       (~is v.arg 0)
+                       (~pos '(raw) metadata.arg)
+                       (~literal? arg))
+              (prn "using a raw integer address @repr.arg in @name (instruction #@index)")))
+          (each arg args
+            (when (and acons.arg  ; not dummy _ or raw string
+                       (isa v.arg 'int)
+                       (~is v.arg 0)
+                       (~pos '(raw) metadata.arg)
+                       (~literal? arg))
+              (prn "using a raw integer address @repr.arg in @name (instruction #@index)"))))))))
 
 ;; literate tangling system for reordering code
 
