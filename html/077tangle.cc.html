@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/077tangle.cc.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.CommentedCode { color: #6c6c6c; }
+.Constant { color: #008080; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.Identifier { color: #008080; }
+.traceContains { color: #008000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Allow code for recipes to be pulled in from multiple places.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: TODO: switch recipe.steps to a more efficient data structure.</span>
+
+<span class="Delimiter">:(scenario tangle_before)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  +label1
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+
+before +label1 [
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+<span class="traceContains">+mem: storing 0 in location 2</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+<span class="Comment"># nothing else</span>
+$mem: <span class="Constant">3</span>
+
+<span class="Comment">//: while loading recipes, load before/after fragments</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+map&lt;string <span class="Comment">/*</span><span class="Comment">label</span><span class="Comment">*/</span><span class="Delimiter">,</span> recipe&gt; Before_fragments<span class="Delimiter">,</span> After_fragments<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+Before_fragments<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+After_fragments<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+
+<span class="Delimiter">:(before &quot;End Command Handlers&quot;)</span>
+else if <span class="Delimiter">(</span>command == <span class="Constant">&quot;before&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  string label = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  recipe tmp = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  Before_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>Before_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+<span class="Delimiter">}</span>
+else if <span class="Delimiter">(</span>command == <span class="Constant">&quot;after&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  string label = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  recipe tmp = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  After_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>After_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: after all recipes are loaded, insert fragments at appropriate labels</span>
+
+<span class="Delimiter">:(after &quot;int main&quot;)</span>
+  Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>insert_fragments<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(code)</span>
+void insert_fragments<span class="Delimiter">(</span>const recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// Copy into a new vector because insertions invalidate iterators.</span>
+  <span class="Comment">// But this way we can't insert into labels created inside before/after.</span>
+  vector&lt;instruction&gt; result<span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    const instruction inst = Recipe[r]<span class="Delimiter">.</span>steps[i]<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    if <span class="Delimiter">(</span>Before_fragments<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label<span class="Delimiter">)</span> != Before_fragments<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      result<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> Before_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> Before_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+    <span class="Delimiter">}</span>
+    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>After_fragments<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label<span class="Delimiter">)</span> != After_fragments<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      result<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> After_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> After_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="CommentedCode">//?   for (index_t i = 0; i &lt; result.size(); ++i) { //? 1</span>
+<span class="CommentedCode">//?     cout &lt;&lt; result[i].to_string() &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?   } //? 1</span>
+  Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario tangle_before_and_after)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  +label1
+  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+before +label1 [
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+after +label1 [
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+<span class="traceContains">+mem: storing 0 in location 2</span>
+<span class="Comment"># label1</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+<span class="traceContains">+mem: storing 0 in location 4</span>
+<span class="Comment"># nothing else</span>
+$mem: <span class="Constant">4</span>
+
+<span class="Delimiter">:(scenario tangle_keeps_labels_separate)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  +label1
+  +label2
+  <span class="Constant">6</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+before +label1 [
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+after +label1 [
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+before +label2 [
+  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+after +label2 [
+  <span class="Constant">5</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+<span class="traceContains">+mem: storing 0 in location 2</span>
+<span class="Comment"># label1</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+<span class="Comment"># 'after' fragments for earlier label always go before 'before' fragments for later label</span>
+<span class="traceContains">+mem: storing 0 in location 4</span>
+<span class="Comment"># label2</span>
+<span class="traceContains">+mem: storing 0 in location 5</span>
+<span class="traceContains">+mem: storing 0 in location 6</span>
+<span class="Comment"># nothing else</span>
+$mem: <span class="Constant">6</span>
+
+<span class="Delimiter">:(scenario tangle_stacks_multiple_fragments)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  +label1
+  <span class="Constant">6</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+before +label1 [
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+after +label1 [
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+before +label1 [
+  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+after +label1 [
+  <span class="Constant">5</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+<span class="Comment"># 'before' fragments stack in order</span>
+<span class="traceContains">+mem: storing 0 in location 2</span>
+<span class="traceContains">+mem: storing 0 in location 4</span>
+<span class="Comment"># label1</span>
+<span class="Comment"># 'after' fragments stack in reverse order</span>
+<span class="traceContains">+mem: storing 0 in location 5</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+<span class="traceContains">+mem: storing 0 in location 6</span>
+<span class="Comment"># nothing else</span>
+$mem: <span class="Constant">6</span>
+
+<span class="Delimiter">:(scenario tangle_supports_fragments_with_multiple_instructions)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  +label1
+  <span class="Constant">6</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+before +label1 [
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+after +label1 [
+  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">5</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+<span class="traceContains">+mem: storing 0 in location 2</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+<span class="Comment"># label1</span>
+<span class="traceContains">+mem: storing 0 in location 4</span>
+<span class="traceContains">+mem: storing 0 in location 5</span>
+<span class="traceContains">+mem: storing 0 in location 6</span>
+<span class="Comment"># nothing else</span>
+$mem: <span class="Constant">6</span>
+
+<span class="Delimiter">:(scenario tangle_tangles_into_all_labels_with_same_name)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  +label1
+  +label1
+  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+before +label1 [
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+after +label1 [
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+<span class="traceContains">+mem: storing 0 in location 2</span>
+<span class="Comment"># label1</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+<span class="traceContains">+mem: storing 0 in location 2</span>
+<span class="Comment"># label1</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+<span class="traceContains">+mem: storing 0 in location 4</span>
+<span class="Comment"># nothing else</span>
+$mem: <span class="Constant">6</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

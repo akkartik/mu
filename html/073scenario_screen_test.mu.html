@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/073scenario_screen_test.mu.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.Identifier { color: #008080; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># To check our support for screens in scenarios, rewrite tests from print.mu</span>
+
+scenario print-character-at-top-left2 <span class="Delimiter">[</span>
+  assume-screen 3:literal/width, 2:literal/height
+  run <span class="Delimiter">[</span>
+    screen:address<span class="Special"> &lt;- </span>print-character screen:address, 97:literal  <span class="Comment"># 'a'</span>
+  <span class="Delimiter">]</span>
+  screen-should-contain <span class="Delimiter">[</span>
+   <span class="Identifier"> .a</span>  .
+    .   .
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario clear-line-erases-printed-characters2 <span class="Delimiter">[</span>
+  assume-screen 5:literal/width, 3:literal/height
+  run <span class="Delimiter">[</span>
+    <span class="Comment"># print a character</span>
+    screen:address<span class="Special"> &lt;- </span>print-character screen:address, 97:literal  <span class="Comment"># 'a'</span>
+    <span class="Comment"># move cursor to start of line</span>
+    screen:address<span class="Special"> &lt;- </span>move-cursor screen:address, 0:literal/row, 0:literal/column
+    <span class="Comment"># clear line</span>
+    screen:address<span class="Special"> &lt;- </span>clear-line screen:address
+  <span class="Delimiter">]</span>
+  screen-should-contain <span class="Delimiter">[</span>
+    .     .
+    .     .
+    .     .
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

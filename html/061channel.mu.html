@@ -1,0 +1,301 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/061channel.mu.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.Identifier { color: #008080; }
+.SalientComment { color: #00ffff; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># Mu synchronizes using channels rather than locks, like Erlang and Go.</span>
+<span class="Comment">#</span>
+<span class="Comment"># The two ends of a channel will usually belong to different routines, but</span>
+<span class="Comment"># each end should only be used by a single one. Don't try to read from or</span>
+<span class="Comment"># write to it from multiple routines at once.</span>
+<span class="Comment">#</span>
+<span class="Comment"># The key property of channels is that writing to a full channel or reading</span>
+<span class="Comment"># from an empty one will put the current routine in 'waiting' state until the</span>
+<span class="Comment"># operation can be completed.</span>
+
+scenario channel <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:channel<span class="Special"> &lt;- </span>init-channel 3:literal/capacity
+    1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, 34:literal
+    2:integer, 1:address:channel<span class="Special"> &lt;- </span>read 1:address:channel
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2<span class="Special"> &lt;- </span>34
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+container channel <span class="Delimiter">[</span>
+  <span class="Comment"># To avoid locking, writer and reader will never write to the same location.</span>
+  <span class="Comment"># So channels will include fields in pairs, one for the writer and one for the</span>
+  <span class="Comment"># reader.</span>
+  first-full:integer  <span class="Comment"># for write</span>
+  first-free:integer  <span class="Comment"># for read</span>
+  <span class="Comment"># A circular buffer contains values from index first-full up to (but not</span>
+  <span class="Comment"># including) index first-empty. The reader always modifies it at first-full,</span>
+  <span class="Comment"># while the writer always modifies it at first-empty.</span>
+  data:address:array:location
+<span class="Delimiter">]</span>
+
+<span class="Comment"># result:address:channel &lt;- init-channel capacity:integer</span>
+recipe init-channel <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  <span class="Comment"># result = new channel</span>
+  result:address:channel<span class="Special"> &lt;- </span>new channel:type
+  <span class="Comment"># result.first-full = 0</span>
+  full:address:integer<span class="Special"> &lt;- </span>get-address result:address:channel/deref, first-full:offset
+  full:address:integer/deref<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Comment"># result.first-free = 0</span>
+  free:address:integer<span class="Special"> &lt;- </span>get-address result:address:channel/deref, first-free:offset
+  free:address:integer/deref<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Comment"># result.data = new location[ingredient+1]</span>
+  capacity:integer<span class="Special"> &lt;- </span>next-ingredient
+  capacity:integer<span class="Special"> &lt;- </span>add capacity:integer, 1:literal  <span class="Comment"># unused slot for 'full?' below</span>
+  dest:address:address:array:location<span class="Special"> &lt;- </span>get-address result:address:channel/deref, data:offset
+  dest:address:address:array:location/deref<span class="Special"> &lt;- </span>new location:type, capacity:integer
+  <span class="Identifier">reply</span> result:address:channel
+<span class="Delimiter">]</span>
+
+<span class="Comment"># chan:address:channel &lt;- write chan:address:channel, val:location</span>
+recipe write <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  chan:address:channel<span class="Special"> &lt;- </span>next-ingredient
+  val:location<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Delimiter">{</span>
+    <span class="Comment"># block if chan is full</span>
+    full:boolean<span class="Special"> &lt;- </span>channel-full? chan:address:channel
+    <span class="Identifier">break-unless</span> full:boolean
+    full-address:address:integer<span class="Special"> &lt;- </span>get-address chan:address:channel/deref, first-full:offset
+    wait-for-location full-address:address:integer/deref
+  <span class="Delimiter">}</span>
+  <span class="Comment"># store val</span>
+  circular-buffer:address:array:location<span class="Special"> &lt;- </span>get chan:address:channel/deref, data:offset
+  free:address:integer<span class="Special"> &lt;- </span>get-address chan:address:channel/deref, first-free:offset
+  dest:address:location<span class="Special"> &lt;- </span>index-address circular-buffer:address:array:location/deref, free:address:integer/deref
+  dest:address:location/deref<span class="Special"> &lt;- </span>copy val:location
+  <span class="Comment"># increment free</span>
+  free:address:integer/deref<span class="Special"> &lt;- </span>add free:address:integer/deref, 1:literal
+  <span class="Delimiter">{</span>
+    <span class="Comment"># wrap free around to 0 if necessary</span>
+    len:integer<span class="Special"> &lt;- </span>length circular-buffer:address:array:location/deref
+    at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal free:address:integer/deref, len:integer
+    <span class="Identifier">break-unless</span> at-end?:boolean
+    free:address:integer/deref<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Delimiter">}</span>
+  <span class="Identifier">reply</span> chan:address:channel/same-as-ingredient:0
+<span class="Delimiter">]</span>
+
+<span class="Comment"># result:location, chan:address:channel &lt;- read chan:address:channel</span>
+recipe read <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  chan:address:channel<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Delimiter">{</span>
+    <span class="Comment"># block if chan is empty</span>
+    empty:boolean<span class="Special"> &lt;- </span>channel-empty? chan:address:channel
+    <span class="Identifier">break-unless</span> empty:boolean
+    free-address:address:integer<span class="Special"> &lt;- </span>get-address chan:address:channel/deref, first-free:offset
+    wait-for-location free-address:address:integer/deref
+  <span class="Delimiter">}</span>
+  <span class="Comment"># read result</span>
+  full:address:integer<span class="Special"> &lt;- </span>get-address chan:address:channel/deref, first-full:offset
+  circular-buffer:address:array:location<span class="Special"> &lt;- </span>get chan:address:channel/deref, data:offset
+  result:location<span class="Special"> &lt;- </span>index circular-buffer:address:array:location/deref, full:address:integer/deref
+  <span class="Comment"># increment full</span>
+  full:address:integer/deref<span class="Special"> &lt;- </span>add full:address:integer/deref, 1:literal
+  <span class="Delimiter">{</span>
+    <span class="Comment"># wrap full around to 0 if necessary</span>
+    len:integer<span class="Special"> &lt;- </span>length circular-buffer:address:array:location/deref
+    at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal full:address:integer/deref, len:integer
+    <span class="Identifier">break-unless</span> at-end?:boolean
+    full:address:integer/deref<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Delimiter">}</span>
+  <span class="Identifier">reply</span> result:location, chan:address:channel/same-as-ingredient:0
+<span class="Delimiter">]</span>
+
+scenario channel-initialization <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:channel<span class="Special"> &lt;- </span>init-channel 3:literal/capacity
+    2:integer<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-full:offset
+    3:integer<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-free:offset
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2<span class="Special"> &lt;- </span>0  <span class="Comment"># first-full</span>
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># first-free</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario channel-write-increments-free <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:channel<span class="Special"> &lt;- </span>init-channel 3:literal/capacity
+    1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, 34:literal
+    2:integer<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-full:offset
+    3:integer<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-free:offset
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2<span class="Special"> &lt;- </span>0  <span class="Comment"># first-full</span>
+    3<span class="Special"> &lt;- </span>1  <span class="Comment"># first-free</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario channel-read-increments-full <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:channel<span class="Special"> &lt;- </span>init-channel 3:literal/capacity
+    1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, 34:literal
+    _, 1:address:channel<span class="Special"> &lt;- </span>read 1:address:channel
+    2:integer<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-full:offset
+    3:integer<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-free:offset
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2<span class="Special"> &lt;- </span>1  <span class="Comment"># first-full</span>
+    3<span class="Special"> &lt;- </span>1  <span class="Comment"># first-free</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario channel-wrap <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    <span class="Comment"># channel with just 1 slot</span>
+    1:address:channel<span class="Special"> &lt;- </span>init-channel 1:literal/capacity
+    <span class="Comment"># write and read a value</span>
+    1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, 34:literal
+    _, 1:address:channel<span class="Special"> &lt;- </span>read 1:address:channel
+    <span class="Comment"># first-free will now be 1</span>
+    2:integer<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-free:offset
+    3:integer<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-free:offset
+    <span class="Comment"># write second value, verify that first-free wraps</span>
+    1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, 34:literal
+    4:integer<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-free:offset
+    <span class="Comment"># read second value, verify that first-full wraps</span>
+    _, 1:address:channel<span class="Special"> &lt;- </span>read 1:address:channel
+    5:integer<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-full:offset
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2<span class="Special"> &lt;- </span>1  <span class="Comment"># first-free after first write</span>
+    3<span class="Special"> &lt;- </span>1  <span class="Comment"># first-full after first read</span>
+    4<span class="Special"> &lt;- </span>0  <span class="Comment"># first-free after second write, wrapped</span>
+    5<span class="Special"> &lt;- </span>0  <span class="Comment"># first-full after second read, wrapped</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+<span class="SalientComment">## helpers</span>
+
+<span class="Comment"># An empty channel has first-empty and first-full both at the same value.</span>
+recipe channel-empty? <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  chan:address:channel<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># return chan.first-full == chan.first-free</span>
+  full:integer<span class="Special"> &lt;- </span>get chan:address:channel/deref, first-full:offset
+  free:integer<span class="Special"> &lt;- </span>get chan:address:channel/deref, first-free:offset
+  result:boolean<span class="Special"> &lt;- </span>equal full:integer, free:integer
+  <span class="Identifier">reply</span> result:boolean
+<span class="Delimiter">]</span>
+
+<span class="Comment"># A full channel has first-empty just before first-full, wasting one slot.</span>
+<span class="Comment"># (Other alternatives: <a href="https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)">https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)</a></span>
+recipe channel-full? <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  chan:address:channel<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># tmp = chan.first-free + 1</span>
+  tmp:integer<span class="Special"> &lt;- </span>get chan:address:channel/deref, first-free:offset
+  tmp:integer<span class="Special"> &lt;- </span>add tmp:integer, 1:literal
+  <span class="Delimiter">{</span>
+    <span class="Comment"># if tmp == chan.capacity, tmp = 0</span>
+    len:integer<span class="Special"> &lt;- </span>channel-capacity chan:address:channel
+    at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal tmp:integer, len:integer
+    <span class="Identifier">break-unless</span> at-end?:boolean
+    tmp:integer<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Delimiter">}</span>
+  <span class="Comment"># return chan.first-full == tmp</span>
+  full:integer<span class="Special"> &lt;- </span>get chan:address:channel/deref, first-full:offset
+  result:boolean<span class="Special"> &lt;- </span>equal full:integer, tmp:integer
+  <span class="Identifier">reply</span> result:boolean
+<span class="Delimiter">]</span>
+
+<span class="Comment"># result:integer &lt;- channel-capacity chan:address:channel</span>
+recipe channel-capacity <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  chan:address:channel<span class="Special"> &lt;- </span>next-ingredient
+  q:address:array:location<span class="Special"> &lt;- </span>get chan:address:channel/deref, data:offset
+  result:integer<span class="Special"> &lt;- </span>length q:address:array:location/deref
+  <span class="Identifier">reply</span> result:integer
+<span class="Delimiter">]</span>
+
+scenario channel-new-empty-not-full <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:channel<span class="Special"> &lt;- </span>init-channel 3:literal/capacity
+    2:integer<span class="Special"> &lt;- </span>channel-empty? 1:address:channel
+    3:integer<span class="Special"> &lt;- </span>channel-full? 1:address:channel
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2<span class="Special"> &lt;- </span>1  <span class="Comment"># empty?</span>
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># full?</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario channel-write-not-empty <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:channel<span class="Special"> &lt;- </span>init-channel 3:literal/capacity
+    1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, 34:literal
+    2:integer<span class="Special"> &lt;- </span>channel-empty? 1:address:channel
+    3:integer<span class="Special"> &lt;- </span>channel-full? 1:address:channel
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2<span class="Special"> &lt;- </span>0  <span class="Comment"># empty?</span>
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># full?</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario channel-write-full <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:channel<span class="Special"> &lt;- </span>init-channel 1:literal/capacity
+    1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, 34:literal
+    2:integer<span class="Special"> &lt;- </span>channel-empty? 1:address:channel
+    3:integer<span class="Special"> &lt;- </span>channel-full? 1:address:channel
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2<span class="Special"> &lt;- </span>0  <span class="Comment"># empty?</span>
+    3<span class="Special"> &lt;- </span>1  <span class="Comment"># full?</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario channel-read-not-full <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:channel<span class="Special"> &lt;- </span>init-channel 1:literal/capacity
+    1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, 34:literal
+    _, 1:address:channel<span class="Special"> &lt;- </span>read 1:address:channel
+    2:integer<span class="Special"> &lt;- </span>channel-empty? 1:address:channel
+    3:integer<span class="Special"> &lt;- </span>channel-full? 1:address:channel
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2<span class="Special"> &lt;- </span>1  <span class="Comment"># empty?</span>
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># full?</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

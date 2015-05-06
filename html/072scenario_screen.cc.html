@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/072scenario_screen.cc.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.cSpecial { color: #008000; }
+.Identifier { color: #008080; }
+.Constant { color: #008080; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.CommentedCode { color: #6c6c6c; }
+.traceContains { color: #008000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Clean syntax to manipulate and check the screen in scenarios.</span>
+<span class="Comment">//: Instructions 'assume-screen' and 'screen-should-contain' implicitly create</span>
+<span class="Comment">//: a variable called 'screen' that is accessible inside other 'run'</span>
+<span class="Comment">//: instructions in the scenario.</span>
+
+<span class="Delimiter">:(scenarios run_mu_scenario)</span>
+<span class="Delimiter">:(scenario screen_in_scenario)</span>
+scenario screen-in-scenario [
+<span class="CommentedCode">#?   $start-tracing</span>
+  assume-screen <span class="Constant">5</span>:literal/width<span class="Delimiter">,</span> <span class="Constant">3</span>:literal/height
+  run [
+    screen:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>:literal  <span class="Comment"># 'a'</span>
+  ]
+  screen-should-contain [
+  <span class="Comment">#  01234</span>
+    <span class="Delimiter">.</span>a    <span class="Delimiter">.</span>
+    <span class="Delimiter">.</span>     <span class="Delimiter">.</span>
+    <span class="Delimiter">.</span>     <span class="Delimiter">.</span>
+  ]
+<span class="CommentedCode">#?   $exit</span>
+]
+
+<span class="Delimiter">:(scenario screen_in_scenario_error)</span>
+<span class="CommentedCode">#? % cerr &lt;&lt; &quot;AAA\n&quot;;</span>
+<span class="Special">% Hide_warnings = true;</span>
+scenario screen-in-scenario-error [
+  assume-screen <span class="Constant">5</span>:literal/width<span class="Delimiter">,</span> <span class="Constant">3</span>:literal/height
+  run [
+    screen:address<span class="Special"> &lt;- </span>print-character screen:address<span class="Delimiter">,</span> <span class="Constant">97</span>:literal  <span class="Comment"># 'a'</span>
+  ]
+  screen-should-contain [
+  <span class="Comment">#  01234</span>
+    <span class="Delimiter">.</span>b    <span class="Delimiter">.</span>
+    <span class="Delimiter">.</span>     <span class="Delimiter">.</span>
+    <span class="Delimiter">.</span>     <span class="Delimiter">.</span>
+  ]
+]
+<span class="traceContains">+warn: expected screen location (0, 0) to contain 'b' instead of 'a'</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Comment">// Scenarios may not define default-space, so they should fit within the</span>
+<span class="Comment">// initial area of memory reserved for tests. We'll put the predefined</span>
+<span class="Comment">// variables available to them at the end of that region.</span>
+const size_t Max_variables_in_scenarios = Reserved_for_tests-<span class="Constant">100</span><span class="Delimiter">;</span>
+size_t Next_predefined_global_for_scenarios = Max_variables_in_scenarios<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+assert<span class="Delimiter">(</span>Next_predefined_global_for_scenarios &lt; Reserved_for_tests<span class="Delimiter">);</span>
+<span class="Delimiter">:(after &quot;transform_all()&quot; following &quot;case RUN:&quot;)</span>
+<span class="Comment">// There's a restriction on the number of variables 'run' can use, so that</span>
+<span class="Comment">// it can avoid colliding with the dynamic allocator in case it doesn't</span>
+<span class="Comment">// initialize a default-space.</span>
+assert<span class="Delimiter">(</span>Name[tmp_recipe[<span class="Constant">0</span>]][<span class="Constant">&quot;&quot;</span>] &lt; Max_variables_in_scenarios<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Comment">// Scenario Globals.</span>
+const size_t SCREEN = Next_predefined_global_for_scenarios++<span class="Delimiter">;</span>
+<span class="Comment">// End Scenario Globals.</span>
+<span class="Delimiter">:(before &quot;End Predefined Scenario Locals In Run&quot;)</span>
+Name[tmp_recipe[<span class="Constant">0</span>]][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;End Rewrite Instruction(curr)&quot;)</span>
+<span class="Comment">// rewrite `assume-screen width, height` to</span>
+<span class="Comment">// `screen:address &lt;- init-fake-screen width, height`</span>
+<span class="CommentedCode">//? cout &lt;&lt; &quot;before: &quot; &lt;&lt; curr.to_string() &lt;&lt; '\n'; //? 1</span>
+if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;assume-screen&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;init-fake-screen&quot;</span>]<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;screen:address&quot;</span><span class="Delimiter">));</span>
+  curr<span class="Delimiter">.</span>products[<span class="Constant">0</span>]<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>SCREEN<span class="Delimiter">);</span>
+<span class="CommentedCode">//? cout &lt;&lt; &quot;after: &quot; &lt;&lt; curr.to_string() &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//? cout &lt;&lt; &quot;AAA &quot; &lt;&lt; Recipe_number[&quot;init-fake-screen&quot;] &lt;&lt; '\n'; //? 1</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: screen-should-contain is a regular instruction</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+SCREEN_SHOULD_CONTAIN<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;screen-should-contain&quot;</span>] = SCREEN_SHOULD_CONTAIN<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case SCREEN_SHOULD_CONTAIN: <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cout &lt;&lt; &quot;AAA\n&quot;; //? 1</span>
+  check_screen<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+void check_screen<span class="Delimiter">(</span>const string&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>  <span class="Comment">// not supported</span>
+  index_t screen_location = Memory[SCREEN]<span class="Delimiter">;</span>
+  int data_offset = find_element_name<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;data&quot;</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>data_offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  index_t screen_data_location = screen_location+data_offset<span class="Delimiter">;</span>  <span class="Comment">// type: address:array:character</span>
+  index_t screen_data_start = Memory[screen_data_location]<span class="Delimiter">;</span>  <span class="Comment">// type: array:character</span>
+  int width_offset = find_element_name<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-columns&quot;</span><span class="Delimiter">);</span>
+  size_t screen_width = Memory[screen_location+width_offset]<span class="Delimiter">;</span>
+  int height_offset = find_element_name<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-rows&quot;</span><span class="Delimiter">);</span>
+  size_t screen_height = Memory[screen_location+height_offset]<span class="Delimiter">;</span>
+  string expected_contents<span class="Delimiter">;</span>
+  istringstream in<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
+  in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>index_t row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">());</span>
+    assert<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">()</span> == <span class="Constant">'.'</span><span class="Delimiter">);</span>
+    for <span class="Delimiter">(</span>index_t column = <span class="Constant">0</span><span class="Delimiter">;</span> column &lt; screen_width<span class="Delimiter">;</span> ++column<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">());</span>
+      expected_contents += in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    <span class="Delimiter">}</span>
+    assert<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">()</span> == <span class="Constant">'.'</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span class="CommentedCode">//?   assert(in.get() == ']');</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking screen size at &quot;</span> &lt;&lt; screen_data_start<span class="Delimiter">;</span>
+<span class="CommentedCode">//?   cout &lt;&lt; expected_contents.size() &lt;&lt; '\n'; //? 1</span>
+  if <span class="Delimiter">(</span>Memory[screen_data_start] &gt; static_cast&lt;signed&gt;<span class="Delimiter">(</span>expected_contents<span class="Delimiter">.</span>size<span class="Delimiter">()))</span>
+    raise &lt;&lt; <span class="Constant">&quot;expected contents are larger than screen size &quot;</span> &lt;&lt; Memory[screen_data_start] &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  ++screen_data_start<span class="Delimiter">;</span>  <span class="Comment">// now skip length</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; expected_contents<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking location &quot;</span> &lt;&lt; screen_data_start+i<span class="Delimiter">;</span>
+    if <span class="Delimiter">((</span>!Memory[screen_data_start+i] &amp;&amp; !isspace<span class="Delimiter">(</span>expected_contents[i]<span class="Delimiter">))</span>  <span class="Comment">// uninitialized memory =&gt; spaces</span>
+        || <span class="Delimiter">(</span>Memory[screen_data_start+i] &amp;&amp; Memory[screen_data_start+i] != expected_contents[i]<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; &quot;CCC &quot; &lt;&lt; Trace_stream &lt;&lt; &quot; &quot; &lt;&lt; Hide_warnings &lt;&lt; '\n'; //? 1</span>
+      raise &lt;&lt; <span class="Constant">&quot;expected screen location (&quot;</span> &lt;&lt; i/screen_width &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; i%screen_width &lt;&lt; <span class="Constant">&quot;) to contain '&quot;</span> &lt;&lt; expected_contents[i] &lt;&lt; <span class="Constant">&quot;' instead of '&quot;</span> &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>Memory[screen_data_start+i]<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+      Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

@@ -1,0 +1,298 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/024compare.cc.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.Constant { color: #008080; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.Identifier { color: #008080; }
+.traceContains { color: #008000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Comparison primitives</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+EQUAL<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;equal&quot;</span>] = EQUAL<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case EQUAL: <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  vector&lt;long long int&gt; arg0 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 1 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  vector&lt;long long int&gt; arg1 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">);</span>
+  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
+  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>equal<span class="Delimiter">(</span>arg0<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> arg0<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> arg1<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product 0 is &quot;</span> &lt;&lt; result[<span class="Constant">0</span>]<span class="Delimiter">;</span>
+  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario equal)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 34</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 33</span>
+<span class="traceContains">+run: product 0 is 0</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+
+<span class="Delimiter">:(scenario equal2)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 34</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 34</span>
+<span class="traceContains">+run: product 0 is 1</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+GREATER_THAN<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;greater-than&quot;</span>] = GREATER_THAN<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case GREATER_THAN: <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  vector&lt;long long int&gt; arg0 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>arg0<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 1 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  vector&lt;long long int&gt; arg1 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>arg1<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
+  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg0[<span class="Constant">0</span>] &gt; arg1[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product 0 is &quot;</span> &lt;&lt; result[<span class="Constant">0</span>]<span class="Delimiter">;</span>
+  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario greater_than)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>greater-than <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 34</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 33</span>
+<span class="traceContains">+run: product 0 is 1</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(scenario greater_than2)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>greater-than <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 34</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 34</span>
+<span class="traceContains">+run: product 0 is 0</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+LESSER_THAN<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;lesser-than&quot;</span>] = LESSER_THAN<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case LESSER_THAN: <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  vector&lt;long long int&gt; arg0 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>arg0<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 1 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  vector&lt;long long int&gt; arg1 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>arg1<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
+  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg0[<span class="Constant">0</span>] &lt; arg1[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product 0 is &quot;</span> &lt;&lt; result[<span class="Constant">0</span>]<span class="Delimiter">;</span>
+  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario lesser_than)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">32</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>lesser-than <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 32</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 33</span>
+<span class="traceContains">+run: product 0 is 1</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(scenario lesser_than2)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>lesser-than <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 34</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 33</span>
+<span class="traceContains">+run: product 0 is 0</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+GREATER_OR_EQUAL<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;greater-or-equal&quot;</span>] = GREATER_OR_EQUAL<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case GREATER_OR_EQUAL: <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  vector&lt;long long int&gt; arg0 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>arg0<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 1 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  vector&lt;long long int&gt; arg1 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>arg1<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
+  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg0[<span class="Constant">0</span>] &gt;= arg1[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product 0 is &quot;</span> &lt;&lt; result[<span class="Constant">0</span>]<span class="Delimiter">;</span>
+  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario greater_or_equal)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>greater-or-equal <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 34</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 33</span>
+<span class="traceContains">+run: product 0 is 1</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(scenario greater_or_equal2)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>greater-or-equal <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 34</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 34</span>
+<span class="traceContains">+run: product 0 is 1</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(scenario greater_or_equal3)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>greater-or-equal <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 34</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 35</span>
+<span class="traceContains">+run: product 0 is 0</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+LESSER_OR_EQUAL<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;lesser-or-equal&quot;</span>] = LESSER_OR_EQUAL<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case LESSER_OR_EQUAL: <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  vector&lt;long long int&gt; arg0 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>arg0<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 1 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  vector&lt;long long int&gt; arg1 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>arg1<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
+  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg0[<span class="Constant">0</span>] &lt;= arg1[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product 0 is &quot;</span> &lt;&lt; result[<span class="Constant">0</span>]<span class="Delimiter">;</span>
+  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario lesser_or_equal)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">32</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>lesser-or-equal <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 32</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 33</span>
+<span class="traceContains">+run: product 0 is 1</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(scenario lesser_or_equal2)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>lesser-or-equal <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 33</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 33</span>
+<span class="traceContains">+run: product 0 is 1</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(scenario lesser_or_equal3)</span>
+recipe main [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>lesser-or-equal <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+]
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+run: ingredient 0 is 1</span>
+<span class="traceContains">+mem: location 1 is 34</span>
+<span class="traceContains">+run: ingredient 1 is 2</span>
+<span class="traceContains">+mem: location 2 is 33</span>
+<span class="traceContains">+run: product 0 is 0</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/045closure_name.cc.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.cSpecial { color: #008000; }
+.Identifier { color: #008080; }
+.Constant { color: #008080; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.CommentedCode { color: #6c6c6c; }
+.traceContains { color: #008000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Writing to a literal (not computed) address of 0 in a recipe chains two</span>
+<span class="Comment">//: spaces together. When a variable has a property of /space:1, it looks up</span>
+<span class="Comment">//: the variable in the chained/surrounding space. /space:2 looks up the</span>
+<span class="Comment">//: surrounding space of the surrounding space, etc.</span>
+
+<span class="Delimiter">:(scenario closure)</span>
+recipe main [
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">30</span>:literal
+  <span class="Constant">1</span>:address:array:location/names:init-counter<span class="Special"> &lt;- </span>init-counter
+<span class="CommentedCode">#?   $print [AAAAAAAAAAAAAAAA]</span>
+<span class="CommentedCode">#?   $print 1:address:array:location</span>
+  <span class="Constant">2</span>:integer/<span class="Special">raw &lt;- </span>increment-counter <span class="Constant">1</span>:address:array:location/names:init-counter
+  <span class="Constant">3</span>:integer/<span class="Special">raw &lt;- </span>increment-counter <span class="Constant">1</span>:address:array:location/names:init-counter
+]
+
+recipe init-counter [
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">30</span>:literal
+  x:integer<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
+  y:integer<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># variable that will be incremented</span>
+  reply default-space:address:array:location
+]
+
+recipe increment-counter [
+  default-space:address:array:location<span class="Special"> &lt;- </span>new space:literal<span class="Delimiter">,</span> <span class="Constant">30</span>:literal
+  <span class="Constant">0</span>:address:array:location/names:init-counter<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># outer space must be created by 'init-counter' above</span>
+  y:integer/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>add y:integer/space:<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>:literal  <span class="Comment"># increment</span>
+  y:integer<span class="Special"> &lt;- </span>copy <span class="Constant">234</span>:literal  <span class="Comment"># dummy</span>
+  reply y:integer/space:<span class="Constant">1</span>
+]
+
+<span class="traceContains">+name: recipe increment-counter is surrounded by init-counter</span>
+<span class="traceContains">+mem: storing 5 in location 3</span>
+
+<span class="Comment">//: To make this work, compute the recipe that provides names for the</span>
+<span class="Comment">//: surrounding space of each recipe. This must happen before transform_names.</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+map&lt;recipe_number<span class="Delimiter">,</span> recipe_number&gt; Surrounding_space<span class="Delimiter">;</span>
+
+<span class="Delimiter">:(after &quot;int main&quot;)</span>
+  Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>collect_surrounding_spaces<span class="Delimiter">);</span>
+
+<span class="Delimiter">:(code)</span>
+void collect_surrounding_spaces<span class="Delimiter">(</span>const recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    const instruction&amp; inst = Recipe[r]<span class="Delimiter">.</span>steps[i]<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    for <span class="Delimiter">(</span>index_t j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products[j]<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products[j]<span class="Delimiter">.</span>name != <span class="Constant">&quot;0&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products[j]<span class="Delimiter">.</span>types<span class="Delimiter">.</span>size<span class="Delimiter">()</span> != <span class="Constant">3</span>
+          || inst<span class="Delimiter">.</span>products[j]<span class="Delimiter">.</span>types[<span class="Constant">0</span>] != Type_number[<span class="Constant">&quot;address&quot;</span>]
+          || inst<span class="Delimiter">.</span>products[j]<span class="Delimiter">.</span>types[<span class="Constant">1</span>] != Type_number[<span class="Constant">&quot;array&quot;</span>]
+          || inst<span class="Delimiter">.</span>products[j]<span class="Delimiter">.</span>types[<span class="Constant">2</span>] != Type_number[<span class="Constant">&quot;location&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        raise &lt;&lt; <span class="Constant">&quot;slot 0 should always have type address:array:location, but is &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products[j]<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+      vector&lt;string&gt; s = property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products[j]<span class="Delimiter">,</span> <span class="Constant">&quot;names&quot;</span><span class="Delimiter">);</span>
+      if <span class="Delimiter">(</span>s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+        raise &lt;&lt; <span class="Constant">&quot;slot 0 requires a /names property in recipe &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; die<span class="Delimiter">();</span>
+      if <span class="Delimiter">(</span>s<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> raise &lt;&lt; <span class="Constant">&quot;slot 0 should have a single value in /names, got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products[j]<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+      string surrounding_recipe_name = s[<span class="Constant">0</span>]<span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>Surrounding_space<span class="Delimiter">.</span>find<span class="Delimiter">(</span>r<span class="Delimiter">)</span> != Surrounding_space<span class="Delimiter">.</span>end<span class="Delimiter">()</span>
+          &amp;&amp; Surrounding_space[r] != Recipe_number[surrounding_recipe_name]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        raise &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; can have only one 'surrounding' recipe but has &quot;</span> &lt;&lt; Recipe[Surrounding_space[r]]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; and &quot;</span> &lt;&lt; surrounding_recipe_name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+      trace<span class="Delimiter">(</span><span class="Constant">&quot;name&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; is surrounded by &quot;</span> &lt;&lt; surrounding_recipe_name<span class="Delimiter">;</span>
+      Surrounding_space[r] = Recipe_number[surrounding_recipe_name]<span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: Once surrounding spaces are available, transform_names uses them to handle</span>
+<span class="Comment">//: /space properties.</span>
+
+<span class="Delimiter">:(replace{} &quot;index_t lookup_name(const reagent&amp; r, const recipe_number default_recipe)&quot;)</span>
+index_t lookup_name<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">,</span> const recipe_number default_recipe<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cout &lt;&lt; &quot;AAA &quot; &lt;&lt; default_recipe &lt;&lt; &quot; &quot; &lt;&lt; Recipe[default_recipe].name &lt;&lt; '\n'; //? 2</span>
+<span class="CommentedCode">//?   cout &lt;&lt; &quot;AAA &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
+  if <span class="Delimiter">(</span>!has_property<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>Name[default_recipe]<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> raise &lt;&lt; <span class="Constant">&quot;name not found: &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; die<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> Name[default_recipe][x<span class="Delimiter">.</span>name]<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  vector&lt;string&gt; p = property<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>p<span class="Delimiter">.</span>size<span class="Delimiter">()</span> != <span class="Constant">1</span><span class="Delimiter">)</span> raise &lt;&lt; <span class="Constant">&quot;/space property should have exactly one (non-negative integer) value</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  int n = to_int<span class="Delimiter">(</span>p[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>n &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  recipe_number surrounding_recipe = lookup_surrounding_recipe<span class="Delimiter">(</span>default_recipe<span class="Delimiter">,</span> n<span class="Delimiter">);</span>
+  set&lt;recipe_number&gt; done<span class="Delimiter">;</span>
+  vector&lt;recipe_number&gt; path<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> lookup_name<span class="Delimiter">(</span>x<span class="Delimiter">,</span> surrounding_recipe<span class="Delimiter">,</span> done<span class="Delimiter">,</span> path<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// If the recipe we need to lookup this name in doesn't have names done yet,</span>
+<span class="Comment">// recursively call transform_names on it.</span>
+index_t lookup_name<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">,</span> const recipe_number r<span class="Delimiter">,</span> set&lt;recipe_number&gt;&amp; done<span class="Delimiter">,</span> vector&lt;recipe_number&gt;&amp; path<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!Name[r]<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> Name[r][x<span class="Delimiter">.</span>name]<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>done<span class="Delimiter">.</span>find<span class="Delimiter">(</span>r<span class="Delimiter">)</span> != done<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;can't compute address of &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot; because &quot;</span><span class="Delimiter">;</span>
+    for <span class="Delimiter">(</span>index_t i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; path<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; path[i-<span class="Constant">1</span>] &lt;&lt; <span class="Constant">&quot; requires computing names of &quot;</span> &lt;&lt; path[i] &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    raise &lt;&lt; path[path<span class="Delimiter">.</span>size<span class="Delimiter">()</span>-<span class="Constant">1</span>] &lt;&lt; <span class="Constant">&quot; requires computing names of &quot;</span> &lt;&lt; r &lt;&lt; <span class="Constant">&quot;..ad infinitum</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; die<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  done<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  path<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  transform_names<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// Not passing 'done' through. Might this somehow cause an infinite loop?</span>
+  assert<span class="Delimiter">(</span>!Name[r]<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  <span class="Identifier">return</span> Name[r][x<span class="Delimiter">.</span>name]<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+recipe_number lookup_surrounding_recipe<span class="Delimiter">(</span>const recipe_number r<span class="Delimiter">,</span> index_t n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>n == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> r<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>Surrounding_space<span class="Delimiter">.</span>find<span class="Delimiter">(</span>r<span class="Delimiter">)</span> == Surrounding_space<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;don't know surrounding recipe of &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  assert<span class="Delimiter">(</span>Surrounding_space[r]<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> lookup_surrounding_recipe<span class="Delimiter">(</span>Surrounding_space[r]<span class="Delimiter">,</span> n-<span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: weaken use-before-set warnings just a tad</span>
+<span class="Delimiter">:(replace{} &quot;bool already_transformed(const reagent&amp; r, const map&lt;string, index_t&gt;&amp; names)&quot;)</span>
+bool already_transformed<span class="Delimiter">(</span>const reagent&amp; r<span class="Delimiter">,</span> const map&lt;string<span class="Delimiter">,</span> index_t&gt;&amp; names<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    vector&lt;string&gt; p = property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>p<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>p[<span class="Constant">0</span>] != <span class="Constant">&quot;0&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>r<span class="Delimiter">.</span>name<span class="Delimiter">)</span> != names<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
