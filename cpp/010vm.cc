@@ -4,7 +4,7 @@ typedef size_t recipe_number;
 :(before "End Globals")
 map<string, recipe_number> Recipe_number;
 map<recipe_number, recipe> Recipe;
-int Next_recipe_number = 1;
+recipe_number Next_recipe_number = 1;
 
 :(before "End Types")
 // Recipes are lists of instructions. To run a recipe, the computer runs its
@@ -74,7 +74,7 @@ typedef size_t type_number;
 :(before "End Globals")
 map<string, type_number> Type_number;
 map<type_number, type_info> Type;
-int Next_type_number = 1;
+type_number Next_type_number = 1;
 :(code)
 void setup_types() {
   Type.clear();  Type_number.clear();
