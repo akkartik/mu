@@ -30,6 +30,8 @@ bool is_equal(char* s, const char* lit) {
 }
 
 :(before "End Includes")
+#include<assert.h>
+
 #include<iostream>
 using std::istream;
 using std::ostream;
