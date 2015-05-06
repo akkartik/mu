@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/000organization.cc.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.Delimiter { color: #c000c0; }
+.Comment { color: #8080ff; }
+.Constant { color: #008080; }
+.Identifier { color: #008080; }
+.PreProc { color: #c000c0; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: You guessed right: the '000' prefix means you should start reading here.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: This project is setup to load all files with a numeric prefix. Just create</span>
+<span class="Comment">//: a new file and start hacking.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: The first few files (00*) are independent of what this program does, an</span>
+<span class="Comment">//: experimental skeleton that will hopefully make it both easier for others to</span>
+<span class="Comment">//: understand and more malleable, easier to rewrite and remould into radically</span>
+<span class="Comment">//: different shapes without breaking in subtle corner cases. The premise is</span>
+<span class="Comment">//: that understandability and rewrite-friendliness are related in a virtuous</span>
+<span class="Comment">//: cycle. Doing one well makes it easier to do the other.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Lower down, this file contains a legal, bare-bones C++ program. It doesn't</span>
+<span class="Comment">//: do anything yet; subsequent files will contain :(...) directives to insert</span>
+<span class="Comment">//: lines into it. For example:</span>
+<span class="Comment">//:   :(after &quot;more events&quot;)</span>
+<span class="Comment">//: This directive means: insert the following lines after a line in the</span>
+<span class="Comment">//: program containing the words &quot;more events&quot;.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: A simple tool is included to 'tangle' all the files together in sequence</span>
+<span class="Comment">//: according to their directives into a single source file containing all the</span>
+<span class="Comment">//: code for the project, and then feed the source file to the compiler.</span>
+<span class="Comment">//: (It'll drop these comments starting with a '//:' prefix that only make</span>
+<span class="Comment">//: sense before tangling.)</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Directives free up the programmer to order code for others to read rather</span>
+<span class="Comment">//: than as forced by the computer or compiler. Each individual feature can be</span>
+<span class="Comment">//: organized in a self-contained 'layer' that adds code to many different data</span>
+<span class="Comment">//: structures and functions all over the program. The right decomposition into</span>
+<span class="Comment">//: layers will let each layer make sense in isolation.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   &quot;If I look at any small part of it, I can see what is going on -- I don't</span>
+<span class="Comment">//:   need to refer to other parts to understand what something is doing.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   If I look at any large part in overview, I can see what is going on -- I</span>
+<span class="Comment">//:   don't need to know all the details to get it.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   Every level of detail is as locally coherent and as well thought-out as</span>
+<span class="Comment">//:   any other level.&quot;</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:       -- Richard Gabriel, &quot;The Quality Without A Name&quot;</span>
+<span class="Comment">//:          (<a href="http://dreamsongs.com/Files/PatternsOfSoftware.pdf">http://dreamsongs.com/Files/PatternsOfSoftware.pdf</a>, page 42)</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Directives are powerful; they permit inserting or modifying any point in</span>
+<span class="Comment">//: the program. Using them tastefully requires mapping out specific lines as</span>
+<span class="Comment">//: waypoints for future layers to hook into. Often such waypoints will be in</span>
+<span class="Comment">//: comments, capitalized to hint that other layers rely on their presence.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: A single waypoint might have many different code fragments hooking into</span>
+<span class="Comment">//: it from all over the codebase. Use 'before' directives to insert</span>
+<span class="Comment">//: code at a location in order, top to bottom, and 'after' directives to</span>
+<span class="Comment">//: insert code in reverse order. By convention waypoints intended for insertion</span>
+<span class="Comment">//: before begin with 'End'. Notice below how the layers line up above the &quot;End</span>
+<span class="Comment">//: Foo&quot; waypoint.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   File 001          File 002                File 003</span>
+<span class="Comment">//:   ============      ===================     ===================</span>
+<span class="Comment">//:   // Foo</span>
+<span class="Comment">//:   ------------</span>
+<span class="Comment">//:              &lt;----  :(before &quot;End Foo&quot;)</span>
+<span class="Comment">//:                     ....</span>
+<span class="Comment">//:                     ...</span>
+<span class="Comment">//:   ------------</span>
+<span class="Comment">//:              &lt;----------------------------  :(before &quot;End Foo&quot;)</span>
+<span class="Comment">//:                                             ....</span>
+<span class="Comment">//:                                             ...</span>
+<span class="Comment">//:   // End Foo</span>
+<span class="Comment">//:   ============</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Here's part of a layer in color: <a href="http://i.imgur.com/0eONnyX.png">http://i.imgur.com/0eONnyX.png</a>. Directives</span>
+<span class="Comment">//: are shaded dark.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Layers do more than just shuffle code around. Their guarantee is that it</span>
+<span class="Comment">//: should be possible to stop loading after any file/layer, build and run the</span>
+<span class="Comment">//: program, and pass all tests for loaded features. (Relevant is</span>
+<span class="Comment">//: <a href="http://youtube.com/watch?v=c8N72t7aScY">http://youtube.com/watch?v=c8N72t7aScY</a>, a scene from &quot;2001: A Space</span>
+<span class="Comment">//: Odyssey&quot;.) Use the included script called 'test_all_layers' to check the</span>
+<span class="Comment">//: guarantee if you make any changes.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: This 'subsetting guarantee' ensures that this directory contains a</span>
+<span class="Comment">//: cleaned-up narrative of the evolution of this codebase. Organizing</span>
+<span class="Comment">//: autobiographically allows a newcomer to rapidly orient himself, reading the</span>
+<span class="Comment">//: first few files to understand a simple gestalt of a program's core purpose</span>
+<span class="Comment">//: and features, and later gradually working his way through other features as</span>
+<span class="Comment">//: the need arises.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Programmers shouldn't need to understand everything about a program to hack</span>
+<span class="Comment">//: on it. But they shouldn't be prevented from a thorough understanding of</span>
+<span class="Comment">//: each aspect either. The goal of layers is to reward curiosity.</span>
+
+<span class="Comment">// Includes</span>
+<span class="Comment">// End Includes</span>
+
+<span class="Comment">// Types</span>
+<span class="Comment">// End Types</span>
+
+<span class="Comment">// prototypes are auto-generated; define your functions in any order</span>
+<span class="PreProc">#include </span><span class="Constant">&quot;function_list&quot;</span>  <span class="Comment">// by convention, files ending with '_list' are auto-generated</span>
+
+<span class="Comment">// Globals</span>
+<span class="Comment">// End Globals</span>
+
+int main<span class="Delimiter">(</span>int argc<span class="Delimiter">,</span> char* argv[]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+
+  <span class="Comment">// End One-time Setup</span>
+
+  <span class="Comment">// End Commandline Parsing</span>
+
+  <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// End Main</span>
+<span class="Delimiter">}</span>
+
+void setup<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Comment">// End Setup</span>
+<span class="Delimiter">}</span>
+
+void teardown<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Comment">// End Teardown</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: Without directives or with the :(code) directive, lines get added at the</span>
+<span class="Comment">//: end.</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

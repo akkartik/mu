@@ -1,0 +1,309 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/071print.mu.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.CommentedCode { color: #6c6c6c; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.Identifier { color: #008080; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># Wrappers around print primitives that take a 'screen' object and are thus</span>
+<span class="Comment"># easier to test.</span>
+
+container screen <span class="Delimiter">[</span>
+  num-rows:integer
+  num-columns:integer
+  cursor-row:integer
+  cursor-column:integer
+  data:address:array:character
+<span class="Delimiter">]</span>
+
+recipe init-fake-screen <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal/capacity
+  result:address:screen<span class="Special"> &lt;- </span>new screen:type
+  width:address:integer<span class="Special"> &lt;- </span>get-address result:address:screen/deref, num-columns:offset
+  width:address:integer/deref<span class="Special"> &lt;- </span>next-ingredient
+  height:address:integer<span class="Special"> &lt;- </span>get-address result:address:screen/deref, num-rows:offset
+  height:address:integer/deref<span class="Special"> &lt;- </span>next-ingredient
+  row:address:integer<span class="Special"> &lt;- </span>get-address result:address:screen/deref, cursor-row:offset
+  row:address:integer/deref<span class="Special"> &lt;- </span>copy 0:literal
+  column:address:integer<span class="Special"> &lt;- </span>get-address result:address:screen/deref, cursor-column:offset
+  column:address:integer/deref<span class="Special"> &lt;- </span>copy 0:literal
+  bufsize:integer<span class="Special"> &lt;- </span>multiply width:address:integer/deref, height:address:integer/deref
+  buf:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:screen/deref, data:offset
+  buf:address:address:array:character/deref<span class="Special"> &lt;- </span>new character:literal, bufsize:integer
+  clear-screen result:address:screen
+  <span class="Identifier">reply</span> result:address:screen
+<span class="Delimiter">]</span>
+
+recipe clear-screen <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  x:address:screen<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># if x exists</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="Comment"># clear fake screen</span>
+    buf:address:array:character<span class="Special"> &lt;- </span>get x:address:screen/deref, data:offset
+    max:integer<span class="Special"> &lt;- </span>length buf:address:array:character/deref
+    i:integer<span class="Special"> &lt;- </span>copy 0:literal
+    <span class="Delimiter">{</span>
+      done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:integer, max:integer
+      <span class="Identifier">break-if</span> done?:boolean
+      c:address:character<span class="Special"> &lt;- </span>index-address buf:address:array:character/deref, i:integer
+      c:address:character/deref<span class="Special"> &lt;- </span>copy <span class="Delimiter">[</span> <span class="Delimiter">]</span>
+      i:integer<span class="Special"> &lt;- </span>add i:integer, 1:literal
+      <span class="Identifier">loop</span>
+    <span class="Delimiter">}</span>
+    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise, real screen</span>
+  clear-display
+  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+<span class="Delimiter">]</span>
+
+recipe print-character <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  x:address:screen<span class="Special"> &lt;- </span>next-ingredient
+  c:character<span class="Special"> &lt;- </span>next-ingredient
+<span class="CommentedCode">#?   $print x:address:character #? 1</span>
+<span class="CommentedCode">#?   $print [ print-character #? 1</span>
+<span class="CommentedCode">#? ] #? 1</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># if x exists</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+<span class="CommentedCode">#?   $print [print-character2 #? 1</span>
+<span class="CommentedCode">#? ] #? 1</span>
+    <span class="Comment"># save character in fake screen</span>
+    row:address:integer<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-row:offset
+    column:address:integer<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
+    width:integer<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
+    index:integer<span class="Special"> &lt;- </span>multiply row:address:integer/deref, width:integer
+    index:integer<span class="Special"> &lt;- </span>add index:integer, column:address:integer/deref
+    buf:address:array:character<span class="Special"> &lt;- </span>get x:address:screen/deref, data:offset
+    cursor:address:character<span class="Special"> &lt;- </span>index-address buf:address:array:character/deref, index:integer
+<span class="CommentedCode">#?     $print cursor:address:character #? 1</span>
+<span class="CommentedCode">#?     $print [ #? 1</span>
+<span class="CommentedCode">#? ] #? 1</span>
+    cursor:address:character/deref<span class="Special"> &lt;- </span>copy c:character  <span class="Comment"># todo: newline, etc.</span>
+    <span class="Comment"># increment column unless it's already all the way to the right</span>
+    <span class="Delimiter">{</span>
+      at-right?:boolean<span class="Special"> &lt;- </span>equal column:address:integer/deref, width:integer
+      <span class="Identifier">break-if</span> at-right?:boolean
+      column:address:integer/deref<span class="Special"> &lt;- </span>add column:address:integer/deref, 1:literal
+    <span class="Delimiter">}</span>
+    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise, real screen</span>
+  print-character-to-display c:character
+  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+<span class="Delimiter">]</span>
+
+scenario print-character-at-top-left <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+<span class="CommentedCode">#?     $start-tracing #? 3</span>
+    1:address:screen<span class="Special"> &lt;- </span>init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, 97:literal  <span class="Comment"># 'a'</span>
+    2:address:array:character<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    3:array:character<span class="Special"> &lt;- </span>copy 2:address:array:character/deref
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    3<span class="Special"> &lt;- </span>6  <span class="Comment"># width*height</span>
+    4<span class="Special"> &lt;- </span>97  <span class="Comment"># 'a'</span>
+    5<span class="Special"> &lt;- </span>0
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+recipe clear-line <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  x:address:screen<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># if x exists, clear line in fake screen</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+    n:integer<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
+    column:address:integer<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
+    original-column:integer<span class="Special"> &lt;- </span>copy column:address:integer/deref
+    <span class="Comment"># space over the entire line</span>
+    <span class="Delimiter">{</span>
+      done?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:integer/deref, n:integer
+      <span class="Identifier">break-if</span> done?:boolean
+      print-character x:address:screen, <span class="Delimiter">[</span> <span class="Delimiter">]</span>  <span class="Comment"># implicitly updates 'column'</span>
+      <span class="Identifier">loop</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># now back to where the cursor was</span>
+    column:address:integer/deref<span class="Special"> &lt;- </span>copy original-column:integer
+    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise, real screen</span>
+  clear-line-on-display
+  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+<span class="Delimiter">]</span>
+
+recipe cursor-position <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  x:address:screen<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># if x exists, lookup cursor in fake screen</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+    row:integer<span class="Special"> &lt;- </span>get x:address:screen/deref, cursor-row:offset
+    column:integer<span class="Special"> &lt;- </span>get x:address:screen/deref, cursor-column:offset
+    <span class="Identifier">reply</span> row:integer, column:integer
+  <span class="Delimiter">}</span>
+  row:integer, column:integer<span class="Special"> &lt;- </span>cursor-position-on-display
+  <span class="Identifier">reply</span> row:integer, column:integer
+<span class="Delimiter">]</span>
+
+recipe move-cursor <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  x:address:screen<span class="Special"> &lt;- </span>next-ingredient
+  new-row:integer<span class="Special"> &lt;- </span>next-ingredient
+  new-column:integer<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># if x exists, move cursor in fake screen</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+    row:address:integer<span class="Special"> &lt;- </span>get-address x:address:screen/deref cursor-row:offset
+    row:address:integer/deref<span class="Special"> &lt;- </span>copy new-row:integer
+    column:address:integer<span class="Special"> &lt;- </span>get-address x:address:screen/deref cursor-column:offset
+    column:address:integer/deref<span class="Special"> &lt;- </span>copy new-column:integer
+    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise, real screen</span>
+  move-cursor-on-display new-row:integer, new-column:integer
+  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+<span class="Delimiter">]</span>
+
+scenario clear-line-erases-printed-characters <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+<span class="CommentedCode">#?     $start-tracing #? 3</span>
+    1:address:screen<span class="Special"> &lt;- </span>init-fake-screen 3:literal/width, 2:literal/height
+    <span class="Comment"># print a character</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, 97:literal  <span class="Comment"># 'a'</span>
+    <span class="Comment"># move cursor to start of line</span>
+    1:address:screen<span class="Special"> &lt;- </span>move-cursor 1:address:screen, 0:literal/row, 0:literal/column
+    <span class="Comment"># clear line</span>
+    1:address:screen<span class="Special"> &lt;- </span>clear-line 1:address:screen
+    2:address:array:character<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    3:array:character<span class="Special"> &lt;- </span>copy 2:address:array:character/deref
+  <span class="Delimiter">]</span>
+  <span class="Comment"># screen should be blank</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    3<span class="Special"> &lt;- </span>6  <span class="Comment"># width*height</span>
+    4<span class="Special"> &lt;- </span>0
+    5<span class="Special"> &lt;- </span>0
+    6<span class="Special"> &lt;- </span>0
+    7<span class="Special"> &lt;- </span>0
+    8<span class="Special"> &lt;- </span>0
+    9<span class="Special"> &lt;- </span>0
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+recipe cursor-down <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  x:address:screen<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># if x exists, move cursor in fake screen</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="Delimiter">{</span>
+      <span class="Comment"># if row &lt; height</span>
+      height:integer<span class="Special"> &lt;- </span>get x:address:screen/deref, num-rows:offset
+      row:address:integer<span class="Special"> &lt;- </span>get-address x:address:screen/deref cursor-row:offset
+      at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:address:integer/deref, height:integer
+      <span class="Identifier">break-if</span> at-bottom?:boolean
+      <span class="Comment"># row = row+1</span>
+      row:address:integer/deref<span class="Special"> &lt;- </span>add row:address:integer, 1:literal
+    <span class="Delimiter">}</span>
+    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise, real screen</span>
+  move-cursor-down-on-display
+  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+<span class="Delimiter">]</span>
+
+recipe cursor-up <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  x:address:screen<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># if x exists, move cursor in fake screen</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="Delimiter">{</span>
+      <span class="Comment"># if row &gt;= 0</span>
+      row:address:integer<span class="Special"> &lt;- </span>get-address x:address:screen/deref cursor-row:offset
+      at-top?:boolean<span class="Special"> &lt;- </span>lesser-than row:address:integer/deref, 0:literal
+      <span class="Identifier">break-if</span> at-top?:boolean
+      <span class="Comment"># row = row-1</span>
+      row:address:integer/deref<span class="Special"> &lt;- </span>subtract row:address:integer, 1:literal
+    <span class="Delimiter">}</span>
+    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise, real screen</span>
+  move-cursor-up-on-display
+  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+<span class="Delimiter">]</span>
+
+recipe cursor-right <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  x:address:screen<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># if x exists, move cursor in fake screen</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="Delimiter">{</span>
+      <span class="Comment"># if column &lt; width</span>
+      width:integer<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
+      column:address:integer<span class="Special"> &lt;- </span>get-address x:address:screen/deref cursor-column:offset
+      at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:integer/deref, width:integer
+      <span class="Identifier">break-if</span> at-bottom?:boolean
+      <span class="Comment"># column = column+1</span>
+      column:address:integer/deref<span class="Special"> &lt;- </span>add column:address:integer, 1:literal
+    <span class="Delimiter">}</span>
+    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise, real screen</span>
+  move-cursor-right-on-display
+  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+<span class="Delimiter">]</span>
+
+recipe cursor-left <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  x:address:screen<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># if x exists, move cursor in fake screen</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="Delimiter">{</span>
+      <span class="Comment"># if column &gt;= 0</span>
+      column:address:integer<span class="Special"> &lt;- </span>get-address x:address:screen/deref cursor-column:offset
+      at-top?:boolean<span class="Special"> &lt;- </span>lesser-than column:address:integer/deref, 0:literal
+      <span class="Identifier">break-if</span> at-top?:boolean
+      <span class="Comment"># column = column-1</span>
+      column:address:integer/deref<span class="Special"> &lt;- </span>subtract column:address:integer, 1:literal
+    <span class="Delimiter">}</span>
+    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise, real screen</span>
+  move-cursor-left-on-display
+  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+<span class="Delimiter">]</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

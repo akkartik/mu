@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/076scenario_keyboard_test.mu.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># To check our support for keyboards in scenarios, rewrite tests from</span>
+<span class="Comment"># scenario_keyboard.mu</span>
+<span class="Comment"># Tests for keyboard interface.</span>
+
+scenario read-key-in-mu <span class="Delimiter">[</span>
+  assume-keyboard <span class="Delimiter">[</span>abc<span class="Delimiter">]</span>
+  run <span class="Delimiter">[</span>
+    1:character, 2:boolean, keyboard:address<span class="Special"> &lt;- </span>read-key keyboard:address
+    3:character, 4:boolean, keyboard:address<span class="Special"> &lt;- </span>read-key keyboard:address
+    5:character, 6:boolean, keyboard:address<span class="Special"> &lt;- </span>read-key keyboard:address
+    7:character, 8:boolean, keyboard:address<span class="Special"> &lt;- </span>read-key keyboard:address
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    1<span class="Special"> &lt;- </span>97  <span class="Comment"># 'a'</span>
+    2<span class="Special"> &lt;- </span>1  <span class="Comment"># first read-key call found a character</span>
+    3<span class="Special"> &lt;- </span>98  <span class="Comment"># 'b'</span>
+    4<span class="Special"> &lt;- </span>1  <span class="Comment"># second read-key call found a character</span>
+    5<span class="Special"> &lt;- </span>99  <span class="Comment"># 'c'</span>
+    6<span class="Special"> &lt;- </span>1  <span class="Comment"># third read-key call found a character</span>
+    7<span class="Special"> &lt;- </span>0
+    8<span class="Special"> &lt;- </span>0  <span class="Comment"># fourth read-key call didn't find a character</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

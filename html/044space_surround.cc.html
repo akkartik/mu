@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/044space_surround.cc.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.CommentedCode { color: #6c6c6c; }
+.Constant { color: #008080; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.Identifier { color: #008080; }
+.traceContains { color: #008000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: So far you can have global variables by not setting default-space, and</span>
+<span class="Comment">//: local variables by setting default-space. You can isolate variables</span>
+<span class="Comment">//: between those extremes by creating 'surrounding' spaces.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: (Surrounding spaces are like lexical scopes in other languages.)</span>
+
+<span class="Delimiter">:(scenario surrounding_space)</span>
+<span class="Comment"># location 1 in space 1 refers to the space surrounding the default space, here 20.</span>
+recipe main [
+  <span class="Constant">10</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal  <span class="Comment"># pretend array</span>
+  <span class="Constant">20</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal  <span class="Comment"># pretend array</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:literal
+  <span class="Constant">0</span>:address:array:location/names:dummy<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>:literal  <span class="Comment"># later layers will explain the /names: property</span>
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">32</span>:literal
+  <span class="Constant">1</span>:integer/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+]
+<span class="traceContains">+run: instruction main/3</span>
+<span class="traceContains">+mem: storing 20 in location 11</span>
+<span class="traceContains">+run: instruction main/4</span>
+<span class="traceContains">+mem: storing 32 in location 12</span>
+<span class="traceContains">+run: instruction main/5</span>
+<span class="traceContains">+mem: storing 33 in location 22</span>
+
+<span class="Comment">//: If you think of a space as a collection of variables with a common</span>
+<span class="Comment">//: lifetime, surrounding allows managing shorter lifetimes inside a longer</span>
+<span class="Comment">//: one.</span>
+
+<span class="Delimiter">:(replace{} &quot;index_t space_base(const reagent&amp; x)&quot;)</span>
+index_t space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index<span class="Delimiter">(</span>x<span class="Delimiter">),</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+index_t space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">,</span> index_t space_index<span class="Delimiter">,</span> index_t base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   trace(&quot;foo&quot;) &lt;&lt; &quot;base of space &quot; &lt;&lt; space_index &lt;&lt; '\n'; //? 1</span>
+  if <span class="Delimiter">(</span>space_index == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     trace(&quot;foo&quot;) &lt;&lt; &quot;base of space &quot; &lt;&lt; space_index &lt;&lt; &quot; is &quot; &lt;&lt; base &lt;&lt; '\n'; //? 1</span>
+    <span class="Identifier">return</span> base<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+<span class="CommentedCode">//?   trace(&quot;foo&quot;) &lt;&lt; &quot;base of space &quot; &lt;&lt; space_index &lt;&lt; &quot; is &quot; &lt;&lt; Memory[base+1] &lt;&lt; '\n'; //? 1</span>
+  index_t result = space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index-<span class="Constant">1</span><span class="Delimiter">,</span> Memory[base+<span class="Constant">1</span>]<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+index_t space_index<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties[i]<span class="Delimiter">.</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span>
+      <span class="Identifier">return</span> to_int<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties[i]<span class="Delimiter">.</span>second[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

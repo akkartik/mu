@@ -1,0 +1,283 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/038scheduler.cc.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.SalientComment { color: #00ffff; }
+.Identifier { color: #008080; }
+.Constant { color: #008080; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.CommentedCode { color: #6c6c6c; }
+.traceContains { color: #008000; }
+.traceAbsent { color: #c00000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Run a second routine concurrently using fork, without any guarantees on</span>
+<span class="Comment">//: how the operations in each are interleaved with each other.</span>
+
+<span class="Delimiter">:(scenario scheduler)</span>
+recipe f1 [
+  start-running f2:recipe
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal
+]
+recipe f2 [
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">4</span>:literal
+]
+<span class="traceContains">+schedule: f1</span>
+<span class="traceContains">+schedule: f2</span>
+
+<span class="Comment">//: first, add a deadline to run(routine)</span>
+<span class="Comment">//: these changes are ugly and brittle; just close your nose and get through the next few lines</span>
+<span class="Delimiter">:(replace &quot;void run_current_routine()&quot;)</span>
+void run_current_routine<span class="Delimiter">(</span>size_t time_slice<span class="Delimiter">)</span>
+<span class="Delimiter">:(replace &quot;while (!Current_routine-&gt;completed())&quot; following &quot;void run_current_routine(size_t time_slice)&quot;)</span>
+size_t ninstrs = <span class="Constant">0</span><span class="Delimiter">;</span>
+while <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING &amp;&amp; ninstrs &lt; time_slice<span class="Delimiter">)</span>
+<span class="Delimiter">:(after &quot;Running One Instruction&quot;)</span>
+ninstrs++<span class="Delimiter">;</span>
+
+<span class="Comment">//: now the rest of the scheduler is clean</span>
+
+<span class="Delimiter">:(before &quot;struct routine&quot;)</span>
+enum routine_state <span class="Delimiter">{</span>
+  RUNNING<span class="Delimiter">,</span>
+  COMPLETED<span class="Delimiter">,</span>
+  <span class="Comment">// End routine States</span>
+<span class="Delimiter">};</span>
+<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+enum routine_state state<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+state = RUNNING<span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+vector&lt;routine*&gt; Routines<span class="Delimiter">;</span>
+index_t Current_routine_index = <span class="Constant">0</span><span class="Delimiter">;</span>
+size_t Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(replace{} &quot;void run(recipe_number r)&quot;)</span>
+void run<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  Routines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new routine<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
+  Current_routine_index = <span class="Constant">0</span><span class="Delimiter">,</span> Current_routine = Routines[<span class="Constant">0</span>]<span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>!all_routines_done<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    skip_to_next_routine<span class="Delimiter">();</span>
+<span class="CommentedCode">//?     cout &lt;&lt; &quot;scheduler: &quot; &lt;&lt; Current_routine_index &lt;&lt; '\n'; //? 1</span>
+    assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING<span class="Delimiter">);</span>
+    trace<span class="Delimiter">(</span><span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; current_recipe_name<span class="Delimiter">();</span>
+    run_current_routine<span class="Delimiter">(</span>Scheduling_interval<span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>
+      Current_routine<span class="Delimiter">-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
+    <span class="Comment">// End Scheduler State Transitions</span>
+  <span class="Delimiter">}</span>
+<span class="CommentedCode">//?   cout &lt;&lt; &quot;done with run\n&quot;; //? 1</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+bool all_routines_done<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; Routines<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cout &lt;&lt; &quot;routine &quot; &lt;&lt; i &lt;&lt; ' ' &lt;&lt; Routines[i]-&gt;state &lt;&lt; '\n'; //? 1</span>
+    if <span class="Delimiter">(</span>Routines[i]<span class="Delimiter">-&gt;</span>state == RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// skip Current_routine_index past non-RUNNING routines</span>
+void skip_to_next_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>!Routines<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  assert<span class="Delimiter">(</span>Current_routine_index &lt; Routines<span class="Delimiter">.</span>size<span class="Delimiter">());</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Delimiter">(</span>Current_routine_index+<span class="Constant">1</span><span class="Delimiter">)</span>%Routines<span class="Delimiter">.</span>size<span class="Delimiter">();</span>  i != Current_routine_index<span class="Delimiter">;</span>  i = <span class="Delimiter">(</span>i+<span class="Constant">1</span><span class="Delimiter">)</span>%Routines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>Routines[i]<span class="Delimiter">-&gt;</span>state == RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?       cout &lt;&lt; &quot;switching to &quot; &lt;&lt; i &lt;&lt; '\n'; //? 1</span>
+      Current_routine_index = i<span class="Delimiter">;</span>
+      Current_routine = Routines[i]<span class="Delimiter">;</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="CommentedCode">//?   cout &lt;&lt; &quot;all done\n&quot;; //? 1</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Teardown&quot;)</span>
+for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; Routines<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span>
+  delete Routines[i]<span class="Delimiter">;</span>
+Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+
+<span class="SalientComment">//:: To schedule new routines to run, call 'start-scheduling'.</span>
+
+<span class="Comment">//: 'start-scheduling' will return a unique id for the routine that was</span>
+<span class="Comment">//: created.</span>
+<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+index_t id<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+index_t Next_routine_id = <span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+Next_routine_id = <span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+id = Next_routine_id<span class="Delimiter">;</span>
+Next_routine_id++<span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+START_RUNNING<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;start-running&quot;</span>] = START_RUNNING<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case START_RUNNING: <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>!current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>initialized<span class="Delimiter">);</span>
+  routine* new_routine = new routine<span class="Delimiter">(</span>Recipe_number[current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name]<span class="Delimiter">);</span>
+  <span class="Comment">// populate ingredients</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span>
+    new_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[i]<span class="Delimiter">));</span>
+  Routines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_routine<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    vector&lt;long long int&gt; result<span class="Delimiter">;</span>
+    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_routine<span class="Delimiter">-&gt;</span>id<span class="Delimiter">);</span>
+    write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario scheduler_runs_single_routine)</span>
+<span class="Special">% Scheduling_interval = 1;</span>
+recipe f1 [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+schedule: f1</span>
+<span class="traceContains">+run: instruction f1/0</span>
+<span class="traceContains">+schedule: f1</span>
+<span class="traceContains">+run: instruction f1/1</span>
+
+<span class="Delimiter">:(scenario scheduler_interleaves_routines)</span>
+<span class="Special">% Scheduling_interval = 1;</span>
+recipe f1 [
+  start-running f2:recipe
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+recipe f2 [
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">4</span>:literal
+  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">4</span>:literal
+]
+<span class="traceContains">+schedule: f1</span>
+<span class="traceContains">+run: instruction f1/0</span>
+<span class="traceContains">+schedule: f2</span>
+<span class="traceContains">+run: instruction f2/0</span>
+<span class="traceContains">+schedule: f1</span>
+<span class="traceContains">+run: instruction f1/1</span>
+<span class="traceContains">+schedule: f2</span>
+<span class="traceContains">+run: instruction f2/1</span>
+<span class="traceContains">+schedule: f1</span>
+<span class="traceContains">+run: instruction f1/2</span>
+
+<span class="Delimiter">:(scenario start_running_takes_args)</span>
+recipe f1 [
+  start-running f2:recipe<span class="Delimiter">,</span> <span class="Constant">3</span>:literal
+]
+recipe f2 [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+]
+<span class="traceContains">+mem: storing 4 in location 2</span>
+
+<span class="Delimiter">:(scenario start_running_returns_routine_id)</span>
+recipe f1 [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>start-running f2:recipe
+]
+recipe f2 [
+  <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">44</span>:literal
+]
+<span class="traceContains">+mem: storing 2 in location 1</span>
+
+<span class="Delimiter">:(scenario scheduler_skips_completed_routines)</span>
+<span class="Comment"># this scenario will require some careful setup in escaped C++</span>
+<span class="Comment"># (straining our tangle capabilities to near-breaking point)</span>
+<span class="Special">% recipe_number f1 = load(&quot;recipe f1 [\n1:integer &lt;- copy 0:literal\n]&quot;).front();</span>
+<span class="Special">% recipe_number f2 = load(&quot;recipe f2 [\n2:integer &lt;- copy 0:literal\n]&quot;).front();</span>
+<span class="Special">% Routines.push_back(new routine(f1));  // f1 meant to run</span>
+<span class="Special">% Routines.push_back(new routine(f2));</span>
+<span class="Special">% Routines.back()-&gt;state = COMPLETED;  // f2 not meant to run</span>
+<span class="CommentedCode">#? % Trace_stream-&gt;dump_layer = &quot;all&quot;;</span>
+<span class="Comment"># must have at least one routine without escaping</span>
+recipe f3 [
+  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+<span class="Comment"># by interleaving '+' lines with '-' lines, we allow f1 and f3 to run in any order</span>
+<span class="traceContains">+schedule: f1</span>
+<span class="traceContains">+mem: storing 0 in location 1</span>
+<span class="traceAbsent">-schedule: f2</span>
+<span class="traceAbsent">-mem: storing 0 in location 2</span>
+<span class="traceContains">+schedule: f3</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+
+<span class="Delimiter">:(scenario scheduler_starts_at_middle_of_routines)</span>
+<span class="Special">% Routines.push_back(new routine(COPY));</span>
+<span class="Special">% Routines.back()-&gt;state = COMPLETED;</span>
+recipe f1 [
+  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+schedule: f1</span>
+<span class="traceAbsent">-run: idle</span>
+
+<span class="SalientComment">//:: 'routine-state' can tell if a given routine id is running</span>
+
+<span class="Delimiter">:(scenario routine_state_test)</span>
+<span class="Special">% Scheduling_interval = 2;</span>
+recipe f1 [
+  <span class="Constant">1</span>:integer/child-id<span class="Special"> &lt;- </span>start-running f2:recipe
+  <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal  <span class="Comment"># race condition since we don't care about location 12</span>
+  <span class="Comment"># thanks to Scheduling_interval, f2's one instruction runs in between here and completes</span>
+  <span class="Constant">2</span>:integer/state<span class="Special"> &lt;- </span>routine-state <span class="Constant">1</span>:integer/child-id
+]
+recipe f2 [
+  <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Comment"># trying to run a second instruction marks routine as completed</span>
+]
+<span class="Comment"># recipe f2 should be in state COMPLETED</span>
+<span class="traceContains">+mem: storing 1 in location 2</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+ROUTINE_STATE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;routine-state&quot;</span>] = ROUTINE_STATE<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case ROUTINE_STATE: <span class="Delimiter">{</span>
+  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
+  index_t id = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">)</span>[<span class="Constant">0</span>]<span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; Routines<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>Routines[i]<span class="Delimiter">-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Routines[i]<span class="Delimiter">-&gt;</span>state<span class="Delimiter">);</span>
+      write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+      <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

@@ -1,0 +1,541 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/060string.mu.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.CommentedCode { color: #6c6c6c; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.Identifier { color: #008080; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># Some useful helpers for dealing with strings.</span>
+
+recipe string-equal <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  a:address:array:character<span class="Special"> &lt;- </span>next-ingredient
+  a-len:integer<span class="Special"> &lt;- </span>length a:address:array:character/deref
+  b:address:array:character<span class="Special"> &lt;- </span>next-ingredient
+  b-len:integer<span class="Special"> &lt;- </span>length b:address:array:character/deref
+  <span class="Comment"># compare lengths</span>
+  <span class="Delimiter">{</span>
+    trace <span class="Delimiter">[</span>string-equal<span class="Delimiter">]</span>, <span class="Delimiter">[</span>comparing lengths<span class="Delimiter">]</span>
+    length-equal?:boolean<span class="Special"> &lt;- </span>equal a-len:integer, b-len:integer
+    <span class="Identifier">break-if</span> length-equal?:boolean
+    <span class="Identifier">reply</span> 0:literal
+  <span class="Delimiter">}</span>
+  <span class="Comment"># compare each corresponding character</span>
+  trace <span class="Delimiter">[</span>string-equal<span class="Delimiter">]</span>, <span class="Delimiter">[</span>comparing characters<span class="Delimiter">]</span>
+  i:integer<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:integer, a-len:integer
+    <span class="Identifier">break-if</span> done?:boolean
+    a2:character<span class="Special"> &lt;- </span>index a:address:array:character/deref, i:integer
+    b2:character<span class="Special"> &lt;- </span>index b:address:array:character/deref, i:integer
+    <span class="Delimiter">{</span>
+      chars-match?:boolean<span class="Special"> &lt;- </span>equal a2:character, b2:character
+      <span class="Identifier">break-if</span> chars-match?:boolean
+      <span class="Identifier">reply</span> 0:literal
+    <span class="Delimiter">}</span>
+    i:integer<span class="Special"> &lt;- </span>add i:integer, 1:literal
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">reply</span> 1:literal
+<span class="Delimiter">]</span>
+
+scenario string-equal-reflexive <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Delimiter">[</span>abc<span class="Delimiter">]</span>
+    3:boolean/<span class="Special">raw &lt;- </span>string-equal x:address:array:character, x:address:array:character
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    3<span class="Special"> &lt;- </span>1  <span class="Comment"># x == x for all x</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario string-equal-identical <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Delimiter">[</span>abc<span class="Delimiter">]</span>
+    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Delimiter">[</span>abc<span class="Delimiter">]</span>
+    3:boolean/<span class="Special">raw &lt;- </span>string-equal x:address:array:character, y:address:array:character
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    3<span class="Special"> &lt;- </span>1  <span class="Comment"># abc == abc</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario string-equal-distinct-lengths <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Delimiter">[</span>abc<span class="Delimiter">]</span>
+    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Delimiter">[</span>abcd<span class="Delimiter">]</span>
+    3:boolean/<span class="Special">raw &lt;- </span>string-equal x:address:array:character, y:address:array:character
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># abc != abcd</span>
+  <span class="Delimiter">]</span>
+  trace-should-contain <span class="Delimiter">[</span>
+    string-equal: comparing lengths
+  <span class="Delimiter">]</span>
+  trace-should-not-contain <span class="Delimiter">[</span>
+    string-equal: comparing characters
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario string-equal-with-empty <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Delimiter">[]</span>
+    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Delimiter">[</span>abcd<span class="Delimiter">]</span>
+    3:boolean/<span class="Special">raw &lt;- </span>string-equal x:address:array:character, y:address:array:character
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># &quot;&quot; != abcd</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario string-equal-common-lengths-but-distinct <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Delimiter">[</span>abc<span class="Delimiter">]</span>
+    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Delimiter">[</span>abd<span class="Delimiter">]</span>
+    3:boolean/<span class="Special">raw &lt;- </span>string-equal x:address:array:character, y:address:array:character
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># abc != abd</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+<span class="Comment"># A new type to help incrementally construct strings.</span>
+container buffer <span class="Delimiter">[</span>
+  length:integer
+  data:address:array:character
+<span class="Delimiter">]</span>
+
+recipe init-buffer <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+<span class="CommentedCode">#?   $print default-space:address:array:location</span>
+<span class="CommentedCode">#?   $print [</span>
+<span class="CommentedCode">#? ]</span>
+  result:address:buffer<span class="Special"> &lt;- </span>new buffer:type
+  len:address:integer<span class="Special"> &lt;- </span>get-address result:address:buffer/deref, length:offset
+  len:address:integer/deref<span class="Special"> &lt;- </span>copy 0:literal
+  s:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:buffer/deref, data:offset
+  capacity:integer<span class="Special"> &lt;- </span>next-ingredient
+  s:address:address:array:character/deref<span class="Special"> &lt;- </span>new character:type, capacity:integer
+<span class="CommentedCode">#?   $print s:address:address:array:character/deref</span>
+<span class="CommentedCode">#?   $print [</span>
+<span class="CommentedCode">#? ]</span>
+  <span class="Identifier">reply</span> result:address:buffer
+<span class="Delimiter">]</span>
+
+recipe grow-buffer <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  in:address:buffer<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># double buffer size</span>
+  x:address:address:array:character<span class="Special"> &lt;- </span>get-address in:address:buffer/deref, data:offset
+  oldlen:integer<span class="Special"> &lt;- </span>length x:address:address:array:character/deref/deref
+  newlen:integer<span class="Special"> &lt;- </span>multiply oldlen:integer, 2:literal
+  olddata:address:array:character<span class="Special"> &lt;- </span>copy x:address:address:array:character/deref
+  x:address:address:array:character/deref<span class="Special"> &lt;- </span>new character:type, newlen:integer
+  <span class="Comment"># copy old contents</span>
+  i:integer<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:integer, oldlen:integer
+    <span class="Identifier">break-if</span> done?:boolean
+    src:character<span class="Special"> &lt;- </span>index olddata:address:array:character/deref, i:integer
+    dest:address:character<span class="Special"> &lt;- </span>index-address x:address:address:array:character/deref/deref, i:integer
+    dest:address:character/deref<span class="Special"> &lt;- </span>copy src:character
+    i:integer<span class="Special"> &lt;- </span>add i:integer, 1:literal
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">reply</span> in:address:buffer
+<span class="Delimiter">]</span>
+
+recipe buffer-full? <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  in:address:buffer<span class="Special"> &lt;- </span>next-ingredient
+  len:integer<span class="Special"> &lt;- </span>get in:address:buffer/deref, length:offset
+  s:address:array:character<span class="Special"> &lt;- </span>get in:address:buffer/deref, data:offset
+  capacity:integer<span class="Special"> &lt;- </span>length s:address:array:character/deref
+  result:boolean<span class="Special"> &lt;- </span>greater-or-equal len:integer, capacity:integer
+  <span class="Identifier">reply</span> result:boolean
+<span class="Delimiter">]</span>
+
+<span class="Comment"># in:address:buffer &lt;- buffer-append in:address:buffer, c:character</span>
+recipe buffer-append <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  in:address:buffer<span class="Special"> &lt;- </span>next-ingredient
+  c:character<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Delimiter">{</span>
+    <span class="Comment"># grow buffer if necessary</span>
+    full?:boolean<span class="Special"> &lt;- </span>buffer-full? in:address:buffer
+    <span class="Identifier">break-unless</span> full?:boolean
+    in:address:buffer<span class="Special"> &lt;- </span>grow-buffer in:address:buffer
+  <span class="Delimiter">}</span>
+  len:address:integer<span class="Special"> &lt;- </span>get-address in:address:buffer/deref, length:offset
+  s:address:array:character<span class="Special"> &lt;- </span>get in:address:buffer/deref, data:offset
+  dest:address:character<span class="Special"> &lt;- </span>index-address s:address:array:character/deref, len:address:integer/deref
+  dest:address:character/deref<span class="Special"> &lt;- </span>copy c:character
+  len:address:integer/deref<span class="Special"> &lt;- </span>add len:address:integer/deref, 1:literal
+  <span class="Identifier">reply</span> in:address:buffer/same-as-ingredient:0
+<span class="Delimiter">]</span>
+
+scenario buffer-append-works <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+    x:address:buffer<span class="Special"> &lt;- </span>init-buffer 3:literal
+    s1:address:array:character<span class="Special"> &lt;- </span>get x:address:buffer/deref, data:offset
+    x:address:buffer<span class="Special"> &lt;- </span>buffer-append x:address:buffer, 97:literal  <span class="Comment"># 'a'</span>
+    x:address:buffer<span class="Special"> &lt;- </span>buffer-append x:address:buffer, 98:literal  <span class="Comment"># 'b'</span>
+    x:address:buffer<span class="Special"> &lt;- </span>buffer-append x:address:buffer, 99:literal  <span class="Comment"># 'c'</span>
+    s2:address:array:character<span class="Special"> &lt;- </span>get x:address:buffer/deref, data:offset
+    1:boolean/<span class="Special">raw &lt;- </span>equal s1:address:array:character, s2:address:array:character
+<span class="CommentedCode">#?     $print s2:address:array:character</span>
+<span class="CommentedCode">#?     $print [</span>
+<span class="CommentedCode">#? ]</span>
+<span class="CommentedCode">#?     $print 1060:integer/raw</span>
+<span class="CommentedCode">#?     $print [</span>
+<span class="CommentedCode">#? ]</span>
+<span class="CommentedCode">#?     $print 1061:integer/raw</span>
+<span class="CommentedCode">#?     $print [</span>
+<span class="CommentedCode">#? ]</span>
+<span class="CommentedCode">#?     $print 1062:integer/raw</span>
+<span class="CommentedCode">#?     $print [</span>
+<span class="CommentedCode">#? ]</span>
+<span class="CommentedCode">#?     $print 1063:integer/raw</span>
+<span class="CommentedCode">#?     $print [</span>
+<span class="CommentedCode">#? ]</span>
+<span class="CommentedCode">#?     $print 1064:integer/raw</span>
+<span class="CommentedCode">#?     $print [</span>
+<span class="CommentedCode">#? ]</span>
+<span class="CommentedCode">#?     $print 1065:integer/raw</span>
+<span class="CommentedCode">#?     $print [</span>
+<span class="CommentedCode">#? ]</span>
+    2:array:character/<span class="Special">raw &lt;- </span>copy s2:address:array:character/deref
+   <span class="Identifier"> +buffer-filled</span>
+    x:address:buffer<span class="Special"> &lt;- </span>buffer-append x:address:buffer, 100:literal  <span class="Comment"># 'd'</span>
+    s3:address:array:character<span class="Special"> &lt;- </span>get x:address:buffer/deref, data:offset
+    10:boolean/<span class="Special">raw &lt;- </span>equal s1:address:array:character, s3:address:array:character
+    11:integer/<span class="Special">raw &lt;- </span>get x:address:buffer/deref, length:offset
+    12:array:character/<span class="Special">raw &lt;- </span>copy s3:address:array:character/deref
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    <span class="Comment"># before +buffer-filled</span>
+    1<span class="Special"> &lt;- </span>1   <span class="Comment"># no change in data pointer</span>
+    2<span class="Special"> &lt;- </span>3   <span class="Comment"># size of data</span>
+    3<span class="Special"> &lt;- </span>97  <span class="Comment"># data</span>
+    4<span class="Special"> &lt;- </span>98
+    5<span class="Special"> &lt;- </span>99
+    <span class="Comment"># in the end</span>
+    10<span class="Special"> &lt;- </span>0   <span class="Comment"># data pointer has grown</span>
+    11<span class="Special"> &lt;- </span>4   <span class="Comment"># final length</span>
+    12<span class="Special"> &lt;- </span>6   <span class="Comment"># but data's capacity has doubled</span>
+    13<span class="Special"> &lt;- </span>97  <span class="Comment"># data</span>
+    14<span class="Special"> &lt;- </span>98
+    15<span class="Special"> &lt;- </span>99
+    16<span class="Special"> &lt;- </span>100
+    17<span class="Special"> &lt;- </span>0
+    18<span class="Special"> &lt;- </span>0
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+<span class="Comment"># result:address:array:character &lt;- integer-to-decimal-string n:integer</span>
+recipe integer-to-decimal-string <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  n:integer<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># is it zero?</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-if</span> n:integer
+    result:address:array:character<span class="Special"> &lt;- </span>new <span class="Delimiter">[</span>0<span class="Delimiter">]</span>
+    <span class="Identifier">reply</span> result:address:array:character
+  <span class="Delimiter">}</span>
+  <span class="Comment"># save sign</span>
+  negate-result:boolean<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Delimiter">{</span>
+    negative?:boolean<span class="Special"> &lt;- </span>lesser-than n:integer, 0:literal
+    <span class="Identifier">break-unless</span> negative?:boolean
+    negate-result:boolean<span class="Special"> &lt;- </span>copy 1:literal
+    n:integer<span class="Special"> &lt;- </span>multiply n:integer,<span class="Identifier"> -1</span>:literal
+  <span class="Delimiter">}</span>
+  <span class="Comment"># add digits from right to left into intermediate buffer</span>
+  tmp:address:buffer<span class="Special"> &lt;- </span>init-buffer 30:literal
+  digit-base:integer<span class="Special"> &lt;- </span>copy 48:literal  <span class="Comment"># '0'</span>
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>equal n:integer, 0:literal
+    <span class="Identifier">break-if</span> done?:boolean
+    n:integer, digit:integer<span class="Special"> &lt;- </span>divide-with-remainder n:integer, 10:literal
+    c:character<span class="Special"> &lt;- </span>add digit-base:integer, digit:integer
+    tmp:address:buffer<span class="Special"> &lt;- </span>buffer-append tmp:address:buffer, c:character
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># add sign</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> negate-result:boolean
+    tmp:address:buffer<span class="Special"> &lt;- </span>buffer-append tmp:address:buffer, 45:literal  <span class="Comment"># '-'</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># reverse buffer into string result</span>
+  len:integer<span class="Special"> &lt;- </span>get tmp:address:buffer/deref, length:offset
+  buf:address:array:character<span class="Special"> &lt;- </span>get tmp:address:buffer/deref, data:offset
+  result:address:array:character<span class="Special"> &lt;- </span>new character:type, len:integer
+  i:integer<span class="Special"> &lt;- </span>subtract len:integer, 1:literal
+  j:integer<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Delimiter">{</span>
+    <span class="Comment"># while i &gt;= 0</span>
+    done?:boolean<span class="Special"> &lt;- </span>lesser-than i:integer, 0:literal
+    <span class="Identifier">break-if</span> done?:boolean
+    <span class="Comment"># result[j] = tmp[i]</span>
+    src:character<span class="Special"> &lt;- </span>index buf:address:array:character/deref, i:integer
+    dest:address:character<span class="Special"> &lt;- </span>index-address result:address:array:character/deref, j:integer
+    dest:address:character/deref<span class="Special"> &lt;- </span>copy src:character
+    <span class="Comment"># ++i</span>
+    i:integer<span class="Special"> &lt;- </span>subtract i:integer, 1:literal
+    <span class="Comment"># --j</span>
+    j:integer<span class="Special"> &lt;- </span>add j:integer, 1:literal
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">reply</span> result:address:array:character
+<span class="Delimiter">]</span>
+
+scenario integer-to-decimal-digit-zero <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:array:character/<span class="Special">raw &lt;- </span>integer-to-decimal-string 0:literal
+    2:array:character/<span class="Special">raw &lt;- </span>copy 1:address:array:character/deref/<span class="Special">raw</span>
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2:string<span class="Special"> &lt;- </span><span class="Delimiter">[</span>0<span class="Delimiter">]</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario integer-to-decimal-digit-positive <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:array:character/<span class="Special">raw &lt;- </span>integer-to-decimal-string 234:literal
+    2:array:character/<span class="Special">raw &lt;- </span>copy 1:address:array:character/deref/<span class="Special">raw</span>
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2:string<span class="Special"> &lt;- </span><span class="Delimiter">[</span>234<span class="Delimiter">]</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario integer-to-decimal-digit-negative <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:array:character/<span class="Special">raw &lt;- </span>integer-to-decimal-string<span class="Identifier"> -1</span>:literal
+    2:array:character/<span class="Special">raw &lt;- </span>copy 1:address:array:character/deref/<span class="Special">raw</span>
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    2<span class="Special"> &lt;- </span>2
+    3<span class="Special"> &lt;- </span>45  <span class="Comment"># '-'</span>
+    4<span class="Special"> &lt;- </span>49  <span class="Comment"># '1'</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+recipe string-append <span class="Delimiter">[</span>
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
+  <span class="Comment"># result = new string[a.length + b.length]</span>
+  a:address:array:character<span class="Special"> &lt;- </span>next-ingredient
+  a-len:integer<span class="Special"> &lt;- </span>length a:address:array:character/deref
+  b:address:array:character<span class="Special"> &lt;- </span>next-ingredient
+  b-len:integer<span class="Special"> &lt;- </span>length b:address:array:character/deref
+  result-len:integer<span class="Special"> &lt;- </span>add a-len:integer, b-len:integer
+  result:address:array:character<span class="Special"> &lt;- </span>new character:type, result-len:integer
+  <span class="Comment"># copy a into result</span>
+  result-idx:integer<span class="Special"> &lt;- </span>copy 0:literal
+  i:integer<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Delimiter">{</span>
+    <span class="Comment"># while i &lt; a.length</span>
+    a-done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:integer, a-len:integer
+    <span class="Identifier">break-if</span> a-done?:boolean
+    <span class="Comment"># result[result-idx] = a[i]</span>
+    out:address:character<span class="Special"> &lt;- </span>index-address result:address:array:character/deref, result-idx:integer
+    in:character<span class="Special"> &lt;- </span>index a:address:array:character/deref, i:integer
+    out:address:character/deref<span class="Special"> &lt;- </span>copy in:character
+    <span class="Comment"># ++i</span>
+    i:integer<span class="Special"> &lt;- </span>add i:integer, 1:literal
+    <span class="Comment"># ++result-idx</span>
+    result-idx:integer<span class="Special"> &lt;- </span>add result-idx:integer, 1:literal
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># copy b into result</span>
+  i:integer<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Delimiter">{</span>
+    <span class="Comment"># while i &lt; b.length</span>
+    b-done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:integer, b-len:integer
+    <span class="Identifier">break-if</span> b-done?:boolean
+    <span class="Comment"># result[result-idx] = a[i]</span>
+    out:address:character<span class="Special"> &lt;- </span>index-address result:address:array:character/deref, result-idx:integer
+    in:character<span class="Special"> &lt;- </span>index b:address:array:character/deref, i:integer
+    out:address:character/deref<span class="Special"> &lt;- </span>copy in:character
+    <span class="Comment"># ++i</span>
+    i:integer<span class="Special"> &lt;- </span>add i:integer, 1:literal
+    <span class="Comment"># ++result-idx</span>
+    result-idx:integer<span class="Special"> &lt;- </span>add result-idx:integer, 1:literal
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">reply</span> result:address:array:character
+<span class="Delimiter">]</span>
+
+scenario string-append-1 <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Delimiter">[</span>hello,<span class="Delimiter">]</span>
+    2:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Delimiter">[</span> world!<span class="Delimiter">]</span>
+    3:address:array:character/<span class="Special">raw &lt;- </span>string-append 1:address:array:character/<span class="Special">raw</span>, 2:address:array:character/<span class="Special">raw</span>
+    4:array:character/<span class="Special">raw &lt;- </span>copy 3:address:array:character/<span class="Special">raw</span>/deref
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    4:string<span class="Special"> &lt;- </span><span class="Delimiter">[</span>hello, world!<span class="Delimiter">]</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+<span class="Comment"># replace underscores in first with remaining args</span>
+<span class="Comment"># result:address:array:character &lt;- interpolate template:address:array:character, ...</span>
+recipe interpolate <span class="Delimiter">[</span>
+  default-space:array:address:location<span class="Special"> &lt;- </span>new location:type, 60:literal
+  template:address:array:character<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># compute result-len, space to allocate for result</span>
+  tem-len:integer<span class="Special"> &lt;- </span>length template:address:array:character/deref
+  result-len:integer<span class="Special"> &lt;- </span>copy tem-len:integer
+  <span class="Delimiter">{</span>
+    <span class="Comment"># while arg received</span>
+    a:address:array:character, arg-received?:boolean<span class="Special"> &lt;- </span>next-ingredient
+    <span class="Identifier">break-unless</span> arg-received?:boolean
+    <span class="Comment"># result-len = result-len + arg.length - 1 for the 'underscore' being replaced</span>
+    a-len:integer<span class="Special"> &lt;- </span>length a:address:array:character/deref
+    result-len:integer<span class="Special"> &lt;- </span>add result-len:integer, a-len:integer
+    result-len:integer<span class="Special"> &lt;- </span>subtract result-len:integer, 1:literal
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+<span class="CommentedCode">#?   $print tem-len:integer #? 1</span>
+<span class="CommentedCode">#?   $print [ ] #? 1</span>
+<span class="CommentedCode">#?   $print result-len:integer #? 1</span>
+<span class="CommentedCode">#?   $print [ #? 1</span>
+<span class="CommentedCode">#? ] #? 1</span>
+  rewind-ingredients
+  _<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># skip template</span>
+  <span class="Comment"># result = new array:character[result-len]</span>
+  result:address:array:character<span class="Special"> &lt;- </span>new character:type, result-len:integer
+  <span class="Comment"># repeatedly copy sections of template and 'holes' into result</span>
+  result-idx:integer<span class="Special"> &lt;- </span>copy 0:literal
+  i:integer<span class="Special"> &lt;- </span>copy 0:literal
+  <span class="Delimiter">{</span>
+    <span class="Comment"># while arg received</span>
+    a:address:array:character, arg-received?:boolean<span class="Special"> &lt;- </span>next-ingredient
+    <span class="Identifier">break-unless</span> arg-received?:boolean
+    <span class="Comment"># copy template into result until '_'</span>
+    <span class="Delimiter">{</span>
+      <span class="Comment"># while i &lt; template.length</span>
+      tem-done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:integer, tem-len:integer
+      <span class="Identifier">break-if</span> tem-done?:boolean, 2:blocks
+      <span class="Comment"># while template[i] != '_'</span>
+      in:character<span class="Special"> &lt;- </span>index template:address:array:character/deref, i:integer
+      underscore?:boolean<span class="Special"> &lt;- </span>equal in:character, 95:literal  <span class="Comment"># '_'</span>
+      <span class="Identifier">break-if</span> underscore?:boolean
+      <span class="Comment"># result[result-idx] = template[i]</span>
+      out:address:character<span class="Special"> &lt;- </span>index-address result:address:array:character/deref, result-idx:integer
+      out:address:character/deref<span class="Special"> &lt;- </span>copy in:character
+      <span class="Comment"># ++i</span>
+      i:integer<span class="Special"> &lt;- </span>add i:integer, 1:literal
+      <span class="Comment"># ++result-idx</span>
+      result-idx:integer<span class="Special"> &lt;- </span>add result-idx:integer, 1:literal
+      <span class="Identifier">loop</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># copy 'a' into result</span>
+    j:integer<span class="Special"> &lt;- </span>copy 0:literal
+    <span class="Delimiter">{</span>
+      <span class="Comment"># while j &lt; a.length</span>
+      arg-done?:boolean<span class="Special"> &lt;- </span>greater-or-equal j:integer, a-len:integer
+      <span class="Identifier">break-if</span> arg-done?:boolean
+      <span class="Comment"># result[result-idx] = a[j]</span>
+      in:character<span class="Special"> &lt;- </span>index a:address:array:character/deref, j:integer
+      out:address:character<span class="Special"> &lt;- </span>index-address result:address:array:character/deref, result-idx:integer
+      out:address:character/deref<span class="Special"> &lt;- </span>copy in:character
+      <span class="Comment"># ++j</span>
+      j:integer<span class="Special"> &lt;- </span>add j:integer, 1:literal
+      <span class="Comment"># ++result-idx</span>
+      result-idx:integer<span class="Special"> &lt;- </span>add result-idx:integer, 1:literal
+      <span class="Identifier">loop</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># skip '_' in template</span>
+    i:integer<span class="Special"> &lt;- </span>add i:integer, 1:literal
+    <span class="Identifier">loop</span>  <span class="Comment"># interpolate next arg</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># done with holes; copy rest of template directly into result</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># while i &lt; template.length</span>
+    tem-done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:integer, tem-len:integer
+    <span class="Identifier">break-if</span> tem-done?:boolean
+    <span class="Comment"># result[result-idx] = template[i]</span>
+    in:character<span class="Special"> &lt;- </span>index template:address:array:character/deref, i:integer
+    out:address:character<span class="Special"> &lt;- </span>index-address result:address:array:character/deref, result-idx:integer
+    out:address:character/deref<span class="Special"> &lt;- </span>copy in:character
+    <span class="Comment"># ++i</span>
+    i:integer<span class="Special"> &lt;- </span>add i:integer, 1:literal
+    <span class="Comment"># ++result-idx</span>
+    result-idx:integer<span class="Special"> &lt;- </span>add result-idx:integer, 1:literal
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">reply</span> result:address:array:character
+<span class="Delimiter">]</span>
+
+scenario interpolate-works <span class="Delimiter">[</span>
+<span class="CommentedCode">#?   dump run #? 1</span>
+  run <span class="Delimiter">[</span>
+    1:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Delimiter">[</span>abc _<span class="Delimiter">]</span>
+    2:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Delimiter">[</span>def<span class="Delimiter">]</span>
+    3:address:array:character/<span class="Special">raw &lt;- </span>interpolate 1:address:array:character/<span class="Special">raw</span>, 2:address:array:character/<span class="Special">raw</span>
+    4:array:character/<span class="Special">raw &lt;- </span>copy 3:address:array:character/<span class="Special">raw</span>/deref
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    4:string<span class="Special"> &lt;- </span><span class="Delimiter">[</span>abc def<span class="Delimiter">]</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario interpolate-at-start <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Delimiter">[</span>_, hello!<span class="Delimiter">]</span>
+    2:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Delimiter">[</span>abc<span class="Delimiter">]</span>
+    3:address:array:character/<span class="Special">raw &lt;- </span>interpolate 1:address:array:character/<span class="Special">raw</span>, 2:address:array:character/<span class="Special">raw</span>
+    4:array:character/<span class="Special">raw &lt;- </span>copy 3:address:array:character/<span class="Special">raw</span>/deref
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    4:string<span class="Special"> &lt;- </span><span class="Delimiter">[</span>abc, hello!<span class="Delimiter">]</span>
+    16<span class="Special"> &lt;- </span>0  <span class="Comment"># out of bounds</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+
+scenario interpolate-at-end <span class="Delimiter">[</span>
+  run <span class="Delimiter">[</span>
+    1:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Delimiter">[</span>hello, _<span class="Delimiter">]</span>
+    2:address:array:character/<span class="Special">raw &lt;- </span>new <span class="Delimiter">[</span>abc<span class="Delimiter">]</span>
+    3:address:array:character/<span class="Special">raw &lt;- </span>interpolate 1:address:array:character/<span class="Special">raw</span>, 2:address:array:character/<span class="Special">raw</span>
+    4:array:character/<span class="Special">raw &lt;- </span>copy 3:address:array:character/<span class="Special">raw</span>/deref
+  <span class="Delimiter">]</span>
+  memory-should-contain <span class="Delimiter">[</span>
+    4:string<span class="Special"> &lt;- </span><span class="Delimiter">[</span>hello, abc<span class="Delimiter">]</span>
+  <span class="Delimiter">]</span>
+<span class="Delimiter">]</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

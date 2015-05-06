@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Desktop/s/mu/042new.cc.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.Identifier { color: #008080; }
+.SalientComment { color: #00ffff; }
+.Constant { color: #008080; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Special { color: #ff6060; }
+.CommentedCode { color: #6c6c6c; }
+.traceContains { color: #008000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: A simple memory allocator to create space for new variables at runtime.</span>
+
+<span class="Delimiter">:(scenarios run)</span>
+<span class="Delimiter">:(scenario new)</span>
+<span class="Comment"># call new two times with identical arguments; you should get back different results</span>
+recipe main [
+  <span class="Constant">1</span>:address:integer/<span class="Special">raw &lt;- </span>new integer:type
+  <span class="Constant">2</span>:address:integer/<span class="Special">raw &lt;- </span>new integer:type
+  <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:integer/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:integer/<span class="Special">raw</span>
+]
+<span class="traceContains">+mem: storing 0 in location 3</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+size_t Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
+index_t Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
+size_t Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
+Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+index_t alloc<span class="Delimiter">,</span> alloc_max<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+alloc = Memory_allocated_until<span class="Delimiter">;</span>
+Memory_allocated_until += Initial_memory_per_routine<span class="Delimiter">;</span>
+alloc_max = Memory_allocated_until<span class="Delimiter">;</span>
+trace<span class="Delimiter">(</span><span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;routine allocated memory from &quot;</span> &lt;&lt; alloc &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; alloc_max<span class="Delimiter">;</span>
+
+<span class="SalientComment">//:: First handle 'type' operands.</span>
+
+<span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
+Type_number[<span class="Constant">&quot;type&quot;</span>] = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Per-recipe Transforms&quot;)</span>
+<span class="Comment">// replace type names with type_numbers</span>
+if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_number[<span class="Constant">&quot;new&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// first arg must be of type 'type'</span>
+  assert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt;= <span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="CommentedCode">//?   cout &lt;&lt; inst.ingredients[0].to_string() &lt;&lt; '\n'; //? 1</span>
+  assert<span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">));</span>
+  if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>properties[<span class="Constant">0</span>]<span class="Delimiter">.</span>second[<span class="Constant">0</span>] == <span class="Constant">&quot;type&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    inst<span class="Delimiter">.</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>Type_number[inst<span class="Delimiter">.</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name]<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; -&gt; &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="SalientComment">//:: Now implement the primitive recipe.</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+NEW<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;new&quot;</span>] = NEW<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case NEW: <span class="Delimiter">{</span>
+  <span class="Comment">// compute the space we need</span>
+  size_t size = <span class="Constant">0</span><span class="Delimiter">;</span>
+  size_t array_length = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Delimiter">{</span>
+    vector&lt;type_number&gt; type<span class="Delimiter">;</span>
+    type<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Comment">// array</span>
+      vector&lt;long long int&gt; capacity = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">);</span>
+      array_length = capacity[<span class="Constant">0</span>]<span class="Delimiter">;</span>
+      trace<span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;array size is &quot;</span> &lt;&lt; array_length<span class="Delimiter">;</span>
+      size = array_length*size_of<span class="Delimiter">(</span>type<span class="Delimiter">)</span> + <span class="Comment">/*</span><span class="Comment">space for length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    else <span class="Delimiter">{</span>
+      <span class="Comment">// scalar</span>
+      size = size_of<span class="Delimiter">(</span>type<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// compute the resulting location</span>
+  <span class="Comment">// really crappy at the moment</span>
+  assert<span class="Delimiter">(</span>size &lt;= Initial_memory_per_routine<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc + size &gt;= Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// waste the remaining space and create a new chunk</span>
+    Current_routine<span class="Delimiter">-&gt;</span>alloc = Memory_allocated_until<span class="Delimiter">;</span>
+    Memory_allocated_until += Initial_memory_per_routine<span class="Delimiter">;</span>
+    Current_routine<span class="Delimiter">-&gt;</span>alloc_max = Memory_allocated_until<span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span><span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;routine allocated memory from &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  const index_t result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new alloc: &quot;</span> &lt;&lt; result<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// initialize array</span>
+    Memory[result] = array_length<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// write result to memory</span>
+  vector&lt;long long int&gt; tmp<span class="Delimiter">;</span>
+  tmp<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">);</span>
+  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
+  <span class="Comment">// bump</span>
+  Current_routine<span class="Delimiter">-&gt;</span>alloc += size<span class="Delimiter">;</span>
+  <span class="Comment">// no support for reclaiming memory</span>
+  assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;= Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario new_array)</span>
+recipe main [
+  <span class="Constant">1</span>:address:array:integer/<span class="Special">raw &lt;- </span>new integer:type<span class="Delimiter">,</span> <span class="Constant">5</span>:literal
+  <span class="Constant">2</span>:address:integer/<span class="Special">raw &lt;- </span>new integer:type
+  <span class="Constant">3</span>:integer/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:integer/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:integer/<span class="Special">raw</span>
+]
+<span class="traceContains">+run: instruction main/0</span>
+<span class="traceContains">+mem: array size is 5</span>
+<span class="traceContains">+run: instruction main/1</span>
+<span class="traceContains">+run: instruction main/2</span>
+<span class="traceContains">+mem: storing 6 in location 3</span>
+
+<span class="Comment">//: Make sure that each routine gets a different alloc to start.</span>
+<span class="Delimiter">:(scenario new_concurrent)</span>
+recipe f1 [
+  start-running f2:recipe
+  <span class="Constant">1</span>:address:integer/<span class="Special">raw &lt;- </span>new integer:type
+]
+recipe f2 [
+  <span class="Constant">2</span>:address:integer/<span class="Special">raw &lt;- </span>new integer:type
+  <span class="Comment"># hack: assumes scheduler implementation</span>
+  <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:integer/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:integer/<span class="Special">raw</span>
+]
+<span class="traceContains">+mem: storing 0 in location 3</span>
+
+<span class="Comment">//: If a routine runs out of its initial allocation, it should allocate more.</span>
+<span class="Delimiter">:(scenario new_overflow)</span>
+<span class="Special">% Initial_memory_per_routine = 2;</span>
+recipe main [
+  <span class="Constant">1</span>:address:integer/<span class="Special">raw &lt;- </span>new integer:type
+  <span class="Constant">2</span>:address:point/<span class="Special">raw &lt;- </span>new point:type  <span class="Comment"># not enough room in initial page</span>
+]
+<span class="traceContains">+new: routine allocated memory from 1000 to 1002</span>
+<span class="traceContains">+new: routine allocated memory from 1002 to 1004</span>
+
+<span class="SalientComment">//:: Next, extend 'new' to handle a string literal argument.</span>
+
+<span class="Delimiter">:(scenario new_string)</span>
+recipe main [
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [abc def]
+  <span class="Constant">2</span>:character<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:address:array:character/deref<span class="Delimiter">,</span> <span class="Constant">5</span>:literal
+]
+<span class="Comment"># integer code for 'e'</span>
+<span class="traceContains">+mem: storing 101 in location 2</span>
+
+<span class="Delimiter">:(after &quot;case NEW&quot; following &quot;Primitive Recipe Implementations&quot;)</span>
+if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>properties[<span class="Constant">0</span>]<span class="Delimiter">.</span>second[<span class="Constant">0</span>] == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// allocate an array just large enough for it</span>
+  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
+  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">);</span>
+  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  <span class="Comment">// assume that all characters fit in a single location</span>
+<span class="CommentedCode">//?   cout &lt;&lt; &quot;new string literal: &quot; &lt;&lt; current_instruction().ingredients[0].name &lt;&lt; '\n'; //? 1</span>
+  Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc++] = current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">.</span>size<span class="Delimiter">();</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc++] = current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name[i]<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// mu strings are not null-terminated in memory</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
