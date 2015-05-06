@@ -7,7 +7,7 @@
 :(before "End Mu Types Initialization")
 //: We'll use this container as a running example, with two integer elements.
 {
-int tmp = Type_number["integer-or-point"] = Next_type_number++;
+type_number tmp = Type_number["integer-or-point"] = Next_type_number++;
 Type[tmp].size = 2;
 Type[tmp].kind = exclusive_container;
 Type[tmp].name = "integer-or-point";

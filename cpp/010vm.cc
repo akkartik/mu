@@ -81,18 +81,18 @@ void setup_types() {
   Type_number["literal"] = 0;
   Next_type_number = 1;
   // Mu Types Initialization
-  int integer = Type_number["integer"] = Next_type_number++;
+  type_number integer = Type_number["integer"] = Next_type_number++;
   Type_number["location"] = Type_number["integer"];  // wildcard type: either a pointer or a scalar
   Type[integer].name = "integer";
-  int address = Type_number["address"] = Next_type_number++;
+  type_number address = Type_number["address"] = Next_type_number++;
   Type[address].name = "address";
-  int boolean = Type_number["boolean"] = Next_type_number++;
+  type_number boolean = Type_number["boolean"] = Next_type_number++;
   Type[boolean].name = "boolean";
-  int character = Type_number["character"] = Next_type_number++;
+  type_number character = Type_number["character"] = Next_type_number++;
   Type[character].name = "character";
   // Array types are a special modifier to any other type. For example,
   // array:integer or array:address:boolean.
-  int array = Type_number["array"] = Next_type_number++;
+  type_number array = Type_number["array"] = Next_type_number++;
   Type[array].name = "array";
   // End Mu Types Initialization
 }
