@@ -21,7 +21,7 @@ REPLY,
 Recipe_number["reply"] = REPLY;
 :(before "End Primitive Recipe Implementations")
 case REPLY: {
-  vector<vector<int> > callee_results;
+  vector<vector<long long int> > callee_results;
   for (index_t i = 0; i < current_instruction().ingredients.size(); ++i) {
     callee_results.push_back(read_memory(current_instruction().ingredients[i]));
   }
@@ -37,7 +37,7 @@ case REPLY: {
     if (has_property(reply_inst.ingredients[i], "same-as-ingredient")) {
       vector<string> tmp = property(reply_inst.ingredients[i], "same-as-ingredient");
       assert(tmp.size() == 1);
-      int ingredient_index = to_int(tmp[0]);
+      long long int ingredient_index = to_int(tmp[0]);
       if (caller_instruction.products[i].value != caller_instruction.ingredients[ingredient_index].value)
         raise << "'same-as-ingredient' result " << caller_instruction.products[i].value << " must be location " << caller_instruction.ingredients[ingredient_index].value << '\n';
     }
@@ -78,7 +78,7 @@ recipe test1 [
 +warn: 'same-as-ingredient' result 2 must be location 1
 
 :(code)
-string to_string(const vector<int>& in) {
+string to_string(const vector<long long int>& in) {
   if (in.empty()) return "[]";
   ostringstream out;
   if (in.size() == 1) {

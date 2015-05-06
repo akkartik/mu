@@ -82,9 +82,9 @@ bool is_number(const string& s) {
   return s.find_first_not_of("0123456789-.") == string::npos;
 }
 
-int to_int(string n) {
+long long int to_int(string n) {
   char* end = NULL;
-  int result = strtol(n.c_str(), &end, /*any base*/0);
+  long long int result = strtoll(n.c_str(), &end, /*any base*/0);
   assert(*end == '\0');
   return result;
 }

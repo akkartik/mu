@@ -22,7 +22,7 @@ case LENGTH: {
     raise << "tried to calculate length of non-array " << x.to_string() << '\n';
     break;
   }
-  vector<int> result;
+  vector<long long int> result;
 //?   cout << "length: " << x.value << '\n'; //? 1
   result.push_back(Memory[x.value]);
   write_memory(current_instruction().products[0], result);

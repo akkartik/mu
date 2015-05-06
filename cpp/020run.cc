@@ -60,7 +60,7 @@ void run_current_routine()
       // Primitive Recipe Implementations
       case COPY: {
         trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-        vector<int> data = read_memory(current_instruction().ingredients[0]);
+        vector<long long int> data = read_memory(current_instruction().ingredients[0]);
         write_memory(current_instruction().products[0], data);
         break;
       }
@@ -144,14 +144,14 @@ void run(string form) {
 
 //:: Reading from memory, writing to memory.
 
-vector<int> read_memory(reagent x) {
+vector<long long int> read_memory(reagent x) {
 //?   cout << "read_memory: " << x.to_string() << '\n'; //? 1
-  vector<int> result;
+  vector<long long int> result;
   if (isa_literal(x)) {
     result.push_back(x.value);
     return result;
   }
-  int base = x.value;
+  index_t base = x.value;
   size_t size = size_of(x);
   for (index_t offset = 0; offset < size; ++offset) {
     int val = Memory[base+offset];
@@ -161,9 +161,9 @@ vector<int> read_memory(reagent x) {
   return result;
 }
 
-void write_memory(reagent x, vector<int> data) {
+void write_memory(reagent x, vector<long long int> data) {
   if (is_dummy(x)) return;
-  int base = x.value;
+  index_t base = x.value;
   if (size_of(x) != data.size())
     raise << "size mismatch in storing to " << x.to_string() << '\n';
   for (index_t offset = 0; offset < data.size(); ++offset) {

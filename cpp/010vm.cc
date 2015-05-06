@@ -41,12 +41,12 @@ struct instruction {
 struct reagent {
   vector<pair<string, vector<string> > > properties;
   string name;
-  int value;
+  long long int value;
   bool initialized;
   vector<type_number> types;
   reagent(string s);
   reagent();
-  void set_value(int v) { value = v; initialized = true; }
+  void set_value(long long int v) { value = v; initialized = true; }
   string to_string() const;
 };
 
@@ -57,7 +57,7 @@ struct property {
 
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
-map<index_t, int> Memory;
+map<index_t, long long int> Memory;
 :(before "End Setup")
 Memory.clear();
 

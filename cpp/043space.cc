@@ -93,21 +93,21 @@ tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()))
 //:: helpers
 
 :(code)
-int space_base(const reagent& x) {
+index_t space_base(const reagent& x) {
   return Current_routine->calls.top().default_space;
 }
 
-int address(int offset, int base) {
+index_t address(index_t offset, index_t base) {
   if (base == 0) return offset;  // raw
 //?   cout << base << '\n'; //? 2
-  if (offset >= Memory[base]) {
+  if (offset >= static_cast<index_t>(Memory[base])) {
     // todo: test
     raise << "location " << offset << " is out of bounds " << Memory[base] << '\n';
   }
   return base+1 + offset;
 }
 
-:(after "void write_memory(reagent x, vector<int> data)")
+:(after "void write_memory(reagent x, vector<long long int> data)")
   if (x.name == "default-space") {
     assert(data.size() == 1);
     Current_routine->calls.top().default_space = data[0];
@@ -122,9 +122,9 @@ recipe main [
 ]
 +mem: storing 10 in location 1
 
-:(after "vector<int> read_memory(reagent x)")
+:(after "vector<long long int> read_memory(reagent x)")
   if (x.name == "default-space") {
-    vector<int> result;
+    vector<long long int> result;
     result.push_back(Current_routine->calls.top().default_space);
     return result;
   }

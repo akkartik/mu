@@ -7,12 +7,12 @@ Recipe_number["add"] = ADD;
 :(before "End Primitive Recipe Implementations")
 case ADD: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<int> arg1 = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
   assert(arg1.size() == 1);
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(arg0[0] + arg1[0]);
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);
@@ -50,12 +50,12 @@ Recipe_number["subtract"] = SUBTRACT;
 :(before "End Primitive Recipe Implementations")
 case SUBTRACT: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<int> arg1 = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
   assert(arg1.size() == 1);
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(arg0[0] - arg1[0]);
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);
@@ -93,13 +93,13 @@ Recipe_number["multiply"] = MULTIPLY;
 :(before "End Primitive Recipe Implementations")
 case MULTIPLY: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<int> arg1 = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
   assert(arg1.size() == 1);
   trace("run") << "ingredient 1 is " << arg1[0];
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(arg0[0] * arg1[0]);
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);
@@ -137,13 +137,13 @@ Recipe_number["divide"] = DIVIDE;
 :(before "End Primitive Recipe Implementations")
 case DIVIDE: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<int> arg1 = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
   assert(arg1.size() == 1);
   trace("run") << "ingredient 1 is " << arg1[0];
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(arg0[0] / arg1[0]);
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);
@@ -181,16 +181,16 @@ Recipe_number["divide-with-remainder"] = DIVIDE_WITH_REMAINDER;
 :(before "End Primitive Recipe Implementations")
 case DIVIDE_WITH_REMAINDER: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<int> arg0 = read_memory(current_instruction().ingredients[0]);
+  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
   assert(arg0.size() == 1);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<int> arg1 = read_memory(current_instruction().ingredients[1]);
+  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
   assert(arg1.size() == 1);
-  vector<int> result0;
+  vector<long long int> result0;
   result0.push_back(arg0[0] / arg1[0]);
   trace("run") << "product 0 is " << result0[0];
   write_memory(current_instruction().products[0], result0);
-  vector<int> result1;
+  vector<long long int> result1;
   result1.push_back(arg0[0] % arg1[0]);
   trace("run") << "product 1 is " << result1[0];
   write_memory(current_instruction().products[1], result1);

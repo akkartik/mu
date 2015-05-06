@@ -47,7 +47,7 @@ recipe main [
 +mem: storing 16 in location 9
 
 //: disable the size mismatch check since the destination array need not be initialized
-:(replace "if (size_of(x) != data.size())" following "void write_memory(reagent x, vector<int> data)")
+:(replace "if (size_of(x) != data.size())" following "void write_memory(reagent x, vector<long long int> data)")
 if (x.types[0] != Type_number["array"] && size_of(x) != data.size())
 :(after "size_t size_of(const reagent& r)")
   static const type_number ARRAY = Type_number["array"];
@@ -101,23 +101,23 @@ case INDEX: {
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].to_string();
   reagent base = canonize(current_instruction().ingredients[0]);
 //?   trace("run") << "ingredient 0 after canonize: " << base.to_string(); //? 1
-  int base_address = base.value;
+  index_t base_address = base.value;
   assert(base.types[0] == ARRAY);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].to_string();
   reagent offset = canonize(current_instruction().ingredients[1]);
 //?   trace("run") << "ingredient 1 after canonize: " << offset.to_string(); //? 1
-  vector<int> offset_val(read_memory(offset));
+  vector<long long int> offset_val(read_memory(offset));
   vector<type_number> element_type = array_element(base.types);
 //?   trace("run") << "offset: " << offset_val[0]; //? 1
 //?   trace("run") << "size of elements: " << size_of(element_type); //? 1
-  int src = base_address + 1 + offset_val[0]*size_of(element_type);
+  index_t src = base_address + 1 + offset_val[0]*size_of(element_type);
   trace("run") << "address to copy is " << src;
   trace("run") << "its type is " << element_type[0];
   reagent tmp;
   tmp.set_value(src);
   copy(element_type.begin(), element_type.end(), inserter(tmp.types, tmp.types.begin()));
 //?   trace("run") << "AAA: " << tmp.to_string() << '\n'; //? 3
-  vector<int> result(read_memory(tmp));
+  vector<long long int> result(read_memory(tmp));
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);
 //?   if (Trace_stream) Trace_stream->dump_layer = ""; //? 1
@@ -164,15 +164,15 @@ case INDEX_ADDRESS: {
   static const type_number ARRAY = Type_number["array"];
   trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
   reagent base = canonize(current_instruction().ingredients[0]);
-  int base_address = base.value;
+  index_t base_address = base.value;
   assert(base.types[0] == ARRAY);
   trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].to_string();
   reagent offset = canonize(current_instruction().ingredients[1]);
-  vector<int> offset_val(read_memory(offset));
+  vector<long long int> offset_val(read_memory(offset));
   vector<type_number> element_type = array_element(base.types);
-  int src = base_address + 1 + offset_val[0]*size_of(element_type);
+  index_t src = base_address + 1 + offset_val[0]*size_of(element_type);
   trace("run") << "address to copy is " << src;
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(src);
   trace("run") << "product 0 is " << result[0];
   write_memory(current_instruction().products[0], result);

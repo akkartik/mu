@@ -13,7 +13,7 @@ recipe main [
 +mem: location 2 is 34
 +mem: storing 34 in location 3
 
-:(before "int base = x.value" following "vector<int> read_memory(reagent x)")
+:(before "index_t base = x.value" following "vector<long long int> read_memory(reagent x)")
 x = canonize(x);
 
 //: similarly, write to addresses pointing at other locations using the
@@ -27,7 +27,7 @@ recipe main [
 +mem: location 1 is 2
 +mem: storing 34 in location 2
 
-:(before "int base = x.value" following "void write_memory(reagent x, vector<int> data)")
+:(before "index_t base = x.value" following "void write_memory(reagent x, vector<long long int> data)")
 x = canonize(x);
 
 :(code)
@@ -55,8 +55,8 @@ reagent deref(reagent x) {
   copy(++x.types.begin(), x.types.end(), inserter(result.types, result.types.begin()));
 
   // drop-one 'deref'
-  int i = 0;
-  int len = x.properties.size();
+  index_t i = 0;
+  size_t len = x.properties.size();
   for (i = 0; i < len; ++i) {
     if (x.properties[i].first == "deref") break;
     result.properties.push_back(x.properties[i]);

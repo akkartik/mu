@@ -58,7 +58,7 @@ case NEW: {
     type.push_back(current_instruction().ingredients[0].value);
     if (current_instruction().ingredients.size() > 1) {
       // array
-      vector<int> capacity = read_memory(current_instruction().ingredients[1]);
+      vector<long long int> capacity = read_memory(current_instruction().ingredients[1]);
       array_length = capacity[0];
       trace("mem") << "array size is " << array_length;
       size = array_length*size_of(type) + /*space for length*/1;
@@ -85,7 +85,7 @@ case NEW: {
     Memory[result] = array_length;
   }
   // write result to memory
-  vector<int> tmp;
+  vector<long long int> tmp;
   tmp.push_back(Current_routine->alloc);
   write_memory(current_instruction().products[0], tmp);
   // bump
@@ -143,7 +143,7 @@ recipe main [
 :(after "case NEW" following "Primitive Recipe Implementations")
 if (current_instruction().ingredients[0].properties[0].second[0] == "literal-string") {
   // allocate an array just large enough for it
-  vector<int> result;
+  vector<long long int> result;
   result.push_back(Current_routine->alloc);
   write_memory(current_instruction().products[0], result);
   // assume that all characters fit in a single location
