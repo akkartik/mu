@@ -1,5 +1,5 @@
-//: Run a second routine concurrently using fork, without any guarantees on
-//: how the operations in each are interleaved with each other.
+//: Run a second routine concurrently using 'start-running', without any
+//: guarantees on how the operations in each are interleaved with each other.
 
 :(scenario scheduler)
 recipe f1 [
@@ -90,10 +90,9 @@ for (index_t i = 0; i < Routines.size(); ++i)
   delete Routines[i];
 Routines.clear();
 
-//:: To schedule new routines to run, call 'start-scheduling'.
+//:: To schedule new routines to run, call 'start-running'.
 
-//: 'start-scheduling' will return a unique id for the routine that was
-//: created.
+//: 'start-running' will return a unique id for the routine that was created.
 :(before "End routine Fields")
 index_t id;
 :(before "End Globals")
