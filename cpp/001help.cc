@@ -43,3 +43,6 @@ using std::cerr;
 using std::string;
 typedef size_t index_t;
 const index_t NOT_FOUND = string::npos;
+:(after "int main(int argc, char* argv[])")
+assert(sizeof(string::size_type) == sizeof(size_t));
+assert(sizeof(index_t) == sizeof(size_t));
