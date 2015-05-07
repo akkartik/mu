@@ -56,8 +56,7 @@ recipe print-character [
   default-space:address:array:location <- new location:type, 30:literal
   x:address:screen <- next-ingredient
   c:character <- next-ingredient
-#?   $print x:address:character #? 1
-#?   $print [ print-character #? 1
+#?   $print x:address:character, [ print-character #? 1
 #? ] #? 1
   {
     # if x exists
@@ -66,11 +65,7 @@ recipe print-character [
 #? ] #? 1
     # save character in fake screen
     row:address:integer <- get-address x:address:screen/deref, cursor-row:offset
-#?     $print [CCC: ] #? 1
-#?     $print row:address:integer #? 1
-#?     $print [ -> ] #? 1
-#?     $print row:address:integer/deref #? 1
-#?     $print [ #? 1
+#?     $print [CCC: ], row:address:integer, [ -> ], row:address:integer/deref, [ #? 1
 #? ] #? 1
 #?     $stop-tracing #? 1
     column:address:integer <- get-address x:address:screen/deref, cursor-column:offset
@@ -79,8 +74,7 @@ recipe print-character [
     index:integer <- add index:integer, column:address:integer/deref
     buf:address:array:character <- get x:address:screen/deref, data:offset
     cursor:address:character <- index-address buf:address:array:character/deref, index:integer
-#?     $print cursor:address:character #? 1
-#?     $print [ #? 1
+#?     $print cursor:address:character, [ #? 1
 #? ] #? 1
     cursor:address:character/deref <- copy c:character  # todo: newline, etc.
     # increment column unless it's already all the way to the right
@@ -207,18 +201,10 @@ recipe cursor-down [
       at-bottom?:boolean <- greater-or-equal row:address:integer/deref, height:integer
       break-if at-bottom?:boolean
       # row = row+1
-#?       $print [AAA: ] #? 1
-#?       $print row:address:integer #? 1
-#?       $print [ -> ] #? 1
-#?       $print row:address:integer/deref #? 1
-#?       $print [ #? 1
+#?       $print [AAA: ], row:address:integer, [ -> ], row:address:integer/deref, [ #? 1
 #? ] #? 1
       row:address:integer/deref <- add row:address:integer/deref, 1:literal
-#?       $print [BBB: ] #? 1
-#?       $print row:address:integer #? 1
-#?       $print [ -> ] #? 1
-#?       $print row:address:integer/deref #? 1
-#?       $print [ #? 1
+#?       $print [BBB: ], row:address:integer, [ -> ], row:address:integer/deref, [ #? 1
 #? ] #? 1
 #?       $start-tracing #? 1
     }

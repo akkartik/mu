@@ -62,11 +62,12 @@ PRINT_CHARACTER_TO_DISPLAY,
 Recipe_number["print-character-to-display"] = PRINT_CHARACTER_TO_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case PRINT_CHARACTER_TO_DISPLAY: {
-  vector<long long int> arg = read_memory(current_instruction().ingredients[0]);
   int h=tb_height(), w=tb_width();
   size_t height = (h >= 0) ? h : 0;
   size_t width = (w >= 0) ? w : 0;
-  if (arg[0] == '\n') {
+  assert(ingredients.at(0).size() == 1);  // scalar
+  long long int c = ingredients.at(0).at(0);
+  if (c == '\n') {
     if (Display_row < height) {
       Display_column = 0;
       ++Display_row;
@@ -75,7 +76,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
     }
     break;
   }
-  tb_change_cell(Display_column, Display_row, arg[0], TB_WHITE, TB_DEFAULT);
+  tb_change_cell(Display_column, Display_row, c, TB_WHITE, TB_DEFAULT);
   if (Display_column < width) {
     Display_column++;
     tb_set_cursor(Display_column, Display_row);
@@ -90,12 +91,9 @@ CURSOR_POSITION_ON_DISPLAY,
 Recipe_number["cursor-position-on-display"] = CURSOR_POSITION_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case CURSOR_POSITION_ON_DISPLAY: {
-  vector<long long int> row;
-  row.push_back(Display_row);
-  write_memory(current_instruction().products[0], row);
-  vector<long long int> column;
-  column.push_back(Display_column);
-  write_memory(current_instruction().products[1], column);
+  products.resize(2);
+  products.at(0).push_back(Display_row);
+  products.at(1).push_back(Display_column);
   break;
 }
 
@@ -105,10 +103,10 @@ MOVE_CURSOR_ON_DISPLAY,
 Recipe_number["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_ON_DISPLAY: {
-  vector<long long int> row = read_memory(current_instruction().ingredients[0]);
-  vector<long long int> column = read_memory(current_instruction().ingredients[1]);
-  Display_row = row[0];
-  Display_column = column[0];
+  assert(ingredients.at(0).size() == 1);  // scalar
+  Display_row = ingredients.at(0).at(0);
+  assert(ingredients.at(1).size() == 1);  // scalar
+  Display_column = ingredients.at(1).at(0);
   tb_set_cursor(Display_column, Display_row);
   tb_present();
   break;
@@ -170,18 +168,12 @@ WAIT_FOR_KEY_FROM_KEYBOARD,
 Recipe_number["wait-for-key-from-keyboard"] = WAIT_FOR_KEY_FROM_KEYBOARD;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_KEY_FROM_KEYBOARD: {
-//? LOG << "AAA\n";  LOG.flush();
   struct tb_event event;
   do {
     tb_poll_event(&event);
   } while (event.type != TB_EVENT_KEY);
-//? LOG << "AAA 2\n";  LOG.flush();
-  vector<long long int> result;
-  result.push_back(event.ch);
-//? LOG << "AAA 3\n";  LOG.flush();
-  if (!current_instruction().products.empty())
-    write_memory(current_instruction().products[0], result);
-//? LOG << "AAA 9\n";  LOG.flush();
+  products.resize(1);
+  products.at(0).push_back(event.ch);
   break;
 }
 
@@ -193,18 +185,15 @@ Recipe_number["read-key-from-keyboard"] = READ_KEY_FROM_KEYBOARD;
 case READ_KEY_FROM_KEYBOARD: {
   struct tb_event event;
   int event_type = tb_peek_event(&event, 5/*ms*/);
-  vector<long long int> result;
-  vector<long long int> found;
-  if (event_type != TB_EVENT_KEY) {
-    result.push_back(0);
-    found.push_back(false);
+  long long int result = 0;
+  long long int found = false;
+  if (event_type == TB_EVENT_KEY) {
+    result = event.ch;
+    found = true;
   }
-  else {
-    result.push_back(event.ch);
-    found.push_back(true);
-  }
-  write_memory(current_instruction().products[0], result);
-  write_memory(current_instruction().products[1], found);
+  products.resize(2);
+  products.at(0).push_back(result);
+  products.at(1).push_back(found);
   break;
 }
 

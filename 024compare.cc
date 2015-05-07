@@ -6,14 +6,16 @@ EQUAL,
 Recipe_number["equal"] = EQUAL;
 :(before "End Primitive Recipe Implementations")
 case EQUAL: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
-  vector<long long int> result;
-  result.push_back(equal(arg0.begin(), arg0.end(), arg1.begin()));
-  trace("run") << "product 0 is " << result[0];
-  write_memory(current_instruction().products[0], result);
+  vector<long long int>& exemplar = ingredients.at(0);
+  bool result = true;
+  for (index_t i = 1; i < ingredients.size(); ++i) {
+    if (!equal(ingredients.at(i).begin(), ingredients.at(i).end(), exemplar.begin())) {
+      result = false;
+      break;
+    }
+  }
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }
 
@@ -28,7 +30,7 @@ recipe main [
 +mem: location 1 is 34
 +run: ingredient 1 is 2
 +mem: location 2 is 33
-+run: product 0 is 0
++run: product 0 is 3
 +mem: storing 0 in location 3
 
 :(scenario equal2)
@@ -42,8 +44,20 @@ recipe main [
 +mem: location 1 is 34
 +run: ingredient 1 is 2
 +mem: location 2 is 34
-+run: product 0 is 1
++run: product 0 is 3
 +mem: storing 1 in location 3
+
+:(scenario equal_multiple)
+recipe main [
+  1:integer <- equal 34:literal, 34:literal, 34:literal
+]
++mem: storing 1 in location 1
+
+:(scenario equal_multiple2)
+recipe main [
+  1:integer <- equal 34:literal, 34:literal, 35:literal
+]
++mem: storing 0 in location 1
 
 :(before "End Primitive Recipe Declarations")
 GREATER_THAN,
@@ -51,16 +65,17 @@ GREATER_THAN,
 Recipe_number["greater-than"] = GREATER_THAN;
 :(before "End Primitive Recipe Implementations")
 case GREATER_THAN: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  assert(arg0.size() == 1);
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
-  assert(arg1.size() == 1);
-  vector<long long int> result;
-  result.push_back(arg0[0] > arg1[0]);
-  trace("run") << "product 0 is " << result[0];
-  write_memory(current_instruction().products[0], result);
+  bool result = true;
+  for (index_t i = 0; i < ingredients.size(); ++i) {
+    assert(ingredients.at(i).size() == 1);  // scalar
+  }
+  for (index_t i = /**/1; i < ingredients.size(); ++i) {
+    if (ingredients.at(i-1).at(0) <= ingredients.at(i).at(0)) {
+      result = false;
+    }
+  }
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }
 
@@ -75,7 +90,7 @@ recipe main [
 +mem: location 1 is 34
 +run: ingredient 1 is 2
 +mem: location 2 is 33
-+run: product 0 is 1
++run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario greater_than2)
@@ -89,8 +104,20 @@ recipe main [
 +mem: location 1 is 34
 +run: ingredient 1 is 2
 +mem: location 2 is 34
-+run: product 0 is 0
++run: product 0 is 3
 +mem: storing 0 in location 3
+
+:(scenario greater_than_multiple)
+recipe main [
+  1:integer <- greater-than 36:literal, 35:literal, 34:literal
+]
++mem: storing 1 in location 1
+
+:(scenario greater_than_multiple2)
+recipe main [
+  1:integer <- greater-than 36:literal, 35:literal, 35:literal
+]
++mem: storing 0 in location 1
 
 :(before "End Primitive Recipe Declarations")
 LESSER_THAN,
@@ -98,16 +125,17 @@ LESSER_THAN,
 Recipe_number["lesser-than"] = LESSER_THAN;
 :(before "End Primitive Recipe Implementations")
 case LESSER_THAN: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  assert(arg0.size() == 1);
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
-  assert(arg1.size() == 1);
-  vector<long long int> result;
-  result.push_back(arg0[0] < arg1[0]);
-  trace("run") << "product 0 is " << result[0];
-  write_memory(current_instruction().products[0], result);
+  bool result = true;
+  for (index_t i = 0; i < ingredients.size(); ++i) {
+    assert(ingredients.at(i).size() == 1);  // scalar
+  }
+  for (index_t i = /**/1; i < ingredients.size(); ++i) {
+    if (ingredients.at(i-1).at(0) >= ingredients.at(i).at(0)) {
+      result = false;
+    }
+  }
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }
 
@@ -122,7 +150,7 @@ recipe main [
 +mem: location 1 is 32
 +run: ingredient 1 is 2
 +mem: location 2 is 33
-+run: product 0 is 1
++run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario lesser_than2)
@@ -136,8 +164,20 @@ recipe main [
 +mem: location 1 is 34
 +run: ingredient 1 is 2
 +mem: location 2 is 33
-+run: product 0 is 0
++run: product 0 is 3
 +mem: storing 0 in location 3
+
+:(scenario lesser_than_multiple)
+recipe main [
+  1:integer <- lesser-than 34:literal, 35:literal, 36:literal
+]
++mem: storing 1 in location 1
+
+:(scenario lesser_than_multiple2)
+recipe main [
+  1:integer <- lesser-than 34:literal, 35:literal, 35:literal
+]
++mem: storing 0 in location 1
 
 :(before "End Primitive Recipe Declarations")
 GREATER_OR_EQUAL,
@@ -145,16 +185,17 @@ GREATER_OR_EQUAL,
 Recipe_number["greater-or-equal"] = GREATER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case GREATER_OR_EQUAL: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  assert(arg0.size() == 1);
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
-  assert(arg1.size() == 1);
-  vector<long long int> result;
-  result.push_back(arg0[0] >= arg1[0]);
-  trace("run") << "product 0 is " << result[0];
-  write_memory(current_instruction().products[0], result);
+  bool result = true;
+  for (index_t i = 0; i < ingredients.size(); ++i) {
+    assert(ingredients.at(i).size() == 1);  // scalar
+  }
+  for (index_t i = /**/1; i < ingredients.size(); ++i) {
+    if (ingredients.at(i-1).at(0) < ingredients.at(i).at(0)) {
+      result = false;
+    }
+  }
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }
 
@@ -169,7 +210,7 @@ recipe main [
 +mem: location 1 is 34
 +run: ingredient 1 is 2
 +mem: location 2 is 33
-+run: product 0 is 1
++run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario greater_or_equal2)
@@ -183,7 +224,7 @@ recipe main [
 +mem: location 1 is 34
 +run: ingredient 1 is 2
 +mem: location 2 is 34
-+run: product 0 is 1
++run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario greater_or_equal3)
@@ -197,8 +238,20 @@ recipe main [
 +mem: location 1 is 34
 +run: ingredient 1 is 2
 +mem: location 2 is 35
-+run: product 0 is 0
++run: product 0 is 3
 +mem: storing 0 in location 3
+
+:(scenario greater_or_equal_multiple)
+recipe main [
+  1:integer <- greater-or-equal 36:literal, 35:literal, 35:literal
+]
++mem: storing 1 in location 1
+
+:(scenario greater_or_equal_multiple2)
+recipe main [
+  1:integer <- greater-or-equal 36:literal, 35:literal, 36:literal
+]
++mem: storing 0 in location 1
 
 :(before "End Primitive Recipe Declarations")
 LESSER_OR_EQUAL,
@@ -206,16 +259,17 @@ LESSER_OR_EQUAL,
 Recipe_number["lesser-or-equal"] = LESSER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case LESSER_OR_EQUAL: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  assert(arg0.size() == 1);
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
-  assert(arg1.size() == 1);
-  vector<long long int> result;
-  result.push_back(arg0[0] <= arg1[0]);
-  trace("run") << "product 0 is " << result[0];
-  write_memory(current_instruction().products[0], result);
+  bool result = true;
+  for (index_t i = 0; i < ingredients.size(); ++i) {
+    assert(ingredients.at(i).size() == 1);  // scalar
+  }
+  for (index_t i = /**/1; i < ingredients.size(); ++i) {
+    if (ingredients.at(i-1).at(0) > ingredients.at(i).at(0)) {
+      result = false;
+    }
+  }
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }
 
@@ -230,7 +284,7 @@ recipe main [
 +mem: location 1 is 32
 +run: ingredient 1 is 2
 +mem: location 2 is 33
-+run: product 0 is 1
++run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario lesser_or_equal2)
@@ -244,7 +298,7 @@ recipe main [
 +mem: location 1 is 33
 +run: ingredient 1 is 2
 +mem: location 2 is 33
-+run: product 0 is 1
++run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario lesser_or_equal3)
@@ -258,5 +312,17 @@ recipe main [
 +mem: location 1 is 34
 +run: ingredient 1 is 2
 +mem: location 2 is 33
-+run: product 0 is 0
++run: product 0 is 3
 +mem: storing 0 in location 3
+
+:(scenario lesser_or_equal_multiple)
+recipe main [
+  1:integer <- lesser-or-equal 34:literal, 35:literal, 35:literal
+]
++mem: storing 1 in location 1
+
+:(scenario lesser_or_equal_multiple2)
+recipe main [
+  1:integer <- lesser-or-equal 34:literal, 35:literal, 34:literal
+]
++mem: storing 0 in location 1

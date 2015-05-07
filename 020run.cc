@@ -27,6 +27,15 @@ recipe main [
 +mem: location 1 is 23
 +mem: storing 23 in location 2
 
+:(scenario copy_multiple)
+recipe main [
+  1:integer, 2:integer <- copy 23:literal, 24:literal
+]
++run: ingredient 0 is 23
++run: ingredient 1 is 24
++mem: storing 23 in location 1
++mem: storing 24 in location 2
+
 :(before "End Types")
 // Book-keeping while running a recipe.
 //: Later layers will change this.
@@ -55,14 +64,20 @@ void run_current_routine()
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace("run") << "instruction " << current_recipe_name() << '/' << current_step_index();
     trace("run") << current_instruction().to_string();
-//?     trace("run") << Memory[1033] << '\n'; //? 1
-//?     cout << "operation " << current_instruction().operation << '\n'; //? 3
+    // Read all ingredients.
+    vector<vector<long long int> > ingredients;
+    for (index_t i = 0; i < current_instruction().ingredients.size(); ++i) {
+      trace("run") << "ingredient " << i << " is " << current_instruction().ingredients.at(i).name;
+      ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
+    }
+    // Instructions below will write to 'products' or to 'instruction_counter'.
+    vector<vector<long long int> > products;
+    index_t instruction_counter = current_step_index();
+//?     cout << "AAA: " << current_instruction().to_string() << '\n'; //? 1
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
       case COPY: {
-        trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-        vector<long long int> data = read_memory(current_instruction().ingredients[0]);
-        write_memory(current_instruction().products[0], data);
+        copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
         break;
       }
       // End Primitive Recipe Implementations
@@ -70,7 +85,16 @@ void run_current_routine()
         cout << "not a primitive op: " << current_instruction().operation << '\n';
       }
     }
-    ++current_step_index();
+//?     cout << "BBB: " << current_instruction().to_string() << '\n'; //? 1
+    if (products.size() < current_instruction().products.size())
+      raise << "failed to write to all products! " << current_instruction().to_string();
+//?     cout << "CCC: " << current_instruction().to_string() << '\n'; //? 1
+    for (index_t i = 0; i < current_instruction().products.size(); ++i) {
+      trace("run") << "product " << i << " is " << current_instruction().products.at(i).name;
+      write_memory(current_instruction().products.at(i), products.at(i));
+    }
+//?     cout << "DDD: " << current_instruction().to_string() << '\n'; //? 1
+    current_step_index() = instruction_counter+1;
   }
 }
 
@@ -146,7 +170,7 @@ void run(string form) {
 //:: Reading from memory, writing to memory.
 
 vector<long long int> read_memory(reagent x) {
-//?   cout << "read_memory: " << x.to_string() << '\n'; //? 1
+//?   cout << "read_memory: " << x.to_string() << '\n'; //? 2
   vector<long long int> result;
   if (isa_literal(x)) {
     result.push_back(x.value);

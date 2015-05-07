@@ -78,7 +78,7 @@ recipe main [
 ]
 +run: instruction main/3
 +run: address to copy is 2
-+run: product 0 is 34
++run: product 0 is 4
 +mem: storing 34 in location 4
 
 :(scenario include_nonderef_properties)
@@ -90,7 +90,7 @@ recipe main [
 ]
 +run: instruction main/3
 +run: address to copy is 2
-+run: product 0 is 34
++run: product 0 is 4
 +mem: storing 34 in location 4
 
 :(after "reagent base = " following "case GET:")
@@ -106,7 +106,7 @@ recipe main [
 ]
 +run: instruction main/3
 +run: address to copy is 2
-+run: product 0 is 2
++run: product 0 is 4
 
 :(after "reagent base = " following "case GET_ADDRESS:")
 base = canonize(base);

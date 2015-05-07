@@ -109,18 +109,15 @@ START_RUNNING,
 Recipe_number["start-running"] = START_RUNNING;
 :(before "End Primitive Recipe Implementations")
 case START_RUNNING: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  assert(!current_instruction().ingredients[0].initialized);
-  routine* new_routine = new routine(Recipe_number[current_instruction().ingredients[0].name]);
+  assert(isa_literal(current_instruction().ingredients.at(0)));
+  assert(!current_instruction().ingredients.at(0).initialized);
+  routine* new_routine = new routine(Recipe_number[current_instruction().ingredients.at(0).name]);
   // populate ingredients
   for (index_t i = 1; i < current_instruction().ingredients.size(); ++i)
-    new_routine->calls.top().ingredient_atoms.push_back(read_memory(current_instruction().ingredients[i]));
+    new_routine->calls.top().ingredient_atoms.push_back(ingredients.at(i));
   Routines.push_back(new_routine);
-  if (!current_instruction().products.empty()) {
-    vector<long long int> result;
-    result.push_back(new_routine->id);
-    write_memory(current_instruction().products[0], result);
-  }
+  products.resize(1);
+  products.at(0).push_back(new_routine->id);
   break;
 }
 
@@ -230,14 +227,16 @@ ROUTINE_STATE,
 Recipe_number["routine-state"] = ROUTINE_STATE;
 :(before "End Primitive Recipe Implementations")
 case ROUTINE_STATE: {
-  vector<long long int> result;
-  index_t id = read_memory(current_instruction().ingredients[0])[0];
+  assert(ingredients.at(0).size() == 1);  // routine id must be scalar
+  index_t id = ingredients.at(0).at(0);
+  long long int result = -1;
   for (index_t i = 0; i < Routines.size(); ++i) {
     if (Routines[i]->id == id) {
-      result.push_back(Routines[i]->state);
-      write_memory(current_instruction().products[0], result);
+      result = Routines[i]->state;
       break;
     }
   }
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }

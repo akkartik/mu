@@ -63,83 +63,89 @@ void transform_braces(const recipe_number r) {
       ;  // do nothing
     else if (inst.operation == Recipe_number["loop"]) {
       inst.operation = Recipe_number["jump"];
-      if (inst.ingredients.size() > 0 && isa_literal(inst.ingredients[0])) {
+      if (inst.ingredients.size() > 0 && isa_literal(inst.ingredients.at(0))) {
         // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients[0].name << ":offset";
+        trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
       }
       else {
         reagent ing;
         ing.set_value(open_braces.top()-index);
+        ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump " << ing.value << ":offset";
         trace("after-brace") << index << ": " << ing.to_string();
-        trace("after-brace") << index << ": " << Recipe[r].steps[index].ingredients[0].to_string();
+        trace("after-brace") << index << ": " << Recipe[r].steps[index].ingredients.at(0).to_string();
       }
     }
     else if (inst.operation == Recipe_number["break"]) {
       inst.operation = Recipe_number["jump"];
-      if (inst.ingredients.size() > 0 && isa_literal(inst.ingredients[0])) {
+      if (inst.ingredients.size() > 0 && isa_literal(inst.ingredients.at(0))) {
         // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients[0].name << ":offset";
+        trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
       }
       else {
         reagent ing;
         ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
+        ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump " << ing.value << ":offset";
       }
     }
     else if (inst.operation == Recipe_number["loop-if"]) {
       inst.operation = Recipe_number["jump-if"];
-      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients[1])) {
+      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients[1].name << ":offset";
+        trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }
       else {
         reagent ing;
         ing.set_value(open_braces.top()-index);
+        ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-if " << inst.ingredients[0].name << ", " << ing.value << ":offset";
+        trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
     else if (inst.operation == Recipe_number["break-if"]) {
       inst.operation = Recipe_number["jump-if"];
-      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients[1])) {
+      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients[1].name << ":offset";
+        trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }
       else {
         reagent ing;
         ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
+        ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-if " << inst.ingredients[0].name << ", " << ing.value << ":offset";
+        trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
     else if (inst.operation == Recipe_number["loop-unless"]) {
       inst.operation = Recipe_number["jump-unless"];
-      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients[1])) {
+      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients[1].name << ":offset";
+        trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }
       else {
         reagent ing;
         ing.set_value(open_braces.top()-index);
+        ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-unless " << inst.ingredients[0].name << ", " << ing.value << ":offset";
+        trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
     else if (inst.operation == Recipe_number["break-unless"]) {
 //?       cout << "AAA break-unless\n"; //? 1
       inst.operation = Recipe_number["jump-unless"];
-      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients[1])) {
+      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients[1].name << ":offset";
+        trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }
       else {
         reagent ing;
         ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
+        ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-unless " << inst.ingredients[0].name << ", " << ing.value << ":offset";
+        trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
     else {
@@ -368,6 +374,7 @@ recipe main [
 //: test how things actually run
 :(scenarios run)
 :(scenario brace_conversion_and_run)
+#? % Trace_stream->dump_layer = "run";
 recipe test-factorial [
   1:integer <- copy 5:literal
   2:integer <- copy 1:literal

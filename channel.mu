@@ -8,9 +8,7 @@ recipe producer [
     done?:boolean <- lesser-than n:integer, 5:literal
     break-unless done?:boolean
     # other threads might get between these prints
-    $print [produce: ]
-    $print n:integer
-    $print [
+    $print [produce: ], n:integer, [
 ]
     chan:address:channel <- write chan:address:channel, n:integer
     n:integer <- add n:integer, 1:literal
@@ -26,9 +24,7 @@ recipe consumer [
     # read an integer from the channel
     n:integer, chan:address:channel <- read chan:address:channel
     # other threads might get between these prints
-    $print [consume: ]
-    $print n:integer
-    $print [
+    $print [consume: ], n:integer, [
 ]
     loop
   }

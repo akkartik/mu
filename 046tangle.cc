@@ -49,7 +49,7 @@ void insert_fragments(const recipe_number r) {
   // But this way we can't insert into labels created inside before/after.
   vector<instruction> result;
   for (index_t i = 0; i < Recipe[r].steps.size(); ++i) {
-    const instruction inst = Recipe[r].steps[i];
+    const instruction inst = Recipe[r].steps.at(i);
     if (!inst.is_label) {
       result.push_back(inst);
       continue;
@@ -63,7 +63,7 @@ void insert_fragments(const recipe_number r) {
     }
   }
 //?   for (index_t i = 0; i < result.size(); ++i) { //? 1
-//?     cout << result[i].to_string() << '\n'; //? 1
+//?     cout << result.at(i).to_string() << '\n'; //? 1
 //?   } //? 1
   Recipe[r].steps.swap(result);
 }

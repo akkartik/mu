@@ -6,32 +6,47 @@ AND,
 Recipe_number["and"] = AND;
 :(before "End Primitive Recipe Implementations")
 case AND: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  assert(arg0.size() == 1);
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
-  assert(arg1.size() == 1);
-  vector<long long int> result;
-  result.push_back(arg0[0] && arg1[0]);
-  trace("run") << "product 0 is " << result[0];
-  write_memory(current_instruction().products[0], result);
+  bool result = true;
+  for (index_t i = 0; i < ingredients.size(); ++i) {
+    assert(ingredients.at(i).size() == 1);  // must be a scalar
+    result = result && ingredients.at(i).at(0);
+  }
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }
 
 :(scenario and)
 recipe main [
-  1:integer <- copy 1:literal
-  2:integer <- copy 0:literal
-  3:integer <- and 1:integer, 2:integer
+  1:boolean <- copy 1:literal
+  2:boolean <- copy 0:literal
+  3:boolean <- and 1:boolean, 2:boolean
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
 +mem: location 1 is 1
 +run: ingredient 1 is 2
 +mem: location 2 is 0
-+run: product 0 is 0
++run: product 0 is 3
 +mem: storing 0 in location 3
+
+:(scenario and2)
+recipe main [
+  1:boolean <- and 1:literal, 1:literal
+]
++mem: storing 1 in location 1
+
+:(scenario and_multiple)
+recipe main [
+  1:boolean <- and 1:literal, 1:literal, 0:literal
+]
++mem: storing 0 in location 1
+
+:(scenario and_multiple2)
+recipe main [
+  1:boolean <- and 1:literal, 1:literal, 1:literal
+]
++mem: storing 1 in location 1
 
 :(before "End Primitive Recipe Declarations")
 OR,
@@ -39,32 +54,47 @@ OR,
 Recipe_number["or"] = OR;
 :(before "End Primitive Recipe Implementations")
 case OR: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  assert(arg0.size() == 1);
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  vector<long long int> arg1 = read_memory(current_instruction().ingredients[1]);
-  assert(arg1.size() == 1);
-  vector<long long int> result;
-  result.push_back(arg0[0] || arg1[0]);
-  trace("run") << "product 0 is " << result[0];
-  write_memory(current_instruction().products[0], result);
+  bool result = false;
+  for (index_t i = 0; i < ingredients.size(); ++i) {
+    assert(ingredients.at(i).size() == 1);  // must be a scalar
+    result = result || ingredients.at(i).at(0);
+  }
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }
 
 :(scenario or)
 recipe main [
-  1:integer <- copy 1:literal
-  2:integer <- copy 0:literal
-  3:integer <- or 1:integer, 2:integer
+  1:boolean <- copy 1:literal
+  2:boolean <- copy 0:literal
+  3:boolean <- or 1:boolean, 2:boolean
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
 +mem: location 1 is 1
 +run: ingredient 1 is 2
 +mem: location 2 is 0
-+run: product 0 is 1
++run: product 0 is 3
 +mem: storing 1 in location 3
+
+:(scenario or2)
+recipe main [
+  1:boolean <- or 0:literal, 0:literal
+]
++mem: storing 0 in location 1
+
+:(scenario or_multiple)
+recipe main [
+  1:boolean <- and 0:literal, 0:literal, 0:literal
+]
++mem: storing 0 in location 1
+
+:(scenario or_multiple2)
+recipe main [
+  1:boolean <- or 0:literal, 0:literal, 1:literal
+]
++mem: storing 1 in location 1
 
 :(before "End Primitive Recipe Declarations")
 NOT,
@@ -72,23 +102,29 @@ NOT,
 Recipe_number["not"] = NOT;
 :(before "End Primitive Recipe Implementations")
 case NOT: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  assert(arg0.size() == 1);
-  vector<long long int> result;
-  result.push_back(!arg0[0]);
-  trace("run") << "product 0 is " << result[0];
-  write_memory(current_instruction().products[0], result);
+  products.resize(ingredients.size());
+  for (index_t i = 0; i < ingredients.size(); ++i) {
+    assert(ingredients.at(i).size() == 1);  // must be a scalar
+    products.at(i).push_back(!ingredients.at(i).at(0));
+  }
   break;
 }
 
 :(scenario not)
 recipe main [
-  1:integer <- copy 1:literal
-  2:integer <- not 1:integer
+  1:boolean <- copy 1:literal
+  2:boolean <- not 1:boolean
 ]
 +run: instruction main/1
 +run: ingredient 0 is 1
 +mem: location 1 is 1
-+run: product 0 is 0
++run: product 0 is 2
 +mem: storing 0 in location 2
+
+:(scenario not_multiple)
+recipe main [
+  1:boolean, 2:boolean, 3:boolean <- not 1:literal, 0:literal, 1:literal
+]
++mem: storing 0 in location 1
++mem: storing 1 in location 2
++mem: storing 0 in location 3

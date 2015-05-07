@@ -105,8 +105,7 @@ container buffer [
 
 recipe init-buffer [
   default-space:address:array:location <- new location:type, 30:literal
-#?   $print default-space:address:array:location
-#?   $print [
+#?   $print default-space:address:array:location, [
 #? ]
   result:address:buffer <- new buffer:type
   len:address:integer <- get-address result:address:buffer/deref, length:offset
@@ -114,8 +113,7 @@ recipe init-buffer [
   s:address:address:array:character <- get-address result:address:buffer/deref, data:offset
   capacity:integer <- next-ingredient
   s:address:address:array:character/deref <- new character:type, capacity:integer
-#?   $print s:address:address:array:character/deref
-#?   $print [
+#?   $print s:address:address:array:character/deref, [
 #? ]
   reply result:address:buffer
 ]
@@ -182,26 +180,19 @@ scenario buffer-append-works [
     x:address:buffer <- buffer-append x:address:buffer, 99:literal  # 'c'
     s2:address:array:character <- get x:address:buffer/deref, data:offset
     1:boolean/raw <- equal s1:address:array:character, s2:address:array:character
-#?     $print s2:address:array:character
-#?     $print [
+#?     $print s2:address:array:character, [
 #? ]
-#?     $print 1060:integer/raw
-#?     $print [
+#?     $print 1060:integer/raw, [
 #? ]
-#?     $print 1061:integer/raw
-#?     $print [
+#?     $print 1061:integer/raw, [
 #? ]
-#?     $print 1062:integer/raw
-#?     $print [
+#?     $print 1062:integer/raw, [
 #? ]
-#?     $print 1063:integer/raw
-#?     $print [
+#?     $print 1063:integer/raw, [
 #? ]
-#?     $print 1064:integer/raw
-#?     $print [
+#?     $print 1064:integer/raw, [
 #? ]
-#?     $print 1065:integer/raw
-#?     $print [
+#?     $print 1065:integer/raw, [
 #? ]
     2:array:character/raw <- copy s2:address:array:character/deref
     +buffer-filled
@@ -395,10 +386,7 @@ recipe interpolate [
     result-len:integer <- subtract result-len:integer, 1:literal
     loop
   }
-#?   $print tem-len:integer #? 1
-#?   $print [ ] #? 1
-#?   $print result-len:integer #? 1
-#?   $print [ #? 1
+#?   $print tem-len:integer, [ ], $result-len:integer, [ #? 1
 #? ] #? 1
   rewind-ingredients
   _ <- next-ingredient  # skip template

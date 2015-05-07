@@ -29,8 +29,6 @@ after +recursive-case [
 
 recipe main [
   1:integer <- factorial 5:literal
-  $print [result: ]
-  $print 1:integer
-  $print [
+  $print [result: ], 1:integer, [
 ]
 ]

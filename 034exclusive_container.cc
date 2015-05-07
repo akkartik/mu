@@ -41,13 +41,13 @@ recipe main [
 if (t.kind == exclusive_container) {
   // size of an exclusive container is the size of its largest variant
   // (So like containers, it can't contain arrays.)
-//?   cout << "--- " << types[0] << ' ' << t.size << '\n'; //? 1
+//?   cout << "--- " << types.at(0) << ' ' << t.size << '\n'; //? 1
 //?   cout << "point: " << Type_number["point"] << " " << Type[Type_number["point"]].name << " " << Type[Type_number["point"]].size << '\n'; //? 1
 //?   cout << t.name << ' ' << t.size << ' ' << t.elements.size() << '\n'; //? 1
   size_t result = 0;
   for (index_t i = 0; i < t.size; ++i) {
-    size_t tmp = size_of(t.elements[i]);
-//?     cout << i << ": " << t.elements[i][0] << ' ' << tmp << ' ' << result << '\n'; //? 1
+    size_t tmp = size_of(t.elements.at(i));
+//?     cout << i << ": " << t.elements.at(i).at(0) << ' ' << tmp << ' ' << result << '\n'; //? 1
     if (tmp > result) result = tmp;
   }
   // ...+1 for its tag.
@@ -88,21 +88,20 @@ MAYBE_CONVERT,
 Recipe_number["maybe-convert"] = MAYBE_CONVERT;
 :(before "End Primitive Recipe Implementations")
 case MAYBE_CONVERT: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  reagent base = canonize(current_instruction().ingredients[0]);
+  reagent base = canonize(current_instruction().ingredients.at(0));
   index_t base_address = base.value;
-  type_number base_type = base.types[0];
+  type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == exclusive_container);
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  assert(isa_literal(current_instruction().ingredients[1]));
-  index_t tag = current_instruction().ingredients[1].value;
-  vector<long long int> result;
+  assert(isa_literal(current_instruction().ingredients.at(1)));
+  index_t tag = current_instruction().ingredients.at(1).value;
+  long long int result;
   if (tag == static_cast<index_t>(Memory[base_address])) {
-    result.push_back(base_address+1);
+    result = base_address+1;
   }
   else {
-    result.push_back(0);
+    result = 0;
   }
-  write_memory(current_instruction().products[0], result);
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }

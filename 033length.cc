@@ -17,14 +17,12 @@ LENGTH,
 Recipe_number["length"] = LENGTH;
 :(before "End Primitive Recipe Implementations")
 case LENGTH: {
-  reagent x = canonize(current_instruction().ingredients[0]);
-  if (x.types[0] != Type_number["array"]) {
+  reagent x = canonize(current_instruction().ingredients.at(0));
+  if (x.types.at(0) != Type_number["array"]) {
     raise << "tried to calculate length of non-array " << x.to_string() << '\n';
     break;
   }
-  vector<long long int> result;
-//?   cout << "length: " << x.value << '\n'; //? 1
-  result.push_back(Memory[x.value]);
-  write_memory(current_instruction().products[0], result);
+  products.resize(1);
+  products.at(0).push_back(Memory[x.value]);
   break;
 }

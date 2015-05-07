@@ -46,20 +46,20 @@ void collect_surrounding_spaces(const recipe_number r) {
     const instruction& inst = Recipe[r].steps[i];
     if (inst.is_label) continue;
     for (index_t j = 0; j < inst.products.size(); ++j) {
-      if (isa_literal(inst.products[j])) continue;
-      if (inst.products[j].name != "0") continue;
-      if (inst.products[j].types.size() != 3
-          || inst.products[j].types[0] != Type_number["address"]
-          || inst.products[j].types[1] != Type_number["array"]
-          || inst.products[j].types[2] != Type_number["location"]) {
-        raise << "slot 0 should always have type address:array:location, but is " << inst.products[j].to_string() << '\n';
+      if (isa_literal(inst.products.at(j))) continue;
+      if (inst.products.at(j).name != "0") continue;
+      if (inst.products.at(j).types.size() != 3
+          || inst.products.at(j).types.at(0) != Type_number["address"]
+          || inst.products.at(j).types.at(1) != Type_number["array"]
+          || inst.products.at(j).types.at(2) != Type_number["location"]) {
+        raise << "slot 0 should always have type address:array:location, but is " << inst.products.at(j).to_string() << '\n';
         continue;
       }
-      vector<string> s = property(inst.products[j], "names");
+      vector<string> s = property(inst.products.at(j), "names");
       if (s.empty())
         raise << "slot 0 requires a /names property in recipe " << Recipe[r].name << die();
-      if (s.size() > 1) raise << "slot 0 should have a single value in /names, got " << inst.products[j].to_string() << '\n';
-      string surrounding_recipe_name = s[0];
+      if (s.size() > 1) raise << "slot 0 should have a single value in /names, got " << inst.products.at(j).to_string() << '\n';
+      string surrounding_recipe_name = s.at(0);
       if (Surrounding_space.find(r) != Surrounding_space.end()
           && Surrounding_space[r] != Recipe_number[surrounding_recipe_name]) {
         raise << "recipe " << Recipe[r].name << " can have only one 'surrounding' recipe but has " << Recipe[Surrounding_space[r]].name << " and " << surrounding_recipe_name << '\n';
@@ -84,7 +84,7 @@ index_t lookup_name(const reagent& x, const recipe_number default_recipe) {
   }
   vector<string> p = property(x, "space");
   if (p.size() != 1) raise << "/space property should have exactly one (non-negative integer) value\n";
-  int n = to_int(p[0]);
+  int n = to_int(p.at(0));
   assert(n >= 0);
   recipe_number surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
   set<recipe_number> done;
@@ -99,9 +99,9 @@ index_t lookup_name(const reagent& x, const recipe_number r, set<recipe_number>&
   if (done.find(r) != done.end()) {
     raise << "can't compute address of " << x.to_string() << " because ";
     for (index_t i = 1; i < path.size(); ++i) {
-      raise << path[i-1] << " requires computing names of " << path[i] << '\n';
+      raise << path.at(i-1) << " requires computing names of " << path.at(i) << '\n';
     }
-    raise << path[path.size()-1] << " requires computing names of " << r << "..ad infinitum\n" << die();
+    raise << path.at(path.size()-1) << " requires computing names of " << r << "..ad infinitum\n" << die();
     return 0;
   }
   done.insert(r);
@@ -127,7 +127,7 @@ bool already_transformed(const reagent& r, const map<string, index_t>& names) {
   if (has_property(r, "space")) {
     vector<string> p = property(r, "space");
     assert(p.size() == 1);
-    if (p[0] != "0") return true;
+    if (p.at(0) != "0") return true;
   }
   return names.find(r.name) != names.end();
 }

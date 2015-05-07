@@ -66,7 +66,7 @@ if (curr.name == "assume-screen") {
   curr.operation = Recipe_number["init-fake-screen"];
   assert(curr.products.empty());
   curr.products.push_back(reagent("screen:address"));
-  curr.products[0].set_value(SCREEN);
+  curr.products.at(0).set_value(SCREEN);
 //? cout << "after: " << curr.to_string() << '\n'; //? 1
 //? cout << "AAA " << Recipe_number["init-fake-screen"] << '\n'; //? 1
 }
@@ -79,7 +79,7 @@ Recipe_number["screen-should-contain"] = SCREEN_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case SCREEN_SHOULD_CONTAIN: {
 //?   cout << "AAA\n"; //? 1
-  check_screen(current_instruction().ingredients[0].name);
+  check_screen(current_instruction().ingredients.at(0).name);
   break;
 }
 
@@ -117,11 +117,11 @@ void check_screen(const string& contents) {
   ++screen_data_start;  // now skip length
   for (index_t i = 0; i < expected_contents.size(); ++i) {
     trace("run") << "checking location " << screen_data_start+i;
-//?     cerr << "comparing " << i/screen_width << ", " << i%screen_width << ": " << Memory[screen_data_start+i] << " vs " << (int)expected_contents[i] << '\n'; //? 1
-    if ((!Memory[screen_data_start+i] && !isspace(expected_contents[i]))  // uninitialized memory => spaces
-        || (Memory[screen_data_start+i] && Memory[screen_data_start+i] != expected_contents[i])) {
+//?     cerr << "comparing " << i/screen_width << ", " << i%screen_width << ": " << Memory[screen_data_start+i] << " vs " << (int)expected_contents.at(i) << '\n'; //? 1
+    if ((!Memory[screen_data_start+i] && !isspace(expected_contents.at(i)))  // uninitialized memory => spaces
+        || (Memory[screen_data_start+i] && Memory[screen_data_start+i] != expected_contents.at(i))) {
 //?       cerr << "CCC " << Trace_stream << " " << Hide_warnings << '\n'; //? 1
-      raise << "expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents[i] << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
+      raise << "expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
       Passed = false;
       return;
     }
