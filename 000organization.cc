@@ -70,12 +70,12 @@
 //: Here's part of a layer in color: http://i.imgur.com/0eONnyX.png. Directives
 //: are shaded dark.
 //:
-//: Layers do more than just shuffle code around. Their guarantee is that it
-//: should be possible to stop loading after any file/layer, build and run the
-//: program, and pass all tests for loaded features. (Relevant is
+//: Layers do more than just shuffle code around. In a well-organized codebase
+//: it should be possible to stop loading after any file/layer, build and run
+//: the program, and pass all tests for loaded features. (Relevant is
 //: http://youtube.com/watch?v=c8N72t7aScY, a scene from "2001: A Space
-//: Odyssey".) Use the included script called 'test_all_layers' to check the
-//: guarantee if you make any changes.
+//: Odyssey".) Get into the habit of running the included script called
+//: 'test_all_layers' before you commit any changes.
 //:
 //: This 'subsetting guarantee' ensures that this directory contains a
 //: cleaned-up narrative of the evolution of this codebase. Organizing
