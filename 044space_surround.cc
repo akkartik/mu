@@ -43,8 +43,10 @@ index_t space_base(const reagent& x, index_t space_index, index_t base) {
 
 index_t space_index(const reagent& x) {
   for (index_t i = 0; i < x.properties.size(); ++i) {
-    if (x.properties[i].first == "space")
-      return to_int(x.properties[i].second[0]);
+    if (x.properties.at(i).first == "space") {
+      assert(x.properties.at(i).second.size() == 1);
+      return to_int(x.properties.at(i).second.at(0));
+    }
   }
   return 0;
 }

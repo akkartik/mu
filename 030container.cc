@@ -11,9 +11,10 @@ i.push_back(integer);
 Type[point].elements.push_back(i);
 Type[point].elements.push_back(i);
 
+//: Containers can be copied around with a single instruction just like
+//: integers, no matter how large they are.
+
 :(scenario copy_multiple_locations)
-# Containers can be copied around with a single instruction just like integers,
-# no matter how large they are.
 recipe main [
   1:integer <- copy 34:literal
   2:integer <- copy 35:literal
@@ -48,13 +49,40 @@ recipe main [
 ]
 +mem: storing 36 in location 17
 
+//: Containers can be checked for equality with a single instruction just like
+//: integers, no matter how large they are.
+
+:(scenario compare_multiple_locations)
+recipe main [
+  1:integer <- copy 34:literal  # first
+  2:integer <- copy 35:literal
+  3:integer <- copy 36:literal
+  4:integer <- copy 34:literal  # second
+  5:integer <- copy 35:literal
+  6:integer <- copy 36:literal
+  7:boolean <- equal 1:point-integer, 4:point-integer
+]
++mem: storing 1 in location 7
+
+:(scenario compare_multiple_locations2)
+recipe main [
+  1:integer <- copy 34:literal  # first
+  2:integer <- copy 35:literal
+  3:integer <- copy 36:literal
+  4:integer <- copy 34:literal  # second
+  5:integer <- copy 35:literal
+  6:integer <- copy 37:literal  # different
+  7:boolean <- equal 1:point-integer, 4:point-integer
+]
++mem: storing 0 in location 7
+
 :(before "End size_of(types) Cases")
-type_info t = Type[types[0]];
+type_info t = Type[types.at(0)];
 if (t.kind == container) {
   // size of a container is the sum of the sizes of its elements
   size_t result = 0;
   for (index_t i = 0; i < t.elements.size(); ++i) {
-    result += size_of(t.elements[i]);
+    result += size_of(t.elements.at(i));
   }
   return result;
 }
@@ -72,7 +100,7 @@ recipe main [
 +run: address to copy is 13
 +run: its type is 1
 +mem: location 13 is 35
-+run: product 0 is 35
++run: product 0 is 15
 +mem: storing 35 in location 15
 
 :(before "End Primitive Recipe Declarations")
@@ -81,29 +109,26 @@ GET,
 Recipe_number["get"] = GET;
 :(before "End Primitive Recipe Implementations")
 case GET: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  reagent base = current_instruction().ingredients[0];
+  reagent base = current_instruction().ingredients.at(0);
   index_t base_address = base.value;
-  type_number base_type = base.types[0];
+  type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == container);
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  assert(isa_literal(current_instruction().ingredients[1]));
-  index_t offset = current_instruction().ingredients[1].value;
+  assert(isa_literal(current_instruction().ingredients.at(1)));
+  assert(ingredients.at(1).size() == 1);  // scalar
+  index_t offset = ingredients.at(1).at(0);
   index_t src = base_address;
   for (index_t i = 0; i < offset; ++i) {
-    src += size_of(Type[base_type].elements[i]);
+    src += size_of(Type[base_type].elements.at(i));
   }
   trace("run") << "address to copy is " << src;
   assert(Type[base_type].kind == container);
   assert(Type[base_type].elements.size() > offset);
-  type_number src_type = Type[base_type].elements[offset][0];
+  type_number src_type = Type[base_type].elements[offset].at(0);
   trace("run") << "its type is " << src_type;
   reagent tmp;
   tmp.set_value(src);
   tmp.types.push_back(src_type);
-  vector<long long int> result(read_memory(tmp));
-  trace("run") << "product 0 is " << result[0];
-  write_memory(current_instruction().products[0], result);
+  products.push_back(read_memory(tmp));
   break;
 }
 
@@ -125,7 +150,7 @@ recipe main [
 +run: address to copy is 14
 +run: its type is 1
 +mem: location 14 is 36
-+run: product 0 is 36
++run: product 0 is 15
 +mem: storing 36 in location 15
 
 //:: To write to elements of containers, you need their address.
@@ -148,22 +173,19 @@ GET_ADDRESS,
 Recipe_number["get-address"] = GET_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case GET_ADDRESS: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  reagent base = current_instruction().ingredients[0];
+  reagent base = current_instruction().ingredients.at(0);
   index_t base_address = base.value;
-  type_number base_type = base.types[0];
+  type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == container);
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  assert(isa_literal(current_instruction().ingredients[1]));
-  index_t offset = current_instruction().ingredients[1].value;
-  index_t src = base_address;
+  assert(isa_literal(current_instruction().ingredients.at(1)));
+  assert(ingredients.at(1).size() == 1);  // scalar
+  index_t offset = ingredients.at(1).at(0);
+  index_t result = base_address;
   for (index_t i = 0; i < offset; ++i) {
-    src += size_of(Type[base_type].elements[i]);
+    result += size_of(Type[base_type].elements.at(i));
   }
-  trace("run") << "address to copy is " << src;
-  vector<long long int> result;
-  result.push_back(src);
-  trace("run") << "product 0 is " << result[0];
-  write_memory(current_instruction().products[0], result);
+  trace("run") << "address to copy is " << result;
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }

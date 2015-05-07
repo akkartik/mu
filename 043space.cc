@@ -35,7 +35,7 @@ reagent r = absolutize(x);
 :(code)
 reagent absolutize(reagent x) {
 //?   if (Recipe_number.find("increment-counter") != Recipe_number.end()) //? 1
-//?     cout << "AAA " << "increment-counter/2: " << Recipe[Recipe_number["increment-counter"]].steps[2].products[0].to_string() << '\n'; //? 1
+//?     cout << "AAA " << "increment-counter/2: " << Recipe[Recipe_number["increment-counter"]].steps.at(2).products.at(0).to_string() << '\n'; //? 1
 //?   cout << "absolutize " << x.to_string() << '\n'; //? 4
 //?   cout << is_raw(x) << '\n'; //? 1
   if (is_raw(x) || is_dummy(x)) return x;
@@ -110,7 +110,7 @@ index_t address(index_t offset, index_t base) {
 :(after "void write_memory(reagent x, vector<long long int> data)")
   if (x.name == "default-space") {
     assert(data.size() == 1);
-    Current_routine->calls.top().default_space = data[0];
+    Current_routine->calls.top().default_space = data.at(0);
 //?     cout << "AAA " << Current_routine->calls.top().default_space << '\n'; //? 1
     return;
   }

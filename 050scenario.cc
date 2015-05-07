@@ -88,7 +88,7 @@ time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
 for (index_t i = 0; i < Scenarios.size(); ++i) {
 //?   cerr << Passed << '\n'; //? 1
-  run_mu_scenario(Scenarios[i]);
+  run_mu_scenario(Scenarios.at(i));
   if (Passed) cerr << ".";
 }
 
@@ -137,16 +137,16 @@ RUN,
 Recipe_number["run"] = RUN;
 :(before "End Primitive Recipe Implementations")
 case RUN: {
-//?   cout << "recipe " << current_instruction().ingredients[0].name << '\n'; //? 1
+//?   cout << "recipe " << current_instruction().ingredients.at(0).name << '\n'; //? 1
   ostringstream tmp;
-  tmp << "recipe run" << Next_recipe_number << " [ " << current_instruction().ingredients[0].name << " ]";
+  tmp << "recipe run" << Next_recipe_number << " [ " << current_instruction().ingredients.at(0).name << " ]";
 //?   Show_rest_of_stream = true; //? 1
   vector<recipe_number> tmp_recipe = load(tmp.str());
   // Predefined Scenario Locals In Run.
   // End Predefined Scenario Locals In Run.
   transform_all();
-//?   cout << tmp_recipe[0] << ' ' << Recipe_number["main"] << '\n'; //? 1
-  Current_routine->calls.push(call(tmp_recipe[0]));
+//?   cout << tmp_recipe.at(0) << ' ' << Recipe_number["main"] << '\n'; //? 1
+  Current_routine->calls.push(call(tmp_recipe.at(0)));
   continue;  // not done with caller; don't increment current_step_index()
 }
 
@@ -181,8 +181,8 @@ MEMORY_SHOULD_CONTAIN,
 Recipe_number["memory-should-contain"] = MEMORY_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case MEMORY_SHOULD_CONTAIN: {
-//?   cout << current_instruction().ingredients[0].name << '\n'; //? 1
-  check_memory(current_instruction().ingredients[0].name);
+//?   cout << current_instruction().ingredients.at(0).name << '\n'; //? 1
+  check_memory(current_instruction().ingredients.at(0).name);
   break;
 }
 
@@ -221,7 +221,7 @@ void check_memory(const string& s) {
 
 void check_type(const string& lhs, istream& in) {
   reagent x(lhs);
-  if (x.properties[0].second[0] == "string") {
+  if (x.properties.at(0).second.at(0) == "string") {
     x.set_value(to_int(x.name));
     skip_whitespace_and_comments(in);
     string _assign = next_word(in);
@@ -230,7 +230,7 @@ void check_type(const string& lhs, istream& in) {
     string literal = next_word(in);
     index_t address = x.value;
     // exclude quoting brackets
-    assert(literal[0] == '[');  literal.erase(0, 1);
+    assert(literal.at(0) == '[');  literal.erase(0, 1);
     assert(literal[literal.size()-1] == ']');  literal.erase(literal.size()-1);
     check_string(address, literal);
     return;
@@ -245,8 +245,8 @@ void check_string(index_t address, const string& literal) {
   ++address;  // now skip length
   for (index_t i = 0; i < literal.size(); ++i) {
     trace("run") << "checking location " << address+i;
-    if (Memory[address+i] != literal[i])
-      raise << "expected location " << (address+i) << " to contain " << literal[i] << " but saw " << Memory[address+i] << '\n';
+    if (Memory[address+i] != literal.at(i))
+      raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
   }
 }
 
@@ -310,7 +310,7 @@ TRACE_SHOULD_CONTAIN,
 Recipe_number["trace-should-contain"] = TRACE_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case TRACE_SHOULD_CONTAIN: {
-  check_trace(current_instruction().ingredients[0].name);
+  check_trace(current_instruction().ingredients.at(0).name);
   break;
 }
 
@@ -340,10 +340,10 @@ vector<pair<string, string> > parse_trace(const string& expected) {
   vector<string> buf = split(expected, "\n");
   vector<pair<string, string> > result;
   for (index_t i = 0; i < buf.size(); ++i) {
-    buf[i] = trim(buf[i]);
-    if (buf[i].empty()) continue;
-    index_t delim = buf[i].find(": ");
-    result.push_back(pair<string, string>(buf[i].substr(0, delim), buf[i].substr(delim+2)));
+    buf.at(i) = trim(buf.at(i));
+    if (buf.at(i).empty()) continue;
+    index_t delim = buf.at(i).find(": ");
+    result.push_back(pair<string, string>(buf.at(i).substr(0, delim), buf.at(i).substr(delim+2)));
   }
   return result;
 }
@@ -395,7 +395,7 @@ TRACE_SHOULD_NOT_CONTAIN,
 Recipe_number["trace-should-not-contain"] = TRACE_SHOULD_NOT_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case TRACE_SHOULD_NOT_CONTAIN: {
-  check_trace_missing(current_instruction().ingredients[0].name);
+  check_trace_missing(current_instruction().ingredients.at(0).name);
   break;
 }
 
@@ -406,8 +406,8 @@ bool check_trace_missing(const string& in) {
   Trace_stream->newline();
   vector<pair<string, string> > lines = parse_trace(in);
   for (index_t i = 0; i < lines.size(); ++i) {
-    if (trace_count(lines[i].first, lines[i].second) != 0) {
-      raise << "unexpected [" << lines[i].second << "] in trace layer " << lines[i].first << '\n';
+    if (trace_count(lines.at(i).first, lines.at(i).second) != 0) {
+      raise << "unexpected [" << lines.at(i).second << "] in trace layer " << lines.at(i).first << '\n';
       Passed = false;
       return false;
     }

@@ -42,41 +42,41 @@ void transform_names(const recipe_number r) {
     // map names to addresses
     for (index_t in = 0; in < inst.ingredients.size(); ++in) {
 //?       cout << "ingredients\n"; //? 2
-      if (is_raw(inst.ingredients[in])) continue;
-//?       cout << "ingredient " << inst.ingredients[in].name << '\n'; //? 3
-//?       cout << "ingredient " << inst.ingredients[in].to_string() << '\n'; //? 1
-      if (inst.ingredients[in].name == "default-space")
-        inst.ingredients[in].initialized = true;
-      if (inst.ingredients[in].types.empty())
+      if (is_raw(inst.ingredients.at(in))) continue;
+//?       cout << "ingredient " << inst.ingredients.at(in).name << '\n'; //? 3
+//?       cout << "ingredient " << inst.ingredients.at(in).to_string() << '\n'; //? 1
+      if (inst.ingredients.at(in).name == "default-space")
+        inst.ingredients.at(in).initialized = true;
+      if (inst.ingredients.at(in).types.empty())
         raise << "missing type in " << inst.to_string() << '\n';
-      assert(!inst.ingredients[in].types.empty());
-      if (inst.ingredients[in].types[0]  // not a literal
-          && !inst.ingredients[in].initialized
-          && !is_number(inst.ingredients[in].name)) {
-        if (!already_transformed(inst.ingredients[in], names)) {
-          raise << "use before set: " << inst.ingredients[in].name << " in " << Recipe[r].name << '\n';
+      assert(!inst.ingredients.at(in).types.empty());
+      if (inst.ingredients.at(in).types[0]  // not a literal
+          && !inst.ingredients.at(in).initialized
+          && !is_number(inst.ingredients.at(in).name)) {
+        if (!already_transformed(inst.ingredients.at(in), names)) {
+          raise << "use before set: " << inst.ingredients.at(in).name << " in " << Recipe[r].name << '\n';
         }
-        inst.ingredients[in].set_value(lookup_name(inst.ingredients[in], r));
-//?         cout << "lookup ingredient " << Recipe[r].name << "/" << i << ": " << inst.ingredients[in].to_string() << '\n'; //? 1
+        inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
+//?         cout << "lookup ingredient " << Recipe[r].name << "/" << i << ": " << inst.ingredients.at(in).to_string() << '\n'; //? 1
       }
     }
     for (index_t out = 0; out < inst.products.size(); ++out) {
 //?       cout << "products\n"; //? 1
-      if (is_raw(inst.products[out])) continue;
-//?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products[out].name << '\n'; //? 4
-//?       cout << inst.products[out].types[0] << '\n'; //? 1
-      if (inst.products[out].name == "default-space")
-        inst.products[out].initialized = true;
-      if (inst.products[out].types[0]  // not a literal
-          && !inst.products[out].initialized
-          && !is_number(inst.products[out].name)) {
-        if (names.find(inst.products[out].name) == names.end()) {
-          trace("name") << "assign " << inst.products[out].name << " " << curr_idx;
-          names[inst.products[out].name] = curr_idx;
-          curr_idx += size_of(inst.products[out]);
+      if (is_raw(inst.products.at(out))) continue;
+//?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products.at(out).name << '\n'; //? 4
+//?       cout << inst.products.at(out).types[0] << '\n'; //? 1
+      if (inst.products.at(out).name == "default-space")
+        inst.products.at(out).initialized = true;
+      if (inst.products.at(out).types[0]  // not a literal
+          && !inst.products.at(out).initialized
+          && !is_number(inst.products.at(out).name)) {
+        if (names.find(inst.products.at(out).name) == names.end()) {
+          trace("name") << "assign " << inst.products.at(out).name << " " << curr_idx;
+          names[inst.products.at(out).name] = curr_idx;
+          curr_idx += size_of(inst.products.at(out));
         }
-        inst.products[out].set_value(lookup_name(inst.products[out], r));
-//?         cout << "lookup product " << Recipe[r].name << "/" << i << ": " << inst.products[out].to_string() << '\n'; //? 1
+        inst.products.at(out).set_value(lookup_name(inst.products.at(out), r));
+//?         cout << "lookup product " << Recipe[r].name << "/" << i << ": " << inst.products.at(out).to_string() << '\n'; //? 1
       }
     }
   }
@@ -118,7 +118,7 @@ bool is_raw(const reagent& r) {
 :(scenario convert_names_passes_dummy)
 # _ is just a dummy result that never gets consumed
 recipe main [
-  _, x:integer <- copy 0:literal
+  _, x:integer <- copy 0:literal, 1:literal
 ]
 +name: assign x 1
 -name: assign _ 1
@@ -126,7 +126,7 @@ recipe main [
 //: one reserved word that we'll need later
 :(scenario convert_names_passes_default_space)
 recipe main [
-  default-space:integer, x:integer <- copy 0:literal
+  default-space:integer, x:integer <- copy 0:literal, 1:literal
 ]
 +name: assign x 1
 -name: assign default-space 1
@@ -158,13 +158,13 @@ if (inst.operation == Recipe_number["get"]
     || inst.operation == Recipe_number["get-address"]) {
   // at least 2 args, and second arg is offset
   assert(inst.ingredients.size() >= 2);
-//?   cout << inst.ingredients[1].to_string() << '\n'; //? 1
-  assert(isa_literal(inst.ingredients[1]));
-  if (inst.ingredients[1].name.find_first_not_of("0123456789") == string::npos) continue;
+//?   cout << inst.ingredients.at(1).to_string() << '\n'; //? 1
+  assert(isa_literal(inst.ingredients.at(1)));
+  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
   // since first non-address in base type must be a container, we don't have to canonize
-  type_number base_type = skip_addresses(inst.ingredients[0].types);
-  inst.ingredients[1].set_value(find_element_name(base_type, inst.ingredients[1].name));
-  trace("name") << "element " << inst.ingredients[1].name << " of type " << Type[base_type].name << " is at offset " << inst.ingredients[1].value;
+  type_number base_type = skip_addresses(inst.ingredients.at(0).types);
+  inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
+  trace("name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << inst.ingredients.at(1).value;
 }
 
 //: this test is actually illegal so can't call run
@@ -195,10 +195,10 @@ recipe main [
 if (inst.operation == Recipe_number["maybe-convert"]) {
   // at least 2 args, and second arg is offset
   assert(inst.ingredients.size() >= 2);
-  assert(isa_literal(inst.ingredients[1]));
-  if (inst.ingredients[1].name.find_first_not_of("0123456789") == string::npos) continue;
+  assert(isa_literal(inst.ingredients.at(1)));
+  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
   // since first non-address in base type must be an exclusive container, we don't have to canonize
-  type_number base_type = skip_addresses(inst.ingredients[0].types);
-  inst.ingredients[1].set_value(find_element_name(base_type, inst.ingredients[1].name));
-  trace("name") << "variant " << inst.ingredients[1].name << " of type " << Type[base_type].name << " has tag " << inst.ingredients[1].value;
+  type_number base_type = skip_addresses(inst.ingredients.at(0).types);
+  inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
+  trace("name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << inst.ingredients.at(1).value;
 }

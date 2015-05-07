@@ -2,7 +2,7 @@
 
 :(scenario reply)
 recipe main [
-  3:integer, 4:integer <- f 2:literal
+  1:integer, 2:integer <- f 34:literal
 ]
 recipe f [
   12:integer <- next-ingredient
@@ -10,10 +10,8 @@ recipe f [
   reply 12:integer, 13:integer
 ]
 +run: instruction main/0
-+run: result 0 is 2
-+mem: storing 2 in location 3
-+run: result 1 is 3
-+mem: storing 3 in location 4
++mem: storing 34 in location 1
++mem: storing 35 in location 2
 
 :(before "End Primitive Recipe Declarations")
 REPLY,
@@ -21,29 +19,27 @@ REPLY,
 Recipe_number["reply"] = REPLY;
 :(before "End Primitive Recipe Implementations")
 case REPLY: {
-  vector<vector<long long int> > callee_results;
-  for (index_t i = 0; i < current_instruction().ingredients.size(); ++i) {
-    callee_results.push_back(read_memory(current_instruction().ingredients[i]));
-  }
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
   Current_routine->calls.pop();
   assert(!Current_routine->calls.empty());
   const instruction& caller_instruction = current_instruction();
-  assert(caller_instruction.products.size() <= callee_results.size());
+  // make reply results available to caller
+  copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
+  // check that any reply ingredients with /same-as-ingredient connect up
+  // the corresponding ingredient and product in the caller.
   for (index_t i = 0; i < caller_instruction.products.size(); ++i) {
-    trace("run") << "result " << i << " is " << to_string(callee_results[i]);
-    // check that any reply ingredients with /same-as-ingredient connect up
-    // the corresponding ingredient and product in the caller.
-    if (has_property(reply_inst.ingredients[i], "same-as-ingredient")) {
-      vector<string> tmp = property(reply_inst.ingredients[i], "same-as-ingredient");
+    trace("run") << "result " << i << " is " << to_string(ingredients.at(i));
+    if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
+      vector<string> tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
       assert(tmp.size() == 1);
-      long long int ingredient_index = to_int(tmp[0]);
-      if (caller_instruction.products[i].value != caller_instruction.ingredients[ingredient_index].value)
-        raise << "'same-as-ingredient' result " << caller_instruction.products[i].value << " must be location " << caller_instruction.ingredients[ingredient_index].value << '\n';
+      long long int ingredient_index = to_int(tmp.at(0));
+      if (caller_instruction.products.at(i).value != caller_instruction.ingredients[ingredient_index].value)
+        raise << "'same-as-ingredient' result " << caller_instruction.products.at(i).value << " must be location " << caller_instruction.ingredients[ingredient_index].value << '\n';
     }
-    write_memory(caller_instruction.products[i], callee_results[i]);
   }
-  break;  // instruction loop will increment caller's step_index
+  // refresh instruction_counter to caller's step_index
+  instruction_counter = current_step_index();
+  break;
 }
 
 //: Products can include containers and exclusive containers, addresses and arrays.
@@ -68,8 +64,8 @@ recipe f [
 :(scenario reply_same_as_ingredient)
 % Hide_warnings = true;
 recipe main [
-  1:address:integer <- new integer:type
-  2:address:integer <- test1 1:address:integer  # call with different ingredient and product
+  1:integer <- copy 0:literal
+  2:integer <- test1 1:integer  # call with different ingredient and product
 ]
 recipe test1 [
   10:address:integer <- next-ingredient
@@ -82,13 +78,13 @@ string to_string(const vector<long long int>& in) {
   if (in.empty()) return "[]";
   ostringstream out;
   if (in.size() == 1) {
-    out << in[0];
+    out << in.at(0);
     return out.str();
   }
   out << "[";
   for (index_t i = 0; i < in.size(); ++i) {
     if (i > 0) out << ", ";
-    out << in[i];
+    out << in.at(i);
   }
   out << "]";
   return out.str();

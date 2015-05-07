@@ -36,7 +36,7 @@ WAIT_FOR_LOCATION,
 Recipe_number["wait-for-location"] = WAIT_FOR_LOCATION;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_LOCATION: {
-  reagent loc = canonize(current_instruction().ingredients[0]);
+  reagent loc = canonize(current_instruction().ingredients.at(0));
   Current_routine->state = WAITING;
   Current_routine->waiting_on_location = loc.value;
   Current_routine->old_value_of_wating_location = Memory[loc.value];
@@ -85,7 +85,7 @@ WAIT_FOR_ROUTINE,
 Recipe_number["wait-for-routine"] = WAIT_FOR_ROUTINE;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_ROUTINE: {
-  reagent loc = canonize(current_instruction().ingredients[0]);
+  reagent loc = canonize(current_instruction().ingredients.at(0));
   Current_routine->state = WAITING;
   Current_routine->waiting_on_routine = loc.value;
   trace("run") << "waiting for routine " << loc.value;

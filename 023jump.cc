@@ -6,9 +6,10 @@ JUMP,
 Recipe_number["jump"] = JUMP;
 :(before "End Primitive Recipe Implementations")
 case JUMP: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].value;
-  current_step_index() += current_instruction().ingredients[0].value;
-  trace("run") << "jumping to instruction " << current_step_index()+1;
+  assert(ingredients.size() == 1);
+  assert(ingredients.at(0).size() == 1);  // scalar
+  instruction_counter += ingredients.at(0).at(0);
+  trace("run") << "jumping to instruction " << instruction_counter+1;
   break;
 }
 
@@ -39,16 +40,15 @@ JUMP_IF,
 Recipe_number["jump-if"] = JUMP_IF;
 :(before "End Primitive Recipe Implementations")
 case JUMP_IF: {
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  assert(arg0.size() == 1);
-  trace("run") << "ingredient 0 is " << arg0[0];
-  if (!arg0[0]) {
+  assert(ingredients.size() == 2);
+  assert(ingredients.at(0).size() == 1);  // scalar
+  if (!ingredients.at(0).at(0)) {
     trace("run") << "jump-if fell through";
     break;
   }
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  current_step_index() += current_instruction().ingredients[1].value;
-  trace("run") << "jumping to instruction " << current_step_index()+1;
+  assert(ingredients.at(1).size() == 1);  // scalar
+  instruction_counter += ingredients.at(1).at(0);
+  trace("run") << "jumping to instruction " << instruction_counter+1;
   break;
 }
 
@@ -79,16 +79,15 @@ JUMP_UNLESS,
 Recipe_number["jump-unless"] = JUMP_UNLESS;
 :(before "End Primitive Recipe Implementations")
 case JUMP_UNLESS: {
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  assert(arg0.size() == 1);
-  trace("run") << "ingredient 0 is " << arg0[0];
-  if (arg0[0]) {
+  assert(ingredients.size() == 2);
+  assert(ingredients.at(0).size() == 1);  // scalar
+  if (ingredients.at(0).at(0)) {
     trace("run") << "jump-unless fell through";
     break;
   }
-  trace("run") << "ingredient 1 is " << current_instruction().ingredients[1].name;
-  current_step_index() += current_instruction().ingredients[1].value;
-  trace("run") << "jumping to instruction " << current_step_index()+1;
+  assert(ingredients.at(1).size() == 1);  // scalar
+  instruction_counter += ingredients.at(1).at(0);
+  trace("run") << "jumping to instruction " << instruction_counter+1;
   break;
 }
 

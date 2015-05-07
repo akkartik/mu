@@ -11,10 +11,11 @@ ASSERT,
 Recipe_number["assert"] = ASSERT;
 :(before "End Primitive Recipe Implementations")
 case ASSERT: {
-  trace("run") << "ingredient 0 is " << current_instruction().ingredients[0].name;
-  vector<long long int> arg0 = read_memory(current_instruction().ingredients[0]);
-  assert(arg0.size() == 1);
-  if (arg0[0] == 0)
-    raise << current_instruction().ingredients[1].name << '\n';
+  assert(ingredients.size() == 2);
+  assert(ingredients.at(0).size() == 1);
+  if (!ingredients.at(0).at(0)) {
+    assert(isa_literal(current_instruction().ingredients.at(1)));
+    raise << current_instruction().ingredients.at(1).name << '\n';
+  }
   break;
 }
