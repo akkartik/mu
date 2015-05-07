@@ -50,7 +50,7 @@ void run(recipe_number r) {
 //?     cout << "scheduler: " << Current_routine_index << '\n'; //? 1
     assert(Current_routine);
     assert(Current_routine->state == RUNNING);
-    trace("schedule") << current_recipe_name();
+    trace("schedule") << "switching to " << Current_routine->id << ": " << current_recipe_name();
     run_current_routine(Scheduling_interval);
     if (Current_routine->completed())
       Current_routine->state = COMPLETED;
@@ -231,11 +231,39 @@ Recipe_number["routine-state"] = ROUTINE_STATE;
 :(before "End Primitive Recipe Implementations")
 case ROUTINE_STATE: {
   vector<long long int> result;
+  assert(!current_instruction().ingredients.empty());
+  assert(!read_memory(current_instruction().ingredients[0]).empty());
+  index_t target_id = read_memory(current_instruction().ingredients[0])[0];
+  cout << "routine-state: looking for " << target_id << '\n';
+  index_t target_index = 0;
+  for (index_t target_index = 0; target_index < Routines.size(); ++target_index) {
+    cout << "routine: " << Routines[target_index]->id << '\n';
+    if (Routines[target_index]->id == target_id) break;
+  }
+  if (target_index < Routines.size()) {
+    cout << "routine-state: " << Routines[target_index]->id << ": " << Routines[target_index]->state << '\n';
+    cout << "dest: " << current_instruction().products[0].to_string() << '\n';
+    cout << "before: " << Memory[current_instruction().products[0].value] << '\n';
+    result.push_back(Routines[target_index]->state);
+  }
+  else {
+    result.push_back(-1);
+  }
+  write_memory(current_instruction().products[0], result);
+  cout << "after: " << Memory[current_instruction().products[0].value] << '\n';
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+RESTART,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["restart"] = RESTART;
+:(before "End Primitive Recipe Implementations")
+case RESTART: {
   index_t id = read_memory(current_instruction().ingredients[0])[0];
   for (index_t i = 0; i < Routines.size(); ++i) {
     if (Routines[i]->id == id) {
-      result.push_back(Routines[i]->state);
-      write_memory(current_instruction().products[0], result);
+      Routines[i]->state = RUNNING;
       break;
     }
   }
