@@ -41,7 +41,6 @@ case WAIT_FOR_LOCATION: {
   Current_routine->waiting_on_location = loc.value;
   Current_routine->old_value_of_wating_location = Memory[loc.value];
   trace("run") << "waiting for location " << loc.value << " to change from " << Memory[loc.value];
-  trace("schedule") << Current_routine->id << ": waiting for location " << loc.value << " to change from " << Memory[loc.value];
   break;
 }
 
@@ -49,21 +48,16 @@ case WAIT_FOR_LOCATION: {
 
 :(before "End Scheduler State Transitions")
 for (index_t i = 0; i < Routines.size(); ++i) {
-  trace("schedule") << "wake up loop 1: routine " << Routines[i]->id << " has state " << Routines[i]->state;
   if (Routines[i]->state != WAITING) continue;
-  trace("schedule") << "waiting on location: " << Routines[i]->waiting_on_location;
-  if (Routines[i]->waiting_on_location)
-    trace("schedule") << "checking routine " << Routines[i]->id << " waiting on location "
-      << Routines[i]->waiting_on_location << ": " << Memory[Routines[i]->waiting_on_location] << " vs " << Routines[i]->old_value_of_wating_location;
-  if (Routines[i]->waiting_on_location &&
+  if (Memory[Routines[i]->waiting_on_location] &&
       Memory[Routines[i]->waiting_on_location] != Routines[i]->old_value_of_wating_location) {
-    trace("schedule") << Current_routine->id << ": waking up routine " << Routines[i]->id << " waiting on location " << Routines[i]->waiting_on_location;
+    trace("schedule") << "waking up routine\n";
     Routines[i]->state = RUNNING;
     Routines[i]->waiting_on_location = Routines[i]->old_value_of_wating_location = 0;
   }
 }
 
-//: also allow waiting on a routine to stop running
+//: also allow waiting on a routine
 
 :(scenario wait_for_routine)
 recipe f1 [
@@ -95,22 +89,18 @@ case WAIT_FOR_ROUTINE: {
   Current_routine->state = WAITING;
   Current_routine->waiting_on_routine = loc.value;
   trace("run") << "waiting for routine " << loc.value;
-  trace("schedule") << Current_routine->id << ": waiting for routine " << loc.value;
   break;
 }
 
 :(before "End Scheduler State Transitions")
-// Wake up any routines waiting for other routines to go to sleep.
-// Important: this must come after the scheduler loop above giving routines
-// waiting for locations to change a chance to wake up.
 for (index_t i = 0; i < Routines.size(); ++i) {
   if (Routines[i]->state != WAITING) continue;
   if (!Routines[i]->waiting_on_routine) continue;
-  index_t target = Routines[i]->waiting_on_routine;
-  assert(target != i);
+  index_t id = Routines[i]->waiting_on_routine;
+  assert(id != i);
   for (index_t j = 0; j < Routines.size(); ++j) {
-    if (Routines[j]->id == target && Routines[j]->state != RUNNING) {
-      trace("schedule") << "waking up routine " << Routines[i]->id << " waiting on routine " << target;
+    if (Routines[j]->id == id && Routines[j]->state != WAITING) {
+      trace("schedule") << "waking up routine\n";
       Routines[i]->state = RUNNING;
       Routines[i]->waiting_on_routine = 0;
     }
