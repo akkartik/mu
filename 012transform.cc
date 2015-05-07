@@ -21,7 +21,7 @@ void transform_all() {
       recipe& r = p->second;
       if (r.steps.empty()) continue;
       if (r.transformed_until != t-1) continue;
-      (*Transform[t])(/*recipe_number*/p->first);
+      (*Transform.at(t))(/*recipe_number*/p->first);
       r.transformed_until = t;
     }
   }
@@ -34,12 +34,12 @@ void parse_int_reagents() {
     recipe& r = p->second;
     if (r.steps.empty()) continue;
     for (index_t index = 0; index < r.steps.size(); ++index) {
-      instruction& inst = r.steps[index];
+      instruction& inst = r.steps.at(index);
       for (index_t i = 0; i < inst.ingredients.size(); ++i) {
-        populate_value(inst.ingredients[i]);
+        populate_value(inst.ingredients.at(i));
       }
       for (index_t i = 0; i < inst.products.size(); ++i) {
-        populate_value(inst.products[i]);
+        populate_value(inst.products.at(i));
       }
     }
   }

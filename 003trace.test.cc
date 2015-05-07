@@ -136,34 +136,34 @@ void test_trace_supports_count2() {
 void test_split_returns_at_least_one_elem() {
   vector<string> result = split("", ",");
   CHECK_EQ(result.size(), 1);
-  CHECK_EQ(result[0], "");
+  CHECK_EQ(result.at(0), "");
 }
 
 void test_split_returns_entire_input_when_no_delim() {
   vector<string> result = split("abc", ",");
   CHECK_EQ(result.size(), 1);
-  CHECK_EQ(result[0], "abc");
+  CHECK_EQ(result.at(0), "abc");
 }
 
 void test_split_works() {
   vector<string> result = split("abc,def", ",");
   CHECK_EQ(result.size(), 2);
-  CHECK_EQ(result[0], "abc");
-  CHECK_EQ(result[1], "def");
+  CHECK_EQ(result.at(0), "abc");
+  CHECK_EQ(result.at(1), "def");
 }
 
 void test_split_works2() {
   vector<string> result = split("abc,def,ghi", ",");
   CHECK_EQ(result.size(), 3);
-  CHECK_EQ(result[0], "abc");
-  CHECK_EQ(result[1], "def");
-  CHECK_EQ(result[2], "ghi");
+  CHECK_EQ(result.at(0), "abc");
+  CHECK_EQ(result.at(1), "def");
+  CHECK_EQ(result.at(2), "ghi");
 }
 
 void test_split_handles_multichar_delim() {
   vector<string> result = split("abc,,def,,ghi", ",,");
   CHECK_EQ(result.size(), 3);
-  CHECK_EQ(result[0], "abc");
-  CHECK_EQ(result[1], "def");
-  CHECK_EQ(result[2], "ghi");
+  CHECK_EQ(result.at(0), "abc");
+  CHECK_EQ(result.at(1), "def");
+  CHECK_EQ(result.at(2), "ghi");
 }

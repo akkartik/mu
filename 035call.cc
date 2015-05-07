@@ -65,7 +65,7 @@ inline const string& current_recipe_name() {
 }
 :(replace{} "inline const instruction& current_instruction()")
 inline const instruction& current_instruction() {
-  return Recipe[Current_routine->calls.top().running_recipe].steps[Current_routine->calls.top().running_step_index];
+  return Recipe[Current_routine->calls.top().running_recipe].steps.at(Current_routine->calls.top().running_step_index);
 }
 
 :(replace{} "default:" following "End Primitive Recipe Implementations")

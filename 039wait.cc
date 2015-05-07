@@ -48,12 +48,12 @@ case WAIT_FOR_LOCATION: {
 
 :(before "End Scheduler State Transitions")
 for (index_t i = 0; i < Routines.size(); ++i) {
-  if (Routines[i]->state != WAITING) continue;
-  if (Memory[Routines[i]->waiting_on_location] &&
-      Memory[Routines[i]->waiting_on_location] != Routines[i]->old_value_of_wating_location) {
+  if (Routines.at(i)->state != WAITING) continue;
+  if (Memory[Routines.at(i)->waiting_on_location] &&
+      Memory[Routines.at(i)->waiting_on_location] != Routines.at(i)->old_value_of_wating_location) {
     trace("schedule") << "waking up routine\n";
-    Routines[i]->state = RUNNING;
-    Routines[i]->waiting_on_location = Routines[i]->old_value_of_wating_location = 0;
+    Routines.at(i)->state = RUNNING;
+    Routines.at(i)->waiting_on_location = Routines.at(i)->old_value_of_wating_location = 0;
   }
 }
 
@@ -94,15 +94,15 @@ case WAIT_FOR_ROUTINE: {
 
 :(before "End Scheduler State Transitions")
 for (index_t i = 0; i < Routines.size(); ++i) {
-  if (Routines[i]->state != WAITING) continue;
-  if (!Routines[i]->waiting_on_routine) continue;
-  index_t id = Routines[i]->waiting_on_routine;
+  if (Routines.at(i)->state != WAITING) continue;
+  if (!Routines.at(i)->waiting_on_routine) continue;
+  index_t id = Routines.at(i)->waiting_on_routine;
   assert(id != i);
   for (index_t j = 0; j < Routines.size(); ++j) {
-    if (Routines[j]->id == id && Routines[j]->state != WAITING) {
+    if (Routines.at(j)->id == id && Routines.at(j)->state != WAITING) {
       trace("schedule") << "waking up routine\n";
-      Routines[i]->state = RUNNING;
-      Routines[i]->waiting_on_routine = 0;
+      Routines.at(i)->state = RUNNING;
+      Routines.at(i)->waiting_on_routine = 0;
     }
   }
 }

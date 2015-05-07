@@ -181,13 +181,13 @@ reagent::reagent(string s) :value(0), initialized(false) {
     properties.push_back(pair<string, vector<string> >(name, values));
   }
   // structures for the first row of properties
-  name = properties[0].first;
-  for (index_t i = 0; i < properties[0].second.size(); ++i) {
-    types.push_back(Type_number[properties[0].second[i]]);
+  name = properties.at(0).first;
+  for (index_t i = 0; i < properties.at(0).second.size(); ++i) {
+    types.push_back(Type_number[properties.at(0).second.at(i)]);
   }
   if (name == "_" && types.empty()) {
     types.push_back(0);
-    properties[0].second.push_back("dummy");
+    properties.at(0).second.push_back("dummy");
   }
 }
 reagent::reagent() :value(0), initialized(false) {
@@ -200,16 +200,16 @@ string reagent::to_string() const {
   ostringstream out;
   out << "{name: \"" << name << "\", value: " << value << ", type: ";
   for (index_t i = 0; i < types.size(); ++i) {
-    out << types[i];
+    out << types.at(i);
     if (i < types.size()-1) out << "-";
   }
   if (!properties.empty()) {
     out << ", properties: [";
     for (index_t i = 0; i < properties.size(); ++i) {
-      out << "\"" << properties[i].first << "\": ";
-      for (index_t j = 0; j < properties[i].second.size(); ++j) {
-        out << "\"" << properties[i].second[j] << "\"";
-        if (j < properties[i].second.size()-1) out << ":";
+      out << "\"" << properties.at(i).first << "\": ";
+      for (index_t j = 0; j < properties.at(i).second.size(); ++j) {
+        out << "\"" << properties.at(i).second.at(j) << "\"";
+        if (j < properties.at(i).second.size()-1) out << ":";
       }
       if (i < properties.size()-1) out << ", ";
       else out << "]";
@@ -224,13 +224,13 @@ string instruction::to_string() const {
   ostringstream out;
   for (index_t i = 0; i < products.size(); ++i) {
     if (i > 0) out << ", ";
-    out << products[i].to_string();
+    out << products.at(i).to_string();
   }
   if (!products.empty()) out << " <- ";
   out << name << '/' << operation << ' ';
   for (index_t i = 0; i < ingredients.size(); ++i) {
     if (i > 0) out << ", ";
-    out << ingredients[i].to_string();
+    out << ingredients.at(i).to_string();
   }
   return out.str();
 }

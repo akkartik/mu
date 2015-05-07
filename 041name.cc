@@ -24,7 +24,7 @@ recipe main [
 map<recipe_number, map<string, index_t> > Name;
 :(after "Clear Other State For recently_added_recipes")
 for (index_t i = 0; i < recently_added_recipes.size(); ++i) {
-  Name.erase(recently_added_recipes[i]);
+  Name.erase(recently_added_recipes.at(i));
 }
 
 :(code)
@@ -37,7 +37,7 @@ void transform_names(const recipe_number r) {
 //?   cout << Recipe[r].steps.size() << '\n'; //? 2
   for (index_t i = 0; i < Recipe[r].steps.size(); ++i) {
 //?     cout << "instruction " << i << '\n'; //? 2
-    instruction& inst = Recipe[r].steps[i];
+    instruction& inst = Recipe[r].steps.at(i);
     // Per-recipe Transforms
     // map names to addresses
     for (index_t in = 0; in < inst.ingredients.size(); ++in) {
@@ -50,7 +50,7 @@ void transform_names(const recipe_number r) {
       if (inst.ingredients.at(in).types.empty())
         raise << "missing type in " << inst.to_string() << '\n';
       assert(!inst.ingredients.at(in).types.empty());
-      if (inst.ingredients.at(in).types[0]  // not a literal
+      if (inst.ingredients.at(in).types.at(0)  // not a literal
           && !inst.ingredients.at(in).initialized
           && !is_number(inst.ingredients.at(in).name)) {
         if (!already_transformed(inst.ingredients.at(in), names)) {
@@ -64,10 +64,10 @@ void transform_names(const recipe_number r) {
 //?       cout << "products\n"; //? 1
       if (is_raw(inst.products.at(out))) continue;
 //?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products.at(out).name << '\n'; //? 4
-//?       cout << inst.products.at(out).types[0] << '\n'; //? 1
+//?       cout << inst.products.at(out).types.at(0) << '\n'; //? 1
       if (inst.products.at(out).name == "default-space")
         inst.products.at(out).initialized = true;
-      if (inst.products.at(out).types[0]  // not a literal
+      if (inst.products.at(out).types.at(0)  // not a literal
           && !inst.products.at(out).initialized
           && !is_number(inst.products.at(out).name)) {
         if (names.find(inst.products.at(out).name) == names.end()) {
@@ -92,7 +92,7 @@ index_t lookup_name(const reagent& r, const recipe_number default_recipe) {
 
 type_number skip_addresses(const vector<type_number>& types) {
   for (index_t i = 0; i < types.size(); ++i) {
-    if (types[i] != Type_number["address"]) return types[i];
+    if (types.at(i) != Type_number["address"]) return types.at(i);
   }
   raise << "expected a container" << '\n' << die();
   return -1;
@@ -102,7 +102,7 @@ int find_element_name(const type_number t, const string& name) {
   const type_info& container = Type[t];
 //?   cout << "looking for element " << name << " in type " << container.name << " with " << container.element_names.size() << " elements\n"; //? 1
   for (index_t i = 0; i < container.element_names.size(); ++i) {
-    if (container.element_names[i] == name) return i;
+    if (container.element_names.at(i) == name) return i;
   }
   raise << "unknown element " << name << " in container " << t << '\n' << die();
   return -1;
@@ -110,7 +110,7 @@ int find_element_name(const type_number t, const string& name) {
 
 bool is_raw(const reagent& r) {
   for (index_t i = /*skip value+type*/1; i < r.properties.size(); ++i) {
-    if (r.properties[i].first == "raw") return true;
+    if (r.properties.at(i).first == "raw") return true;
   }
   return false;
 }

@@ -75,9 +75,9 @@ else if (command == "exclusive-container") {
 vector<type_number> recently_added_types;
 :(before "End Setup")
 for (index_t i = 0; i < recently_added_types.size(); ++i) {
-//?   cout << "erasing " << Type[recently_added_types[i]].name << '\n'; //? 1
-  Type_number.erase(Type[recently_added_types[i]].name);
-  Type.erase(recently_added_types[i]);
+//?   cout << "erasing " << Type[recently_added_types.at(i)].name << '\n'; //? 1
+  Type_number.erase(Type[recently_added_types.at(i)].name);
+  Type.erase(recently_added_types.at(i));
 }
 recently_added_types.clear();
 //: lastly, ensure scenarios are consistent by always starting them at the

@@ -48,9 +48,9 @@ string slurp_quoted(istream& in) {
 }
 
 :(after "reagent::reagent(string s)")
-//?   cout << s[0] << '\n'; //? 1
-  if (s[0] == '[') {
-    assert(s[s.size()-1] == ']');
+//?   cout << s.at(0) << '\n'; //? 1
+  if (s.at(0) == '[') {
+    assert(*s.rbegin() == ']');
     // delete [] delimiters
     s.erase(0, 1);
     s.erase(s.size()-1, s.size());

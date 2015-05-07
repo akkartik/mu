@@ -230,8 +230,8 @@ void check_type(const string& lhs, istream& in) {
     string literal = next_word(in);
     index_t address = x.value;
     // exclude quoting brackets
-    assert(literal.at(0) == '[');  literal.erase(0, 1);
-    assert(literal[literal.size()-1] == ']');  literal.erase(literal.size()-1);
+    assert(*literal.begin() == '[');  literal.erase(literal.begin());
+    assert(*--literal.end() == ']');  literal.erase(--literal.end());
     check_string(address, literal);
     return;
   }
@@ -323,15 +323,15 @@ bool check_trace(const string& expected) {
   if (expected_lines.empty()) return true;
   index_t curr_expected_line = 0;
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (expected_lines[curr_expected_line].first != p->first) continue;
-    if (expected_lines[curr_expected_line].second != p->second.second) continue;
+    if (expected_lines.at(curr_expected_line).first != p->first) continue;
+    if (expected_lines.at(curr_expected_line).second != p->second.second) continue;
     // match
     ++curr_expected_line;
     if (curr_expected_line == expected_lines.size()) return true;
   }
 
-  raise << "missing [" << expected_lines[curr_expected_line].second << "] "
-        << "in trace layer " << expected_lines[curr_expected_line].first << '\n';
+  raise << "missing [" << expected_lines.at(curr_expected_line).second << "] "
+        << "in trace layer " << expected_lines.at(curr_expected_line).first << '\n';
   Passed = false;
   return false;
 }

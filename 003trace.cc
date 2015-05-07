@@ -215,12 +215,12 @@ void trace_all(const string& label, const list<string>& in) {
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {  // missing layer == anywhere, frame, hierarchical layers
   vector<string> expected_lines = split(expected, "");
   index_t curr_expected_line = 0;
-  while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
+  while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
     ++curr_expected_line;
   if (curr_expected_line == expected_lines.size()) return true;
   Trace_stream->newline();
   string layer, frame, contents;
-  parse_layer_frame_contents(expected_lines[curr_expected_line], &layer, &frame, &contents);
+  parse_layer_frame_contents(expected_lines.at(curr_expected_line), &layer, &frame, &contents);
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (!layer.empty() && !prefix_match(layer, p->first))
       continue;
@@ -232,10 +232,10 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
       continue;
 
     ++curr_expected_line;
-    while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
+    while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
     if (curr_expected_line == expected_lines.size()) return true;
-    parse_layer_frame_contents(expected_lines[curr_expected_line], &layer, &frame, &contents);
+    parse_layer_frame_contents(expected_lines.at(curr_expected_line), &layer, &frame, &contents);
   }
 
   ++Num_failures;
@@ -281,7 +281,7 @@ void parse_layer_and_frame(const string& orig, string* layer, string* frame) {
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, string expected) {  // empty layer == everything, multiple layers, hierarchical layers
   vector<string> expected_lines = split(expected, "");
   index_t curr_expected_line = 0;
-  while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
+  while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
     ++curr_expected_line;
   if (curr_expected_line == expected_lines.size()) return true;
   Trace_stream->newline();
@@ -289,16 +289,16 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (!layer.empty() && !any_prefix_match(layers, p->first))
       continue;
-    if (p->second.second != expected_lines[curr_expected_line])
+    if (p->second.second != expected_lines.at(curr_expected_line))
       continue;
     ++curr_expected_line;
-    while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
+    while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
     if (curr_expected_line == expected_lines.size()) return true;
   }
 
   ++Num_failures;
-  cerr << "\nF " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << expected_lines[curr_expected_line] << "] in trace:\n";
+  cerr << "\nF " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << expected_lines.at(curr_expected_line) << "] in trace:\n";
   DUMP(layer);
   Passed = false;
   return false;
@@ -350,7 +350,7 @@ bool trace_doesnt_contain(string layer, string line) {
 
 bool trace_doesnt_contain(string expected) {
   vector<string> tmp = split(expected, ": ");
-  return trace_doesnt_contain(tmp[0], tmp[1]);
+  return trace_doesnt_contain(tmp.at(0), tmp.at(1));
 }
 
 bool trace_doesnt_contain(string layer, int frame, string line) {
@@ -380,7 +380,7 @@ struct lease_trace_frame {
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, int frame, string expected) {  // multiple layers, hierarchical layers
   vector<string> expected_lines = split(expected, "");  // hack: doesn't handle newlines in embedded in lines
   index_t curr_expected_line = 0;
-  while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
+  while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
     ++curr_expected_line;
   if (curr_expected_line == expected_lines.size()) return true;
   Trace_stream->newline();
@@ -390,16 +390,16 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
       continue;
     if (p->second.first != frame)
       continue;
-    if (p->second.second != expected_lines[curr_expected_line])
+    if (p->second.second != expected_lines.at(curr_expected_line))
       continue;
     ++curr_expected_line;
-    while (curr_expected_line < expected_lines.size() && expected_lines[curr_expected_line].empty())
+    while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
     if (curr_expected_line == expected_lines.size()) return true;
   }
 
   ++Num_failures;
-  cerr << "\nF " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << expected_lines[curr_expected_line] << "] in trace/" << frame << ":\n";
+  cerr << "\nF " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << expected_lines.at(curr_expected_line) << "] in trace/" << frame << ":\n";
   DUMP(layer);
   Passed = false;
   return false;
@@ -426,7 +426,7 @@ vector<string> split(string s, string delim) {
 
 bool any_prefix_match(const vector<string>& pats, const string& needle) {
   if (pats.empty()) return false;
-  if (*pats[0].rbegin() != '/')
+  if (*pats.at(0).rbegin() != '/')
     // prefix match not requested
     return find(pats.begin(), pats.end(), needle) != pats.end();
   // first pat ends in a '/'; assume all pats do.

@@ -104,7 +104,7 @@ case INDEX: {
 //?   trace("run") << "ingredient 1 after canonize: " << offset.to_string(); //? 1
   vector<long long int> offset_val(read_memory(offset));
   vector<type_number> element_type = array_element(base.types);
-//?   trace("run") << "offset: " << offset_val[0]; //? 1
+//?   trace("run") << "offset: " << offset_val.at(0); //? 1
 //?   trace("run") << "size of elements: " << size_of(element_type); //? 1
   index_t src = base_address + 1 + offset_val.at(0)*size_of(element_type);
   trace("run") << "address to copy is " << src;
