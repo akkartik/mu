@@ -1,9 +1,14 @@
 " Highlighting literate directives in C++ sources.
 function! HighlightTangledFile()
+  " Tangled comments only make sense in the sources and are stripped out of
+  " the generated .cc file. They're highlighted same as regular comments.
+  syntax match tangledComment /\/\/:.*/ | highlight link tangledComment Comment
+  syntax match tangledSalientComment /\/\/::.*/ | highlight link tangledSalientComment SalientComment
   set comments-=://
   set comments-=n://
   set comments+=n://:,n://
 
+  " Inside tangle scenarios.
   syntax region tangleDirective start=+:(+ skip=+".*"+ end=+)+
   highlight link tangleDirective Delimiter
   syntax match traceContains /^+.*/
@@ -11,16 +16,14 @@ function! HighlightTangledFile()
   syntax match traceAbsent /^-.*/
   highlight traceAbsent ctermfg=darkred
   syntax match tangleScenarioSetup /^\s*% .*/ | highlight link tangleScenarioSetup SpecialChar
+
   " Our C++ files can have mu code in scenarios, so highlight mu comments like
   " regular comments.
   syntax match muComment /# .*$/ | highlight link muComment Comment
   syntax match muSalientComment /##.*$/ | highlight link muSalientComment SalientComment
   syntax match muCommentedCode /#? .*$/ | highlight link muCommentedCode CommentedCode
-  " Tangled comments only make sense in the sources and are stripped out of
-  " the generated .cc file. They're highlighted same as regular comments.
-  syntax match tangledComment /\/\/:.*/ | highlight link tangledComment Comment
-  syntax match tangledSalientComment /\/\/::.*/ | highlight link tangledSalientComment SalientComment
-  " Include some bare-bones mu highlighting even in the C++ sources.
+  set comments+=n:#
+  " Some other bare-bones mu highlighting.
   syntax match muAssign " <- " | highlight link muAssign SpecialChar
   syntax match muAssign "\<raw\>"
 endfunction
