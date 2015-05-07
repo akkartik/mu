@@ -55,6 +55,7 @@ void run_current_routine()
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace("run") << "instruction " << current_recipe_name() << '/' << current_step_index();
     trace("run") << current_instruction().to_string();
+    assert(Memory[0] == 0);
 //?     trace("run") << Memory[1033] << '\n'; //? 1
 //?     cout << "operation " << current_instruction().operation << '\n'; //? 3
     switch (current_instruction().operation) {
