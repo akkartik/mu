@@ -45,7 +45,7 @@ reagent deref(reagent x) {
 //?   cout << "deref: " << x.to_string() << "\n"; //? 2
   static const type_number ADDRESS = Type_number["address"];
   reagent result;
-  assert(x.types[0] == ADDRESS);
+  assert(x.types.at(0) == ADDRESS);
 
   // compute value
   result.set_value(Memory[x.value]);
@@ -58,12 +58,12 @@ reagent deref(reagent x) {
   index_t i = 0;
   size_t len = x.properties.size();
   for (i = 0; i < len; ++i) {
-    if (x.properties[i].first == "deref") break;
-    result.properties.push_back(x.properties[i]);
+    if (x.properties.at(i).first == "deref") break;
+    result.properties.push_back(x.properties.at(i));
   }
   ++i;  // skip first deref
   for (; i < len; ++i) {
-    result.properties.push_back(x.properties[i]);
+    result.properties.push_back(x.properties.at(i));
   }
   return result;
 }
@@ -116,15 +116,15 @@ base = canonize(base);
 :(code)
 bool has_property(reagent x, string name) {
   for (index_t i = 0; i < x.properties.size(); ++i) {
-    if (x.properties[i].first == name) return true;
+    if (x.properties.at(i).first == name) return true;
   }
   return false;
 }
 
 vector<string> property(const reagent& r, const string& name) {
   for (index_t p = 0; p != r.properties.size(); ++p) {
-    if (r.properties[p].first == name)
-      return r.properties[p].second;
+    if (r.properties.at(p).first == name)
+      return r.properties.at(p).second;
   }
   return vector<string>();
 }

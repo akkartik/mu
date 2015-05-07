@@ -111,7 +111,7 @@ inline const string& current_recipe_name() {
 }
 
 inline const instruction& current_instruction() {
-  return Recipe[Current_routine->running_recipe].steps[Current_routine->running_step_index];
+  return Recipe[Current_routine->running_recipe].steps.at(Current_routine->running_step_index);
 }
 
 inline bool routine::completed() const {
@@ -192,8 +192,8 @@ void write_memory(reagent x, vector<long long int> data) {
   if (size_of(x) != data.size())
     raise << "size mismatch in storing to " << x.to_string() << '\n';
   for (index_t offset = 0; offset < data.size(); ++offset) {
-    trace("mem") << "storing " << data[offset] << " in location " << base+offset;
-    Memory[base+offset] = data[offset];
+    trace("mem") << "storing " << data.at(offset) << " in location " << base+offset;
+    Memory[base+offset] = data.at(offset);
   }
 }
 
@@ -211,7 +211,7 @@ bool is_dummy(const reagent& x) {
 }
 
 bool isa_literal(const reagent& r) {
-  return r.types.size() == 1 && r.types[0] == 0;
+  return r.types.size() == 1 && r.types.at(0) == 0;
 }
 
 :(scenario run_label)

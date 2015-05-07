@@ -49,14 +49,14 @@ assert(Next_predefined_global_for_scenarios < Reserved_for_tests);
 // There's a restriction on the number of variables 'run' can use, so that
 // it can avoid colliding with the dynamic allocator in case it doesn't
 // initialize a default-space.
-assert(Name[tmp_recipe[0]][""] < Max_variables_in_scenarios);
+assert(Name[tmp_recipe.at(0)][""] < Max_variables_in_scenarios);
 
 :(before "End Globals")
 // Scenario Globals.
 const size_t SCREEN = Next_predefined_global_for_scenarios++;
 // End Scenario Globals.
 :(before "End Predefined Scenario Locals In Run")
-Name[tmp_recipe[0]]["screen"] = SCREEN;
+Name[tmp_recipe.at(0)]["screen"] = SCREEN;
 
 :(before "End Rewrite Instruction(curr)")
 // rewrite `assume-screen width, height` to

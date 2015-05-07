@@ -43,7 +43,7 @@ map<recipe_number, recipe_number> Surrounding_space;
 :(code)
 void collect_surrounding_spaces(const recipe_number r) {
   for (index_t i = 0; i < Recipe[r].steps.size(); ++i) {
-    const instruction& inst = Recipe[r].steps[i];
+    const instruction& inst = Recipe[r].steps.at(i);
     if (inst.is_label) continue;
     for (index_t j = 0; j < inst.products.size(); ++j) {
       if (isa_literal(inst.products.at(j))) continue;

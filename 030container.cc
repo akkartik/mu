@@ -123,7 +123,7 @@ case GET: {
   trace("run") << "address to copy is " << src;
   assert(Type[base_type].kind == container);
   assert(Type[base_type].elements.size() > offset);
-  type_number src_type = Type[base_type].elements[offset].at(0);
+  type_number src_type = Type[base_type].elements.at(offset).at(0);
   trace("run") << "its type is " << src_type;
   reagent tmp;
   tmp.set_value(src);

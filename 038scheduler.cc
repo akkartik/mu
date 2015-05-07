@@ -44,7 +44,7 @@ Scheduling_interval = 500;
 :(replace{} "void run(recipe_number r)")
 void run(recipe_number r) {
   Routines.push_back(new routine(r));
-  Current_routine_index = 0, Current_routine = Routines[0];
+  Current_routine_index = 0, Current_routine = Routines.at(0);
   while (!all_routines_done()) {
     skip_to_next_routine();
 //?     cout << "scheduler: " << Current_routine_index << '\n'; //? 1
@@ -62,8 +62,8 @@ void run(recipe_number r) {
 :(code)
 bool all_routines_done() {
   for (index_t i = 0; i < Routines.size(); ++i) {
-//?     cout << "routine " << i << ' ' << Routines[i]->state << '\n'; //? 1
-    if (Routines[i]->state == RUNNING) {
+//?     cout << "routine " << i << ' ' << Routines.at(i)->state << '\n'; //? 1
+    if (Routines.at(i)->state == RUNNING) {
       return false;
     }
   }
@@ -75,10 +75,10 @@ void skip_to_next_routine() {
   assert(!Routines.empty());
   assert(Current_routine_index < Routines.size());
   for (index_t i = (Current_routine_index+1)%Routines.size();  i != Current_routine_index;  i = (i+1)%Routines.size()) {
-    if (Routines[i]->state == RUNNING) {
+    if (Routines.at(i)->state == RUNNING) {
 //?       cout << "switching to " << i << '\n'; //? 1
       Current_routine_index = i;
-      Current_routine = Routines[i];
+      Current_routine = Routines.at(i);
       return;
     }
   }
@@ -87,7 +87,7 @@ void skip_to_next_routine() {
 
 :(before "End Teardown")
 for (index_t i = 0; i < Routines.size(); ++i)
-  delete Routines[i];
+  delete Routines.at(i);
 Routines.clear();
 
 //:: To schedule new routines to run, call 'start-running'.
@@ -231,8 +231,8 @@ case ROUTINE_STATE: {
   index_t id = ingredients.at(0).at(0);
   long long int result = -1;
   for (index_t i = 0; i < Routines.size(); ++i) {
-    if (Routines[i]->id == id) {
-      result = Routines[i]->state;
+    if (Routines.at(i)->id == id) {
+      result = Routines.at(i)->state;
       break;
     }
   }

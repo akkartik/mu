@@ -42,7 +42,7 @@ void transform_braces(const recipe_number r) {
   const int OPEN = 0, CLOSE = 1;
   list<pair<int/*OPEN/CLOSE*/, /*step*/index_t> > braces;
   for (index_t index = 0; index < Recipe[r].steps.size(); ++index) {
-    const instruction& inst = Recipe[r].steps[index];
+    const instruction& inst = Recipe[r].steps.at(index);
     if (inst.label == "{") {
       trace("brace") << r << ": push (open, " << index << ")";
       braces.push_back(pair<int,index_t>(OPEN, index));
@@ -55,7 +55,7 @@ void transform_braces(const recipe_number r) {
   stack</*step*/index_t> open_braces;
   trace("after-brace") << "recipe " << Recipe[r].name;
   for (index_t index = 0; index < Recipe[r].steps.size(); ++index) {
-    instruction& inst = Recipe[r].steps[index];
+    instruction& inst = Recipe[r].steps.at(index);
 //?     cout << "AAA " << inst.name << ": " << inst.operation << '\n'; //? 1
     if (inst.label == "{") open_braces.push(index);
     else if (inst.label == "}") open_braces.pop();
@@ -74,7 +74,7 @@ void transform_braces(const recipe_number r) {
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump " << ing.value << ":offset";
         trace("after-brace") << index << ": " << ing.to_string();
-        trace("after-brace") << index << ": " << Recipe[r].steps[index].ingredients.at(0).to_string();
+        trace("after-brace") << index << ": " << Recipe[r].steps.at(index).ingredients.at(0).to_string();
       }
     }
     else if (inst.operation == Recipe_number["break"]) {
