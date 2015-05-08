@@ -19,3 +19,13 @@ case TRACE: {
   trace(label) << message;
   break;
 }
+
+:(before "End Primitive Recipe Declarations")
+HIDE_WARNINGS,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["hide-warnings"] = HIDE_WARNINGS;
+:(before "End Primitive Recipe Implementations")
+case HIDE_WARNINGS: {
+  Hide_warnings = true;
+  break;
+}
