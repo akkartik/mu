@@ -183,7 +183,12 @@ recipe read-file [
   stdin:address:channel <- next-ingredient
   c:character, stdin:address:channel <- read stdin:address:channel
   {
-    q-pressed?:boolean <- equal c:character, 81:literal  # 'q'
+    q-pressed?:boolean <- equal c:character, 81:literal  # 'Q'
+    break-unless q-pressed?:boolean
+    reply -1:literal
+  }
+  {
+    q-pressed?:boolean <- equal c:character, 113:literal  # 'q'
     break-unless q-pressed?:boolean
     reply -1:literal
   }
@@ -201,7 +206,12 @@ recipe read-rank [
   stdin:address:channel <- next-ingredient
   c:character, stdin:address:channel <- read stdin:address:channel
   {
-    q-pressed?:boolean <- equal c:character, 81:literal  # 'q'
+    q-pressed?:boolean <- equal c:character, 81:literal  # 'Q'
+    break-unless q-pressed?:boolean
+    reply -1:literal
+  }
+  {
+    q-pressed?:boolean <- equal c:character, 113:literal  # 'q'
     break-unless q-pressed?:boolean
     reply -1:literal
   }
@@ -314,5 +324,72 @@ F read-move-blocking: routine failed to terminate on newline]
   ]
   trace-should-contain [
     test: reached end
+  ]
+]
+
+scenario read-move-quit [
+  run [
+    1:address:channel <- init-channel 2:literal
+    2:integer/routine <- start-running read-move:recipe, 1:address:channel
+    # 'read-move' is waiting for input
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer/id
+    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    assert 4:boolean/waiting?, [
+F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
+    # press 'q'
+    1:address:channel <- write 1:address:channel, 113:literal  # 'q'
+    restart 2:integer/routine
+    # 'read-move' completes
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer/id
+    4:boolean/completed? <- equal 3:integer/routine-state, 1:literal/completed
+    assert 4:boolean/completed?, [
+F read-move-quit: routine failed to terminate on 'q']
+    trace [test], [reached end]
+  ]
+  trace-should-contain [
+    test: reached end
+  ]
+]
+
+scenario read-move-illegal-file [
+  run [
+    hide-warnings
+    1:address:channel <- init-channel 2:literal
+    2:integer/routine <- start-running read-move:recipe, 1:address:channel
+    # 'read-move' is waiting for input
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer/id
+    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    assert 4:boolean/waiting?, [
+F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
+    1:address:channel <- write 1:address:channel, 50:literal  # '2'
+    restart 2:integer/routine
+    wait-for-routine 2:integer
+  ]
+  trace-should-contain [
+    warn: file too low
+  ]
+]
+
+scenario read-move-illegal-rank [
+  run [
+    hide-warnings
+    1:address:channel <- init-channel 2:literal
+    2:integer/routine <- start-running read-move:recipe, 1:address:channel
+    # 'read-move' is waiting for input
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer/id
+    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    assert 4:boolean/waiting?, [
+F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
+    1:address:channel <- write 1:address:channel, 97:literal  # 'a'
+    1:address:channel <- write 1:address:channel, 97:literal  # 'a'
+    restart 2:integer/routine
+    wait-for-routine 2:integer
+  ]
+  trace-should-contain [
+    warn: rank too high
   ]
 ]
