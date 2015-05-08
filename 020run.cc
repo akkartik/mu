@@ -64,6 +64,7 @@ void run_current_routine()
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace("run") << "instruction " << current_recipe_name() << '/' << current_step_index();
     trace("run") << current_instruction().to_string();
+    assert(Memory[0] == 0);
     // Read all ingredients.
     vector<vector<long long int> > ingredients;
     for (index_t i = 0; i < current_instruction().ingredients.size(); ++i) {
