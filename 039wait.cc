@@ -68,14 +68,19 @@ for (index_t i = 0; i < Routines.size(); ++i) {
 :(scenario wait_for_routine)
 recipe f1 [
   1:integer <- copy 0:literal
-  2:integer/routine <- start-running f2:recipe
-  wait-for-routine 2:integer/routine
+  12:integer/routine <- start-running f2:recipe
+  wait-for-routine 12:integer/routine
   # now wait for f2 to run and modify location 1 before using its value
   3:integer <- copy 1:integer
 ]
 recipe f2 [
   1:integer <- copy 34:literal
 ]
++schedule: f1
++run: waiting for routine 2
++schedule: f2
++schedule: waking up routine 1
++schedule: f1
 # if we got the synchronization wrong we'd be storing 0 in location 3
 +mem: storing 34 in location 3
 
@@ -91,10 +96,10 @@ WAIT_FOR_ROUTINE,
 Recipe_number["wait-for-routine"] = WAIT_FOR_ROUTINE;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_ROUTINE: {
-  reagent loc = canonize(current_instruction().ingredients.at(0));
   Current_routine->state = WAITING;
-  Current_routine->waiting_on_routine = loc.value;
-  trace("run") << "waiting for routine " << loc.value;
+  assert(ingredients.at(0).size() == 1);  // scalar
+  Current_routine->waiting_on_routine = ingredients.at(0).at(0);
+  trace("run") << "waiting for routine " << ingredients.at(0).at(0);
   break;
 }
 
@@ -108,8 +113,8 @@ for (index_t i = 0; i < Routines.size(); ++i) {
   index_t id = Routines.at(i)->waiting_on_routine;
   assert(id != i);
   for (index_t j = 0; j < Routines.size(); ++j) {
-    if (Routines.at(j)->id == id && Routines.at(j)->state != WAITING) {
-      trace("schedule") << "waking up routine\n";
+    if (Routines.at(j)->id == id && Routines.at(j)->state != RUNNING) {
+      trace("schedule") << "waking up routine " << Routines.at(i)->id;
       Routines.at(i)->state = RUNNING;
       Routines.at(i)->waiting_on_routine = 0;
     }
