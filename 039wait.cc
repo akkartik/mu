@@ -24,9 +24,9 @@ WAITING,
 :(before "End routine Fields")
 // only if state == WAITING
 index_t waiting_on_location;
-int old_value_of_wating_location;
+int old_value_of_waiting_location;
 :(before "End routine Constructor")
-waiting_on_location = old_value_of_wating_location = 0;
+waiting_on_location = old_value_of_waiting_location = 0;
 
 //: primitive recipe to put routines in that state
 
@@ -39,7 +39,7 @@ case WAIT_FOR_LOCATION: {
   reagent loc = canonize(current_instruction().ingredients.at(0));
   Current_routine->state = WAITING;
   Current_routine->waiting_on_location = loc.value;
-  Current_routine->old_value_of_wating_location = Memory[loc.value];
+  Current_routine->old_value_of_waiting_location = Memory[loc.value];
   trace("run") << "waiting for location " << loc.value << " to change from " << Memory[loc.value];
 //?   trace("schedule") << Current_routine->id << ": waiting for location " << loc.value << " to change from " << Memory[loc.value]; //? 1
   break;
@@ -54,12 +54,12 @@ for (index_t i = 0; i < Routines.size(); ++i) {
 //?   trace("schedule") << "waiting on location: " << Routines.at(i)->waiting_on_location; //? 1
 //?   if (Routines.at(i)->waiting_on_location) //? 1
 //?     trace("schedule") << "checking routine " << Routines.at(i)->id << " waiting on location " //? 1
-//?       << Routines.at(i)->waiting_on_location << ": " << Memory[Routines.at(i)->waiting_on_location] << " vs " << Routines[i]->old_value_of_wating_location; //? 1
+//?       << Routines.at(i)->waiting_on_location << ": " << Memory[Routines.at(i)->waiting_on_location] << " vs " << Routines.at(i)->old_value_of_waiting_location; //? 1
   if (Routines.at(i)->waiting_on_location &&
-      Memory[Routines.at(i)->waiting_on_location] != Routines.at(i)->old_value_of_wating_location) {
+      Memory[Routines.at(i)->waiting_on_location] != Routines.at(i)->old_value_of_waiting_location) {
     trace("schedule") << "waking up routine\n";
     Routines.at(i)->state = RUNNING;
-    Routines.at(i)->waiting_on_location = Routines.at(i)->old_value_of_wating_location = 0;
+    Routines.at(i)->waiting_on_location = Routines.at(i)->old_value_of_waiting_location = 0;
   }
 }
 
