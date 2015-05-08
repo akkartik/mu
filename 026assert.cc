@@ -12,7 +12,7 @@ Recipe_number["assert"] = ASSERT;
 :(before "End Primitive Recipe Implementations")
 case ASSERT: {
   assert(ingredients.size() == 2);
-  assert(ingredients.at(0).size() == 1);
+  assert(ingredients.at(0).size() == 1);  // scalar
   if (!ingredients.at(0).at(0)) {
     assert(isa_literal(current_instruction().ingredients.at(1)));
     raise << current_instruction().ingredients.at(1).name << '\n';

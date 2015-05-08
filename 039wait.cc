@@ -63,7 +63,7 @@ for (index_t i = 0; i < Routines.size(); ++i) {
   }
 }
 
-//: also allow waiting on a routine
+//: also allow waiting on a routine to stop running
 
 :(scenario wait_for_routine)
 recipe f1 [
