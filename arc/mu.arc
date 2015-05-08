@@ -831,7 +831,7 @@
                     )
                 $dump-channel
                   (do1 nil
-                    ($.close-charterm) ;? 1
+                    ($.close-charterm)
                     (withs (x (m arg.0)
                             y (memory* (+ x 2)))
                       (prn label.routine* " -- " x " -- " (list (memory* x)
@@ -842,7 +842,7 @@
                                                                 (repr:memory* (+ y 2))
                                                                 (memory* (+ y 3))
                                                                 (repr:memory* (+ y 4)))))
-                    ($.open-charterm) ;? 1
+                    ($.open-charterm)
                     )
                 $quit
                   (quit)
@@ -2640,15 +2640,15 @@
 ;?   (c:character <- copy ((#\newline literal))) ;? 1
 ;?   (curr:tagged-value <- save-type c:character) ;? 1
 ;?   (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value) ;? 1
-  { begin ;? 1
-    (c:character <- read-key k:keyboard-address) ;? 1
-    (loop-unless c:character) ;? 1
-    (curr:tagged-value <- save-type c:character) ;? 1
-    (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value) ;? 1
-    (eof?:boolean <- equal c:character ((#\null literal))) ;? 1
-    (break-if eof?:boolean) ;? 1
-    (loop) ;? 1
-  } ;? 1
+  { begin
+    (c:character <- read-key k:keyboard-address)
+    (loop-unless c:character)
+    (curr:tagged-value <- save-type c:character)
+    (stdin:channel-address/deref <- write stdin:channel-address curr:tagged-value)
+    (eof?:boolean <- equal c:character ((#\null literal)))
+    (break-if eof?:boolean)
+    (loop)
+  }
 )
 
 ; collect characters until newline before sending out
