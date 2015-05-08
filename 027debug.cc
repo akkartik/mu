@@ -52,3 +52,13 @@ case _EXIT: {
   exit(0);
   break;
 }
+
+:(before "End Primitive Recipe Declarations")
+_DUMP_LAYER,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["$dump-layer"] = _DUMP_LAYER;
+:(before "End Primitive Recipe Implementations")
+case _DUMP_LAYER: {
+  Trace_stream->dump_layer = current_instruction().ingredients.at(0).name;
+  break;
+}

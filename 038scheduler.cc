@@ -51,6 +51,7 @@ void run(recipe_number r) {
     assert(Current_routine);
     assert(Current_routine->state == RUNNING);
     trace("schedule") << current_recipe_name();
+//?     trace("schedule") << Current_routine->id << " " << current_recipe_name(); //? 1
     run_current_routine(Scheduling_interval);
     if (Current_routine->completed())
       Current_routine->state = COMPLETED;
@@ -254,6 +255,18 @@ case RESTART: {
       Routines.at(i)->state = RUNNING;
       break;
     }
+  }
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+_DUMP_ROUTINES,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["$dump-routines"] = _DUMP_ROUTINES;
+:(before "End Primitive Recipe Implementations")
+case _DUMP_ROUTINES: {
+  for (index_t i = 0; i < Routines.size(); ++i) {
+    cerr << Routines.at(i)->id << ": " << Routines.at(i)->state << '\n';
   }
   break;
 }

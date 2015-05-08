@@ -117,6 +117,7 @@ struct trace_stream {
     past_lines.push_back(pair<string, pair<int, string> >(curr_layer, pair<int, string>(frame[curr_layer], curr_contents)));
     if (curr_layer == dump_layer || curr_layer == "dump" || dump_layer == "all" ||
         (!Hide_warnings && curr_layer == "warn"))
+//?     if (dump_layer == "all" && (Current_routine->id == 3 || curr_layer == "schedule")) //? 1
       cerr << curr_layer << '/' << frame[curr_layer] << ": " << curr_contents << '\n';
     delete curr_stream;
     curr_stream = NULL;
