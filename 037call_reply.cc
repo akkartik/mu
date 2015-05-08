@@ -21,7 +21,8 @@ Recipe_number["reply"] = REPLY;
 case REPLY: {
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
   Current_routine->calls.pop();
-  assert(!Current_routine->calls.empty());
+  // just in case 'main' returns a value, drop it for now
+  if (Current_routine->calls.empty()) goto stop_running_current_routine;
   const instruction& caller_instruction = current_instruction();
   // make reply results available to caller
   copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));

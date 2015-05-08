@@ -96,6 +96,7 @@ void run_current_routine()
 //?     cout << "DDD: " << current_instruction().to_string() << '\n'; //? 1
     current_step_index() = instruction_counter+1;
   }
+  stop_running_current_routine:;
 }
 
 //: Some helpers.

@@ -240,3 +240,20 @@ case ROUTINE_STATE: {
   products.at(0).push_back(result);
   break;
 }
+
+:(before "End Primitive Recipe Declarations")
+RESTART,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["restart"] = RESTART;
+:(before "End Primitive Recipe Implementations")
+case RESTART: {
+  assert(ingredients.at(0).size() == 1);  // routine id must be scalar
+  index_t id = ingredients.at(0).at(0);
+  for (index_t i = 0; i < Routines.size(); ++i) {
+    if (Routines.at(i)->id == id) {
+      Routines.at(i)->state = RUNNING;
+      break;
+    }
+  }
+  break;
+}
