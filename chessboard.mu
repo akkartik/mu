@@ -82,21 +82,19 @@ recipe print-board [
   screen:address <- cursor-to-next-line screen:address
 ]
 
-scenario printing-the-board [
-  assume-screen 30:literal/width, 24:literal/height
-  run [
-#?     $print [AAA #? 1
-#? ] #? 1
-    # layout in memory:
-    #   R P _ _ _ _ p r
-    #   N P _ _ _ _ p n
-    #   B P _ _ _ _ p b
-    #   Q P _ _ _ _ p q
-    #   K P _ _ _ _ p k
-    #   B P _ _ _ _ p B
-    #   N P _ _ _ _ p n
-    #   R P _ _ _ _ p r
-    1:address:array:integer/initial-position <- init-array 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 81:literal/Q, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 113:literal/q, 75:literal/K, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 107:literal/k, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r
+# board:address:array:address:array:character <- initial-position
+recipe initial-position [
+  default-space:address:array:location <- new location:type, 30:literal
+  # layout in memory (in raster order):
+  #   R P _ _ _ _ p r
+  #   N P _ _ _ _ p n
+  #   B P _ _ _ _ p b
+  #   Q P _ _ _ _ p q
+  #   K P _ _ _ _ p k
+  #   B P _ _ _ _ p B
+  #   N P _ _ _ _ p n
+  #   R P _ _ _ _ p r
+  initial-position:address:array:integer <- init-array 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 81:literal/Q, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 113:literal/q, 75:literal/K, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 107:literal/k, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r
 #?       82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r,
 #?       78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n,
 #?       66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 
@@ -105,15 +103,15 @@ scenario printing-the-board [
 #?       66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b,
 #?       78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n,
 #?       82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r
-#?     $print [BBB #? 1
-#? ] #? 1
-#?     $start-tracing #? 1
-    2:address:array:address:array:character/board <- init-board 1:address:array:integer/initial-position
-#?     $print [CCC #? 1
-#? ] #? 1
-    screen:address <- print-board screen:address, 2:address:array:address:array:character/board
-#?     $print [DDD #? 1
-#? ] #? 1
+  board:address:array:address:array:character <- init-board initial-position:address:array:integer
+  reply board:address:array:address:array:character
+]
+
+scenario printing-the-board [
+  assume-screen 30:literal/width, 24:literal/height
+  run [
+    1:address:array:address:array:character/board <- initial-position
+    screen:address <- print-board screen:address, 1:address:array:address:array:character/board
   ]
   screen-should-contain [
   #  012345678901234567890123456789
@@ -425,17 +423,7 @@ recipe make-move [
 scenario making-a-move [
   assume-screen 30:literal/width, 24:literal/height
   run [
-    # layout in memory:
-    #   R P _ _ _ _ p r
-    #   N P _ _ _ _ p n
-    #   B P _ _ _ _ p b
-    #   Q P _ _ _ _ p q
-    #   K P _ _ _ _ p k
-    #   B P _ _ _ _ p B
-    #   N P _ _ _ _ p n
-    #   R P _ _ _ _ p r
-    1:address:array:integer/initial-position <- init-array 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 81:literal/Q, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 113:literal/q, 75:literal/K, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 107:literal/k, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r
-    2:address:array:address:array:character/board <- init-board 1:address:array:integer/initial-position
+    2:address:array:address:array:character/board <- initial-position
     3:address:move <- new move:type
     4:address:integer <- get-address 3:address:move/deref, from-file:offset
     4:address:integer/deref <- copy 6:literal/g
