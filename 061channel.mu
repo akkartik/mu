@@ -264,3 +264,80 @@ scenario channel-read-not-full [
     3 <- 0  # full?
   ]
 ]
+
+# helper for channels of characters in particular
+# out:address:channel <- buffer-lines in:address:channel, out:address:channel
+recipe buffer-lines [
+  default-space:address:address:array:location <- new location:type, 30:literal
+  in:address:channel <- next-ingredient
+  out:address:channel <- next-ingredient
+  # repeat forever
+  {
+    line:address:buffer <- init-buffer, 30:literal
+    # read characters from 'in' until newline, copy into line
+    {
+      c:character, in:address:channel <- read in:address:channel
+      # todo: handle backspace
+      line:address:buffer <- buffer-append line:address:buffer, c:character
+      line-done?:boolean <- equal c:character, 10:literal/newline
+      break-if line-done?:boolean
+      loop
+    }
+    # copy line into 'out'
+    i:integer <- copy 0:literal
+    line-contents:address:array:character <- get line:address:buffer/deref, data:offset
+    max:integer <- get line:address:buffer/deref, length:offset
+    {
+      done?:boolean <- greater-or-equal i:integer, max:integer
+      break-if done?:boolean
+      c:character <- index line-contents:address:array:character/deref, i:integer
+      out:address:channel <- write out:address:channel, c:character
+      i:integer <- add i:integer, 1:literal
+      loop
+    }
+    loop
+  }
+  reply out:address:channel/same-as-ingredient:1
+]
+
+scenario buffer-lines-blocks-until-newline [
+  run [
+    1:address:channel/stdin <- init-channel 10:literal/capacity
+    2:address:channel/buffered-stdin <- init-channel 10:literal/capacity
+    3:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    assert 3:boolean, [
+F buffer-lines-blocks-until-newline: channel should be empty after init]
+    # buffer stdin into buffered-stdin, try to read from buffered-stdin
+    4:integer/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin
+    wait-for-routine 4:integer/buffer-routine
+    5:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    assert 5:boolean, [
+F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
+    # write 'a'
+    1:address:channel <- write 1:address:channel, 97:literal/a
+    restart 4:integer/buffer-routine
+    wait-for-routine 4:integer/buffer-routine
+    6:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    assert 6:boolean, [
+F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
+    # write 'b'
+    1:address:channel <- write 1:address:channel, 98:literal/b
+    restart 4:integer/buffer-routine
+    wait-for-routine 4:integer/buffer-routine
+    7:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    assert 7:boolean, [
+F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
+    # write newline
+    1:address:channel <- write 1:address:channel, 10:literal/newline
+    restart 4:integer/buffer-routine
+    wait-for-routine 4:integer/buffer-routine
+    8:boolean <- channel-empty? 2:address:channel/buffered-stdin
+    9:boolean/completed? <- not 8:boolean
+    assert 9:boolean/completed?, [
+F buffer-lines-blocks-until-newline: channel should contain data after writing newline]
+    trace [test], [reached end]
+  ]
+  trace-should-contain [
+    test: reached end
+  ]
+]
