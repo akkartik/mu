@@ -41,6 +41,7 @@ case WAIT_FOR_LOCATION: {
   Current_routine->waiting_on_location = loc.value;
   Current_routine->old_value_of_wating_location = Memory[loc.value];
   trace("run") << "waiting for location " << loc.value << " to change from " << Memory[loc.value];
+//?   trace("schedule") << Current_routine->id << ": waiting for location " << loc.value << " to change from " << Memory[loc.value]; //? 1
   break;
 }
 
@@ -48,8 +49,13 @@ case WAIT_FOR_LOCATION: {
 
 :(before "End Scheduler State Transitions")
 for (index_t i = 0; i < Routines.size(); ++i) {
+//?   trace("schedule") << "wake up loop 1: routine " << Routines.at(i)->id << " has state " << Routines.at(i)->state; //? 1
   if (Routines.at(i)->state != WAITING) continue;
-  if (Memory[Routines.at(i)->waiting_on_location] &&
+//?   trace("schedule") << "waiting on location: " << Routines.at(i)->waiting_on_location; //? 1
+//?   if (Routines.at(i)->waiting_on_location) //? 1
+//?     trace("schedule") << "checking routine " << Routines.at(i)->id << " waiting on location " //? 1
+//?       << Routines.at(i)->waiting_on_location << ": " << Memory[Routines.at(i)->waiting_on_location] << " vs " << Routines[i]->old_value_of_wating_location; //? 1
+  if (Routines.at(i)->waiting_on_location &&
       Memory[Routines.at(i)->waiting_on_location] != Routines.at(i)->old_value_of_wating_location) {
     trace("schedule") << "waking up routine\n";
     Routines.at(i)->state = RUNNING;
@@ -93,6 +99,9 @@ case WAIT_FOR_ROUTINE: {
 }
 
 :(before "End Scheduler State Transitions")
+// Wake up any routines waiting for other routines to go to sleep.
+// Important: this must come after the scheduler loop above giving routines
+// waiting for locations to change a chance to wake up.
 for (index_t i = 0; i < Routines.size(); ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   if (!Routines.at(i)->waiting_on_routine) continue;

@@ -1,3 +1,7 @@
+# chessboard program: takes moves in algebraic notation and displays the
+# position after each
+
+## a board is an array of files, a file is an array of characters (squares)
 recipe init-board [
   default-space:address:array:location <- new location:type, 30:literal
   initial-position:address:array:integer <- next-ingredient
@@ -138,5 +142,177 @@ scenario printing-the-board [
     .                              .
     .                              .
     .                              .
+  ]
+]
+
+## data structure: move
+container move [
+  # valid range: 0-7
+  from-file:integer
+  from-rank:integer
+  to-file:integer
+  to-rank:integer
+]
+
+recipe read-move [
+  default-space:address:array:location <- new location:type, 30:literal
+  stdin:address:channel <- next-ingredient
+  from-file:integer <- read-file stdin:address:channel
+  {
+    q-pressed?:boolean <- lesser-than from-file:integer, 0:literal
+    break-unless q-pressed?:boolean
+    reply 0:literal
+  }
+  # construct the move object
+  result:address:move <- new move:literal
+  x:address:integer <- get-address result:address:move/deref, from-file:offset
+  x:address:integer/deref <- copy from-file:integer
+  x:address:integer <- get-address result:address:move/deref, from-rank:offset
+  x:address:integer/deref <- read-rank stdin:address:channel
+  expect-from-channel stdin:address:channel, 45:literal  # '-'
+  x:address:integer <- get-address result:address:move/deref, to-file:offset
+  x:address:integer/deref <- read-file stdin:address:channel
+  x:address:integer <- get-address result:address:move/deref, to-rank:offset
+  x:address:integer/deref <- read-rank stdin:address:channel
+  expect-from-channel stdin:address:channel, 10:literal  # newline
+  reply result:address:move
+]
+
+recipe read-file [
+  default-space:address:array:location <- new location:type, 30:literal
+  stdin:address:channel <- next-ingredient
+  c:character, stdin:address:channel <- read stdin:address:channel
+  {
+    q-pressed?:boolean <- equal c:character, 81:literal  # 'q'
+    break-unless q-pressed?:boolean
+    reply -1:literal
+  }
+  file:integer <- subtract c:character, 97:literal  # 'a'
+  # 'a' <= file <= 'h'
+  above-min:boolean <- greater-or-equal file:integer, 0:literal
+  assert above-min:boolean [file too low]
+  below-max:boolean <- lesser-than file:integer, 8:literal
+  assert below-max:boolean [file too high]
+  reply file:integer
+]
+
+recipe read-rank [
+  default-space:address:array:location <- new location:type, 30:literal
+  stdin:address:channel <- next-ingredient
+  c:character, stdin:address:channel <- read stdin:address:channel
+  {
+    q-pressed?:boolean <- equal c:character, 81:literal  # 'q'
+    break-unless q-pressed?:boolean
+    reply -1:literal
+  }
+  rank:integer <- subtract c:character, 49:literal  # '1'
+  # assert'1' <= rank <= '8'
+  above-min:boolean <- greater-or-equal rank:integer 0:literal
+  assert above-min:boolean [rank too low]
+  below-max:boolean <- lesser-or-equal rank:integer 7:literal
+  assert below-max:boolean [rank too high]
+  reply rank:integer
+]
+
+# read a character from the given channel and check that it's what we expect
+recipe expect-from-channel [
+  default-space:address:array:location <- new location:type, 30:literal
+  stdin:address:channel <- next-ingredient
+  expected:character <- next-ingredient
+  c:character, stdin:address:channel <- read stdin:address:channel
+  match?:boolean <- equal c:character, expected:character
+  assert match?:boolean [expected character not found]
+]
+
+scenario read-move-blocking [
+  run [
+#?     $start-tracing #? 1
+    1:address:channel <- init-channel 2:literal
+#?     $print [aaa channel address: ], 1:address:channel, [ #? 1
+#? ] #? 1
+    2:integer/routine <- start-running read-move:recipe, 1:address:channel
+    # 'read-move' is waiting for input
+    wait-for-routine 2:integer
+#?     $print [bbb channel address: ], 1:address:channel, [ #? 1
+#? ] #? 1
+    3:integer <- routine-state 2:integer/id
+#?     $print [I: routine ], 2:integer, [ state ], 3:integer [ #? 1
+#? ] #? 1
+    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    assert 4:boolean/waiting?, [
+F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
+    # press 'a'
+#?     $print [ccc channel address: ], 1:address:channel, [ #? 1
+#? ] #? 1
+#?     $exit #? 1
+    1:address:channel <- write 1:address:channel, 97:literal  # 'a'
+    restart 2:integer/routine
+    # 'read-move' still waiting for input
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer/id
+#?     $print [II: routine ], 2:integer, [ state ], 3:integer [ #? 1
+#? ] #? 1
+    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    assert 4:boolean/waiting?, [
+F read-move-blocking: routine failed to pause after rank 'a']
+    # press '2'
+    1:address:channel <- write 1:address:channel, 50:literal  # '2'
+    restart 2:integer/routine
+    # 'read-move' still waiting for input
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer/id
+#?     $print [III: routine ], 2:integer, [ state ], 3:integer [ #? 1
+#? ] #? 1
+    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    assert 4:boolean/waiting?, [
+F read-move-blocking: routine failed to pause after file 'a2']
+    # press '-'
+    1:address:channel <- write 1:address:channel, 45:literal  # '-'
+    restart 2:integer/routine
+    # 'read-move' still waiting for input
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer
+#?     $print [IV: routine ], 2:integer, [ state ], 3:integer [ #? 1
+#? ] #? 1
+    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    assert 4:boolean/waiting?/routine-state, [
+F read-move-blocking: routine failed to pause after hyphen 'a2-']
+    # press 'a'
+    1:address:channel <- write 1:address:channel, 97:literal  # 'a'
+    restart 2:integer/routine
+    # 'read-move' still waiting for input
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer
+#?     $print [V: routine ], 2:integer, [ state ], 3:integer [ #? 1
+#? ] #? 1
+    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    assert 4:boolean/waiting?/routine-state, [
+F read-move-blocking: routine failed to pause after rank 'a2-a']
+    # press '4'
+    1:address:channel <- write 1:address:channel, 52:literal  # '4'
+    restart 2:integer/routine
+    # 'read-move' still waiting for input
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer
+#?     $print [VI: routine ], 2:integer, [ state ], 3:integer [ #? 1
+#? ] #? 1
+    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    assert 4:boolean/waiting?, [
+F read-move-blocking: routine failed to pause after file 'a2-a4']
+    # press 'newline'
+    1:address:channel <- write 1:address:channel, 10:literal  # newline
+    restart 2:integer/routine
+    # 'read-move' now completes
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer
+#?     $print [VII: routine ], 2:integer, [ state ], 3:integer [ #? 1
+#? ] #? 1
+    4:boolean/completed? <- equal 3:integer/routine-state, 1:literal/completed
+    assert 4:boolean/completed?, [
+F read-move-blocking: routine failed to terminate on newline]
+    trace [test], [reached end]
+  ]
+  trace-should-contain [
+    test: reached end
   ]
 ]
