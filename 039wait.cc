@@ -111,7 +111,7 @@ for (index_t i = 0; i < Routines.size(); ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   if (!Routines.at(i)->waiting_on_routine) continue;
   index_t id = Routines.at(i)->waiting_on_routine;
-  assert(id != i);
+  assert(id != Routines.at(i)->id);
   for (index_t j = 0; j < Routines.size(); ++j) {
     if (Routines.at(j)->id == id && Routines.at(j)->state != RUNNING) {
       trace("schedule") << "waking up routine " << Routines.at(i)->id;
@@ -120,4 +120,3 @@ for (index_t i = 0; i < Routines.size(); ++i) {
     }
   }
 }
-
