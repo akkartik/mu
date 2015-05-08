@@ -393,3 +393,86 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
     warn: rank too high
   ]
 ]
+
+recipe make-move [
+  default-space:address:array:location <- new location:type, 30:literal
+  b:address:array:address:array:character <- next-ingredient
+  m:address:move <- next-ingredient
+  from-file:integer <- get m:address:move/deref, from-file:offset
+#?   $print from-file:integer, [ #? 1
+#? ] #? 1
+  from-rank:integer <- get m:address:move/deref, from-rank:offset
+#?   $print from-rank:integer, [ #? 1
+#? ] #? 1
+  to-file:integer <- get m:address:move/deref, to-file:offset
+#?   $print to-file:integer, [ #? 1
+#? ] #? 1
+  to-rank:integer <- get m:address:move/deref, to-rank:offset
+#?   $print to-rank:integer, [ #? 1
+#? ] #? 1
+  f:address:array:character <- index b:address:array:address:array:character/deref, from-file:integer
+  src:address:character/square <- index-address f:address:array:character/deref, from-rank:integer
+  f:address:array:character <- index b:address:array:address:array:character/deref, to-file:integer
+  dest:address:character/square <- index-address f:address:array:character/deref, to-rank:integer
+#?   $print src:address:character/deref, [ #? 1
+#? ] #? 1
+  dest:address:character/deref/square <- copy src:address:character/deref/square
+  src:address:character/deref/square <- copy 32:literal  # ' '
+  reply b:address:array:address:array:character/same-as-ingredient:0
+]
+
+scenario making-a-move [
+  assume-screen 30:literal/width, 24:literal/height
+  run [
+    # layout in memory:
+    #   R P _ _ _ _ p r
+    #   N P _ _ _ _ p n
+    #   B P _ _ _ _ p b
+    #   Q P _ _ _ _ p q
+    #   K P _ _ _ _ p k
+    #   B P _ _ _ _ p B
+    #   N P _ _ _ _ p n
+    #   R P _ _ _ _ p r
+    1:address:array:integer/initial-position <- init-array 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 81:literal/Q, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 113:literal/q, 75:literal/K, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 107:literal/k, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r
+    2:address:array:address:array:character/board <- init-board 1:address:array:integer/initial-position
+    3:address:move <- new move:type
+    4:address:integer <- get-address 3:address:move/deref, from-file:offset
+    4:address:integer/deref <- copy 6:literal/g
+    5:address:integer <- get-address 3:address:move/deref, from-rank:offset
+    5:address:integer/deref <- copy 1:literal/2
+    6:address:integer <- get-address 3:address:move/deref, to-file:offset
+    6:address:integer/deref <- copy 6:literal/g
+    7:address:integer <- get-address 3:address:move/deref, to-rank:offset
+    7:address:integer/deref <- copy 3:literal/4
+    2:address:array:address:array:character/board <- make-move 2:address:array:address:array:character/board, 3:address:move
+    screen:address <- print-board screen:address, 2:address:array:address:array:character/board
+  ]
+  screen-should-contain [
+  #  012345678901234567890123456789
+    .8 | r n b q k b n r           .
+    .7 | p p p p p p p p           .
+    .6 |                           .
+    .5 |                           .
+    .4 |             P             .
+    .3 |                           .
+    .2 | P P P P P P   P           .
+    .1 | R N B Q K B N R           .
+    .  +----------------           .
+    .    a b c d e f g h           .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+    .                              .
+  ]
+]

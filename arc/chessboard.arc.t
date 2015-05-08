@@ -191,8 +191,6 @@
 (new-trace "make-move")
 (run-code main
   (default-space:space-address <- new space:literal 30:literal/capacity)
-  ; hook up stdin
-  (stdin:channel-address <- init-channel 1:literal)
   ; fake screen
   (screen:terminal-address <- init-fake-terminal 20:literal 10:literal)
   ; initial position
