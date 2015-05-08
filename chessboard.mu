@@ -154,6 +154,7 @@ container move [
   to-rank:integer
 ]
 
+# result:address:move <- read-move stdin:address:channel
 recipe read-move [
   default-space:address:array:location <- new location:type, 30:literal
   stdin:address:channel <- next-ingredient
