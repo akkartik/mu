@@ -173,7 +173,7 @@ recipe read-move [
   x:address:integer/deref <- read-file stdin:address:channel
   x:address:integer <- get-address result:address:move/deref, to-rank:offset
   x:address:integer/deref <- read-rank stdin:address:channel
-  expect-from-channel stdin:address:channel, 10:literal  # newline
+  expect-from-channel stdin:address:channel, 13:literal  # newline
   reply result:address:move
 ]
 
@@ -309,7 +309,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after file 'a2-a4']
     # press 'newline'
-    1:address:channel <- write 1:address:channel, 10:literal  # newline
+    1:address:channel <- write 1:address:channel, 13:literal  # newline
     restart 2:integer/routine
     # 'read-move' now completes
     wait-for-routine 2:integer
@@ -464,4 +464,70 @@ scenario making-a-move [
     .                              .
     .                              .
   ]
+]
+
+# Use this to debug asynchronous keyboard processing.
+#? recipe main [
+#?   default-space:address:array:location <- new location:type, 30:literal
+#?   switch-to-display
+#?   stdin:address:channel <- init-channel 10:literal/capacity
+#?   start-running send-keys-to-channel:recipe, 0:literal/keyboard, stdin:address:channel, 0:literal/screen
+#?   c:character, stdin:address:channel <- read stdin:address:channel
+#?   return-to-console
+#? ]
+
+#? recipe main [
+#?   default-space:address:array:location <- new location:type, 30:literal
+#?   switch-to-display
+#?   {
+#?     c:character, found:boolean <- read-key-from-keyboard
+#?     $print found:boolean, [
+#? ]
+#?     loop-unless found:boolean
+#?   }
+#? #?   return-to-console
+#?   $print c:character
+#? ]
+
+# todo:
+#   problem with buffering
+#   some way of closing channels
+recipe chessboard [
+  default-space:address:array:location <- new location:type, 30:literal
+  board:address:array:address:array:character <- initial-position
+  switch-to-display
+  # hook up stdin
+  stdin:address:channel <- init-channel 10:literal/capacity
+  start-running send-keys-to-channel:recipe, 0:literal/keyboard, stdin:address:channel, 0:literal/screen
+#?   # buffer stdin
+#?   buffered-stdin:address:channel <- init-channel 10:literal/capacity
+#?   start-running buffer-lines:recipe, stdin:address:channel, buffered-stdin:address:channel
+  {
+    msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
+  ]
+    print-string 0:literal/screen, msg:address:array:character
+    cursor-to-next-line 0:literal/screen
+    print-board 0:literal/screen, board:address:array:address:array:character
+    cursor-to-next-line 0:literal/screen
+    msg:address:array:character <- new [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
+]
+    print-string 0:literal/screen, msg:address:array:character
+    cursor-to-next-line 0:literal/screen
+    msg:address:array:character <- new [Hit 'q' to exit.
+]
+    print-string 0:literal/screen, msg:address:array:character
+    cursor-to-next-line 0:literal/screen
+    msg:address:array:character <- new [move: ]
+    print-string 0:literal/screen, msg:address:array:character
+    m:address:move <- read-move stdin:address:channel
+    break-unless m:address:move
+    board:address:array:address:array:character <- make-move board:address:array:address:array:character, m:address:move
+    clear-screen 0:literal/screen
+    loop
+  }
+  return-to-console
+]
+
+recipe main [
+  chessboard
 ]

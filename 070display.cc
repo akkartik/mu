@@ -187,8 +187,9 @@ case READ_KEY_FROM_KEYBOARD: {
   int event_type = tb_peek_event(&event, 5/*ms*/);
   long long int result = 0;
   long long int found = false;
+//?   cerr << event_type << '\n'; //? 1
   if (event_type == TB_EVENT_KEY) {
-    result = event.ch;
+    result = event.key ? event.key : event.ch;
     found = true;
   }
   products.resize(2);
