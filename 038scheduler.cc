@@ -53,9 +53,13 @@ void run(recipe_number r) {
     trace("schedule") << current_recipe_name();
 //?     trace("schedule") << Current_routine->id << " " << current_recipe_name(); //? 1
     run_current_routine(Scheduling_interval);
+    // Scheduler State Transitions
     if (Current_routine->completed())
       Current_routine->state = COMPLETED;
     // End Scheduler State Transitions
+
+    // Scheduler Cleanup
+    // End Scheduler Cleanup
   }
 //?   cout << "done with run\n"; //? 1
 }
@@ -64,12 +68,6 @@ void run(recipe_number r) {
 bool all_routines_done() {
   for (index_t i = 0; i < Routines.size(); ++i) {
 //?     cout << "routine " << i << ' ' << Routines.at(i)->state << '\n'; //? 1
-    // Ugly hack: temporarily assume that the first routine spawns helpers.
-    // When the first routine completes we can terminate.
-    // Biggest user of routines right now is tests. When the main test routine
-    // completes the test can terminate.
-    // XXX: We need a better story for when channels close.
-    if (Routines.at(i)->id == 1 && Routines.at(i)->state == COMPLETED) return true;
     if (Routines.at(i)->state == RUNNING) {
       return false;
     }
@@ -110,6 +108,13 @@ Next_routine_id = 1;
 id = Next_routine_id;
 Next_routine_id++;
 
+//: routines save the routine that spawned them
+:(before "End routine Fields")
+// todo: really should be routine_id, but that's less efficient.
+long long int parent_index;  // only < 0 if there's no parent_index
+:(before "End routine Constructor")
+parent_index = -1;
+
 :(before "End Primitive Recipe Declarations")
 START_RUNNING,
 :(before "End Primitive Recipe Numbers")
@@ -119,6 +124,8 @@ case START_RUNNING: {
   assert(isa_literal(current_instruction().ingredients.at(0)));
   assert(!current_instruction().ingredients.at(0).initialized);
   routine* new_routine = new routine(Recipe_number[current_instruction().ingredients.at(0).name]);
+//?   cerr << new_routine->id << " -> " << Current_routine->id << '\n'; //? 1
+  new_routine->parent_index = Current_routine_index;
   // populate ingredients
   for (index_t i = 1; i < current_instruction().ingredients.size(); ++i)
     new_routine->calls.top().ingredient_atoms.push_back(ingredients.at(i));
@@ -211,6 +218,25 @@ recipe f1 [
 +schedule: f1
 -run: idle
 
+//:: Routines are marked completed when their parent completes.
+:(before "End Scheduler Cleanup")
+for (index_t i = 0; i < Routines.size(); ++i) {
+  if (Routines.at(i)->state == COMPLETED) continue;
+  if (Routines.at(i)->parent_index < 0) continue;  // root thread
+  if (has_completed_parent(i)) Routines.at(i)->state = COMPLETED;
+}
+
+:(code)
+bool has_completed_parent(index_t routine_index) {
+//?   cerr << routine_index << '\n'; //? 1
+  for (long long int j = routine_index; j < 0; j = Routines.at(j)->parent_index) {
+//?     cerr << ' ' << j << '\n'; //? 1
+    if (Routines.at(j)->state == COMPLETED)
+      return true;
+  }
+  return false;
+}
+
 //:: 'routine-state' can tell if a given routine id is running
 
 :(scenario routine_state_test)
@@ -247,6 +273,8 @@ case ROUTINE_STATE: {
   products.at(0).push_back(result);
   break;
 }
+
+//:: miscellaneous helpers
 
 :(before "End Primitive Recipe Declarations")
 RESTART,
