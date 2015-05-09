@@ -1,4 +1,5 @@
-**Mu: making programs easier to understand in the large**
+**Mu: making programs easier to understand in the large** [![Comment-on-Github.Party](https://img.shields.io/badge/Comment%20on-Github.Party-yellow.svg)](https://github.party/item?id=30)
+-
 
 Imagine a world where you can:
 
