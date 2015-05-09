@@ -82,7 +82,8 @@ void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
 
 struct tb_event {
   uint8_t type;
-  /* fields for type TB_EVENT_KEY */
+  /* fields for type TB_EVENT_KEY. At most one of 'key' and 'ch' will be set at
+   * any time. */
   uint16_t key;
   uint32_t ch;
   /* fields for type TB_EVENT_RESIZE */
