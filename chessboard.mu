@@ -499,9 +499,9 @@ recipe chessboard [
   # hook up stdin
   stdin:address:channel <- init-channel 10:literal/capacity
   start-running send-keys-to-channel:recipe, 0:literal/keyboard, stdin:address:channel, 0:literal/screen
-#?   # buffer stdin
-#?   buffered-stdin:address:channel <- init-channel 10:literal/capacity
-#?   start-running buffer-lines:recipe, stdin:address:channel, buffered-stdin:address:channel
+  # buffer stdin
+  buffered-stdin:address:channel <- init-channel 10:literal/capacity
+  start-running buffer-lines:recipe, stdin:address:channel, buffered-stdin:address:channel
   {
     msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
   ]
@@ -519,7 +519,7 @@ recipe chessboard [
     cursor-to-next-line 0:literal/screen
     msg:address:array:character <- new [move: ]
     print-string 0:literal/screen, msg:address:array:character
-    m:address:move <- read-move stdin:address:channel
+    m:address:move <- read-move buffered-stdin:address:channel
     break-unless m:address:move
     board:address:array:address:array:character <- make-move board:address:array:address:array:character, m:address:move
     clear-screen 0:literal/screen
