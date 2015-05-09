@@ -279,7 +279,7 @@ recipe buffer-lines [
       c:character, in:address:channel <- read in:address:channel
       # todo: handle backspace
       line:address:buffer <- buffer-append line:address:buffer, c:character
-      line-done?:boolean <- equal c:character, 10:literal/newline
+      line-done?:boolean <- equal c:character, 13:literal/newline
       break-if line-done?:boolean
       loop
     }
@@ -328,7 +328,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     assert 7:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
-    1:address:channel <- write 1:address:channel, 10:literal/newline
+    1:address:channel <- write 1:address:channel, 13:literal/newline
     restart 4:integer/buffer-routine
     wait-for-routine 4:integer/buffer-routine
     8:boolean <- channel-empty? 2:address:channel/buffered-stdin
