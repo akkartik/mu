@@ -64,6 +64,12 @@ void run(recipe_number r) {
 bool all_routines_done() {
   for (index_t i = 0; i < Routines.size(); ++i) {
 //?     cout << "routine " << i << ' ' << Routines.at(i)->state << '\n'; //? 1
+    // Ugly hack: temporarily assume that the first routine spawns helpers.
+    // When the first routine completes we can terminate.
+    // Biggest user of routines right now is tests. When the main test routine
+    // completes the test can terminate.
+    // XXX: We need a better story for when channels close.
+    if (Routines.at(i)->id == 1 && Routines.at(i)->state == COMPLETED) return true;
     if (Routines.at(i)->state == RUNNING) {
       return false;
     }

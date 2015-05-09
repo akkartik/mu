@@ -51,3 +51,18 @@ recipe wait-for-key [
   c:character <- wait-for-key-from-keyboard
   reply c:character, x:address:keyboard/same-as-ingredient:0
 ]
+
+recipe send-keys-to-channel [
+  default-space:address:array:location <- new location:type, 30:literal
+  keyboard:address <- next-ingredient
+  chan:address:channel <- next-ingredient
+  screen:address <- next-ingredient
+  {
+    c:character <- read-key keyboard:address
+    loop-unless c:character
+    print-character screen:address, c:character
+    chan:address:channel <- write chan:address:channel, c:character
+    # todo: eof
+    loop
+  }
+]
