@@ -276,13 +276,38 @@ recipe buffer-lines [
     line:address:buffer <- init-buffer, 30:literal
     # read characters from 'in' until newline, copy into line
     {
+      +next-character
       c:character, in:address:channel <- read in:address:channel
-      # todo: handle backspace
+      # drop a character on backspace
+      {
+        # special-case: if it's a backspace
+        backspace?:boolean <- equal c:character, 8:literal
+        break-unless backspace?:boolean
+        # drop previous character
+#?         return-to-console #? 2
+#?         $print [backspace! #? 1
+#? ] #? 1
+        buffer-length:address:integer <- get-address line:address:buffer/deref, length:offset
+        {
+          buffer-empty?:boolean <- equal buffer-length:address:integer/deref, 0:literal
+          break-if buffer-empty?:boolean
+#?           $print [before: ], buffer-length:address:integer/deref, [ #? 1
+#? ] #? 1
+          buffer-length:address:integer/deref <- subtract buffer-length:address:integer/deref, 1:literal
+#?           $print [after: ], buffer-length:address:integer/deref, [ #? 1
+#? ] #? 1
+        }
+#?         $exit #? 2
+        # and don't append this one
+        loop +next-character:label
+      }
+      # append anything else
       line:address:buffer <- buffer-append line:address:buffer, c:character
       line-done?:boolean <- equal c:character, 13:literal/newline
       break-if line-done?:boolean
       loop
     }
+#?     return-to-console #? 1
     # copy line into 'out'
     i:integer <- copy 0:literal
     line-contents:address:array:character <- get line:address:buffer/deref, data:offset
@@ -292,9 +317,13 @@ recipe buffer-lines [
       break-if done?:boolean
       c:character <- index line-contents:address:array:character/deref, i:integer
       out:address:channel <- write out:address:channel, c:character
+#?       $print [writing ], i:integer, [: ], c:character, [ #? 1
+#? ] #? 1
       i:integer <- add i:integer, 1:literal
       loop
     }
+#?     $dump-trace #? 1
+#?     $exit #? 1
     loop
   }
   reply out:address:channel/same-as-ingredient:1

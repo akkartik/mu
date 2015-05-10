@@ -308,6 +308,7 @@ recipe main [
 +after-brace: jump 2:offset
 
 :(scenario break_label)
+% Hide_warnings = true;
 recipe main [
   1:integer <- copy 0:literal
   {

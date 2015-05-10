@@ -88,6 +88,7 @@ time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
 for (index_t i = 0; i < Scenarios.size(); ++i) {
 //?   cerr << Passed << '\n'; //? 1
+//?   cerr << i << ": " << Scenarios.at(i).name << '\n'; //? 1
   run_mu_scenario(Scenarios.at(i));
   if (Passed) cerr << ".";
 }

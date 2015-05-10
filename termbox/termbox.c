@@ -130,10 +130,7 @@ int tb_init(void)
 
 void tb_shutdown(void)
 {
-  if (termw == -1) {
-    fputs("tb_shutdown() should not be called twice.", stderr);
-    abort();
-  }
+  if (termw == -1) return;
 
   bytebuffer_puts(&output_buffer, funcs[T_SHOW_CURSOR]);
   bytebuffer_puts(&output_buffer, funcs[T_SGR0]);

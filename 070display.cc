@@ -68,8 +68,8 @@ case PRINT_CHARACTER_TO_DISPLAY: {
   size_t width = (w >= 0) ? w : 0;
   assert(ingredients.at(0).size() == 1);  // scalar
   long long int c = ingredients.at(0).at(0);
-  if (c == '\n') {
-    if (Display_row < height) {
+  if (c == '\n' || c == '\r') {
+    if (Display_row < height-1) {
       Display_column = 0;
       ++Display_row;
       tb_set_cursor(Display_column, Display_row);
@@ -77,9 +77,18 @@ case PRINT_CHARACTER_TO_DISPLAY: {
     }
     break;
   }
+  if (c == '\b') {
+    if (Display_column > 0) {
+      tb_change_cell(Display_column-1, Display_row, ' ', TB_WHITE, TB_DEFAULT);
+      --Display_column;
+      tb_set_cursor(Display_column, Display_row);
+      tb_present();
+    }
+    break;
+  }
   tb_change_cell(Display_column, Display_row, c, TB_WHITE, TB_DEFAULT);
-  if (Display_column < width) {
-    Display_column++;
+  if (Display_column < width-1) {
+    ++Display_column;
     tb_set_cursor(Display_column, Display_row);
   }
   tb_present();
@@ -119,9 +128,13 @@ MOVE_CURSOR_DOWN_ON_DISPLAY,
 Recipe_number["move-cursor-down-on-display"] = MOVE_CURSOR_DOWN_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_DOWN_ON_DISPLAY: {
-  Display_row++;
-  tb_set_cursor(Display_column, Display_row);
-  tb_present();
+  int h=tb_height();
+  size_t height = (h >= 0) ? h : 0;
+  if (Display_row < height-1) {
+    Display_row++;
+    tb_set_cursor(Display_column, Display_row);
+    tb_present();
+  }
   break;
 }
 
@@ -131,9 +144,11 @@ MOVE_CURSOR_UP_ON_DISPLAY,
 Recipe_number["move-cursor-up-on-display"] = MOVE_CURSOR_UP_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_UP_ON_DISPLAY: {
-  Display_row--;
-  tb_set_cursor(Display_column, Display_row);
-  tb_present();
+  if (Display_row > 0) {
+    Display_row--;
+    tb_set_cursor(Display_column, Display_row);
+    tb_present();
+  }
   break;
 }
 
@@ -143,9 +158,13 @@ MOVE_CURSOR_RIGHT_ON_DISPLAY,
 Recipe_number["move-cursor-right-on-display"] = MOVE_CURSOR_RIGHT_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
-  Display_column++;
-  tb_set_cursor(Display_column, Display_row);
-  tb_present();
+  int w=tb_width();
+  size_t width = (w >= 0) ? w : 0;
+  if (Display_column < width-1) {
+    Display_column++;
+    tb_set_cursor(Display_column, Display_row);
+    tb_present();
+  }
   break;
 }
 
@@ -155,9 +174,11 @@ MOVE_CURSOR_LEFT_ON_DISPLAY,
 Recipe_number["move-cursor-left-on-display"] = MOVE_CURSOR_LEFT_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_LEFT_ON_DISPLAY: {
-  Display_column--;
-  tb_set_cursor(Display_column, Display_row);
-  tb_present();
+  if (Display_column > 0) {
+    Display_column--;
+    tb_set_cursor(Display_column, Display_row);
+    tb_present();
+  }
   break;
 }
 
@@ -191,6 +212,7 @@ case READ_KEY_FROM_KEYBOARD: {
 //?   cerr << event_type << '\n'; //? 1
   if (event_type == TB_EVENT_KEY) {
     if (event.key == TB_KEY_CTRL_C) tb_shutdown(), exit(1);
+    if (event.key == TB_KEY_BACKSPACE2) event.key = TB_KEY_BACKSPACE;
     result = event.key ? event.key : event.ch;
     found = true;
   }

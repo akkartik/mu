@@ -54,11 +54,21 @@ case _EXIT: {
 }
 
 :(before "End Primitive Recipe Declarations")
-_DUMP_LAYER,
+_START_DUMPING_LAYER,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$dump-layer"] = _DUMP_LAYER;
+Recipe_number["$start-dumping-layer"] = _START_DUMPING_LAYER;
 :(before "End Primitive Recipe Implementations")
-case _DUMP_LAYER: {
+case _START_DUMPING_LAYER: {
   Trace_stream->dump_layer = current_instruction().ingredients.at(0).name;
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+_DUMP_TRACE,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["$dump-trace"] = _DUMP_TRACE;
+:(before "End Primitive Recipe Implementations")
+case _DUMP_TRACE: {
+  DUMP("");
   break;
 }
