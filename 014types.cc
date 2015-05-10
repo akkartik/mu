@@ -22,9 +22,13 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   skip_whitespace(in);
   string name = next_word(in);
   trace("parse") << "reading " << command << ' ' << name;
-//?   cout << name << '\n'; //? 1
-  assert(Type_number.find(name) == Type_number.end());
-  Type_number[name] = Next_type_number++;
+//?   cout << name << '\n'; //? 2
+//?   if (Type_number.find(name) != Type_number.end()) //? 1
+//?     cerr << Type_number[name] << '\n'; //? 1
+  if (Type_number.find(name) == Type_number.end()
+      || Type_number[name] == 0) {
+    Type_number[name] = Next_type_number++;
+  }
   skip_bracket(in, "'container' must begin with '['");
   assert(Type.find(Type_number[name]) == Type.end());
   type_info& t = Type[Type_number[name]];

@@ -19,6 +19,48 @@ recipe main [
   return-to-console  # cleanup screen and keyboard
 ]
 
+recipe chessboard [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  keyboard:address <- next-ingredient
+  board:address:array:address:array:character <- initial-position
+  # hook up stdin
+  stdin:address:channel <- init-channel 10:literal/capacity
+  start-running send-keys-to-channel:recipe, keyboard:address, stdin:address:channel, screen:address
+  # buffer lines in stdin
+  buffered-stdin:address:channel <- init-channel 10:literal/capacity
+  start-running buffer-lines:recipe, stdin:address:channel, buffered-stdin:address:channel
+  {
+    msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
+]
+    print-string screen:address, msg:address:array:character
+    cursor-to-next-line screen:address
+    print-board screen:address, board:address:array:address:array:character
+    cursor-to-next-line screen:address
+    msg:address:array:character <- new [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
+]
+    print-string screen:address, msg:address:array:character
+    cursor-to-next-line screen:address
+    msg:address:array:character <- new [Hit 'q' to exit.
+]
+    print-string screen:address, msg:address:array:character
+    {
+      cursor-to-next-line screen:address
+      msg:address:array:character <- new [move: ]
+      print-string screen:address, msg:address:array:character
+      m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin:address:channel, screen:address
+      break-if quit:boolean, +quit:offset
+      buffered-stdin:address:channel <- clear-channel buffered-stdin:address:channel  # cleanup after error. todo: test this?
+      loop-if error:boolean
+    }
+    board:address:array:address:array:character <- make-move board:address:array:address:array:character, m:address:move
+    clear-screen screen:address
+    loop
+  }
+  +quit
+#?   $print [aaa] #? 1
+]
+
 ## a board is an array of files, a file is an array of characters (squares)
 
 recipe init-board [
@@ -551,46 +593,4 @@ scenario making-a-move [
     .                              .
     .                              .
   ]
-]
-
-recipe chessboard [
-  default-space:address:array:location <- new location:type, 30:literal
-  screen:address <- next-ingredient
-  keyboard:address <- next-ingredient
-  board:address:array:address:array:character <- initial-position
-  # hook up stdin
-  stdin:address:channel <- init-channel 10:literal/capacity
-  start-running send-keys-to-channel:recipe, keyboard:address, stdin:address:channel, screen:address
-  # buffer lines in stdin
-  buffered-stdin:address:channel <- init-channel 10:literal/capacity
-  start-running buffer-lines:recipe, stdin:address:channel, buffered-stdin:address:channel
-  {
-    msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
-]
-    print-string screen:address, msg:address:array:character
-    cursor-to-next-line screen:address
-    print-board screen:address, board:address:array:address:array:character
-    cursor-to-next-line screen:address
-    msg:address:array:character <- new [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
-]
-    print-string screen:address, msg:address:array:character
-    cursor-to-next-line screen:address
-    msg:address:array:character <- new [Hit 'q' to exit.
-]
-    print-string screen:address, msg:address:array:character
-    {
-      cursor-to-next-line screen:address
-      msg:address:array:character <- new [move: ]
-      print-string screen:address, msg:address:array:character
-      m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin:address:channel, screen:address
-      break-if quit:boolean, +quit:offset
-      buffered-stdin:address:channel <- clear-channel buffered-stdin:address:channel  # cleanup after error. todo: test this?
-      loop-if error:boolean
-    }
-    board:address:array:address:array:character <- make-move board:address:array:address:array:character, m:address:move
-    clear-screen screen:address
-    loop
-  }
-  +quit
-#?   $print [aaa] #? 1
 ]
