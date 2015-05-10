@@ -28,13 +28,21 @@ set comments+=n:#
 syntax match CommentedCode "#? .*"
 let b:cmt_head = "#? "
 
-" don't match '[' at end of line, that's usually start of code
-syntax region muString start=+\[[^\]]+ skip=+\\\\+ end=+\]+
+" mu strings are inside [ ... ] and can span multiple lines
+" don't match '[' at end of line, that's usually code
+syntax region muString start=+\[[^\]]+ end=+\]+
 syntax match muString "\[\]"
 highlight link muString String
+" mu syntax for representing the screen in scenarios
+syntax region muScreen start=+ \.+ end=+\.$\|$+
+highlight link muScreen muString
+
+" all mu literals are constants
+syntax match muNumber %[^ ]\+:literal/\?[^ ,]*%
+highlight link muNumber Constant
 
 syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
-syntax match muLabel " [^a-zA-Z0-9 \[][a-zA-Z0-9-]\+" | highlight link muLabel Function
+syntax match muLabel " [^a-zA-Z0-9 \[\.][a-zA-Z0-9-]\+" | highlight link muLabel Function
 syntax match muAssign " <- " | highlight link muAssign SpecialChar
 syntax match muAssign "\<raw\>"
 syntax keyword muControl reply reply-if reply-unless jump jump-if jump-unless loop loop-if loop-unless break-if break-unless | highlight link muControl Function
