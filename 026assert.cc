@@ -15,9 +15,8 @@ case ASSERT: {
   assert(ingredients.at(0).size() == 1);  // scalar
   if (!ingredients.at(0).at(0)) {
     assert(isa_literal(current_instruction().ingredients.at(1)));
-//?     tb_shutdown(); //? 1
+    tb_shutdown();
     raise << current_instruction().ingredients.at(1).name << '\n' << die();
-//?     exit(0); //? 1
   }
   break;
 }

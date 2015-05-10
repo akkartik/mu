@@ -24,25 +24,25 @@ void transform_labels(const recipe_number r) {
     instruction& inst = Recipe[r].steps.at(i);
     if (inst.operation == Recipe_number["jump"]) {
 //?       cerr << inst.to_string() << '\n'; //? 1
-      replace_offset(inst.ingredients.at(0), offset, r);
+      replace_offset(inst.ingredients.at(0), offset, i, r);
     }
     if (inst.operation == Recipe_number["jump-if"] || inst.operation == Recipe_number["jump-unless"]) {
-      replace_offset(inst.ingredients.at(1), offset, r);
+      replace_offset(inst.ingredients.at(1), offset, i, r);
     }
     if ((inst.operation == Recipe_number["loop"] || inst.operation == Recipe_number["break"])
         && inst.ingredients.size() == 1) {
-      replace_offset(inst.ingredients.at(0), offset, r);
+      replace_offset(inst.ingredients.at(0), offset, i, r);
     }
     if ((inst.operation == Recipe_number["loop-if"] || inst.operation == Recipe_number["loop-unless"]
             || inst.operation == Recipe_number["break-if"] || inst.operation == Recipe_number["break-unless"])
         && inst.ingredients.size() == 2) {
-      replace_offset(inst.ingredients.at(1), offset, r);
+      replace_offset(inst.ingredients.at(1), offset, i, r);
     }
   }
 }
 
 :(code)
-void replace_offset(reagent& x, /*const*/ map<string, index_t>& offset, const recipe_number r) {
+void replace_offset(reagent& x, /*const*/ map<string, index_t>& offset, const index_t current_offset, const recipe_number r) {
 //?   cerr << "AAA " << x.to_string() << '\n'; //? 1
   assert(isa_literal(x));
 //?   cerr << "BBB " << x.to_string() << '\n'; //? 1
@@ -52,7 +52,7 @@ void replace_offset(reagent& x, /*const*/ map<string, index_t>& offset, const re
 //?   cerr << "DDD " << x.to_string() << '\n'; //? 1
   if (offset.find(x.name) == offset.end())
     raise << "can't find label " << x.name << " in routine " << Recipe[r].name << '\n';
-  x.set_value(offset[x.name]);
+  x.set_value(offset[x.name]-current_offset);
 }
 
 :(scenario break_to_label)
@@ -91,3 +91,17 @@ recipe main [
   +target
 ]
 -mem: storing 0 in location 1
+
+:(scenario jump_runs_code_after_label)
+recipe main [
+  # first a few lines of padding to exercise the offset computation
+  1:integer <- copy 0:literal
+  2:integer <- copy 0:literal
+  3:integer <- copy 0:literal
+  jump +target:offset
+  4:integer <- copy 0:literal
+  +target
+  5:integer <- copy 0:literal
+]
++mem: storing 0 in location 5
+-mem: storing 0 in location 4

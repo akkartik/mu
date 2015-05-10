@@ -152,100 +152,148 @@ container move [
   to-rank:integer
 ]
 
-# result:address:move <- read-move stdin:address:channel
+# result:address:move, quit?:boolean, error?:boolean <- read-move stdin:address:channel, screen:address
+# prints only error messages to screen
 recipe read-move [
   default-space:address:array:location <- new location:type, 30:literal
   stdin:address:channel <- next-ingredient
-  from-file:integer <- read-file stdin:address:channel
+  screen:address <- next-ingredient
+#?   $print screen:address #? 1
+  from-file:integer, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
+  reply-if quit?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
+  reply-if error?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
 #?   return-to-console #? 1
-  {
-    q-pressed?:boolean <- lesser-than from-file:integer, 0:literal
-    break-unless q-pressed?:boolean
-    reply 0:literal
-  }
   # construct the move object
   result:address:move <- new move:literal
   x:address:integer <- get-address result:address:move/deref, from-file:offset
   x:address:integer/deref <- copy from-file:integer
   x:address:integer <- get-address result:address:move/deref, from-rank:offset
-  x:address:integer/deref <- read-rank stdin:address:channel
-  expect-from-channel stdin:address:channel, 45:literal  # '-'
+  x:address:integer/deref, quit?:boolean, error?:boolean <- read-rank stdin:address:channel, screen:address
+  reply-if quit?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
+  reply-if error?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
+  error?:boolean <- expect-from-channel stdin:address:channel, 45:literal/dash, screen:address
+  reply-if error?:boolean, 0:literal/dummy, 0:literal/quit, error?:boolean
   x:address:integer <- get-address result:address:move/deref, to-file:offset
-  x:address:integer/deref <- read-file stdin:address:channel
+  x:address:integer/deref, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
+  reply-if quit?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
+  reply-if error?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
   x:address:integer <- get-address result:address:move/deref, to-rank:offset
-  x:address:integer/deref <- read-rank stdin:address:channel
+  x:address:integer/deref, quit?:boolean, error?:boolean <- read-rank stdin:address:channel, screen:address
+  reply-if quit?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
+  reply-if error?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
 #?   $exit #? 1
-  expect-from-channel stdin:address:channel, 13:literal  # newline
-  reply result:address:move
+  error?:boolean <- expect-from-channel stdin:address:channel, 13:literal/newline, screen:address
+  reply-if error?:boolean, 0:literal/dummy, 0:literal/quit, error?:boolean
+  reply result:address:move, quit?:boolean, error?:boolean
 ]
 
+# file:integer, quit:boolean, error:boolean <- read-file stdin:address:channel, screen:address
+# valid values for file: 0-7
 recipe read-file [
   default-space:address:array:location <- new location:type, 30:literal
   stdin:address:channel <- next-ingredient
+  screen:address <- next-ingredient
   c:character, stdin:address:channel <- read stdin:address:channel
   {
     q-pressed?:boolean <- equal c:character, 81:literal  # 'Q'
     break-unless q-pressed?:boolean
-    reply -1:literal
+    reply 0:literal/dummy, 1:literal/quit, 0:literal/error
   }
   {
     q-pressed?:boolean <- equal c:character, 113:literal  # 'q'
     break-unless q-pressed?:boolean
-    reply -1:literal
+    reply 0:literal/dummy, 1:literal/quit, 0:literal/error
   }
   file:integer <- subtract c:character, 97:literal  # 'a'
 #?   $print file:integer, [ #? 1
 #? ] #? 1
   # 'a' <= file <= 'h'
-  above-min:boolean <- greater-or-equal file:integer, 0:literal
-  assert above-min:boolean [file too low]
-  below-max:boolean <- lesser-than file:integer, 8:literal
-  assert below-max:boolean [file too high]
-  reply file:integer
+  {
+    above-min:boolean <- greater-or-equal file:integer, 0:literal
+    break-if above-min:boolean
+    error-message:address:array:character <- new [file too low: ]
+    print-string screen:address, error-message:address:array:character
+    print-character screen:address, c:character
+    cursor-to-next-line screen:address
+    reply 0:literal/dummy, 0:literal/quit, 1:literal/error
+  }
+  {
+    below-max:boolean <- lesser-than file:integer, 8:literal
+    break-if below-max:boolean
+    error-message:address:array:character <- new [file too high: ]
+    print-string screen:address, error-message:address:array:character
+    print-character screen:address, c:character
+    reply 0:literal/dummy, 0:literal/quit, 1:literal/error
+  }
+  reply file:integer, 0:literal/quit, 0:literal/error
 ]
 
+# rank:integer <- read-rank stdin:address:channel, screen:address
+# valid values: 0-7, -1 (quit), -2 (error)
 recipe read-rank [
   default-space:address:array:location <- new location:type, 30:literal
   stdin:address:channel <- next-ingredient
+  screen:address <- next-ingredient
   c:character, stdin:address:channel <- read stdin:address:channel
   {
     q-pressed?:boolean <- equal c:character, 81:literal  # 'Q'
     break-unless q-pressed?:boolean
-    reply -1:literal
+    reply 0:literal/dummy, 1:literal/quit, 0:literal/error
   }
   {
     q-pressed?:boolean <- equal c:character, 113:literal  # 'q'
     break-unless q-pressed?:boolean
-    reply -1:literal
+    reply 0:literal/dummy, 1:literal/quit, 0:literal/error
   }
   rank:integer <- subtract c:character, 49:literal  # '1'
 #?   $print rank:integer, [ #? 1
 #? ] #? 1
   # assert'1' <= rank <= '8'
-  above-min:boolean <- greater-or-equal rank:integer 0:literal
-  assert above-min:boolean [rank too low]
-  below-max:boolean <- lesser-or-equal rank:integer 7:literal
-  assert below-max:boolean [rank too high]
-  reply rank:integer
+  {
+    above-min:boolean <- greater-or-equal rank:integer 0:literal
+    break-if above-min:boolean
+    error-message:address:array:character <- new [rank too low: ]
+    print-string screen:address, error-message:address:array:character
+    print-character screen:address, c:character
+    reply 0:literal/dummy, 0:literal/quit, 1:literal/error
+  }
+  {
+    below-max:boolean <- lesser-or-equal rank:integer 7:literal
+    break-if below-max:boolean
+    error-message:address:array:character <- new [rank too high: ]
+    print-string screen:address, error-message:address:array:character
+    print-character screen:address, c:character
+    reply 0:literal/dummy, 0:literal/quit, 1:literal/error
+  }
+  reply rank:integer, 0:literal/quit, 0:literal/error
 ]
 
 # read a character from the given channel and check that it's what we expect
+# return true on error
 recipe expect-from-channel [
   default-space:address:array:location <- new location:type, 30:literal
   stdin:address:channel <- next-ingredient
   expected:character <- next-ingredient
+  screen:address <- next-ingredient
   c:character, stdin:address:channel <- read stdin:address:channel
   match?:boolean <- equal c:character, expected:character
-  assert match?:boolean [expected character not found]
+  {
+    break-if match?:boolean
+    s:address:array:character <- new [expected character not found]
+    print-string screen:address, s:address:array:character
+  }
+  result:boolean <- not match?:boolean
+  reply result:boolean
 ]
 
 scenario read-move-blocking [
+  assume-screen 20:literal/width, 2:literal/height
   run [
 #?     $start-tracing #? 1
     1:address:channel <- init-channel 2:literal
 #?     $print [aaa channel address: ], 1:address:channel, [ #? 1
 #? ] #? 1
-    2:integer/routine <- start-running read-move:recipe, 1:address:channel
+    2:integer/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:integer
 #?     $print [bbb channel address: ], 1:address:channel, [ #? 1
@@ -333,9 +381,10 @@ F read-move-blocking: routine failed to terminate on newline]
 ]
 
 scenario read-move-quit [
+  assume-screen 20:literal/width, 2:literal/height
   run [
     1:address:channel <- init-channel 2:literal
-    2:integer/routine <- start-running read-move:recipe, 1:address:channel
+    2:integer/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:integer
     3:integer <- routine-state 2:integer/id
@@ -359,10 +408,10 @@ F read-move-quit: routine failed to terminate on 'q']
 ]
 
 scenario read-move-illegal-file [
+  assume-screen 20:literal/width, 2:literal/height
   run [
-    hide-warnings
     1:address:channel <- init-channel 2:literal
-    2:integer/routine <- start-running read-move:recipe, 1:address:channel
+    2:integer/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:integer
     3:integer <- routine-state 2:integer/id
@@ -373,16 +422,17 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
     restart 2:integer/routine
     wait-for-routine 2:integer
   ]
-  trace-should-contain [
-    warn: file too low
+  screen-should-contain [
+    .file too low: 2     .
+    .                    .
   ]
 ]
 
 scenario read-move-illegal-rank [
+  assume-screen 20:literal/width, 2:literal/height
   run [
-    hide-warnings
     1:address:channel <- init-channel 2:literal
-    2:integer/routine <- start-running read-move:recipe, 1:address:channel
+    2:integer/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:integer
     3:integer <- routine-state 2:integer/id
@@ -394,8 +444,9 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
     restart 2:integer/routine
     wait-for-routine 2:integer
   ]
-  trace-should-contain [
-    warn: rank too high
+  screen-should-contain [
+    .rank too high: a    .
+    .                    .
   ]
 ]
 
@@ -496,15 +547,20 @@ recipe chessboard [
     msg:address:array:character <- new [Hit 'q' to exit.
 ]
     print-string 0:literal/screen, msg:address:array:character
-    cursor-to-next-line 0:literal/screen
-    msg:address:array:character <- new [move: ]
-    print-string 0:literal/screen, msg:address:array:character
-    m:address:move <- read-move buffered-stdin:address:channel
-    break-unless m:address:move
+    {
+      cursor-to-next-line 0:literal/screen
+      msg:address:array:character <- new [move: ]
+      print-string 0:literal/screen, msg:address:array:character
+      m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin:address:channel, 0:literal/screen
+      break-if quit:boolean, +quit:offset
+      loop-if error:boolean
+    }
     board:address:array:address:array:character <- make-move board:address:array:address:array:character, m:address:move
     clear-screen 0:literal/screen
     loop
   }
+  +quit
+#?   $print [aaa] #? 1
   return-to-console
 ]
 

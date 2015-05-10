@@ -130,7 +130,8 @@ if (argc > 1) {
 :(before "End Main")
 if (!Run_tests) {
   setup();
-  Trace_stream = new trace_stream;
+//?   Trace_file = "interactive"; //? 1
+  START_TRACING_UNTIL_END_OF_SCOPE;
 //?   Trace_stream->dump_layer = "all"; //? 2
   transform_all();
   recipe_number r = Recipe_number[string("main")];

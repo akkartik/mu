@@ -62,6 +62,7 @@ recipe f [
 //: ingredients unless they're also products. The /same-as-ingredient inside
 //: the recipe's 'reply' will help catch accidental misuse of such
 //: 'ingredient-results' (sometimes called in-out parameters in other languages).
+
 :(scenario reply_same_as_ingredient)
 % Hide_warnings = true;
 recipe main [
@@ -89,4 +90,45 @@ string to_string(const vector<long long int>& in) {
   }
   out << "]";
   return out.str();
+}
+
+//: Conditional reply.
+
+:(scenario reply_if)
+recipe main [
+  1:integer <- test1
+]
+recipe test1 [
+  reply-if 0:literal, 34:literal
+  reply 35:literal
+]
++mem: storing 35 in location 1
+
+:(scenario reply_if2)
+recipe main [
+  1:integer <- test1
+]
+recipe test1 [
+  reply-if 1:literal, 34:literal
+  reply 35:literal
+]
++mem: storing 34 in location 1
+
+:(before "End Rewrite Instruction(curr)")
+// rewrite `reply-if a, b, c, ...` to
+//   ```
+//   jump-unless a, 1:offset
+//   reply b, c, ...
+//   ```
+if (curr.name == "reply-if") {
+  assert(curr.products.empty());
+  curr.operation = Recipe_number["jump-unless"];
+  vector<reagent> results;
+  copy(++curr.ingredients.begin(), curr.ingredients.end(), inserter(results, results.end()));
+  curr.ingredients.resize(1);
+  curr.ingredients.push_back(reagent("1:offset"));
+  result.steps.push_back(curr);
+  curr.clear();
+  curr.operation = Recipe_number["reply"];
+  curr.ingredients.swap(results);
 }

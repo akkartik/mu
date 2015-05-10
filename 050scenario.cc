@@ -88,7 +88,7 @@ time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
 for (index_t i = 0; i < Scenarios.size(); ++i) {
 //?   cerr << Passed << '\n'; //? 1
-//?   cerr << i << ": " << Scenarios.at(i).name << '\n'; //? 1
+//?   cerr << i << ": " << Scenarios.at(i).name << '\n'; //? 2
   run_mu_scenario(Scenarios.at(i));
   if (Passed) cerr << ".";
 }
@@ -294,6 +294,10 @@ recipe main [
 // Like runs of contiguous '+' lines, order is important. The trace checks
 // that the lines are present *and* in the specified sequence. (There can be
 // other lines in between.)
+//
+// Be careful not to mix setting Hide_warnings and checking the trace in .mu
+// files. It'll work in C++ scenarios, but the test failure gets silently
+// hidden in mu scenarios.
 
 :(scenario trace_check_warns_on_failure)
 % Hide_warnings = true;
@@ -319,8 +323,10 @@ case TRACE_SHOULD_CONTAIN: {
 // simplified version of check_trace_contents() that emits warnings rather
 // than just printing to stderr
 bool check_trace(const string& expected) {
+//?   cerr << "AAA " << expected << '\n'; //? 1
   Trace_stream->newline();
   vector<pair<string, string> > expected_lines = parse_trace(expected);
+//?   cerr << "BBB " << expected_lines.size() << '\n'; //? 1
   if (expected_lines.empty()) return true;
   index_t curr_expected_line = 0;
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
@@ -328,7 +334,10 @@ bool check_trace(const string& expected) {
     if (expected_lines.at(curr_expected_line).second != p->second.second) continue;
     // match
     ++curr_expected_line;
-    if (curr_expected_line == expected_lines.size()) return true;
+    if (curr_expected_line == expected_lines.size()) {
+//?       cerr << "ZZZ\n"; //? 1
+      return true;
+    }
   }
 
   raise << "missing [" << expected_lines.at(curr_expected_line).second << "] "

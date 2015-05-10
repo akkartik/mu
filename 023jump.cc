@@ -42,6 +42,7 @@ Recipe_number["jump-if"] = JUMP_IF;
 :(before "End Primitive Recipe Implementations")
 case JUMP_IF: {
   assert(current_instruction().ingredients.at(1).initialized);
+  trace("AAA") << current_instruction().to_string() << '\n';
   assert(ingredients.size() == 2);
   assert(ingredients.at(0).size() == 1);  // scalar
   if (!ingredients.at(0).at(0)) {
