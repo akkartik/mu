@@ -472,29 +472,6 @@ scenario making-a-move [
   ]
 ]
 
-# Use this to debug asynchronous keyboard processing.
-#? recipe main [
-#?   default-space:address:array:location <- new location:type, 30:literal
-#?   switch-to-display
-#?   stdin:address:channel <- init-channel 10:literal/capacity
-#?   start-running send-keys-to-channel:recipe, 0:literal/keyboard, stdin:address:channel, 0:literal/screen
-#?   c:character, stdin:address:channel <- read stdin:address:channel
-#?   return-to-console
-#? ]
-
-#? recipe main [
-#?   default-space:address:array:location <- new location:type, 30:literal
-#?   switch-to-display
-#?   {
-#?     c:character, found:boolean <- read-key-from-keyboard
-#?     $print found:boolean, [
-#? ]
-#?     loop-unless found:boolean
-#?   }
-#? #?   return-to-console
-#?   $print c:character
-#? ]
-
 recipe chessboard [
   default-space:address:array:location <- new location:type, 30:literal
   board:address:array:address:array:character <- initial-position
