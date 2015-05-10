@@ -47,9 +47,6 @@ void parse_int_reagents() {
 
 void populate_value(reagent& r) {
   if (r.initialized) return;
-  char* end = NULL;
-  int result = strtol(r.name.c_str(), &end, /*any base*/0);
-  if (*end != '\0') return;
-//?   cout << "setting value\n"; //? 1
-  r.set_value(result);
+  if (!is_number(r.name)) return;
+  r.set_value(to_int(r.name));
 }

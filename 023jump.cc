@@ -6,6 +6,7 @@ JUMP,
 Recipe_number["jump"] = JUMP;
 :(before "End Primitive Recipe Implementations")
 case JUMP: {
+  assert(current_instruction().ingredients.at(0).initialized);
   assert(ingredients.size() == 1);
   assert(ingredients.at(0).size() == 1);  // scalar
   instruction_counter += ingredients.at(0).at(0);
@@ -40,6 +41,7 @@ JUMP_IF,
 Recipe_number["jump-if"] = JUMP_IF;
 :(before "End Primitive Recipe Implementations")
 case JUMP_IF: {
+  assert(current_instruction().ingredients.at(1).initialized);
   assert(ingredients.size() == 2);
   assert(ingredients.at(0).size() == 1);  // scalar
   if (!ingredients.at(0).at(0)) {
@@ -79,6 +81,7 @@ JUMP_UNLESS,
 Recipe_number["jump-unless"] = JUMP_UNLESS;
 :(before "End Primitive Recipe Implementations")
 case JUMP_UNLESS: {
+  assert(current_instruction().ingredients.at(1).initialized);
   assert(ingredients.size() == 2);
   assert(ingredients.at(0).size() == 1);  // scalar
   if (ingredients.at(0).at(0)) {

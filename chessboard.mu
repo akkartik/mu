@@ -157,6 +157,7 @@ recipe read-move [
   default-space:address:array:location <- new location:type, 30:literal
   stdin:address:channel <- next-ingredient
   from-file:integer <- read-file stdin:address:channel
+#?   return-to-console #? 1
   {
     q-pressed?:boolean <- lesser-than from-file:integer, 0:literal
     break-unless q-pressed?:boolean
@@ -173,6 +174,7 @@ recipe read-move [
   x:address:integer/deref <- read-file stdin:address:channel
   x:address:integer <- get-address result:address:move/deref, to-rank:offset
   x:address:integer/deref <- read-rank stdin:address:channel
+#?   $exit #? 1
   expect-from-channel stdin:address:channel, 13:literal  # newline
   reply result:address:move
 ]
@@ -192,6 +194,8 @@ recipe read-file [
     reply -1:literal
   }
   file:integer <- subtract c:character, 97:literal  # 'a'
+#?   $print file:integer, [ #? 1
+#? ] #? 1
   # 'a' <= file <= 'h'
   above-min:boolean <- greater-or-equal file:integer, 0:literal
   assert above-min:boolean [file too low]
@@ -215,6 +219,8 @@ recipe read-rank [
     reply -1:literal
   }
   rank:integer <- subtract c:character, 49:literal  # '1'
+#?   $print rank:integer, [ #? 1
+#? ] #? 1
   # assert'1' <= rank <= '8'
   above-min:boolean <- greater-or-equal rank:integer 0:literal
   assert above-min:boolean [rank too low]

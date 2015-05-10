@@ -130,7 +130,7 @@ case SWITCH: {
   index_t id = some_other_running_routine();
   if (id) {
     assert(id != Current_routine->id);
-    cerr << "waiting on " << id << " from " << Current_routine->id << '\n';
+//?     cerr << "waiting on " << id << " from " << Current_routine->id << '\n'; //? 1
     Current_routine->state = WAITING;
     Current_routine->waiting_on_routine = id;
   }
