@@ -28,10 +28,12 @@ set comments+=n:#
 syntax match CommentedCode "#? .*"
 let b:cmt_head = "#? "
 
-syntax region muString start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=@Spell
+" don't match '[' at end of line, that's usually start of code
+syntax region muString start=+\[[^\]]+ skip=+\\\\+ end=+\]+
+syntax match muString "\[\]"
 highlight link muString String
 
-syntax match muDelimiter "[{}\[\]]" | highlight link muDelimiter Delimiter
+syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
 syntax match muLabel " [^a-zA-Z0-9 \[][a-zA-Z0-9-]\+" | highlight link muLabel Function
 syntax match muAssign " <- " | highlight link muAssign SpecialChar
 syntax match muAssign "\<raw\>"
