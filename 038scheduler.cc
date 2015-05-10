@@ -325,6 +325,23 @@ case RESTART: {
 }
 
 :(before "End Primitive Recipe Declarations")
+STOP,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["stop"] = STOP;
+:(before "End Primitive Recipe Implementations")
+case STOP: {
+  assert(ingredients.at(0).size() == 1);  // routine id must be scalar
+  index_t id = ingredients.at(0).at(0);
+  for (index_t i = 0; i < Routines.size(); ++i) {
+    if (Routines.at(i)->id == id) {
+      Routines.at(i)->state = COMPLETED;
+      break;
+    }
+  }
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
 _DUMP_ROUTINES,
 :(before "End Primitive Recipe Numbers")
 Recipe_number["$dump-routines"] = _DUMP_ROUTINES;

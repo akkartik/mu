@@ -489,9 +489,6 @@ scenario making-a-move [
 #?   $print c:character
 #? ]
 
-# todo:
-#   problem with buffering
-#   some way of closing channels
 recipe chessboard [
   default-space:address:array:location <- new location:type, 30:literal
   board:address:array:address:array:character <- initial-position
