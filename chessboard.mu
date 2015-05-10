@@ -589,6 +589,7 @@ recipe chessboard [
       print-string 0:literal/screen, msg:address:array:character
       m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin:address:channel, 0:literal/screen
       break-if quit:boolean, +quit:offset
+      buffered-stdin:address:channel <- clear-channel buffered-stdin:address:channel  # cleanup after error. todo: test this?
       loop-if error:boolean
     }
     board:address:array:address:array:character <- make-move board:address:array:address:array:character, m:address:move

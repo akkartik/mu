@@ -106,6 +106,17 @@ recipe read [
   reply result:location, chan:address:channel/same-as-ingredient:0
 ]
 
+recipe clear-channel [
+  default-space:address:address:array:location <- new location:type, 30:literal
+  chan:address:channel <- next-ingredient
+  {
+    empty?:boolean <- channel-empty? chan:address:channel
+    break-if empty?:boolean
+    _, chan:address:channel <- read chan:address:channel
+  }
+  reply chan:address:channel/same-as-ingredient:0
+]
+
 scenario channel-initialization [
   run [
     1:address:channel <- init-channel 3:literal/capacity
