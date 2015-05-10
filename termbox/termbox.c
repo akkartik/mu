@@ -158,6 +158,8 @@ void tb_present(void)
   int x,y,w,i;
   struct tb_cell *back, *front;
 
+  assert(termw != -1);
+
   /* invalidate cursor position */
   lastx = LAST_COORD_INIT;
   lasty = LAST_COORD_INIT;
@@ -203,12 +205,11 @@ void tb_present(void)
 
 void tb_set_cursor(int cx, int cy)
 {
+  assert(termw != -1);
   if (IS_CURSOR_HIDDEN(cursor_x, cursor_y) && !IS_CURSOR_HIDDEN(cx, cy))
     bytebuffer_puts(&output_buffer, funcs[T_SHOW_CURSOR]);
-
   if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y) && IS_CURSOR_HIDDEN(cx, cy))
     bytebuffer_puts(&output_buffer, funcs[T_HIDE_CURSOR]);
-
   cursor_x = cx;
   cursor_y = cy;
   if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
@@ -217,6 +218,7 @@ void tb_set_cursor(int cx, int cy)
 
 void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
 {
+  assert(termw != -1);
   if ((unsigned)x >= (unsigned)back_buffer.width)
     return;
   if ((unsigned)y >= (unsigned)back_buffer.height)
@@ -232,6 +234,7 @@ struct tb_cell *tb_cell_buffer()
 
 int tb_poll_event(struct tb_event *event)
 {
+  assert(termw != -1);
   return wait_fill_event(event, 0);
 }
 
@@ -240,21 +243,25 @@ int tb_peek_event(struct tb_event *event, int timeout)
   struct timeval tv;
   tv.tv_sec = timeout / 1000;
   tv.tv_usec = (timeout - (tv.tv_sec * 1000)) * 1000;
+  assert(termw != -1);
   return wait_fill_event(event, &tv);
 }
 
 int tb_width(void)
 {
+  assert(termw != -1);
   return termw;
 }
 
 int tb_height(void)
 {
+  assert(termw != -1);
   return termh;
 }
 
 void tb_clear(void)
 {
+  assert(termw != -1);
   if (buffer_size_change_request) {
     update_size();
     buffer_size_change_request = 0;
@@ -264,6 +271,7 @@ void tb_clear(void)
 
 void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
 {
+  assert(termw != -1);
   foreground = fg;
   background = bg;
 }
