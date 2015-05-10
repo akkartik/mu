@@ -571,7 +571,7 @@ recipe chessboard [
   start-running buffer-lines:recipe, stdin:address:channel, buffered-stdin:address:channel
   {
     msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
-  ]
+]
     print-string 0:literal/screen, msg:address:array:character
     cursor-to-next-line 0:literal/screen
     print-board 0:literal/screen, board:address:array:address:array:character
