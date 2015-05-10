@@ -101,6 +101,7 @@
 // End Globals
 
 int main(int argc, char* argv[]) {
+  atexit(teardown);
 
   // End One-time Setup
 
@@ -117,5 +118,9 @@ void teardown() {
   // End Teardown
 }
 
+:(before "End Includes")
+#include<stdlib.h>
+
+:(code)
 //: Without directives or with the :(code) directive, lines get added at the
 //: end.
