@@ -204,6 +204,13 @@ recipe read-file [
     break-unless q-pressed?:boolean
     reply 0:literal/dummy, 1:literal/quit, 0:literal/error
   }
+  {
+    newline?:boolean <- equal c:character, 13:literal/newline
+    break-unless newline?:boolean
+    error-message:address:array:character <- new [that's not enough]
+    print-string screen:address, error-message:address:array:character
+    reply 0:literal/dummy, 0:literal/quit, 1:literal/error
+  }
   file:integer <- subtract c:character, 97:literal  # 'a'
 #?   $print file:integer, [ #? 1
 #? ] #? 1
@@ -244,6 +251,13 @@ recipe read-rank [
     q-pressed?:boolean <- equal c:character, 113:literal  # 'q'
     break-unless q-pressed?:boolean
     reply 0:literal/dummy, 1:literal/quit, 0:literal/error
+  }
+  {
+    newline?:boolean <- equal c:character, 13:literal/newline
+    break-unless newline?:boolean
+    error-message:address:array:character <- new [that's not enough]
+    print-string screen:address, error-message:address:array:character
+    reply 0:literal/dummy, 0:literal/quit, 1:literal/error
   }
   rank:integer <- subtract c:character, 49:literal  # '1'
 #?   $print rank:integer, [ #? 1
@@ -446,6 +460,28 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
   ]
   screen-should-contain [
     .rank too high: a    .
+    .                    .
+  ]
+]
+
+scenario read-move-empty [
+  assume-screen 20:literal/width, 2:literal/height
+  run [
+    1:address:channel <- init-channel 2:literal
+    2:integer/routine <- start-running read-move:recipe, 1:address:channel, screen:address
+    # 'read-move' is waiting for input
+    wait-for-routine 2:integer
+    3:integer <- routine-state 2:integer/id
+    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    assert 4:boolean/waiting?, [
+F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
+    1:address:channel <- write 1:address:channel, 13:literal/newline
+    1:address:channel <- write 1:address:channel, 97:literal  # 'a'
+    restart 2:integer/routine
+    wait-for-routine 2:integer
+  ]
+  screen-should-contain [
+    .that's not enough   .
     .                    .
   ]
 ]
