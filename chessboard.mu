@@ -1,5 +1,5 @@
-# chessboard program: takes moves in algebraic notation and displays the
-# position after each
+# Chessboard program: you type in moves in algebraic notation, and it'll
+# display the position after each move.
 
 # recipes are mu's names for functions, and recipes have ingredients
 recipe main [
