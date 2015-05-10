@@ -120,3 +120,31 @@ for (index_t i = 0; i < Routines.size(); ++i) {
     }
   }
 }
+
+:(before "End Primitive Recipe Declarations")
+SWITCH,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["switch"] = SWITCH;
+:(before "End Primitive Recipe Implementations")
+case SWITCH: {
+  index_t id = some_other_running_routine();
+  if (id) {
+    assert(id != Current_routine->id);
+    cerr << "waiting on " << id << " from " << Current_routine->id << '\n';
+    Current_routine->state = WAITING;
+    Current_routine->waiting_on_routine = id;
+  }
+  break;
+}
+
+:(code)
+index_t some_other_running_routine() {
+  for (index_t i = 0; i < Routines.size(); ++i) {
+    if (i == Current_routine_index) continue;
+    assert(Routines.at(i) != Current_routine);
+    assert(Routines.at(i)->id != Current_routine->id);
+    if (Routines.at(i)->state == RUNNING)
+      return Routines.at(i)->id;
+  }
+  return 0;
+}

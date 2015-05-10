@@ -35,6 +35,8 @@ recipe read-key [
     idx:address:integer/deref <- add idx:address:integer/deref, 1:literal
     reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
   }
+  # real keyboard input is infrequent; avoid polling it too much
+  switch
   c:character, found?:boolean <- read-key-from-keyboard
   reply c:character, found?:boolean, x:address:keyboard/same-as-ingredient:0
 ]
