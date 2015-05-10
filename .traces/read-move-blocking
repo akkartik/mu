@@ -26,7 +26,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     3:integer <- routine-state 2:integer/id
 #?     $print [II: routine ], 2:integer, [ state ], 3:integer [ #? 1
 #? ] #? 1
-    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    waiting:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
@@ -112,7 +112,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     3:integer <- routine-state 2:integer/id
 #?     $print [II: routine ], 2:integer, [ state ], 3:integer [ #? 1
 #? ] #? 1
-    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    waiting:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
@@ -211,7 +211,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     3:integer <- routine-state 2:integer/id
 #?     $print [II: routine ], 2:integer, [ state ], 3:integer [ #? 1
 #? ] #? 1
-    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    waiting:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
@@ -297,7 +297,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     3:integer <- routine-state 2:integer/id
 #?     $print [II: routine ], 2:integer, [ state ], 3:integer [ #? 1
 #? ] #? 1
-    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    waiting:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
@@ -384,7 +384,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     3:integer <- routine-state 2:integer/id
 #?     $print [II: routine ], 2:integer, [ state ], 3:integer [ #? 1
 #? ] #? 1
-    4:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
+    waiting:boolean/waiting? <- equal 3:integer/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
@@ -479,7 +479,7 @@ parse/0:   product: {name: "3", value: 0, type: 1, properties: ["3": "integer"]}
 parse/0: instruction: equal
 parse/0:   ingredient: {name: "3", value: 0, type: 1, properties: ["3": "integer", "routine-state": ]}
 parse/0:   ingredient: {name: "2", value: 0, type: 0, properties: ["2": "literal", "waiting": ]}
-parse/0:   product: {name: "4", value: 0, type: 3, properties: ["4": "boolean", "waiting?": ]}
+parse/0:   product: {name: "waiting", value: 0, type: 3, properties: ["waiting": "boolean", "waiting?": ]}
 parse/0: instruction: assert
 parse/0:   ingredient: {name: "4", value: 0, type: 3, properties: ["4": "boolean", "waiting?": ]}
 parse/0:   ingredient: {name: "
@@ -588,6 +588,7 @@ F read-move-blocking: routine failed to terminate on newline": "literal-string"]
 parse/0: instruction: trace
 parse/0:   ingredient: {name: "test", value: 0, type: 0, properties: ["test": "literal-string"]}
 parse/0:   ingredient: {name: "reached end", value: 0, type: 0, properties: ["reached end": "literal-string"]}
+name/0: assign waiting 1
 after-brace/0: recipe run1001
 after-brace/0: init-channel ...
 after-brace/0: start-running ...
@@ -1468,12 +1469,12 @@ mem/0: location 2 is 2
 run/0: product 0 is 3
 mem/0: storing 2 in location 3
 run/0: instruction run1001/10
-run/0: {name: "4", value: 4, type: 3, properties: ["4": "boolean", "waiting?": ]} <- equal/13 {name: "3", value: 3, type: 1, properties: ["3": "integer", "routine-state": ]}, {name: "2", value: 2, type: 0, properties: ["2": "literal", "waiting": ]}
+run/0: {name: "waiting", value: 1, type: 3, properties: ["waiting": "boolean", "waiting?": ]} <- equal/13 {name: "3", value: 3, type: 1, properties: ["3": "integer", "routine-state": ]}, {name: "2", value: 2, type: 0, properties: ["2": "literal", "waiting": ]}
 run/0: ingredient 0 is 3
 mem/0: location 3 is 2
 run/0: ingredient 1 is 2
-run/0: product 0 is 4
-mem/0: storing 1 in location 4
+run/0: product 0 is waiting
+mem/0: storing 1 in location 1
 run/0: instruction run1001/11
 run/0: assert/20 {name: "4", value: 4, type: 3, properties: ["4": "boolean", "waiting?": ]}, {name: "
 F read-move-blocking: routine failed to pause after rank 'a'", value: 0, type: 0, properties: ["
@@ -1485,7 +1486,7 @@ F read-move-blocking: routine failed to pause after rank 'a'
 run/0: instruction run1001/12
 run/0: {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]} <- write/109 {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]}, {name: "50", value: 50, type: 0, properties: ["50": "literal"]}
 run/0: ingredient 0 is 1
-mem/0: location 1 is 1031
+mem/0: location 1 is 1
 run/0: ingredient 1 is 50
 run/0: instruction write/0
 run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
@@ -1497,7 +1498,7 @@ run/0: product 0 is default-space
 run/0: instruction write/1
 run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
 run/0: product 0 is chan
-mem/0: storing 1031 in location 1133
+mem/0: storing 1 in location 1133
 run/0: instruction write/2
 run/0: {name: "val", value: 2, type: 1, properties: ["val": "location"]} <- next-ingredient/33 
 run/0: product 0 is val
@@ -1505,7 +1506,7 @@ mem/0: storing 50 in location 1134
 run/0: instruction write/4
 run/0: {name: "full", value: 3, type: 3, properties: ["full": "boolean"]} <- channel-full?/110 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
 run/0: ingredient 0 is chan
-mem/0: location 1133 is 1031
+mem/0: location 1133 is 1
 run/0: instruction channel-full?/0
 run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
 run/0: ingredient 0 is location
@@ -1516,32 +1517,32 @@ run/0: product 0 is default-space
 run/0: instruction channel-full?/1
 run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
 run/0: product 0 is chan
-mem/0: storing 1031 in location 1164
+mem/0: storing 1 in location 1164
 run/0: instruction channel-full?/2
 run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
 run/0: ingredient 0 is chan
-mem/0: location 1164 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
+mem/0: location 1164 is 1
+mem/0: location 1 is 1
+mem/0: location 2 is 2
+mem/0: location 3 is 2
 run/0: ingredient 1 is first-free
-mem/0: location 1164 is 1031
-run/0: address to copy is 1032
+mem/0: location 1164 is 1
+run/0: address to copy is 2
 run/0: its type is 1
-mem/0: location 1032 is 1
+mem/0: location 2 is 2
 run/0: product 0 is tmp
-mem/0: storing 1 in location 1165
+mem/0: storing 2 in location 1165
 run/0: instruction channel-full?/3
 run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- add/2 {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
 run/0: ingredient 0 is tmp
-mem/0: location 1165 is 1
+mem/0: location 1165 is 2
 run/0: ingredient 1 is 1
 run/0: product 0 is tmp
-mem/0: storing 2 in location 1165
+mem/0: storing 3 in location 1165
 run/0: instruction channel-full?/5
 run/0: {name: "len", value: 3, type: 1, properties: ["len": "integer"]} <- channel-capacity/113 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
 run/0: ingredient 0 is chan
-mem/0: location 1164 is 1031
+mem/0: location 1164 is 1
 run/0: instruction channel-capacity/0
 run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
 run/0: ingredient 0 is location
@@ -1552,65 +1553,69 @@ run/0: product 0 is default-space
 run/0: instruction channel-capacity/1
 run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
 run/0: product 0 is chan
-mem/0: storing 1031 in location 1195
+mem/0: storing 1 in location 1195
 run/0: instruction channel-capacity/2
 run/0: {name: "q", value: 2, type: 2-5-1, properties: ["q": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
 run/0: ingredient 0 is chan
-mem/0: location 1195 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
+mem/0: location 1195 is 1
+mem/0: location 1 is 1
+mem/0: location 2 is 2
+mem/0: location 3 is 2
 run/0: ingredient 1 is data
-mem/0: location 1195 is 1031
-run/0: address to copy is 1033
+mem/0: location 1195 is 1
+run/0: address to copy is 3
 run/0: its type is 2
-mem/0: location 1033 is 1034
+mem/0: location 3 is 2
 run/0: product 0 is q
-mem/0: storing 1034 in location 1196
+mem/0: storing 2 in location 1196
 run/0: instruction channel-capacity/3
 run/0: {name: "result", value: 3, type: 1, properties: ["result": "integer"]} <- length/31 {name: "q", value: 2, type: 2-5-1, properties: ["q": "address":"array":"location", "deref": ]}
 run/0: ingredient 0 is q
-mem/0: location 1196 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 0
-mem/0: location 1037 is 0
-mem/0: location 1196 is 1034
+mem/0: location 1196 is 2
+mem/0: location 2 is 2
+mem/0: location 3 is 2
+mem/0: location 4 is 1
+mem/0: location 1196 is 2
 run/0: product 0 is result
-mem/0: storing 3 in location 1197
+mem/0: storing 2 in location 1197
 run/0: instruction channel-capacity/4
 run/0: reply/36 {name: "result", value: 3, type: 1, properties: ["result": "integer"]}
 run/0: ingredient 0 is result
-mem/0: location 1197 is 3
-run/0: result 0 is 3
+mem/0: location 1197 is 2
+run/0: result 0 is 2
 run/0: product 0 is len
-mem/0: storing 3 in location 1166
+mem/0: storing 2 in location 1166
 run/0: instruction channel-full?/6
 run/0: {name: "at-end?", value: 4, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}, {name: "len", value: 3, type: 1, properties: ["len": "integer"]}
 run/0: ingredient 0 is tmp
-mem/0: location 1165 is 2
+mem/0: location 1165 is 3
 run/0: ingredient 1 is len
-mem/0: location 1166 is 3
+mem/0: location 1166 is 2
 run/0: product 0 is at-end?
-mem/0: storing 0 in location 1167
+mem/0: storing 1 in location 1167
 run/0: instruction channel-full?/7
 run/0: break-unless/12 {name: "at-end?", value: 4, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
 run/0: ingredient 0 is at-end?
-mem/0: location 1167 is 0
+mem/0: location 1167 is 1
 run/0: ingredient 1 is 
-run/0: jumping to instruction 9
+run/0: jump-unless fell through
+run/0: instruction channel-full?/8
+run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
+run/0: ingredient 0 is 0
+run/0: product 0 is tmp
+mem/0: storing 0 in location 1165
 run/0: instruction channel-full?/10
 run/0: {name: "full", value: 5, type: 1, properties: ["full": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
 run/0: ingredient 0 is chan
-mem/0: location 1164 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
+mem/0: location 1164 is 1
+mem/0: location 1 is 1
+mem/0: location 2 is 2
+mem/0: location 3 is 2
 run/0: ingredient 1 is first-full
-mem/0: location 1164 is 1031
-run/0: address to copy is 1031
+mem/0: location 1164 is 1
+run/0: address to copy is 1
 run/0: its type is 1
-mem/0: location 1031 is 1
+mem/0: location 1 is 1
 run/0: product 0 is full
 mem/0: storing 1 in location 1168
 run/0: instruction channel-full?/11
@@ -1618,7 +1623,7 @@ run/0: {name: "result", value: 6, type: 3, properties: ["result": "boolean"]} <-
 run/0: ingredient 0 is full
 mem/0: location 1168 is 1
 run/0: ingredient 1 is tmp
-mem/0: location 1165 is 2
+mem/0: location 1165 is 0
 run/0: product 0 is result
 mem/0: storing 0 in location 1169
 run/0: instruction channel-full?/12
@@ -1637,2449 +1642,105 @@ run/0: jumping to instruction 8
 run/0: instruction write/9
 run/0: {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
 run/0: ingredient 0 is chan
-mem/0: location 1133 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
+mem/0: location 1133 is 1
+mem/0: location 1 is 1
+mem/0: location 2 is 2
+mem/0: location 3 is 2
 run/0: ingredient 1 is data
-mem/0: location 1133 is 1031
-run/0: address to copy is 1033
+mem/0: location 1133 is 1
+run/0: address to copy is 3
 run/0: its type is 2
-mem/0: location 1033 is 1034
+mem/0: location 3 is 2
 run/0: product 0 is circular-buffer
-mem/0: storing 1034 in location 1137
+mem/0: storing 2 in location 1137
 run/0: instruction write/10
 run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
 run/0: ingredient 0 is chan
-mem/0: location 1133 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
+mem/0: location 1133 is 1
+mem/0: location 1 is 1
+mem/0: location 2 is 2
+mem/0: location 3 is 2
 run/0: ingredient 1 is first-free
-mem/0: location 1133 is 1031
-run/0: address to copy is 1032
+mem/0: location 1133 is 1
+run/0: address to copy is 2
 run/0: product 0 is free
-mem/0: storing 1032 in location 1138
+mem/0: storing 2 in location 1138
 run/0: instruction write/11
 run/0: {name: "dest", value: 7, type: 2-1, properties: ["dest": "address":"location"]} <- index-address/30 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}, {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}
 run/0: ingredient 0 is circular-buffer
-mem/0: location 1137 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 0
-mem/0: location 1037 is 0
+mem/0: location 1137 is 2
+mem/0: location 2 is 2
+mem/0: location 3 is 2
+mem/0: location 4 is 1
 run/0: ingredient 1 is free
-mem/0: location 1138 is 1032
-mem/0: location 1032 is 1
-mem/0: location 1137 is 1034
-mem/0: location 1138 is 1032
-mem/0: location 1032 is 1
+mem/0: location 1138 is 2
+mem/0: location 2 is 2
+mem/0: location 1137 is 2
+mem/0: location 1138 is 2
+mem/0: location 2 is 2
 run/0: product 0 is dest
-mem/0: storing 1036 in location 1139
+mem/0: storing 5 in location 1139
 run/0: instruction write/12
 run/0: {name: "dest", value: 7, type: 2-1, properties: ["dest": "address":"location", "deref": ]} <- copy/1 {name: "val", value: 2, type: 1, properties: ["val": "location"]}
 run/0: ingredient 0 is val
 mem/0: location 1134 is 50
 run/0: product 0 is dest
-mem/0: location 1139 is 1036
-mem/0: storing 50 in location 1036
+mem/0: location 1139 is 5
+mem/0: storing 50 in location 5
 run/0: instruction write/13
 run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]} <- add/2 {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
 run/0: ingredient 0 is free
-mem/0: location 1138 is 1032
-mem/0: location 1032 is 1
+mem/0: location 1138 is 2
+mem/0: location 2 is 2
 run/0: ingredient 1 is 1
 run/0: product 0 is free
-mem/0: location 1138 is 1032
-mem/0: storing 2 in location 1032
+mem/0: location 1138 is 2
+mem/0: storing 3 in location 2
 run/0: instruction write/15
 run/0: {name: "len", value: 8, type: 1, properties: ["len": "integer"]} <- length/31 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}
 run/0: ingredient 0 is circular-buffer
-mem/0: location 1137 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 0
-mem/0: location 1137 is 1034
+mem/0: location 1137 is 2
+mem/0: location 2 is 3
+mem/0: location 3 is 2
+mem/0: location 4 is 1
+mem/0: location 5 is 50
+mem/0: location 1137 is 2
 run/0: product 0 is len
 mem/0: storing 3 in location 1140
 run/0: instruction write/16
 run/0: {name: "at-end?", value: 9, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}, {name: "len", value: 8, type: 1, properties: ["len": "integer"]}
 run/0: ingredient 0 is free
-mem/0: location 1138 is 1032
-mem/0: location 1032 is 2
+mem/0: location 1138 is 2
+mem/0: location 2 is 3
 run/0: ingredient 1 is len
 mem/0: location 1140 is 3
 run/0: product 0 is at-end?
-mem/0: storing 0 in location 1141
+mem/0: storing 1 in location 1141
 run/0: instruction write/17
 run/0: break-unless/12 {name: "at-end?", value: 9, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
 run/0: ingredient 0 is at-end?
-mem/0: location 1141 is 0
+mem/0: location 1141 is 1
 run/0: ingredient 1 is 
-run/0: jumping to instruction 19
+run/0: jump-unless fell through
+run/0: instruction write/18
+run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
+run/0: ingredient 0 is 0
+run/0: product 0 is free
+mem/0: location 1138 is 2
+mem/0: storing 0 in location 2
 run/0: instruction write/20
 run/0: reply/36 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "same-as-ingredient": "0"]}
 run/0: ingredient 0 is chan
-mem/0: location 1133 is 1031
-run/0: result 0 is 1031
+mem/0: location 1133 is 1
+run/0: result 0 is 1
 run/0: product 0 is 1
-mem/0: storing 1031 in location 1
+mem/0: storing 1 in location 1
 run/0: instruction run1001/13
 run/0: restart/39 {name: "2", value: 2, type: 1, properties: ["2": "integer", "routine": ]}
 run/0: ingredient 0 is 2
-mem/0: location 2 is 2
+mem/0: location 2 is 0
 run/0: instruction run1001/14
 run/0: wait-for-routine/43 {name: "2", value: 2, type: 1, properties: ["2": "integer"]}
 run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: waiting for routine 2
-schedule/0: read
-run/0: instruction read/8
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101158 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 101158 is 1031
-run/0: address to copy is 1031
-run/0: product 0 is full
-mem/0: storing 1031 in location 101161
-run/0: instruction read/9
-run/0: {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101158 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 101158 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is circular-buffer
-mem/0: storing 1034 in location 101162
-run/0: instruction read/10
-run/0: {name: "result", value: 6, type: 1, properties: ["result": "location"]} <- index/29 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}, {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 101162 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 0
-run/0: ingredient 1 is full
-mem/0: location 101161 is 1031
-mem/0: location 1031 is 1
-mem/0: location 101162 is 1034
-mem/0: location 101161 is 1031
-mem/0: location 1031 is 1
-run/0: address to copy is 1036
-run/0: its type is 1
-mem/0: location 1036 is 50
-run/0: product 0 is result
-mem/0: storing 50 in location 101163
-run/0: instruction read/11
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]} <- add/2 {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is full
-mem/0: location 101161 is 1031
-mem/0: location 1031 is 1
-run/0: ingredient 1 is 1
-run/0: product 0 is full
-mem/0: location 101161 is 1031
-mem/0: storing 2 in location 1031
-run/0: instruction read/13
-run/0: {name: "len", value: 7, type: 1, properties: ["len": "integer"]} <- length/31 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 101162 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 0
-mem/0: location 101162 is 1034
-run/0: product 0 is len
-mem/0: storing 3 in location 101164
-run/0: instruction read/14
-run/0: {name: "at-end?", value: 8, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}, {name: "len", value: 7, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 101161 is 1031
-mem/0: location 1031 is 2
-run/0: ingredient 1 is len
-mem/0: location 101164 is 3
-run/0: product 0 is at-end?
-mem/0: storing 0 in location 101165
-run/0: instruction read/15
-run/0: break-unless/12 {name: "at-end?", value: 8, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 101165 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 17
-run/0: instruction read/18
-run/0: reply/36 {name: "result", value: 6, type: 1, properties: ["result": "location"]}, {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "same-as-ingredient": "0"]}
-run/0: ingredient 0 is result
-mem/0: location 101163 is 50
-run/0: ingredient 1 is chan
-mem/0: location 101158 is 1031
-run/0: result 0 is 50
-run/0: result 1 is 1031
-run/0: product 0 is c
-mem/0: storing 50 in location 101128
-run/0: product 1 is stdin
-mem/0: storing 1031 in location 101127
-run/0: instruction read-rank/4
-run/0: {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]} <- equal/13 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "81", value: 81, type: 0, properties: ["81": "literal"]}
-run/0: ingredient 0 is c
-mem/0: location 101128 is 50
-run/0: ingredient 1 is 81
-run/0: product 0 is q-pressed?
-mem/0: storing 0 in location 101129
-run/0: instruction read-rank/5
-run/0: break-unless/12 {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is q-pressed?
-mem/0: location 101129 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 7
-run/0: instruction read-rank/9
-run/0: {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]} <- equal/13 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "113", value: 113, type: 0, properties: ["113": "literal"]}
-run/0: ingredient 0 is c
-mem/0: location 101128 is 50
-run/0: ingredient 1 is 113
-run/0: product 0 is q-pressed?
-mem/0: storing 0 in location 101129
-run/0: instruction read-rank/10
-run/0: break-unless/12 {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is q-pressed?
-mem/0: location 101129 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 12
-run/0: instruction read-rank/13
-run/0: {name: "rank", value: 4, type: 1, properties: ["rank": "integer"]} <- subtract/3 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "49", value: 49, type: 0, properties: ["49": "literal"]}
-run/0: ingredient 0 is c
-mem/0: location 101128 is 50
-run/0: ingredient 1 is 49
-run/0: product 0 is rank
-mem/0: storing 1 in location 101130
-run/0: instruction read-rank/14
-run/0: {name: "above-min", value: 5, type: 3, properties: ["above-min": "boolean"]} <- greater-or-equal/16 {name: "rank", value: 4, type: 1, properties: ["rank": "integer"]}, {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run/0: ingredient 0 is rank
-mem/0: location 101130 is 1
-run/0: ingredient 1 is 0
-run/0: product 0 is above-min
-mem/0: storing 1 in location 101131
-run/0: instruction read-rank/15
-run/0: assert/20 {name: "above-min", value: 5, type: 3, properties: ["above-min": "boolean"]}, {name: "rank too low", value: 0, type: 0, properties: ["rank too low": "literal-string"]}
-run/0: ingredient 0 is above-min
-mem/0: location 101131 is 1
-run/0: ingredient 1 is rank too low
-run/0: instruction read-rank/16
-run/0: {name: "below-max", value: 6, type: 3, properties: ["below-max": "boolean"]} <- lesser-or-equal/17 {name: "rank", value: 4, type: 1, properties: ["rank": "integer"]}, {name: "7", value: 7, type: 0, properties: ["7": "literal"]}
-run/0: ingredient 0 is rank
-mem/0: location 101130 is 1
-run/0: ingredient 1 is 7
-run/0: product 0 is below-max
-mem/0: storing 1 in location 101132
-run/0: instruction read-rank/17
-run/0: assert/20 {name: "below-max", value: 6, type: 3, properties: ["below-max": "boolean"]}, {name: "rank too high", value: 0, type: 0, properties: ["rank too high": "literal-string"]}
-run/0: ingredient 0 is below-max
-mem/0: location 101132 is 1
-run/0: ingredient 1 is rank too high
-run/0: instruction read-rank/18
-run/0: reply/36 {name: "rank", value: 4, type: 1, properties: ["rank": "integer"]}
-run/0: ingredient 0 is rank
-mem/0: location 101130 is 1
-run/0: result 0 is 1
-run/0: product 0 is x
-mem/0: location 101006 is 101125
-mem/0: storing 1 in location 101125
-run/0: instruction read-move/13
-run/0: expect-from-channel/141 {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]}, {name: "45", value: 45, type: 0, properties: ["45": "literal"]}
-run/0: ingredient 0 is stdin
-mem/0: location 101002 is 1031
-run/0: ingredient 1 is 45
-run/0: instruction expect-from-channel/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101218
-run/0: product 0 is default-space
-run/0: instruction expect-from-channel/1
-run/0: {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is stdin
-mem/0: storing 1031 in location 101220
-run/0: instruction expect-from-channel/2
-run/0: {name: "expected", value: 2, type: 4, properties: ["expected": "character"]} <- next-ingredient/33 
-run/0: product 0 is expected
-mem/0: storing 45 in location 101221
-run/0: instruction expect-from-channel/3
-run/0: {name: "c", value: 3, type: 4, properties: ["c": "character"]}, {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]} <- read/111 {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]}
-run/0: ingredient 0 is stdin
-mem/0: location 101220 is 1031
-run/0: instruction read/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101249
-run/0: product 0 is default-space
-run/0: instruction read/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 101251
-run/0: instruction read/3
-run/0: {name: "empty", value: 2, type: 3, properties: ["empty": "boolean"]} <- channel-empty?/112 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 101251 is 1031
-run/0: instruction channel-empty?/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101280
-run/0: product 0 is default-space
-run/0: instruction channel-empty?/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 101282
-run/0: instruction channel-empty?/2
-run/0: {name: "full", value: 2, type: 1, properties: ["full": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101282 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 101282 is 1031
-run/0: address to copy is 1031
-run/0: its type is 1
-mem/0: location 1031 is 2
-run/0: product 0 is full
-mem/0: storing 2 in location 101283
-run/0: instruction channel-empty?/3
-run/0: {name: "free", value: 3, type: 1, properties: ["free": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101282 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 101282 is 1031
-run/0: address to copy is 1032
-run/0: its type is 1
-mem/0: location 1032 is 2
-run/0: product 0 is free
-mem/0: storing 2 in location 101284
-run/0: instruction channel-empty?/4
-run/0: {name: "result", value: 4, type: 3, properties: ["result": "boolean"]} <- equal/13 {name: "full", value: 2, type: 1, properties: ["full": "integer"]}, {name: "free", value: 3, type: 1, properties: ["free": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 101283 is 2
-run/0: ingredient 1 is free
-mem/0: location 101284 is 2
-run/0: product 0 is result
-mem/0: storing 1 in location 101285
-run/0: instruction channel-empty?/5
-run/0: reply/36 {name: "result", value: 4, type: 3, properties: ["result": "boolean"]}
-run/0: ingredient 0 is result
-mem/0: location 101285 is 1
-run/0: result 0 is 1
-run/0: product 0 is empty
-mem/0: storing 1 in location 101252
-run/0: instruction read/4
-run/0: break-unless/12 {name: "empty", value: 2, type: 3, properties: ["empty": "boolean"]}, {name: "", value: 2, type: 0, properties: ["": ]}
-run/0: ingredient 0 is empty
-mem/0: location 101252 is 1
-run/0: ingredient 1 is 
-run/0: jump-unless fell through
-run/0: instruction read/5
-run/0: {name: "free-address", value: 3, type: 2-1, properties: ["free-address": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101251 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 101251 is 1031
-run/0: address to copy is 1032
-run/0: product 0 is free-address
-mem/0: storing 1032 in location 101253
-run/0: instruction read/6
-run/0: wait-for-location/42 {name: "free-address", value: 3, type: 2-1, properties: ["free-address": "address":"integer", "deref": ]}
-run/0: ingredient 0 is free-address
-mem/0: location 101253 is 1032
-mem/0: location 1032 is 2
-mem/0: location 101253 is 1032
-run/0: waiting for location 1032 to change from 2
-schedule/0: waking up routine 1
-schedule/0: run1001
-run/0: instruction run1001/15
-run/0: {name: "3", value: 3, type: 1, properties: ["3": "integer"]} <- routine-state/38 {name: "2", value: 2, type: 1, properties: ["2": "integer", "id": ]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: product 0 is 3
-mem/0: storing 2 in location 3
-run/0: instruction run1001/16
-run/0: {name: "4", value: 4, type: 3, properties: ["4": "boolean", "waiting?": ]} <- equal/13 {name: "3", value: 3, type: 1, properties: ["3": "integer", "routine-state": ]}, {name: "2", value: 2, type: 0, properties: ["2": "literal", "waiting": ]}
-run/0: ingredient 0 is 3
-mem/0: location 3 is 2
-run/0: ingredient 1 is 2
-run/0: product 0 is 4
-mem/0: storing 1 in location 4
-run/0: instruction run1001/17
-run/0: assert/20 {name: "4", value: 4, type: 3, properties: ["4": "boolean", "waiting?": ]}, {name: "
-F read-move-blocking: routine failed to pause after file 'a2'", value: 0, type: 0, properties: ["
-F read-move-blocking: routine failed to pause after file 'a2'": "literal-string"]}
-run/0: ingredient 0 is 4
-mem/0: location 4 is 1
-run/0: ingredient 1 is 
-F read-move-blocking: routine failed to pause after file 'a2'
-run/0: instruction run1001/18
-run/0: {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]} <- write/109 {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]}, {name: "45", value: 45, type: 0, properties: ["45": "literal"]}
-run/0: ingredient 0 is 1
-mem/0: location 1 is 1031
-run/0: ingredient 1 is 45
-run/0: instruction write/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1224
-run/0: product 0 is default-space
-run/0: instruction write/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1226
-run/0: instruction write/2
-run/0: {name: "val", value: 2, type: 1, properties: ["val": "location"]} <- next-ingredient/33 
-run/0: product 0 is val
-mem/0: storing 45 in location 1227
-run/0: instruction write/4
-run/0: {name: "full", value: 3, type: 3, properties: ["full": "boolean"]} <- channel-full?/110 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 1226 is 1031
-run/0: instruction channel-full?/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1255
-run/0: product 0 is default-space
-run/0: instruction channel-full?/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1257
-run/0: instruction channel-full?/2
-run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1257 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 1257 is 1031
-run/0: address to copy is 1032
-run/0: its type is 1
-mem/0: location 1032 is 2
-run/0: product 0 is tmp
-mem/0: storing 2 in location 1258
-run/0: instruction channel-full?/3
-run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- add/2 {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is tmp
-mem/0: location 1258 is 2
-run/0: ingredient 1 is 1
-run/0: product 0 is tmp
-mem/0: storing 3 in location 1258
-run/0: instruction channel-full?/5
-run/0: {name: "len", value: 3, type: 1, properties: ["len": "integer"]} <- channel-capacity/113 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 1257 is 1031
-run/0: instruction channel-capacity/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1286
-run/0: product 0 is default-space
-run/0: instruction channel-capacity/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1288
-run/0: instruction channel-capacity/2
-run/0: {name: "q", value: 2, type: 2-5-1, properties: ["q": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1288 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 1288 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is q
-mem/0: storing 1034 in location 1289
-run/0: instruction channel-capacity/3
-run/0: {name: "result", value: 3, type: 1, properties: ["result": "integer"]} <- length/31 {name: "q", value: 2, type: 2-5-1, properties: ["q": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is q
-mem/0: location 1289 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 0
-mem/0: location 1289 is 1034
-run/0: product 0 is result
-mem/0: storing 3 in location 1290
-run/0: instruction channel-capacity/4
-run/0: reply/36 {name: "result", value: 3, type: 1, properties: ["result": "integer"]}
-run/0: ingredient 0 is result
-mem/0: location 1290 is 3
-run/0: result 0 is 3
-run/0: product 0 is len
-mem/0: storing 3 in location 1259
-run/0: instruction channel-full?/6
-run/0: {name: "at-end?", value: 4, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}, {name: "len", value: 3, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is tmp
-mem/0: location 1258 is 3
-run/0: ingredient 1 is len
-mem/0: location 1259 is 3
-run/0: product 0 is at-end?
-mem/0: storing 1 in location 1260
-run/0: instruction channel-full?/7
-run/0: break-unless/12 {name: "at-end?", value: 4, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 1260 is 1
-run/0: ingredient 1 is 
-run/0: jump-unless fell through
-run/0: instruction channel-full?/8
-run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run/0: ingredient 0 is 0
-run/0: product 0 is tmp
-mem/0: storing 0 in location 1258
-run/0: instruction channel-full?/10
-run/0: {name: "full", value: 5, type: 1, properties: ["full": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1257 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 1257 is 1031
-run/0: address to copy is 1031
-run/0: its type is 1
-mem/0: location 1031 is 2
-run/0: product 0 is full
-mem/0: storing 2 in location 1261
-run/0: instruction channel-full?/11
-run/0: {name: "result", value: 6, type: 3, properties: ["result": "boolean"]} <- equal/13 {name: "full", value: 5, type: 1, properties: ["full": "integer"]}, {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 1261 is 2
-run/0: ingredient 1 is tmp
-mem/0: location 1258 is 0
-run/0: product 0 is result
-mem/0: storing 0 in location 1262
-run/0: instruction channel-full?/12
-run/0: reply/36 {name: "result", value: 6, type: 3, properties: ["result": "boolean"]}
-run/0: ingredient 0 is result
-mem/0: location 1262 is 0
-run/0: result 0 is 0
-run/0: product 0 is full
-mem/0: storing 0 in location 1228
-run/0: instruction write/5
-run/0: break-unless/12 {name: "full", value: 3, type: 3, properties: ["full": "boolean"]}, {name: "", value: 2, type: 0, properties: ["": ]}
-run/0: ingredient 0 is full
-mem/0: location 1228 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 8
-run/0: instruction write/9
-run/0: {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1226 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 1226 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is circular-buffer
-mem/0: storing 1034 in location 1230
-run/0: instruction write/10
-run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1226 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 1226 is 1031
-run/0: address to copy is 1032
-run/0: product 0 is free
-mem/0: storing 1032 in location 1231
-run/0: instruction write/11
-run/0: {name: "dest", value: 7, type: 2-1, properties: ["dest": "address":"location"]} <- index-address/30 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}, {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 1230 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 0
-run/0: ingredient 1 is free
-mem/0: location 1231 is 1032
-mem/0: location 1032 is 2
-mem/0: location 1230 is 1034
-mem/0: location 1231 is 1032
-mem/0: location 1032 is 2
-run/0: product 0 is dest
-mem/0: storing 1037 in location 1232
-run/0: instruction write/12
-run/0: {name: "dest", value: 7, type: 2-1, properties: ["dest": "address":"location", "deref": ]} <- copy/1 {name: "val", value: 2, type: 1, properties: ["val": "location"]}
-run/0: ingredient 0 is val
-mem/0: location 1227 is 45
-run/0: product 0 is dest
-mem/0: location 1232 is 1037
-mem/0: storing 45 in location 1037
-run/0: instruction write/13
-run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]} <- add/2 {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is free
-mem/0: location 1231 is 1032
-mem/0: location 1032 is 2
-run/0: ingredient 1 is 1
-run/0: product 0 is free
-mem/0: location 1231 is 1032
-mem/0: storing 3 in location 1032
-run/0: instruction write/15
-run/0: {name: "len", value: 8, type: 1, properties: ["len": "integer"]} <- length/31 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 1230 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 45
-mem/0: location 1230 is 1034
-run/0: product 0 is len
-mem/0: storing 3 in location 1233
-run/0: instruction write/16
-run/0: {name: "at-end?", value: 9, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}, {name: "len", value: 8, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is free
-mem/0: location 1231 is 1032
-mem/0: location 1032 is 3
-run/0: ingredient 1 is len
-mem/0: location 1233 is 3
-run/0: product 0 is at-end?
-mem/0: storing 1 in location 1234
-run/0: instruction write/17
-run/0: break-unless/12 {name: "at-end?", value: 9, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 1234 is 1
-run/0: ingredient 1 is 
-run/0: jump-unless fell through
-run/0: instruction write/18
-run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run/0: ingredient 0 is 0
-run/0: product 0 is free
-mem/0: location 1231 is 1032
-mem/0: storing 0 in location 1032
-run/0: instruction write/20
-run/0: reply/36 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "same-as-ingredient": "0"]}
-run/0: ingredient 0 is chan
-mem/0: location 1226 is 1031
-run/0: result 0 is 1031
-run/0: product 0 is 1
-mem/0: storing 1031 in location 1
-run/0: instruction run1001/19
-run/0: restart/39 {name: "2", value: 2, type: 1, properties: ["2": "integer", "routine": ]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: instruction run1001/20
-run/0: wait-for-routine/43 {name: "2", value: 2, type: 1, properties: ["2": "integer"]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: waiting for routine 2
-schedule/0: read
-run/0: instruction read/8
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101251 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 101251 is 1031
-run/0: address to copy is 1031
-run/0: product 0 is full
-mem/0: storing 1031 in location 101254
-run/0: instruction read/9
-run/0: {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101251 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 101251 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is circular-buffer
-mem/0: storing 1034 in location 101255
-run/0: instruction read/10
-run/0: {name: "result", value: 6, type: 1, properties: ["result": "location"]} <- index/29 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}, {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 101255 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 45
-run/0: ingredient 1 is full
-mem/0: location 101254 is 1031
-mem/0: location 1031 is 2
-mem/0: location 101255 is 1034
-mem/0: location 101254 is 1031
-mem/0: location 1031 is 2
-run/0: address to copy is 1037
-run/0: its type is 1
-mem/0: location 1037 is 45
-run/0: product 0 is result
-mem/0: storing 45 in location 101256
-run/0: instruction read/11
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]} <- add/2 {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is full
-mem/0: location 101254 is 1031
-mem/0: location 1031 is 2
-run/0: ingredient 1 is 1
-run/0: product 0 is full
-mem/0: location 101254 is 1031
-mem/0: storing 3 in location 1031
-run/0: instruction read/13
-run/0: {name: "len", value: 7, type: 1, properties: ["len": "integer"]} <- length/31 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 101255 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 45
-mem/0: location 101255 is 1034
-run/0: product 0 is len
-mem/0: storing 3 in location 101257
-run/0: instruction read/14
-run/0: {name: "at-end?", value: 8, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}, {name: "len", value: 7, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 101254 is 1031
-mem/0: location 1031 is 3
-run/0: ingredient 1 is len
-mem/0: location 101257 is 3
-run/0: product 0 is at-end?
-mem/0: storing 1 in location 101258
-run/0: instruction read/15
-run/0: break-unless/12 {name: "at-end?", value: 8, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 101258 is 1
-run/0: ingredient 1 is 
-run/0: jump-unless fell through
-run/0: instruction read/16
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run/0: ingredient 0 is 0
-run/0: product 0 is full
-mem/0: location 101254 is 1031
-mem/0: storing 0 in location 1031
-run/0: instruction read/18
-run/0: reply/36 {name: "result", value: 6, type: 1, properties: ["result": "location"]}, {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "same-as-ingredient": "0"]}
-run/0: ingredient 0 is result
-mem/0: location 101256 is 45
-run/0: ingredient 1 is chan
-mem/0: location 101251 is 1031
-run/0: result 0 is 45
-run/0: result 1 is 1031
-run/0: product 0 is c
-mem/0: storing 45 in location 101222
-run/0: product 1 is stdin
-mem/0: storing 1031 in location 101220
-run/0: instruction expect-from-channel/4
-run/0: {name: "match?", value: 4, type: 3, properties: ["match?": "boolean"]} <- equal/13 {name: "c", value: 3, type: 4, properties: ["c": "character"]}, {name: "expected", value: 2, type: 4, properties: ["expected": "character"]}
-run/0: ingredient 0 is c
-mem/0: location 101222 is 45
-run/0: ingredient 1 is expected
-mem/0: location 101221 is 45
-run/0: product 0 is match?
-mem/0: storing 1 in location 101223
-run/0: instruction expect-from-channel/5
-run/0: assert/20 {name: "match?", value: 4, type: 3, properties: ["match?": "boolean"]}, {name: "expected character not found", value: 0, type: 0, properties: ["expected character not found": "literal-string"]}
-run/0: ingredient 0 is match?
-mem/0: location 101223 is 1
-run/0: ingredient 1 is expected character not found
-run/0: instruction read-move/14
-run/0: {name: "x", value: 5, type: 2-1, properties: ["x": "address":"integer"]} <- get-address/28 {name: "result", value: 4, type: 2-13, properties: ["result": "address":"move", "deref": ]}, {name: "to-file", value: 2, type: 0, properties: ["to-file": "offset"]}
-run/0: ingredient 0 is result
-mem/0: location 101005 is 101124
-mem/0: location 101124 is 0
-mem/0: location 101125 is 1
-mem/0: location 101126 is 0
-mem/0: location 101127 is 1031
-run/0: ingredient 1 is to-file
-mem/0: location 101005 is 101124
-run/0: address to copy is 101126
-run/0: product 0 is x
-mem/0: storing 101126 in location 101006
-run/0: instruction read-move/15
-run/0: {name: "x", value: 5, type: 2-1, properties: ["x": "address":"integer", "deref": ]} <- read-file/139 {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]}
-run/0: ingredient 0 is stdin
-mem/0: location 101002 is 1031
-run/0: instruction read-file/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101311
-run/0: product 0 is default-space
-run/0: instruction read-file/1
-run/0: {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is stdin
-mem/0: storing 1031 in location 101313
-run/0: instruction read-file/2
-run/0: {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]} <- read/111 {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]}
-run/0: ingredient 0 is stdin
-mem/0: location 101313 is 1031
-run/0: instruction read/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101342
-run/0: product 0 is default-space
-run/0: instruction read/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 101344
-run/0: instruction read/3
-run/0: {name: "empty", value: 2, type: 3, properties: ["empty": "boolean"]} <- channel-empty?/112 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 101344 is 1031
-run/0: instruction channel-empty?/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101373
-run/0: product 0 is default-space
-run/0: instruction channel-empty?/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 101375
-run/0: instruction channel-empty?/2
-run/0: {name: "full", value: 2, type: 1, properties: ["full": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101375 is 1031
-mem/0: location 1031 is 0
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 101375 is 1031
-run/0: address to copy is 1031
-run/0: its type is 1
-mem/0: location 1031 is 0
-run/0: product 0 is full
-mem/0: storing 0 in location 101376
-run/0: instruction channel-empty?/3
-run/0: {name: "free", value: 3, type: 1, properties: ["free": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101375 is 1031
-mem/0: location 1031 is 0
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 101375 is 1031
-run/0: address to copy is 1032
-run/0: its type is 1
-mem/0: location 1032 is 0
-run/0: product 0 is free
-mem/0: storing 0 in location 101377
-run/0: instruction channel-empty?/4
-run/0: {name: "result", value: 4, type: 3, properties: ["result": "boolean"]} <- equal/13 {name: "full", value: 2, type: 1, properties: ["full": "integer"]}, {name: "free", value: 3, type: 1, properties: ["free": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 101376 is 0
-run/0: ingredient 1 is free
-mem/0: location 101377 is 0
-run/0: product 0 is result
-mem/0: storing 1 in location 101378
-run/0: instruction channel-empty?/5
-run/0: reply/36 {name: "result", value: 4, type: 3, properties: ["result": "boolean"]}
-run/0: ingredient 0 is result
-mem/0: location 101378 is 1
-run/0: result 0 is 1
-run/0: product 0 is empty
-mem/0: storing 1 in location 101345
-run/0: instruction read/4
-run/0: break-unless/12 {name: "empty", value: 2, type: 3, properties: ["empty": "boolean"]}, {name: "", value: 2, type: 0, properties: ["": ]}
-run/0: ingredient 0 is empty
-mem/0: location 101345 is 1
-run/0: ingredient 1 is 
-run/0: jump-unless fell through
-run/0: instruction read/5
-run/0: {name: "free-address", value: 3, type: 2-1, properties: ["free-address": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101344 is 1031
-mem/0: location 1031 is 0
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 101344 is 1031
-run/0: address to copy is 1032
-run/0: product 0 is free-address
-mem/0: storing 1032 in location 101346
-run/0: instruction read/6
-run/0: wait-for-location/42 {name: "free-address", value: 3, type: 2-1, properties: ["free-address": "address":"integer", "deref": ]}
-run/0: ingredient 0 is free-address
-mem/0: location 101346 is 1032
-mem/0: location 1032 is 0
-mem/0: location 101346 is 1032
-run/0: waiting for location 1032 to change from 0
-schedule/0: waking up routine 1
-schedule/0: run1001
-run/0: instruction run1001/21
-run/0: {name: "3", value: 3, type: 1, properties: ["3": "integer"]} <- routine-state/38 {name: "2", value: 2, type: 1, properties: ["2": "integer"]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: product 0 is 3
-mem/0: storing 2 in location 3
-run/0: instruction run1001/22
-run/0: {name: "4", value: 4, type: 3, properties: ["4": "boolean", "waiting?": ]} <- equal/13 {name: "3", value: 3, type: 1, properties: ["3": "integer", "routine-state": ]}, {name: "2", value: 2, type: 0, properties: ["2": "literal", "waiting": ]}
-run/0: ingredient 0 is 3
-mem/0: location 3 is 2
-run/0: ingredient 1 is 2
-run/0: product 0 is 4
-mem/0: storing 1 in location 4
-run/0: instruction run1001/23
-run/0: assert/20 {name: "4", value: 4, type: 3, properties: ["4": "boolean", "waiting?": , "routine-state": ]}, {name: "
-F read-move-blocking: routine failed to pause after hyphen 'a2-'", value: 0, type: 0, properties: ["
-F read-move-blocking: routine failed to pause after hyphen 'a2-'": "literal-string"]}
-run/0: ingredient 0 is 4
-mem/0: location 4 is 1
-run/0: ingredient 1 is 
-F read-move-blocking: routine failed to pause after hyphen 'a2-'
-run/0: instruction run1001/24
-run/0: {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]} <- write/109 {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]}, {name: "97", value: 97, type: 0, properties: ["97": "literal"]}
-run/0: ingredient 0 is 1
-mem/0: location 1 is 1031
-run/0: ingredient 1 is 97
-run/0: instruction write/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1317
-run/0: product 0 is default-space
-run/0: instruction write/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1319
-run/0: instruction write/2
-run/0: {name: "val", value: 2, type: 1, properties: ["val": "location"]} <- next-ingredient/33 
-run/0: product 0 is val
-mem/0: storing 97 in location 1320
-run/0: instruction write/4
-run/0: {name: "full", value: 3, type: 3, properties: ["full": "boolean"]} <- channel-full?/110 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 1319 is 1031
-run/0: instruction channel-full?/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1348
-run/0: product 0 is default-space
-run/0: instruction channel-full?/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1350
-run/0: instruction channel-full?/2
-run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1350 is 1031
-mem/0: location 1031 is 0
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 1350 is 1031
-run/0: address to copy is 1032
-run/0: its type is 1
-mem/0: location 1032 is 0
-run/0: product 0 is tmp
-mem/0: storing 0 in location 1351
-run/0: instruction channel-full?/3
-run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- add/2 {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is tmp
-mem/0: location 1351 is 0
-run/0: ingredient 1 is 1
-run/0: product 0 is tmp
-mem/0: storing 1 in location 1351
-run/0: instruction channel-full?/5
-run/0: {name: "len", value: 3, type: 1, properties: ["len": "integer"]} <- channel-capacity/113 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 1350 is 1031
-run/0: instruction channel-capacity/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1379
-run/0: product 0 is default-space
-run/0: instruction channel-capacity/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1381
-run/0: instruction channel-capacity/2
-run/0: {name: "q", value: 2, type: 2-5-1, properties: ["q": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1381 is 1031
-mem/0: location 1031 is 0
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 1381 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is q
-mem/0: storing 1034 in location 1382
-run/0: instruction channel-capacity/3
-run/0: {name: "result", value: 3, type: 1, properties: ["result": "integer"]} <- length/31 {name: "q", value: 2, type: 2-5-1, properties: ["q": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is q
-mem/0: location 1382 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 45
-mem/0: location 1382 is 1034
-run/0: product 0 is result
-mem/0: storing 3 in location 1383
-run/0: instruction channel-capacity/4
-run/0: reply/36 {name: "result", value: 3, type: 1, properties: ["result": "integer"]}
-run/0: ingredient 0 is result
-mem/0: location 1383 is 3
-run/0: result 0 is 3
-run/0: product 0 is len
-mem/0: storing 3 in location 1352
-run/0: instruction channel-full?/6
-run/0: {name: "at-end?", value: 4, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}, {name: "len", value: 3, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is tmp
-mem/0: location 1351 is 1
-run/0: ingredient 1 is len
-mem/0: location 1352 is 3
-run/0: product 0 is at-end?
-mem/0: storing 0 in location 1353
-run/0: instruction channel-full?/7
-run/0: break-unless/12 {name: "at-end?", value: 4, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 1353 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 9
-run/0: instruction channel-full?/10
-run/0: {name: "full", value: 5, type: 1, properties: ["full": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1350 is 1031
-mem/0: location 1031 is 0
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 1350 is 1031
-run/0: address to copy is 1031
-run/0: its type is 1
-mem/0: location 1031 is 0
-run/0: product 0 is full
-mem/0: storing 0 in location 1354
-run/0: instruction channel-full?/11
-run/0: {name: "result", value: 6, type: 3, properties: ["result": "boolean"]} <- equal/13 {name: "full", value: 5, type: 1, properties: ["full": "integer"]}, {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 1354 is 0
-run/0: ingredient 1 is tmp
-mem/0: location 1351 is 1
-run/0: product 0 is result
-mem/0: storing 0 in location 1355
-run/0: instruction channel-full?/12
-run/0: reply/36 {name: "result", value: 6, type: 3, properties: ["result": "boolean"]}
-run/0: ingredient 0 is result
-mem/0: location 1355 is 0
-run/0: result 0 is 0
-run/0: product 0 is full
-mem/0: storing 0 in location 1321
-run/0: instruction write/5
-run/0: break-unless/12 {name: "full", value: 3, type: 3, properties: ["full": "boolean"]}, {name: "", value: 2, type: 0, properties: ["": ]}
-run/0: ingredient 0 is full
-mem/0: location 1321 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 8
-run/0: instruction write/9
-run/0: {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1319 is 1031
-mem/0: location 1031 is 0
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 1319 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is circular-buffer
-mem/0: storing 1034 in location 1323
-run/0: instruction write/10
-run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1319 is 1031
-mem/0: location 1031 is 0
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 1319 is 1031
-run/0: address to copy is 1032
-run/0: product 0 is free
-mem/0: storing 1032 in location 1324
-run/0: instruction write/11
-run/0: {name: "dest", value: 7, type: 2-1, properties: ["dest": "address":"location"]} <- index-address/30 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}, {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 1323 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 45
-run/0: ingredient 1 is free
-mem/0: location 1324 is 1032
-mem/0: location 1032 is 0
-mem/0: location 1323 is 1034
-mem/0: location 1324 is 1032
-mem/0: location 1032 is 0
-run/0: product 0 is dest
-mem/0: storing 1035 in location 1325
-run/0: instruction write/12
-run/0: {name: "dest", value: 7, type: 2-1, properties: ["dest": "address":"location", "deref": ]} <- copy/1 {name: "val", value: 2, type: 1, properties: ["val": "location"]}
-run/0: ingredient 0 is val
-mem/0: location 1320 is 97
-run/0: product 0 is dest
-mem/0: location 1325 is 1035
-mem/0: storing 97 in location 1035
-run/0: instruction write/13
-run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]} <- add/2 {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is free
-mem/0: location 1324 is 1032
-mem/0: location 1032 is 0
-run/0: ingredient 1 is 1
-run/0: product 0 is free
-mem/0: location 1324 is 1032
-mem/0: storing 1 in location 1032
-run/0: instruction write/15
-run/0: {name: "len", value: 8, type: 1, properties: ["len": "integer"]} <- length/31 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 1323 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 45
-mem/0: location 1323 is 1034
-run/0: product 0 is len
-mem/0: storing 3 in location 1326
-run/0: instruction write/16
-run/0: {name: "at-end?", value: 9, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}, {name: "len", value: 8, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is free
-mem/0: location 1324 is 1032
-mem/0: location 1032 is 1
-run/0: ingredient 1 is len
-mem/0: location 1326 is 3
-run/0: product 0 is at-end?
-mem/0: storing 0 in location 1327
-run/0: instruction write/17
-run/0: break-unless/12 {name: "at-end?", value: 9, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 1327 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 19
-run/0: instruction write/20
-run/0: reply/36 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "same-as-ingredient": "0"]}
-run/0: ingredient 0 is chan
-mem/0: location 1319 is 1031
-run/0: result 0 is 1031
-run/0: product 0 is 1
-mem/0: storing 1031 in location 1
-run/0: instruction run1001/25
-run/0: restart/39 {name: "2", value: 2, type: 1, properties: ["2": "integer", "routine": ]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: instruction run1001/26
-run/0: wait-for-routine/43 {name: "2", value: 2, type: 1, properties: ["2": "integer"]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: waiting for routine 2
-schedule/0: read
-run/0: instruction read/8
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101344 is 1031
-mem/0: location 1031 is 0
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 101344 is 1031
-run/0: address to copy is 1031
-run/0: product 0 is full
-mem/0: storing 1031 in location 101347
-run/0: instruction read/9
-run/0: {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101344 is 1031
-mem/0: location 1031 is 0
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 101344 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is circular-buffer
-mem/0: storing 1034 in location 101348
-run/0: instruction read/10
-run/0: {name: "result", value: 6, type: 1, properties: ["result": "location"]} <- index/29 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}, {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 101348 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 45
-run/0: ingredient 1 is full
-mem/0: location 101347 is 1031
-mem/0: location 1031 is 0
-mem/0: location 101348 is 1034
-mem/0: location 101347 is 1031
-mem/0: location 1031 is 0
-run/0: address to copy is 1035
-run/0: its type is 1
-mem/0: location 1035 is 97
-run/0: product 0 is result
-mem/0: storing 97 in location 101349
-run/0: instruction read/11
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]} <- add/2 {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is full
-mem/0: location 101347 is 1031
-mem/0: location 1031 is 0
-run/0: ingredient 1 is 1
-run/0: product 0 is full
-mem/0: location 101347 is 1031
-mem/0: storing 1 in location 1031
-run/0: instruction read/13
-run/0: {name: "len", value: 7, type: 1, properties: ["len": "integer"]} <- length/31 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 101348 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 45
-mem/0: location 101348 is 1034
-run/0: product 0 is len
-mem/0: storing 3 in location 101350
-run/0: instruction read/14
-run/0: {name: "at-end?", value: 8, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}, {name: "len", value: 7, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 101347 is 1031
-mem/0: location 1031 is 1
-run/0: ingredient 1 is len
-mem/0: location 101350 is 3
-run/0: product 0 is at-end?
-mem/0: storing 0 in location 101351
-run/0: instruction read/15
-run/0: break-unless/12 {name: "at-end?", value: 8, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 101351 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 17
-run/0: instruction read/18
-run/0: reply/36 {name: "result", value: 6, type: 1, properties: ["result": "location"]}, {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "same-as-ingredient": "0"]}
-run/0: ingredient 0 is result
-mem/0: location 101349 is 97
-run/0: ingredient 1 is chan
-mem/0: location 101344 is 1031
-run/0: result 0 is 97
-run/0: result 1 is 1031
-run/0: product 0 is c
-mem/0: storing 97 in location 101314
-run/0: product 1 is stdin
-mem/0: storing 1031 in location 101313
-run/0: instruction read-file/4
-run/0: {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]} <- equal/13 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "81", value: 81, type: 0, properties: ["81": "literal"]}
-run/0: ingredient 0 is c
-mem/0: location 101314 is 97
-run/0: ingredient 1 is 81
-run/0: product 0 is q-pressed?
-mem/0: storing 0 in location 101315
-run/0: instruction read-file/5
-run/0: break-unless/12 {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is q-pressed?
-mem/0: location 101315 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 7
-run/0: instruction read-file/9
-run/0: {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]} <- equal/13 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "113", value: 113, type: 0, properties: ["113": "literal"]}
-run/0: ingredient 0 is c
-mem/0: location 101314 is 97
-run/0: ingredient 1 is 113
-run/0: product 0 is q-pressed?
-mem/0: storing 0 in location 101315
-run/0: instruction read-file/10
-run/0: break-unless/12 {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is q-pressed?
-mem/0: location 101315 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 12
-run/0: instruction read-file/13
-run/0: {name: "file", value: 4, type: 1, properties: ["file": "integer"]} <- subtract/3 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "97", value: 97, type: 0, properties: ["97": "literal"]}
-run/0: ingredient 0 is c
-mem/0: location 101314 is 97
-run/0: ingredient 1 is 97
-run/0: product 0 is file
-mem/0: storing 0 in location 101316
-run/0: instruction read-file/14
-run/0: {name: "above-min", value: 5, type: 3, properties: ["above-min": "boolean"]} <- greater-or-equal/16 {name: "file", value: 4, type: 1, properties: ["file": "integer"]}, {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run/0: ingredient 0 is file
-mem/0: location 101316 is 0
-run/0: ingredient 1 is 0
-run/0: product 0 is above-min
-mem/0: storing 1 in location 101317
-run/0: instruction read-file/15
-run/0: assert/20 {name: "above-min", value: 5, type: 3, properties: ["above-min": "boolean"]}, {name: "file too low", value: 0, type: 0, properties: ["file too low": "literal-string"]}
-run/0: ingredient 0 is above-min
-mem/0: location 101317 is 1
-run/0: ingredient 1 is file too low
-run/0: instruction read-file/16
-run/0: {name: "below-max", value: 6, type: 3, properties: ["below-max": "boolean"]} <- lesser-than/15 {name: "file", value: 4, type: 1, properties: ["file": "integer"]}, {name: "8", value: 8, type: 0, properties: ["8": "literal"]}
-run/0: ingredient 0 is file
-mem/0: location 101316 is 0
-run/0: ingredient 1 is 8
-run/0: product 0 is below-max
-mem/0: storing 1 in location 101318
-run/0: instruction read-file/17
-run/0: assert/20 {name: "below-max", value: 6, type: 3, properties: ["below-max": "boolean"]}, {name: "file too high", value: 0, type: 0, properties: ["file too high": "literal-string"]}
-run/0: ingredient 0 is below-max
-mem/0: location 101318 is 1
-run/0: ingredient 1 is file too high
-run/0: instruction read-file/18
-run/0: reply/36 {name: "file", value: 4, type: 1, properties: ["file": "integer"]}
-run/0: ingredient 0 is file
-mem/0: location 101316 is 0
-run/0: result 0 is 0
-run/0: product 0 is x
-mem/0: location 101006 is 101126
-mem/0: storing 0 in location 101126
-run/0: instruction read-move/16
-run/0: {name: "x", value: 5, type: 2-1, properties: ["x": "address":"integer"]} <- get-address/28 {name: "result", value: 4, type: 2-13, properties: ["result": "address":"move", "deref": ]}, {name: "to-rank", value: 3, type: 0, properties: ["to-rank": "offset"]}
-run/0: ingredient 0 is result
-mem/0: location 101005 is 101124
-mem/0: location 101124 is 0
-mem/0: location 101125 is 1
-mem/0: location 101126 is 0
-mem/0: location 101127 is 1031
-run/0: ingredient 1 is to-rank
-mem/0: location 101005 is 101124
-run/0: address to copy is 101127
-run/0: product 0 is x
-mem/0: storing 101127 in location 101006
-run/0: instruction read-move/17
-run/0: {name: "x", value: 5, type: 2-1, properties: ["x": "address":"integer", "deref": ]} <- read-rank/140 {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]}
-run/0: ingredient 0 is stdin
-mem/0: location 101002 is 1031
-run/0: instruction read-rank/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101404
-run/0: product 0 is default-space
-run/0: instruction read-rank/1
-run/0: {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is stdin
-mem/0: storing 1031 in location 101406
-run/0: instruction read-rank/2
-run/0: {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]} <- read/111 {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]}
-run/0: ingredient 0 is stdin
-mem/0: location 101406 is 1031
-run/0: instruction read/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101435
-run/0: product 0 is default-space
-run/0: instruction read/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 101437
-run/0: instruction read/3
-run/0: {name: "empty", value: 2, type: 3, properties: ["empty": "boolean"]} <- channel-empty?/112 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 101437 is 1031
-run/0: instruction channel-empty?/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101466
-run/0: product 0 is default-space
-run/0: instruction channel-empty?/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 101468
-run/0: instruction channel-empty?/2
-run/0: {name: "full", value: 2, type: 1, properties: ["full": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101468 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 101468 is 1031
-run/0: address to copy is 1031
-run/0: its type is 1
-mem/0: location 1031 is 1
-run/0: product 0 is full
-mem/0: storing 1 in location 101469
-run/0: instruction channel-empty?/3
-run/0: {name: "free", value: 3, type: 1, properties: ["free": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101468 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 101468 is 1031
-run/0: address to copy is 1032
-run/0: its type is 1
-mem/0: location 1032 is 1
-run/0: product 0 is free
-mem/0: storing 1 in location 101470
-run/0: instruction channel-empty?/4
-run/0: {name: "result", value: 4, type: 3, properties: ["result": "boolean"]} <- equal/13 {name: "full", value: 2, type: 1, properties: ["full": "integer"]}, {name: "free", value: 3, type: 1, properties: ["free": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 101469 is 1
-run/0: ingredient 1 is free
-mem/0: location 101470 is 1
-run/0: product 0 is result
-mem/0: storing 1 in location 101471
-run/0: instruction channel-empty?/5
-run/0: reply/36 {name: "result", value: 4, type: 3, properties: ["result": "boolean"]}
-run/0: ingredient 0 is result
-mem/0: location 101471 is 1
-run/0: result 0 is 1
-run/0: product 0 is empty
-mem/0: storing 1 in location 101438
-run/0: instruction read/4
-run/0: break-unless/12 {name: "empty", value: 2, type: 3, properties: ["empty": "boolean"]}, {name: "", value: 2, type: 0, properties: ["": ]}
-run/0: ingredient 0 is empty
-mem/0: location 101438 is 1
-run/0: ingredient 1 is 
-run/0: jump-unless fell through
-run/0: instruction read/5
-run/0: {name: "free-address", value: 3, type: 2-1, properties: ["free-address": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101437 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 101437 is 1031
-run/0: address to copy is 1032
-run/0: product 0 is free-address
-mem/0: storing 1032 in location 101439
-run/0: instruction read/6
-run/0: wait-for-location/42 {name: "free-address", value: 3, type: 2-1, properties: ["free-address": "address":"integer", "deref": ]}
-run/0: ingredient 0 is free-address
-mem/0: location 101439 is 1032
-mem/0: location 1032 is 1
-mem/0: location 101439 is 1032
-run/0: waiting for location 1032 to change from 1
-schedule/0: waking up routine 1
-schedule/0: run1001
-run/0: instruction run1001/27
-run/0: {name: "3", value: 3, type: 1, properties: ["3": "integer"]} <- routine-state/38 {name: "2", value: 2, type: 1, properties: ["2": "integer"]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: product 0 is 3
-mem/0: storing 2 in location 3
-run/0: instruction run1001/28
-run/0: {name: "4", value: 4, type: 3, properties: ["4": "boolean", "waiting?": ]} <- equal/13 {name: "3", value: 3, type: 1, properties: ["3": "integer", "routine-state": ]}, {name: "2", value: 2, type: 0, properties: ["2": "literal", "waiting": ]}
-run/0: ingredient 0 is 3
-mem/0: location 3 is 2
-run/0: ingredient 1 is 2
-run/0: product 0 is 4
-mem/0: storing 1 in location 4
-run/0: instruction run1001/29
-run/0: assert/20 {name: "4", value: 4, type: 3, properties: ["4": "boolean", "waiting?": , "routine-state": ]}, {name: "
-F read-move-blocking: routine failed to pause after rank 'a2-a'", value: 0, type: 0, properties: ["
-F read-move-blocking: routine failed to pause after rank 'a2-a'": "literal-string"]}
-run/0: ingredient 0 is 4
-mem/0: location 4 is 1
-run/0: ingredient 1 is 
-F read-move-blocking: routine failed to pause after rank 'a2-a'
-run/0: instruction run1001/30
-run/0: {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]} <- write/109 {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]}, {name: "52", value: 52, type: 0, properties: ["52": "literal"]}
-run/0: ingredient 0 is 1
-mem/0: location 1 is 1031
-run/0: ingredient 1 is 52
-run/0: instruction write/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1410
-run/0: product 0 is default-space
-run/0: instruction write/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1412
-run/0: instruction write/2
-run/0: {name: "val", value: 2, type: 1, properties: ["val": "location"]} <- next-ingredient/33 
-run/0: product 0 is val
-mem/0: storing 52 in location 1413
-run/0: instruction write/4
-run/0: {name: "full", value: 3, type: 3, properties: ["full": "boolean"]} <- channel-full?/110 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 1412 is 1031
-run/0: instruction channel-full?/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1441
-run/0: product 0 is default-space
-run/0: instruction channel-full?/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1443
-run/0: instruction channel-full?/2
-run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1443 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 1443 is 1031
-run/0: address to copy is 1032
-run/0: its type is 1
-mem/0: location 1032 is 1
-run/0: product 0 is tmp
-mem/0: storing 1 in location 1444
-run/0: instruction channel-full?/3
-run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- add/2 {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is tmp
-mem/0: location 1444 is 1
-run/0: ingredient 1 is 1
-run/0: product 0 is tmp
-mem/0: storing 2 in location 1444
-run/0: instruction channel-full?/5
-run/0: {name: "len", value: 3, type: 1, properties: ["len": "integer"]} <- channel-capacity/113 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 1443 is 1031
-run/0: instruction channel-capacity/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1472
-run/0: product 0 is default-space
-run/0: instruction channel-capacity/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1474
-run/0: instruction channel-capacity/2
-run/0: {name: "q", value: 2, type: 2-5-1, properties: ["q": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1474 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 1474 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is q
-mem/0: storing 1034 in location 1475
-run/0: instruction channel-capacity/3
-run/0: {name: "result", value: 3, type: 1, properties: ["result": "integer"]} <- length/31 {name: "q", value: 2, type: 2-5-1, properties: ["q": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is q
-mem/0: location 1475 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 45
-mem/0: location 1475 is 1034
-run/0: product 0 is result
-mem/0: storing 3 in location 1476
-run/0: instruction channel-capacity/4
-run/0: reply/36 {name: "result", value: 3, type: 1, properties: ["result": "integer"]}
-run/0: ingredient 0 is result
-mem/0: location 1476 is 3
-run/0: result 0 is 3
-run/0: product 0 is len
-mem/0: storing 3 in location 1445
-run/0: instruction channel-full?/6
-run/0: {name: "at-end?", value: 4, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}, {name: "len", value: 3, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is tmp
-mem/0: location 1444 is 2
-run/0: ingredient 1 is len
-mem/0: location 1445 is 3
-run/0: product 0 is at-end?
-mem/0: storing 0 in location 1446
-run/0: instruction channel-full?/7
-run/0: break-unless/12 {name: "at-end?", value: 4, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 1446 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 9
-run/0: instruction channel-full?/10
-run/0: {name: "full", value: 5, type: 1, properties: ["full": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1443 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 1443 is 1031
-run/0: address to copy is 1031
-run/0: its type is 1
-mem/0: location 1031 is 1
-run/0: product 0 is full
-mem/0: storing 1 in location 1447
-run/0: instruction channel-full?/11
-run/0: {name: "result", value: 6, type: 3, properties: ["result": "boolean"]} <- equal/13 {name: "full", value: 5, type: 1, properties: ["full": "integer"]}, {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 1447 is 1
-run/0: ingredient 1 is tmp
-mem/0: location 1444 is 2
-run/0: product 0 is result
-mem/0: storing 0 in location 1448
-run/0: instruction channel-full?/12
-run/0: reply/36 {name: "result", value: 6, type: 3, properties: ["result": "boolean"]}
-run/0: ingredient 0 is result
-mem/0: location 1448 is 0
-run/0: result 0 is 0
-run/0: product 0 is full
-mem/0: storing 0 in location 1414
-run/0: instruction write/5
-run/0: break-unless/12 {name: "full", value: 3, type: 3, properties: ["full": "boolean"]}, {name: "", value: 2, type: 0, properties: ["": ]}
-run/0: ingredient 0 is full
-mem/0: location 1414 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 8
-run/0: instruction write/9
-run/0: {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1412 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 1412 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is circular-buffer
-mem/0: storing 1034 in location 1416
-run/0: instruction write/10
-run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1412 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 1
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 1412 is 1031
-run/0: address to copy is 1032
-run/0: product 0 is free
-mem/0: storing 1032 in location 1417
-run/0: instruction write/11
-run/0: {name: "dest", value: 7, type: 2-1, properties: ["dest": "address":"location"]} <- index-address/30 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}, {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 1416 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 50
-mem/0: location 1037 is 45
-run/0: ingredient 1 is free
-mem/0: location 1417 is 1032
-mem/0: location 1032 is 1
-mem/0: location 1416 is 1034
-mem/0: location 1417 is 1032
-mem/0: location 1032 is 1
-run/0: product 0 is dest
-mem/0: storing 1036 in location 1418
-run/0: instruction write/12
-run/0: {name: "dest", value: 7, type: 2-1, properties: ["dest": "address":"location", "deref": ]} <- copy/1 {name: "val", value: 2, type: 1, properties: ["val": "location"]}
-run/0: ingredient 0 is val
-mem/0: location 1413 is 52
-run/0: product 0 is dest
-mem/0: location 1418 is 1036
-mem/0: storing 52 in location 1036
-run/0: instruction write/13
-run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]} <- add/2 {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is free
-mem/0: location 1417 is 1032
-mem/0: location 1032 is 1
-run/0: ingredient 1 is 1
-run/0: product 0 is free
-mem/0: location 1417 is 1032
-mem/0: storing 2 in location 1032
-run/0: instruction write/15
-run/0: {name: "len", value: 8, type: 1, properties: ["len": "integer"]} <- length/31 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 1416 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 52
-mem/0: location 1037 is 45
-mem/0: location 1416 is 1034
-run/0: product 0 is len
-mem/0: storing 3 in location 1419
-run/0: instruction write/16
-run/0: {name: "at-end?", value: 9, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}, {name: "len", value: 8, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is free
-mem/0: location 1417 is 1032
-mem/0: location 1032 is 2
-run/0: ingredient 1 is len
-mem/0: location 1419 is 3
-run/0: product 0 is at-end?
-mem/0: storing 0 in location 1420
-run/0: instruction write/17
-run/0: break-unless/12 {name: "at-end?", value: 9, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 1420 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 19
-run/0: instruction write/20
-run/0: reply/36 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "same-as-ingredient": "0"]}
-run/0: ingredient 0 is chan
-mem/0: location 1412 is 1031
-run/0: result 0 is 1031
-run/0: product 0 is 1
-mem/0: storing 1031 in location 1
-run/0: instruction run1001/31
-run/0: restart/39 {name: "2", value: 2, type: 1, properties: ["2": "integer", "routine": ]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: instruction run1001/32
-run/0: wait-for-routine/43 {name: "2", value: 2, type: 1, properties: ["2": "integer"]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: waiting for routine 2
-schedule/0: read
-run/0: instruction read/8
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101437 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 101437 is 1031
-run/0: address to copy is 1031
-run/0: product 0 is full
-mem/0: storing 1031 in location 101440
-run/0: instruction read/9
-run/0: {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101437 is 1031
-mem/0: location 1031 is 1
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 101437 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is circular-buffer
-mem/0: storing 1034 in location 101441
-run/0: instruction read/10
-run/0: {name: "result", value: 6, type: 1, properties: ["result": "location"]} <- index/29 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}, {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 101441 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 52
-mem/0: location 1037 is 45
-run/0: ingredient 1 is full
-mem/0: location 101440 is 1031
-mem/0: location 1031 is 1
-mem/0: location 101441 is 1034
-mem/0: location 101440 is 1031
-mem/0: location 1031 is 1
-run/0: address to copy is 1036
-run/0: its type is 1
-mem/0: location 1036 is 52
-run/0: product 0 is result
-mem/0: storing 52 in location 101442
-run/0: instruction read/11
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]} <- add/2 {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is full
-mem/0: location 101440 is 1031
-mem/0: location 1031 is 1
-run/0: ingredient 1 is 1
-run/0: product 0 is full
-mem/0: location 101440 is 1031
-mem/0: storing 2 in location 1031
-run/0: instruction read/13
-run/0: {name: "len", value: 7, type: 1, properties: ["len": "integer"]} <- length/31 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 101441 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 52
-mem/0: location 1037 is 45
-mem/0: location 101441 is 1034
-run/0: product 0 is len
-mem/0: storing 3 in location 101443
-run/0: instruction read/14
-run/0: {name: "at-end?", value: 8, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}, {name: "len", value: 7, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 101440 is 1031
-mem/0: location 1031 is 2
-run/0: ingredient 1 is len
-mem/0: location 101443 is 3
-run/0: product 0 is at-end?
-mem/0: storing 0 in location 101444
-run/0: instruction read/15
-run/0: break-unless/12 {name: "at-end?", value: 8, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 101444 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 17
-run/0: instruction read/18
-run/0: reply/36 {name: "result", value: 6, type: 1, properties: ["result": "location"]}, {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "same-as-ingredient": "0"]}
-run/0: ingredient 0 is result
-mem/0: location 101442 is 52
-run/0: ingredient 1 is chan
-mem/0: location 101437 is 1031
-run/0: result 0 is 52
-run/0: result 1 is 1031
-run/0: product 0 is c
-mem/0: storing 52 in location 101407
-run/0: product 1 is stdin
-mem/0: storing 1031 in location 101406
-run/0: instruction read-rank/4
-run/0: {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]} <- equal/13 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "81", value: 81, type: 0, properties: ["81": "literal"]}
-run/0: ingredient 0 is c
-mem/0: location 101407 is 52
-run/0: ingredient 1 is 81
-run/0: product 0 is q-pressed?
-mem/0: storing 0 in location 101408
-run/0: instruction read-rank/5
-run/0: break-unless/12 {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is q-pressed?
-mem/0: location 101408 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 7
-run/0: instruction read-rank/9
-run/0: {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]} <- equal/13 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "113", value: 113, type: 0, properties: ["113": "literal"]}
-run/0: ingredient 0 is c
-mem/0: location 101407 is 52
-run/0: ingredient 1 is 113
-run/0: product 0 is q-pressed?
-mem/0: storing 0 in location 101408
-run/0: instruction read-rank/10
-run/0: break-unless/12 {name: "q-pressed?", value: 3, type: 3, properties: ["q-pressed?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is q-pressed?
-mem/0: location 101408 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 12
-run/0: instruction read-rank/13
-run/0: {name: "rank", value: 4, type: 1, properties: ["rank": "integer"]} <- subtract/3 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "49", value: 49, type: 0, properties: ["49": "literal"]}
-run/0: ingredient 0 is c
-mem/0: location 101407 is 52
-run/0: ingredient 1 is 49
-run/0: product 0 is rank
-mem/0: storing 3 in location 101409
-run/0: instruction read-rank/14
-run/0: {name: "above-min", value: 5, type: 3, properties: ["above-min": "boolean"]} <- greater-or-equal/16 {name: "rank", value: 4, type: 1, properties: ["rank": "integer"]}, {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run/0: ingredient 0 is rank
-mem/0: location 101409 is 3
-run/0: ingredient 1 is 0
-run/0: product 0 is above-min
-mem/0: storing 1 in location 101410
-run/0: instruction read-rank/15
-run/0: assert/20 {name: "above-min", value: 5, type: 3, properties: ["above-min": "boolean"]}, {name: "rank too low", value: 0, type: 0, properties: ["rank too low": "literal-string"]}
-run/0: ingredient 0 is above-min
-mem/0: location 101410 is 1
-run/0: ingredient 1 is rank too low
-run/0: instruction read-rank/16
-run/0: {name: "below-max", value: 6, type: 3, properties: ["below-max": "boolean"]} <- lesser-or-equal/17 {name: "rank", value: 4, type: 1, properties: ["rank": "integer"]}, {name: "7", value: 7, type: 0, properties: ["7": "literal"]}
-run/0: ingredient 0 is rank
-mem/0: location 101409 is 3
-run/0: ingredient 1 is 7
-run/0: product 0 is below-max
-mem/0: storing 1 in location 101411
-run/0: instruction read-rank/17
-run/0: assert/20 {name: "below-max", value: 6, type: 3, properties: ["below-max": "boolean"]}, {name: "rank too high", value: 0, type: 0, properties: ["rank too high": "literal-string"]}
-run/0: ingredient 0 is below-max
-mem/0: location 101411 is 1
-run/0: ingredient 1 is rank too high
-run/0: instruction read-rank/18
-run/0: reply/36 {name: "rank", value: 4, type: 1, properties: ["rank": "integer"]}
-run/0: ingredient 0 is rank
-mem/0: location 101409 is 3
-run/0: result 0 is 3
-run/0: product 0 is x
-mem/0: location 101006 is 101127
-mem/0: storing 3 in location 101127
-run/0: instruction read-move/18
-run/0: expect-from-channel/141 {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]}, {name: "13", value: 13, type: 0, properties: ["13": "literal"]}
-run/0: ingredient 0 is stdin
-mem/0: location 101002 is 1031
-run/0: ingredient 1 is 13
-run/0: instruction expect-from-channel/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101497
-run/0: product 0 is default-space
-run/0: instruction expect-from-channel/1
-run/0: {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is stdin
-mem/0: storing 1031 in location 101499
-run/0: instruction expect-from-channel/2
-run/0: {name: "expected", value: 2, type: 4, properties: ["expected": "character"]} <- next-ingredient/33 
-run/0: product 0 is expected
-mem/0: storing 13 in location 101500
-run/0: instruction expect-from-channel/3
-run/0: {name: "c", value: 3, type: 4, properties: ["c": "character"]}, {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]} <- read/111 {name: "stdin", value: 1, type: 2-10, properties: ["stdin": "address":"channel"]}
-run/0: ingredient 0 is stdin
-mem/0: location 101499 is 1031
-run/0: instruction read/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101528
-run/0: product 0 is default-space
-run/0: instruction read/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 101530
-run/0: instruction read/3
-run/0: {name: "empty", value: 2, type: 3, properties: ["empty": "boolean"]} <- channel-empty?/112 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 101530 is 1031
-run/0: instruction channel-empty?/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 101559
-run/0: product 0 is default-space
-run/0: instruction channel-empty?/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 101561
-run/0: instruction channel-empty?/2
-run/0: {name: "full", value: 2, type: 1, properties: ["full": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101561 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 101561 is 1031
-run/0: address to copy is 1031
-run/0: its type is 1
-mem/0: location 1031 is 2
-run/0: product 0 is full
-mem/0: storing 2 in location 101562
-run/0: instruction channel-empty?/3
-run/0: {name: "free", value: 3, type: 1, properties: ["free": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101561 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 101561 is 1031
-run/0: address to copy is 1032
-run/0: its type is 1
-mem/0: location 1032 is 2
-run/0: product 0 is free
-mem/0: storing 2 in location 101563
-run/0: instruction channel-empty?/4
-run/0: {name: "result", value: 4, type: 3, properties: ["result": "boolean"]} <- equal/13 {name: "full", value: 2, type: 1, properties: ["full": "integer"]}, {name: "free", value: 3, type: 1, properties: ["free": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 101562 is 2
-run/0: ingredient 1 is free
-mem/0: location 101563 is 2
-run/0: product 0 is result
-mem/0: storing 1 in location 101564
-run/0: instruction channel-empty?/5
-run/0: reply/36 {name: "result", value: 4, type: 3, properties: ["result": "boolean"]}
-run/0: ingredient 0 is result
-mem/0: location 101564 is 1
-run/0: result 0 is 1
-run/0: product 0 is empty
-mem/0: storing 1 in location 101531
-run/0: instruction read/4
-run/0: break-unless/12 {name: "empty", value: 2, type: 3, properties: ["empty": "boolean"]}, {name: "", value: 2, type: 0, properties: ["": ]}
-run/0: ingredient 0 is empty
-mem/0: location 101531 is 1
-run/0: ingredient 1 is 
-run/0: jump-unless fell through
-run/0: instruction read/5
-run/0: {name: "free-address", value: 3, type: 2-1, properties: ["free-address": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101530 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 101530 is 1031
-run/0: address to copy is 1032
-run/0: product 0 is free-address
-mem/0: storing 1032 in location 101532
-run/0: instruction read/6
-run/0: wait-for-location/42 {name: "free-address", value: 3, type: 2-1, properties: ["free-address": "address":"integer", "deref": ]}
-run/0: ingredient 0 is free-address
-mem/0: location 101532 is 1032
-mem/0: location 1032 is 2
-mem/0: location 101532 is 1032
-run/0: waiting for location 1032 to change from 2
-schedule/0: waking up routine 1
-schedule/0: run1001
-run/0: instruction run1001/33
-run/0: {name: "3", value: 3, type: 1, properties: ["3": "integer"]} <- routine-state/38 {name: "2", value: 2, type: 1, properties: ["2": "integer"]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: product 0 is 3
-mem/0: storing 2 in location 3
-run/0: instruction run1001/34
-run/0: {name: "4", value: 4, type: 3, properties: ["4": "boolean", "waiting?": ]} <- equal/13 {name: "3", value: 3, type: 1, properties: ["3": "integer", "routine-state": ]}, {name: "2", value: 2, type: 0, properties: ["2": "literal", "waiting": ]}
-run/0: ingredient 0 is 3
-mem/0: location 3 is 2
-run/0: ingredient 1 is 2
-run/0: product 0 is 4
-mem/0: storing 1 in location 4
-run/0: instruction run1001/35
-run/0: assert/20 {name: "4", value: 4, type: 3, properties: ["4": "boolean", "waiting?": ]}, {name: "
-F read-move-blocking: routine failed to pause after file 'a2-a4'", value: 0, type: 0, properties: ["
-F read-move-blocking: routine failed to pause after file 'a2-a4'": "literal-string"]}
-run/0: ingredient 0 is 4
-mem/0: location 4 is 1
-run/0: ingredient 1 is 
-F read-move-blocking: routine failed to pause after file 'a2-a4'
-run/0: instruction run1001/36
-run/0: {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]} <- write/109 {name: "1", value: 1, type: 2-10, properties: ["1": "address":"channel"]}, {name: "13", value: 13, type: 0, properties: ["13": "literal"]}
-run/0: ingredient 0 is 1
-mem/0: location 1 is 1031
-run/0: ingredient 1 is 13
-run/0: instruction write/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1503
-run/0: product 0 is default-space
-run/0: instruction write/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1505
-run/0: instruction write/2
-run/0: {name: "val", value: 2, type: 1, properties: ["val": "location"]} <- next-ingredient/33 
-run/0: product 0 is val
-mem/0: storing 13 in location 1506
-run/0: instruction write/4
-run/0: {name: "full", value: 3, type: 3, properties: ["full": "boolean"]} <- channel-full?/110 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 1505 is 1031
-run/0: instruction channel-full?/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1534
-run/0: product 0 is default-space
-run/0: instruction channel-full?/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1536
-run/0: instruction channel-full?/2
-run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1536 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 1536 is 1031
-run/0: address to copy is 1032
-run/0: its type is 1
-mem/0: location 1032 is 2
-run/0: product 0 is tmp
-mem/0: storing 2 in location 1537
-run/0: instruction channel-full?/3
-run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- add/2 {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is tmp
-mem/0: location 1537 is 2
-run/0: ingredient 1 is 1
-run/0: product 0 is tmp
-mem/0: storing 3 in location 1537
-run/0: instruction channel-full?/5
-run/0: {name: "len", value: 3, type: 1, properties: ["len": "integer"]} <- channel-capacity/113 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]}
-run/0: ingredient 0 is chan
-mem/0: location 1536 is 1031
-run/0: instruction channel-capacity/0
-run/0: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/51 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run/0: ingredient 0 is location
-run/0: ingredient 1 is 30
-mem/0: array size is 30
-mem/0: new alloc: 1565
-run/0: product 0 is default-space
-run/0: instruction channel-capacity/1
-run/0: {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel"]} <- next-ingredient/33 
-run/0: product 0 is chan
-mem/0: storing 1031 in location 1567
-run/0: instruction channel-capacity/2
-run/0: {name: "q", value: 2, type: 2-5-1, properties: ["q": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1567 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 1567 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is q
-mem/0: storing 1034 in location 1568
-run/0: instruction channel-capacity/3
-run/0: {name: "result", value: 3, type: 1, properties: ["result": "integer"]} <- length/31 {name: "q", value: 2, type: 2-5-1, properties: ["q": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is q
-mem/0: location 1568 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 52
-mem/0: location 1037 is 45
-mem/0: location 1568 is 1034
-run/0: product 0 is result
-mem/0: storing 3 in location 1569
-run/0: instruction channel-capacity/4
-run/0: reply/36 {name: "result", value: 3, type: 1, properties: ["result": "integer"]}
-run/0: ingredient 0 is result
-mem/0: location 1569 is 3
-run/0: result 0 is 3
-run/0: product 0 is len
-mem/0: storing 3 in location 1538
-run/0: instruction channel-full?/6
-run/0: {name: "at-end?", value: 4, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}, {name: "len", value: 3, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is tmp
-mem/0: location 1537 is 3
-run/0: ingredient 1 is len
-mem/0: location 1538 is 3
-run/0: product 0 is at-end?
-mem/0: storing 1 in location 1539
-run/0: instruction channel-full?/7
-run/0: break-unless/12 {name: "at-end?", value: 4, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 1539 is 1
-run/0: ingredient 1 is 
-run/0: jump-unless fell through
-run/0: instruction channel-full?/8
-run/0: {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run/0: ingredient 0 is 0
-run/0: product 0 is tmp
-mem/0: storing 0 in location 1537
-run/0: instruction channel-full?/10
-run/0: {name: "full", value: 5, type: 1, properties: ["full": "integer"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1536 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 1536 is 1031
-run/0: address to copy is 1031
-run/0: its type is 1
-mem/0: location 1031 is 2
-run/0: product 0 is full
-mem/0: storing 2 in location 1540
-run/0: instruction channel-full?/11
-run/0: {name: "result", value: 6, type: 3, properties: ["result": "boolean"]} <- equal/13 {name: "full", value: 5, type: 1, properties: ["full": "integer"]}, {name: "tmp", value: 2, type: 1, properties: ["tmp": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 1540 is 2
-run/0: ingredient 1 is tmp
-mem/0: location 1537 is 0
-run/0: product 0 is result
-mem/0: storing 0 in location 1541
-run/0: instruction channel-full?/12
-run/0: reply/36 {name: "result", value: 6, type: 3, properties: ["result": "boolean"]}
-run/0: ingredient 0 is result
-mem/0: location 1541 is 0
-run/0: result 0 is 0
-run/0: product 0 is full
-mem/0: storing 0 in location 1507
-run/0: instruction write/5
-run/0: break-unless/12 {name: "full", value: 3, type: 3, properties: ["full": "boolean"]}, {name: "", value: 2, type: 0, properties: ["": ]}
-run/0: ingredient 0 is full
-mem/0: location 1507 is 0
-run/0: ingredient 1 is 
-run/0: jumping to instruction 8
-run/0: instruction write/9
-run/0: {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1505 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 1505 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is circular-buffer
-mem/0: storing 1034 in location 1509
-run/0: instruction write/10
-run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-free", value: 1, type: 0, properties: ["first-free": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 1505 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 2
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-free
-mem/0: location 1505 is 1031
-run/0: address to copy is 1032
-run/0: product 0 is free
-mem/0: storing 1032 in location 1510
-run/0: instruction write/11
-run/0: {name: "dest", value: 7, type: 2-1, properties: ["dest": "address":"location"]} <- index-address/30 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}, {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 1509 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 52
-mem/0: location 1037 is 45
-run/0: ingredient 1 is free
-mem/0: location 1510 is 1032
-mem/0: location 1032 is 2
-mem/0: location 1509 is 1034
-mem/0: location 1510 is 1032
-mem/0: location 1032 is 2
-run/0: product 0 is dest
-mem/0: storing 1037 in location 1511
-run/0: instruction write/12
-run/0: {name: "dest", value: 7, type: 2-1, properties: ["dest": "address":"location", "deref": ]} <- copy/1 {name: "val", value: 2, type: 1, properties: ["val": "location"]}
-run/0: ingredient 0 is val
-mem/0: location 1506 is 13
-run/0: product 0 is dest
-mem/0: location 1511 is 1037
-mem/0: storing 13 in location 1037
-run/0: instruction write/13
-run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]} <- add/2 {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is free
-mem/0: location 1510 is 1032
-mem/0: location 1032 is 2
-run/0: ingredient 1 is 1
-run/0: product 0 is free
-mem/0: location 1510 is 1032
-mem/0: storing 3 in location 1032
-run/0: instruction write/15
-run/0: {name: "len", value: 8, type: 1, properties: ["len": "integer"]} <- length/31 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 1509 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 52
-mem/0: location 1037 is 13
-mem/0: location 1509 is 1034
-run/0: product 0 is len
-mem/0: storing 3 in location 1512
-run/0: instruction write/16
-run/0: {name: "at-end?", value: 9, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]}, {name: "len", value: 8, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is free
-mem/0: location 1510 is 1032
-mem/0: location 1032 is 3
-run/0: ingredient 1 is len
-mem/0: location 1512 is 3
-run/0: product 0 is at-end?
-mem/0: storing 1 in location 1513
-run/0: instruction write/17
-run/0: break-unless/12 {name: "at-end?", value: 9, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 1513 is 1
-run/0: ingredient 1 is 
-run/0: jump-unless fell through
-run/0: instruction write/18
-run/0: {name: "free", value: 6, type: 2-1, properties: ["free": "address":"integer", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run/0: ingredient 0 is 0
-run/0: product 0 is free
-mem/0: location 1510 is 1032
-mem/0: storing 0 in location 1032
-run/0: instruction write/20
-run/0: reply/36 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "same-as-ingredient": "0"]}
-run/0: ingredient 0 is chan
-mem/0: location 1505 is 1031
-run/0: result 0 is 1031
-run/0: product 0 is 1
-mem/0: storing 1031 in location 1
-run/0: instruction run1001/37
-run/0: restart/39 {name: "2", value: 2, type: 1, properties: ["2": "integer", "routine": ]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: instruction run1001/38
-run/0: wait-for-routine/43 {name: "2", value: 2, type: 1, properties: ["2": "integer"]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: waiting for routine 2
-schedule/0: read
-run/0: instruction read/8
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer"]} <- get-address/28 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "first-full", value: 0, type: 0, properties: ["first-full": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101530 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is first-full
-mem/0: location 101530 is 1031
-run/0: address to copy is 1031
-run/0: product 0 is full
-mem/0: storing 1031 in location 101533
-run/0: instruction read/9
-run/0: {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location"]} <- get/27 {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "deref": ]}, {name: "data", value: 2, type: 0, properties: ["data": "offset"]}
-run/0: ingredient 0 is chan
-mem/0: location 101530 is 1031
-mem/0: location 1031 is 2
-mem/0: location 1032 is 0
-mem/0: location 1033 is 1034
-run/0: ingredient 1 is data
-mem/0: location 101530 is 1031
-run/0: address to copy is 1033
-run/0: its type is 2
-mem/0: location 1033 is 1034
-run/0: product 0 is circular-buffer
-mem/0: storing 1034 in location 101534
-run/0: instruction read/10
-run/0: {name: "result", value: 6, type: 1, properties: ["result": "location"]} <- index/29 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}, {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 101534 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 52
-mem/0: location 1037 is 13
-run/0: ingredient 1 is full
-mem/0: location 101533 is 1031
-mem/0: location 1031 is 2
-mem/0: location 101534 is 1034
-mem/0: location 101533 is 1031
-mem/0: location 1031 is 2
-run/0: address to copy is 1037
-run/0: its type is 1
-mem/0: location 1037 is 13
-run/0: product 0 is result
-mem/0: storing 13 in location 101535
-run/0: instruction read/11
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]} <- add/2 {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run/0: ingredient 0 is full
-mem/0: location 101533 is 1031
-mem/0: location 1031 is 2
-run/0: ingredient 1 is 1
-run/0: product 0 is full
-mem/0: location 101533 is 1031
-mem/0: storing 3 in location 1031
-run/0: instruction read/13
-run/0: {name: "len", value: 7, type: 1, properties: ["len": "integer"]} <- length/31 {name: "circular-buffer", value: 5, type: 2-5-1, properties: ["circular-buffer": "address":"array":"location", "deref": ]}
-run/0: ingredient 0 is circular-buffer
-mem/0: location 101534 is 1034
-mem/0: location 1034 is 3
-mem/0: location 1035 is 97
-mem/0: location 1036 is 52
-mem/0: location 1037 is 13
-mem/0: location 101534 is 1034
-run/0: product 0 is len
-mem/0: storing 3 in location 101536
-run/0: instruction read/14
-run/0: {name: "at-end?", value: 8, type: 3, properties: ["at-end?": "boolean"]} <- greater-or-equal/16 {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]}, {name: "len", value: 7, type: 1, properties: ["len": "integer"]}
-run/0: ingredient 0 is full
-mem/0: location 101533 is 1031
-mem/0: location 1031 is 3
-run/0: ingredient 1 is len
-mem/0: location 101536 is 3
-run/0: product 0 is at-end?
-mem/0: storing 1 in location 101537
-run/0: instruction read/15
-run/0: break-unless/12 {name: "at-end?", value: 8, type: 3, properties: ["at-end?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run/0: ingredient 0 is at-end?
-mem/0: location 101537 is 1
-run/0: ingredient 1 is 
-run/0: jump-unless fell through
-run/0: instruction read/16
-run/0: {name: "full", value: 4, type: 2-1, properties: ["full": "address":"integer", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run/0: ingredient 0 is 0
-run/0: product 0 is full
-mem/0: location 101533 is 1031
-mem/0: storing 0 in location 1031
-run/0: instruction read/18
-run/0: reply/36 {name: "result", value: 6, type: 1, properties: ["result": "location"]}, {name: "chan", value: 1, type: 2-10, properties: ["chan": "address":"channel", "same-as-ingredient": "0"]}
-run/0: ingredient 0 is result
-mem/0: location 101535 is 13
-run/0: ingredient 1 is chan
-mem/0: location 101530 is 1031
-run/0: result 0 is 13
-run/0: result 1 is 1031
-run/0: product 0 is c
-mem/0: storing 13 in location 101501
-run/0: product 1 is stdin
-mem/0: storing 1031 in location 101499
-run/0: instruction expect-from-channel/4
-run/0: {name: "match?", value: 4, type: 3, properties: ["match?": "boolean"]} <- equal/13 {name: "c", value: 3, type: 4, properties: ["c": "character"]}, {name: "expected", value: 2, type: 4, properties: ["expected": "character"]}
-run/0: ingredient 0 is c
-mem/0: location 101501 is 13
-run/0: ingredient 1 is expected
-mem/0: location 101500 is 13
-run/0: product 0 is match?
-mem/0: storing 1 in location 101502
-run/0: instruction expect-from-channel/5
-run/0: assert/20 {name: "match?", value: 4, type: 3, properties: ["match?": "boolean"]}, {name: "expected character not found", value: 0, type: 0, properties: ["expected character not found": "literal-string"]}
-run/0: ingredient 0 is match?
-mem/0: location 101502 is 1
-run/0: ingredient 1 is expected character not found
-run/0: instruction read-move/19
-run/0: reply/36 {name: "result", value: 4, type: 2-13, properties: ["result": "address":"move"]}
-run/0: ingredient 0 is result
-mem/0: location 101005 is 101124
-schedule/0: waking up routine 1
-schedule/0: run1001
-run/0: instruction run1001/39
-run/0: {name: "3", value: 3, type: 1, properties: ["3": "integer"]} <- routine-state/38 {name: "2", value: 2, type: 1, properties: ["2": "integer"]}
-run/0: ingredient 0 is 2
-mem/0: location 2 is 2
-run/0: product 0 is 3
-mem/0: storing 1 in location 3
-run/0: instruction run1001/40
-run/0: {name: "4", value: 4, type: 3, properties: ["4": "boolean", "completed?": ]} <- equal/13 {name: "3", value: 3, type: 1, properties: ["3": "integer", "routine-state": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal", "completed": ]}
-run/0: ingredient 0 is 3
-mem/0: location 3 is 1
-run/0: ingredient 1 is 1
-run/0: product 0 is 4
-mem/0: storing 1 in location 4
-run/0: instruction run1001/41
-run/0: assert/20 {name: "4", value: 4, type: 3, properties: ["4": "boolean", "completed?": ]}, {name: "
-F read-move-blocking: routine failed to terminate on newline", value: 0, type: 0, properties: ["
-F read-move-blocking: routine failed to terminate on newline": "literal-string"]}
-run/0: ingredient 0 is 4
-mem/0: location 4 is 1
-run/0: ingredient 1 is 
-F read-move-blocking: routine failed to terminate on newline
-run/0: instruction run1001/42
-run/0: trace/18 {name: "test", value: 0, type: 0, properties: ["test": "literal-string"]}, {name: "reached end", value: 0, type: 0, properties: ["reached end": "literal-string"]}
-run/0: ingredient 0 is test
-run/0: ingredient 1 is reached end
-test/0: reached end
-run/0: instruction read-move-blocking/1
-run/0: trace-should-contain/54 {name: "
-    test: reached end
-  ", value: 0, type: 0, properties: ["
-    test: reached end
-  ": "literal-string"]}
-run/0: ingredient 0 is 
-    test: reached end
-  
+mem/0: location 2 is 0
+run/0: waiting for routine 0

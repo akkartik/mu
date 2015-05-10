@@ -29,57 +29,52 @@ for (index_t i = 0; i < recently_added_recipes.size(); ++i) {
 
 :(code)
 void transform_names(const recipe_number r) {
+  bool names_used = false;
+  bool numeric_locations_used = false;
   map<string, index_t>& names = Name[r];
   // store the indices 'used' so far in the map
   index_t& curr_idx = names[""];
   ++curr_idx;  // avoid using index 0, benign skip in some other cases
-//?   cout << "Recipe " << r << ": " << Recipe[r].name << '\n'; //? 3
-//?   cout << Recipe[r].steps.size() << '\n'; //? 2
   for (index_t i = 0; i < Recipe[r].steps.size(); ++i) {
-//?     cout << "instruction " << i << '\n'; //? 2
     instruction& inst = Recipe[r].steps.at(i);
     // Per-recipe Transforms
     // map names to addresses
     for (index_t in = 0; in < inst.ingredients.size(); ++in) {
-//?       cout << "ingredients\n"; //? 2
-      if (is_raw(inst.ingredients.at(in))) continue;
-//?       cout << "ingredient " << inst.ingredients.at(in).name << '\n'; //? 3
-//?       cout << "ingredient " << inst.ingredients.at(in).to_string() << '\n'; //? 1
-      if (inst.ingredients.at(in).name == "default-space")
-        inst.ingredients.at(in).initialized = true;
-      if (inst.ingredients.at(in).types.empty())
-        raise << "missing type in " << inst.to_string() << '\n';
-      assert(!inst.ingredients.at(in).types.empty());
-      if (inst.ingredients.at(in).types.at(0)  // not a literal
-          && !inst.ingredients.at(in).initialized
-          && !is_number(inst.ingredients.at(in).name)) {
-        if (!already_transformed(inst.ingredients.at(in), names)) {
-          raise << "use before set: " << inst.ingredients.at(in).name << " in " << Recipe[r].name << '\n';
-        }
-        inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
-//?         cout << "lookup ingredient " << Recipe[r].name << "/" << i << ": " << inst.ingredients.at(in).to_string() << '\n'; //? 1
+      if (is_numeric_location(inst.ingredients.at(in))) numeric_locations_used = true;
+      if (is_named_location(inst.ingredients.at(in))) names_used = true;
+      if (disqualified(inst.ingredients.at(in))) continue;
+      if (!already_transformed(inst.ingredients.at(in), names)) {
+        raise << "use before set: " << inst.ingredients.at(in).name << " in " << Recipe[r].name << '\n';
       }
+      inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
     }
     for (index_t out = 0; out < inst.products.size(); ++out) {
-//?       cout << "products\n"; //? 1
-      if (is_raw(inst.products.at(out))) continue;
-//?       cout << "product " << out << '/' << inst.products.size() << " " << inst.products.at(out).name << '\n'; //? 4
-//?       cout << inst.products.at(out).types.at(0) << '\n'; //? 1
-      if (inst.products.at(out).name == "default-space")
-        inst.products.at(out).initialized = true;
-      if (inst.products.at(out).types.at(0)  // not a literal
-          && !inst.products.at(out).initialized
-          && !is_number(inst.products.at(out).name)) {
-        if (names.find(inst.products.at(out).name) == names.end()) {
-          trace("name") << "assign " << inst.products.at(out).name << " " << curr_idx;
-          names[inst.products.at(out).name] = curr_idx;
-          curr_idx += size_of(inst.products.at(out));
-        }
-        inst.products.at(out).set_value(lookup_name(inst.products.at(out), r));
-//?         cout << "lookup product " << Recipe[r].name << "/" << i << ": " << inst.products.at(out).to_string() << '\n'; //? 1
+      if (is_numeric_location(inst.products.at(out))) numeric_locations_used = true;
+      if (is_named_location(inst.products.at(out))) names_used = true;
+      if (disqualified(inst.products.at(out))) continue;
+      if (names.find(inst.products.at(out).name) == names.end()) {
+        trace("name") << "assign " << inst.products.at(out).name << " " << curr_idx;
+        names[inst.products.at(out).name] = curr_idx;
+        curr_idx += size_of(inst.products.at(out));
       }
+      inst.products.at(out).set_value(lookup_name(inst.products.at(out), r));
     }
   }
+  if (names_used && numeric_locations_used)
+    raise << "mixing variable names and numeric addresses in " << Recipe[r].name << '\n';
+}
+
+bool disqualified(/*mutable*/ reagent& x) {
+  if (x.types.empty())
+    raise << "missing type in " << x.to_string() << '\n';
+  assert(!x.types.empty());
+  if (is_raw(x)) return true;
+  if (isa_literal(x)) return true;
+  if (is_number(x.name)) return true;
+  if (x.name == "default-space")
+    x.initialized = true;
+  if (x.initialized) return true;
+  return false;
 }
 
 bool already_transformed(const reagent& r, const map<string, index_t>& names) {
@@ -108,10 +103,35 @@ int find_element_name(const type_number t, const string& name) {
   return -1;
 }
 
+bool is_numeric_location(const reagent& x) {
+  if (isa_literal(x)) return false;
+  if (is_raw(x)) return false;
+  if (x.name == "0") return false;  // used for chaining lexical scopes
+  return is_number(x.name);
+}
+
+bool is_named_location(const reagent& x) {
+  if (isa_literal(x)) return false;
+  if (is_raw(x)) return false;
+  if (is_special_name(x.name)) return false;
+  return !is_number(x.name);
+}
+
 bool is_raw(const reagent& r) {
   for (index_t i = /*skip value+type*/1; i < r.properties.size(); ++i) {
     if (r.properties.at(i).first == "raw") return true;
   }
+  return false;
+}
+
+bool is_special_name(const string& s) {
+  if (s == "_") return true;
+  // lexical scopes
+  if (s == "default-space") return true;
+  if (s == "0") return true;
+  // tests will use these in later layers even though tests will mostly use numeric addresses
+  if (s == "screen") return true;
+  if (s == "keyboard") return true;
   return false;
 }
 
@@ -138,6 +158,42 @@ recipe main [
 ]
 -name: assign x 1
 
+:(scenario convert_names_warns_when_mixing_names_and_numeric_locations)
+% Hide_warnings = true;
+recipe main [
+  x:integer <- copy 1:integer
+]
++warn: mixing variable names and numeric addresses in main
+
+:(scenario convert_names_warns_when_mixing_names_and_numeric_locations2)
+% Hide_warnings = true;
+recipe main [
+  x:integer <- copy 1:literal
+  1:integer <- copy x:integer
+]
++warn: mixing variable names and numeric addresses in main
+
+:(scenario convert_names_does_not_warn_when_mixing_names_and_raw_locations)
+% Hide_warnings = true;
+recipe main [
+  x:integer <- copy 1:integer/raw
+]
+-warn: mixing variable names and numeric addresses in main
+
+:(scenario convert_names_does_not_warn_when_mixing_names_and_literals)
+% Hide_warnings = true;
+recipe main [
+  x:integer <- copy 1:literal
+]
+-warn: mixing variable names and numeric addresses in main
+
+:(scenario convert_names_does_not_warn_when_mixing_special_names_and_numeric_locations)
+% Hide_warnings = true;
+recipe main [
+  screen:integer <- copy 1:integer
+]
+-warn: mixing variable names and numeric addresses in main
+
 //:: Support element names for containers in 'get' and 'get-address'.
 
 //: update our running example container for the next test
@@ -146,8 +202,9 @@ Type[point].element_names.push_back("x");
 Type[point].element_names.push_back("y");
 :(scenario convert_names_transforms_container_elements)
 recipe main [
-  a:integer <- get 0:point, y:offset
-  b:integer <- get 0:point, x:offset
+  p:address:point <- copy 0:literal  # unsafe
+  a:integer <- get p:address:point/deref, y:offset
+  b:integer <- get p:address:point/deref, x:offset
 ]
 +name: element y of type point is at offset 1
 +name: element x of type point is at offset 0
