@@ -190,6 +190,7 @@ case READ_KEY_FROM_KEYBOARD: {
   long long int found = false;
 //?   cerr << event_type << '\n'; //? 1
   if (event_type == TB_EVENT_KEY) {
+    if (event.key == TB_KEY_CTRL_C) tb_shutdown(), exit(1);
     result = event.key ? event.key : event.ch;
     found = true;
   }
