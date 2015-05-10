@@ -62,6 +62,7 @@ recipe send-keys-to-channel [
   {
     c:character, found?:boolean <- read-key keyboard:address
     loop-unless found?:boolean
+#?     print-integer screen:address, c:character #? 1
     print-character screen:address, c:character
     chan:address:channel <- write chan:address:channel, c:character
     # todo: eof
