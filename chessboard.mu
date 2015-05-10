@@ -1,6 +1,24 @@
 # chessboard program: takes moves in algebraic notation and displays the
 # position after each
 
+# recipes are mu's names for functions, and recipes have ingredients
+recipe main [
+  switch-to-display  # take control of screen and keyboard
+
+  # The chessboard recipe takes keyboard and screen objects as 'ingredients'.
+  #
+  # In mu it is good form (though not required) to explicitly show the
+  # hardware you rely on.
+  #
+  # The chessboard also returns the same keyboard and screen objects. In mu it
+  # is good form to not modify ingredients of a recipe unless they are also
+  # results. Here we clearly modify both keyboard and screen, so we return
+  # both.
+  0:literal/real-screen, 0:literal/real-keyboard <- chessboard 0:literal/real-screen, 0:literal/real-keyboard
+
+  return-to-console  # cleanup screen and keyboard
+]
+
 ## a board is an array of files, a file is an array of characters (squares)
 recipe init-board [
   default-space:address:array:location <- new location:type, 30:literal
@@ -573,10 +591,4 @@ recipe chessboard [
   }
   +quit
 #?   $print [aaa] #? 1
-]
-
-recipe main [
-  switch-to-display
-  0:literal/real-screen, 0:literal/real-keyboard <- chessboard 0:literal/real-screen, 0:literal/real-keyboard
-  return-to-console
 ]
