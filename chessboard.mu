@@ -108,7 +108,7 @@ recipe initial-position [
 ]
 
 scenario printing-the-board [
-  assume-screen 30:literal/width, 24:literal/height
+  assume-screen 30:literal/width, 12:literal/height
   run [
     1:address:array:address:array:character/board <- initial-position
     screen:address <- print-board screen:address, 1:address:array:address:array:character/board
@@ -125,19 +125,6 @@ scenario printing-the-board [
     .1 | R N B Q K B N R           .
     .  +----------------           .
     .    a b c d e f g h           .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
     .                              .
     .                              .
   ]
@@ -514,7 +501,7 @@ recipe make-move [
 ]
 
 scenario making-a-move [
-  assume-screen 30:literal/width, 24:literal/height
+  assume-screen 30:literal/width, 12:literal/height
   run [
     2:address:array:address:array:character/board <- initial-position
     3:address:move <- new move:type
@@ -541,19 +528,6 @@ scenario making-a-move [
     .1 | R N B Q K B N R           .
     .  +----------------           .
     .    a b c d e f g h           .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
-    .                              .
     .                              .
     .                              .
   ]
