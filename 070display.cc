@@ -31,6 +31,9 @@ case RETURN_TO_CONSOLE: {
   break;
 }
 
+:(before "End Teardown")
+tb_shutdown();
+
 :(before "End Primitive Recipe Declarations")
 CLEAR_DISPLAY,
 :(before "End Primitive Recipe Numbers")
