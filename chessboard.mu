@@ -20,6 +20,7 @@ recipe main [
 ]
 
 ## a board is an array of files, a file is an array of characters (squares)
+
 recipe init-board [
   default-space:address:array:location <- new location:type, 30:literal
   initial-position:address:array:integer <- next-ingredient
@@ -149,6 +150,7 @@ scenario printing-the-board [
 ]
 
 ## data structure: move
+
 container move [
   # valid range: 0-7
   from-file:integer
