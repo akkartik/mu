@@ -4,10 +4,13 @@
 :(scenario scheduler)
 recipe f1 [
   start-running f2:recipe
-  1:integer <- copy 3:literal
+  # wait for f2 to run
+  {
+    loop-unless 1:integer
+  }
 ]
 recipe f2 [
-  2:integer <- copy 4:literal
+  1:integer <- copy 1:literal
 ]
 +schedule: f1
 +schedule: f2
@@ -51,6 +54,7 @@ void run(recipe_number r) {
     assert(Current_routine);
     assert(Current_routine->state == RUNNING);
     trace("schedule") << current_recipe_name();
+//?     trace("schedule") << Current_routine_index << ": " << current_recipe_name(); //? 1
 //?     trace("schedule") << Current_routine->id << " " << current_recipe_name(); //? 1
     run_current_routine(Scheduling_interval);
     // Scheduler State Transitions
@@ -171,6 +175,10 @@ recipe f2 [
 :(scenario start_running_takes_args)
 recipe f1 [
   start-running f2:recipe, 3:literal
+  # wait for f2 to run
+  {
+    loop-unless 1:integer
+  }
 ]
 recipe f2 [
   1:integer <- next-ingredient
@@ -219,18 +227,41 @@ recipe f1 [
 -run: idle
 
 //:: Routines are marked completed when their parent completes.
+
+:(scenario scheduler_kills_orphans)
+recipe main [
+  start-running f1:recipe
+  # f1 never actually runs because its parent completes without waiting for it
+]
+recipe f1 [
+  1:integer <- copy 0:literal
+]
+-schedule: f1
+
 :(before "End Scheduler Cleanup")
+//? trace("schedule") << "Before cleanup"; //? 1
+//? for (index_t i = 0; i < Routines.size(); ++i) { //? 1
+//?   trace("schedule") << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << ' ' << Routines.at(i)->state; //? 1
+//? } //? 1
 for (index_t i = 0; i < Routines.size(); ++i) {
   if (Routines.at(i)->state == COMPLETED) continue;
   if (Routines.at(i)->parent_index < 0) continue;  // root thread
-  if (has_completed_parent(i)) Routines.at(i)->state = COMPLETED;
+//?   trace("schedule") << "AAA " << i; //? 1
+  if (has_completed_parent(i)) {
+//?     trace("schedule") << "BBB " << i; //? 1
+    Routines.at(i)->state = COMPLETED;
+  }
 }
+//? trace("schedule") << "After cleanup"; //? 1
+//? for (index_t i = 0; i < Routines.size(); ++i) { //? 1
+//?   trace("schedule") << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << ' ' << Routines.at(i)->state; //? 1
+//? } //? 1
 
 :(code)
 bool has_completed_parent(index_t routine_index) {
-//?   cerr << routine_index << '\n'; //? 1
-  for (long long int j = routine_index; j < 0; j = Routines.at(j)->parent_index) {
-//?     cerr << ' ' << j << '\n'; //? 1
+//?   trace("schedule") << "CCC " << routine_index << '\n'; //? 2
+  for (long long int j = routine_index; j >= 0; j = Routines.at(j)->parent_index) {
+//?     trace("schedule") << "DDD " << j << '\n'; //? 2
     if (Routines.at(j)->state == COMPLETED)
       return true;
   }
@@ -300,7 +331,7 @@ Recipe_number["$dump-routines"] = _DUMP_ROUTINES;
 :(before "End Primitive Recipe Implementations")
 case _DUMP_ROUTINES: {
   for (index_t i = 0; i < Routines.size(); ++i) {
-    cerr << Routines.at(i)->id << ": " << Routines.at(i)->state << '\n';
+    cerr << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << '\n';
   }
   break;
 }

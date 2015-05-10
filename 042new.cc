@@ -118,11 +118,17 @@ recipe main [
 recipe f1 [
   start-running f2:recipe
   1:address:integer/raw <- new integer:type
+  # wait for f2 to complete
+  {
+    loop-unless 4:integer/raw
+  }
 ]
 recipe f2 [
   2:address:integer/raw <- new integer:type
   # hack: assumes scheduler implementation
   3:boolean/raw <- equal 1:address:integer/raw, 2:address:integer/raw
+  # signal f2 complete
+  4:integer/raw <- copy 1:literal
 ]
 +mem: storing 0 in location 3
 
