@@ -27,6 +27,7 @@ Recipe_number["return-to-console"] = RETURN_TO_CONSOLE;
 :(before "End Primitive Recipe Implementations")
 case RETURN_TO_CONSOLE: {
   tb_shutdown();
+//?   Trace_stream->dump_layer = "all"; //? 1
   break;
 }
 
