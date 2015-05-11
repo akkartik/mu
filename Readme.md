@@ -257,6 +257,23 @@ just flat lists of instructions.
 
 Another example, this time with concurrency.
 
+```
+  recipe main [
+    start-running thread2:recipe
+    {
+      $print 34:literal
+      loop
+    }
+  ]
+
+  recipe thread2 [
+    {
+      $print 35:literal
+      loop
+    }
+  ]
+```
+
 ```shell
   $ ./mu fork.mu
 ```
