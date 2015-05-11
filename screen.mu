@@ -1,4 +1,8 @@
-# example of recipes for working with screen objects
+# example program: managing the display using 'screen' objects
+#
+# The zero screen below means 'use the real screen'. Tests can also use fake
+# screens.
+
 recipe main [
   switch-to-display
   print-character 0:literal/screen, 97:literal

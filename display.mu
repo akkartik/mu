@@ -1,4 +1,5 @@
-# example of raw primitives operating on display
+# example program: managing the display
+
 recipe main [
   switch-to-display
   print-character-to-display 97:literal

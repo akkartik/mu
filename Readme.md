@@ -94,9 +94,9 @@ returns some *results*.
   [results] <- instruction [ingredients]
 ```
 
-Result and ingredient *reagents* have to be simple; you can't nest operations.
-But you can have any number of them. In particular you can have any number of
-results. For example, you can perform integer division as follows:
+Result and ingredient *reagents* have to be variables. But you can have any
+number of them. In particular you can have any number of results. For example,
+you can perform integer division as follows:
 
 ```
   quotient:integer, remainder:integer <- divide-with-remainder 11:literal, 3:literal
@@ -246,6 +246,10 @@ inserting code at them.
 ```
 
 (You'll find this version in `tangle.mu`.)
+
+Any instruction without ingredients or products that starts with a
+non-alphanumeric character is a label. By convention we use '+' to indicate
+label names.
 
 This is a good time to point out that `{` and `}` are also just labels in Mu
 syntax, and that `break` and `loop` get rewritten as jumps to just after the

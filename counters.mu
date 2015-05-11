@@ -23,9 +23,12 @@ recipe main [
   b:address:space <- init-counter 23:literal
   # increment both by 2 but in different ways
   increment-counter a:address:space, 1:literal
-  bres:integer <- increment-counter b:address:space, 2:literal
-  ares:integer <- increment-counter a:address:space, 1:literal
+  b-value:integer <- increment-counter b:address:space, 2:literal
+  a-value:integer <- increment-counter a:address:space, 1:literal
   # check results
-  $print [Contents of counters a: ], ares:integer, [ b: ], bres:integer, [
+  $print [Contents of counters
+]
+  # trailing space in next line is to help with syntax highlighting
+  $print [a: ], a-value:integer, [ b: ], b-value:integer, [ 
 ]
 ]
