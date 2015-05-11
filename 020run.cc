@@ -144,6 +144,9 @@ if (!Run_tests) {
 :(code)
 void load_permanently(string filename) {
   ifstream fin(filename.c_str());
+  fin.peek();
+//?   cerr << "AAA: " << filename << ' ' << static_cast<bool>(fin) << ' ' << fin.fail() << '\n'; //? 1
+//?   return; //? 1
   if (!fin) {
     raise << "no such file " << filename << '\n';
     return;
