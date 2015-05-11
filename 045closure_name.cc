@@ -84,7 +84,7 @@ index_t lookup_name(const reagent& x, const recipe_number default_recipe) {
   }
   vector<string> p = property(x, "space");
   if (p.size() != 1) raise << "/space property should have exactly one (non-negative integer) value\n";
-  int n = to_int(p.at(0));
+  int n = to_number(p.at(0));
   assert(n >= 0);
   recipe_number surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
   set<recipe_number> done;

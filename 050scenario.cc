@@ -200,7 +200,7 @@ void check_memory(const string& s) {
       check_type(lhs, in);
       continue;
     }
-    int address = to_int(lhs);
+    int address = to_number(lhs);
     skip_whitespace_and_comments(in);
     string _assign;  in >> _assign;  assert(_assign == "<-");
     skip_whitespace_and_comments(in);
@@ -223,7 +223,7 @@ void check_memory(const string& s) {
 void check_type(const string& lhs, istream& in) {
   reagent x(lhs);
   if (x.properties.at(0).second.at(0) == "string") {
-    x.set_value(to_int(x.name));
+    x.set_value(to_number(x.name));
     skip_whitespace_and_comments(in);
     string _assign = next_word(in);
     assert(_assign == "<-");
