@@ -94,7 +94,7 @@
 // Types
 // End Types
 
-// prototypes are auto-generated; define your functions in any order
+// prototypes are auto-generated in the makefile; define your functions in any order
 #include "function_list"  // by convention, files ending with '_list' are auto-generated
 
 // Globals
@@ -110,6 +110,13 @@ int main(int argc, char* argv[]) {
   return 0;  // End Main
 }
 
+//: our first directive; will move the include above the program
+:(before "End Includes")
+#include<stdlib.h>
+
+//: Without directives or with the :(code) directive, lines get added at the
+//: end.
+:(code)
 void setup() {
   // End Setup
 }
@@ -117,10 +124,3 @@ void setup() {
 void teardown() {
   // End Teardown
 }
-
-:(before "End Includes")
-#include<stdlib.h>
-
-:(code)
-//: Without directives or with the :(code) directive, lines get added at the
-//: end.
