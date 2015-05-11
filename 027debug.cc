@@ -72,3 +72,13 @@ case _DUMP_TRACE: {
   DUMP("");
   break;
 }
+
+:(before "End Primitive Recipe Declarations")
+_DUMP_MEMORY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["$dump-memory"] = _DUMP_MEMORY;
+:(before "End Primitive Recipe Implementations")
+case _DUMP_MEMORY: {
+  dump_memory();
+  break;
+}
