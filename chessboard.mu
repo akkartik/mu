@@ -1,7 +1,7 @@
 # Chessboard program: you type in moves in algebraic notation, and it'll
 # display the position after each move.
 
-# recipes are mu's names for functions, and recipes have ingredients
+# recipes are mu's names for functions
 recipe main [
   switch-to-display  # take control of screen and keyboard
 
@@ -14,6 +14,9 @@ recipe main [
   # is good form to not modify ingredients of a recipe unless they are also
   # results. Here we clearly modify both keyboard and screen, so we return
   # both.
+  #
+  # Here the keyboard and screen are both 0, which usually indicates real
+  # hardware rather than a fake for testing as you'll see below.
   0:literal/real-screen, 0:literal/real-keyboard <- chessboard 0:literal/real-screen, 0:literal/real-keyboard
 
   return-to-console  # cleanup screen and keyboard
