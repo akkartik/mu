@@ -98,7 +98,7 @@ Result and ingredient *reagents* have to be variables. But you can have any
 number of them. In particular you can have any number of results. For example,
 you can perform integer division as follows:
 
-```
+```python
   quotient:integer, remainder:integer <- divide-with-remainder 11:literal, 3:literal
 ```
 
