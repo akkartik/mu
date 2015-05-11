@@ -1,6 +1,9 @@
-# To demonstrate tangle directives, we'll construct a factorial function with
-# separate base and recursive cases. Compare factorial.mu.
-# This isn't a very realistic example, just a simple demonstration of
+# example program: constructing recipes out of order
+#
+# We construct a factorial function with separate base and recursive cases.
+# Compare factorial.mu.
+#
+# This isn't a very tasteful example, just a simple demonstration of
 # possibilities.
 
 recipe factorial [

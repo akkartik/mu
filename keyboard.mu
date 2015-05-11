@@ -1,7 +1,8 @@
-# example reading keys from keyboard
+# example program: reading keys from keyboard
 #
 # Keeps printing 'a' until you press a key. Then prints the key you pressed
 # and exits.
+
 recipe main [
   switch-to-display
   {

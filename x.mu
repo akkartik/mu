@@ -1,5 +1,8 @@
+# example program: add two numbers
+
 recipe main [
-  12:integer <- copy 1:literal
-  13:integer <- copy 3:literal
-  11:integer <- add 12:integer, 13:integer
+  11:integer <- copy 1:literal
+  12:integer <- copy 3:literal
+  13:integer <- add 11:integer, 12:integer
+  $dump-memory
 ]
