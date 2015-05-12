@@ -110,7 +110,8 @@ Recipe_number["get"] = GET;
 :(before "End Primitive Recipe Implementations")
 case GET: {
   reagent base = current_instruction().ingredients.at(0);
-  index_t base_address = base.value;
+  assert(!is_negative(base.value));
+  index_t base_address = value(base.value);
   type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == container);
   assert(isa_literal(current_instruction().ingredients.at(1)));
@@ -126,7 +127,7 @@ case GET: {
   type_number src_type = Type[base_type].elements.at(offset).at(0);
   trace("run") << "its type is " << src_type;
   reagent tmp;
-  tmp.set_value(src);
+  tmp.set_value(mu_integer(src));
   tmp.types.push_back(src_type);
   products.push_back(read_memory(tmp));
   break;
@@ -174,7 +175,8 @@ Recipe_number["get-address"] = GET_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case GET_ADDRESS: {
   reagent base = current_instruction().ingredients.at(0);
-  index_t base_address = base.value;
+  assert(!is_negative(base.value));
+  index_t base_address = value(base.value);
   type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == container);
   assert(isa_literal(current_instruction().ingredients.at(1)));
@@ -186,6 +188,6 @@ case GET_ADDRESS: {
   }
   trace("run") << "address to copy is " << result;
   products.resize(1);
-  products.at(0).push_back(result);
+  products.at(0).push_back(mu_integer(result));  // address must be a positive integer
   break;
 }

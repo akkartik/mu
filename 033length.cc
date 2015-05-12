@@ -23,6 +23,8 @@ case LENGTH: {
     break;
   }
   products.resize(1);
-  products.at(0).push_back(Memory[x.value]);
+  assert(is_integer(Memory[x.value]));
+  assert(!is_negative(Memory[x.value]));
+  products.at(0).push_back(Memory[x.value]);  // length must be a positive integer
   break;
 }

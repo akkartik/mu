@@ -9,7 +9,7 @@ case JUMP: {
   assert(current_instruction().ingredients.at(0).initialized);
   assert(ingredients.size() == 1);
   assert(ingredients.at(0).size() == 1);  // scalar
-  instruction_counter += ingredients.at(0).at(0);
+  instruction_counter += value(ingredients.at(0).at(0));
   trace("run") << "jumping to instruction " << instruction_counter+1;
   break;
 }
@@ -49,7 +49,7 @@ case JUMP_IF: {
     break;
   }
   assert(ingredients.at(1).size() == 1);  // scalar
-  instruction_counter += ingredients.at(1).at(0);
+  instruction_counter += value(ingredients.at(1).at(0));
   trace("run") << "jumping to instruction " << instruction_counter+1;
   break;
 }
@@ -89,7 +89,7 @@ case JUMP_UNLESS: {
     break;
   }
   assert(ingredients.at(1).size() == 1);  // scalar
-  instruction_counter += ingredients.at(1).at(0);
+  instruction_counter += value(ingredients.at(1).at(0));
   trace("run") << "jumping to instruction " << instruction_counter+1;
   break;
 }

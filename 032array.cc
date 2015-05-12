@@ -53,7 +53,7 @@ if (x.types.at(0) != Type_number["array"] && size_of(x) != data.size())
   if (r.types.at(0) == Type_number["array"]) {
     assert(r.types.size() > 1);
     // skip the 'array' type to get at the element type
-    return 1 + Memory[r.value]*size_of(array_element(r.types));
+    return 1 + value(Memory[r.value])*size_of(array_element(r.types));
   }
 
 //:: To access elements of an array, use 'index'
@@ -98,7 +98,8 @@ case INDEX: {
 //?   if (Trace_stream) Trace_stream->dump_layer = "run"; //? 1
   reagent base = canonize(current_instruction().ingredients.at(0));
 //?   trace("run") << "ingredient 0 after canonize: " << base.to_string(); //? 1
-  index_t base_address = base.value;
+  assert(!is_negative(base.value));
+  index_t base_address = value(base.value);
   assert(base.types.at(0) == Type_number["array"]);
   reagent offset = canonize(current_instruction().ingredients.at(1));
 //?   trace("run") << "ingredient 1 after canonize: " << offset.to_string(); //? 1
@@ -106,11 +107,12 @@ case INDEX: {
   vector<type_number> element_type = array_element(base.types);
 //?   trace("run") << "offset: " << offset_val.at(0); //? 1
 //?   trace("run") << "size of elements: " << size_of(element_type); //? 1
-  index_t src = base_address + 1 + offset_val.at(0)*size_of(element_type);
+  assert(offset_val.size() == 1);  // scalar
+  index_t src = base_address + 1 + value(offset_val.at(0))*size_of(element_type);
   trace("run") << "address to copy is " << src;
   trace("run") << "its type is " << element_type.at(0);
   reagent tmp;
-  tmp.set_value(src);
+  tmp.set_value(mu_integer(src));
   copy(element_type.begin(), element_type.end(), inserter(tmp.types, tmp.types.begin()));
   products.push_back(read_memory(tmp));
   break;
@@ -153,13 +155,14 @@ Recipe_number["index-address"] = INDEX_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
   reagent base = canonize(current_instruction().ingredients.at(0));
-  index_t base_address = base.value;
+  assert(!is_negative(base.value));
+  index_t base_address = value(base.value);
   assert(base.types.at(0) == Type_number["array"]);
-  reagent offset = canonize(current_instruction().ingredients.at(1));
-  vector<long long int> offset_val(read_memory(offset));
+  vector<long long int>& offset_val = ingredients.at(1);
+  assert(offset_val.size() == 1);
   vector<type_number> element_type = array_element(base.types);
-  index_t result = base_address + 1 + offset_val.at(0)*size_of(element_type);
+  index_t result = base_address + 1 + value(offset_val.at(0))*size_of(element_type);
   products.resize(1);
-  products.at(0).push_back(result);
+  products.at(0).push_back(mu_integer(result));  // address must be a positive integer
   break;
 }

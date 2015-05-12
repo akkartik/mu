@@ -15,7 +15,7 @@ case _PRINT: {
       for (index_t j = 0; j < ingredients.at(i).size(); ++j) {
         trace("run") << "$print: " << ingredients.at(i).at(j);
         if (j > 0) cout << " ";
-        cout << ingredients.at(i).at(j);
+        cout << value(ingredients.at(i).at(j));
       }
     }
   }

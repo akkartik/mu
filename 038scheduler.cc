@@ -135,7 +135,7 @@ case START_RUNNING: {
     new_routine->calls.top().ingredient_atoms.push_back(ingredients.at(i));
   Routines.push_back(new_routine);
   products.resize(1);
-  products.at(0).push_back(new_routine->id);
+  products.at(0).push_back(new_routine->id);  // routine ids are positive integers
   break;
 }
 
@@ -301,7 +301,7 @@ case ROUTINE_STATE: {
     }
   }
   products.resize(1);
-  products.at(0).push_back(result);
+  products.at(0).push_back(result);  // routine states are positive integers
   break;
 }
 

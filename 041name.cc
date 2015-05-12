@@ -46,7 +46,7 @@ void transform_names(const recipe_number r) {
       if (!already_transformed(inst.ingredients.at(in), names)) {
         raise << "use before set: " << inst.ingredients.at(in).name << " in " << Recipe[r].name << '\n';
       }
-      inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
+      inst.ingredients.at(in).set_value(mu_integer(lookup_name(inst.ingredients.at(in), r)));  // must be a positive integer
     }
     for (index_t out = 0; out < inst.products.size(); ++out) {
       if (is_numeric_location(inst.products.at(out))) numeric_locations_used = true;
@@ -57,7 +57,7 @@ void transform_names(const recipe_number r) {
         names[inst.products.at(out).name] = curr_idx;
         curr_idx += size_of(inst.products.at(out));
       }
-      inst.products.at(out).set_value(lookup_name(inst.products.at(out), r));
+      inst.products.at(out).set_value(mu_integer(lookup_name(inst.products.at(out), r)));  // must be a positive integer
     }
   }
   if (names_used && numeric_locations_used)
@@ -220,7 +220,7 @@ if (inst.operation == Recipe_number["get"]
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
   // since first non-address in base type must be a container, we don't have to canonize
   type_number base_type = skip_addresses(inst.ingredients.at(0).types);
-  inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
+  inst.ingredients.at(1).set_value(mu_integer(find_element_name(base_type, inst.ingredients.at(1).name)));  // must be a positive integer
   trace("name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << inst.ingredients.at(1).value;
 }
 
@@ -256,6 +256,6 @@ if (inst.operation == Recipe_number["maybe-convert"]) {
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
   // since first non-address in base type must be an exclusive container, we don't have to canonize
   type_number base_type = skip_addresses(inst.ingredients.at(0).types);
-  inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
+  inst.ingredients.at(1).set_value(mu_integer(find_element_name(base_type, inst.ingredients.at(1).name)));  // must be a positive integer
   trace("name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << inst.ingredients.at(1).value;
 }

@@ -41,7 +41,7 @@ recipe clear-screen [
       done?:boolean <- greater-or-equal i:integer, max:integer
       break-if done?:boolean
       c:address:character <- index-address buf:address:array:character/deref, i:integer
-      c:address:character/deref <- copy [ ]
+      c:address:character/deref <- copy [ ]  # hack: can't copy any literal string except a single space
       i:integer <- add i:integer, 1:literal
       loop
     }

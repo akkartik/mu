@@ -48,7 +48,7 @@ reagent deref(reagent x) {
   assert(x.types.at(0) == ADDRESS);
 
   // compute value
-  result.set_value(Memory[x.value]);
+  result.set_value(mu_integer(value(Memory[x.value])));  // address must be a positive integer
   trace("mem") << "location " << x.value << " is " << result.value;
 
   // populate types
