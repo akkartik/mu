@@ -121,7 +121,10 @@ void check_screen(const string& contents) {
     if ((!Memory[screen_data_start+i] && !isspace(expected_contents.at(i)))  // uninitialized memory => spaces
         || (Memory[screen_data_start+i] && Memory[screen_data_start+i] != expected_contents.at(i))) {
 //?       cerr << "CCC " << Trace_stream << " " << Hide_warnings << '\n'; //? 1
-      raise << "expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
+      if (Current_scenario)
+        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
+      else
+        raise << "expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
       Passed = false;
       return;
     }
