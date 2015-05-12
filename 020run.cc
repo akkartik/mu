@@ -78,7 +78,11 @@ void run_current_routine()
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
       case COPY: {
-        copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
+        products.resize(ingredients.size());
+        for (index_t i = 0; i < ingredients.size(); ++i) {
+          copy(ingredients.at(i).begin(), ingredients.at(i).end(), inserter(products.at(i), products.at(i).begin()));
+        }
+//?         copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
         break;
       }
       // End Primitive Recipe Implementations
@@ -121,6 +125,7 @@ inline bool routine::completed() const {
 }
 
 :(before "End Commandline Parsing")
+// Loading Commandline Files
 if (argc > 1) {
   for (int i = 1; i < argc; ++i) {
     load_permanently(argv[i]);
@@ -183,10 +188,14 @@ vector<long long int> read_memory(reagent x) {
     return result;
   }
   index_t base = x.value;
+//?   cerr << "AAA " << base << '\n'; //? 1
+  assert(!is_negative(base));
+  base = value(base);
   size_t size = size_of(x);
   for (index_t offset = 0; offset < size; ++offset) {
     long long int val = Memory[base+offset];
-    trace("mem") << "location " << base+offset << " is " << val;
+//?     cerr << "AAA2 " << val << '\n'; //? 1
+    trace("mem") << "location " << base+offset << " is " << value(val);
     result.push_back(val);
   }
   return result;
@@ -194,11 +203,20 @@ vector<long long int> read_memory(reagent x) {
 
 void write_memory(reagent x, vector<long long int> data) {
   if (is_dummy(x)) return;
+  // Preprocess x.
+  // End Preprocess x.
   index_t base = x.value;
+  assert(!is_negative(base));
+  base = value(base);
   if (size_of(x) != data.size())
     raise << "size mismatch in storing to " << x.to_string() << '\n';
+//?   cerr << "BBB " << base << '\n'; //? 1
   for (index_t offset = 0; offset < data.size(); ++offset) {
-    trace("mem") << "storing " << data.at(offset) << " in location " << base+offset;
+    trace("mem") << "storing " << value(data.at(offset)) << " in location " << base+offset;
+//?     if (base+offset > 99999) { //? 1
+//?       raise << "AAAAAAAAAAAAAAAAAAAAA\n"; //? 1
+//?       Trace_stream->newline(), exit(0); //? 1
+//?     } //? 1
     Memory[base+offset] = data.at(offset);
   }
 }

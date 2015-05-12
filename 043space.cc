@@ -42,7 +42,7 @@ reagent absolutize(reagent x) {
 //?   cout << "not raw: " << x.to_string() << '\n'; //? 1
   assert(x.initialized);
   reagent r = x;
-  r.set_value(address(r.value, space_base(r)));
+  r.set_value(mu_integer(address(r.value, space_base(r))));  // must be a positive integer
 //?   cout << "after absolutize: " << r.value << '\n'; //? 1
   r.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
   assert(is_raw(r));
@@ -100,11 +100,11 @@ index_t space_base(const reagent& x) {
 index_t address(index_t offset, index_t base) {
   if (base == 0) return offset;  // raw
 //?   cout << base << '\n'; //? 2
-  if (offset >= static_cast<index_t>(Memory[base])) {
+  if (value(offset) >= value(Memory[base])) {
     // todo: test
-    raise << "location " << offset << " is out of bounds " << Memory[base] << '\n';
+    raise << "location " << value(offset) << " is out of bounds " << value(Memory[base]) << '\n';
   }
-  return base+1 + offset;
+  return value(base)+1 + value(offset);
 }
 
 :(after "void write_memory(reagent x, vector<long long int> data)")

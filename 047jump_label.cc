@@ -52,7 +52,7 @@ void replace_offset(reagent& x, /*const*/ map<string, index_t>& offset, const in
 //?   cerr << "DDD " << x.to_string() << '\n'; //? 1
   if (offset.find(x.name) == offset.end())
     raise << "can't find label " << x.name << " in routine " << Recipe[r].name << '\n';
-  x.set_value(offset[x.name]-current_offset);
+  x.set_value(mu_integer(offset[x.name]-current_offset));
 }
 
 :(scenario break_to_label)

@@ -41,15 +41,15 @@ if (curr.name == "assume-keyboard") {
   curr.operation = Recipe_number["new"];
   assert(curr.products.empty());
   curr.products.push_back(reagent("keyboard:address"));
-  curr.products.at(0).set_value(KEYBOARD);
+  curr.products.at(0).set_value(mu_integer(KEYBOARD));  // address must be a positive integer
   result.steps.push_back(curr);  // hacky that "Rewrite Instruction" is converting to multiple instructions
   // leave second instruction in curr
   curr.clear();
   curr.operation = Recipe_number["init-fake-keyboard"];
   assert(curr.ingredients.empty());
   curr.ingredients.push_back(reagent("keyboard:address"));
-  curr.ingredients.at(0).set_value(KEYBOARD);
+  curr.ingredients.at(0).set_value(mu_integer(KEYBOARD));  // address must be a positive integer
   assert(curr.products.empty());
   curr.products.push_back(reagent("keyboard:address"));
-  curr.products.at(0).set_value(KEYBOARD);
+  curr.products.at(0).set_value(mu_integer(KEYBOARD));  // address must be a positive integer
 }

@@ -37,7 +37,7 @@ if (inst.operation == Recipe_number["new"]) {
 //?   cout << inst.ingredients.at(0).to_string() << '\n'; //? 1
   assert(isa_literal(inst.ingredients.at(0)));
   if (inst.ingredients.at(0).properties.at(0).second.at(0) == "type") {
-    inst.ingredients.at(0).set_value(Type_number[inst.ingredients.at(0).name]);
+    inst.ingredients.at(0).set_value(mu_integer(Type_number[inst.ingredients.at(0).name]));  // type numbers must be positive integers
   }
   trace("new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).value;
 }
@@ -51,15 +51,16 @@ Recipe_number["new"] = NEW;
 :(before "End Primitive Recipe Implementations")
 case NEW: {
   // compute the space we need
+//?   cerr << current_instruction().to_string() << '\n'; //? 1
   size_t size = 0;
   size_t array_length = 0;
   {
     vector<type_number> type;
     assert(isa_literal(current_instruction().ingredients.at(0)));
-    type.push_back(current_instruction().ingredients.at(0).value);
+    type.push_back(value(current_instruction().ingredients.at(0).value));  // type numbers must be positive integers
     if (current_instruction().ingredients.size() > 1) {
       // array
-      array_length = ingredients.at(1).at(0);
+      array_length = value(ingredients.at(1).at(0));
       trace("mem") << "array size is " << array_length;
       size = array_length*size_of(type) + /*space for length*/1;
     }
@@ -78,7 +79,7 @@ case NEW: {
   products.at(0).push_back(result);
   // initialize array if necessary
   if (current_instruction().ingredients.size() > 1) {
-    Memory[result] = array_length;
+    Memory[result] = mu_integer(array_length);  // array lengths must be positive integers
   }
   // bump
   Current_routine->alloc += size;
@@ -89,6 +90,7 @@ case NEW: {
 
 :(code)
 void ensure_space(size_t size) {
+//?   cerr << size << '\n'; //? 1
   assert(size <= Initial_memory_per_routine);
 //?   cout << Current_routine->alloc << " " << Current_routine->alloc_max << " " << size << '\n'; //? 1
   if (Current_routine->alloc + size > Current_routine->alloc_max) {
@@ -158,6 +160,7 @@ if (isa_literal(current_instruction().ingredients.at(0))
   // allocate an array just large enough for it
   size_t string_length = current_instruction().ingredients.at(0).name.size();
 //?   cout << "string_length is " << string_length << '\n'; //? 1
+//?   cerr << "AAA\n"; //? 1
   ensure_space(string_length+1);  // don't forget the extra location for array size
   products.resize(1);
   products.at(0).push_back(Current_routine->alloc);
