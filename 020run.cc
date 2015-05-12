@@ -185,7 +185,7 @@ vector<long long int> read_memory(reagent x) {
   index_t base = x.value;
   size_t size = size_of(x);
   for (index_t offset = 0; offset < size; ++offset) {
-    int val = Memory[base+offset];
+    long long int val = Memory[base+offset];
     trace("mem") << "location " << base+offset << " is " << val;
     result.push_back(val);
   }
