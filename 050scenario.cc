@@ -93,6 +93,17 @@ for (index_t i = 0; i < Scenarios.size(); ++i) {
   if (Passed) cerr << ".";
 }
 
+//: Convenience: run a single named scenario.
+:(before "Loading Commandline Files")
+if (argc == 2 && Run_tests) {
+  for (index_t i = 0; i < Scenarios.size(); ++i) {
+    if (Scenarios.at(i).name == argv[1]) {
+      run_mu_scenario(Scenarios.at(i));
+      return 0;
+    }
+  }
+}
+
 :(before "End Globals")
 const scenario* Current_scenario = NULL;
 :(code)
