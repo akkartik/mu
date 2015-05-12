@@ -240,7 +240,7 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   }
 
   ++Num_failures;
-  cerr << "\nF " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << contents << "] in trace:\n";
+  cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << contents << "] in trace:\n";
   DUMP(layer);
   Passed = false;
   return false;
@@ -299,7 +299,7 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
   }
 
   ++Num_failures;
-  cerr << "\nF " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << expected_lines.at(curr_expected_line) << "] in trace:\n";
+  cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << expected_lines.at(curr_expected_line) << "] in trace:\n";
   DUMP(layer);
   Passed = false;
   return false;
@@ -339,7 +339,7 @@ int trace_count(string layer, int frame, string line) {
 #define CHECK_TRACE_DOESNT_WARN() \
   if (trace_count("warn") > 0) { \
     ++Num_failures; \
-    cerr << "\nF " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected warnings\n"; \
+    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected warnings\n"; \
     DUMP("warn"); \
     Passed = false; \
     return; \
@@ -400,7 +400,7 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
   }
 
   ++Num_failures;
-  cerr << "\nF " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << expected_lines.at(curr_expected_line) << "] in trace/" << frame << ":\n";
+  cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << expected_lines.at(curr_expected_line) << "] in trace/" << frame << ":\n";
   DUMP(layer);
   Passed = false;
   return false;

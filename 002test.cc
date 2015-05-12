@@ -23,7 +23,7 @@ long Num_failures = 0;
 #define CHECK(X) \
   if (!(X)) { \
     ++Num_failures; \
-    cerr << "\nF " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): " << #X << '\n'; \
+    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): " << #X << '\n'; \
     Passed = false; \
     return;  /* Currently we stop at the very first failure. */ \
   }
@@ -31,7 +31,7 @@ long Num_failures = 0;
 #define CHECK_EQ(X, Y) \
   if ((X) != (Y)) { \
     ++Num_failures; \
-    cerr << "\nF " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): " << #X << " == " << #Y << '\n'; \
+    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): " << #X << " == " << #Y << '\n'; \
     cerr << "  got " << (X) << '\n';  /* BEWARE: multiple eval */ \
     Passed = false; \
     return;  /* Currently we stop at the very first failure. */ \
