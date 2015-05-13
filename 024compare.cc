@@ -6,7 +6,7 @@ EQUAL,
 Recipe_number["equal"] = EQUAL;
 :(before "End Primitive Recipe Implementations")
 case EQUAL: {
-  vector<long long int>& exemplar = ingredients.at(0);
+  vector<double>& exemplar = ingredients.at(0);
   bool result = true;
   for (index_t i = 1; i < ingredients.size(); ++i) {
     if (!equal(ingredients.at(i).begin(), ingredients.at(i).end(), exemplar.begin())) {

@@ -13,7 +13,7 @@ recipe main [
 +mem: location 2 is 34
 +mem: storing 34 in location 3
 
-:(before "index_t base = x.value" following "vector<long long int> read_memory(reagent x)")
+:(before "index_t base = x.value" following "vector<double> read_memory(reagent x)")
 x = canonize(x);
 
 //: similarly, write to addresses pointing at other locations using the
@@ -27,7 +27,7 @@ recipe main [
 +mem: location 1 is 2
 +mem: storing 34 in location 2
 
-:(before "index_t base = x.value" following "void write_memory(reagent x, vector<long long int> data)")
+:(before "index_t base = x.value" following "void write_memory(reagent x, vector<double> data)")
 x = canonize(x);
 
 :(code)

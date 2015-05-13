@@ -107,7 +107,7 @@ index_t address(index_t offset, index_t base) {
   return base+1 + offset;
 }
 
-:(after "void write_memory(reagent x, vector<long long int> data)")
+:(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "default-space") {
     assert(data.size() == 1);
     Current_routine->calls.top().default_space = data.at(0);
@@ -122,9 +122,9 @@ recipe main [
 ]
 +mem: storing 10 in location 1
 
-:(after "vector<long long int> read_memory(reagent x)")
+:(after "vector<double> read_memory(reagent x)")
   if (x.name == "default-space") {
-    vector<long long int> result;
+    vector<double> result;
     result.push_back(Current_routine->calls.top().default_space);
     return result;
   }

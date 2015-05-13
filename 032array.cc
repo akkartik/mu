@@ -47,7 +47,7 @@ recipe main [
 +mem: storing 16 in location 9
 
 //: disable the size mismatch check since the destination array need not be initialized
-:(replace "if (size_of(x) != data.size())" following "void write_memory(reagent x, vector<long long int> data)")
+:(replace "if (size_of(x) != data.size())" following "void write_memory(reagent x, vector<double> data)")
 if (x.types.at(0) != Type_number["array"] && size_of(x) != data.size())
 :(after "size_t size_of(const reagent& r)")
   if (r.types.at(0) == Type_number["array"]) {
@@ -102,7 +102,7 @@ case INDEX: {
   assert(base.types.at(0) == Type_number["array"]);
   reagent offset = canonize(current_instruction().ingredients.at(1));
 //?   trace("run") << "ingredient 1 after canonize: " << offset.to_string(); //? 1
-  vector<long long int> offset_val(read_memory(offset));
+  vector<double> offset_val(read_memory(offset));
   vector<type_number> element_type = array_element(base.types);
 //?   trace("run") << "offset: " << offset_val.at(0); //? 1
 //?   trace("run") << "size of elements: " << size_of(element_type); //? 1
@@ -156,7 +156,7 @@ case INDEX_ADDRESS: {
   index_t base_address = base.value;
   assert(base.types.at(0) == Type_number["array"]);
   reagent offset = canonize(current_instruction().ingredients.at(1));
-  vector<long long int> offset_val(read_memory(offset));
+  vector<double> offset_val(read_memory(offset));
   vector<type_number> element_type = array_element(base.types);
   index_t result = base_address + 1 + offset_val.at(0)*size_of(element_type);
   products.resize(1);
