@@ -53,7 +53,7 @@ void run(recipe_number r) {
 //?     cout << "scheduler: " << Current_routine_index << '\n'; //? 1
     assert(Current_routine);
     assert(Current_routine->state == RUNNING);
-    trace("schedule") << current_recipe_name();
+    trace("schedule") << current_routine_label();
 //?     trace("schedule") << Current_routine_index << ": " << current_recipe_name(); //? 1
 //?     trace("schedule") << Current_routine->id << " " << current_recipe_name(); //? 1
     run_current_routine(Scheduling_interval);
@@ -92,6 +92,16 @@ void skip_to_next_routine() {
     }
   }
 //?   cout << "all done\n"; //? 1
+}
+
+string current_routine_label() {
+  ostringstream result;
+  call_stack calls = Current_routine->calls;
+  for (call_stack::iterator p = calls.begin(); p != calls.end(); ++p) {
+    if (p != calls.begin()) result << '/';
+    result << Recipe[p->running_recipe].name;
+  }
+  return result.str();
 }
 
 :(before "End Teardown")
@@ -133,7 +143,7 @@ case START_RUNNING: {
   new_routine->parent_index = Current_routine_index;
   // populate ingredients
   for (index_t i = 1; i < current_instruction().ingredients.size(); ++i)
-    new_routine->calls.top().ingredient_atoms.push_back(ingredients.at(i));
+    new_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
   Routines.push_back(new_routine);
   products.resize(1);
   products.at(0).push_back(new_routine->id);

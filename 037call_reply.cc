@@ -20,7 +20,7 @@ Recipe_number["reply"] = REPLY;
 :(before "End Primitive Recipe Implementations")
 case REPLY: {
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
-  Current_routine->calls.pop();
+  Current_routine->calls.pop_front();
   // just in case 'main' returns a value, drop it for now
   if (Current_routine->calls.empty()) goto stop_running_current_routine;
   const instruction& caller_instruction = current_instruction();
