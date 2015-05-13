@@ -9,11 +9,11 @@ container keyboard [  # can't think of another word like screen/display, so real
 recipe init-fake-keyboard [
   default-space:address:array:location <- new location:type, 30:literal
   result:address:keyboard <- new keyboard:type
-  buf:address:address:array:character <- get-address result:address:keyboard/deref data:offset
+  buf:address:address:array:character <- get-address result:address:keyboard/deref, data:offset
 #?   $start-tracing #? 1
   buf:address:address:array:character/deref <- next-ingredient
 #?   $stop-tracing #? 1
-  idx:address:integer <- get-address result:address:keyboard/deref index:offset
+  idx:address:integer <- get-address result:address:keyboard/deref, index:offset
   idx:address:integer/deref <- copy 0:literal
   reply result:address:keyboard
 ]

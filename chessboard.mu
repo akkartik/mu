@@ -316,7 +316,7 @@ recipe read-rank [
 #? ] #? 1
   # assert'1' <= rank <= '8'
   {
-    above-min:boolean <- greater-or-equal rank:integer 0:literal
+    above-min:boolean <- greater-or-equal rank:integer, 0:literal
     break-if above-min:boolean
     error-message:address:array:character <- new [rank too low: ]
     print-string screen:address, error-message:address:array:character
@@ -324,7 +324,7 @@ recipe read-rank [
     reply 0:literal/dummy, 0:literal/quit, 1:literal/error
   }
   {
-    below-max:boolean <- lesser-or-equal rank:integer 7:literal
+    below-max:boolean <- lesser-or-equal rank:integer, 7:literal
     break-if below-max:boolean
     error-message:address:array:character <- new [rank too high: ]
     print-string screen:address, error-message:address:array:character
