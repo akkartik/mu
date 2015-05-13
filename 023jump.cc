@@ -56,7 +56,7 @@ case JUMP_IF: {
 
 :(scenario jump_if)
 recipe main [
-  jump-if 999:literal 1:offset
+  jump-if 999:literal, 1:offset
   1:integer <- copy 1:literal
 ]
 +run: instruction main/0
@@ -67,7 +67,7 @@ recipe main [
 
 :(scenario jump_if_fallthrough)
 recipe main [
-  jump-if 0:literal 1:offset
+  jump-if 0:literal, 1:offset
   123:integer <- copy 1:literal
 ]
 +run: instruction main/0
@@ -96,7 +96,7 @@ case JUMP_UNLESS: {
 
 :(scenario jump_unless)
 recipe main [
-  jump-unless 0:literal 1:offset
+  jump-unless 0:literal, 1:offset
   1:integer <- copy 1:literal
 ]
 +run: instruction main/0
@@ -107,7 +107,7 @@ recipe main [
 
 :(scenario jump_unless_fallthrough)
 recipe main [
-  jump-unless 999:literal 1:offset
+  jump-unless 999:literal, 1:offset
   123:integer <- copy 1:literal
 ]
 +run: instruction main/0

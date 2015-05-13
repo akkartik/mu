@@ -218,9 +218,9 @@ recipe move-cursor [
   # if x exists, move cursor in fake screen
   {
     break-unless x:address:screen
-    row:address:integer <- get-address x:address:screen/deref cursor-row:offset
+    row:address:integer <- get-address x:address:screen/deref, cursor-row:offset
     row:address:integer/deref <- copy new-row:integer
-    column:address:integer <- get-address x:address:screen/deref cursor-column:offset
+    column:address:integer <- get-address x:address:screen/deref, cursor-column:offset
     column:address:integer/deref <- copy new-column:integer
     reply x:address:screen/same-as-ingredient:0
   }
@@ -263,7 +263,7 @@ recipe cursor-down [
     {
       # if row < height
       height:integer <- get x:address:screen/deref, num-rows:offset
-      row:address:integer <- get-address x:address:screen/deref cursor-row:offset
+      row:address:integer <- get-address x:address:screen/deref, cursor-row:offset
       at-bottom?:boolean <- greater-or-equal row:address:integer/deref, height:integer
       break-if at-bottom?:boolean
       # row = row+1
@@ -289,7 +289,7 @@ recipe cursor-up [
     break-unless x:address:screen
     {
       # if row >= 0
-      row:address:integer <- get-address x:address:screen/deref cursor-row:offset
+      row:address:integer <- get-address x:address:screen/deref, cursor-row:offset
       at-top?:boolean <- lesser-than row:address:integer/deref, 0:literal
       break-if at-top?:boolean
       # row = row-1
@@ -311,7 +311,7 @@ recipe cursor-right [
     {
       # if column < width
       width:integer <- get x:address:screen/deref, num-columns:offset
-      column:address:integer <- get-address x:address:screen/deref cursor-column:offset
+      column:address:integer <- get-address x:address:screen/deref, cursor-column:offset
       at-bottom?:boolean <- greater-or-equal column:address:integer/deref, width:integer
       break-if at-bottom?:boolean
       # column = column+1
@@ -332,7 +332,7 @@ recipe cursor-left [
     break-unless x:address:screen
     {
       # if column >= 0
-      column:address:integer <- get-address x:address:screen/deref cursor-column:offset
+      column:address:integer <- get-address x:address:screen/deref, cursor-column:offset
       at-top?:boolean <- lesser-than column:address:integer/deref, 0:literal
       break-if at-top?:boolean
       # column = column-1

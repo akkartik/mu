@@ -380,7 +380,7 @@ recipe test-factorial [
   1:integer <- copy 5:literal
   2:integer <- copy 1:literal
   {
-    3:boolean <- equal 1:integer 1:literal
+    3:boolean <- equal 1:integer, 1:literal
     break-if 3:boolean
 #    $print 1:integer
     2:integer <- multiply 2:integer, 1:integer
