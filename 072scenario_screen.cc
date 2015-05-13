@@ -6,7 +6,7 @@
 :(scenarios run_mu_scenario)
 :(scenario screen_in_scenario)
 scenario screen-in-scenario [
-#?   $start-tracing #? 3
+#?   $start-tracing
   assume-screen 5:literal/width, 3:literal/height
   run [
     screen:address <- print-character screen:address, 97:literal  # 'a'
@@ -35,7 +35,6 @@ scenario screen-in-scenario-error [
     .     .
   ]
 ]
-# manual test: modifying the trace line below should cause a failure
 +warn: expected screen location (0, 0) to contain 'b' instead of 'a'
 
 :(before "End Globals")
@@ -67,7 +66,7 @@ if (curr.name == "assume-screen") {
   curr.operation = Recipe_number["init-fake-screen"];
   assert(curr.products.empty());
   curr.products.push_back(reagent("screen:address"));
-  curr.products.at(0).set_value(mu_integer(SCREEN));  // address must be a positive integer
+  curr.products.at(0).set_value(SCREEN);
 //? cout << "after: " << curr.to_string() << '\n'; //? 1
 //? cout << "AAA " << Recipe_number["init-fake-screen"] << '\n'; //? 1
 }
@@ -87,15 +86,15 @@ case SCREEN_SHOULD_CONTAIN: {
 :(code)
 void check_screen(const string& contents) {
   assert(!Current_routine->calls.top().default_space);  // not supported
-  index_t screen_location = value(Memory[SCREEN]);
+  index_t screen_location = Memory[SCREEN];
   int data_offset = find_element_name(Type_number["screen"], "data");
   assert(data_offset >= 0);
   index_t screen_data_location = screen_location+data_offset;  // type: address:array:character
-  index_t screen_data_start = value(Memory[screen_data_location]);  // type: array:character
+  index_t screen_data_start = Memory[screen_data_location];  // type: array:character
   int width_offset = find_element_name(Type_number["screen"], "num-columns");
-  size_t screen_width = value(Memory[screen_location+width_offset]);
+  size_t screen_width = Memory[screen_location+width_offset];
   int height_offset = find_element_name(Type_number["screen"], "num-rows");
-  size_t screen_height = value(Memory[screen_location+height_offset]);
+  size_t screen_height = Memory[screen_location+height_offset];
   string expected_contents;
   istringstream in(contents);
   in >> std::noskipws;
@@ -113,21 +112,19 @@ void check_screen(const string& contents) {
 //?   assert(in.get() == ']');
   trace("run") << "checking screen size at " << screen_data_start;
 //?   cout << expected_contents.size() << '\n'; //? 1
-  if (value(Memory[screen_data_start]) > static_cast<signed>(expected_contents.size()))
-    raise << "expected contents are larger than screen size " << value(Memory[screen_data_start]) << '\n';
+  if (Memory[screen_data_start] > static_cast<signed>(expected_contents.size()))
+    raise << "expected contents are larger than screen size " << Memory[screen_data_start] << '\n';
   ++screen_data_start;  // now skip length
   for (index_t i = 0; i < expected_contents.size(); ++i) {
     trace("run") << "checking location " << screen_data_start+i;
-//?     cerr << "comparing " << i/screen_width << ", " << i%screen_width << ": " << value(Memory[screen_data_start+i]) << " vs " << (int)expected_contents.at(i) << '\n'; //? 1
-    long long int curr = value(Memory[screen_data_start+i]);
-//?     cerr << curr << " <= " << expected_contents.at(i) << '\n'; //? 1
-    if ((!curr && !isspace(expected_contents.at(i)))  // uninitialized memory => spaces
-        || (curr && value(Memory[screen_data_start+i]) != expected_contents.at(i))) {
+//?     cerr << "comparing " << i/screen_width << ", " << i%screen_width << ": " << Memory[screen_data_start+i] << " vs " << (int)expected_contents.at(i) << '\n'; //? 1
+    if ((!Memory[screen_data_start+i] && !isspace(expected_contents.at(i)))  // uninitialized memory => spaces
+        || (Memory[screen_data_start+i] && Memory[screen_data_start+i] != expected_contents.at(i))) {
 //?       cerr << "CCC " << Trace_stream << " " << Hide_warnings << '\n'; //? 1
       if (Current_scenario && !Hide_warnings)  // Hide_warnings indicates we're checking for the warning at the C++ level rather than raising a test failure at the mu level
-        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(value(Memory[screen_data_start+i])) << "'\n";
+        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
       else
-        raise << "expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(value(Memory[screen_data_start+i])) << "'\n";
+        raise << "expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
       Passed = false;
       return;
     }

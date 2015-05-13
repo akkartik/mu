@@ -89,20 +89,19 @@ Recipe_number["maybe-convert"] = MAYBE_CONVERT;
 :(before "End Primitive Recipe Implementations")
 case MAYBE_CONVERT: {
   reagent base = canonize(current_instruction().ingredients.at(0));
-  assert(!is_negative(base.value));
-  index_t base_address = value(base.value);
+  index_t base_address = base.value;
   type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == exclusive_container);
   assert(isa_literal(current_instruction().ingredients.at(1)));
   index_t tag = current_instruction().ingredients.at(1).value;
   long long int result;
-  if (tag == static_cast<index_t>(value(Memory[base_address]))) {
+  if (tag == static_cast<index_t>(Memory[base_address])) {
     result = base_address+1;
   }
   else {
     result = 0;
   }
   products.resize(1);
-  products.at(0).push_back(mu_integer(result));  // address must be a positive integer
+  products.at(0).push_back(result);
   break;
 }

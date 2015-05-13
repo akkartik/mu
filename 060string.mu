@@ -156,8 +156,6 @@ recipe buffer-append [
   default-space:address:array:location <- new location:type, 30:literal
   in:address:buffer <- next-ingredient
   c:character <- next-ingredient
-#?   $print c:character, [  #? 1
-#? ] #? 1
   {
     # grow buffer if necessary
     full?:boolean <- buffer-full? in:address:buffer
@@ -177,12 +175,8 @@ scenario buffer-append-works [
     default-space:address:array:location <- new location:type, 30:literal
     x:address:buffer <- init-buffer 3:literal
     s1:address:array:character <- get x:address:buffer/deref, data:offset
-#?     $start-tracing #? 1
     x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
-#?     $exit #? 1
-#?     $start-tracing #? 1
     x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
-#?     $exit #? 1
     x:address:buffer <- buffer-append x:address:buffer, 99:literal  # 'c'
     s2:address:array:character <- get x:address:buffer/deref, data:offset
     1:boolean/raw <- equal s1:address:array:character, s2:address:array:character
@@ -200,9 +194,7 @@ scenario buffer-append-works [
 #? ]
 #?     $print 1065:integer/raw, [
 #? ]
-#?     $start-tracing #? 1
     2:array:character/raw <- copy s2:address:array:character/deref
-#?     $exit #? 1
     +buffer-filled
     x:address:buffer <- buffer-append x:address:buffer, 100:literal  # 'd'
     s3:address:array:character <- get x:address:buffer/deref, data:offset
@@ -269,8 +261,6 @@ recipe integer-to-decimal-string [
   buf:address:array:character <- get tmp:address:buffer/deref, data:offset
   result:address:array:character <- new character:type, len:integer
   i:integer <- subtract len:integer, 1:literal
-#?   $print len:integer, [ - 1 = ], i:integer, [  #? 1
-#? ] #? 1
   j:integer <- copy 0:literal
   {
     # while i >= 0
@@ -281,11 +271,7 @@ recipe integer-to-decimal-string [
     dest:address:character <- index-address result:address:array:character/deref, j:integer
     dest:address:character/deref <- copy src:character
     # ++i
-#?     $print [aaa: ], i:integer, [  #? 1
-#? ] #? 1
     i:integer <- subtract i:integer, 1:literal
-#?     $print [bbb: ], i:integer, [  #? 1
-#? ] #? 1
     # --j
     j:integer <- add j:integer, 1:literal
     loop
@@ -304,7 +290,6 @@ scenario integer-to-decimal-digit-zero [
 ]
 
 scenario integer-to-decimal-digit-positive [
-#?   $start-tracing #? 1
   run [
     1:address:array:character/raw <- integer-to-decimal-string 234:literal
     2:array:character/raw <- copy 1:address:array:character/deref/raw
@@ -315,7 +300,6 @@ scenario integer-to-decimal-digit-positive [
 ]
 
 scenario integer-to-decimal-digit-negative [
-#?   $start-tracing #? 1
   run [
     1:address:array:character/raw <- integer-to-decimal-string -1:literal
     2:array:character/raw <- copy 1:address:array:character/deref/raw

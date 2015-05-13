@@ -205,7 +205,7 @@ struct lease_tracer {
 #define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;
 :(before "End Test Setup")
 START_TRACING_UNTIL_END_OF_SCOPE
-//? Trace_stream->dump_layer = "all"; //? 2
+//? Trace_stream->dump_layer = "all"; //? 1
 
 :(before "End Tracing")
 void trace_all(const string& label, const list<string>& in) {
