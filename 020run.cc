@@ -65,7 +65,9 @@ void run_current_routine()
     trace("run") << "instruction " << current_recipe_name() << '/' << current_step_index();
     trace("run") << current_instruction().to_string();
     assert(Memory[0] == 0);
-    // Read all ingredients.
+    // Read all ingredients from memory.
+    // Each ingredient loads a vector of values rather than a single value; mu
+    // permits operating on reagents spanning multiple locations.
     vector<vector<long long int> > ingredients;
     for (index_t i = 0; i < current_instruction().ingredients.size(); ++i) {
       trace("run") << "ingredient " << i << " is " << current_instruction().ingredients.at(i).name;
