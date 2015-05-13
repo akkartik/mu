@@ -6,7 +6,7 @@ recipe f1 [
   start-running f2:recipe
   # wait for f2 to run
   {
-    loop-unless 1:integer
+    jump-unless 1:integer, -1:literal
   }
 ]
 recipe f2 [
@@ -177,7 +177,7 @@ recipe f1 [
   start-running f2:recipe, 3:literal
   # wait for f2 to run
   {
-    loop-unless 1:integer
+    jump-unless 1:integer, -1:literal
   }
 ]
 recipe f2 [
