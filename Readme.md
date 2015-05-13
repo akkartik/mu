@@ -71,18 +71,18 @@ As a sneak peek, here's how you compute factorial in Mu:
 ```python
   recipe factorial [
     default-space:address:array:location <- new location:type, 30:literal
-    n:integer <- next-ingredient
+    n:number <- next-ingredient
     {
       # if n=0 return 1
-      zero?:boolean <- equal n:integer, 0:literal
+      zero?:boolean <- equal n:number, 0:literal
       break-unless zero?:boolean
       reply 1:literal
     }
     # return n * factorial(n - 1)
-    x:integer <- subtract n:integer, 1:literal
-    subresult:integer <- factorial x:integer
-    result:integer <- multiply subresult:integer, n:integer
-    reply result:integer
+    x:number <- subtract n:number, 1:literal
+    subresult:number <- factorial x:number
+    result:number <- multiply subresult:number, n:number
+    reply result:number
   ]
 ```
 
@@ -99,15 +99,15 @@ number of them. In particular you can have any number of results. For example,
 you can perform integer division as follows:
 
 ```python
-  quotient:integer, remainder:integer <- divide-with-remainder 11:literal, 3:literal
+  quotient:number, remainder:number <- divide-with-remainder 11:literal, 3:literal
 ```
 
 Each reagent provides its name as well as its type separated by a colon. Types
 can be multiple words, like:
 
 ```python
-  x:array:integer:3  # x is an array of 3 integers
-  y:list:integer  # y is a list of integers
+  x:array:number:3  # x is an array of 3 integers
+  y:list:number  # y is a list of integers
 ```
 
 Try out the factorial program now:
@@ -124,13 +124,13 @@ its address. Mu maps names to addresses for you like in other languages, but
 in a more transparent, lightweight, hackable manner. This instruction:
 
 ```python
-  z:integer <- add x:integer, y:integer
+  z:number <- add x:number, y:number
 ```
 
 might turn into this:
 
 ```python
-  3:integer <- add 1:integer, 2:integer
+  3:number <- add 1:number, 2:number
 ```
 
 You shouldn't rely on the specific address Mu chooses for a variable, but it
@@ -171,7 +171,7 @@ Once you've chained spaces together, you can access variables in them by
 adding a 'space' property:
 
 ```python
-  3:integer/space:1
+  3:number/space:1
 ```
 
 This reagent is the integer in slot 3 of the space chained in slot 0 of the
@@ -189,9 +189,9 @@ You can append arbitrary properties to reagents besides types and spaces. Just
 separate them with slashes.
 
 ```python
-  x:array:integer:3/uninitialized
+  x:array:number:3/uninitialized
   y:string/tainted:yes
-  z:list:integer/assign-once:true/assigned:false
+  z:list:number/assign-once:true/assigned:false
 ```
 
 Most properties are meaningless to Mu, and it'll silently skip them when
@@ -222,7 +222,7 @@ inserting code at them.
 ```python
   recipe factorial [
     default-space:address:array:location <- new location:type, 30:literal
-    n:integer <- next-ingredient
+    n:number <- next-ingredient
     {
       +base-case:
     }
@@ -231,17 +231,17 @@ inserting code at them.
 
   after +base-case [
     # if n=0 return 1
-    zero?:boolean <- equal n:integer, 0:literal
+    zero?:boolean <- equal n:number, 0:literal
     break-unless zero?:boolean
     reply 1:literal
   ]
 
   after +recursive-case [
     # return n * factorial(n-1)
-    x:integer <- subtract n:integer, 1:literal
-    subresult:integer <- factorial x:integer
-    result:integer <- multiply subresult:integer, n:integer
-    reply result:integer
+    x:number <- subtract n:number, 1:literal
+    subresult:number <- factorial x:number
+    result:number <- multiply subresult:number, n:number
+    reply result:number
   ]
 ```
 

@@ -7,12 +7,12 @@
 :(scenario surrounding_space)
 # location 1 in space 1 refers to the space surrounding the default space, here 20.
 recipe main [
-  10:integer <- copy 5:literal  # pretend array
-  20:integer <- copy 5:literal  # pretend array
+  10:number <- copy 5:literal  # pretend array
+  20:number <- copy 5:literal  # pretend array
   default-space:address:array:location <- copy 10:literal
   0:address:array:location/names:dummy <- copy 20:literal  # later layers will explain the /names: property
-  1:integer <- copy 32:literal
-  1:integer/space:1 <- copy 33:literal
+  1:number <- copy 32:literal
+  1:number/space:1 <- copy 33:literal
 ]
 +run: instruction main/3
 +mem: storing 20 in location 11

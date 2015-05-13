@@ -5,20 +5,20 @@ recipe main [
   f
 ]
 recipe f [
-  3:integer <- add 2:literal, 2:literal
+  3:number <- add 2:literal, 2:literal
 ]
 +mem: storing 4 in location 3
 
 :(scenario return_on_fallthrough)
 recipe main [
   f
-  1:integer <- copy 34:literal
-  2:integer <- copy 34:literal
-  3:integer <- copy 34:literal
+  1:number <- copy 34:literal
+  2:number <- copy 34:literal
+  3:number <- copy 34:literal
 ]
 recipe f [
-  4:integer <- copy 34:literal
-  5:integer <- copy 34:literal
+  4:number <- copy 34:literal
+  5:number <- copy 34:literal
 ]
 +run: instruction main/0
 +run: instruction f/0

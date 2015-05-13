@@ -4,7 +4,7 @@
 
 :(scenario convert_names)
 recipe main [
-  x:integer <- copy 0:literal
+  x:number <- copy 0:literal
 ]
 +name: assign x 1
 +run: instruction main/0
@@ -13,7 +13,7 @@ recipe main [
 :(scenario convert_names_warns)
 % Hide_warnings = true;
 recipe main [
-  x:integer <- copy y:integer
+  x:number <- copy y:number
 ]
 +warn: use before set: y in main
 
@@ -138,7 +138,7 @@ bool is_special_name(const string& s) {
 :(scenario convert_names_passes_dummy)
 # _ is just a dummy result that never gets consumed
 recipe main [
-  _, x:integer <- copy 0:literal, 1:literal
+  _, x:number <- copy 0:literal, 1:literal
 ]
 +name: assign x 1
 -name: assign _ 1
@@ -146,7 +146,7 @@ recipe main [
 //: one reserved word that we'll need later
 :(scenario convert_names_passes_default_space)
 recipe main [
-  default-space:integer, x:integer <- copy 0:literal, 1:literal
+  default-space:number, x:number <- copy 0:literal, 1:literal
 ]
 +name: assign x 1
 -name: assign default-space 1
@@ -154,43 +154,43 @@ recipe main [
 //: an escape hatch to suppress name conversion that we'll use later
 :(scenario convert_names_passes_raw)
 recipe main [
-  x:integer/raw <- copy 0:literal
+  x:number/raw <- copy 0:literal
 ]
 -name: assign x 1
 
 :(scenario convert_names_warns_when_mixing_names_and_numeric_locations)
 % Hide_warnings = true;
 recipe main [
-  x:integer <- copy 1:integer
+  x:number <- copy 1:number
 ]
 +warn: mixing variable names and numeric addresses in main
 
 :(scenario convert_names_warns_when_mixing_names_and_numeric_locations2)
 % Hide_warnings = true;
 recipe main [
-  x:integer <- copy 1:literal
-  1:integer <- copy x:integer
+  x:number <- copy 1:literal
+  1:number <- copy x:number
 ]
 +warn: mixing variable names and numeric addresses in main
 
 :(scenario convert_names_does_not_warn_when_mixing_names_and_raw_locations)
 % Hide_warnings = true;
 recipe main [
-  x:integer <- copy 1:integer/raw
+  x:number <- copy 1:number/raw
 ]
 -warn: mixing variable names and numeric addresses in main
 
 :(scenario convert_names_does_not_warn_when_mixing_names_and_literals)
 % Hide_warnings = true;
 recipe main [
-  x:integer <- copy 1:literal
+  x:number <- copy 1:literal
 ]
 -warn: mixing variable names and numeric addresses in main
 
 :(scenario convert_names_does_not_warn_when_mixing_special_names_and_numeric_locations)
 % Hide_warnings = true;
 recipe main [
-  screen:integer <- copy 1:integer
+  screen:number <- copy 1:number
 ]
 -warn: mixing variable names and numeric addresses in main
 
@@ -203,8 +203,8 @@ Type[point].element_names.push_back("y");
 :(scenario convert_names_transforms_container_elements)
 recipe main [
   p:address:point <- copy 0:literal  # unsafe
-  a:integer <- get p:address:point/deref, y:offset
-  b:integer <- get p:address:point/deref, x:offset
+  a:number <- get p:address:point/deref, y:offset
+  b:number <- get p:address:point/deref, x:offset
 ]
 +name: element y of type point is at offset 1
 +name: element x of type point is at offset 0
@@ -229,7 +229,7 @@ if (inst.operation == Recipe_number["get"]
 :(scenario convert_names_handles_containers)
 recipe main [
   a:point <- copy 0:literal
-  b:integer <- copy 0:literal
+  b:number <- copy 0:literal
 ]
 +name: assign a 1
 +name: assign b 3
@@ -239,12 +239,12 @@ recipe main [
 :(scenarios run)
 :(scenario maybe_convert_named)
 recipe main [
-  12:integer <- copy 1:literal
-  13:integer <- copy 35:literal
-  14:integer <- copy 36:literal
-  20:address:point <- maybe-convert 12:integer-or-point, p:variant
+  12:number <- copy 1:literal
+  13:number <- copy 35:literal
+  14:number <- copy 36:literal
+  20:address:point <- maybe-convert 12:number-or-point, p:variant
 ]
-+name: variant p of type integer-or-point has tag 1
++name: variant p of type number-or-point has tag 1
 +mem: storing 13 in location 20
 
 :(after "Per-recipe Transforms")

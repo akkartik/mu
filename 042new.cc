@@ -4,9 +4,9 @@
 :(scenario new)
 # call new two times with identical arguments; you should get back different results
 recipe main [
-  1:address:integer/raw <- new integer:type
-  2:address:integer/raw <- new integer:type
-  3:boolean/raw <- equal 1:address:integer/raw, 2:address:integer/raw
+  1:address:number/raw <- new number:type
+  2:address:number/raw <- new number:type
+  3:boolean/raw <- equal 1:address:number/raw, 2:address:number/raw
 ]
 +mem: storing 0 in location 3
 
@@ -102,9 +102,9 @@ void ensure_space(size_t size) {
 
 :(scenario new_array)
 recipe main [
-  1:address:array:integer/raw <- new integer:type, 5:literal
-  2:address:integer/raw <- new integer:type
-  3:integer/raw <- subtract 2:address:integer/raw, 1:address:array:integer/raw
+  1:address:array:number/raw <- new number:type, 5:literal
+  2:address:number/raw <- new number:type
+  3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
 ]
 +run: instruction main/0
 +mem: array size is 5
@@ -117,18 +117,18 @@ recipe main [
 :(scenario new_concurrent)
 recipe f1 [
   start-running f2:recipe
-  1:address:integer/raw <- new integer:type
+  1:address:number/raw <- new number:type
   # wait for f2 to complete
   {
-    loop-unless 4:integer/raw
+    loop-unless 4:number/raw
   }
 ]
 recipe f2 [
-  2:address:integer/raw <- new integer:type
+  2:address:number/raw <- new number:type
   # hack: assumes scheduler implementation
-  3:boolean/raw <- equal 1:address:integer/raw, 2:address:integer/raw
+  3:boolean/raw <- equal 1:address:number/raw, 2:address:number/raw
   # signal f2 complete
-  4:integer/raw <- copy 1:literal
+  4:number/raw <- copy 1:literal
 ]
 +mem: storing 0 in location 3
 
@@ -136,7 +136,7 @@ recipe f2 [
 :(scenario new_overflow)
 % Initial_memory_per_routine = 2;
 recipe main [
-  1:address:integer/raw <- new integer:type
+  1:address:number/raw <- new number:type
   2:address:point/raw <- new point:type  # not enough room in initial page
 ]
 +new: routine allocated memory from 1000 to 1002
@@ -149,7 +149,7 @@ recipe main [
   1:address:array:character <- new [abc def]
   2:character <- index 1:address:array:character/deref, 5:literal
 ]
-# integer code for 'e'
+# number code for 'e'
 +mem: storing 101 in location 2
 
 :(after "case NEW" following "Primitive Recipe Implementations")
@@ -175,7 +175,7 @@ if (isa_literal(current_instruction().ingredients.at(0))
 :(scenario new_string_overflow)
 % Initial_memory_per_routine = 2;
 recipe main [
-  1:address:integer/raw <- new integer:type
+  1:address:number/raw <- new number:type
   2:address:array:character/raw <- new [a]  # not enough room in initial page, if you take the array size into account
 ]
 +new: routine allocated memory from 1000 to 1002

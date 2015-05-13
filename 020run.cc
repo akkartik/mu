@@ -11,7 +11,7 @@
 
 :(scenario copy_literal)
 recipe main [
-  1:integer <- copy 23:literal
+  1:number <- copy 23:literal
 ]
 +run: instruction main/0
 +run: ingredient 0 is 23
@@ -19,8 +19,8 @@ recipe main [
 
 :(scenario copy)
 recipe main [
-  1:integer <- copy 23:literal
-  2:integer <- copy 1:integer
+  1:number <- copy 23:literal
+  2:number <- copy 1:number
 ]
 +run: instruction main/1
 +run: ingredient 0 is 1
@@ -29,7 +29,7 @@ recipe main [
 
 :(scenario copy_multiple)
 recipe main [
-  1:integer, 2:integer <- copy 23:literal, 24:literal
+  1:number, 2:number <- copy 23:literal, 24:literal
 ]
 +run: ingredient 0 is 23
 +run: ingredient 1 is 24
@@ -226,8 +226,8 @@ bool isa_literal(const reagent& r) {
 :(scenario run_label)
 recipe main [
   +foo
-  1:integer <- copy 23:literal
-  2:integer <- copy 1:integer
+  1:number <- copy 23:literal
+  2:number <- copy 1:number
 ]
 +run: instruction main/1
 +run: instruction main/2

@@ -1,23 +1,23 @@
 //: Containers contain a fixed number of elements of different types.
 
 :(before "End Mu Types Initialization")
-//: We'll use this container as a running example, with two integer elements.
+//: We'll use this container as a running example, with two number elements.
 type_number point = Type_number["point"] = Next_type_number++;
 Type[point].size = 2;
 Type[point].kind = container;
 Type[point].name = "point";
 vector<type_number> i;
-i.push_back(integer);
+i.push_back(number);
 Type[point].elements.push_back(i);
 Type[point].elements.push_back(i);
 
 //: Containers can be copied around with a single instruction just like
-//: integers, no matter how large they are.
+//: numbers, no matter how large they are.
 
 :(scenario copy_multiple_locations)
 recipe main [
-  1:integer <- copy 34:literal
-  2:integer <- copy 35:literal
+  1:number <- copy 34:literal
+  2:number <- copy 35:literal
   3:point <- copy 1:point
 ]
 +run: ingredient 0 is 1
@@ -29,50 +29,50 @@ recipe main [
 :(before "End Mu Types Initialization")
 // A more complex container, containing another container as one of its
 // elements.
-type_number point_integer = Type_number["point-integer"] = Next_type_number++;
-Type[point_integer].size = 2;
-Type[point_integer].kind = container;
-Type[point_integer].name = "point-integer";
+type_number point_number = Type_number["point-number"] = Next_type_number++;
+Type[point_number].size = 2;
+Type[point_number].kind = container;
+Type[point_number].name = "point-number";
 vector<type_number> p2;
 p2.push_back(point);
-Type[point_integer].elements.push_back(p2);
+Type[point_number].elements.push_back(p2);
 vector<type_number> i2;
-i2.push_back(integer);
-Type[point_integer].elements.push_back(i2);
+i2.push_back(number);
+Type[point_number].elements.push_back(i2);
 
 :(scenario copy_handles_nested_container_elements)
 recipe main [
-  12:integer <- copy 34:literal
-  13:integer <- copy 35:literal
-  14:integer <- copy 36:literal
-  15:point-integer <- copy 12:point-integer
+  12:number <- copy 34:literal
+  13:number <- copy 35:literal
+  14:number <- copy 36:literal
+  15:point-number <- copy 12:point-number
 ]
 +mem: storing 36 in location 17
 
 //: Containers can be checked for equality with a single instruction just like
-//: integers, no matter how large they are.
+//: numbers, no matter how large they are.
 
 :(scenario compare_multiple_locations)
 recipe main [
-  1:integer <- copy 34:literal  # first
-  2:integer <- copy 35:literal
-  3:integer <- copy 36:literal
-  4:integer <- copy 34:literal  # second
-  5:integer <- copy 35:literal
-  6:integer <- copy 36:literal
-  7:boolean <- equal 1:point-integer, 4:point-integer
+  1:number <- copy 34:literal  # first
+  2:number <- copy 35:literal
+  3:number <- copy 36:literal
+  4:number <- copy 34:literal  # second
+  5:number <- copy 35:literal
+  6:number <- copy 36:literal
+  7:boolean <- equal 1:point-number, 4:point-number
 ]
 +mem: storing 1 in location 7
 
 :(scenario compare_multiple_locations2)
 recipe main [
-  1:integer <- copy 34:literal  # first
-  2:integer <- copy 35:literal
-  3:integer <- copy 36:literal
-  4:integer <- copy 34:literal  # second
-  5:integer <- copy 35:literal
-  6:integer <- copy 37:literal  # different
-  7:boolean <- equal 1:point-integer, 4:point-integer
+  1:number <- copy 34:literal  # first
+  2:number <- copy 35:literal
+  3:number <- copy 36:literal
+  4:number <- copy 34:literal  # second
+  5:number <- copy 35:literal
+  6:number <- copy 37:literal  # different
+  7:boolean <- equal 1:point-number, 4:point-number
 ]
 +mem: storing 0 in location 7
 
@@ -90,9 +90,9 @@ if (t.kind == container) {
 //:: To access elements of a container, use 'get'
 :(scenario get)
 recipe main [
-  12:integer <- copy 34:literal
-  13:integer <- copy 35:literal
-  15:integer <- get 12:point, 1:offset
+  12:number <- copy 34:literal
+  13:number <- copy 35:literal
+  15:number <- get 12:point, 1:offset
 ]
 +run: instruction main/2
 +run: ingredient 0 is 12
@@ -139,10 +139,10 @@ Type_number["offset"] = 0;
 
 :(scenario get_handles_nested_container_elements)
 recipe main [
-  12:integer <- copy 34:literal
-  13:integer <- copy 35:literal
-  14:integer <- copy 36:literal
-  15:integer <- get 12:point-integer, 1:offset
+  12:number <- copy 34:literal
+  13:number <- copy 35:literal
+  14:number <- copy 36:literal
+  15:number <- get 12:point-number, 1:offset
 ]
 +run: instruction main/2
 +run: ingredient 0 is 12
@@ -157,9 +157,9 @@ recipe main [
 
 :(scenario get_address)
 recipe main [
-  12:integer <- copy 34:literal
-  13:integer <- copy 35:literal
-  15:address:integer <- get-address 12:point, 1:offset
+  12:number <- copy 34:literal
+  13:number <- copy 35:literal
+  15:address:number <- get-address 12:point, 1:offset
 ]
 +run: instruction main/2
 +run: ingredient 0 is 12

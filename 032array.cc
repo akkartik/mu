@@ -6,14 +6,14 @@
 //: Create containers containing addresses to arrays instead.
 
 :(scenario copy_array)
-# Arrays can be copied around with a single instruction just like integers,
+# Arrays can be copied around with a single instruction just like numbers,
 # no matter how large they are.
 recipe main [
-  1:integer <- copy 3:literal
-  2:integer <- copy 14:literal
-  3:integer <- copy 15:literal
-  4:integer <- copy 16:literal
-  5:array:integer <- copy 1:array:integer
+  1:number <- copy 3:literal  # length
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:array:number <- copy 1:array:number
 ]
 +run: instruction main/4
 +run: ingredient 0 is 1
@@ -28,12 +28,12 @@ recipe main [
 
 :(scenario copy_array_indirect)
 recipe main [
-  1:integer <- copy 3:literal
-  2:integer <- copy 14:literal
-  3:integer <- copy 15:literal
-  4:integer <- copy 16:literal
-  5:address:array:integer <- copy 1:literal
-  6:array:integer <- copy 5:address:array:integer/deref
+  1:number <- copy 3:literal  # length
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:address:array:number <- copy 1:literal
+  6:array:number <- copy 5:address:array:number/deref
 ]
 +run: instruction main/5
 +run: ingredient 0 is 5
@@ -60,11 +60,11 @@ if (x.types.at(0) != Type_number["array"] && size_of(x) != data.size())
 
 :(scenario index)
 recipe main [
-  1:integer <- copy 3:literal
-  2:integer <- copy 14:literal
-  3:integer <- copy 15:literal
-  4:integer <- copy 16:literal
-  5:integer <- index 1:array:integer, 0:literal
+  1:number <- copy 3:literal  # length
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:number <- index 1:array:number, 0:literal
 ]
 +run: instruction main/4
 +run: address to copy is 2
@@ -75,12 +75,12 @@ recipe main [
 
 :(scenario index_direct_offset)
 recipe main [
-  1:integer <- copy 3:literal
-  2:integer <- copy 14:literal
-  3:integer <- copy 15:literal
-  4:integer <- copy 16:literal
-  5:integer <- copy 0:literal
-  6:integer <- index 1:array:integer, 5:integer
+  1:number <- copy 3:literal  # length
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:number <- copy 0:literal
+  6:number <- index 1:array:number, 5:number
 ]
 +run: instruction main/5
 +run: address to copy is 2
@@ -123,11 +123,11 @@ vector<type_number> array_element(const vector<type_number>& types) {
 
 :(scenario index_address)
 recipe main [
-  1:integer <- copy 3:literal
-  2:integer <- copy 14:literal
-  3:integer <- copy 15:literal
-  4:integer <- copy 16:literal
-  5:integer <- index-address 1:array:integer, 0:literal
+  1:number <- copy 3:literal  # length
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:number <- index-address 1:array:number, 0:literal
 ]
 +run: instruction main/4
 +mem: storing 2 in location 5
@@ -136,12 +136,12 @@ recipe main [
 
 :(scenario index_indirect)
 recipe main [
-  1:integer <- copy 3:literal
-  2:integer <- copy 14:literal
-  3:integer <- copy 15:literal
-  4:integer <- copy 16:literal
-  5:address:array:integer <- copy 1:literal
-  6:integer <- index 5:address:array:integer/deref, 1:literal
+  1:number <- copy 3:literal  # length
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:address:array:number <- copy 1:literal
+  6:number <- index 5:address:array:number/deref, 1:literal
 ]
 +run: instruction main/5
 +mem: storing 15 in location 6

@@ -6,8 +6,8 @@ recipe main [
   f 2:literal
 ]
 recipe f [
-  12:integer <- next-ingredient
-  13:integer <- add 1:literal, 12:integer
+  12:number <- next-ingredient
+  13:number <- add 1:literal, 12:number
 ]
 +run: instruction f/1
 +mem: location 12 is 2
@@ -18,7 +18,7 @@ recipe main [
   f
 ]
 recipe f [
-  _, 12:integer <- next-ingredient
+  _, 12:number <- next-ingredient
 ]
 +mem: storing 0 in location 12
 
@@ -61,10 +61,10 @@ recipe main [
   f 2:literal
 ]
 recipe f [
-  12:integer <- next-ingredient  # consume ingredient
+  12:number <- next-ingredient  # consume ingredient
   _, 1:boolean <- next-ingredient  # will not find any ingredients
   rewind-ingredients
-  13:integer, 2:boolean <- next-ingredient  # will find ingredient again
+  13:number, 2:boolean <- next-ingredient  # will find ingredient again
 ]
 +mem: storing 2 in location 12
 +mem: storing 0 in location 1
@@ -86,8 +86,8 @@ recipe main [
   f 1:literal, 2:literal
 ]
 recipe f [
-  12:integer <- ingredient 1:literal  # consume second ingredient first
-  13:integer, 1:boolean <- next-ingredient  # next-ingredient tries to scan past that
+  12:number <- ingredient 1:literal  # consume second ingredient first
+  13:number, 1:boolean <- next-ingredient  # next-ingredient tries to scan past that
 ]
 +mem: storing 2 in location 12
 +mem: storing 0 in location 1

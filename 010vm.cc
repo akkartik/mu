@@ -64,7 +64,7 @@ Memory.clear();
 :(after "Types")
 // Mu types encode how the numbers stored in different parts of memory are
 // interpreted. A location tagged as a 'character' type will interpret the
-// number 97 as the letter 'a', while a different location of type 'integer'
+// number 97 as the letter 'a', while a different location of type 'number'
 // would not.
 //
 // Unlike most computers today, mu stores types in a single big table, shared
@@ -81,9 +81,9 @@ void setup_types() {
   Type_number["literal"] = 0;
   Next_type_number = 1;
   // Mu Types Initialization
-  type_number integer = Type_number["integer"] = Next_type_number++;
-  Type_number["location"] = Type_number["integer"];  // wildcard type: either a pointer or a scalar
-  Type[integer].name = "integer";
+  type_number number = Type_number["number"] = Next_type_number++;
+  Type_number["location"] = Type_number["number"];  // wildcard type: either a pointer or a scalar
+  Type[number].name = "number";
   type_number address = Type_number["address"] = Next_type_number++;
   Type[address].name = "address";
   type_number boolean = Type_number["boolean"] = Next_type_number++;
@@ -91,7 +91,7 @@ void setup_types() {
   type_number character = Type_number["character"] = Next_type_number++;
   Type[character].name = "character";
   // Array types are a special modifier to any other type. For example,
-  // array:integer or array:address:boolean.
+  // array:number or array:address:boolean.
   type_number array = Type_number["array"] = Next_type_number++;
   Type[array].name = "array";
   // End Mu Types Initialization

@@ -14,26 +14,26 @@ scenario array-from-args [
 # create an array out of a list of scalar args
 recipe init-array [
   default-space:address:array:location <- new location:type, 30:literal
-  capacity:integer <- copy 0:literal
+  capacity:number <- copy 0:literal
   {
     # while read curr-value
     curr-value:location, exists?:boolean <- next-ingredient
     break-unless exists?:boolean
-    capacity:integer <- add capacity:integer, 1:literal
+    capacity:number <- add capacity:number, 1:literal
     loop
   }
-  result:address:array:location <- new location:type, capacity:integer
+  result:address:array:location <- new location:type, capacity:number
   rewind-ingredients
-  i:integer <- copy 0:literal
+  i:number <- copy 0:literal
   {
     # while read curr-value
-    done?:boolean <- greater-or-equal i:integer, capacity:integer
+    done?:boolean <- greater-or-equal i:number, capacity:number
     break-if done?:boolean
     curr-value:location, exists?:boolean <- next-ingredient
     assert exists?:boolean, [error in rewinding ingredients to init-array]
-    tmp:address:location <- index-address result:address:array:location/deref, i:integer
+    tmp:address:location <- index-address result:address:array:location/deref, i:number
     tmp:address:location/deref <- copy curr-value:location
-    i:integer <- add i:integer, 1:literal
+    i:number <- add i:number, 1:literal
     loop
   }
   reply result:address:array:location

@@ -3,7 +3,7 @@
 recipe main [
   switch-to-display
   print-character-to-display 97:literal
-  1:integer/raw, 2:integer/raw <- cursor-position-on-display
+  1:number/raw, 2:number/raw <- cursor-position-on-display
   wait-for-key-from-keyboard
   clear-display
   move-cursor-on-display 0:literal, 4:literal

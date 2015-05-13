@@ -21,9 +21,9 @@ case EQUAL: {
 
 :(scenario equal)
 recipe main [
-  1:integer <- copy 34:literal
-  2:integer <- copy 33:literal
-  3:integer <- equal 1:integer, 2:integer
+  1:number <- copy 34:literal
+  2:number <- copy 33:literal
+  3:number <- equal 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -35,9 +35,9 @@ recipe main [
 
 :(scenario equal2)
 recipe main [
-  1:integer <- copy 34:literal
-  2:integer <- copy 34:literal
-  3:integer <- equal 1:integer, 2:integer
+  1:number <- copy 34:literal
+  2:number <- copy 34:literal
+  3:number <- equal 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -49,13 +49,13 @@ recipe main [
 
 :(scenario equal_multiple)
 recipe main [
-  1:integer <- equal 34:literal, 34:literal, 34:literal
+  1:number <- equal 34:literal, 34:literal, 34:literal
 ]
 +mem: storing 1 in location 1
 
 :(scenario equal_multiple2)
 recipe main [
-  1:integer <- equal 34:literal, 34:literal, 35:literal
+  1:number <- equal 34:literal, 34:literal, 35:literal
 ]
 +mem: storing 0 in location 1
 
@@ -81,9 +81,9 @@ case GREATER_THAN: {
 
 :(scenario greater_than)
 recipe main [
-  1:integer <- copy 34:literal
-  2:integer <- copy 33:literal
-  3:integer <- greater-than 1:integer, 2:integer
+  1:number <- copy 34:literal
+  2:number <- copy 33:literal
+  3:boolean <- greater-than 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -95,9 +95,9 @@ recipe main [
 
 :(scenario greater_than2)
 recipe main [
-  1:integer <- copy 34:literal
-  2:integer <- copy 34:literal
-  3:integer <- greater-than 1:integer, 2:integer
+  1:number <- copy 34:literal
+  2:number <- copy 34:literal
+  3:boolean <- greater-than 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -109,13 +109,13 @@ recipe main [
 
 :(scenario greater_than_multiple)
 recipe main [
-  1:integer <- greater-than 36:literal, 35:literal, 34:literal
+  1:boolean <- greater-than 36:literal, 35:literal, 34:literal
 ]
 +mem: storing 1 in location 1
 
 :(scenario greater_than_multiple2)
 recipe main [
-  1:integer <- greater-than 36:literal, 35:literal, 35:literal
+  1:boolean <- greater-than 36:literal, 35:literal, 35:literal
 ]
 +mem: storing 0 in location 1
 
@@ -141,9 +141,9 @@ case LESSER_THAN: {
 
 :(scenario lesser_than)
 recipe main [
-  1:integer <- copy 32:literal
-  2:integer <- copy 33:literal
-  3:integer <- lesser-than 1:integer, 2:integer
+  1:number <- copy 32:literal
+  2:number <- copy 33:literal
+  3:boolean <- lesser-than 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -155,9 +155,9 @@ recipe main [
 
 :(scenario lesser_than2)
 recipe main [
-  1:integer <- copy 34:literal
-  2:integer <- copy 33:literal
-  3:integer <- lesser-than 1:integer, 2:integer
+  1:number <- copy 34:literal
+  2:number <- copy 33:literal
+  3:boolean <- lesser-than 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -169,13 +169,13 @@ recipe main [
 
 :(scenario lesser_than_multiple)
 recipe main [
-  1:integer <- lesser-than 34:literal, 35:literal, 36:literal
+  1:boolean <- lesser-than 34:literal, 35:literal, 36:literal
 ]
 +mem: storing 1 in location 1
 
 :(scenario lesser_than_multiple2)
 recipe main [
-  1:integer <- lesser-than 34:literal, 35:literal, 35:literal
+  1:boolean <- lesser-than 34:literal, 35:literal, 35:literal
 ]
 +mem: storing 0 in location 1
 
@@ -201,9 +201,9 @@ case GREATER_OR_EQUAL: {
 
 :(scenario greater_or_equal)
 recipe main [
-  1:integer <- copy 34:literal
-  2:integer <- copy 33:literal
-  3:integer <- greater-or-equal 1:integer, 2:integer
+  1:number <- copy 34:literal
+  2:number <- copy 33:literal
+  3:boolean <- greater-or-equal 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -215,9 +215,9 @@ recipe main [
 
 :(scenario greater_or_equal2)
 recipe main [
-  1:integer <- copy 34:literal
-  2:integer <- copy 34:literal
-  3:integer <- greater-or-equal 1:integer, 2:integer
+  1:number <- copy 34:literal
+  2:number <- copy 34:literal
+  3:boolean <- greater-or-equal 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -229,9 +229,9 @@ recipe main [
 
 :(scenario greater_or_equal3)
 recipe main [
-  1:integer <- copy 34:literal
-  2:integer <- copy 35:literal
-  3:integer <- greater-or-equal 1:integer, 2:integer
+  1:number <- copy 34:literal
+  2:number <- copy 35:literal
+  3:boolean <- greater-or-equal 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -243,13 +243,13 @@ recipe main [
 
 :(scenario greater_or_equal_multiple)
 recipe main [
-  1:integer <- greater-or-equal 36:literal, 35:literal, 35:literal
+  1:boolean <- greater-or-equal 36:literal, 35:literal, 35:literal
 ]
 +mem: storing 1 in location 1
 
 :(scenario greater_or_equal_multiple2)
 recipe main [
-  1:integer <- greater-or-equal 36:literal, 35:literal, 36:literal
+  1:boolean <- greater-or-equal 36:literal, 35:literal, 36:literal
 ]
 +mem: storing 0 in location 1
 
@@ -275,9 +275,9 @@ case LESSER_OR_EQUAL: {
 
 :(scenario lesser_or_equal)
 recipe main [
-  1:integer <- copy 32:literal
-  2:integer <- copy 33:literal
-  3:integer <- lesser-or-equal 1:integer, 2:integer
+  1:number <- copy 32:literal
+  2:number <- copy 33:literal
+  3:boolean <- lesser-or-equal 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -289,9 +289,9 @@ recipe main [
 
 :(scenario lesser_or_equal2)
 recipe main [
-  1:integer <- copy 33:literal
-  2:integer <- copy 33:literal
-  3:integer <- lesser-or-equal 1:integer, 2:integer
+  1:number <- copy 33:literal
+  2:number <- copy 33:literal
+  3:boolean <- lesser-or-equal 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -303,9 +303,9 @@ recipe main [
 
 :(scenario lesser_or_equal3)
 recipe main [
-  1:integer <- copy 34:literal
-  2:integer <- copy 33:literal
-  3:integer <- lesser-or-equal 1:integer, 2:integer
+  1:number <- copy 34:literal
+  2:number <- copy 33:literal
+  3:boolean <- lesser-or-equal 1:number, 2:number
 ]
 +run: instruction main/2
 +run: ingredient 0 is 1
@@ -317,12 +317,12 @@ recipe main [
 
 :(scenario lesser_or_equal_multiple)
 recipe main [
-  1:integer <- lesser-or-equal 34:literal, 35:literal, 35:literal
+  1:boolean <- lesser-or-equal 34:literal, 35:literal, 35:literal
 ]
 +mem: storing 1 in location 1
 
 :(scenario lesser_or_equal_multiple2)
 recipe main [
-  1:integer <- lesser-or-equal 34:literal, 35:literal, 34:literal
+  1:boolean <- lesser-or-equal 34:literal, 35:literal, 34:literal
 ]
 +mem: storing 0 in location 1

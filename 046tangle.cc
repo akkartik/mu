@@ -4,13 +4,13 @@
 
 :(scenario tangle_before)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   +label1
-  3:integer <- copy 0:literal
+  3:number <- copy 0:literal
 ]
 
 before +label1 [
-  2:integer <- copy 0:literal
+  2:number <- copy 0:literal
 ]
 +mem: storing 0 in location 1
 +mem: storing 0 in location 2
@@ -70,15 +70,15 @@ void insert_fragments(const recipe_number r) {
 
 :(scenario tangle_before_and_after)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   +label1
-  4:integer <- copy 0:literal
+  4:number <- copy 0:literal
 ]
 before +label1 [
-  2:integer <- copy 0:literal
+  2:number <- copy 0:literal
 ]
 after +label1 [
-  3:integer <- copy 0:literal
+  3:number <- copy 0:literal
 ]
 +mem: storing 0 in location 1
 +mem: storing 0 in location 2
@@ -90,22 +90,22 @@ $mem: 4
 
 :(scenario tangle_keeps_labels_separate)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   +label1
   +label2
-  6:integer <- copy 0:literal
+  6:number <- copy 0:literal
 ]
 before +label1 [
-  2:integer <- copy 0:literal
+  2:number <- copy 0:literal
 ]
 after +label1 [
-  3:integer <- copy 0:literal
+  3:number <- copy 0:literal
 ]
 before +label2 [
-  4:integer <- copy 0:literal
+  4:number <- copy 0:literal
 ]
 after +label2 [
-  5:integer <- copy 0:literal
+  5:number <- copy 0:literal
 ]
 +mem: storing 0 in location 1
 +mem: storing 0 in location 2
@@ -121,21 +121,21 @@ $mem: 6
 
 :(scenario tangle_stacks_multiple_fragments)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   +label1
-  6:integer <- copy 0:literal
+  6:number <- copy 0:literal
 ]
 before +label1 [
-  2:integer <- copy 0:literal
+  2:number <- copy 0:literal
 ]
 after +label1 [
-  3:integer <- copy 0:literal
+  3:number <- copy 0:literal
 ]
 before +label1 [
-  4:integer <- copy 0:literal
+  4:number <- copy 0:literal
 ]
 after +label1 [
-  5:integer <- copy 0:literal
+  5:number <- copy 0:literal
 ]
 +mem: storing 0 in location 1
 # 'before' fragments stack in order
@@ -151,17 +151,17 @@ $mem: 6
 
 :(scenario tangle_supports_fragments_with_multiple_instructions)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   +label1
-  6:integer <- copy 0:literal
+  6:number <- copy 0:literal
 ]
 before +label1 [
-  2:integer <- copy 0:literal
-  3:integer <- copy 0:literal
+  2:number <- copy 0:literal
+  3:number <- copy 0:literal
 ]
 after +label1 [
-  4:integer <- copy 0:literal
-  5:integer <- copy 0:literal
+  4:number <- copy 0:literal
+  5:number <- copy 0:literal
 ]
 +mem: storing 0 in location 1
 +mem: storing 0 in location 2
@@ -175,16 +175,16 @@ $mem: 6
 
 :(scenario tangle_tangles_into_all_labels_with_same_name)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   +label1
   +label1
-  4:integer <- copy 0:literal
+  4:number <- copy 0:literal
 ]
 before +label1 [
-  2:integer <- copy 0:literal
+  2:number <- copy 0:literal
 ]
 after +label1 [
-  3:integer <- copy 0:literal
+  3:number <- copy 0:literal
 ]
 +mem: storing 0 in location 1
 +mem: storing 0 in location 2

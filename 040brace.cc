@@ -24,7 +24,7 @@
 recipe main [
   {
     break
-    1:integer <- copy 0:literal
+    1:number <- copy 0:literal
   }
 ]
 +after-brace: recipe main
@@ -191,10 +191,10 @@ Recipe_number["loop-unless"] = LOOP_UNLESS;
 
 :(scenario loop)
 recipe main [
-  1:integer <- copy 0:literal
-  2:integer <- copy 0:literal
+  1:number <- copy 0:literal
+  2:number <- copy 0:literal
   {
-    3:integer <- copy 0:literal
+    3:number <- copy 0:literal
     loop
   }
 ]
@@ -206,7 +206,7 @@ recipe main [
 
 :(scenario break_empty_block)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   {
     break
   }
@@ -217,7 +217,7 @@ recipe main [
 
 :(scenario break_cascading)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   {
     break
   }
@@ -232,11 +232,11 @@ recipe main [
 
 :(scenario break_cascading2)
 recipe main [
-  1:integer <- copy 0:literal
-  2:integer <- copy 0:literal
+  1:number <- copy 0:literal
+  2:number <- copy 0:literal
   {
     break
-    3:integer <- copy 0:literal
+    3:number <- copy 0:literal
   }
   {
     break
@@ -251,11 +251,11 @@ recipe main [
 
 :(scenario break_if)
 recipe main [
-  1:integer <- copy 0:literal
-  2:integer <- copy 0:literal
+  1:number <- copy 0:literal
+  2:number <- copy 0:literal
   {
-    break-if 2:integer
-    3:integer <- copy 0:literal
+    break-if 2:number
+    3:number <- copy 0:literal
   }
   {
     break
@@ -270,36 +270,36 @@ recipe main [
 
 :(scenario break_nested)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   {
-    2:integer <- copy 0:literal
+    2:number <- copy 0:literal
     break
     {
-      3:integer <- copy 0:literal
+      3:number <- copy 0:literal
     }
-    4:integer <- copy 0:literal
+    4:number <- copy 0:literal
   }
 ]
 +after-brace: jump 4:offset
 
 :(scenario break_nested_degenerate)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   {
-    2:integer <- copy 0:literal
+    2:number <- copy 0:literal
     break
     {
     }
-    4:integer <- copy 0:literal
+    4:number <- copy 0:literal
   }
 ]
 +after-brace: jump 3:offset
 
 :(scenario break_nested_degenerate2)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   {
-    2:integer <- copy 0:literal
+    2:number <- copy 0:literal
     break
     {
     }
@@ -310,7 +310,7 @@ recipe main [
 :(scenario break_label)
 % Hide_warnings = true;
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   {
     break +foo:offset
   }
@@ -319,11 +319,11 @@ recipe main [
 
 :(scenario break_unless)
 recipe main [
-  1:integer <- copy 0:literal
-  2:integer <- copy 0:literal
+  1:number <- copy 0:literal
+  2:number <- copy 0:literal
   {
-    break-unless 2:integer
-    3:integer <- copy 0:literal
+    break-unless 2:number
+    3:number <- copy 0:literal
   }
 ]
 +after-brace: recipe main
@@ -334,11 +334,11 @@ recipe main [
 
 :(scenario loop_unless)
 recipe main [
-  1:integer <- copy 0:literal
-  2:integer <- copy 0:literal
+  1:number <- copy 0:literal
+  2:number <- copy 0:literal
   {
-    loop-unless 2:integer
-    3:integer <- copy 0:literal
+    loop-unless 2:number
+    3:number <- copy 0:literal
   }
 ]
 +after-brace: recipe main
@@ -349,14 +349,14 @@ recipe main [
 
 :(scenario loop_nested)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   {
-    2:integer <- copy 0:literal
+    2:number <- copy 0:literal
     {
-      3:integer <- copy 0:literal
+      3:number <- copy 0:literal
     }
     loop-if 4:boolean
-    5:integer <- copy 0:literal
+    5:number <- copy 0:literal
   }
 ]
 +after-brace: recipe main
@@ -364,9 +364,9 @@ recipe main [
 
 :(scenario loop_label)
 recipe main [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   +foo
-  2:integer <- copy 0:literal
+  2:number <- copy 0:literal
 ]
 +after-brace: recipe main
 +after-brace: copy ...
@@ -377,16 +377,16 @@ recipe main [
 :(scenario brace_conversion_and_run)
 #? % Trace_stream->dump_layer = "run";
 recipe test-factorial [
-  1:integer <- copy 5:literal
-  2:integer <- copy 1:literal
+  1:number <- copy 5:literal
+  2:number <- copy 1:literal
   {
-    3:boolean <- equal 1:integer, 1:literal
+    3:boolean <- equal 1:number, 1:literal
     break-if 3:boolean
-#    $print 1:integer
-    2:integer <- multiply 2:integer, 1:integer
-    1:integer <- subtract 1:integer, 1:literal
+#    $print 1:number
+    2:number <- multiply 2:number, 1:number
+    1:number <- subtract 1:number, 1:literal
     loop
   }
-  4:integer <- copy 2:integer  # trigger a read
+  4:number <- copy 2:number  # trigger a read
 ]
 +mem: location 2 is 120

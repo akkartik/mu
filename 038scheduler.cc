@@ -6,11 +6,11 @@ recipe f1 [
   start-running f2:recipe
   # wait for f2 to run
   {
-    jump-unless 1:integer, -1:literal
+    jump-unless 1:number, -1:literal
   }
 ]
 recipe f2 [
-  1:integer <- copy 1:literal
+  1:number <- copy 1:literal
 ]
 +schedule: f1
 +schedule: f2
@@ -102,6 +102,7 @@ Routines.clear();
 //:: To schedule new routines to run, call 'start-running'.
 
 //: 'start-running' will return a unique id for the routine that was created.
+//: routine id is a number, but don't do any arithmetic on it
 :(before "End routine Fields")
 index_t id;
 :(before "End Globals")
@@ -142,8 +143,8 @@ case START_RUNNING: {
 :(scenario scheduler_runs_single_routine)
 % Scheduling_interval = 1;
 recipe f1 [
-  1:integer <- copy 0:literal
-  2:integer <- copy 0:literal
+  1:number <- copy 0:literal
+  2:number <- copy 0:literal
 ]
 +schedule: f1
 +run: instruction f1/0
@@ -154,12 +155,12 @@ recipe f1 [
 % Scheduling_interval = 1;
 recipe f1 [
   start-running f2:recipe
-  1:integer <- copy 0:literal
-  2:integer <- copy 0:literal
+  1:number <- copy 0:literal
+  2:number <- copy 0:literal
 ]
 recipe f2 [
-  3:integer <- copy 4:literal
-  4:integer <- copy 4:literal
+  3:number <- copy 4:literal
+  4:number <- copy 4:literal
 ]
 +schedule: f1
 +run: instruction f1/0
@@ -177,36 +178,36 @@ recipe f1 [
   start-running f2:recipe, 3:literal
   # wait for f2 to run
   {
-    jump-unless 1:integer, -1:literal
+    jump-unless 1:number, -1:literal
   }
 ]
 recipe f2 [
-  1:integer <- next-ingredient
-  2:integer <- add 1:integer, 1:literal
+  1:number <- next-ingredient
+  2:number <- add 1:number, 1:literal
 ]
 +mem: storing 4 in location 2
 
 :(scenario start_running_returns_routine_id)
 recipe f1 [
-  1:integer <- start-running f2:recipe
+  1:number <- start-running f2:recipe
 ]
 recipe f2 [
-  12:integer <- copy 44:literal
+  12:number <- copy 44:literal
 ]
 +mem: storing 2 in location 1
 
 :(scenario scheduler_skips_completed_routines)
 # this scenario will require some careful setup in escaped C++
 # (straining our tangle capabilities to near-breaking point)
-% recipe_number f1 = load("recipe f1 [\n1:integer <- copy 0:literal\n]").front();
-% recipe_number f2 = load("recipe f2 [\n2:integer <- copy 0:literal\n]").front();
+% recipe_number f1 = load("recipe f1 [\n1:number <- copy 0:literal\n]").front();
+% recipe_number f2 = load("recipe f2 [\n2:number <- copy 0:literal\n]").front();
 % Routines.push_back(new routine(f1));  // f1 meant to run
 % Routines.push_back(new routine(f2));
 % Routines.back()->state = COMPLETED;  // f2 not meant to run
 #? % Trace_stream->dump_layer = "all";
 # must have at least one routine without escaping
 recipe f3 [
-  3:integer <- copy 0:literal
+  3:number <- copy 0:literal
 ]
 # by interleaving '+' lines with '-' lines, we allow f1 and f3 to run in any order
 +schedule: f1
@@ -220,8 +221,8 @@ recipe f3 [
 % Routines.push_back(new routine(COPY));
 % Routines.back()->state = COMPLETED;
 recipe f1 [
-  1:integer <- copy 0:literal
-  2:integer <- copy 0:literal
+  1:number <- copy 0:literal
+  2:number <- copy 0:literal
 ]
 +schedule: f1
 -run: idle
@@ -234,7 +235,7 @@ recipe main [
   # f1 never actually runs because its parent completes without waiting for it
 ]
 recipe f1 [
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
 ]
 -schedule: f1
 
@@ -273,13 +274,13 @@ bool has_completed_parent(index_t routine_index) {
 :(scenario routine_state_test)
 % Scheduling_interval = 2;
 recipe f1 [
-  1:integer/child-id <- start-running f2:recipe
-  12:integer <- copy 0:literal  # race condition since we don't care about location 12
+  1:number/child-id <- start-running f2:recipe
+  12:number <- copy 0:literal  # race condition since we don't care about location 12
   # thanks to Scheduling_interval, f2's one instruction runs in between here and completes
-  2:integer/state <- routine-state 1:integer/child-id
+  2:number/state <- routine-state 1:number/child-id
 ]
 recipe f2 [
-  12:integer <- copy 0:literal
+  12:number <- copy 0:literal
   # trying to run a second instruction marks routine as completed
 ]
 # recipe f2 should be in state COMPLETED

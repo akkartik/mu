@@ -3,10 +3,10 @@
 
 :(scenario copy_indirect)
 recipe main [
-  1:address:integer <- copy 2:literal
-  2:integer <- copy 34:literal
+  1:address:number <- copy 2:literal
+  2:number <- copy 34:literal
   # This loads location 1 as an address and looks up *that* location.
-  3:integer <- copy 1:address:integer/deref
+  3:number <- copy 1:address:number/deref
 ]
 +run: instruction main/2
 +mem: location 1 is 2
@@ -20,8 +20,8 @@ x = canonize(x);
 //: 'deref' property
 :(scenario store_indirect)
 recipe main [
-  1:address:integer <- copy 2:literal
-  1:address:integer/deref <- copy 34:literal
+  1:address:number <- copy 2:literal
+  1:address:number/deref <- copy 34:literal
 ]
 +run: instruction main/1
 +mem: location 1 is 2
@@ -71,10 +71,10 @@ reagent deref(reagent x) {
 //:: 'get' can read from container address
 :(scenario get_indirect)
 recipe main [
-  1:integer <- copy 2:literal
-  2:integer <- copy 34:literal
-  3:integer <- copy 35:literal
-  4:integer <- get 1:address:point/deref, 0:offset
+  1:number <- copy 2:literal
+  2:number <- copy 34:literal
+  3:number <- copy 35:literal
+  4:number <- get 1:address:point/deref, 0:offset
 ]
 +run: instruction main/3
 +run: address to copy is 2
@@ -83,10 +83,10 @@ recipe main [
 
 :(scenario include_nonderef_properties)
 recipe main [
-  1:integer <- copy 2:literal
-  2:integer <- copy 34:literal
-  3:integer <- copy 35:literal
-  4:integer <- get 1:address:point/deref/foo, 0:offset
+  1:number <- copy 2:literal
+  2:number <- copy 34:literal
+  3:number <- copy 35:literal
+  4:number <- get 1:address:point/deref/foo, 0:offset
 ]
 +run: instruction main/3
 +run: address to copy is 2
@@ -99,10 +99,10 @@ base = canonize(base);
 :(scenario get_address_indirect)
 # 'get' can read from container address
 recipe main [
-  1:integer <- copy 2:literal
-  2:integer <- copy 34:literal
-  3:integer <- copy 35:literal
-  4:integer <- get-address 1:address:point/deref, 0:offset
+  1:number <- copy 2:literal
+  2:number <- copy 34:literal
+  3:number <- copy 35:literal
+  4:number <- get-address 1:address:point/deref, 0:offset
 ]
 +run: instruction main/3
 +run: address to copy is 2
