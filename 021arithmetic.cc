@@ -6,7 +6,7 @@ ADD,
 Recipe_number["add"] = ADD;
 :(before "End Primitive Recipe Implementations")
 case ADD: {
-  long long int result = 0;
+  double result = 0;
   for (index_t i = 0; i < ingredients.size(); ++i) {
     assert(ingredients.at(i).size() == 1);  // scalar
     result += ingredients.at(i).at(0);
@@ -53,7 +53,7 @@ Recipe_number["subtract"] = SUBTRACT;
 :(before "End Primitive Recipe Implementations")
 case SUBTRACT: {
   assert(ingredients.at(0).size() == 1);  // scalar
-  long long int result = ingredients.at(0).at(0);
+  double result = ingredients.at(0).at(0);
   for (index_t i = 1; i < ingredients.size(); ++i) {
     assert(ingredients.at(i).size() == 1);  // scalar
     result -= ingredients.at(i).at(0);
@@ -99,7 +99,7 @@ MULTIPLY,
 Recipe_number["multiply"] = MULTIPLY;
 :(before "End Primitive Recipe Implementations")
 case MULTIPLY: {
-  long long int result = 1;
+  double result = 1;
   for (index_t i = 0; i < ingredients.size(); ++i) {
     assert(ingredients.at(i).size() == 1);  // scalar
     result *= ingredients.at(i).at(0);
@@ -146,7 +146,7 @@ Recipe_number["divide"] = DIVIDE;
 :(before "End Primitive Recipe Implementations")
 case DIVIDE: {
   assert(ingredients.at(0).size() == 1);  // scalar
-  long long int result = ingredients.at(0).at(0);
+  double result = ingredients.at(0).at(0);
   for (index_t i = 1; i < ingredients.size(); ++i) {
     assert(ingredients.at(i).size() == 1);  // scalar
     result /= ingredients.at(i).at(0);
@@ -193,7 +193,7 @@ Recipe_number["divide-with-remainder"] = DIVIDE_WITH_REMAINDER;
 :(before "End Primitive Recipe Implementations")
 case DIVIDE_WITH_REMAINDER: {
   long long int quotient = ingredients.at(0).at(0) / ingredients.at(1).at(0);
-  long long int remainder = ingredients.at(0).at(0) % ingredients.at(1).at(0);
+  long long int remainder = static_cast<long long int>(ingredients.at(0).at(0)) % static_cast<long long int>(ingredients.at(1).at(0));
   products.resize(2);
   products.at(0).push_back(quotient);
   products.at(1).push_back(remainder);
@@ -227,3 +227,10 @@ recipe main [
 +mem: storing 2 in location 3
 +run: product 1 is 4
 +mem: storing 5 in location 4
+
+:(scenario divide_with_decimal_point)
+recipe main [
+  # todo: literal floats?
+  1:integer <- divide 5:literal, 2:literal
+]
++mem: storing 2.5 in location 1

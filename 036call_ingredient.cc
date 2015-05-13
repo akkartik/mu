@@ -23,7 +23,7 @@ recipe f [
 +mem: storing 0 in location 12
 
 :(before "End call Fields")
-vector<vector<long long int> > ingredient_atoms;
+vector<vector<double> > ingredient_atoms;
 index_t next_ingredient_to_process;
 :(replace{} "call(recipe_number r)")
 call(recipe_number r) :running_recipe(r), running_step_index(0), next_ingredient_to_process(0) {}

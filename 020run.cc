@@ -68,13 +68,13 @@ void run_current_routine()
     // Read all ingredients from memory.
     // Each ingredient loads a vector of values rather than a single value; mu
     // permits operating on reagents spanning multiple locations.
-    vector<vector<long long int> > ingredients;
+    vector<vector<double> > ingredients;
     for (index_t i = 0; i < current_instruction().ingredients.size(); ++i) {
       trace("run") << "ingredient " << i << " is " << current_instruction().ingredients.at(i).name;
       ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
     }
     // Instructions below will write to 'products' or to 'instruction_counter'.
-    vector<vector<long long int> > products;
+    vector<vector<double> > products;
     index_t instruction_counter = current_step_index();
 //?     cout << "AAA: " << current_instruction().to_string() << '\n'; //? 1
     switch (current_instruction().operation) {
@@ -178,9 +178,9 @@ void run(string form) {
 
 //:: Reading from memory, writing to memory.
 
-vector<long long int> read_memory(reagent x) {
+vector<double> read_memory(reagent x) {
 //?   cout << "read_memory: " << x.to_string() << '\n'; //? 2
-  vector<long long int> result;
+  vector<double> result;
   if (isa_literal(x)) {
     result.push_back(x.value);
     return result;
@@ -188,14 +188,14 @@ vector<long long int> read_memory(reagent x) {
   index_t base = x.value;
   size_t size = size_of(x);
   for (index_t offset = 0; offset < size; ++offset) {
-    long long int val = Memory[base+offset];
+    double val = Memory[base+offset];
     trace("mem") << "location " << base+offset << " is " << val;
     result.push_back(val);
   }
   return result;
 }
 
-void write_memory(reagent x, vector<long long int> data) {
+void write_memory(reagent x, vector<double> data) {
   if (is_dummy(x)) return;
   index_t base = x.value;
   if (size_of(x) != data.size())

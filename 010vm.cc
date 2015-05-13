@@ -57,7 +57,7 @@ struct property {
 
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
-map<index_t, long long int> Memory;
+map<index_t, double> Memory;
 :(before "End Setup")
 Memory.clear();
 
@@ -249,7 +249,7 @@ string slurp_until(istream& in, char delim) {
 }
 
 void dump_memory() {
-  for (map<index_t, long long int>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
+  for (map<index_t, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
     cout << p->first << ": " << p->second << '\n';
   }
 }

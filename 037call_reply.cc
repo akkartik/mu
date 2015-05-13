@@ -76,7 +76,7 @@ recipe test1 [
 +warn: 'same-as-ingredient' result 2 must be location 1
 
 :(code)
-string to_string(const vector<long long int>& in) {
+string to_string(const vector<double>& in) {
   if (in.empty()) return "[]";
   ostringstream out;
   if (in.size() == 1) {
