@@ -37,7 +37,7 @@ struct call {
   // End call Fields
   call(recipe_number r) :running_recipe(r), running_step_index(0) {}
 };
-typedef stack<call> call_stack;
+typedef list<call> call_stack;
 
 :(replace{} "struct routine")
 struct routine {
@@ -49,7 +49,7 @@ struct routine {
 };
 :(code)
 routine::routine(recipe_number r) {
-  calls.push(call(r));
+  calls.push_front(call(r));
   // End routine Constructor
 }
 
@@ -57,15 +57,18 @@ routine::routine(recipe_number r) {
 
 :(replace{} "inline index_t& current_step_index()")
 inline index_t& current_step_index() {
-  return Current_routine->calls.top().running_step_index;
+  assert(!Current_routine->calls.empty());
+  return Current_routine->calls.front().running_step_index;
 }
 :(replace{} "inline const string& current_recipe_name()")
 inline const string& current_recipe_name() {
-  return Recipe[Current_routine->calls.top().running_recipe].name;
+  assert(!Current_routine->calls.empty());
+  return Recipe[Current_routine->calls.front().running_recipe].name;
 }
 :(replace{} "inline const instruction& current_instruction()")
 inline const instruction& current_instruction() {
-  return Recipe[Current_routine->calls.top().running_recipe].steps.at(Current_routine->calls.top().running_step_index);
+  assert(!Current_routine->calls.empty());
+  return Recipe[Current_routine->calls.front().running_recipe].steps.at(Current_routine->calls.front().running_step_index);
 }
 
 :(replace{} "default:" following "End Primitive Recipe Implementations")
@@ -75,7 +78,7 @@ default: {
     raise << "undefined operation " << current_instruction().operation << ": " << current_instruction().to_string() << '\n';
     break;
   }
-  Current_routine->calls.push(call(current_instruction().operation));
+  Current_routine->calls.push_front(call(current_instruction().operation));
   continue;  // not done with caller; don't increment current_step_index()
 }
 
@@ -87,14 +90,15 @@ inline bool routine::completed() const {
 }
 
 inline const vector<instruction>& routine::steps() const {
-  return Recipe[calls.top().running_recipe].steps;
+  assert(!calls.empty());
+  return Recipe[calls.front().running_recipe].steps;
 }
 
 :(before "Running One Instruction")
 // when we reach the end of one call, we may reach the end of the one below
 // it, and the one below that, and so on
 while (current_step_index() >= Current_routine->steps().size()) {
-  Current_routine->calls.pop();
+  Current_routine->calls.pop_front();
   if (Current_routine->calls.empty()) return;
   // todo: no results returned warning
   ++current_step_index();

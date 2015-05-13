@@ -85,7 +85,7 @@ case SCREEN_SHOULD_CONTAIN: {
 
 :(code)
 void check_screen(const string& contents) {
-  assert(!Current_routine->calls.top().default_space);  // not supported
+  assert(!Current_routine->calls.front().default_space);  // not supported
   index_t screen_location = Memory[SCREEN];
   int data_offset = find_element_name(Type_number["screen"], "data");
   assert(data_offset >= 0);

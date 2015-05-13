@@ -158,7 +158,7 @@ case RUN: {
   // End Predefined Scenario Locals In Run.
   transform_all();
 //?   cout << tmp_recipe.at(0) << ' ' << Recipe_number["main"] << '\n'; //? 1
-  Current_routine->calls.push(call(tmp_recipe.at(0)));
+  Current_routine->calls.push_front(call(tmp_recipe.at(0)));
   continue;  // not done with caller; don't increment current_step_index()
 }
 

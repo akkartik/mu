@@ -94,7 +94,7 @@ tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()))
 
 :(code)
 index_t space_base(const reagent& x) {
-  return Current_routine->calls.top().default_space;
+  return Current_routine->calls.front().default_space;
 }
 
 index_t address(index_t offset, index_t base) {
@@ -110,8 +110,8 @@ index_t address(index_t offset, index_t base) {
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "default-space") {
     assert(data.size() == 1);
-    Current_routine->calls.top().default_space = data.at(0);
-//?     cout << "AAA " << Current_routine->calls.top().default_space << '\n'; //? 1
+    Current_routine->calls.front().default_space = data.at(0);
+//?     cout << "AAA " << Current_routine->calls.front().default_space << '\n'; //? 1
     return;
   }
 
@@ -125,6 +125,6 @@ recipe main [
 :(after "vector<double> read_memory(reagent x)")
   if (x.name == "default-space") {
     vector<double> result;
-    result.push_back(Current_routine->calls.top().default_space);
+    result.push_back(Current_routine->calls.front().default_space);
     return result;
   }

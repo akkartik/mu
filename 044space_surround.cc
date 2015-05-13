@@ -27,7 +27,7 @@ recipe main [
 
 :(replace{} "index_t space_base(const reagent& x)")
 index_t space_base(const reagent& x) {
-  return space_base(x, space_index(x), Current_routine->calls.top().default_space);
+  return space_base(x, space_index(x), Current_routine->calls.front().default_space);
 }
 
 index_t space_base(const reagent& x, index_t space_index, index_t base) {
