@@ -12,7 +12,7 @@ case AND: {
     result = result && ingredients.at(i).at(0);
   }
   products.resize(1);
-  products.at(0).push_back(result);  // boolean must be a positive integer
+  products.at(0).push_back(result);
   break;
 }
 
@@ -60,7 +60,7 @@ case OR: {
     result = result || ingredients.at(i).at(0);
   }
   products.resize(1);
-  products.at(0).push_back(result);  // boolean must be a positive integer
+  products.at(0).push_back(result);
   break;
 }
 
@@ -105,7 +105,7 @@ case NOT: {
   products.resize(ingredients.size());
   for (index_t i = 0; i < ingredients.size(); ++i) {
     assert(ingredients.at(i).size() == 1);  // must be a scalar
-    products.at(i).push_back(!ingredients.at(i).at(0));  // boolean must be a positive integer
+    products.at(i).push_back(!ingredients.at(i).at(0));
   }
   break;
 }

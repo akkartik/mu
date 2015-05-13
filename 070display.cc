@@ -70,7 +70,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
   size_t height = (h >= 0) ? h : 0;
   size_t width = (w >= 0) ? w : 0;
   assert(ingredients.at(0).size() == 1);  // scalar
-  long long int c = value(ingredients.at(0).at(0));  // unicode code-point will probably always be a positive integer
+  long long int c = ingredients.at(0).at(0);
   if (c == '\n' || c == '\r') {
     if (Display_row < height-1) {
       Display_column = 0;
@@ -117,9 +117,9 @@ Recipe_number["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_ON_DISPLAY: {
   assert(ingredients.at(0).size() == 1);  // scalar
-  Display_row = ingredients.at(0).at(0);  // screen coordinate will always be a non-negative integer
+  Display_row = ingredients.at(0).at(0);
   assert(ingredients.at(1).size() == 1);  // scalar
-  Display_column = ingredients.at(1).at(0);  // screen coordinate will always be a non-negative integer
+  Display_column = ingredients.at(1).at(0);
   tb_set_cursor(Display_column, Display_row);
   tb_present();
   break;

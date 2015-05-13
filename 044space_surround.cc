@@ -36,8 +36,8 @@ index_t space_base(const reagent& x, index_t space_index, index_t base) {
 //?     trace("foo") << "base of space " << space_index << " is " << base << '\n'; //? 1
     return base;
   }
-//?   trace("foo") << "base of space " << space_index << " is " << value(Memory[base+1]) << '\n'; //? 1
-  index_t result = space_base(x, space_index-1, value(Memory[base+1]));
+//?   trace("foo") << "base of space " << space_index << " is " << Memory[base+1] << '\n'; //? 1
+  index_t result = space_base(x, space_index-1, Memory[base+1]);
   return result;
 }
 

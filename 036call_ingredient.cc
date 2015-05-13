@@ -105,14 +105,14 @@ case INGREDIENT: {
     products.push_back(
         Current_routine->calls.top().ingredient_atoms.at(Current_routine->calls.top().next_ingredient_to_process));
     assert(products.size() == 1);  products.resize(2);  // push a new vector
-    products.at(1).push_back(1);  // non-negative integer
+    products.at(1).push_back(1);
     ++Current_routine->calls.top().next_ingredient_to_process;
   }
   else {
     if (current_instruction().products.size() > 1) {
       products.resize(2);
       products.at(0).push_back(0);  // todo: will fail noisily if we try to read a compound value
-      products.at(1).push_back(0);  // non-negative integer
+      products.at(1).push_back(0);
     }
   }
   break;

@@ -48,5 +48,5 @@ void parse_int_reagents() {
 void populate_value(reagent& r) {
   if (r.initialized) return;
   if (!is_number(r.name)) return;
-  r.set_value(mu_integer(to_number(r.name)));
+  r.set_value(to_number(r.name));
 }

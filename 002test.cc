@@ -54,7 +54,6 @@ if (Run_tests) {
   time_t t; time(&t);
   cerr << "C tests: " << ctime(&t);
   for (index_t i=0; i < sizeof(Tests)/sizeof(Tests[0]); ++i) {
-//?     cerr << "===\n"; //? 1
     run_test(i);
   }
   // End Tests

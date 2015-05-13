@@ -69,10 +69,10 @@ void transform_braces(const recipe_number r) {
       }
       else {
         reagent ing;
-        ing.set_value(mu_integer(open_braces.top()-index));
+        ing.set_value(open_braces.top()-index);
         ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump " << to_int(ing.value) << ":offset";
+        trace("after-brace") << "jump " << ing.value << ":offset";
         trace("after-brace") << index << ": " << ing.to_string();
         trace("after-brace") << index << ": " << Recipe[r].steps.at(index).ingredients.at(0).to_string();
       }
@@ -85,10 +85,10 @@ void transform_braces(const recipe_number r) {
       }
       else {
         reagent ing;
-        ing.set_value(mu_integer(matching_brace(open_braces.top(), braces) - index - 1));
+        ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
         ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump " << to_int(ing.value) << ":offset";
+        trace("after-brace") << "jump " << ing.value << ":offset";
       }
     }
     else if (inst.operation == Recipe_number["loop-if"]) {
@@ -99,10 +99,10 @@ void transform_braces(const recipe_number r) {
       }
       else {
         reagent ing;
-        ing.set_value(mu_integer(open_braces.top()-index));
+        ing.set_value(open_braces.top()-index);
         ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << to_int(ing.value) << ":offset";
+        trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
     else if (inst.operation == Recipe_number["break-if"]) {
@@ -113,10 +113,10 @@ void transform_braces(const recipe_number r) {
       }
       else {
         reagent ing;
-        ing.set_value(mu_integer(matching_brace(open_braces.top(), braces) - index - 1));
+        ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
         ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << to_int(ing.value) << ":offset";
+        trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
     else if (inst.operation == Recipe_number["loop-unless"]) {
@@ -127,10 +127,10 @@ void transform_braces(const recipe_number r) {
       }
       else {
         reagent ing;
-        ing.set_value(mu_integer(open_braces.top()-index));
+        ing.set_value(open_braces.top()-index);
         ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << to_int(ing.value) << ":offset";
+        trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
     else if (inst.operation == Recipe_number["break-unless"]) {
@@ -142,10 +142,10 @@ void transform_braces(const recipe_number r) {
       }
       else {
         reagent ing;
-        ing.set_value(mu_integer(matching_brace(open_braces.top(), braces) - index - 1));
+        ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
         ing.types.push_back(Type_number["offset"]);
         inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << to_int(ing.value) << ":offset";
+        trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
     else {
@@ -380,14 +380,13 @@ recipe test-factorial [
   1:integer <- copy 5:literal
   2:integer <- copy 1:literal
   {
-    3:boolean <- equal 1:integer, 1:literal
+    3:boolean <- equal 1:integer 1:literal
     break-if 3:boolean
-#?     $print 1:integer, [ ], 2:integer, [
-#? ]
 #    $print 1:integer
     2:integer <- multiply 2:integer, 1:integer
     1:integer <- subtract 1:integer, 1:literal
     loop
   }
+  4:integer <- copy 2:integer  # trigger a read
 ]
-+mem: storing 120 in location 2
++mem: location 2 is 120

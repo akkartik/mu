@@ -88,7 +88,7 @@ time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
 for (index_t i = 0; i < Scenarios.size(); ++i) {
 //?   cerr << Passed << '\n'; //? 1
-//?   cerr << i << ": " << Scenarios.at(i).name << '\n'; //? 3
+//?   cerr << i << ": " << Scenarios.at(i).name << '\n'; //? 2
   run_mu_scenario(Scenarios.at(i));
   if (Passed) cerr << ".";
 }
@@ -215,15 +215,15 @@ void check_memory(const string& s) {
     skip_whitespace_and_comments(in);
     string _assign;  in >> _assign;  assert(_assign == "<-");
     skip_whitespace_and_comments(in);
-    int expected_value = 0;  in >> expected_value;
+    int value = 0;  in >> value;
     if (locations_checked.find(address) != locations_checked.end())
       raise << "duplicate expectation for location " << address << '\n';
     trace("run") << "checking location " << address;
-    if (value(Memory[address]) != expected_value) {
+    if (Memory[address] != value) {
       if (Current_scenario)
-        raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << expected_value << " but saw " << value(Memory[address]) << '\n';
+        raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
       else
-        raise << "expected location " << address << " to contain " << expected_value << " but saw " << value(Memory[address]) << '\n';
+        raise << "expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
       Passed = false;
       return;
     }
@@ -234,7 +234,7 @@ void check_memory(const string& s) {
 void check_type(const string& lhs, istream& in) {
   reagent x(lhs);
   if (x.properties.at(0).second.at(0) == "string") {
-    x.set_value(mu_integer(to_number(x.name)));  // address must be a positive integer
+    x.set_value(to_number(x.name));
     skip_whitespace_and_comments(in);
     string _assign = next_word(in);
     assert(_assign == "<-");
@@ -252,13 +252,13 @@ void check_type(const string& lhs, istream& in) {
 
 void check_string(index_t address, const string& literal) {
   trace("run") << "checking string length at " << address;
-  if (value(Memory[address]) != static_cast<signed>(literal.size()))
-    raise << "expected location " << address << " to contain length " << literal.size() << " of string [" << literal << "] but saw " << value(Memory[address]) << '\n';
+  if (Memory[address] != static_cast<signed>(literal.size()))
+    raise << "expected location " << address << " to contain length " << literal.size() << " of string [" << literal << "] but saw " << Memory[address] << '\n';
   ++address;  // now skip length
   for (index_t i = 0; i < literal.size(); ++i) {
     trace("run") << "checking location " << address+i;
-    if (value(Memory[address+i]) != literal.at(i))
-      raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << value(Memory[address+i]) << '\n';
+    if (Memory[address+i] != literal.at(i))
+      raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
   }
 }
 

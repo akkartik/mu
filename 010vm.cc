@@ -250,7 +250,7 @@ string slurp_until(istream& in, char delim) {
 
 void dump_memory() {
   for (map<index_t, long long int>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
-    cout << p->first << ": " << value(p->second) << '\n';
+    cout << p->first << ": " << p->second << '\n';
   }
 }
 :(before "End Includes")

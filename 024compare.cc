@@ -9,23 +9,13 @@ case EQUAL: {
   vector<long long int>& exemplar = ingredients.at(0);
   bool result = true;
   for (index_t i = 1; i < ingredients.size(); ++i) {
-//?     cerr << ingredients.at(i).at(0) << " <=> " << exemplar.at(0) << '\n'; //? 1
-//?     cerr << value(ingredients.at(i).at(0)) << " <=> " << value(exemplar.at(0)) << '\n'; //? 1
-    if (ingredients.at(i).size() != exemplar.size()) {
+    if (!equal(ingredients.at(i).begin(), ingredients.at(i).end(), exemplar.begin())) {
       result = false;
       break;
     }
-//?     if (!equal(ingredients.at(i).begin(), ingredients.at(i).end(), exemplar.begin()))
-    for (index_t j = 0; j < exemplar.size(); ++j) {
-      if (value(ingredients.at(i).at(j)) != value(exemplar.at(j))) {
-        result = false;
-        goto finish;
-      }
-    }
   }
-  finish:
   products.resize(1);
-  products.at(0).push_back(result);  // boolean must be a positive integer
+  products.at(0).push_back(result);
   break;
 }
 
@@ -80,12 +70,12 @@ case GREATER_THAN: {
     assert(ingredients.at(i).size() == 1);  // scalar
   }
   for (index_t i = /**/1; i < ingredients.size(); ++i) {
-    if (value(ingredients.at(i-1).at(0)) <= value(ingredients.at(i).at(0))) {
+    if (ingredients.at(i-1).at(0) <= ingredients.at(i).at(0)) {
       result = false;
     }
   }
   products.resize(1);
-  products.at(0).push_back(result);  // boolean must be a positive integer
+  products.at(0).push_back(result);
   break;
 }
 
@@ -140,12 +130,12 @@ case LESSER_THAN: {
     assert(ingredients.at(i).size() == 1);  // scalar
   }
   for (index_t i = /**/1; i < ingredients.size(); ++i) {
-    if (value(ingredients.at(i-1).at(0)) >= value(ingredients.at(i).at(0))) {
+    if (ingredients.at(i-1).at(0) >= ingredients.at(i).at(0)) {
       result = false;
     }
   }
   products.resize(1);
-  products.at(0).push_back(result);  // boolean must be a positive integer
+  products.at(0).push_back(result);
   break;
 }
 
@@ -200,12 +190,12 @@ case GREATER_OR_EQUAL: {
     assert(ingredients.at(i).size() == 1);  // scalar
   }
   for (index_t i = /**/1; i < ingredients.size(); ++i) {
-    if (value(ingredients.at(i-1).at(0)) < value(ingredients.at(i).at(0))) {
+    if (ingredients.at(i-1).at(0) < ingredients.at(i).at(0)) {
       result = false;
     }
   }
   products.resize(1);
-  products.at(0).push_back(result);  // boolean must be a positive integer
+  products.at(0).push_back(result);
   break;
 }
 
@@ -274,12 +264,12 @@ case LESSER_OR_EQUAL: {
     assert(ingredients.at(i).size() == 1);  // scalar
   }
   for (index_t i = /**/1; i < ingredients.size(); ++i) {
-    if (value(ingredients.at(i-1).at(0)) > value(ingredients.at(i).at(0))) {
+    if (ingredients.at(i-1).at(0) > ingredients.at(i).at(0)) {
       result = false;
     }
   }
   products.resize(1);
-  products.at(0).push_back(result);  // boolean must be a positive integer
+  products.at(0).push_back(result);
   break;
 }
 
