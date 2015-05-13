@@ -58,10 +58,12 @@ if (Run_tests) {
   }
   // End Tests
   cerr << '\n';
-  if (Num_failures > 0)
+  if (Num_failures > 0) {
     cerr << Num_failures << " failure"
          << (Num_failures > 1 ? "s" : "")
          << '\n';
+    return 1;
+  }
   return 0;
 }
 
