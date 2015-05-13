@@ -9,23 +9,23 @@ recipe main [
   1:address:array:location/names:init-counter <- init-counter
 #?   $print [AAAAAAAAAAAAAAAA]
 #?   $print 1:address:array:location
-  2:integer/raw <- increment-counter 1:address:array:location/names:init-counter
-  3:integer/raw <- increment-counter 1:address:array:location/names:init-counter
+  2:number/raw <- increment-counter 1:address:array:location/names:init-counter
+  3:number/raw <- increment-counter 1:address:array:location/names:init-counter
 ]
 
 recipe init-counter [
   default-space:address:array:location <- new location:type, 30:literal
-  x:integer <- copy 23:literal
-  y:integer <- copy 3:literal  # variable that will be incremented
+  x:number <- copy 23:literal
+  y:number <- copy 3:literal  # variable that will be incremented
   reply default-space:address:array:location
 ]
 
 recipe increment-counter [
   default-space:address:array:location <- new space:literal, 30:literal
   0:address:array:location/names:init-counter <- next-ingredient  # outer space must be created by 'init-counter' above
-  y:integer/space:1 <- add y:integer/space:1, 1:literal  # increment
-  y:integer <- copy 234:literal  # dummy
-  reply y:integer/space:1
+  y:number/space:1 <- add y:number/space:1, 1:literal  # increment
+  y:number <- copy 234:literal  # dummy
+  reply y:number/space:1
 ]
 
 +name: recipe increment-counter is surrounded by init-counter

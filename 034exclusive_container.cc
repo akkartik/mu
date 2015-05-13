@@ -5,15 +5,15 @@
 //: currently stored in them.
 
 :(before "End Mu Types Initialization")
-//: We'll use this container as a running example, with two integer elements.
+//: We'll use this container as a running example, with two number elements.
 {
-type_number tmp = Type_number["integer-or-point"] = Next_type_number++;
+type_number tmp = Type_number["number-or-point"] = Next_type_number++;
 Type[tmp].size = 2;
 Type[tmp].kind = exclusive_container;
-Type[tmp].name = "integer-or-point";
+Type[tmp].name = "number-or-point";
 //? cout << tmp << ": " << Type[tmp].elements.size() << '\n'; //? 1
 vector<type_number> t1;
-t1.push_back(integer);
+t1.push_back(number);
 Type[tmp].elements.push_back(t1);
 //? cout << Type[tmp].elements.size() << '\n'; //? 1
 vector<type_number> t2;
@@ -28,10 +28,10 @@ Type[tmp].element_names.push_back("p");
 :(scenario copy_exclusive_container)
 # Copying exclusive containers copies all their contents and an extra location for the tag.
 recipe main [
-  1:integer <- copy 1:literal  # 'point' variant
-  2:integer <- copy 34:literal
-  3:integer <- copy 35:literal
-  4:integer-or-point <- copy 1:integer-or-point
+  1:number <- copy 1:literal  # 'point' variant
+  2:number <- copy 34:literal
+  3:number <- copy 35:literal
+  4:number-or-point <- copy 1:number-or-point
 ]
 +mem: storing 1 in location 4
 +mem: storing 34 in location 5
@@ -66,19 +66,19 @@ Type_number["variant"] = 0;
 
 :(scenario maybe_convert)
 recipe main [
-  12:integer <- copy 1:literal
-  13:integer <- copy 35:literal
-  14:integer <- copy 36:literal
-  20:address:point <- maybe-convert 12:integer-or-point, 1:variant
+  12:number <- copy 1:literal
+  13:number <- copy 35:literal
+  14:number <- copy 36:literal
+  20:address:point <- maybe-convert 12:number-or-point, 1:variant
 ]
 +mem: storing 13 in location 20
 
 :(scenario maybe_convert_fail)
 recipe main [
-  12:integer <- copy 1:literal
-  13:integer <- copy 35:literal
-  14:integer <- copy 36:literal
-  20:address:point <- maybe-convert 12:integer-or-point, 0:variant
+  12:number <- copy 1:literal
+  13:number <- copy 35:literal
+  14:number <- copy 36:literal
+  20:address:point <- maybe-convert 12:number-or-point, 0:variant
 ]
 +mem: storing 0 in location 20
 

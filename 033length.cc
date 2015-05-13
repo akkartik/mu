@@ -2,11 +2,11 @@
 
 :(scenario array_length)
 recipe main [
-  1:integer <- copy 3:literal
-  2:integer <- copy 14:literal
-  3:integer <- copy 15:literal
-  4:integer <- copy 16:literal
-  5:integer <- length 1:array:integer
+  1:number <- copy 3:literal  # length
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:number <- length 1:array:number
 ]
 +run: instruction main/4
 +mem: storing 3 in location 5

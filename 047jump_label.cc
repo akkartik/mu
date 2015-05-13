@@ -5,7 +5,7 @@
 :(scenario jump_to_label)
 recipe main [
   jump +target:offset
-  1:integer <- copy 0:literal
+  1:number <- copy 0:literal
   +target
 ]
 -mem: storing 0 in location 1
@@ -48,7 +48,7 @@ void replace_offset(reagent& x, /*const*/ map<string, index_t>& offset, const in
 //?   cerr << "BBB " << x.to_string() << '\n'; //? 1
   assert(!x.initialized);
 //?   cerr << "CCC " << x.to_string() << '\n'; //? 1
-  if (is_number(x.name)) return;  // non-labels will be handled like other integer operands
+  if (is_number(x.name)) return;  // non-labels will be handled like other number operands
 //?   cerr << "DDD " << x.to_string() << '\n'; //? 1
   if (offset.find(x.name) == offset.end())
     raise << "can't find label " << x.name << " in routine " << Recipe[r].name << '\n';
@@ -61,7 +61,7 @@ recipe main [
   {
     {
       break +target:offset
-      1:integer <- copy 0:literal
+      1:number <- copy 0:literal
     }
   }
   +target
@@ -73,7 +73,7 @@ recipe main [
   {
     {
       jump-if 1:literal, +target:offset
-      1:integer <- copy 0:literal
+      1:number <- copy 0:literal
     }
   }
   +target
@@ -85,7 +85,7 @@ recipe main [
   {
     {
       loop-unless 0:literal, +target:offset  # loop/break with a label don't care about braces
-      1:integer <- copy 0:literal
+      1:number <- copy 0:literal
     }
   }
   +target
@@ -95,13 +95,13 @@ recipe main [
 :(scenario jump_runs_code_after_label)
 recipe main [
   # first a few lines of padding to exercise the offset computation
-  1:integer <- copy 0:literal
-  2:integer <- copy 0:literal
-  3:integer <- copy 0:literal
+  1:number <- copy 0:literal
+  2:number <- copy 0:literal
+  3:number <- copy 0:literal
   jump +target:offset
-  4:integer <- copy 0:literal
+  4:number <- copy 0:literal
   +target
-  5:integer <- copy 0:literal
+  5:number <- copy 0:literal
 ]
 +mem: storing 0 in location 5
 -mem: storing 0 in location 4

@@ -8,7 +8,7 @@
 
 recipe factorial [
   default-space:address:array:location <- new location:type, 30:literal
-  n:integer <- next-ingredient
+  n:number <- next-ingredient
   {
     +base-case
   }
@@ -17,21 +17,21 @@ recipe factorial [
 
 after +base-case [
   # if n=0 return 1
-  zero?:boolean <- equal n:integer, 0:literal
+  zero?:boolean <- equal n:number, 0:literal
   break-unless zero?:boolean
   reply 1:literal
 ]
 
 after +recursive-case [
   # return n * factorial(n - 1)
-  x:integer <- subtract n:integer, 1:literal
-  subresult:integer <- factorial x:integer
-  result:integer <- multiply subresult:integer, n:integer
-  reply result:integer
+  x:number <- subtract n:number, 1:literal
+  subresult:number <- factorial x:number
+  result:number <- multiply subresult:number, n:number
+  reply result:number
 ]
 
 recipe main [
-  1:integer <- factorial 5:literal
-  $print [result: ], 1:integer, [
+  1:number <- factorial 5:literal
+  $print [result: ], 1:number, [
 ]
 ]

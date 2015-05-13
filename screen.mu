@@ -6,7 +6,7 @@
 recipe main [
   switch-to-display
   print-character 0:literal/screen, 97:literal
-  1:integer/raw, 2:integer/raw <- cursor-position 0:literal/screen
+  1:number/raw, 2:number/raw <- cursor-position 0:literal/screen
   wait-for-key 0:literal/keyboard
   clear-screen 0:literal/screen
   move-cursor 0:literal/screen, 0:literal/row, 4:literal/column

@@ -2,12 +2,12 @@
 
 :(scenario reply)
 recipe main [
-  1:integer, 2:integer <- f 34:literal
+  1:number, 2:number <- f 34:literal
 ]
 recipe f [
-  12:integer <- next-ingredient
-  13:integer <- add 1:literal, 12:integer
-  reply 12:integer, 13:integer
+  12:number <- next-ingredient
+  13:number <- add 1:literal, 12:number
+  reply 12:number, 13:number
 ]
 +run: instruction main/0
 +mem: storing 34 in location 1
@@ -49,8 +49,8 @@ recipe main [
   3:point <- f 2:literal
 ]
 recipe f [
-  12:integer <- next-ingredient
-  13:integer <- copy 35:literal
+  12:number <- next-ingredient
+  13:number <- copy 35:literal
   reply 12:point
 ]
 +run: instruction main/0
@@ -66,12 +66,12 @@ recipe f [
 :(scenario reply_same_as_ingredient)
 % Hide_warnings = true;
 recipe main [
-  1:integer <- copy 0:literal
-  2:integer <- test1 1:integer  # call with different ingredient and product
+  1:number <- copy 0:literal
+  2:number <- test1 1:number  # call with different ingredient and product
 ]
 recipe test1 [
-  10:address:integer <- next-ingredient
-  reply 10:address:integer/same-as-ingredient:0
+  10:address:number <- next-ingredient
+  reply 10:address:number/same-as-ingredient:0
 ]
 +warn: 'same-as-ingredient' result 2 must be location 1
 
@@ -96,7 +96,7 @@ string to_string(const vector<double>& in) {
 
 :(scenario reply_if)
 recipe main [
-  1:integer <- test1
+  1:number <- test1
 ]
 recipe test1 [
   reply-if 0:literal, 34:literal
@@ -106,7 +106,7 @@ recipe test1 [
 
 :(scenario reply_if2)
 recipe main [
-  1:integer <- test1
+  1:number <- test1
 ]
 recipe test1 [
   reply-if 1:literal, 34:literal

@@ -3,8 +3,8 @@
 :(scenarios load)
 :(scenario container)
 container foo [
-  x:integer
-  y:integer
+  x:number
+  y:number
 ]
 +parse: reading container foo
 +parse:   element name: x
@@ -60,8 +60,8 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
 
 :(scenario exclusive_container)
 exclusive-container foo [
-  x:integer
-  y:integer
+  x:number
+  y:number
 ]
 +parse: reading exclusive-container foo
 +parse:   element name: x

@@ -2,7 +2,7 @@
 # easier to test.
 
 container keyboard [  # can't think of another word like screen/display, so real and fake keyboards use the same name
-  index:integer
+  index:number
   data:address:array:character
 ]
 
@@ -13,8 +13,8 @@ recipe init-fake-keyboard [
 #?   $start-tracing #? 1
   buf:address:address:array:character/deref <- next-ingredient
 #?   $stop-tracing #? 1
-  idx:address:integer <- get-address result:address:keyboard/deref, index:offset
-  idx:address:integer/deref <- copy 0:literal
+  idx:address:number <- get-address result:address:keyboard/deref, index:offset
+  idx:address:number/deref <- copy 0:literal
   reply result:address:keyboard
 ]
 
@@ -23,16 +23,16 @@ recipe read-key [
   x:address:keyboard <- next-ingredient
   {
     break-unless x:address:keyboard
-    idx:address:integer <- get-address x:address:keyboard/deref, index:offset
+    idx:address:number <- get-address x:address:keyboard/deref, index:offset
     buf:address:array:character <- get x:address:keyboard/deref, data:offset
-    max:integer <- length buf:address:array:character/deref
+    max:number <- length buf:address:array:character/deref
     {
-      done?:boolean <- greater-or-equal idx:address:integer/deref, max:integer
+      done?:boolean <- greater-or-equal idx:address:number/deref, max:number
       break-unless done?:boolean
       reply 0:literal, 0:literal/done, x:address:keyboard/same-as-ingredient:0
     }
-    c:character <- index buf:address:array:character/deref, idx:address:integer/deref
-    idx:address:integer/deref <- add idx:address:integer/deref, 1:literal
+    c:character <- index buf:address:array:character/deref, idx:address:number/deref
+    idx:address:number/deref <- add idx:address:number/deref, 1:literal
     reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
   }
   # real keyboard input is infrequent; avoid polling it too much

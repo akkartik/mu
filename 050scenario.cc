@@ -8,7 +8,7 @@
 :(scenario scenario_block)
 scenario foo [
   run [
-    1:integer <- copy 13:literal
+    1:number <- copy 13:literal
   ]
   memory-should-contain [
     1 <- 13
@@ -19,13 +19,13 @@ scenario foo [
 :(scenario scenario_multiple_blocks)
 scenario foo [
   run [
-    1:integer <- copy 13:literal
+    1:number <- copy 13:literal
   ]
   memory-should-contain [
     1 <- 13
   ]
   run [
-    2:integer <- copy 13:literal
+    2:number <- copy 13:literal
   ]
   memory-should-contain [
     1 <- 13
@@ -36,7 +36,7 @@ scenario foo [
 :(scenario scenario_check_memory_and_trace)
 scenario foo [
   run [
-    1:integer <- copy 13:literal
+    1:number <- copy 13:literal
     trace [a], [a b c]
   ]
   memory-should-contain [
@@ -138,7 +138,7 @@ void run_mu_scenario(const scenario& s) {
 #? % Trace_stream->dump_layer = "all";
 recipe main [
   run [
-    1:integer <- copy 13:literal
+    1:number <- copy 13:literal
   ]
 ]
 +mem: storing 13 in location 1
@@ -165,10 +165,10 @@ case RUN: {
 :(scenario run_multiple)
 recipe main [
   run [
-    1:integer <- copy 13:literal
+    1:number <- copy 13:literal
   ]
   run [
-    2:integer <- copy 13:literal
+    2:number <- copy 13:literal
   ]
 ]
 +mem: storing 13 in location 1
@@ -275,10 +275,10 @@ recipe main [
 :(scenario memory_check_string_length)
 % Hide_warnings = true;
 recipe main [
-  1:integer <- copy 3:literal
-  2:integer <- copy 97:literal  # 'a'
-  3:integer <- copy 98:literal  # 'b'
-  4:integer <- copy 99:literal  # 'c'
+  1:number <- copy 3:literal
+  2:number <- copy 97:literal  # 'a'
+  3:number <- copy 98:literal  # 'b'
+  4:number <- copy 99:literal  # 'c'
   memory-should-contain [
     1:string <- [ab]
   ]
@@ -287,10 +287,10 @@ recipe main [
 
 :(scenario memory_check_string)
 recipe main [
-  1:integer <- copy 3:literal
-  2:integer <- copy 97:literal  # 'a'
-  3:integer <- copy 98:literal  # 'b'
-  4:integer <- copy 99:literal  # 'c'
+  1:number <- copy 3:literal
+  2:number <- copy 97:literal  # 'a'
+  3:number <- copy 98:literal  # 'b'
+  4:number <- copy 99:literal  # 'c'
   memory-should-contain [
     1:string <- [abc]
   ]

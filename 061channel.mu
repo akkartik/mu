@@ -12,7 +12,7 @@ scenario channel [
   run [
     1:address:channel <- init-channel 3:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
-    2:integer, 1:address:channel <- read 1:address:channel
+    2:number, 1:address:channel <- read 1:address:channel
   ]
   memory-should-contain [
     2 <- 34
@@ -23,30 +23,30 @@ container channel [
   # To avoid locking, writer and reader will never write to the same location.
   # So channels will include fields in pairs, one for the writer and one for the
   # reader.
-  first-full:integer  # for write
-  first-free:integer  # for read
+  first-full:number  # for write
+  first-free:number  # for read
   # A circular buffer contains values from index first-full up to (but not
   # including) index first-empty. The reader always modifies it at first-full,
   # while the writer always modifies it at first-empty.
   data:address:array:location
 ]
 
-# result:address:channel <- init-channel capacity:integer
+# result:address:channel <- init-channel capacity:number
 recipe init-channel [
   default-space:address:array:location <- new location:type, 30:literal
   # result = new channel
   result:address:channel <- new channel:type
   # result.first-full = 0
-  full:address:integer <- get-address result:address:channel/deref, first-full:offset
-  full:address:integer/deref <- copy 0:literal
+  full:address:number <- get-address result:address:channel/deref, first-full:offset
+  full:address:number/deref <- copy 0:literal
   # result.first-free = 0
-  free:address:integer <- get-address result:address:channel/deref, first-free:offset
-  free:address:integer/deref <- copy 0:literal
+  free:address:number <- get-address result:address:channel/deref, first-free:offset
+  free:address:number/deref <- copy 0:literal
   # result.data = new location[ingredient+1]
-  capacity:integer <- next-ingredient
-  capacity:integer <- add capacity:integer, 1:literal  # unused slot for 'full?' below
+  capacity:number <- next-ingredient
+  capacity:number <- add capacity:number, 1:literal  # unused slot for 'full?' below
   dest:address:address:array:location <- get-address result:address:channel/deref, data:offset
-  dest:address:address:array:location/deref <- new location:type, capacity:integer
+  dest:address:address:array:location/deref <- new location:type, capacity:number
   reply result:address:channel
 ]
 
@@ -59,22 +59,22 @@ recipe write [
     # block if chan is full
     full:boolean <- channel-full? chan:address:channel
     break-unless full:boolean
-    full-address:address:integer <- get-address chan:address:channel/deref, first-full:offset
-    wait-for-location full-address:address:integer/deref
+    full-address:address:number <- get-address chan:address:channel/deref, first-full:offset
+    wait-for-location full-address:address:number/deref
   }
   # store val
   circular-buffer:address:array:location <- get chan:address:channel/deref, data:offset
-  free:address:integer <- get-address chan:address:channel/deref, first-free:offset
-  dest:address:location <- index-address circular-buffer:address:array:location/deref, free:address:integer/deref
+  free:address:number <- get-address chan:address:channel/deref, first-free:offset
+  dest:address:location <- index-address circular-buffer:address:array:location/deref, free:address:number/deref
   dest:address:location/deref <- copy val:location
   # increment free
-  free:address:integer/deref <- add free:address:integer/deref, 1:literal
+  free:address:number/deref <- add free:address:number/deref, 1:literal
   {
     # wrap free around to 0 if necessary
-    len:integer <- length circular-buffer:address:array:location/deref
-    at-end?:boolean <- greater-or-equal free:address:integer/deref, len:integer
+    len:number <- length circular-buffer:address:array:location/deref
+    at-end?:boolean <- greater-or-equal free:address:number/deref, len:number
     break-unless at-end?:boolean
-    free:address:integer/deref <- copy 0:literal
+    free:address:number/deref <- copy 0:literal
   }
   reply chan:address:channel/same-as-ingredient:0
 ]
@@ -87,21 +87,21 @@ recipe read [
     # block if chan is empty
     empty:boolean <- channel-empty? chan:address:channel
     break-unless empty:boolean
-    free-address:address:integer <- get-address chan:address:channel/deref, first-free:offset
-    wait-for-location free-address:address:integer/deref
+    free-address:address:number <- get-address chan:address:channel/deref, first-free:offset
+    wait-for-location free-address:address:number/deref
   }
   # read result
-  full:address:integer <- get-address chan:address:channel/deref, first-full:offset
+  full:address:number <- get-address chan:address:channel/deref, first-full:offset
   circular-buffer:address:array:location <- get chan:address:channel/deref, data:offset
-  result:location <- index circular-buffer:address:array:location/deref, full:address:integer/deref
+  result:location <- index circular-buffer:address:array:location/deref, full:address:number/deref
   # increment full
-  full:address:integer/deref <- add full:address:integer/deref, 1:literal
+  full:address:number/deref <- add full:address:number/deref, 1:literal
   {
     # wrap full around to 0 if necessary
-    len:integer <- length circular-buffer:address:array:location/deref
-    at-end?:boolean <- greater-or-equal full:address:integer/deref, len:integer
+    len:number <- length circular-buffer:address:array:location/deref
+    at-end?:boolean <- greater-or-equal full:address:number/deref, len:number
     break-unless at-end?:boolean
-    full:address:integer/deref <- copy 0:literal
+    full:address:number/deref <- copy 0:literal
   }
   reply result:location, chan:address:channel/same-as-ingredient:0
 ]
@@ -120,8 +120,8 @@ recipe clear-channel [
 scenario channel-initialization [
   run [
     1:address:channel <- init-channel 3:literal/capacity
-    2:integer <- get 1:address:channel/deref, first-full:offset
-    3:integer <- get 1:address:channel/deref, first-free:offset
+    2:number <- get 1:address:channel/deref, first-full:offset
+    3:number <- get 1:address:channel/deref, first-free:offset
   ]
   memory-should-contain [
     2 <- 0  # first-full
@@ -133,8 +133,8 @@ scenario channel-write-increments-free [
   run [
     1:address:channel <- init-channel 3:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
-    2:integer <- get 1:address:channel/deref, first-full:offset
-    3:integer <- get 1:address:channel/deref, first-free:offset
+    2:number <- get 1:address:channel/deref, first-full:offset
+    3:number <- get 1:address:channel/deref, first-free:offset
   ]
   memory-should-contain [
     2 <- 0  # first-full
@@ -147,8 +147,8 @@ scenario channel-read-increments-full [
     1:address:channel <- init-channel 3:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
     _, 1:address:channel <- read 1:address:channel
-    2:integer <- get 1:address:channel/deref, first-full:offset
-    3:integer <- get 1:address:channel/deref, first-free:offset
+    2:number <- get 1:address:channel/deref, first-full:offset
+    3:number <- get 1:address:channel/deref, first-free:offset
   ]
   memory-should-contain [
     2 <- 1  # first-full
@@ -164,14 +164,14 @@ scenario channel-wrap [
     1:address:channel <- write 1:address:channel, 34:literal
     _, 1:address:channel <- read 1:address:channel
     # first-free will now be 1
-    2:integer <- get 1:address:channel/deref, first-free:offset
-    3:integer <- get 1:address:channel/deref, first-free:offset
+    2:number <- get 1:address:channel/deref, first-free:offset
+    3:number <- get 1:address:channel/deref, first-free:offset
     # write second value, verify that first-free wraps
     1:address:channel <- write 1:address:channel, 34:literal
-    4:integer <- get 1:address:channel/deref, first-free:offset
+    4:number <- get 1:address:channel/deref, first-free:offset
     # read second value, verify that first-full wraps
     _, 1:address:channel <- read 1:address:channel
-    5:integer <- get 1:address:channel/deref, first-full:offset
+    5:number <- get 1:address:channel/deref, first-full:offset
   ]
   memory-should-contain [
     2 <- 1  # first-free after first write
@@ -188,9 +188,9 @@ recipe channel-empty? [
   default-space:address:array:location <- new location:type, 30:literal
   chan:address:channel <- next-ingredient
   # return chan.first-full == chan.first-free
-  full:integer <- get chan:address:channel/deref, first-full:offset
-  free:integer <- get chan:address:channel/deref, first-free:offset
-  result:boolean <- equal full:integer, free:integer
+  full:number <- get chan:address:channel/deref, first-full:offset
+  free:number <- get chan:address:channel/deref, first-free:offset
+  result:boolean <- equal full:number, free:number
   reply result:boolean
 ]
 
@@ -200,35 +200,35 @@ recipe channel-full? [
   default-space:address:array:location <- new location:type, 30:literal
   chan:address:channel <- next-ingredient
   # tmp = chan.first-free + 1
-  tmp:integer <- get chan:address:channel/deref, first-free:offset
-  tmp:integer <- add tmp:integer, 1:literal
+  tmp:number <- get chan:address:channel/deref, first-free:offset
+  tmp:number <- add tmp:number, 1:literal
   {
     # if tmp == chan.capacity, tmp = 0
-    len:integer <- channel-capacity chan:address:channel
-    at-end?:boolean <- greater-or-equal tmp:integer, len:integer
+    len:number <- channel-capacity chan:address:channel
+    at-end?:boolean <- greater-or-equal tmp:number, len:number
     break-unless at-end?:boolean
-    tmp:integer <- copy 0:literal
+    tmp:number <- copy 0:literal
   }
   # return chan.first-full == tmp
-  full:integer <- get chan:address:channel/deref, first-full:offset
-  result:boolean <- equal full:integer, tmp:integer
+  full:number <- get chan:address:channel/deref, first-full:offset
+  result:boolean <- equal full:number, tmp:number
   reply result:boolean
 ]
 
-# result:integer <- channel-capacity chan:address:channel
+# result:number <- channel-capacity chan:address:channel
 recipe channel-capacity [
   default-space:address:array:location <- new location:type, 30:literal
   chan:address:channel <- next-ingredient
   q:address:array:location <- get chan:address:channel/deref, data:offset
-  result:integer <- length q:address:array:location/deref
-  reply result:integer
+  result:number <- length q:address:array:location/deref
+  reply result:number
 ]
 
 scenario channel-new-empty-not-full [
   run [
     1:address:channel <- init-channel 3:literal/capacity
-    2:integer <- channel-empty? 1:address:channel
-    3:integer <- channel-full? 1:address:channel
+    2:boolean <- channel-empty? 1:address:channel
+    3:boolean <- channel-full? 1:address:channel
   ]
   memory-should-contain [
     2 <- 1  # empty?
@@ -240,8 +240,8 @@ scenario channel-write-not-empty [
   run [
     1:address:channel <- init-channel 3:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
-    2:integer <- channel-empty? 1:address:channel
-    3:integer <- channel-full? 1:address:channel
+    2:boolean <- channel-empty? 1:address:channel
+    3:boolean <- channel-full? 1:address:channel
   ]
   memory-should-contain [
     2 <- 0  # empty?
@@ -253,8 +253,8 @@ scenario channel-write-full [
   run [
     1:address:channel <- init-channel 1:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
-    2:integer <- channel-empty? 1:address:channel
-    3:integer <- channel-full? 1:address:channel
+    2:boolean <- channel-empty? 1:address:channel
+    3:boolean <- channel-full? 1:address:channel
   ]
   memory-should-contain [
     2 <- 0  # empty?
@@ -267,8 +267,8 @@ scenario channel-read-not-full [
     1:address:channel <- init-channel 1:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
     _, 1:address:channel <- read 1:address:channel
-    2:integer <- channel-empty? 1:address:channel
-    3:integer <- channel-full? 1:address:channel
+    2:boolean <- channel-empty? 1:address:channel
+    3:boolean <- channel-full? 1:address:channel
   ]
   memory-should-contain [
     2 <- 1  # empty?
@@ -298,14 +298,14 @@ recipe buffer-lines [
 #?         return-to-console #? 2
 #?         $print [backspace! #? 1
 #? ] #? 1
-        buffer-length:address:integer <- get-address line:address:buffer/deref, length:offset
+        buffer-length:address:number <- get-address line:address:buffer/deref, length:offset
         {
-          buffer-empty?:boolean <- equal buffer-length:address:integer/deref, 0:literal
+          buffer-empty?:boolean <- equal buffer-length:address:number/deref, 0:literal
           break-if buffer-empty?:boolean
-#?           $print [before: ], buffer-length:address:integer/deref, [ #? 1
+#?           $print [before: ], buffer-length:address:number/deref, [ #? 1
 #? ] #? 1
-          buffer-length:address:integer/deref <- subtract buffer-length:address:integer/deref, 1:literal
-#?           $print [after: ], buffer-length:address:integer/deref, [ #? 1
+          buffer-length:address:number/deref <- subtract buffer-length:address:number/deref, 1:literal
+#?           $print [after: ], buffer-length:address:number/deref, [ #? 1
 #? ] #? 1
         }
 #?         $exit #? 2
@@ -320,17 +320,17 @@ recipe buffer-lines [
     }
 #?     return-to-console #? 1
     # copy line into 'out'
-    i:integer <- copy 0:literal
+    i:number <- copy 0:literal
     line-contents:address:array:character <- get line:address:buffer/deref, data:offset
-    max:integer <- get line:address:buffer/deref, length:offset
+    max:number <- get line:address:buffer/deref, length:offset
     {
-      done?:boolean <- greater-or-equal i:integer, max:integer
+      done?:boolean <- greater-or-equal i:number, max:number
       break-if done?:boolean
-      c:character <- index line-contents:address:array:character/deref, i:integer
+      c:character <- index line-contents:address:array:character/deref, i:number
       out:address:channel <- write out:address:channel, c:character
-#?       $print [writing ], i:integer, [: ], c:character, [ #? 1
+#?       $print [writing ], i:number, [: ], c:character, [ #? 1
 #? ] #? 1
-      i:integer <- add i:integer, 1:literal
+      i:number <- add i:number, 1:literal
       loop
     }
 #?     $dump-trace #? 1
@@ -348,29 +348,29 @@ scenario buffer-lines-blocks-until-newline [
     assert 3:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after init]
     # buffer stdin into buffered-stdin, try to read from buffered-stdin
-    4:integer/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin
-    wait-for-routine 4:integer/buffer-routine
+    4:number/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin
+    wait-for-routine 4:number/buffer-routine
     5:boolean <- channel-empty? 2:address:channel/buffered-stdin
     assert 5:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
     # write 'a'
     1:address:channel <- write 1:address:channel, 97:literal/a
-    restart 4:integer/buffer-routine
-    wait-for-routine 4:integer/buffer-routine
+    restart 4:number/buffer-routine
+    wait-for-routine 4:number/buffer-routine
     6:boolean <- channel-empty? 2:address:channel/buffered-stdin
     assert 6:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     # write 'b'
     1:address:channel <- write 1:address:channel, 98:literal/b
-    restart 4:integer/buffer-routine
-    wait-for-routine 4:integer/buffer-routine
+    restart 4:number/buffer-routine
+    wait-for-routine 4:number/buffer-routine
     7:boolean <- channel-empty? 2:address:channel/buffered-stdin
     assert 7:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
     1:address:channel <- write 1:address:channel, 13:literal/newline
-    restart 4:integer/buffer-routine
-    wait-for-routine 4:integer/buffer-routine
+    restart 4:number/buffer-routine
+    wait-for-routine 4:number/buffer-routine
     8:boolean <- channel-empty? 2:address:channel/buffered-stdin
     9:boolean/completed? <- not 8:boolean
     assert 9:boolean/completed?, [

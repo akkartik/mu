@@ -3,11 +3,11 @@
 :(scenarios load)
 :(scenario first_recipe)
 recipe main [
-  1:integer <- copy 23:literal
+  1:number <- copy 23:literal
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
-+parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
++parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
 
 :(code)
 vector<recipe_number> load(string form) {
@@ -215,51 +215,51 @@ recently_added_recipes.clear();
 recipe f1 [ ]
 # this comment will go through to 'load'
 recipe main [
-  1:integer <- copy 23:literal
+  1:number <- copy 23:literal
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
-+parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
++parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
 
 :(scenario parse_comment_amongst_instruction)
 recipe main [
   # comment
-  1:integer <- copy 23:literal
+  1:number <- copy 23:literal
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
-+parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
++parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
 
 :(scenario parse_comment_amongst_instruction2)
 recipe main [
   # comment
-  1:integer <- copy 23:literal
+  1:number <- copy 23:literal
   # comment
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
-+parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
++parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
 
 :(scenario parse_comment_amongst_instruction3)
 recipe main [
-  1:integer <- copy 23:literal
+  1:number <- copy 23:literal
   # comment
-  2:integer <- copy 23:literal
+  2:number <- copy 23:literal
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
-+parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
++parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
-+parse:   product: {name: "2", value: 0, type: 1, properties: ["2": "integer"]}
++parse:   product: {name: "2", value: 0, type: 1, properties: ["2": "number"]}
 
 :(scenario parse_comment_after_instruction)
 recipe main [
-  1:integer <- copy 23:literal  # comment
+  1:number <- copy 23:literal  # comment
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
-+parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
++parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
 
 :(scenario parse_label)
 recipe main [
@@ -275,43 +275,43 @@ recipe main [
 
 :(scenario parse_multiple_properties)
 recipe main [
-  1:integer <- copy 23:literal/foo:bar:baz
+  1:number <- copy 23:literal/foo:bar:baz
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal", "foo": "bar":"baz"]}
-+parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
++parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
 
 :(scenario parse_multiple_products)
 recipe main [
-  1:integer, 2:integer <- copy 23:literal
+  1:number, 2:number <- copy 23:literal
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
-+parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
-+parse:   product: {name: "2", value: 0, type: 1, properties: ["2": "integer"]}
++parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
++parse:   product: {name: "2", value: 0, type: 1, properties: ["2": "number"]}
 
 :(scenario parse_multiple_ingredients)
 recipe main [
-  1:integer, 2:integer <- copy 23:literal, 4:integer
+  1:number, 2:number <- copy 23:literal, 4:number
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
-+parse:   ingredient: {name: "4", value: 0, type: 1, properties: ["4": "integer"]}
-+parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
-+parse:   product: {name: "2", value: 0, type: 1, properties: ["2": "integer"]}
++parse:   ingredient: {name: "4", value: 0, type: 1, properties: ["4": "number"]}
++parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
++parse:   product: {name: "2", value: 0, type: 1, properties: ["2": "number"]}
 
 :(scenario parse_multiple_types)
 recipe main [
-  1:integer, 2:address:integer <- copy 23:literal, 4:integer
+  1:number, 2:address:number <- copy 23:literal, 4:number
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", value: 0, type: 0, properties: ["23": "literal"]}
-+parse:   ingredient: {name: "4", value: 0, type: 1, properties: ["4": "integer"]}
-+parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "integer"]}
-+parse:   product: {name: "2", value: 0, type: 2-1, properties: ["2": "address":"integer"]}
++parse:   ingredient: {name: "4", value: 0, type: 1, properties: ["4": "number"]}
++parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
++parse:   product: {name: "2", value: 0, type: 2-1, properties: ["2": "address":"number"]}
 
 :(scenario parse_properties)
 recipe main [
-  1:integer:address/deref <- copy 23:literal
+  1:number:address/deref <- copy 23:literal
 ]
-+parse:   product: {name: "1", value: 0, type: 1-2, properties: ["1": "integer":"address", "deref": ]}
++parse:   product: {name: "1", value: 0, type: 1-2, properties: ["1": "number":"address", "deref": ]}
