@@ -105,3 +105,21 @@ case MAYBE_CONVERT: {
   products.at(0).push_back(result);
   break;
 }
+
+//:: Allow exclusive containers to be defined in mu code.
+
+:(scenario exclusive_container)
+exclusive-container foo [
+  x:number
+  y:number
+]
++parse: reading exclusive-container foo
++parse:   element name: x
++parse:   type: 1
++parse:   element name: y
++parse:   type: 1
+
+:(before "End Command Handlers")
+else if (command == "exclusive-container") {
+  insert_container(command, exclusive_container, in);
+}
