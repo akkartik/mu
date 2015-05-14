@@ -125,7 +125,10 @@ void check_screen(const string& contents) {
         raise << "\nF - " << Current_scenario->name << ": expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
       else
         raise << "expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
-      Passed = false;
+      if (!Hide_warnings) {
+        Passed = false;
+        ++Num_failures;
+      }
       return;
     }
   }
