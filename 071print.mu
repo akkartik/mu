@@ -68,7 +68,7 @@ recipe print-character [
     # special-case: newline
     {
       newline?:boolean <- equal c:character, 10:literal/newlin
-#?       $print c:character, [ ], newline?:boolean, [ #? 1
+#?       $print c:character, [ ], newline?:boolean, [ 
 #? ] #? 1
       break-unless newline?:boolean
       {
@@ -180,7 +180,7 @@ recipe clear-line [
     # space over the entire line
 #?     $start-tracing #? 1
     {
-#?       $print column:address:number/deref, [ #? 1
+#?       $print column:address:number/deref, [ 
 #? ] #? 1
       done?:boolean <- greater-or-equal column:address:number/deref, n:number
       break-if done?:boolean
@@ -267,10 +267,10 @@ recipe cursor-down [
       at-bottom?:boolean <- greater-or-equal row:address:number/deref, height:number
       break-if at-bottom?:boolean
       # row = row+1
-#?       $print [AAA: ], row:address:number, [ -> ], row:address:number/deref, [ #? 1
+#?       $print [AAA: ], row:address:number, [ -> ], row:address:number/deref, [ 
 #? ] #? 1
       row:address:number/deref <- add row:address:number/deref, 1:literal
-#?       $print [BBB: ], row:address:number, [ -> ], row:address:number/deref, [ #? 1
+#?       $print [BBB: ], row:address:number, [ -> ], row:address:number/deref, [ 
 #? ] #? 1
 #?       $start-tracing #? 1
     }
