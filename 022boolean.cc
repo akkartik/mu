@@ -8,7 +8,7 @@ Recipe_number["and"] = AND;
 case AND: {
   bool result = true;
   for (index_t i = 0; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // must be a scalar
+    assert(ingredients.at(i).size() == 1);  // scalar
     result = result && ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -56,7 +56,7 @@ Recipe_number["or"] = OR;
 case OR: {
   bool result = false;
   for (index_t i = 0; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // must be a scalar
+    assert(ingredients.at(i).size() == 1);  // scalar
     result = result || ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -104,7 +104,7 @@ Recipe_number["not"] = NOT;
 case NOT: {
   products.resize(ingredients.size());
   for (index_t i = 0; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // must be a scalar
+    assert(ingredients.at(i).size() == 1);  // scalar
     products.at(i).push_back(!ingredients.at(i).at(0));
   }
   break;
