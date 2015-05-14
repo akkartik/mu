@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 037call_reply.cc</title>
+<title>~/Desktop/s/mu/037call_reply.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -35,18 +35,16 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 
 <span class="Delimiter">:(scenario reply)</span>
 recipe main [
-  <span class="Constant">3</span>:integer<span class="Delimiter">,</span> <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>f <span class="Constant">2</span>:literal
+  <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>f <span class="Constant">34</span>:literal
 ]
 recipe f [
-  <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Constant">13</span>:integer<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">12</span>:integer
-  reply <span class="Constant">12</span>:integer<span class="Delimiter">,</span> <span class="Constant">13</span>:integer
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">12</span>:number
+  reply <span class="Constant">12</span>:number<span class="Delimiter">,</span> <span class="Constant">13</span>:number
 ]
 <span class="traceContains">+run: instruction main/0</span>
-<span class="traceContains">+run: result 0 is 2</span>
-<span class="traceContains">+mem: storing 2 in location 3</span>
-<span class="traceContains">+run: result 1 is 3</span>
-<span class="traceContains">+mem: storing 3 in location 4</span>
+<span class="traceContains">+mem: storing 34 in location 1</span>
+<span class="traceContains">+mem: storing 35 in location 2</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 REPLY<span class="Delimiter">,</span>
@@ -54,29 +52,28 @@ REPLY<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;reply&quot;</span>] = REPLY<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case REPLY: <span class="Delimiter">{</span>
-  vector&lt;vector&lt;long long int&gt; &gt; callee_results<span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    callee_results<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[i]<span class="Delimiter">));</span>
-  <span class="Delimiter">}</span>
   const instruction&amp; reply_inst = current_instruction<span class="Delimiter">();</span>  <span class="Comment">// save pointer into recipe before pop</span>
-  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop<span class="Delimiter">();</span>
-  assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
+  <span class="Comment">// just in case 'main' returns a value, drop it for now</span>
+  if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">goto</span> stop_running_current_routine<span class="Delimiter">;</span>
   const instruction&amp; caller_instruction = current_instruction<span class="Delimiter">();</span>
-  assert<span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &lt;= callee_results<span class="Delimiter">.</span>size<span class="Delimiter">());</span>
+  <span class="Comment">// make reply results available to caller</span>
+  copy<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>products<span class="Delimiter">,</span> products<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
+  <span class="Comment">// check that any reply ingredients with /same-as-ingredient connect up</span>
+  <span class="Comment">// the corresponding ingredient and product in the caller.</span>
   for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;result &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>callee_results[i]<span class="Delimiter">);</span>
-    <span class="Comment">// check that any reply ingredients with /same-as-ingredient connect up</span>
-    <span class="Comment">// the corresponding ingredient and product in the caller.</span>
-    if <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>reply_inst<span class="Delimiter">.</span>ingredients[i]<span class="Delimiter">,</span> <span class="Constant">&quot;same-as-ingredient&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      vector&lt;string&gt; tmp = property<span class="Delimiter">(</span>reply_inst<span class="Delimiter">.</span>ingredients[i]<span class="Delimiter">,</span> <span class="Constant">&quot;same-as-ingredient&quot;</span><span class="Delimiter">);</span>
+    trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;result &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+    if <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>reply_inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;same-as-ingredient&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      vector&lt;string&gt; tmp = property<span class="Delimiter">(</span>reply_inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;same-as-ingredient&quot;</span><span class="Delimiter">);</span>
       assert<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-      long long int ingredient_index = to_int<span class="Delimiter">(</span>tmp[<span class="Constant">0</span>]<span class="Delimiter">);</span>
-      if <span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>products[i]<span class="Delimiter">.</span>value != caller_instruction<span class="Delimiter">.</span>ingredients[ingredient_index]<span class="Delimiter">.</span>value<span class="Delimiter">)</span>
-        raise &lt;&lt; <span class="Constant">&quot;'same-as-ingredient' result &quot;</span> &lt;&lt; caller_instruction<span class="Delimiter">.</span>products[i]<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; must be location &quot;</span> &lt;&lt; caller_instruction<span class="Delimiter">.</span>ingredients[ingredient_index]<span class="Delimiter">.</span>value &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+      long long int ingredient_index = to_number<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+      if <span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>value != caller_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">).</span>value<span class="Delimiter">)</span>
+        raise &lt;&lt; <span class="Constant">&quot;'same-as-ingredient' result &quot;</span> &lt;&lt; caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>value &lt;&lt; <span class="Constant">&quot; must be location &quot;</span> &lt;&lt; caller_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">).</span>value &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    write_memory<span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>products[i]<span class="Delimiter">,</span> callee_results[i]<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// instruction loop will increment caller's step_index</span>
+  <span class="Comment">// refresh instruction_counter to caller's step_index</span>
+  instruction_counter = current_step_index<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: Products can include containers and exclusive containers, addresses and arrays.</span>
@@ -85,8 +82,8 @@ recipe main [
   <span class="Constant">3</span>:point<span class="Special"> &lt;- </span>f <span class="Constant">2</span>:literal
 ]
 recipe f [
-  <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Constant">13</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
   reply <span class="Constant">12</span>:point
 ]
 <span class="traceContains">+run: instruction main/0</span>
@@ -98,33 +95,75 @@ recipe f [
 <span class="Comment">//: ingredients unless they're also products. The /same-as-ingredient inside</span>
 <span class="Comment">//: the recipe's 'reply' will help catch accidental misuse of such</span>
 <span class="Comment">//: 'ingredient-results' (sometimes called in-out parameters in other languages).</span>
+
 <span class="Delimiter">:(scenario reply_same_as_ingredient)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
-  <span class="Constant">1</span>:address:integer<span class="Special"> &lt;- </span>new integer:type
-  <span class="Constant">2</span>:address:integer<span class="Special"> &lt;- </span>test1 <span class="Constant">1</span>:address:integer  <span class="Comment"># call with different ingredient and product</span>
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>test1 <span class="Constant">1</span>:number  <span class="Comment"># call with different ingredient and product</span>
 ]
 recipe test1 [
-  <span class="Constant">10</span>:address:integer<span class="Special"> &lt;- </span>next-ingredient
-  reply <span class="Constant">10</span>:address:integer/same-as-ingredient:<span class="Constant">0</span>
+  <span class="Constant">10</span>:address:number<span class="Special"> &lt;- </span>next-ingredient
+  reply <span class="Constant">10</span>:address:number/same-as-ingredient:<span class="Constant">0</span>
 ]
 <span class="traceContains">+warn: 'same-as-ingredient' result 2 must be location 1</span>
 
 <span class="Delimiter">:(code)</span>
-string to_string<span class="Delimiter">(</span>const vector&lt;long long int&gt;&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+string to_string<span class="Delimiter">(</span>const vector&lt;double&gt;&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">&quot;[]&quot;</span><span class="Delimiter">;</span>
   ostringstream out<span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    out &lt;&lt; in[<span class="Constant">0</span>]<span class="Delimiter">;</span>
+    out &lt;&lt; in<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   out &lt;&lt; <span class="Constant">&quot;[&quot;</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; in<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
-    out &lt;&lt; in[i]<span class="Delimiter">;</span>
+    out &lt;&lt; in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   out &lt;&lt; <span class="Constant">&quot;]&quot;</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: Conditional reply.</span>
+
+<span class="Delimiter">:(scenario reply_if)</span>
+recipe main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>test1
+]
+recipe test1 [
+  reply-if <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">34</span>:literal
+  reply <span class="Constant">35</span>:literal
+]
+<span class="traceContains">+mem: storing 35 in location 1</span>
+
+<span class="Delimiter">:(scenario reply_if2)</span>
+recipe main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>test1
+]
+recipe test1 [
+  reply-if <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">34</span>:literal
+  reply <span class="Constant">35</span>:literal
+]
+<span class="traceContains">+mem: storing 34 in location 1</span>
+
+<span class="Delimiter">:(before &quot;End Rewrite Instruction(curr)&quot;)</span>
+<span class="Comment">// rewrite `reply-if a, b, c, ...` to</span>
+<span class="Comment">//   ```</span>
+<span class="Comment">//   jump-unless a, 1:offset</span>
+<span class="Comment">//   reply b, c, ...</span>
+<span class="Comment">//   ```</span>
+if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply-if&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;jump-unless&quot;</span>]<span class="Delimiter">;</span>
+  vector&lt;reagent&gt; results<span class="Delimiter">;</span>
+  copy<span class="Delimiter">(</span>++curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>results<span class="Delimiter">,</span> results<span class="Delimiter">.</span>end<span class="Delimiter">()));</span>
+  curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;1:offset&quot;</span><span class="Delimiter">));</span>
+  result<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
+  curr<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;reply&quot;</span>]<span class="Delimiter">;</span>
+  curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>results<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>

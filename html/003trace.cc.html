@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 003trace.cc</title>
+<title>~/Desktop/s/mu/003trace.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -151,6 +151,7 @@ struct trace_stream <span class="Delimiter">{</span>
     past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt;<span class="Delimiter">(</span>curr_layer<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt;<span class="Delimiter">(</span>frame[curr_layer]<span class="Delimiter">,</span> curr_contents<span class="Delimiter">)));</span>
     if <span class="Delimiter">(</span>curr_layer == dump_layer || curr_layer == <span class="Constant">&quot;dump&quot;</span> || dump_layer == <span class="Constant">&quot;all&quot;</span> ||
         <span class="Delimiter">(</span>!Hide_warnings &amp;&amp; curr_layer == <span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span>
+<span class="CommentedCode">//?     if (dump_layer == &quot;all&quot; &amp;&amp; (Current_routine-&gt;id == 3 || curr_layer == &quot;schedule&quot;)) //? 1</span>
       cerr &lt;&lt; curr_layer &lt;&lt; <span class="Constant">'/'</span> &lt;&lt; frame[curr_layer] &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     delete curr_stream<span class="Delimiter">;</span>
     curr_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
@@ -249,12 +250,12 @@ void trace_all<span class="Delimiter">(</span>const string&amp; label<span class
 bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string FILE<span class="Delimiter">,</span> int LINE<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// missing layer == anywhere, frame, hierarchical layers</span>
   vector&lt;string&gt; expected_lines = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>
   index_t curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines[curr_expected_line]<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+  while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
     ++curr_expected_line<span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
   string layer<span class="Delimiter">,</span> frame<span class="Delimiter">,</span> contents<span class="Delimiter">;</span>
-  parse_layer_frame_contents<span class="Delimiter">(</span>expected_lines[curr_expected_line]<span class="Delimiter">,</span> &amp;layer<span class="Delimiter">,</span> &amp;frame<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
+  parse_layer_frame_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;layer<span class="Delimiter">,</span> &amp;frame<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
   for <span class="Delimiter">(</span>vector&lt;pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt; &gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>!layer<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; !prefix_match<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -266,14 +267,14 @@ bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span cl
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
 
     ++curr_expected_line<span class="Delimiter">;</span>
-    while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines[curr_expected_line]<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+    while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
       ++curr_expected_line<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-    parse_layer_frame_contents<span class="Delimiter">(</span>expected_lines[curr_expected_line]<span class="Delimiter">,</span> &amp;layer<span class="Delimiter">,</span> &amp;frame<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
+    parse_layer_frame_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;layer<span class="Delimiter">,</span> &amp;frame<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 
   ++Num_failures<span class="Delimiter">;</span>
-  cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; FILE &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;] in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; FILE &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;] in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   DUMP<span class="Delimiter">(</span>layer<span class="Delimiter">);</span>
   Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -315,7 +316,7 @@ void parse_layer_and_frame<span class="Delimiter">(</span>const string&amp; orig
 bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string FILE<span class="Delimiter">,</span> int LINE<span class="Delimiter">,</span> string layer<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// empty layer == everything, multiple layers, hierarchical layers</span>
   vector&lt;string&gt; expected_lines = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>
   index_t curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines[curr_expected_line]<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+  while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
     ++curr_expected_line<span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
@@ -323,16 +324,16 @@ bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span cl
   for <span class="Delimiter">(</span>vector&lt;pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt; &gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>!layer<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; !any_prefix_match<span class="Delimiter">(</span>layers<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second != expected_lines[curr_expected_line]<span class="Delimiter">)</span>
+    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second != expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">))</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     ++curr_expected_line<span class="Delimiter">;</span>
-    while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines[curr_expected_line]<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+    while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
       ++curr_expected_line<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
   ++Num_failures<span class="Delimiter">;</span>
-  cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; FILE &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; expected_lines[curr_expected_line] &lt;&lt; <span class="Constant">&quot;] in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; FILE &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;] in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   DUMP<span class="Delimiter">(</span>layer<span class="Delimiter">);</span>
   Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -372,7 +373,7 @@ int trace_count<span class="Delimiter">(</span>string layer<span class="Delimite
 <span class="PreProc">#define CHECK_TRACE_DOESNT_WARN() \</span>
 <span class="PreProc">  </span>if<span class="PreProc"> (trace_count(</span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
 <span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): unexpected warnings</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): unexpected warnings</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    DUMP(</span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    </span><span class="Identifier">return</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
@@ -384,7 +385,7 @@ bool trace_doesnt_contain<span class="Delimiter">(</span>string layer<span class
 
 bool trace_doesnt_contain<span class="Delimiter">(</span>string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   vector&lt;string&gt; tmp = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
-  <span class="Identifier">return</span> trace_doesnt_contain<span class="Delimiter">(</span>tmp[<span class="Constant">0</span>]<span class="Delimiter">,</span> tmp[<span class="Constant">1</span>]<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> trace_doesnt_contain<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
 bool trace_doesnt_contain<span class="Delimiter">(</span>string layer<span class="Delimiter">,</span> int frame<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -414,7 +415,7 @@ struct lease_trace_frame <span class="Delimiter">{</span>
 bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string FILE<span class="Delimiter">,</span> int LINE<span class="Delimiter">,</span> string layer<span class="Delimiter">,</span> int frame<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// multiple layers, hierarchical layers</span>
   vector&lt;string&gt; expected_lines = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>  <span class="Comment">// hack: doesn't handle newlines in embedded in lines</span>
   index_t curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines[curr_expected_line]<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+  while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
     ++curr_expected_line<span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
@@ -424,16 +425,16 @@ bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span cl
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>first != frame<span class="Delimiter">)</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second != expected_lines[curr_expected_line]<span class="Delimiter">)</span>
+    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second != expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">))</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     ++curr_expected_line<span class="Delimiter">;</span>
-    while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines[curr_expected_line]<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+    while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
       ++curr_expected_line<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
   ++Num_failures<span class="Delimiter">;</span>
-  cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; FILE &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; expected_lines[curr_expected_line] &lt;&lt; <span class="Constant">&quot;] in trace/&quot;</span> &lt;&lt; frame &lt;&lt; <span class="Constant">&quot;:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; FILE &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;] in trace/&quot;</span> &lt;&lt; frame &lt;&lt; <span class="Constant">&quot;:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   DUMP<span class="Delimiter">(</span>layer<span class="Delimiter">);</span>
   Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -460,7 +461,7 @@ vector&lt;string&gt; split<span class="Delimiter">(</span>string s<span class="D
 
 bool any_prefix_match<span class="Delimiter">(</span>const vector&lt;string&gt;&amp; pats<span class="Delimiter">,</span> const string&amp; needle<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>pats<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>*pats[<span class="Constant">0</span>]<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">'/'</span><span class="Delimiter">)</span>
+  if <span class="Delimiter">(</span>*pats<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">'/'</span><span class="Delimiter">)</span>
     <span class="Comment">// prefix match not requested</span>
     <span class="Identifier">return</span> find<span class="Delimiter">(</span>pats<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> pats<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> needle<span class="Delimiter">)</span> != pats<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
   <span class="Comment">// first pat ends in a '/'; assume all pats do.</span>

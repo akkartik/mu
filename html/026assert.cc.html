@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 026assert.cc</title>
+<title>~/Desktop/s/mu/026assert.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -15,6 +15,7 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 * { font-size: 1em; }
 .cSpecial { color: #008000; }
 .Constant { color: #008080; }
+.Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
 .Identifier { color: #008080; }
@@ -43,11 +44,12 @@ ASSERT<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;assert&quot;</span>] = ASSERT<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case ASSERT: <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-  vector&lt;long long int&gt; arg0 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>arg0<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>arg0[<span class="Constant">0</span>] == <span class="Constant">0</span><span class="Delimiter">)</span>
-    raise &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">2</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  if <span class="Delimiter">(</span>!ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
+    raise &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; die<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>

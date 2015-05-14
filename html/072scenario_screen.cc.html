@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 072scenario_screen.cc</title>
+<title>~/Desktop/s/mu/072scenario_screen.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -83,14 +83,14 @@ assert<span class="Delimiter">(</span>Next_predefined_global_for_scenarios &lt; 
 <span class="Comment">// There's a restriction on the number of variables 'run' can use, so that</span>
 <span class="Comment">// it can avoid colliding with the dynamic allocator in case it doesn't</span>
 <span class="Comment">// initialize a default-space.</span>
-assert<span class="Delimiter">(</span>Name[tmp_recipe[<span class="Constant">0</span>]][<span class="Constant">&quot;&quot;</span>] &lt; Max_variables_in_scenarios<span class="Delimiter">);</span>
+assert<span class="Delimiter">(</span>Name[tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>][<span class="Constant">&quot;&quot;</span>] &lt; Max_variables_in_scenarios<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">// Scenario Globals.</span>
 const size_t SCREEN = Next_predefined_global_for_scenarios++<span class="Delimiter">;</span>
 <span class="Comment">// End Scenario Globals.</span>
 <span class="Delimiter">:(before &quot;End Predefined Scenario Locals In Run&quot;)</span>
-Name[tmp_recipe[<span class="Constant">0</span>]][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="Delimiter">;</span>
+Name[tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Rewrite Instruction(curr)&quot;)</span>
 <span class="Comment">// rewrite `assume-screen width, height` to</span>
@@ -100,7 +100,7 @@ if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <
   curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;init-fake-screen&quot;</span>]<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;screen:address&quot;</span><span class="Delimiter">));</span>
-  curr<span class="Delimiter">.</span>products[<span class="Constant">0</span>]<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>SCREEN<span class="Delimiter">);</span>
+  curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>SCREEN<span class="Delimiter">);</span>
 <span class="CommentedCode">//? cout &lt;&lt; &quot;after: &quot; &lt;&lt; curr.to_string() &lt;&lt; '\n'; //? 1</span>
 <span class="CommentedCode">//? cout &lt;&lt; &quot;AAA &quot; &lt;&lt; Recipe_number[&quot;init-fake-screen&quot;] &lt;&lt; '\n'; //? 1</span>
 <span class="Delimiter">}</span>
@@ -113,13 +113,14 @@ Recipe_number[<span class="Constant">&quot;screen-should-contain&quot;</span>] =
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case SCREEN_SHOULD_CONTAIN: <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;AAA\n&quot;; //? 1</span>
-  check_screen<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
+  check_screen<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
 void check_screen<span class="Delimiter">(</span>const string&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>  <span class="Comment">// not supported</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;Checking screen\n&quot;; //? 1</span>
+  assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>  <span class="Comment">// not supported</span>
   index_t screen_location = Memory[SCREEN]<span class="Delimiter">;</span>
   int data_offset = find_element_name<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;data&quot;</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>data_offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
@@ -151,13 +152,60 @@ void check_screen<span class="Delimiter">(</span>const string&amp; contents<span
   ++screen_data_start<span class="Delimiter">;</span>  <span class="Comment">// now skip length</span>
   for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; expected_contents<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking location &quot;</span> &lt;&lt; screen_data_start+i<span class="Delimiter">;</span>
-    if <span class="Delimiter">((</span>!Memory[screen_data_start+i] &amp;&amp; !isspace<span class="Delimiter">(</span>expected_contents[i]<span class="Delimiter">))</span>  <span class="Comment">// uninitialized memory =&gt; spaces</span>
-        || <span class="Delimiter">(</span>Memory[screen_data_start+i] &amp;&amp; Memory[screen_data_start+i] != expected_contents[i]<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;comparing &quot; &lt;&lt; i/screen_width &lt;&lt; &quot;, &quot; &lt;&lt; i%screen_width &lt;&lt; &quot;: &quot; &lt;&lt; Memory[screen_data_start+i] &lt;&lt; &quot; vs &quot; &lt;&lt; (int)expected_contents.at(i) &lt;&lt; '\n'; //? 1</span>
+    if <span class="Delimiter">((</span>!Memory[screen_data_start+i] &amp;&amp; !isspace<span class="Delimiter">(</span>expected_contents<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>  <span class="Comment">// uninitialized memory =&gt; spaces</span>
+        || <span class="Delimiter">(</span>Memory[screen_data_start+i] &amp;&amp; Memory[screen_data_start+i] != expected_contents<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?       cerr &lt;&lt; &quot;CCC &quot; &lt;&lt; Trace_stream &lt;&lt; &quot; &quot; &lt;&lt; Hide_warnings &lt;&lt; '\n'; //? 1</span>
-      raise &lt;&lt; <span class="Constant">&quot;expected screen location (&quot;</span> &lt;&lt; i/screen_width &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; i%screen_width &lt;&lt; <span class="Constant">&quot;) to contain '&quot;</span> &lt;&lt; expected_contents[i] &lt;&lt; <span class="Constant">&quot;' instead of '&quot;</span> &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>Memory[screen_data_start+i]<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-      Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Hide_warnings<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        <span class="Comment">// genuine test in a mu file</span>
+        raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected screen location (&quot;</span> &lt;&lt; i/screen_width &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; i%screen_width &lt;&lt; <span class="Constant">&quot;) to contain '&quot;</span> &lt;&lt; expected_contents<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' instead of '&quot;</span> &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>Memory[screen_data_start+i]<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+        dump_screen<span class="Delimiter">();</span>
+      <span class="Delimiter">}</span>
+      else <span class="Delimiter">{</span>
+        <span class="Comment">// just testing check_screen</span>
+        raise &lt;&lt; <span class="Constant">&quot;expected screen location (&quot;</span> &lt;&lt; i/screen_width &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; i%screen_width &lt;&lt; <span class="Constant">&quot;) to contain '&quot;</span> &lt;&lt; expected_contents<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' instead of '&quot;</span> &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>Memory[screen_data_start+i]<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+      if <span class="Delimiter">(</span>!Hide_warnings<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+        ++Num_failures<span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
       <span class="Identifier">return</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_DUMP_SCREEN<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;$dump-screen&quot;</span>] = _DUMP_SCREEN<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _DUMP_SCREEN: <span class="Delimiter">{</span>
+  dump_screen<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+void dump_screen<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>  <span class="Comment">// not supported</span>
+  index_t screen_location = Memory[SCREEN]<span class="Delimiter">;</span>
+  int width_offset = find_element_name<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-columns&quot;</span><span class="Delimiter">);</span>
+  size_t screen_width = Memory[screen_location+width_offset]<span class="Delimiter">;</span>
+  int height_offset = find_element_name<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;num-rows&quot;</span><span class="Delimiter">);</span>
+  size_t screen_height = Memory[screen_location+height_offset]<span class="Delimiter">;</span>
+  int data_offset = find_element_name<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;screen&quot;</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;data&quot;</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>data_offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  index_t screen_data_location = screen_location+data_offset<span class="Delimiter">;</span>  <span class="Comment">// type: address:array:character</span>
+  index_t screen_data_start = Memory[screen_data_location]<span class="Delimiter">;</span>  <span class="Comment">// type: array:character</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;data start: &quot; &lt;&lt; screen_data_start &lt;&lt; '\n'; //? 1</span>
+  assert<span class="Delimiter">(</span>Memory[screen_data_start] == screen_width*screen_height<span class="Delimiter">);</span>
+  index_t curr = screen_data_start+<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
+  for <span class="Delimiter">(</span>index_t row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; curr &lt;&lt; &quot;:\n&quot;; //? 1</span>
+    for <span class="Delimiter">(</span>index_t col = <span class="Constant">0</span><span class="Delimiter">;</span> col &lt; screen_width<span class="Delimiter">;</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      cerr &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>Memory[curr]<span class="Delimiter">);</span>
+      ++curr<span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 </pre>

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 012transform.cc</title>
+<title>~/Desktop/s/mu/012transform.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -13,7 +13,6 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
 body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 * { font-size: 1em; }
-.cSpecial { color: #008000; }
 .Identifier { color: #008080; }
 .Constant { color: #008080; }
 .Comment { color: #8080ff; }
@@ -53,7 +52,7 @@ void transform_all<span class="Delimiter">()</span> <span class="Delimiter">{</s
       recipe&amp; r = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>transformed_until != t-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-      <span class="Delimiter">(</span>*Transform[t]<span class="Delimiter">)(</span><span class="Comment">/*</span><span class="Comment">recipe_number</span><span class="Comment">*/</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">);</span>
+      <span class="Delimiter">(</span>*Transform<span class="Delimiter">.</span>at<span class="Delimiter">(</span>t<span class="Delimiter">))(</span><span class="Comment">/*</span><span class="Comment">recipe_number</span><span class="Comment">*/</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">);</span>
       r<span class="Delimiter">.</span>transformed_until = t<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -66,12 +65,12 @@ void parse_int_reagents<span class="Delimiter">()</span> <span class="Delimiter"
     recipe&amp; r = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     for <span class="Delimiter">(</span>index_t index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      instruction&amp; inst = r<span class="Delimiter">.</span>steps[index]<span class="Delimiter">;</span>
+      instruction&amp; inst = r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
       for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        populate_value<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients[i]<span class="Delimiter">);</span>
+        populate_value<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
       <span class="Delimiter">}</span>
       for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        populate_value<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products[i]<span class="Delimiter">);</span>
+        populate_value<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -79,11 +78,8 @@ void parse_int_reagents<span class="Delimiter">()</span> <span class="Delimiter"
 
 void populate_value<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>initialized<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  char* end = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  int result = strtol<span class="Delimiter">(</span>r<span class="Delimiter">.</span>name<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> &amp;end<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">any base</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>*end != <span class="cSpecial">'\0'</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cout &lt;&lt; &quot;setting value\n&quot;; //? 1</span>
-  r<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!is_number<span class="Delimiter">(</span>r<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  r<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>to_number<span class="Delimiter">(</span>r<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>
