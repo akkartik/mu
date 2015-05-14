@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 036call_ingredient.cc</title>
+<title>~/Desktop/s/mu/036call_ingredient.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -38,8 +38,8 @@ recipe main [
   f <span class="Constant">2</span>:literal
 ]
 recipe f [
-  <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Constant">13</span>:integer<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">12</span>:integer
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">12</span>:number
 ]
 <span class="traceContains">+run: instruction f/1</span>
 <span class="traceContains">+mem: location 12 is 2</span>
@@ -50,22 +50,22 @@ recipe main [
   f
 ]
 recipe f [
-  _<span class="Delimiter">,</span> <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>next-ingredient
+  _<span class="Delimiter">,</span> <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
 ]
 <span class="traceContains">+mem: storing 0 in location 12</span>
 
 <span class="Delimiter">:(before &quot;End call Fields&quot;)</span>
-vector&lt;vector&lt;long long int&gt; &gt; ingredient_atoms<span class="Delimiter">;</span>
+vector&lt;vector&lt;double&gt; &gt; ingredient_atoms<span class="Delimiter">;</span>
 index_t next_ingredient_to_process<span class="Delimiter">;</span>
 <span class="Delimiter">:(replace{} &quot;call(recipe_number r)&quot;)</span>
 call<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)</span> :running_recipe<span class="Delimiter">(</span>r<span class="Delimiter">),</span> running_step_index<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> next_ingredient_to_process<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
 
-<span class="Delimiter">:(replace &quot;Current_routine-&gt;calls.push(call(current_instruction().operation))&quot; following &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Delimiter">:(replace &quot;Current_routine-&gt;calls.push_front(call(current_instruction().operation))&quot; following &quot;End Primitive Recipe Implementations&quot;)</span>
 call callee<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">);</span>
-for <span class="Delimiter">(</span>size_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  callee<span class="Delimiter">.</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[i]<span class="Delimiter">));</span>
+for <span class="Delimiter">(</span>size_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  callee<span class="Delimiter">.</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
-Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push<span class="Delimiter">(</span>callee<span class="Delimiter">);</span>
+Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>callee<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 NEXT_INGREDIENT<span class="Delimiter">,</span>
@@ -73,24 +73,18 @@ NEXT_INGREDIENT<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;next-ingredient&quot;</span>] = NEXT_INGREDIENT<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case NEXT_INGREDIENT: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>next_ingredient_to_process &lt; Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product 0 is &quot;</span>
-        &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>ingredient_atoms[Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>next_ingredient_to_process][<span class="Constant">0</span>]<span class="Delimiter">;</span>
-    write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span>
-        Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>ingredient_atoms[Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>next_ingredient_to_process]<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      vector&lt;long long int&gt; ingredient_exists<span class="Delimiter">;</span>
-      ingredient_exists<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-      write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">1</span>]<span class="Delimiter">,</span> ingredient_exists<span class="Delimiter">);</span>
-    <span class="Delimiter">}</span>
-    ++Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process &lt; Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>
+        Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">));</span>
+    assert<span class="Delimiter">(</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">// push a new vector</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+    ++Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   else <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      vector&lt;long long int&gt; no_ingredient<span class="Delimiter">;</span>
-      no_ingredient<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-      write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">1</span>]<span class="Delimiter">,</span> no_ingredient<span class="Delimiter">);</span>
-    <span class="Delimiter">}</span>
+    products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// todo: will fail noisily if we try to read a compound value</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -100,10 +94,10 @@ recipe main [
   f <span class="Constant">2</span>:literal
 ]
 recipe f [
-  <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># consume ingredient</span>
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># consume ingredient</span>
   _<span class="Delimiter">,</span> <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># will not find any ingredients</span>
   rewind-ingredients
-  <span class="Constant">13</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># will find ingredient again</span>
+  <span class="Constant">13</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># will find ingredient again</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 12</span>
 <span class="traceContains">+mem: storing 0 in location 1</span>
@@ -116,7 +110,7 @@ REWIND_INGREDIENTS<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;rewind-ingredients&quot;</span>] = REWIND_INGREDIENTS<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case REWIND_INGREDIENTS: <span class="Delimiter">{</span>
-  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>next_ingredient_to_process = <span class="Constant">0</span><span class="Delimiter">;</span>
+  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -125,8 +119,8 @@ recipe main [
   f <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
 ]
 recipe f [
-  <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>ingredient <span class="Constant">1</span>:literal  <span class="Comment"># consume second ingredient first</span>
-  <span class="Constant">13</span>:integer<span class="Delimiter">,</span> <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># next-ingredient tries to scan past that</span>
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>ingredient <span class="Constant">1</span>:literal  <span class="Comment"># consume second ingredient first</span>
+  <span class="Constant">13</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># next-ingredient tries to scan past that</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 12</span>
 <span class="traceContains">+mem: storing 0 in location 1</span>
@@ -137,24 +131,21 @@ INGREDIENT<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;ingredient&quot;</span>] = INGREDIENT<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case INGREDIENT: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>static_cast&lt;index_t&gt;<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>value<span class="Delimiter">)</span> &lt; Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>next_ingredient_to_process = current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-    trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product 0 is &quot;</span>
-        &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>ingredient_atoms[Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>next_ingredient_to_process][<span class="Constant">0</span>]<span class="Delimiter">;</span>
-    write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span>
-        Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>ingredient_atoms[Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>next_ingredient_to_process]<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      vector&lt;long long int&gt; ingredient_exists<span class="Delimiter">;</span>
-      ingredient_exists<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-      write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">1</span>]<span class="Delimiter">,</span> ingredient_exists<span class="Delimiter">);</span>
-    <span class="Delimiter">}</span>
-    ++Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
+  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  if <span class="Delimiter">(</span>static_cast&lt;index_t&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt; Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>
+        Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">));</span>
+    assert<span class="Delimiter">(</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">// push a new vector</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+    ++Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   else <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      vector&lt;long long int&gt; no_ingredient<span class="Delimiter">;</span>
-      no_ingredient<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-      write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">1</span>]<span class="Delimiter">,</span> no_ingredient<span class="Delimiter">);</span>
+      products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
+      products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// todo: will fail noisily if we try to read a compound value</span>
+      products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 075scenario_keyboard.cc</title>
+<title>~/Desktop/s/mu/075scenario_keyboard.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -45,20 +45,20 @@ scenario keyboard-in-scenario [
   ]
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">97</span>  <span class="Comment"># 'a'</span>
-    <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># first read-key call found a character</span>
+    <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">98</span>  <span class="Comment"># 'b'</span>
-    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># second read-key call found a character</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
     <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">99</span>  <span class="Comment"># 'c'</span>
-    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># third read-key call found a character</span>
-    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
-    <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># fourth read-key call didn't find a character</span>
+    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
+    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># eof</span>
+    <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
   ]
 ]
 
 <span class="Delimiter">:(before &quot;End Scenario Globals&quot;)</span>
 const size_t KEYBOARD = Next_predefined_global_for_scenarios++<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Predefined Scenario Locals In Run&quot;)</span>
-Name[tmp_recipe[<span class="Constant">0</span>]][<span class="Constant">&quot;keyboard&quot;</span>] = KEYBOARD<span class="Delimiter">;</span>
+Name[tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>][<span class="Constant">&quot;keyboard&quot;</span>] = KEYBOARD<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Rewrite Instruction(curr)&quot;)</span>
 <span class="Comment">// rewrite `assume-keyboard string` to</span>
@@ -71,17 +71,17 @@ if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <
   curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;new&quot;</span>]<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;keyboard:address&quot;</span><span class="Delimiter">));</span>
-  curr<span class="Delimiter">.</span>products[<span class="Constant">0</span>]<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>KEYBOARD<span class="Delimiter">);</span>
+  curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>KEYBOARD<span class="Delimiter">);</span>
   result<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>  <span class="Comment">// hacky that &quot;Rewrite Instruction&quot; is converting to multiple instructions</span>
   <span class="Comment">// leave second instruction in curr</span>
   curr<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;init-fake-keyboard&quot;</span>]<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;keyboard:address&quot;</span><span class="Delimiter">));</span>
-  curr<span class="Delimiter">.</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>KEYBOARD<span class="Delimiter">);</span>
+  curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>KEYBOARD<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;keyboard:address&quot;</span><span class="Delimiter">));</span>
-  curr<span class="Delimiter">.</span>products[<span class="Constant">0</span>]<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>KEYBOARD<span class="Delimiter">);</span>
+  curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>KEYBOARD<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>

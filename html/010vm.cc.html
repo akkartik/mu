@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 010vm.cc</title>
+<title>~/Desktop/s/mu/010vm.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -90,14 +90,14 @@ struct property <span class="Delimiter">{</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">// Locations refer to a common 'memory'. Each location can store a number.</span>
-map&lt;index_t<span class="Delimiter">,</span> long long int&gt; Memory<span class="Delimiter">;</span>
+map&lt;index_t<span class="Delimiter">,</span> double&gt; Memory<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Memory<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 
 <span class="Delimiter">:(after &quot;Types&quot;)</span>
 <span class="Comment">// Mu types encode how the numbers stored in different parts of memory are</span>
 <span class="Comment">// interpreted. A location tagged as a 'character' type will interpret the</span>
-<span class="Comment">// number 97 as the letter 'a', while a different location of type 'integer'</span>
+<span class="Comment">// number 97 as the letter 'a', while a different location of type 'number'</span>
 <span class="Comment">// would not.</span>
 <span class="Comment">//</span>
 <span class="Comment">// Unlike most computers today, mu stores types in a single big table, shared</span>
@@ -114,9 +114,9 @@ void setup_types<span class="Delimiter">()</span> <span class="Delimiter">{</spa
   Type_number[<span class="Constant">&quot;literal&quot;</span>] = <span class="Constant">0</span><span class="Delimiter">;</span>
   Next_type_number = <span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Comment">// Mu Types Initialization</span>
-  type_number integer = Type_number[<span class="Constant">&quot;integer&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
-  Type_number[<span class="Constant">&quot;location&quot;</span>] = Type_number[<span class="Constant">&quot;integer&quot;</span>]<span class="Delimiter">;</span>  <span class="Comment">// wildcard type: either a pointer or a scalar</span>
-  Type[integer]<span class="Delimiter">.</span>name = <span class="Constant">&quot;integer&quot;</span><span class="Delimiter">;</span>
+  type_number number = Type_number[<span class="Constant">&quot;number&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
+  Type_number[<span class="Constant">&quot;location&quot;</span>] = Type_number[<span class="Constant">&quot;number&quot;</span>]<span class="Delimiter">;</span>  <span class="Comment">// wildcard type: either a pointer or a scalar</span>
+  Type[number]<span class="Delimiter">.</span>name = <span class="Constant">&quot;number&quot;</span><span class="Delimiter">;</span>
   type_number address = Type_number[<span class="Constant">&quot;address&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
   Type[address]<span class="Delimiter">.</span>name = <span class="Constant">&quot;address&quot;</span><span class="Delimiter">;</span>
   type_number boolean = Type_number[<span class="Constant">&quot;boolean&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
@@ -124,7 +124,7 @@ void setup_types<span class="Delimiter">()</span> <span class="Delimiter">{</spa
   type_number character = Type_number[<span class="Constant">&quot;character&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
   Type[character]<span class="Delimiter">.</span>name = <span class="Constant">&quot;character&quot;</span><span class="Delimiter">;</span>
   <span class="Comment">// Array types are a special modifier to any other type. For example,</span>
-  <span class="Comment">// array:integer or array:address:boolean.</span>
+  <span class="Comment">// array:number or array:address:boolean.</span>
   type_number array = Type_number[<span class="Constant">&quot;array&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
   Type[array]<span class="Delimiter">.</span>name = <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
   <span class="Comment">// End Mu Types Initialization</span>
@@ -214,13 +214,13 @@ reagent::reagent<span class="Delimiter">(</span>string s<span class="Delimiter">
     properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> vector&lt;string&gt; &gt;<span class="Delimiter">(</span>name<span class="Delimiter">,</span> values<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// structures for the first row of properties</span>
-  name = properties[<span class="Constant">0</span>]<span class="Delimiter">.</span>first<span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; properties[<span class="Constant">0</span>]<span class="Delimiter">.</span>second<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[properties[<span class="Constant">0</span>]<span class="Delimiter">.</span>second[i]]<span class="Delimiter">);</span>
+  name = properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>first<span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span>]<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>name == <span class="Constant">&quot;_&quot;</span> &amp;&amp; types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-    properties[<span class="Constant">0</span>]<span class="Delimiter">.</span>second<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;dummy&quot;</span><span class="Delimiter">);</span>
+    properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;dummy&quot;</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 reagent::reagent<span class="Delimiter">()</span> :value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> initialized<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -233,16 +233,16 @@ string reagent::to_string<span class="Delimiter">()</span> const <span class="De
   ostringstream out<span class="Delimiter">;</span>
   out &lt;&lt; <span class="Constant">&quot;{name: </span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">, value: &quot;</span> &lt;&lt; value &lt;&lt; <span class="Constant">&quot;, type: &quot;</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; types<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    out &lt;&lt; types[i]<span class="Delimiter">;</span>
+    out &lt;&lt; types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>i &lt; types<span class="Delimiter">.</span>size<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;-&quot;</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>!properties<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     out &lt;&lt; <span class="Constant">&quot;, properties: [&quot;</span><span class="Delimiter">;</span>
     for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; properties<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      out &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; properties[i]<span class="Delimiter">.</span>first &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: &quot;</span><span class="Delimiter">;</span>
-      for <span class="Delimiter">(</span>index_t j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; properties[i]<span class="Delimiter">.</span>second<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        out &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; properties[i]<span class="Delimiter">.</span>second[j] &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-        if <span class="Delimiter">(</span>j &lt; properties[i]<span class="Delimiter">.</span>second<span class="Delimiter">.</span>size<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;:&quot;</span><span class="Delimiter">;</span>
+      out &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">: &quot;</span><span class="Delimiter">;</span>
+      for <span class="Delimiter">(</span>index_t j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        out &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span> &lt;&lt; properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+        if <span class="Delimiter">(</span>j &lt; properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>size<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;:&quot;</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
       if <span class="Delimiter">(</span>i &lt; properties<span class="Delimiter">.</span>size<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
       else out &lt;&lt; <span class="Constant">&quot;]&quot;</span><span class="Delimiter">;</span>
@@ -257,13 +257,13 @@ string instruction::to_string<span class="Delimiter">()</span> const <span class
   ostringstream out<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; products<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
-    out &lt;&lt; products[i]<span class="Delimiter">.</span>to_string<span class="Delimiter">();</span>
+    out &lt;&lt; products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>to_string<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>!products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> out &lt;&lt; <span class="Constant">&quot; &lt;- &quot;</span><span class="Delimiter">;</span>
   out &lt;&lt; name &lt;&lt; <span class="Constant">'/'</span> &lt;&lt; operation &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>i &gt; <span class="Constant">0</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">&quot;, &quot;</span><span class="Delimiter">;</span>
-    out &lt;&lt; ingredients[i]<span class="Delimiter">.</span>to_string<span class="Delimiter">();</span>
+    out &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>to_string<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
@@ -282,8 +282,7 @@ string slurp_until<span class="Delimiter">(</span>istream&amp; in<span class="De
 <span class="Delimiter">}</span>
 
 void dump_memory<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  map&lt;int<span class="Delimiter">,</span> int&gt; ordered<span class="Delimiter">(</span>Memory<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> Memory<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
-  for <span class="Delimiter">(</span>map&lt;int<span class="Delimiter">,</span> int&gt;::iterator p = ordered<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != ordered<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>map&lt;index_t<span class="Delimiter">,</span> double&gt;::iterator p = Memory<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Memory<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     cout &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>

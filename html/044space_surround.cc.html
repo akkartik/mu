@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 044space_surround.cc</title>
+<title>~/Desktop/s/mu/044space_surround.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -40,12 +40,12 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 <span class="Delimiter">:(scenario surrounding_space)</span>
 <span class="Comment"># location 1 in space 1 refers to the space surrounding the default space, here 20.</span>
 recipe main [
-  <span class="Constant">10</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal  <span class="Comment"># pretend array</span>
-  <span class="Constant">20</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal  <span class="Comment"># pretend array</span>
+  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal  <span class="Comment"># pretend array</span>
+  <span class="Constant">20</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal  <span class="Comment"># pretend array</span>
   default-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:literal
   <span class="Constant">0</span>:address:array:location/names:dummy<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>:literal  <span class="Comment"># later layers will explain the /names: property</span>
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">32</span>:literal
-  <span class="Constant">1</span>:integer/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">32</span>:literal
+  <span class="Constant">1</span>:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
 ]
 <span class="traceContains">+run: instruction main/3</span>
 <span class="traceContains">+mem: storing 20 in location 11</span>
@@ -60,7 +60,7 @@ recipe main [
 
 <span class="Delimiter">:(replace{} &quot;index_t space_base(const reagent&amp; x)&quot;)</span>
 index_t space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index<span class="Delimiter">(</span>x<span class="Delimiter">),</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index<span class="Delimiter">(</span>x<span class="Delimiter">),</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 index_t space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">,</span> index_t space_index<span class="Delimiter">,</span> index_t base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -76,8 +76,10 @@ index_t space_base<span class="Delimiter">(</span>const reagent&amp; x<span clas
 
 index_t space_index<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties[i]<span class="Delimiter">.</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span>
-      <span class="Identifier">return</span> to_int<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties[i]<span class="Delimiter">.</span>second[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+      <span class="Identifier">return</span> to_number<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+    <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>

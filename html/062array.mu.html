@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 062array.mu</title>
+<title>~/Desktop/s/mu/062array.mu</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="none">
@@ -13,8 +13,9 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
 body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 * { font-size: 1em; }
-.Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
+.Comment { color: #8080ff; }
+.Constant { color: #008080; }
 .Special { color: #ff6060; }
 .Identifier { color: #008080; }
 -->
@@ -28,46 +29,46 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 </head>
 <body>
 <pre id='vimCodeElement'>
-scenario array-from-args <span class="Delimiter">[</span>
-  run <span class="Delimiter">[</span>
-    1:address:array:location<span class="Special"> &lt;- </span>init-array 0:literal, 1:literal, 2:literal
+scenario array-from-args [
+  run [
+    1:address:array:location<span class="Special"> &lt;- </span>init-array <span class="Constant">0:literal</span>, <span class="Constant">1:literal</span>, <span class="Constant">2:literal</span>
     2:array:location<span class="Special"> &lt;- </span>copy 1:address:array:location/deref
-  <span class="Delimiter">]</span>
-  memory-should-contain <span class="Delimiter">[</span>
+  ]
+  memory-should-contain [
     2<span class="Special"> &lt;- </span>3  <span class="Comment"># array length</span>
     3<span class="Special"> &lt;- </span>0
     4<span class="Special"> &lt;- </span>1
     5<span class="Special"> &lt;- </span>2
-  <span class="Delimiter">]</span>
-<span class="Delimiter">]</span>
+  ]
+]
 
 <span class="Comment"># create an array out of a list of scalar args</span>
-recipe init-array <span class="Delimiter">[</span>
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, 30:literal
-  capacity:integer<span class="Special"> &lt;- </span>copy 0:literal
+recipe init-array [
+  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  capacity:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># while read curr-value</span>
     curr-value:location, exists?:boolean<span class="Special"> &lt;- </span>next-ingredient
     <span class="Identifier">break-unless</span> exists?:boolean
-    capacity:integer<span class="Special"> &lt;- </span>add capacity:integer, 1:literal
+    capacity:number<span class="Special"> &lt;- </span>add capacity:number, <span class="Constant">1:literal</span>
     <span class="Identifier">loop</span>
   <span class="Delimiter">}</span>
-  result:address:array:location<span class="Special"> &lt;- </span>new location:type, capacity:integer
+  result:address:array:location<span class="Special"> &lt;- </span>new location:type, capacity:number
   rewind-ingredients
-  i:integer<span class="Special"> &lt;- </span>copy 0:literal
+  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># while read curr-value</span>
-    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:integer, capacity:integer
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, capacity:number
     <span class="Identifier">break-if</span> done?:boolean
     curr-value:location, exists?:boolean<span class="Special"> &lt;- </span>next-ingredient
-    assert exists?:boolean, <span class="Delimiter">[</span>error in rewinding ingredients to init-array<span class="Delimiter">]</span>
-    tmp:address:location<span class="Special"> &lt;- </span>index-address result:address:array:location/deref, i:integer
+    assert exists?:boolean, <span class="Constant">[error in rewinding ingredients to init-array]</span>
+    tmp:address:location<span class="Special"> &lt;- </span>index-address result:address:array:location/deref, i:number
     tmp:address:location/deref<span class="Special"> &lt;- </span>copy curr-value:location
-    i:integer<span class="Special"> &lt;- </span>add i:integer, 1:literal
+    i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
     <span class="Identifier">loop</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">reply</span> result:address:array:location
-<span class="Delimiter">]</span>
+]
 </pre>
 </body>
 </html>

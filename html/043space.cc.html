@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 043space.cc</title>
+<title>~/Desktop/s/mu/043space.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -15,12 +15,12 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 * { font-size: 1em; }
 .cSpecial { color: #008000; }
 .Identifier { color: #008080; }
-.SalientComment { color: #00ffff; }
 .Constant { color: #008080; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
 .CommentedCode { color: #6c6c6c; }
+.SalientComment { color: #00ffff; }
 .traceContains { color: #008000; }
 -->
 </style>
@@ -41,22 +41,22 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 <span class="Comment"># if default-space is 10, and if an array of 5 locals lies from location 11 to 15 (inclusive),</span>
 <span class="Comment"># then location 0 is really location 11, location 1 is really location 12, and so on.</span>
 recipe main [
-  <span class="Constant">10</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal  <span class="Comment"># pretend array; in practice we'll use new</span>
+  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal  <span class="Comment"># pretend array; in practice we'll use new</span>
   default-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:literal
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
 ]
 <span class="traceContains">+mem: storing 23 in location 12</span>
 
 <span class="Delimiter">:(scenario deref_sidesteps_default_space)</span>
 recipe main [
   <span class="Comment"># pretend pointer from outside</span>
-  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
   <span class="Comment"># pretend array</span>
-  <span class="Constant">1000</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal
+  <span class="Constant">1000</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal
   <span class="Comment"># actual start of this function</span>
   default-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">1000</span>:literal
-  <span class="Constant">1</span>:address:integer<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal
-  <span class="Constant">8</span>:integer/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>:address:integer/deref
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal
+  <span class="Constant">8</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>:address:number/deref
 ]
 <span class="traceContains">+mem: storing 34 in location 8</span>
 
@@ -70,7 +70,7 @@ reagent r = absolutize<span class="Delimiter">(</span>x<span class="Delimiter">)
 <span class="Delimiter">:(code)</span>
 reagent absolutize<span class="Delimiter">(</span>reagent x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   if (Recipe_number.find(&quot;increment-counter&quot;) != Recipe_number.end()) //? 1</span>
-<span class="CommentedCode">//?     cout &lt;&lt; &quot;AAA &quot; &lt;&lt; &quot;increment-counter/2: &quot; &lt;&lt; Recipe[Recipe_number[&quot;increment-counter&quot;]].steps[2].products[0].to_string() &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?     cout &lt;&lt; &quot;AAA &quot; &lt;&lt; &quot;increment-counter/2: &quot; &lt;&lt; Recipe[Recipe_number[&quot;increment-counter&quot;]].steps.at(2).products.at(0).to_string() &lt;&lt; '\n'; //? 1</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;absolutize &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 4</span>
 <span class="CommentedCode">//?   cout &lt;&lt; is_raw(x) &lt;&lt; '\n'; //? 1</span>
   if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">)</span> || is_dummy<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> x<span class="Delimiter">;</span>
@@ -91,14 +91,14 @@ result<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>
 <span class="Delimiter">:(scenario deref_sidesteps_default_space_in_get)</span>
 recipe main [
   <span class="Comment"># pretend pointer to container from outside</span>
-  <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
-  <span class="Constant">13</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
   <span class="Comment"># pretend array</span>
-  <span class="Constant">1000</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal
+  <span class="Constant">1000</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal
   <span class="Comment"># actual start of this function</span>
   default-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">1000</span>:literal
   <span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>:literal
-  <span class="Constant">9</span>:integer/<span class="Special">raw &lt;- </span>get <span class="Constant">1</span>:address:point/deref<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+  <span class="Constant">9</span>:number/<span class="Special">raw &lt;- </span>get <span class="Constant">1</span>:address:point/deref<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
 ]
 <span class="traceContains">+mem: storing 35 in location 9</span>
 
@@ -110,15 +110,15 @@ tmp<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>pus
 <span class="Delimiter">:(scenario deref_sidesteps_default_space_in_index)</span>
 recipe main [
   <span class="Comment"># pretend pointer to array from outside</span>
-  <span class="Constant">12</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:literal
-  <span class="Constant">13</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
-  <span class="Constant">14</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:literal
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
   <span class="Comment"># pretend array</span>
-  <span class="Constant">1000</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal
+  <span class="Constant">1000</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal
   <span class="Comment"># actual start of this function</span>
   default-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">1000</span>:literal
-  <span class="Constant">1</span>:address:array:integer<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>:literal
-  <span class="Constant">9</span>:integer/<span class="Special">raw &lt;- </span>index <span class="Constant">1</span>:address:array:integer/deref<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>:literal
+  <span class="Constant">9</span>:number/<span class="Special">raw &lt;- </span>index <span class="Constant">1</span>:address:array:number/deref<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
 ]
 <span class="traceContains">+mem: storing 35 in location 9</span>
 
@@ -129,7 +129,7 @@ tmp<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>pus
 
 <span class="Delimiter">:(code)</span>
 index_t space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>default_space<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>default_space<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 index_t address<span class="Delimiter">(</span>index_t offset<span class="Delimiter">,</span> index_t base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -142,25 +142,25 @@ index_t address<span class="Delimiter">(</span>index_t offset<span class="Delimi
   <span class="Identifier">return</span> base+<span class="Constant">1</span> + offset<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(after &quot;void write_memory(reagent x, vector&lt;long long int&gt; data)&quot;)</span>
+<span class="Delimiter">:(after &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
   if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;default-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>data<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-    Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>default_space = data[<span class="Constant">0</span>]<span class="Delimiter">;</span>
-<span class="CommentedCode">//?     cout &lt;&lt; &quot;AAA &quot; &lt;&lt; Current_routine-&gt;calls.top().default_space &lt;&lt; '\n'; //? 1</span>
+    Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>default_space = data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="CommentedCode">//?     cout &lt;&lt; &quot;AAA &quot; &lt;&lt; Current_routine-&gt;calls.front().default_space &lt;&lt; '\n'; //? 1</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario get_default_space)</span>
 recipe main [
   default-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:literal
-  <span class="Constant">1</span>:integer/<span class="Special">raw &lt;- </span>copy default-space:address:array:location
+  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy default-space:address:array:location
 ]
 <span class="traceContains">+mem: storing 10 in location 1</span>
 
-<span class="Delimiter">:(after &quot;vector&lt;long long int&gt; read_memory(reagent x)&quot;)</span>
+<span class="Delimiter">:(after &quot;vector&lt;double&gt; read_memory(reagent x)&quot;)</span>
   if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;default-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    vector&lt;long long int&gt; result<span class="Delimiter">;</span>
-    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>top<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>
+    vector&lt;double&gt; result<span class="Delimiter">;</span>
+    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>
     <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 </pre>

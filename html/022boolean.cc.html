@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 022boolean.cc</title>
+<title>~/Desktop/s/mu/022boolean.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -38,32 +38,47 @@ AND<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;and&quot;</span>] = AND<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case AND: <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-  vector&lt;long long int&gt; arg0 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>arg0<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 1 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-  vector&lt;long long int&gt; arg1 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>arg1<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
-  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg0[<span class="Constant">0</span>] &amp;&amp; arg1[<span class="Constant">0</span>]<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product 0 is &quot;</span> &lt;&lt; result[<span class="Constant">0</span>]<span class="Delimiter">;</span>
-  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  bool result = <span class="Constant">true</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+    result = result &amp;&amp; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario and)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
-  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>and <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
+  <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean
 ]
 <span class="traceContains">+run: instruction main/2</span>
 <span class="traceContains">+run: ingredient 0 is 1</span>
 <span class="traceContains">+mem: location 1 is 1</span>
 <span class="traceContains">+run: ingredient 1 is 2</span>
 <span class="traceContains">+mem: location 2 is 0</span>
-<span class="traceContains">+run: product 0 is 0</span>
+<span class="traceContains">+run: product 0 is 3</span>
 <span class="traceContains">+mem: storing 0 in location 3</span>
+
+<span class="Delimiter">:(scenario and2)</span>
+recipe main [
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+]
+<span class="traceContains">+mem: storing 1 in location 1</span>
+
+<span class="Delimiter">:(scenario and_multiple)</span>
+recipe main [
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+
+<span class="Delimiter">:(scenario and_multiple2)</span>
+recipe main [
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+]
+<span class="traceContains">+mem: storing 1 in location 1</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 OR<span class="Delimiter">,</span>
@@ -71,32 +86,47 @@ OR<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;or&quot;</span>] = OR<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case OR: <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-  vector&lt;long long int&gt; arg0 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>arg0<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 1 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-  vector&lt;long long int&gt; arg1 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">1</span>]<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>arg1<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
-  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg0[<span class="Constant">0</span>] || arg1[<span class="Constant">0</span>]<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product 0 is &quot;</span> &lt;&lt; result[<span class="Constant">0</span>]<span class="Delimiter">;</span>
-  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  bool result = <span class="Constant">false</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+    result = result || ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario or)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
-  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>or <span class="Constant">1</span>:integer<span class="Delimiter">,</span> <span class="Constant">2</span>:integer
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
+  <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>or <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean
 ]
 <span class="traceContains">+run: instruction main/2</span>
 <span class="traceContains">+run: ingredient 0 is 1</span>
 <span class="traceContains">+mem: location 1 is 1</span>
 <span class="traceContains">+run: ingredient 1 is 2</span>
 <span class="traceContains">+mem: location 2 is 0</span>
-<span class="traceContains">+run: product 0 is 1</span>
+<span class="traceContains">+run: product 0 is 3</span>
 <span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(scenario or2)</span>
+recipe main [
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>or <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+
+<span class="Delimiter">:(scenario or_multiple)</span>
+recipe main [
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+
+<span class="Delimiter">:(scenario or_multiple2)</span>
+recipe main [
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>or <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+]
+<span class="traceContains">+mem: storing 1 in location 1</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 NOT<span class="Delimiter">,</span>
@@ -104,26 +134,32 @@ NOT<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;not&quot;</span>] = NOT<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case NOT: <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-  vector&lt;long long int&gt; arg0 = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>arg0<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
-  result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>!arg0[<span class="Constant">0</span>]<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product 0 is &quot;</span> &lt;&lt; result[<span class="Constant">0</span>]<span class="Delimiter">;</span>
-  write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">());</span>
+  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>!ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario not)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>not <span class="Constant">1</span>:integer
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
+  <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>not <span class="Constant">1</span>:boolean
 ]
 <span class="traceContains">+run: instruction main/1</span>
 <span class="traceContains">+run: ingredient 0 is 1</span>
 <span class="traceContains">+mem: location 1 is 1</span>
-<span class="traceContains">+run: product 0 is 0</span>
+<span class="traceContains">+run: product 0 is 2</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
+
+<span class="Delimiter">:(scenario not_multiple)</span>
+recipe main [
+  <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean<span class="Delimiter">,</span> <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>not <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+]
+<span class="traceContains">+mem: storing 0 in location 1</span>
+<span class="traceContains">+mem: storing 1 in location 2</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
 </pre>
 </body>
 </html>

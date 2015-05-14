@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 020run.cc</title>
+<title>~/Desktop/s/mu/020run.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -15,14 +15,14 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 * { font-size: 1em; }
 .cSpecial { color: #008000; }
 .CommentedCode { color: #6c6c6c; }
-.SalientComment { color: #00ffff; }
+.traceAbsent { color: #c00000; }
 .Constant { color: #008080; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
 .Identifier { color: #008080; }
+.SalientComment { color: #00ffff; }
 .traceContains { color: #008000; }
-.traceAbsent { color: #c00000; }
 -->
 </style>
 
@@ -47,7 +47,7 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 
 <span class="Delimiter">:(scenario copy_literal)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
 ]
 <span class="traceContains">+run: instruction main/0</span>
 <span class="traceContains">+run: ingredient 0 is 23</span>
@@ -55,13 +55,22 @@ recipe main [
 
 <span class="Delimiter">:(scenario copy)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:integer
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
 ]
 <span class="traceContains">+run: instruction main/1</span>
 <span class="traceContains">+run: ingredient 0 is 1</span>
 <span class="traceContains">+mem: location 1 is 23</span>
 <span class="traceContains">+mem: storing 23 in location 2</span>
+
+<span class="Delimiter">:(scenario copy_multiple)</span>
+recipe main [
+  <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal<span class="Delimiter">,</span> <span class="Constant">24</span>:literal
+]
+<span class="traceContains">+run: ingredient 0 is 23</span>
+<span class="traceContains">+run: ingredient 1 is 24</span>
+<span class="traceContains">+mem: storing 23 in location 1</span>
+<span class="traceContains">+mem: storing 24 in location 2</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 <span class="Comment">// Book-keeping while running a recipe.</span>
@@ -91,13 +100,23 @@ void run_current_routine<span class="Delimiter">()</span>
     if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>is_label<span class="Delimiter">)</span> <span class="Delimiter">{</span> ++current_step_index<span class="Delimiter">();</span> <span class="Identifier">continue</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
     trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction &quot;</span> &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">'/'</span> &lt;&lt; current_step_index<span class="Delimiter">();</span>
     trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">();</span>
-<span class="CommentedCode">//?     cout &lt;&lt; &quot;operation &quot; &lt;&lt; current_instruction().operation &lt;&lt; '\n'; //? 3</span>
+    assert<span class="Delimiter">(</span>Memory[<span class="Constant">0</span>] == <span class="Constant">0</span><span class="Delimiter">);</span>
+    <span class="Comment">// Read all ingredients from memory.</span>
+    <span class="Comment">// Each ingredient loads a vector of values rather than a single value; mu</span>
+    <span class="Comment">// permits operating on reagents spanning multiple locations.</span>
+    vector&lt;vector&lt;double&gt; &gt; ingredients<span class="Delimiter">;</span>
+    for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+      ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment">// Instructions below will write to 'products' or to 'instruction_counter'.</span>
+    vector&lt;vector&lt;double&gt; &gt; products<span class="Delimiter">;</span>
+    index_t instruction_counter = current_step_index<span class="Delimiter">();</span>
+<span class="CommentedCode">//?     cout &lt;&lt; &quot;AAA: &quot; &lt;&lt; current_instruction().to_string() &lt;&lt; '\n'; //? 1</span>
     switch <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// Primitive Recipe Implementations</span>
       case COPY: <span class="Delimiter">{</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient 0 is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-        vector&lt;long long int&gt; data = read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients[<span class="Constant">0</span>]<span class="Delimiter">);</span>
-        write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products[<span class="Constant">0</span>]<span class="Delimiter">,</span> data<span class="Delimiter">);</span>
+        copy<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>products<span class="Delimiter">,</span> products<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
         <span class="Identifier">break</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
       <span class="Comment">// End Primitive Recipe Implementations</span>
@@ -105,8 +124,19 @@ void run_current_routine<span class="Delimiter">()</span>
         cout &lt;&lt; <span class="Constant">&quot;not a primitive op: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>operation &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
-    ++current_step_index<span class="Delimiter">();</span>
+<span class="CommentedCode">//?     cout &lt;&lt; &quot;BBB: &quot; &lt;&lt; current_instruction().to_string() &lt;&lt; '\n'; //? 1</span>
+    if <span class="Delimiter">(</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &lt; current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>size<span class="Delimiter">())</span>
+      raise &lt;&lt; <span class="Constant">&quot;failed to write to all products! &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">();</span>
+<span class="CommentedCode">//?     cout &lt;&lt; &quot;CCC: &quot; &lt;&lt; current_instruction().to_string() &lt;&lt; '\n'; //? 1</span>
+    for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+      write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+    <span class="Delimiter">}</span>
+<span class="CommentedCode">//?     cout &lt;&lt; &quot;DDD: &quot; &lt;&lt; current_instruction().to_string() &lt;&lt; '\n'; //? 1</span>
+    current_step_index<span class="Delimiter">()</span> = instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;screen: &quot; &lt;&lt; Memory[SCREEN] &lt;&lt; '\n'; //? 1</span>
   <span class="Delimiter">}</span>
+  stop_running_current_routine:<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: Some helpers.</span>
@@ -122,7 +152,7 @@ inline const string&amp; current_recipe_name<span class="Delimiter">()</span> <s
 <span class="Delimiter">}</span>
 
 inline const instruction&amp; current_instruction<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> Recipe[Current_routine<span class="Delimiter">-&gt;</span>running_recipe]<span class="Delimiter">.</span>steps[Current_routine<span class="Delimiter">-&gt;</span>running_step_index]<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> Recipe[Current_routine<span class="Delimiter">-&gt;</span>running_recipe]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>running_step_index<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 inline bool routine::completed<span class="Delimiter">()</span> const <span class="Delimiter">{</span>
@@ -130,6 +160,7 @@ inline bool routine::completed<span class="Delimiter">()</span> const <span clas
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Commandline Parsing&quot;)</span>
+<span class="Comment">// Loading Commandline Files</span>
 if <span class="Delimiter">(</span>argc &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   for <span class="Delimiter">(</span>int i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; argc<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     load_permanently<span class="Delimiter">(</span>argv[i]<span class="Delimiter">);</span>
@@ -139,7 +170,8 @@ if <span class="Delimiter">(</span>argc &gt; <span class="Constant">1</span><spa
 <span class="Delimiter">:(before &quot;End Main&quot;)</span>
 if <span class="Delimiter">(</span>!Run_tests<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   setup<span class="Delimiter">();</span>
-  Trace_stream = new trace_stream<span class="Delimiter">;</span>
+<span class="CommentedCode">//?   Trace_file = &quot;interactive&quot;; //? 1</span>
+  START_TRACING_UNTIL_END_OF_SCOPE<span class="Delimiter">;</span>
 <span class="CommentedCode">//?   Trace_stream-&gt;dump_layer = &quot;all&quot;; //? 2</span>
   transform_all<span class="Delimiter">();</span>
   recipe_number r = Recipe_number[string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span>]<span class="Delimiter">;</span>
@@ -152,6 +184,9 @@ if <span class="Delimiter">(</span>!Run_tests<span class="Delimiter">)</span> <s
 <span class="Delimiter">:(code)</span>
 void load_permanently<span class="Delimiter">(</span>string filename<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ifstream fin<span class="Delimiter">(</span>filename<span class="Delimiter">.</span>c_str<span class="Delimiter">());</span>
+  fin<span class="Delimiter">.</span>peek<span class="Delimiter">();</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;AAA: &quot; &lt;&lt; filename &lt;&lt; ' ' &lt;&lt; static_cast&lt;bool&gt;(fin) &lt;&lt; ' ' &lt;&lt; fin.fail() &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?   return; //? 1</span>
   if <span class="Delimiter">(</span>!fin<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;no such file &quot;</span> &lt;&lt; filename &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
@@ -162,7 +197,7 @@ void load_permanently<span class="Delimiter">(</span>string filename<span class=
   fin<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
   <span class="Comment">// freeze everything so it doesn't get cleared by tests</span>
   recently_added_recipes<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  <span class="Comment">// End load_permanently.</span>
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: On startup, load everything in core.mu</span>
@@ -180,9 +215,9 @@ void run<span class="Delimiter">(</span>string form<span class="Delimiter">)</sp
 
 <span class="SalientComment">//:: Reading from memory, writing to memory.</span>
 
-vector&lt;long long int&gt; read_memory<span class="Delimiter">(</span>reagent x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   cout &lt;&lt; &quot;read_memory: &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
-  vector&lt;long long int&gt; result<span class="Delimiter">;</span>
+vector&lt;double&gt; read_memory<span class="Delimiter">(</span>reagent x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cout &lt;&lt; &quot;read_memory: &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 2</span>
+  vector&lt;double&gt; result<span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>x<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
     <span class="Identifier">return</span> result<span class="Delimiter">;</span>
@@ -190,21 +225,21 @@ vector&lt;long long int&gt; read_memory<span class="Delimiter">(</span>reagent x
   index_t base = x<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   size_t size = size_of<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
   for <span class="Delimiter">(</span>index_t offset = <span class="Constant">0</span><span class="Delimiter">;</span> offset &lt; size<span class="Delimiter">;</span> ++offset<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    int val = Memory[base+offset]<span class="Delimiter">;</span>
+    double val = Memory[base+offset]<span class="Delimiter">;</span>
     trace<span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;location &quot;</span> &lt;&lt; base+offset &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; val<span class="Delimiter">;</span>
     result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>val<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-void write_memory<span class="Delimiter">(</span>reagent x<span class="Delimiter">,</span> vector&lt;long long int&gt; data<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void write_memory<span class="Delimiter">(</span>reagent x<span class="Delimiter">,</span> vector&lt;double&gt; data<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>is_dummy<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   index_t base = x<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> != data<span class="Delimiter">.</span>size<span class="Delimiter">())</span>
     raise &lt;&lt; <span class="Constant">&quot;size mismatch in storing to &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>index_t offset = <span class="Constant">0</span><span class="Delimiter">;</span> offset &lt; data<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++offset<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    trace<span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; data[offset] &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; base+offset<span class="Delimiter">;</span>
-    Memory[base+offset] = data[offset]<span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span><span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; data<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; base+offset<span class="Delimiter">;</span>
+    Memory[base+offset] = data<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
@@ -222,14 +257,14 @@ bool is_dummy<span class="Delimiter">(</span>const reagent&amp; x<span class="De
 <span class="Delimiter">}</span>
 
 bool isa_literal<span class="Delimiter">(</span>const reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> r<span class="Delimiter">.</span>types<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span> &amp;&amp; r<span class="Delimiter">.</span>types[<span class="Constant">0</span>] == <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> r<span class="Delimiter">.</span>types<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span> &amp;&amp; r<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario run_label)</span>
 recipe main [
   +foo
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:integer
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
 ]
 <span class="traceContains">+run: instruction main/1</span>
 <span class="traceContains">+run: instruction main/2</span>

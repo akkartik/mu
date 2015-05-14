@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 046tangle.cc</title>
+<title>~/Desktop/s/mu/046tangle.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -37,13 +37,13 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 
 <span class="Delimiter">:(scenario tangle_before)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
   +label1
-  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 
 before +label1 [
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
@@ -82,7 +82,7 @@ void insert_fragments<span class="Delimiter">(</span>const recipe_number r<span 
   <span class="Comment">// But this way we can't insert into labels created inside before/after.</span>
   vector&lt;instruction&gt; result<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    const instruction inst = Recipe[r]<span class="Delimiter">.</span>steps[i]<span class="Delimiter">;</span>
+    const instruction inst = Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -96,22 +96,22 @@ void insert_fragments<span class="Delimiter">(</span>const recipe_number r<span 
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
 <span class="CommentedCode">//?   for (index_t i = 0; i &lt; result.size(); ++i) { //? 1</span>
-<span class="CommentedCode">//?     cout &lt;&lt; result[i].to_string() &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?     cout &lt;&lt; result.at(i).to_string() &lt;&lt; '\n'; //? 1</span>
 <span class="CommentedCode">//?   } //? 1</span>
   Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario tangle_before_and_after)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
   +label1
-  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 before +label1 [
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 after +label1 [
-  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
@@ -123,22 +123,22 @@ $mem: <span class="Constant">4</span>
 
 <span class="Delimiter">:(scenario tangle_keeps_labels_separate)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
   +label1
   +label2
-  <span class="Constant">6</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 before +label1 [
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 after +label1 [
-  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 before +label2 [
-  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 after +label2 [
-  <span class="Constant">5</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
@@ -154,21 +154,21 @@ $mem: <span class="Constant">6</span>
 
 <span class="Delimiter">:(scenario tangle_stacks_multiple_fragments)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
   +label1
-  <span class="Constant">6</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 before +label1 [
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 after +label1 [
-  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 before +label1 [
-  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 after +label1 [
-  <span class="Constant">5</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 <span class="Comment"># 'before' fragments stack in order</span>
@@ -184,17 +184,17 @@ $mem: <span class="Constant">6</span>
 
 <span class="Delimiter">:(scenario tangle_supports_fragments_with_multiple_instructions)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
   +label1
-  <span class="Constant">6</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 before +label1 [
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
-  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 after +label1 [
-  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
-  <span class="Constant">5</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
@@ -208,16 +208,16 @@ $mem: <span class="Constant">6</span>
 
 <span class="Delimiter">:(scenario tangle_tangles_into_all_labels_with_same_name)</span>
 recipe main [
-  <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
   +label1
   +label1
-  <span class="Constant">4</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 before +label1 [
-  <span class="Constant">2</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 after +label1 [
-  <span class="Constant">3</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
