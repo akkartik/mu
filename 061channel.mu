@@ -300,8 +300,8 @@ recipe buffer-lines [
 #?         return-to-console #? 2
 #?         $print [backspace! #? 1
 #? ] #? 1
-        buffer-length:address:number <- get-address line:address:buffer/deref, length:offset
         {
+          buffer-length:address:number <- get-address line:address:buffer/deref, length:offset
           buffer-empty?:boolean <- equal buffer-length:address:number/deref, 0:literal
           break-if buffer-empty?:boolean
 #?           $print [before: ], buffer-length:address:number/deref, [ 
