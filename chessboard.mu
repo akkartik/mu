@@ -26,19 +26,17 @@ recipe main [
 # program.
 
 scenario print-board-and-read-move [
+  # we'll make the screen really wide because the program currently prints out a long line
   assume-screen 120:literal/width, 20:literal/height
   # initialize keyboard to type in a move
   assume-keyboard [a2-a4
 ]
   run [
     screen:address, keyboard:address <- chessboard screen:address, keyboard:address
-#?     data:address <- get screen:address:screen/deref, data:offset #? 1
-#?     $print [screen is at ], screen:address, [ ], data:address, [ 
-#? ] #? 1
 #?     $dump-screen #? 1
   ]
   screen-should-contain [
-  #  0         1         2         3         4         5         6         7         8         9         10        11
+  #            1         2         3         4         5         6         7         8         9         10        11
   #  012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
     .Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.         .
     .                                                                                                                        .
@@ -61,6 +59,7 @@ scenario print-board-and-read-move [
     .                                                                                                                        .
     .                                                                                                                        .
   ]
+  # todo: doesn't show the cursor position yet (it's right after the 'move: ')
 ]
 
 recipe chessboard [
