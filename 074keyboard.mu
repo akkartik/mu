@@ -29,7 +29,7 @@ recipe read-key [
     {
       done?:boolean <- greater-or-equal idx:address:number/deref, max:number
       break-unless done?:boolean
-      reply 0:literal, 0:literal/found, x:address:keyboard/same-as-ingredient:0
+      reply 0:literal/eof, 1:literal/found, x:address:keyboard/same-as-ingredient:0
     }
     c:character <- index buf:address:array:character/deref, idx:address:number/deref
     idx:address:number/deref <- add idx:address:number/deref, 1:literal
