@@ -27,8 +27,10 @@ recipe main [
 
 scenario print-board-and-read-move [
   assume-screen 30:literal/width, 12:literal/height
+  # initialize keyboard to type in a move, then quit
   assume-keyboard [a2-a4
-]  # newline is important
+q
+]
   run [
     screen:address, keyboard:address <- chessboard screen:address, keyboard:address
   ]
@@ -38,9 +40,9 @@ scenario print-board-and-read-move [
     .7 | p p p p p p p p           .
     .6 |                           .
     .5 |                           .
-    .4 |                           .
+    .4 | P                         .
     .3 |                           .
-    .2 | P P P P P P P P           .
+    .2 |   P P P P P P P           .
     .1 | R N B Q K B N R           .
     .  +----------------           .
     .    a b c d e f g h           .
@@ -50,13 +52,13 @@ scenario print-board-and-read-move [
 ]
 
 recipe chessboard [
-#?   $start-tracing [schedule] #? 1
+#?   $start-tracing [schedule] #? 2
 #?   $start-tracing #? 1
   default-space:address:array:location <- new location:type, 30:literal
   screen:address <- next-ingredient
   keyboard:address <- next-ingredient
-  $print [screen: ], screen:address, [, keyboard: ], keyboard:address, [ 
-]
+#?   $print [screen: ], screen:address, [, keyboard: ], keyboard:address, [ 
+#? ] #? 1
   board:address:array:address:array:character <- initial-position
   # hook up stdin
   stdin:address:channel <- init-channel 10:literal/capacity
@@ -68,31 +70,31 @@ recipe chessboard [
     msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
 ]
     print-string screen:address, msg:address:array:character
-    $print [aaa
-]
+#?     $print [aaa
+#? ] #? 1
     cursor-to-next-line screen:address
     print-board screen:address, board:address:array:address:array:character
     cursor-to-next-line screen:address
     msg:address:array:character <- new [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
 ]
     print-string screen:address, msg:address:array:character
-    $print [bbb
-]
+#?     $print [bbb
+#? ] #? 1
     cursor-to-next-line screen:address
     msg:address:array:character <- new [Hit 'q' to exit.
 ]
     print-string screen:address, msg:address:array:character
-    $print [ccc
-]
+#?     $print [ccc
+#? ] #? 1
     {
       cursor-to-next-line screen:address
       msg:address:array:character <- new [move: ]
       print-string screen:address, msg:address:array:character
-    $print [ddd
-]
+#?     $print [ddd
+#? ] #? 1
       m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin:address:channel, screen:address
-    $print [eee
-]
+#?     $print [eee
+#? ] #? 1
       break-if quit:boolean, +quit:offset
       buffered-stdin:address:channel <- clear-channel buffered-stdin:address:channel  # cleanup after error. todo: test this?
       loop-if error:boolean
@@ -295,6 +297,11 @@ recipe read-file [
   {
     q-pressed?:boolean <- equal c:character, 113:literal  # 'q'
     break-unless q-pressed?:boolean
+    reply 0:literal/dummy, 1:literal/quit, 0:literal/error
+  }
+  {
+    empty-fake-keyboard?:boolean <- equal c:character, 0:literal/eof
+    break-unless empty-fake-keyboard?:boolean
     reply 0:literal/dummy, 1:literal/quit, 0:literal/error
   }
   {

@@ -12,12 +12,12 @@ scenario read-key-in-mu [
   ]
   memory-should-contain [
     1 <- 97  # 'a'
-    2 <- 1  # first read-key call found a character
+    2 <- 1
     3 <- 98  # 'b'
-    4 <- 1  # second read-key call found a character
+    4 <- 1
     5 <- 99  # 'c'
-    6 <- 1  # third read-key call found a character
-    7 <- 0
-    8 <- 0  # fourth read-key call didn't find a character
+    6 <- 1
+    7 <- 0  # eof
+    8 <- 1
   ]
 ]
