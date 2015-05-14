@@ -67,7 +67,7 @@ recipe print-character [
     max-row:number <- subtract height:number, 1:literal
     # special-case: newline
     {
-      newline?:boolean <- equal c:character, 13:literal
+      newline?:boolean <- equal c:character, 10:literal/newlin
 #?       $print c:character, [ ], newline?:boolean, [ #? 1
 #? ] #? 1
       break-unless newline?:boolean
@@ -153,7 +153,7 @@ scenario print-newline-character [
 #?     $start-tracing #? 3
     1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
-    1:address:screen <- print-character 1:address:screen, 13:literal/newline
+    1:address:screen <- print-character 1:address:screen, 10:literal/newline
     2:number <- get 1:address:screen/deref, cursor-row:offset
     3:number <- get 1:address:screen/deref, cursor-column:offset
     4:address:array:character <- get 1:address:screen/deref, data:offset

@@ -214,9 +214,10 @@ case READ_KEY_FROM_KEYBOARD: {
   long long int found = false;
 //?   cerr << event_type << '\n'; //? 1
   if (event_type == TB_EVENT_KEY) {
-    if (event.key == TB_KEY_CTRL_C) tb_shutdown(), exit(1);
-    if (event.key == TB_KEY_BACKSPACE2) event.key = TB_KEY_BACKSPACE;
     result = event.key ? event.key : event.ch;
+    if (result == TB_KEY_CTRL_C) tb_shutdown(), exit(1);
+    if (result == TB_KEY_BACKSPACE2) result = TB_KEY_BACKSPACE;
+    if (result == TB_KEY_CARRIAGE_RETURN) result = TB_KEY_NEWLINE;
     found = true;
   }
   products.resize(2);

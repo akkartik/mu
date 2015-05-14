@@ -280,6 +280,8 @@ scenario channel-read-not-full [
 # out:address:channel <- buffer-lines in:address:channel, out:address:channel
 recipe buffer-lines [
   default-space:address:address:array:location <- new location:type, 30:literal
+#?   $print [buffer-lines: aaa
+#? ]
   in:address:channel <- next-ingredient
   out:address:channel <- next-ingredient
   # repeat forever
@@ -313,13 +315,17 @@ recipe buffer-lines [
         loop +next-character:label
       }
       # append anything else
+#?       $print [buffer-lines: appending ], c:character, [ 
+#? ]
       line:address:buffer <- buffer-append line:address:buffer, c:character
-      line-done?:boolean <- equal c:character, 13:literal/newline
+      line-done?:boolean <- equal c:character, 10:literal/newline
       break-if line-done?:boolean
       loop
     }
 #?     return-to-console #? 1
     # copy line into 'out'
+#?     $print [buffer-lines: emitting
+#? ]
     i:number <- copy 0:literal
     line-contents:address:array:character <- get line:address:buffer/deref, data:offset
     max:number <- get line:address:buffer/deref, length:offset
@@ -368,7 +374,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     assert 7:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
-    1:address:channel <- write 1:address:channel, 13:literal/newline
+    1:address:channel <- write 1:address:channel, 10:literal/newline
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
     8:boolean <- channel-empty? 2:address:channel/buffered-stdin
