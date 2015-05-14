@@ -321,7 +321,7 @@ recipe read-file [
     reply 0:literal/dummy, 0:literal/quit, 1:literal/error
   }
   file:number <- subtract c:character, 97:literal  # 'a'
-#?   $print file:number, [ #? 1
+#?   $print file:number, [ 
 #? ] #? 1
   # 'a' <= file <= 'h'
   {
@@ -369,7 +369,7 @@ recipe read-rank [
     reply 0:literal/dummy, 0:literal/quit, 1:literal/error
   }
   rank:number <- subtract c:character, 49:literal  # '1'
-#?   $print rank:number, [ #? 1
+#?   $print rank:number, [ 
 #? ] #? 1
   # assert'1' <= rank <= '8'
   {
@@ -414,21 +414,21 @@ scenario read-move-blocking [
   run [
 #?     $start-tracing #? 1
     1:address:channel <- init-channel 2:literal
-#?     $print [aaa channel address: ], 1:address:channel, [ #? 1
+#?     $print [aaa channel address: ], 1:address:channel, [ 
 #? ] #? 1
     2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:number
-#?     $print [bbb channel address: ], 1:address:channel, [ #? 1
+#?     $print [bbb channel address: ], 1:address:channel, [ 
 #? ] #? 1
     3:number <- routine-state 2:number/id
-#?     $print [I: routine ], 2:number, [ state ], 3:number [ #? 1
+#?     $print [I: routine ], 2:number, [ state ], 3:number [ 
 #? ] #? 1
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
     # press 'a'
-#?     $print [ccc channel address: ], 1:address:channel, [ #? 1
+#?     $print [ccc channel address: ], 1:address:channel, [ 
 #? ] #? 1
 #?     $exit #? 1
     1:address:channel <- write 1:address:channel, 97:literal  # 'a'
@@ -436,7 +436,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-#?     $print [II: routine ], 2:number, [ state ], 3:number [ #? 1
+#?     $print [II: routine ], 2:number, [ state ], 3:number [ 
 #? ] #? 1
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
@@ -447,7 +447,7 @@ F read-move-blocking: routine failed to pause after rank 'a']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-#?     $print [III: routine ], 2:number, [ state ], 3:number [ #? 1
+#?     $print [III: routine ], 2:number, [ state ], 3:number [ 
 #? ] #? 1
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
@@ -458,7 +458,7 @@ F read-move-blocking: routine failed to pause after file 'a2']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [IV: routine ], 2:number, [ state ], 3:number [ #? 1
+#?     $print [IV: routine ], 2:number, [ state ], 3:number [ 
 #? ] #? 1
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?/routine-state, [
@@ -469,7 +469,7 @@ F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [V: routine ], 2:number, [ state ], 3:number [ #? 1
+#?     $print [V: routine ], 2:number, [ state ], 3:number [ 
 #? ] #? 1
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?/routine-state, [
@@ -480,7 +480,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [VI: routine ], 2:number, [ state ], 3:number [ #? 1
+#?     $print [VI: routine ], 2:number, [ state ], 3:number [ 
 #? ] #? 1
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
@@ -491,7 +491,7 @@ F read-move-blocking: routine failed to pause after file 'a2-a4']
     # 'read-move' now completes
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [VII: routine ], 2:number, [ state ], 3:number [ #? 1
+#?     $print [VII: routine ], 2:number, [ state ], 3:number [ 
 #? ] #? 1
     4:boolean/completed? <- equal 3:number/routine-state, 1:literal/completed
     assert 4:boolean/completed?, [
@@ -600,22 +600,22 @@ recipe make-move [
   b:address:array:address:array:character <- next-ingredient
   m:address:move <- next-ingredient
   from-file:number <- get m:address:move/deref, from-file:offset
-#?   $print from-file:number, [ #? 1
+#?   $print from-file:number, [ 
 #? ] #? 1
   from-rank:number <- get m:address:move/deref, from-rank:offset
-#?   $print from-rank:number, [ #? 1
+#?   $print from-rank:number, [ 
 #? ] #? 1
   to-file:number <- get m:address:move/deref, to-file:offset
-#?   $print to-file:number, [ #? 1
+#?   $print to-file:number, [ 
 #? ] #? 1
   to-rank:number <- get m:address:move/deref, to-rank:offset
-#?   $print to-rank:number, [ #? 1
+#?   $print to-rank:number, [ 
 #? ] #? 1
   f:address:array:character <- index b:address:array:address:array:character/deref, from-file:number
   src:address:character/square <- index-address f:address:array:character/deref, from-rank:number
   f:address:array:character <- index b:address:array:address:array:character/deref, to-file:number
   dest:address:character/square <- index-address f:address:array:character/deref, to-rank:number
-#?   $print src:address:character/deref, [ #? 1
+#?   $print src:address:character/deref, [ 
 #? ] #? 1
   dest:address:character/deref/square <- copy src:address:character/deref/square
   src:address:character/deref/square <- copy 32:literal  # ' '

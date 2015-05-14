@@ -386,7 +386,7 @@ recipe interpolate [
     result-len:number <- subtract result-len:number, 1:literal
     loop
   }
-#?   $print tem-len:number, [ ], $result-len:number, [ #? 1
+#?   $print tem-len:number, [ ], $result-len:number, [ 
 #? ] #? 1
   rewind-ingredients
   _ <- next-ingredient  # skip template

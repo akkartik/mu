@@ -304,10 +304,10 @@ recipe buffer-lines [
         {
           buffer-empty?:boolean <- equal buffer-length:address:number/deref, 0:literal
           break-if buffer-empty?:boolean
-#?           $print [before: ], buffer-length:address:number/deref, [ #? 1
+#?           $print [before: ], buffer-length:address:number/deref, [ 
 #? ] #? 1
           buffer-length:address:number/deref <- subtract buffer-length:address:number/deref, 1:literal
-#?           $print [after: ], buffer-length:address:number/deref, [ #? 1
+#?           $print [after: ], buffer-length:address:number/deref, [ 
 #? ] #? 1
         }
 #?         $exit #? 2
@@ -334,7 +334,7 @@ recipe buffer-lines [
       break-if done?:boolean
       c:character <- index line-contents:address:array:character/deref, i:number
       out:address:channel <- write out:address:channel, c:character
-#?       $print [writing ], i:number, [: ], c:character, [ #? 1
+#?       $print [writing ], i:number, [: ], c:character, [ 
 #? ] #? 1
       i:number <- add i:number, 1:literal
       loop
