@@ -30,6 +30,8 @@ recipe init-fake-screen [
 recipe clear-screen [
   default-space:address:array:location <- new location:type, 30:literal
   x:address:screen <- next-ingredient
+#?   $print [clearing screen
+#? ] #? 1
   # if x exists
   {
     break-unless x:address:screen
@@ -45,6 +47,11 @@ recipe clear-screen [
       i:number <- add i:number, 1:literal
       loop
     }
+    # reset cursor
+    cur:address:number <- get-address x:address:screen/deref, cursor-row:offset
+    cur:address:number/deref <- copy 0:literal
+    cur:address:number <- get-address x:address:screen/deref, cursor-column:offset
+    cur:address:number/deref <- copy 0:literal
     reply x:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
@@ -101,6 +108,8 @@ recipe print-character [
       }
       reply x:address:screen/same-as-ingredient:0
     }
+#?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, [ 
+#? ] #? 1
     cursor:address:character/deref <- copy c:character
     # increment column unless it's already all the way to the right
     {

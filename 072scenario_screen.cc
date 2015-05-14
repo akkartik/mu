@@ -85,6 +85,7 @@ case SCREEN_SHOULD_CONTAIN: {
 
 :(code)
 void check_screen(const string& contents) {
+//?   cerr << "Checking screen\n"; //? 1
   assert(!Current_routine->calls.front().default_space);  // not supported
   index_t screen_location = Memory[SCREEN];
   int data_offset = find_element_name(Type_number["screen"], "data");
@@ -121,15 +122,55 @@ void check_screen(const string& contents) {
     if ((!Memory[screen_data_start+i] && !isspace(expected_contents.at(i)))  // uninitialized memory => spaces
         || (Memory[screen_data_start+i] && Memory[screen_data_start+i] != expected_contents.at(i))) {
 //?       cerr << "CCC " << Trace_stream << " " << Hide_warnings << '\n'; //? 1
-      if (Current_scenario && !Hide_warnings)  // Hide_warnings indicates we're checking for the warning at the C++ level rather than raising a test failure at the mu level
+      if (Current_scenario && !Hide_warnings) {
+        // genuine test in a mu file
         raise << "\nF - " << Current_scenario->name << ": expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
-      else
+        dump_screen();
+      }
+      else {
+        // just testing check_screen
         raise << "expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
+      }
       if (!Hide_warnings) {
         Passed = false;
         ++Num_failures;
       }
       return;
     }
+  }
+}
+
+:(before "End Primitive Recipe Declarations")
+_DUMP_SCREEN,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["$dump-screen"] = _DUMP_SCREEN;
+:(before "End Primitive Recipe Implementations")
+case _DUMP_SCREEN: {
+  dump_screen();
+  break;
+}
+
+:(code)
+void dump_screen() {
+  assert(!Current_routine->calls.front().default_space);  // not supported
+  index_t screen_location = Memory[SCREEN];
+  int width_offset = find_element_name(Type_number["screen"], "num-columns");
+  size_t screen_width = Memory[screen_location+width_offset];
+  int height_offset = find_element_name(Type_number["screen"], "num-rows");
+  size_t screen_height = Memory[screen_location+height_offset];
+  int data_offset = find_element_name(Type_number["screen"], "data");
+  assert(data_offset >= 0);
+  index_t screen_data_location = screen_location+data_offset;  // type: address:array:character
+  index_t screen_data_start = Memory[screen_data_location];  // type: array:character
+//?   cerr << "data start: " << screen_data_start << '\n'; //? 1
+  assert(Memory[screen_data_start] == screen_width*screen_height);
+  index_t curr = screen_data_start+1;  // skip length
+  for (index_t row = 0; row < screen_height; ++row) {
+//?     cerr << curr << ":\n"; //? 1
+    for (index_t col = 0; col < screen_width; ++col) {
+      cerr << static_cast<char>(Memory[curr]);
+      ++curr;
+    }
+    cerr << '\n';
   }
 }

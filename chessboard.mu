@@ -26,28 +26,40 @@ recipe main [
 # program.
 
 scenario print-board-and-read-move [
-  assume-screen 30:literal/width, 12:literal/height
-  # initialize keyboard to type in a move, then quit
+  assume-screen 120:literal/width, 20:literal/height
+  # initialize keyboard to type in a move
   assume-keyboard [a2-a4
-q
 ]
   run [
     screen:address, keyboard:address <- chessboard screen:address, keyboard:address
+#?     data:address <- get screen:address:screen/deref, data:offset #? 1
+#?     $print [screen is at ], screen:address, [ ], data:address, [ 
+#? ] #? 1
+#?     $dump-screen #? 1
   ]
   screen-should-contain [
-  #  012345678901234567890123456789
-    .8 | r n b q k b n r           .
-    .7 | p p p p p p p p           .
-    .6 |                           .
-    .5 |                           .
-    .4 | P                         .
-    .3 |                           .
-    .2 |   P P P P P P P           .
-    .1 | R N B Q K B N R           .
-    .  +----------------           .
-    .    a b c d e f g h           .
-    .                              .
-    .                              .
+  #  0         1         2         3         4         5         6         7         8         9         10        11
+  #  012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+    .Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.         .
+    .                                                                                                                        .
+    .8 | r n b q k b n r                                                                                                     .
+    .7 | p p p p p p p p                                                                                                     .
+    .6 |                                                                                                                     .
+    .5 |                                                                                                                     .
+    .4 | P                                                                                                                   .
+    .3 |                                                                                                                     .
+    .2 |   P P P P P P P                                                                                                     .
+    .1 | R N B Q K B N R                                                                                                     .
+    .  +----------------                                                                                                     .
+    .    a b c d e f g h                                                                                                     .
+    .                                                                                                                        .
+    .Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.                               .
+    .                                                                                                                        .
+    .Hit 'q' to exit.                                                                                                        .
+    .                                                                                                                        .
+    .move:                                                                                                                   .
+    .                                                                                                                        .
+    .                                                                                                                        .
   ]
 ]
 
@@ -155,9 +167,13 @@ recipe print-board [
   board:address:array:address:array:character <- next-ingredient
   row:number <- copy 7:literal  # start printing from the top of the board
   # print each row
+#?   $print [printing board to screen ], screen:address, [ 
+#? ] #? 1
   {
     done?:boolean <- lesser-than row:number, 0:literal
     break-if done?:boolean
+#?     $print [printing rank ], row:number, [ 
+#? ] #? 1
     # print rank number as a legend
     rank:number <- add row:number, 1:literal
     print-integer screen:address, rank:number
@@ -180,6 +196,8 @@ recipe print-board [
     loop
   }
   # print file letters as legend
+#?   $print [printing legend
+#? ] #? 1
   s:address:array:character <- new [  +----------------]
   print-string screen:address, s:address:array:character
   screen:address <- cursor-to-next-line screen:address
@@ -187,6 +205,8 @@ recipe print-board [
   s:address:array:character <- new [    a b c d e f g h]
   screen:address <- print-string screen:address, s:address:array:character
   screen:address <- cursor-to-next-line screen:address
+#?   $print [done printing board
+#? ] #? 1
 ]
 
 # board:address:array:address:array:character <- initial-position
@@ -219,6 +239,7 @@ scenario printing-the-board [
   run [
     1:address:array:address:array:character/board <- initial-position
     screen:address <- print-board screen:address, 1:address:array:address:array:character/board
+#?     $dump-screen #? 1
   ]
   screen-should-contain [
   #  012345678901234567890123456789
