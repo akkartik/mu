@@ -22,10 +22,57 @@ recipe main [
   return-to-console  # cleanup screen and keyboard
 ]
 
+# But enough about mu. Here's what it looks like to run the chessboard
+# program.
+
+scenario print-board-and-read-move [
+  assume-screen 30:literal/width, 12:literal/height
+  assume-keyboard [a2-a4
+]  # newline is important
+  run [
+    screen:address, keyboard:address <- chessboard screen:address, keyboard:address
+  ]
+  screen-should-contain [
+  #  012345678901234567890123456789
+    .8 | r n b q k b n r           .
+    .7 | p p p p p p p p           .
+    .6 |                           .
+    .5 |                           .
+    .4 |                           .
+    .3 |                           .
+    .2 | P P P P P P P P           .
+    .1 | R N B Q K B N R           .
+    .  +----------------           .
+    .    a b c d e f g h           .
+    .                              .
+    .                              .
+  ]
+#?   assume-keyboard [a2-a4]
+#?   screen-should-contain [
+#?   #  012345678901234567890123456789
+#?     .8 | r n b q k b n r           .
+#?     .7 | p p p p p p p p           .
+#?     .6 |                           .
+#?     .5 |                           .
+#?     .4 |                           .
+#?     .3 |                           .
+#?     .2 | P P P P P P P P           .
+#?     .1 | R N B Q K B N R           .
+#?     .  +----------------           .
+#?     .    a b c d e f g h           .
+#?     .                              .
+#?     .                              .
+#?   ]
+]
+
 recipe chessboard [
+#?   $start-tracing [schedule] #? 1
+#?   $start-tracing #? 1
   default-space:address:array:location <- new location:type, 30:literal
   screen:address <- next-ingredient
   keyboard:address <- next-ingredient
+  $print [screen: ], screen:address, [, keyboard: ], keyboard:address, [ 
+]
   board:address:array:address:array:character <- initial-position
   # hook up stdin
   stdin:address:channel <- init-channel 10:literal/capacity
@@ -37,21 +84,31 @@ recipe chessboard [
     msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
 ]
     print-string screen:address, msg:address:array:character
+    $print [aaa
+]
     cursor-to-next-line screen:address
     print-board screen:address, board:address:array:address:array:character
     cursor-to-next-line screen:address
     msg:address:array:character <- new [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
 ]
     print-string screen:address, msg:address:array:character
+    $print [bbb
+]
     cursor-to-next-line screen:address
     msg:address:array:character <- new [Hit 'q' to exit.
 ]
     print-string screen:address, msg:address:array:character
+    $print [ccc
+]
     {
       cursor-to-next-line screen:address
       msg:address:array:character <- new [move: ]
       print-string screen:address, msg:address:array:character
+    $print [ddd
+]
       m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin:address:channel, screen:address
+    $print [eee
+]
       break-if quit:boolean, +quit:offset
       buffered-stdin:address:channel <- clear-channel buffered-stdin:address:channel  # cleanup after error. todo: test this?
       loop-if error:boolean
@@ -234,7 +291,7 @@ recipe read-move [
   reply-if quit?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
   reply-if error?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
 #?   $exit #? 1
-  error?:boolean <- expect-from-channel stdin:address:channel, 13:literal/newline, screen:address
+  error?:boolean <- expect-from-channel stdin:address:channel, 10:literal/newline, screen:address
   reply-if error?:boolean, 0:literal/dummy, 0:literal/quit, error?:boolean
   reply result:address:move, quit?:boolean, error?:boolean
 ]
@@ -257,7 +314,7 @@ recipe read-file [
     reply 0:literal/dummy, 1:literal/quit, 0:literal/error
   }
   {
-    newline?:boolean <- equal c:character, 13:literal/newline
+    newline?:boolean <- equal c:character, 10:literal/newline
     break-unless newline?:boolean
     error-message:address:array:character <- new [that's not enough]
     print-string screen:address, error-message:address:array:character
@@ -305,7 +362,7 @@ recipe read-rank [
     reply 0:literal/dummy, 1:literal/quit, 0:literal/error
   }
   {
-    newline?:boolean <- equal c:character, 13:literal/newline
+    newline?:boolean <- equal c:character, 10:literal  # newline
     break-unless newline?:boolean
     error-message:address:array:character <- new [that's not enough]
     print-string screen:address, error-message:address:array:character
@@ -429,7 +486,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after file 'a2-a4']
     # press 'newline'
-    1:address:channel <- write 1:address:channel, 13:literal  # newline
+    1:address:channel <- write 1:address:channel, 10:literal  # newline
     restart 2:number/routine
     # 'read-move' now completes
     wait-for-routine 2:number
@@ -527,7 +584,7 @@ scenario read-move-empty [
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
-    1:address:channel <- write 1:address:channel, 13:literal/newline
+    1:address:channel <- write 1:address:channel, 10:literal/newline
     1:address:channel <- write 1:address:channel, 97:literal  # 'a'
     restart 2:number/routine
     wait-for-routine 2:number

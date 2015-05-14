@@ -184,6 +184,9 @@ struct tb_event {
  * #define TB_KEY_CTRL_9 clash with '9'
  * #define TB_KEY_CTRL_0 clash with '0'
  */
+/* Some aliases */
+#define TB_KEY_NEWLINE TB_KEY_CTRL_J
+#define TB_KEY_CARRIAGE_RETURN TB_KEY_CTRL_M
 
 /* Wait for an event up to 'timeout' milliseconds and fill the 'event'
  * structure with it, when the event is available. Returns the type of the
