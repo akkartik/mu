@@ -160,7 +160,7 @@ void load_permanently(string filename) {
   fin.close();
   // freeze everything so it doesn't get cleared by tests
   recently_added_recipes.clear();
-  recently_added_types.clear();
+  // End load_permanently.
 }
 
 //:: On startup, load everything in core.mu
