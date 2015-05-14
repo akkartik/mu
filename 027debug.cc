@@ -28,7 +28,10 @@ _START_TRACING,
 Recipe_number["$start-tracing"] = _START_TRACING;
 :(before "End Primitive Recipe Implementations")
 case _START_TRACING: {
-  Trace_stream->dump_layer = "all";
+  if (current_instruction().ingredients.empty())
+    Trace_stream->dump_layer = "all";
+  else
+    Trace_stream->dump_layer = current_instruction().ingredients.at(0).name;
 //?   cout << Trace_stream << ": " << Trace_stream->dump_layer << '\n'; //? 1
   break;
 }
@@ -50,16 +53,6 @@ Recipe_number["$exit"] = _EXIT;
 :(before "End Primitive Recipe Implementations")
 case _EXIT: {
   exit(0);
-  break;
-}
-
-:(before "End Primitive Recipe Declarations")
-_START_DUMPING_LAYER,
-:(before "End Primitive Recipe Numbers")
-Recipe_number["$start-dumping-layer"] = _START_DUMPING_LAYER;
-:(before "End Primitive Recipe Implementations")
-case _START_DUMPING_LAYER: {
-  Trace_stream->dump_layer = current_instruction().ingredients.at(0).name;
   break;
 }
 
