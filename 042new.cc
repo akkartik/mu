@@ -76,7 +76,10 @@ case NEW: {
   // save result
   products.resize(1);
   products.at(0).push_back(result);
-  // initialize array if necessary
+  // initialize allocated space
+  for (index_t address = result; address < result+size; ++address) {
+    Memory[address] = 0;
+  }
   if (current_instruction().ingredients.size() > 1) {
     Memory[result] = array_length;
   }
@@ -99,6 +102,15 @@ void ensure_space(size_t size) {
     trace("new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max;
   }
 }
+
+:(scenario new_initializes)
+% Memory_allocated_until = 10;
+% Memory[Memory_allocated_until] = 1;
+recipe main [
+  1:address:number <- new number:type
+  2:number <- copy 1:address:number/deref
+]
++mem: storing 0 in location 2
 
 :(scenario new_array)
 recipe main [
