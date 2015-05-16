@@ -123,6 +123,10 @@ Next_routine_id = 1;
 id = Next_routine_id;
 Next_routine_id++;
 
+//: it needs a new type: 'recipe'
+:(before "End Mu Types Initialization")
+Type_number["recipe"] = 0;
+
 //: routines save the routine that spawned them
 :(before "End routine Fields")
 // todo: really should be routine_id, but that's less efficient.
