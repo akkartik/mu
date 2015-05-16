@@ -1,3 +1,9 @@
+//: Continuations are a powerful primitive for constructing advanced kinds of
+//: control *policies* like back-tracking. They're usually provided using a
+//: primitive called 'call-cc': http://en.wikipedia.org/wiki/Call-with-current-continuation)
+//: But in mu 'call-cc' is constructed out of a combination of two primitives:
+//:   'current-continuation', which returns a continuation, and
+//:   'continue-from', which takes a continuation to switch to.
 
 :(before "End Globals")
 map<index_t, call_stack> Continuation;
