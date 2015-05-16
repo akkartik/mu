@@ -183,7 +183,10 @@ reagent::reagent(string s) :value(0), initialized(false) {
   // structures for the first row of properties
   name = properties.at(0).first;
   for (index_t i = 0; i < properties.at(0).second.size(); ++i) {
-    types.push_back(Type_number[properties.at(0).second.at(i)]);
+    string type = properties.at(0).second.at(i);
+    if (Type_number.find(type) == Type_number.end())
+      raise << "unknown type: " << type << '\n';
+    types.push_back(Type_number[type]);
   }
   if (name == "_" && types.empty()) {
     types.push_back(0);

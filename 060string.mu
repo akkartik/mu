@@ -403,7 +403,7 @@ recipe interpolate [
     {
       # while i < template.length
       tem-done?:boolean <- greater-or-equal i:number, tem-len:number
-      break-if tem-done?:boolean, 2:blocks
+      break-if tem-done?:boolean, +done:label
       # while template[i] != '_'
       in:character <- index template:address:array:character/deref, i:number
       underscore?:boolean <- equal in:character, 95:literal  # '_'
@@ -437,6 +437,7 @@ recipe interpolate [
     i:number <- add i:number, 1:literal
     loop  # interpolate next arg
   }
+  +done
   # done with holes; copy rest of template directly into result
   {
     # while i < template.length

@@ -10,6 +10,9 @@ recipe main [
 ]
 -mem: storing 0 in location 1
 
+:(before "End Mu Types Initialization")
+Type_number["label"] = 0;
+
 :(after "int main")
   Transform.push_back(transform_labels);
 

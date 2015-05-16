@@ -239,3 +239,11 @@ recipe main [
   _ <- copy 0:literal
 ]
 +run: instruction main/0
+
+:(scenario run_warns_on_unknown_types)
+% Hide_warnings = true;
+recipe main [
+  # integer is not a type
+  1:integer <- copy 0:literal
+]
++warn: unknown type: integer
