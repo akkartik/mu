@@ -34,6 +34,7 @@ vector<recipe_number> load(istream& in) {
         raise << "redefining recipe " << Recipe[Recipe_number[recipe_name]].name << "\n";
         Recipe.erase(Recipe_number[recipe_name]);
       }
+      // todo: save user-defined recipes to mu's memory
       Recipe[Recipe_number[recipe_name]] = slurp_recipe(in);
       Recipe[Recipe_number[recipe_name]].name = recipe_name;
       // track added recipes because we may need to undo them in tests; see below

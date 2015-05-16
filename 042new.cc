@@ -43,6 +43,7 @@ if (inst.operation == Recipe_number["new"]) {
 }
 
 //:: Now implement the primitive recipe.
+//: todo: build 'new' in mu itself
 
 :(before "End Primitive Recipe Declarations")
 NEW,
@@ -68,7 +69,7 @@ case NEW: {
       size = size_of(type);
     }
   }
-  // compute the resulting location
+  // compute the region of memory to return
   // really crappy at the moment
   ensure_space(size);
   const index_t result = Current_routine->alloc;

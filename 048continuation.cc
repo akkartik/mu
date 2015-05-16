@@ -5,6 +5,7 @@
 //:   'current-continuation', which returns a continuation, and
 //:   'continue-from', which takes a continuation to switch to.
 
+//: todo: implement continuations in mu's memory
 :(before "End Globals")
 map<index_t, call_stack> Continuation;
 index_t Next_continuation_id = 0;
