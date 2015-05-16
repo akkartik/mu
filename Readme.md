@@ -317,7 +317,20 @@ allocator and a few other places).
 
 ---
 
-Try running the tests:
+If you're still reading, here are some more things to check out:
+
+a) Look at the [chessboard program](http://akkartik.github.io/mu/html/chessboard.mu.html)
+for a more complex example where I write tests showing blocking reads from the
+keyboard and what gets printed to the screen -- things we don't typically
+associate with automated tests.
+
+b) Try skimming the [colorized source code](http://akkartik.github.io/mu). I'd
+like it to eventually be possible to get a pretty good sense for how things
+work just by skimming the files in order, skimming the top of each file and
+ignoring details lower down. I'd love to hear feedback about how successful my
+efforts are.
+
+c) Try running the tests:
 
 ```shell
   $ ./mu test
