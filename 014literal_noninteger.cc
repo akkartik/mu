@@ -20,8 +20,8 @@ recipe main [
 
 :(code)
 bool is_noninteger(const string& s) {
-  return s.find_first_not_of("0123456789-.") == NOT_FOUND
-      && s.find('.') != NOT_FOUND;
+  return s.find_first_not_of("0123456789-.") == string::npos
+      && s.find('.') != string::npos;
 }
 
 double to_double(string n) {

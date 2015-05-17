@@ -82,13 +82,13 @@ bool next_instruction(istream& in, instruction* curr) {
   }
   skip_whitespace_and_comments(in);  if (in.eof()) return false;
 
-//?   if (words.size() == 1) cout << words.at(0) << ' ' << words.at(0).size() << '\n'; //? 1
-  if (words.size() == 1 && words.at(0) == "]") {
+//?   if (SIZE(words) == 1) cout << words.at(0) << ' ' << SIZE(words.at(0)) << '\n'; //? 1
+  if (SIZE(words) == 1 && words.at(0) == "]") {
 //?     cout << "AAA\n"; //? 1
     return false;  // end of recipe
   }
 
-  if (words.size() == 1 && !isalnum(words.at(0).at(0)) && words.at(0).at(0) != '$') {
+  if (SIZE(words) == 1 && !isalnum(words.at(0).at(0)) && words.at(0).at(0) != '$') {
     curr->is_label = true;
     curr->label = words.at(0);
     trace("parse") << "label: " << curr->label;
@@ -203,7 +203,7 @@ void show_rest_of_stream(istream& in) {
 :(before "End Globals")
 vector<recipe_number> recently_added_recipes;
 :(before "End Setup")
-for (index_t i = 0; i < recently_added_recipes.size(); ++i) {
+for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
 //?   cout << "AAA clearing " << Recipe[recently_added_recipes.at(i)].name << '\n'; //? 2
   Recipe_number.erase(Recipe[recently_added_recipes.at(i)].name);
   Recipe.erase(recently_added_recipes.at(i));

@@ -41,8 +41,8 @@ scenario screen-in-scenario-error [
 // Scenarios may not define default-space, so they should fit within the
 // initial area of memory reserved for tests. We'll put the predefined
 // variables available to them at the end of that region.
-const size_t Max_variables_in_scenarios = Reserved_for_tests-100;
-size_t Next_predefined_global_for_scenarios = Max_variables_in_scenarios;
+const long long int Max_variables_in_scenarios = Reserved_for_tests-100;
+long long int Next_predefined_global_for_scenarios = Max_variables_in_scenarios;
 :(before "End Setup")
 assert(Next_predefined_global_for_scenarios < Reserved_for_tests);
 :(after "transform_all()" following "case RUN:")
@@ -53,7 +53,7 @@ assert(Name[tmp_recipe.at(0)][""] < Max_variables_in_scenarios);
 
 :(before "End Globals")
 // Scenario Globals.
-const size_t SCREEN = Next_predefined_global_for_scenarios++;
+const long long int SCREEN = Next_predefined_global_for_scenarios++;
 // End Scenario Globals.
 :(before "End Predefined Scenario Locals In Run")
 Name[tmp_recipe.at(0)]["screen"] = SCREEN;
@@ -87,23 +87,23 @@ case SCREEN_SHOULD_CONTAIN: {
 void check_screen(const string& contents) {
 //?   cerr << "Checking screen\n"; //? 1
   assert(!Current_routine->calls.front().default_space);  // not supported
-  index_t screen_location = Memory[SCREEN];
+  long long int screen_location = Memory[SCREEN];
   int data_offset = find_element_name(Type_number["screen"], "data");
   assert(data_offset >= 0);
-  index_t screen_data_location = screen_location+data_offset;  // type: address:array:character
-  index_t screen_data_start = Memory[screen_data_location];  // type: array:character
+  long long int screen_data_location = screen_location+data_offset;  // type: address:array:character
+  long long int screen_data_start = Memory[screen_data_location];  // type: array:character
   int width_offset = find_element_name(Type_number["screen"], "num-columns");
-  size_t screen_width = Memory[screen_location+width_offset];
+  long long int screen_width = Memory[screen_location+width_offset];
   int height_offset = find_element_name(Type_number["screen"], "num-rows");
-  size_t screen_height = Memory[screen_location+height_offset];
+  long long int screen_height = Memory[screen_location+height_offset];
   string expected_contents;
   istringstream in(contents);
   in >> std::noskipws;
-  for (index_t row = 0; row < screen_height; ++row) {
+  for (long long int row = 0; row < screen_height; ++row) {
     skip_whitespace_and_comments(in);
     assert(!in.eof());
     assert(in.get() == '.');
-    for (index_t column = 0; column < screen_width; ++column) {
+    for (long long int column = 0; column < screen_width; ++column) {
       assert(!in.eof());
       expected_contents += in.get();
     }
@@ -112,11 +112,11 @@ void check_screen(const string& contents) {
   skip_whitespace_and_comments(in);
 //?   assert(in.get() == ']');
   trace("run") << "checking screen size at " << screen_data_start;
-//?   cout << expected_contents.size() << '\n'; //? 1
-  if (Memory[screen_data_start] > static_cast<signed>(expected_contents.size()))
+//?   cout << SIZE(expected_contents) << '\n'; //? 1
+  if (Memory[screen_data_start] > SIZE(expected_contents))
     raise << "expected contents are larger than screen size " << Memory[screen_data_start] << '\n';
   ++screen_data_start;  // now skip length
-  for (index_t i = 0; i < expected_contents.size(); ++i) {
+  for (long long int i = 0; i < SIZE(expected_contents); ++i) {
     trace("run") << "checking location " << screen_data_start+i;
 //?     cerr << "comparing " << i/screen_width << ", " << i%screen_width << ": " << Memory[screen_data_start+i] << " vs " << (int)expected_contents.at(i) << '\n'; //? 1
     if ((!Memory[screen_data_start+i] && !isspace(expected_contents.at(i)))  // uninitialized memory => spaces
@@ -153,21 +153,21 @@ case _DUMP_SCREEN: {
 :(code)
 void dump_screen() {
   assert(!Current_routine->calls.front().default_space);  // not supported
-  index_t screen_location = Memory[SCREEN];
+  long long int screen_location = Memory[SCREEN];
   int width_offset = find_element_name(Type_number["screen"], "num-columns");
-  size_t screen_width = Memory[screen_location+width_offset];
+  long long int screen_width = Memory[screen_location+width_offset];
   int height_offset = find_element_name(Type_number["screen"], "num-rows");
-  size_t screen_height = Memory[screen_location+height_offset];
+  long long int screen_height = Memory[screen_location+height_offset];
   int data_offset = find_element_name(Type_number["screen"], "data");
   assert(data_offset >= 0);
-  index_t screen_data_location = screen_location+data_offset;  // type: address:array:character
-  index_t screen_data_start = Memory[screen_data_location];  // type: array:character
+  long long int screen_data_location = screen_location+data_offset;  // type: address:array:character
+  long long int screen_data_start = Memory[screen_data_location];  // type: array:character
 //?   cerr << "data start: " << screen_data_start << '\n'; //? 1
   assert(Memory[screen_data_start] == screen_width*screen_height);
-  index_t curr = screen_data_start+1;  // skip length
-  for (index_t row = 0; row < screen_height; ++row) {
+  long long int curr = screen_data_start+1;  // skip length
+  for (long long int row = 0; row < screen_height; ++row) {
 //?     cerr << curr << ":\n"; //? 1
-    for (index_t col = 0; col < screen_width; ++col) {
+    for (long long int col = 0; col < screen_width; ++col) {
       cerr << static_cast<char>(Memory[curr]);
       ++curr;
     }

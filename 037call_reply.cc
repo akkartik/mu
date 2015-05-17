@@ -28,11 +28,11 @@ case REPLY: {
   copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
   // check that any reply ingredients with /same-as-ingredient connect up
   // the corresponding ingredient and product in the caller.
-  for (index_t i = 0; i < caller_instruction.products.size(); ++i) {
+  for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
     trace("run") << "result " << i << " is " << to_string(ingredients.at(i));
     if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
       vector<string> tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
-      assert(tmp.size() == 1);
+      assert(SIZE(tmp) == 1);
       long long int ingredient_index = to_integer(tmp.at(0));
       if (caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
         raise << "'same-as-ingredient' result " << caller_instruction.products.at(i).value << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n';
@@ -79,12 +79,12 @@ recipe test1 [
 string to_string(const vector<double>& in) {
   if (in.empty()) return "[]";
   ostringstream out;
-  if (in.size() == 1) {
+  if (SIZE(in) == 1) {
     out << in.at(0);
     return out.str();
   }
   out << "[";
-  for (index_t i = 0; i < in.size(); ++i) {
+  for (long long int i = 0; i < SIZE(in); ++i) {
     if (i > 0) out << ", ";
     out << in.at(i);
   }

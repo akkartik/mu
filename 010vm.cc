@@ -1,6 +1,6 @@
 :(after "Types")
 // A program is a book of 'recipes' (functions)
-typedef size_t recipe_number;
+typedef long long int recipe_number;
 :(before "End Globals")
 map<string, recipe_number> Recipe_number;
 map<recipe_number, recipe> Recipe;
@@ -57,7 +57,7 @@ struct property {
 
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
-map<index_t, double> Memory;
+map<long long int, double> Memory;
 :(before "End Setup")
 Memory.clear();
 
@@ -70,7 +70,7 @@ Memory.clear();
 // Unlike most computers today, mu stores types in a single big table, shared
 // by all the mu programs on the computer. This is useful in providing a
 // seamless experience to help understand arbitrary mu programs.
-typedef size_t type_number;
+typedef long long int type_number;
 :(before "End Globals")
 map<string, type_number> Type_number;
 map<type_number, type_info> Type;
@@ -119,7 +119,7 @@ enum kind_of_type {
 struct type_info {
   string name;
   kind_of_type kind;
-  size_t size;  // only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)
+  long long int size;  // only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)
   vector<vector<type_number> > elements;
   vector<string> element_names;
   // End type_info Fields
@@ -182,7 +182,7 @@ reagent::reagent(string s) :value(0), initialized(false) {
   }
   // structures for the first row of properties
   name = properties.at(0).first;
-  for (index_t i = 0; i < properties.at(0).second.size(); ++i) {
+  for (long long int i = 0; i < SIZE(properties.at(0).second); ++i) {
     string type = properties.at(0).second.at(i);
     if (Type_number.find(type) == Type_number.end())
       raise << "unknown type: " << type << '\n';
@@ -202,19 +202,19 @@ reagent::reagent() :value(0), initialized(false) {
 string reagent::to_string() const {
   ostringstream out;
   out << "{name: \"" << name << "\", value: " << value << ", type: ";
-  for (index_t i = 0; i < types.size(); ++i) {
+  for (long long int i = 0; i < SIZE(types); ++i) {
+    if (i > 0) out << '-';
     out << types.at(i);
-    if (i < types.size()-1) out << "-";
   }
   if (!properties.empty()) {
     out << ", properties: [";
-    for (index_t i = 0; i < properties.size(); ++i) {
+    for (long long int i = 0; i < SIZE(properties); ++i) {
       out << "\"" << properties.at(i).first << "\": ";
-      for (index_t j = 0; j < properties.at(i).second.size(); ++j) {
+      for (long long int j = 0; j < SIZE(properties.at(i).second); ++j) {
+        if (j > 0) out << ':';
         out << "\"" << properties.at(i).second.at(j) << "\"";
-        if (j < properties.at(i).second.size()-1) out << ":";
       }
-      if (i < properties.size()-1) out << ", ";
+      if (i < SIZE(properties)-1) out << ", ";
       else out << "]";
     }
   }
@@ -225,13 +225,13 @@ string reagent::to_string() const {
 string instruction::to_string() const {
   if (is_label) return label;
   ostringstream out;
-  for (index_t i = 0; i < products.size(); ++i) {
+  for (long long int i = 0; i < SIZE(products); ++i) {
     if (i > 0) out << ", ";
     out << products.at(i).to_string();
   }
   if (!products.empty()) out << " <- ";
   out << name << '/' << operation << ' ';
-  for (index_t i = 0; i < ingredients.size(); ++i) {
+  for (long long int i = 0; i < SIZE(ingredients); ++i) {
     if (i > 0) out << ", ";
     out << ingredients.at(i).to_string();
   }
@@ -252,7 +252,7 @@ string slurp_until(istream& in, char delim) {
 }
 
 void dump_memory() {
-  for (map<index_t, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
+  for (map<long long int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
     cout << p->first << ": " << p->second << '\n';
   }
 }

@@ -33,7 +33,7 @@ recipe f [
 // This requires maintaining a 'stack' of interrupted recipes or 'calls'.
 struct call {
   recipe_number running_recipe;
-  index_t running_step_index;
+  long long int running_step_index;
   // End call Fields
   call(recipe_number r) :running_recipe(r), running_step_index(0) {}
 };
@@ -55,8 +55,8 @@ routine::routine(recipe_number r) {
 
 //:: now update routine's helpers
 
-:(replace{} "inline index_t& current_step_index()")
-inline index_t& current_step_index() {
+:(replace{} "inline long long int& current_step_index()")
+inline long long int& current_step_index() {
   assert(!Current_routine->calls.empty());
   return Current_routine->calls.front().running_step_index;
 }
@@ -97,7 +97,7 @@ inline const vector<instruction>& routine::steps() const {
 :(before "Running One Instruction")
 // when we reach the end of one call, we may reach the end of the one below
 // it, and the one below that, and so on
-while (current_step_index() >= Current_routine->steps().size()) {
+while (current_step_index() >= SIZE(Current_routine->steps())) {
   Current_routine->calls.pop_front();
   if (Current_routine->calls.empty()) return;
   // todo: no results returned warning

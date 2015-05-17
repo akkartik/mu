@@ -7,8 +7,8 @@
 
 //: todo: implement continuations in mu's memory
 :(before "End Globals")
-map<index_t, call_stack> Continuation;
-index_t Next_continuation_id = 0;
+map<long long int, call_stack> Continuation;
+long long int Next_continuation_id = 0;
 :(before "End Setup")
 Continuation.clear();
 Next_continuation_id = 0;
@@ -36,8 +36,8 @@ CONTINUE_FROM,
 Recipe_number["continue-from"] = CONTINUE_FROM;
 :(before "End Primitive Recipe Implementations")
 case CONTINUE_FROM: {
-  assert(ingredients.at(0).size() == 1);  // scalar
-  index_t c = ingredients.at(0).at(0);
+  assert(scalar(ingredients.at(0)));
+  long long int c = ingredients.at(0).at(0);
   Current_routine->calls = Continuation[c];  // deep copy because calls have no pointers
   // refresh instruction_counter to next instruction after current-continuation
   instruction_counter = current_step_index()+1;

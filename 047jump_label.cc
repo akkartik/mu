@@ -18,12 +18,12 @@ Type_number["label"] = 0;
 
 :(code)
 void transform_labels(const recipe_number r) {
-  map<string, index_t> offset;
-  for (index_t i = 0; i < Recipe[r].steps.size(); ++i) {
+  map<string, long long int> offset;
+  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     const instruction& inst = Recipe[r].steps.at(i);
     if (!inst.label.empty()) offset[inst.label] = i;
   }
-  for (index_t i = 0; i < Recipe[r].steps.size(); ++i) {
+  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
     if (inst.operation == Recipe_number["jump"]) {
 //?       cerr << inst.to_string() << '\n'; //? 1
@@ -33,19 +33,19 @@ void transform_labels(const recipe_number r) {
       replace_offset(inst.ingredients.at(1), offset, i, r);
     }
     if ((inst.operation == Recipe_number["loop"] || inst.operation == Recipe_number["break"])
-        && inst.ingredients.size() == 1) {
+        && SIZE(inst.ingredients) == 1) {
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
     if ((inst.operation == Recipe_number["loop-if"] || inst.operation == Recipe_number["loop-unless"]
             || inst.operation == Recipe_number["break-if"] || inst.operation == Recipe_number["break-unless"])
-        && inst.ingredients.size() == 2) {
+        && SIZE(inst.ingredients) == 2) {
       replace_offset(inst.ingredients.at(1), offset, i, r);
     }
   }
 }
 
 :(code)
-void replace_offset(reagent& x, /*const*/ map<string, index_t>& offset, const index_t current_offset, const recipe_number r) {
+void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, const long long int current_offset, const recipe_number r) {
 //?   cerr << "AAA " << x.to_string() << '\n'; //? 1
   assert(isa_literal(x));
 //?   cerr << "BBB " << x.to_string() << '\n'; //? 1

@@ -26,7 +26,7 @@ scenario keyboard-in-scenario [
 ]
 
 :(before "End Scenario Globals")
-const size_t KEYBOARD = Next_predefined_global_for_scenarios++;
+const long long int KEYBOARD = Next_predefined_global_for_scenarios++;
 :(before "End Predefined Scenario Locals In Run")
 Name[tmp_recipe.at(0)]["keyboard"] = KEYBOARD;
 

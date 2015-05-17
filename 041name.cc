@@ -21,9 +21,9 @@ recipe main [
   Transform.push_back(transform_names);
 
 :(before "End Globals")
-map<recipe_number, map<string, index_t> > Name;
+map<recipe_number, map<string, long long int> > Name;
 :(after "Clear Other State For recently_added_recipes")
-for (index_t i = 0; i < recently_added_recipes.size(); ++i) {
+for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
   Name.erase(recently_added_recipes.at(i));
 }
 
@@ -31,15 +31,15 @@ for (index_t i = 0; i < recently_added_recipes.size(); ++i) {
 void transform_names(const recipe_number r) {
   bool names_used = false;
   bool numeric_locations_used = false;
-  map<string, index_t>& names = Name[r];
+  map<string, long long int>& names = Name[r];
   // store the indices 'used' so far in the map
-  index_t& curr_idx = names[""];
+  long long int& curr_idx = names[""];
   ++curr_idx;  // avoid using index 0, benign skip in some other cases
-  for (index_t i = 0; i < Recipe[r].steps.size(); ++i) {
+  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
     // Per-recipe Transforms
     // map names to addresses
-    for (index_t in = 0; in < inst.ingredients.size(); ++in) {
+    for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
       if (is_numeric_location(inst.ingredients.at(in))) numeric_locations_used = true;
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
       if (disqualified(inst.ingredients.at(in))) continue;
@@ -48,7 +48,7 @@ void transform_names(const recipe_number r) {
       }
       inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
     }
-    for (index_t out = 0; out < inst.products.size(); ++out) {
+    for (long long int out = 0; out < SIZE(inst.products); ++out) {
       if (is_numeric_location(inst.products.at(out))) numeric_locations_used = true;
       if (is_named_location(inst.products.at(out))) names_used = true;
       if (disqualified(inst.products.at(out))) continue;
@@ -77,16 +77,16 @@ bool disqualified(/*mutable*/ reagent& x) {
   return false;
 }
 
-bool already_transformed(const reagent& r, const map<string, index_t>& names) {
+bool already_transformed(const reagent& r, const map<string, long long int>& names) {
   return names.find(r.name) != names.end();
 }
 
-index_t lookup_name(const reagent& r, const recipe_number default_recipe) {
+long long int lookup_name(const reagent& r, const recipe_number default_recipe) {
   return Name[default_recipe][r.name];
 }
 
 type_number skip_addresses(const vector<type_number>& types) {
-  for (index_t i = 0; i < types.size(); ++i) {
+  for (long long int i = 0; i < SIZE(types); ++i) {
     if (types.at(i) != Type_number["address"]) return types.at(i);
   }
   raise << "expected a container" << '\n' << die();
@@ -95,8 +95,8 @@ type_number skip_addresses(const vector<type_number>& types) {
 
 int find_element_name(const type_number t, const string& name) {
   const type_info& container = Type[t];
-//?   cout << "looking for element " << name << " in type " << container.name << " with " << container.element_names.size() << " elements\n"; //? 1
-  for (index_t i = 0; i < container.element_names.size(); ++i) {
+//?   cout << "looking for element " << name << " in type " << container.name << " with " << SIZE(container.element_names) << " elements\n"; //? 1
+  for (long long int i = 0; i < SIZE(container.element_names); ++i) {
     if (container.element_names.at(i) == name) return i;
   }
   raise << "unknown element " << name << " in container " << t << '\n' << die();
@@ -118,7 +118,7 @@ bool is_named_location(const reagent& x) {
 }
 
 bool is_raw(const reagent& r) {
-  for (index_t i = /*skip value+type*/1; i < r.properties.size(); ++i) {
+  for (long long int i = /*skip value+type*/1; i < SIZE(r.properties); ++i) {
     if (r.properties.at(i).first == "raw") return true;
   }
   return false;
@@ -214,10 +214,10 @@ recipe main [
 if (inst.operation == Recipe_number["get"]
     || inst.operation == Recipe_number["get-address"]) {
   // at least 2 args, and second arg is offset
-  assert(inst.ingredients.size() >= 2);
+  assert(SIZE(inst.ingredients) >= 2);
 //?   cout << inst.ingredients.at(1).to_string() << '\n'; //? 1
   assert(isa_literal(inst.ingredients.at(1)));
-  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == NOT_FOUND) continue;
+  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
   // since first non-address in base type must be a container, we don't have to canonize
   type_number base_type = skip_addresses(inst.ingredients.at(0).types);
   inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
@@ -251,9 +251,9 @@ recipe main [
 // convert variant names of exclusive containers
 if (inst.operation == Recipe_number["maybe-convert"]) {
   // at least 2 args, and second arg is offset
-  assert(inst.ingredients.size() >= 2);
+  assert(SIZE(inst.ingredients) >= 2);
   assert(isa_literal(inst.ingredients.at(1)));
-  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == NOT_FOUND) continue;
+  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
   // since first non-address in base type must be an exclusive container, we don't have to canonize
   type_number base_type = skip_addresses(inst.ingredients.at(0).types);
   inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));

@@ -42,13 +42,13 @@ map<recipe_number, recipe_number> Surrounding_space;
 
 :(code)
 void collect_surrounding_spaces(const recipe_number r) {
-  for (index_t i = 0; i < Recipe[r].steps.size(); ++i) {
+  for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     const instruction& inst = Recipe[r].steps.at(i);
     if (inst.is_label) continue;
-    for (index_t j = 0; j < inst.products.size(); ++j) {
+    for (long long int j = 0; j < SIZE(inst.products); ++j) {
       if (isa_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
-      if (inst.products.at(j).types.size() != 3
+      if (SIZE(inst.products.at(j).types) != 3
           || inst.products.at(j).types.at(0) != Type_number["address"]
           || inst.products.at(j).types.at(1) != Type_number["array"]
           || inst.products.at(j).types.at(2) != Type_number["location"]) {
@@ -58,7 +58,7 @@ void collect_surrounding_spaces(const recipe_number r) {
       vector<string> s = property(inst.products.at(j), "names");
       if (s.empty())
         raise << "slot 0 requires a /names property in recipe " << Recipe[r].name << die();
-      if (s.size() > 1) raise << "slot 0 should have a single value in /names, got " << inst.products.at(j).to_string() << '\n';
+      if (SIZE(s) > 1) raise << "slot 0 should have a single value in /names, got " << inst.products.at(j).to_string() << '\n';
       string surrounding_recipe_name = s.at(0);
       if (Surrounding_space.find(r) != Surrounding_space.end()
           && Surrounding_space[r] != Recipe_number[surrounding_recipe_name]) {
@@ -74,8 +74,8 @@ void collect_surrounding_spaces(const recipe_number r) {
 //: Once surrounding spaces are available, transform_names uses them to handle
 //: /space properties.
 
-:(replace{} "index_t lookup_name(const reagent& r, const recipe_number default_recipe)")
-index_t lookup_name(const reagent& x, const recipe_number default_recipe) {
+:(replace{} "long long int lookup_name(const reagent& r, const recipe_number default_recipe)")
+long long int lookup_name(const reagent& x, const recipe_number default_recipe) {
 //?   cout << "AAA " << default_recipe << " " << Recipe[default_recipe].name << '\n'; //? 2
 //?   cout << "AAA " << x.to_string() << '\n'; //? 1
   if (!has_property(x, "space")) {
@@ -83,7 +83,7 @@ index_t lookup_name(const reagent& x, const recipe_number default_recipe) {
     return Name[default_recipe][x.name];
   }
   vector<string> p = property(x, "space");
-  if (p.size() != 1) raise << "/space property should have exactly one (non-negative integer) value\n";
+  if (SIZE(p) != 1) raise << "/space property should have exactly one (non-negative integer) value\n";
   long long int n = to_integer(p.at(0));
   assert(n >= 0);
   recipe_number surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
@@ -94,14 +94,14 @@ index_t lookup_name(const reagent& x, const recipe_number default_recipe) {
 
 // If the recipe we need to lookup this name in doesn't have names done yet,
 // recursively call transform_names on it.
-index_t lookup_name(const reagent& x, const recipe_number r, set<recipe_number>& done, vector<recipe_number>& path) {
+long long int lookup_name(const reagent& x, const recipe_number r, set<recipe_number>& done, vector<recipe_number>& path) {
   if (!Name[r].empty()) return Name[r][x.name];
   if (done.find(r) != done.end()) {
     raise << "can't compute address of " << x.to_string() << " because ";
-    for (index_t i = 1; i < path.size(); ++i) {
+    for (long long int i = 1; i < SIZE(path); ++i) {
       raise << path.at(i-1) << " requires computing names of " << path.at(i) << '\n';
     }
-    raise << path.at(path.size()-1) << " requires computing names of " << r << "..ad infinitum\n" << die();
+    raise << path.at(SIZE(path)-1) << " requires computing names of " << r << "..ad infinitum\n" << die();
     return 0;
   }
   done.insert(r);
@@ -111,7 +111,7 @@ index_t lookup_name(const reagent& x, const recipe_number r, set<recipe_number>&
   return Name[r][x.name];
 }
 
-recipe_number lookup_surrounding_recipe(const recipe_number r, index_t n) {
+recipe_number lookup_surrounding_recipe(const recipe_number r, long long int n) {
   if (n == 0) return r;
   if (Surrounding_space.find(r) == Surrounding_space.end()) {
     raise << "don't know surrounding recipe of " << Recipe[r].name << '\n';
@@ -122,11 +122,11 @@ recipe_number lookup_surrounding_recipe(const recipe_number r, index_t n) {
 }
 
 //: weaken use-before-set warnings just a tad
-:(replace{} "bool already_transformed(const reagent& r, const map<string, index_t>& names)")
-bool already_transformed(const reagent& r, const map<string, index_t>& names) {
+:(replace{} "bool already_transformed(const reagent& r, const map<string, long long int>& names)")
+bool already_transformed(const reagent& r, const map<string, long long int>& names) {
   if (has_property(r, "space")) {
     vector<string> p = property(r, "space");
-    assert(p.size() == 1);
+    assert(SIZE(p) == 1);
     if (p.at(0) != "0") return true;
   }
   return names.find(r.name) != names.end();

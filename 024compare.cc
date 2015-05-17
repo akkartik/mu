@@ -8,7 +8,7 @@ Recipe_number["equal"] = EQUAL;
 case EQUAL: {
   vector<double>& exemplar = ingredients.at(0);
   bool result = true;
-  for (index_t i = 1; i < ingredients.size(); ++i) {
+  for (long long int i = 1; i < SIZE(ingredients); ++i) {
     if (!equal(ingredients.at(i).begin(), ingredients.at(i).end(), exemplar.begin())) {
       result = false;
       break;
@@ -66,10 +66,10 @@ Recipe_number["greater-than"] = GREATER_THAN;
 :(before "End Primitive Recipe Implementations")
 case GREATER_THAN: {
   bool result = true;
-  for (index_t i = 0; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // scalar
+  for (long long int i = 0; i < SIZE(ingredients); ++i) {
+    assert(scalar(ingredients.at(i)));
   }
-  for (index_t i = /**/1; i < ingredients.size(); ++i) {
+  for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) <= ingredients.at(i).at(0)) {
       result = false;
     }
@@ -126,10 +126,10 @@ Recipe_number["lesser-than"] = LESSER_THAN;
 :(before "End Primitive Recipe Implementations")
 case LESSER_THAN: {
   bool result = true;
-  for (index_t i = 0; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // scalar
+  for (long long int i = 0; i < SIZE(ingredients); ++i) {
+    assert(scalar(ingredients.at(i)));
   }
-  for (index_t i = /**/1; i < ingredients.size(); ++i) {
+  for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) >= ingredients.at(i).at(0)) {
       result = false;
     }
@@ -186,10 +186,10 @@ Recipe_number["greater-or-equal"] = GREATER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case GREATER_OR_EQUAL: {
   bool result = true;
-  for (index_t i = 0; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // scalar
+  for (long long int i = 0; i < SIZE(ingredients); ++i) {
+    assert(scalar(ingredients.at(i)));
   }
-  for (index_t i = /**/1; i < ingredients.size(); ++i) {
+  for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) < ingredients.at(i).at(0)) {
       result = false;
     }
@@ -260,10 +260,10 @@ Recipe_number["lesser-or-equal"] = LESSER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case LESSER_OR_EQUAL: {
   bool result = true;
-  for (index_t i = 0; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // scalar
+  for (long long int i = 0; i < SIZE(ingredients); ++i) {
+    assert(scalar(ingredients.at(i)));
   }
-  for (index_t i = /**/1; i < ingredients.size(); ++i) {
+  for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) > ingredients.at(i).at(0)) {
       result = false;
     }
