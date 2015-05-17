@@ -42,7 +42,7 @@ void transform_braces(const recipe_number r) {
   const int OPEN = 0, CLOSE = 1;
   // use signed integer for step index because we'll be doing arithmetic on it
   list<pair<int/*OPEN/CLOSE*/, /*step*/long long int> > braces;
-  for (long long int index = 0; index < static_cast<long long int>(Recipe[r].steps.size()); ++index) {
+  for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
     const instruction& inst = Recipe[r].steps.at(index);
     if (inst.label == "{") {
       trace("brace") << r << ": push (open, " << index << ")";
@@ -55,7 +55,7 @@ void transform_braces(const recipe_number r) {
   }
   stack</*step*/long long int> open_braces;
   trace("after-brace") << "recipe " << Recipe[r].name;
-  for (long long int index = 0; index < static_cast<long long int>(Recipe[r].steps.size()); ++index) {
+  for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
 //?     cerr << index << '\n'; //? 1
     instruction& inst = Recipe[r].steps.at(index);
 //?     cout << "AAA " << inst.name << ": " << inst.operation << '\n'; //? 1
@@ -65,7 +65,7 @@ void transform_braces(const recipe_number r) {
       ;  // do nothing
     else if (inst.operation == Recipe_number["loop"]) {
       inst.operation = Recipe_number["jump"];
-      if (inst.ingredients.size() > 0 && isa_literal(inst.ingredients.at(0))) {
+      if (SIZE(inst.ingredients) > 0 && isa_literal(inst.ingredients.at(0))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
       }
@@ -81,7 +81,7 @@ void transform_braces(const recipe_number r) {
     }
     else if (inst.operation == Recipe_number["break"]) {
       inst.operation = Recipe_number["jump"];
-      if (inst.ingredients.size() > 0 && isa_literal(inst.ingredients.at(0))) {
+      if (SIZE(inst.ingredients) > 0 && isa_literal(inst.ingredients.at(0))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
       }
@@ -95,7 +95,7 @@ void transform_braces(const recipe_number r) {
     }
     else if (inst.operation == Recipe_number["loop-if"]) {
       inst.operation = Recipe_number["jump-if"];
-      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients.at(1))) {
+      if (SIZE(inst.ingredients) > 1 && isa_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }
@@ -109,7 +109,7 @@ void transform_braces(const recipe_number r) {
     }
     else if (inst.operation == Recipe_number["break-if"]) {
       inst.operation = Recipe_number["jump-if"];
-      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients.at(1))) {
+      if (SIZE(inst.ingredients) > 1 && isa_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }
@@ -123,7 +123,7 @@ void transform_braces(const recipe_number r) {
     }
     else if (inst.operation == Recipe_number["loop-unless"]) {
       inst.operation = Recipe_number["jump-unless"];
-      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients.at(1))) {
+      if (SIZE(inst.ingredients) > 1 && isa_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }
@@ -138,7 +138,7 @@ void transform_braces(const recipe_number r) {
     else if (inst.operation == Recipe_number["break-unless"]) {
 //?       cout << "AAA break-unless\n"; //? 1
       inst.operation = Recipe_number["jump-unless"];
-      if (inst.ingredients.size() > 1 && isa_literal(inst.ingredients.at(1))) {
+      if (SIZE(inst.ingredients) > 1 && isa_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }

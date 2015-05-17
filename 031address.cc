@@ -13,7 +13,7 @@ recipe main [
 +mem: location 2 is 34
 +mem: storing 34 in location 3
 
-:(before "index_t base = x.value" following "vector<double> read_memory(reagent x)")
+:(before "long long int base = x.value" following "vector<double> read_memory(reagent x)")
 x = canonize(x);
 
 //: similarly, write to addresses pointing at other locations using the
@@ -27,7 +27,7 @@ recipe main [
 +mem: location 1 is 2
 +mem: storing 34 in location 2
 
-:(before "index_t base = x.value" following "void write_memory(reagent x, vector<double> data)")
+:(before "long long int base = x.value" following "void write_memory(reagent x, vector<double> data)")
 x = canonize(x);
 
 :(code)
@@ -55,8 +55,8 @@ reagent deref(reagent x) {
   copy(++x.types.begin(), x.types.end(), inserter(result.types, result.types.begin()));
 
   // drop-one 'deref'
-  index_t i = 0;
-  size_t len = x.properties.size();
+  long long int i = 0;
+  long long int len = SIZE(x.properties);
   for (i = 0; i < len; ++i) {
     if (x.properties.at(i).first == "deref") break;
     result.properties.push_back(x.properties.at(i));
@@ -115,14 +115,14 @@ base = canonize(base);
 
 :(code)
 bool has_property(reagent x, string name) {
-  for (index_t i = 0; i < x.properties.size(); ++i) {
+  for (long long int i = 0; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == name) return true;
   }
   return false;
 }
 
 vector<string> property(const reagent& r, const string& name) {
-  for (index_t p = 0; p != r.properties.size(); ++p) {
+  for (long long int p = 0; p != SIZE(r.properties); ++p) {
     if (r.properties.at(p).first == name)
       return r.properties.at(p).second;
   }

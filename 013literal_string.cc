@@ -53,7 +53,7 @@ string slurp_quoted(istream& in) {
     assert(*s.rbegin() == ']');
     // delete [] delimiters
     s.erase(0, 1);
-    s.erase(s.size()-1, s.size());
+    s.erase(SIZE(s)-1, SIZE(s));
     name = s;
     types.push_back(0);
     properties.push_back(pair<string, vector<string> >(name, vector<string>()));

@@ -11,14 +11,14 @@ recipe main [
 +mem: storing 0 in location 3
 
 :(before "End Globals")
-size_t Reserved_for_tests = 1000;
-index_t Memory_allocated_until = Reserved_for_tests;
-size_t Initial_memory_per_routine = 100000;
+long long int Reserved_for_tests = 1000;
+long long int Memory_allocated_until = Reserved_for_tests;
+long long int Initial_memory_per_routine = 100000;
 :(before "End Setup")
 Memory_allocated_until = Reserved_for_tests;
 Initial_memory_per_routine = 100000;
 :(before "End routine Fields")
-index_t alloc, alloc_max;
+long long int alloc, alloc_max;
 :(before "End routine Constructor")
 alloc = Memory_allocated_until;
 Memory_allocated_until += Initial_memory_per_routine;
@@ -33,7 +33,7 @@ Type_number["type"] = 0;
 // replace type names with type_numbers
 if (inst.operation == Recipe_number["new"]) {
   // first arg must be of type 'type'
-  assert(inst.ingredients.size() >= 1);
+  assert(SIZE(inst.ingredients) >= 1);
 //?   cout << inst.ingredients.at(0).to_string() << '\n'; //? 1
   assert(isa_literal(inst.ingredients.at(0)));
   if (inst.ingredients.at(0).properties.at(0).second.at(0) == "type") {
@@ -52,13 +52,13 @@ Recipe_number["new"] = NEW;
 :(before "End Primitive Recipe Implementations")
 case NEW: {
   // compute the space we need
-  size_t size = 0;
-  size_t array_length = 0;
+  long long int size = 0;
+  long long int array_length = 0;
   {
     vector<type_number> type;
     assert(isa_literal(current_instruction().ingredients.at(0)));
     type.push_back(current_instruction().ingredients.at(0).value);
-    if (current_instruction().ingredients.size() > 1) {
+    if (SIZE(current_instruction().ingredients) > 1) {
       // array
       array_length = ingredients.at(1).at(0);
       trace("mem") << "array size is " << array_length;
@@ -72,16 +72,16 @@ case NEW: {
   // compute the region of memory to return
   // really crappy at the moment
   ensure_space(size);
-  const index_t result = Current_routine->alloc;
+  const long long int result = Current_routine->alloc;
   trace("mem") << "new alloc: " << result;
   // save result
   products.resize(1);
   products.at(0).push_back(result);
   // initialize allocated space
-  for (index_t address = result; address < result+size; ++address) {
+  for (long long int address = result; address < result+size; ++address) {
     Memory[address] = 0;
   }
-  if (current_instruction().ingredients.size() > 1) {
+  if (SIZE(current_instruction().ingredients) > 1) {
     Memory[result] = array_length;
   }
   // bump
@@ -92,7 +92,7 @@ case NEW: {
 }
 
 :(code)
-void ensure_space(size_t size) {
+void ensure_space(long long int size) {
   assert(size <= Initial_memory_per_routine);
 //?   cout << Current_routine->alloc << " " << Current_routine->alloc_max << " " << size << '\n'; //? 1
   if (Current_routine->alloc + size > Current_routine->alloc_max) {
@@ -169,7 +169,7 @@ recipe main [
 if (isa_literal(current_instruction().ingredients.at(0))
     && current_instruction().ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
   // allocate an array just large enough for it
-  size_t string_length = current_instruction().ingredients.at(0).name.size();
+  long long int string_length = SIZE(current_instruction().ingredients.at(0).name);
 //?   cout << "string_length is " << string_length << '\n'; //? 1
   ensure_space(string_length+1);  // don't forget the extra location for array size
   products.resize(1);
@@ -177,7 +177,7 @@ if (isa_literal(current_instruction().ingredients.at(0))
   // initialize string
 //?   cout << "new string literal: " << current_instruction().ingredients.at(0).name << '\n'; //? 1
   Memory[Current_routine->alloc++] = string_length;
-  for (index_t i = 0; i < string_length; ++i) {
+  for (long long int i = 0; i < string_length; ++i) {
     Memory[Current_routine->alloc++] = current_instruction().ingredients.at(0).name.at(i);
   }
   // mu strings are not null-terminated in memory

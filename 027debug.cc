@@ -6,13 +6,13 @@ _PRINT,
 Recipe_number["$print"] = _PRINT;
 :(before "End Primitive Recipe Implementations")
 case _PRINT: {
-  for (index_t i = 0; i < ingredients.size(); ++i) {
+  for (long long int i = 0; i < SIZE(ingredients); ++i) {
     if (isa_literal(current_instruction().ingredients.at(i))) {
       trace("run") << "$print: " << current_instruction().ingredients.at(i).name;
       cout << current_instruction().ingredients.at(i).name;
     }
     else {
-      for (index_t j = 0; j < ingredients.at(i).size(); ++j) {
+      for (long long int j = 0; j < SIZE(ingredients.at(i)); ++j) {
         trace("run") << "$print: " << ingredients.at(i).at(j);
         if (j > 0) cout << " ";
         cout << ingredients.at(i).at(j);

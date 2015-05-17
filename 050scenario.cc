@@ -86,7 +86,7 @@ scenario parse_scenario(istream& in) {
 :(before "End Tests")
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
-for (index_t i = 0; i < Scenarios.size(); ++i) {
+for (long long int i = 0; i < SIZE(Scenarios); ++i) {
 //?   cerr << Passed << '\n'; //? 1
 //?   cerr << i << ": " << Scenarios.at(i).name << '\n'; //? 3
   run_mu_scenario(Scenarios.at(i));
@@ -96,7 +96,7 @@ for (index_t i = 0; i < Scenarios.size(); ++i) {
 //: Convenience: run a single named scenario.
 :(before "Loading Commandline Files")
 if (argc == 2 && Run_tests) {
-  for (index_t i = 0; i < Scenarios.size(); ++i) {
+  for (long long int i = 0; i < SIZE(Scenarios); ++i) {
     if (Scenarios.at(i).name == argv[1]) {
       run_mu_scenario(Scenarios.at(i));
       return 0;
@@ -202,7 +202,7 @@ case MEMORY_SHOULD_CONTAIN: {
 void check_memory(const string& s) {
   istringstream in(s);
   in >> std::noskipws;
-  set<index_t> locations_checked;
+  set<long long int> locations_checked;
   while (true) {
     skip_whitespace_and_comments(in);
     if (in.eof()) break;
@@ -240,7 +240,7 @@ void check_type(const string& lhs, istream& in) {
     assert(_assign == "<-");
     skip_whitespace_and_comments(in);
     string literal = next_word(in);
-    index_t address = x.value;
+    long long int address = x.value;
     // exclude quoting brackets
     assert(*literal.begin() == '[');  literal.erase(literal.begin());
     assert(*--literal.end() == ']');  literal.erase(--literal.end());
@@ -250,12 +250,12 @@ void check_type(const string& lhs, istream& in) {
   raise << "don't know how to check memory for " << lhs << '\n';
 }
 
-void check_string(index_t address, const string& literal) {
+void check_string(long long int address, const string& literal) {
   trace("run") << "checking string length at " << address;
-  if (Memory[address] != static_cast<signed>(literal.size()))
-    raise << "expected location " << address << " to contain length " << literal.size() << " of string [" << literal << "] but saw " << Memory[address] << '\n';
+  if (Memory[address] != SIZE(literal))
+    raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n';
   ++address;  // now skip length
-  for (index_t i = 0; i < literal.size(); ++i) {
+  for (long long int i = 0; i < SIZE(literal); ++i) {
     trace("run") << "checking location " << address+i;
     if (Memory[address+i] != literal.at(i))
       raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
@@ -337,15 +337,15 @@ bool check_trace(const string& expected) {
 //?   cerr << "AAA " << expected << '\n'; //? 1
   Trace_stream->newline();
   vector<pair<string, string> > expected_lines = parse_trace(expected);
-//?   cerr << "BBB " << expected_lines.size() << '\n'; //? 1
+//?   cerr << "BBB " << SIZE(expected_lines) << '\n'; //? 1
   if (expected_lines.empty()) return true;
-  index_t curr_expected_line = 0;
+  long long int curr_expected_line = 0;
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (expected_lines.at(curr_expected_line).first != p->first) continue;
     if (expected_lines.at(curr_expected_line).second != p->second.second) continue;
     // match
     ++curr_expected_line;
-    if (curr_expected_line == expected_lines.size()) {
+    if (curr_expected_line == SIZE(expected_lines)) {
 //?       cerr << "ZZZ\n"; //? 1
       return true;
     }
@@ -360,10 +360,10 @@ bool check_trace(const string& expected) {
 vector<pair<string, string> > parse_trace(const string& expected) {
   vector<string> buf = split(expected, "\n");
   vector<pair<string, string> > result;
-  for (index_t i = 0; i < buf.size(); ++i) {
+  for (long long int i = 0; i < SIZE(buf); ++i) {
     buf.at(i) = trim(buf.at(i));
     if (buf.at(i).empty()) continue;
-    index_t delim = buf.at(i).find(": ");
+    long long int delim = buf.at(i).find(": ");
     result.push_back(pair<string, string>(buf.at(i).substr(0, delim), buf.at(i).substr(delim+2)));
   }
   return result;
@@ -426,7 +426,7 @@ case TRACE_SHOULD_NOT_CONTAIN: {
 bool check_trace_missing(const string& in) {
   Trace_stream->newline();
   vector<pair<string, string> > lines = parse_trace(in);
-  for (index_t i = 0; i < lines.size(); ++i) {
+  for (long long int i = 0; i < SIZE(lines); ++i) {
     if (trace_count(lines.at(i).first, lines.at(i).second) != 0) {
       raise << "unexpected [" << lines.at(i).second << "] in trace layer " << lines.at(i).first << '\n';
       Passed = false;

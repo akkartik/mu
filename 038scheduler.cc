@@ -18,9 +18,9 @@ recipe f2 [
 //: first, add a deadline to run(routine)
 //: these changes are ugly and brittle; just close your nose and get through the next few lines
 :(replace "void run_current_routine()")
-void run_current_routine(size_t time_slice)
-:(replace "while (!Current_routine->completed())" following "void run_current_routine(size_t time_slice)")
-size_t ninstrs = 0;
+void run_current_routine(long long int time_slice)
+:(replace "while (!Current_routine->completed())" following "void run_current_routine(long long int time_slice)")
+long long int ninstrs = 0;
 while (Current_routine->state == RUNNING && ninstrs < time_slice)
 :(after "Running One Instruction")
 ninstrs++;
@@ -40,8 +40,8 @@ state = RUNNING;
 
 :(before "End Globals")
 vector<routine*> Routines;
-index_t Current_routine_index = 0;
-size_t Scheduling_interval = 500;
+long long int Current_routine_index = 0;
+long long int Scheduling_interval = 500;
 :(before "End Setup")
 Scheduling_interval = 500;
 :(replace{} "void run(recipe_number r)")
@@ -70,7 +70,7 @@ void run(recipe_number r) {
 
 :(code)
 bool all_routines_done() {
-  for (index_t i = 0; i < Routines.size(); ++i) {
+  for (long long int i = 0; i < SIZE(Routines); ++i) {
 //?     cout << "routine " << i << ' ' << Routines.at(i)->state << '\n'; //? 1
     if (Routines.at(i)->state == RUNNING) {
       return false;
@@ -82,8 +82,8 @@ bool all_routines_done() {
 // skip Current_routine_index past non-RUNNING routines
 void skip_to_next_routine() {
   assert(!Routines.empty());
-  assert(Current_routine_index < Routines.size());
-  for (index_t i = (Current_routine_index+1)%Routines.size();  i != Current_routine_index;  i = (i+1)%Routines.size()) {
+  assert(Current_routine_index < SIZE(Routines));
+  for (long long int i = (Current_routine_index+1)%SIZE(Routines);  i != Current_routine_index;  i = (i+1)%SIZE(Routines)) {
     if (Routines.at(i)->state == RUNNING) {
 //?       cout << "switching to " << i << '\n'; //? 1
       Current_routine_index = i;
@@ -105,7 +105,7 @@ string current_routine_label() {
 }
 
 :(before "End Teardown")
-for (index_t i = 0; i < Routines.size(); ++i)
+for (long long int i = 0; i < SIZE(Routines); ++i)
   delete Routines.at(i);
 Routines.clear();
 
@@ -114,9 +114,9 @@ Routines.clear();
 //: 'start-running' will return a unique id for the routine that was created.
 //: routine id is a number, but don't do any arithmetic on it
 :(before "End routine Fields")
-index_t id;
+long long int id;
 :(before "End Globals")
-index_t Next_routine_id = 1;
+long long int Next_routine_id = 1;
 :(before "End Setup")
 Next_routine_id = 1;
 :(before "End routine Constructor")
@@ -146,7 +146,7 @@ case START_RUNNING: {
 //?   cerr << new_routine->id << " -> " << Current_routine->id << '\n'; //? 1
   new_routine->parent_index = Current_routine_index;
   // populate ingredients
-  for (index_t i = 1; i < current_instruction().ingredients.size(); ++i)
+  for (long long int i = 1; i < SIZE(current_instruction().ingredients); ++i)
     new_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
   Routines.push_back(new_routine);
   products.resize(1);
@@ -255,10 +255,10 @@ recipe f1 [
 
 :(before "End Scheduler Cleanup")
 //? trace("schedule") << "Before cleanup"; //? 1
-//? for (index_t i = 0; i < Routines.size(); ++i) { //? 1
+//? for (long long int i = 0; i < SIZE(Routines); ++i) { //? 1
 //?   trace("schedule") << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << ' ' << Routines.at(i)->state; //? 1
 //? } //? 1
-for (index_t i = 0; i < Routines.size(); ++i) {
+for (long long int i = 0; i < SIZE(Routines); ++i) {
   if (Routines.at(i)->state == COMPLETED) continue;
   if (Routines.at(i)->parent_index < 0) continue;  // root thread
 //?   trace("schedule") << "AAA " << i; //? 1
@@ -268,12 +268,12 @@ for (index_t i = 0; i < Routines.size(); ++i) {
   }
 }
 //? trace("schedule") << "After cleanup"; //? 1
-//? for (index_t i = 0; i < Routines.size(); ++i) { //? 1
+//? for (long long int i = 0; i < SIZE(Routines); ++i) { //? 1
 //?   trace("schedule") << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << ' ' << Routines.at(i)->state; //? 1
 //? } //? 1
 
 :(code)
-bool has_completed_parent(index_t routine_index) {
+bool has_completed_parent(long long int routine_index) {
 //?   trace("schedule") << "CCC " << routine_index << '\n'; //? 2
   for (long long int j = routine_index; j >= 0; j = Routines.at(j)->parent_index) {
 //?     trace("schedule") << "DDD " << j << '\n'; //? 2
@@ -306,10 +306,10 @@ ROUTINE_STATE,
 Recipe_number["routine-state"] = ROUTINE_STATE;
 :(before "End Primitive Recipe Implementations")
 case ROUTINE_STATE: {
-  assert(ingredients.at(0).size() == 1);  // routine id must be scalar
-  index_t id = ingredients.at(0).at(0);
+  assert(scalar(ingredients.at(0)));
+  long long int id = ingredients.at(0).at(0);
   long long int result = -1;
-  for (index_t i = 0; i < Routines.size(); ++i) {
+  for (long long int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->id == id) {
       result = Routines.at(i)->state;
       break;
@@ -328,9 +328,9 @@ RESTART,
 Recipe_number["restart"] = RESTART;
 :(before "End Primitive Recipe Implementations")
 case RESTART: {
-  assert(ingredients.at(0).size() == 1);  // routine id must be scalar
-  index_t id = ingredients.at(0).at(0);
-  for (index_t i = 0; i < Routines.size(); ++i) {
+  assert(scalar(ingredients.at(0)));
+  long long int id = ingredients.at(0).at(0);
+  for (long long int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->id == id) {
       Routines.at(i)->state = RUNNING;
       break;
@@ -345,9 +345,9 @@ STOP,
 Recipe_number["stop"] = STOP;
 :(before "End Primitive Recipe Implementations")
 case STOP: {
-  assert(ingredients.at(0).size() == 1);  // routine id must be scalar
-  index_t id = ingredients.at(0).at(0);
-  for (index_t i = 0; i < Routines.size(); ++i) {
+  assert(scalar(ingredients.at(0)));
+  long long int id = ingredients.at(0).at(0);
+  for (long long int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->id == id) {
       Routines.at(i)->state = COMPLETED;
       break;
@@ -362,7 +362,7 @@ _DUMP_ROUTINES,
 Recipe_number["$dump-routines"] = _DUMP_ROUTINES;
 :(before "End Primitive Recipe Implementations")
 case _DUMP_ROUTINES: {
-  for (index_t i = 0; i < Routines.size(); ++i) {
+  for (long long int i = 0; i < SIZE(Routines); ++i) {
     cerr << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << '\n';
   }
   break;

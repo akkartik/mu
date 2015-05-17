@@ -80,8 +80,8 @@ recipe main [
 type_info t = Type[types.at(0)];
 if (t.kind == container) {
   // size of a container is the sum of the sizes of its elements
-  size_t result = 0;
-  for (index_t i = 0; i < t.elements.size(); ++i) {
+  long long int result = 0;
+  for (long long int i = 0; i < SIZE(t.elements); ++i) {
     result += size_of(t.elements.at(i));
   }
   return result;
@@ -110,19 +110,19 @@ Recipe_number["get"] = GET;
 :(before "End Primitive Recipe Implementations")
 case GET: {
   reagent base = current_instruction().ingredients.at(0);
-  index_t base_address = base.value;
+  long long int base_address = base.value;
   type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == container);
   assert(isa_literal(current_instruction().ingredients.at(1)));
-  assert(ingredients.at(1).size() == 1);  // scalar
-  index_t offset = ingredients.at(1).at(0);
-  index_t src = base_address;
-  for (index_t i = 0; i < offset; ++i) {
+  assert(scalar(ingredients.at(1)));
+  long long int offset = ingredients.at(1).at(0);
+  long long int src = base_address;
+  for (long long int i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements.at(i));
   }
   trace("run") << "address to copy is " << src;
   assert(Type[base_type].kind == container);
-  assert(Type[base_type].elements.size() > offset);
+  assert(SIZE(Type[base_type].elements) > offset);
   type_number src_type = Type[base_type].elements.at(offset).at(0);
   trace("run") << "its type is " << src_type;
   reagent tmp;
@@ -169,14 +169,14 @@ Recipe_number["get-address"] = GET_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case GET_ADDRESS: {
   reagent base = current_instruction().ingredients.at(0);
-  index_t base_address = base.value;
+  long long int base_address = base.value;
   type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == container);
   assert(isa_literal(current_instruction().ingredients.at(1)));
-  assert(ingredients.at(1).size() == 1);  // scalar
-  index_t offset = ingredients.at(1).at(0);
-  index_t result = base_address;
-  for (index_t i = 0; i < offset; ++i) {
+  assert(scalar(ingredients.at(1)));
+  long long int offset = ingredients.at(1).at(0);
+  long long int result = base_address;
+  for (long long int i = 0; i < offset; ++i) {
     result += size_of(Type[base_type].elements.at(i));
   }
   trace("run") << "address to copy is " << result;
@@ -239,8 +239,8 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     }
     t.elements.push_back(types);
   }
-  assert(t.elements.size() == t.element_names.size());
-  t.size = t.elements.size();
+  assert(SIZE(t.elements) == SIZE(t.element_names));
+  t.size = SIZE(t.elements);
 }
 
 //: ensure types created in one scenario don't leak outside it.
@@ -249,7 +249,7 @@ vector<type_number> recently_added_types;
 :(before "End load_permanently")  //: for non-tests
 recently_added_types.clear();
 :(before "End Setup")  //: for tests
-for (index_t i = 0; i < recently_added_types.size(); ++i) {
+for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
 //?   cout << "erasing " << Type[recently_added_types.at(i)].name << '\n'; //? 1
   Type_number.erase(Type[recently_added_types.at(i)].name);
   Type.erase(recently_added_types.at(i));

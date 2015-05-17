@@ -25,26 +25,26 @@ recipe main [
 //: lifetime, surrounding allows managing shorter lifetimes inside a longer
 //: one.
 
-:(replace{} "index_t space_base(const reagent& x)")
-index_t space_base(const reagent& x) {
+:(replace{} "long long int space_base(const reagent& x)")
+long long int space_base(const reagent& x) {
   return space_base(x, space_index(x), Current_routine->calls.front().default_space);
 }
 
-index_t space_base(const reagent& x, index_t space_index, index_t base) {
+long long int space_base(const reagent& x, long long int space_index, long long int base) {
 //?   trace("foo") << "base of space " << space_index << '\n'; //? 1
   if (space_index == 0) {
 //?     trace("foo") << "base of space " << space_index << " is " << base << '\n'; //? 1
     return base;
   }
 //?   trace("foo") << "base of space " << space_index << " is " << Memory[base+1] << '\n'; //? 1
-  index_t result = space_base(x, space_index-1, Memory[base+1]);
+  long long int result = space_base(x, space_index-1, Memory[base+1]);
   return result;
 }
 
-index_t space_index(const reagent& x) {
-  for (index_t i = 0; i < x.properties.size(); ++i) {
+long long int space_index(const reagent& x) {
+  for (long long int i = 0; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == "space") {
-      assert(x.properties.at(i).second.size() == 1);
+      assert(SIZE(x.properties.at(i).second) == 1);
       return to_integer(x.properties.at(i).second.at(0));
     }
   }

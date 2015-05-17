@@ -7,7 +7,7 @@
 //:: Display management
 
 :(before "End Globals")
-index_t Display_row = 0, Display_column = 0;
+long long int Display_row = 0, Display_column = 0;
 
 :(before "End Primitive Recipe Declarations")
 SWITCH_TO_DISPLAY,
@@ -51,8 +51,8 @@ CLEAR_LINE_ON_DISPLAY,
 Recipe_number["clear-line-on-display"] = CLEAR_LINE_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case CLEAR_LINE_ON_DISPLAY: {
-  size_t width = tb_width();
-  for (index_t x = Display_column; x < width; ++x) {
+  long long int width = tb_width();
+  for (long long int x = Display_column; x < width; ++x) {
     tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_DEFAULT);
   }
   tb_set_cursor(Display_column, Display_row);
@@ -67,9 +67,9 @@ Recipe_number["print-character-to-display"] = PRINT_CHARACTER_TO_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case PRINT_CHARACTER_TO_DISPLAY: {
   int h=tb_height(), w=tb_width();
-  size_t height = (h >= 0) ? h : 0;
-  size_t width = (w >= 0) ? w : 0;
-  assert(ingredients.at(0).size() == 1);  // scalar
+  long long int height = (h >= 0) ? h : 0;
+  long long int width = (w >= 0) ? w : 0;
+  assert(scalar(ingredients.at(0)));
   long long int c = ingredients.at(0).at(0);
   if (c == '\n' || c == '\r') {
     if (Display_row < height-1) {
@@ -116,9 +116,9 @@ MOVE_CURSOR_ON_DISPLAY,
 Recipe_number["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_ON_DISPLAY: {
-  assert(ingredients.at(0).size() == 1);  // scalar
+  assert(scalar(ingredients.at(0)));
   Display_row = ingredients.at(0).at(0);
-  assert(ingredients.at(1).size() == 1);  // scalar
+  assert(scalar(ingredients.at(1)));
   Display_column = ingredients.at(1).at(0);
   tb_set_cursor(Display_column, Display_row);
   tb_present();
@@ -132,7 +132,7 @@ Recipe_number["move-cursor-down-on-display"] = MOVE_CURSOR_DOWN_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_DOWN_ON_DISPLAY: {
   int h=tb_height();
-  size_t height = (h >= 0) ? h : 0;
+  long long int height = (h >= 0) ? h : 0;
   if (Display_row < height-1) {
     Display_row++;
     tb_set_cursor(Display_column, Display_row);
@@ -162,7 +162,7 @@ Recipe_number["move-cursor-right-on-display"] = MOVE_CURSOR_RIGHT_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
   int w=tb_width();
-  size_t width = (w >= 0) ? w : 0;
+  long long int width = (w >= 0) ? w : 0;
   if (Display_column < width-1) {
     Display_column++;
     tb_set_cursor(Display_column, Display_row);

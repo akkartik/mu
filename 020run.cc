@@ -41,7 +41,7 @@ recipe main [
 //: Later layers will change this.
 struct routine {
   recipe_number running_recipe;
-  index_t running_step_index;
+  long long int running_step_index;
   routine(recipe_number r) :running_recipe(r), running_step_index(0) {}
   bool completed() const;
 };
@@ -69,13 +69,13 @@ void run_current_routine()
     // Each ingredient loads a vector of values rather than a single value; mu
     // permits operating on reagents spanning multiple locations.
     vector<vector<double> > ingredients;
-    for (index_t i = 0; i < current_instruction().ingredients.size(); ++i) {
+    for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
       trace("run") << "ingredient " << i << " is " << current_instruction().ingredients.at(i).name;
       ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
     }
     // Instructions below will write to 'products' or to 'instruction_counter'.
     vector<vector<double> > products;
-    index_t instruction_counter = current_step_index();
+    long long int instruction_counter = current_step_index();
 //?     cout << "AAA: " << current_instruction().to_string() << '\n'; //? 1
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
@@ -89,10 +89,10 @@ void run_current_routine()
       }
     }
 //?     cout << "BBB: " << current_instruction().to_string() << '\n'; //? 1
-    if (products.size() < current_instruction().products.size())
+    if (SIZE(products) < SIZE(current_instruction().products))
       raise << "failed to write to all products! " << current_instruction().to_string();
 //?     cout << "CCC: " << current_instruction().to_string() << '\n'; //? 1
-    for (index_t i = 0; i < current_instruction().products.size(); ++i) {
+    for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
       trace("run") << "product " << i << " is " << current_instruction().products.at(i).name;
       write_memory(current_instruction().products.at(i), products.at(i));
     }
@@ -107,7 +107,7 @@ void run_current_routine()
 //: We'll need to override these later as we change the definition of routine.
 //: Important that they return referrences into the routine.
 
-inline index_t& current_step_index() {
+inline long long int& current_step_index() {
   return Current_routine->running_step_index;
 }
 
@@ -120,7 +120,7 @@ inline const instruction& current_instruction() {
 }
 
 inline bool routine::completed() const {
-  return running_step_index >= Recipe[running_recipe].steps.size();
+  return running_step_index >= SIZE(Recipe[running_recipe].steps);
 }
 
 :(before "End Commandline Parsing")
@@ -186,9 +186,9 @@ vector<double> read_memory(reagent x) {
     result.push_back(x.value);
     return result;
   }
-  index_t base = x.value;
-  size_t size = size_of(x);
-  for (index_t offset = 0; offset < size; ++offset) {
+  long long int base = x.value;
+  long long int size = size_of(x);
+  for (long long int offset = 0; offset < size; ++offset) {
     double val = Memory[base+offset];
     trace("mem") << "location " << base+offset << " is " << val;
     result.push_back(val);
@@ -198,20 +198,20 @@ vector<double> read_memory(reagent x) {
 
 void write_memory(reagent x, vector<double> data) {
   if (is_dummy(x)) return;
-  index_t base = x.value;
-  if (size_of(x) != data.size())
+  long long int base = x.value;
+  if (size_of(x) != SIZE(data))
     raise << "size mismatch in storing to " << x.to_string() << '\n';
-  for (index_t offset = 0; offset < data.size(); ++offset) {
+  for (long long int offset = 0; offset < SIZE(data); ++offset) {
     trace("mem") << "storing " << data.at(offset) << " in location " << base+offset;
     Memory[base+offset] = data.at(offset);
   }
 }
 
 :(code)
-size_t size_of(const reagent& r) {
+long long int size_of(const reagent& r) {
   return size_of(r.types);
 }
-size_t size_of(const vector<type_number>& types) {
+long long int size_of(const vector<type_number>& types) {
   // End size_of(types) Cases
   return 1;
 }
@@ -221,7 +221,7 @@ bool is_dummy(const reagent& x) {
 }
 
 bool isa_literal(const reagent& r) {
-  return r.types.size() == 1 && r.types.at(0) == 0;
+  return SIZE(r.types) == 1 && r.types.at(0) == 0;
 }
 
 :(scenario run_label)

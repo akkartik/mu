@@ -7,8 +7,8 @@ Recipe_number["add"] = ADD;
 :(before "End Primitive Recipe Implementations")
 case ADD: {
   double result = 0;
-  for (index_t i = 0; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // scalar
+  for (long long int i = 0; i < SIZE(ingredients); ++i) {
+    assert(scalar(ingredients.at(i)));
     result += ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -52,10 +52,10 @@ SUBTRACT,
 Recipe_number["subtract"] = SUBTRACT;
 :(before "End Primitive Recipe Implementations")
 case SUBTRACT: {
-  assert(ingredients.at(0).size() == 1);  // scalar
+  assert(scalar(ingredients.at(0)));
   double result = ingredients.at(0).at(0);
-  for (index_t i = 1; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // scalar
+  for (long long int i = 1; i < SIZE(ingredients); ++i) {
+    assert(scalar(ingredients.at(i)));
     result -= ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -100,8 +100,8 @@ Recipe_number["multiply"] = MULTIPLY;
 :(before "End Primitive Recipe Implementations")
 case MULTIPLY: {
   double result = 1;
-  for (index_t i = 0; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // scalar
+  for (long long int i = 0; i < SIZE(ingredients); ++i) {
+    assert(scalar(ingredients.at(i)));
     result *= ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -145,10 +145,10 @@ DIVIDE,
 Recipe_number["divide"] = DIVIDE;
 :(before "End Primitive Recipe Implementations")
 case DIVIDE: {
-  assert(ingredients.at(0).size() == 1);  // scalar
+  assert(scalar(ingredients.at(0)));
   double result = ingredients.at(0).at(0);
-  for (index_t i = 1; i < ingredients.size(); ++i) {
-    assert(ingredients.at(i).size() == 1);  // scalar
+  for (long long int i = 1; i < SIZE(ingredients); ++i) {
+    assert(scalar(ingredients.at(i)));
     result /= ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -237,3 +237,11 @@ recipe main [
   1:number <- divide 5:literal, 2:literal
 ]
 +mem: storing 2.5 in location 1
+
+:(code)
+inline bool scalar(vector<long long int>& x) {
+  return SIZE(x) == 1;
+}
+inline bool scalar(vector<double>& x) {
+  return SIZE(x) == 1;
+}

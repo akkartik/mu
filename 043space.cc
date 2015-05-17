@@ -26,7 +26,7 @@ recipe main [
 +mem: storing 34 in location 8
 
 :(before "End call Fields")
-index_t default_space;
+long long int default_space;
 :(replace "call(recipe_number r) :running_recipe(r)")
 call(recipe_number r) :running_recipe(r), running_step_index(0), next_ingredient_to_process(0), default_space(0) {}
 
@@ -93,14 +93,14 @@ tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()))
 //:: helpers
 
 :(code)
-index_t space_base(const reagent& x) {
+long long int space_base(const reagent& x) {
   return Current_routine->calls.front().default_space;
 }
 
-index_t address(index_t offset, index_t base) {
+long long int address(long long int offset, long long int base) {
   if (base == 0) return offset;  // raw
 //?   cout << base << '\n'; //? 2
-  if (offset >= static_cast<index_t>(Memory[base])) {
+  if (offset >= static_cast<long long int>(Memory[base])) {
     // todo: test
     raise << "location " << offset << " is out of bounds " << Memory[base] << '\n';
   }
@@ -109,7 +109,7 @@ index_t address(index_t offset, index_t base) {
 
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "default-space") {
-    assert(data.size() == 1);
+    assert(scalar(data));
     Current_routine->calls.front().default_space = data.at(0);
 //?     cout << "AAA " << Current_routine->calls.front().default_space << '\n'; //? 1
     return;

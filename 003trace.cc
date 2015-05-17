@@ -215,10 +215,10 @@ void trace_all(const string& label, const list<string>& in) {
 
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {  // missing layer == anywhere, frame, hierarchical layers
   vector<string> expected_lines = split(expected, "");
-  index_t curr_expected_line = 0;
-  while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
+  long long int curr_expected_line = 0;
+  while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
     ++curr_expected_line;
-  if (curr_expected_line == expected_lines.size()) return true;
+  if (curr_expected_line == SIZE(expected_lines)) return true;
   Trace_stream->newline();
   string layer, frame, contents;
   parse_layer_frame_contents(expected_lines.at(curr_expected_line), &layer, &frame, &contents);
@@ -233,9 +233,9 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
       continue;
 
     ++curr_expected_line;
-    while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
+    while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
-    if (curr_expected_line == expected_lines.size()) return true;
+    if (curr_expected_line == SIZE(expected_lines)) return true;
     parse_layer_frame_contents(expected_lines.at(curr_expected_line), &layer, &frame, &contents);
   }
 
@@ -253,20 +253,20 @@ void parse_layer_frame_contents(const string& orig, string* layer, string* frame
 }
 
 void parse_contents(const string& s, const string& delim, string* prefix, string* contents) {
-  index_t pos = s.find(delim);
-  if (pos == NOT_FOUND) {
+  size_t pos = s.find(delim);
+  if (pos == string::npos) {
     *prefix = "";
     *contents = s;
   }
   else {
     *prefix = s.substr(0, pos);
-    *contents = s.substr(pos+delim.size());
+    *contents = s.substr(pos+SIZE(delim));
   }
 }
 
 void parse_layer_and_frame(const string& orig, string* layer, string* frame) {
-  index_t last_slash = orig.rfind('/');
-  if (last_slash == NOT_FOUND
+  size_t last_slash = orig.rfind('/');
+  if (last_slash == string::npos
       || orig.find_last_not_of("0123456789") != last_slash) {
     *layer = orig;
     *frame = "";
@@ -281,10 +281,10 @@ void parse_layer_and_frame(const string& orig, string* layer, string* frame) {
 
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, string expected) {  // empty layer == everything, multiple layers, hierarchical layers
   vector<string> expected_lines = split(expected, "");
-  index_t curr_expected_line = 0;
-  while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
+  long long int curr_expected_line = 0;
+  while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
     ++curr_expected_line;
-  if (curr_expected_line == expected_lines.size()) return true;
+  if (curr_expected_line == SIZE(expected_lines)) return true;
   Trace_stream->newline();
   vector<string> layers = split(layer, ",");
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
@@ -293,9 +293,9 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
     if (p->second.second != expected_lines.at(curr_expected_line))
       continue;
     ++curr_expected_line;
-    while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
+    while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
-    if (curr_expected_line == expected_lines.size()) return true;
+    if (curr_expected_line == SIZE(expected_lines)) return true;
   }
 
   ++Num_failures;
@@ -380,10 +380,10 @@ struct lease_trace_frame {
 
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, int frame, string expected) {  // multiple layers, hierarchical layers
   vector<string> expected_lines = split(expected, "");  // hack: doesn't handle newlines in embedded in lines
-  index_t curr_expected_line = 0;
-  while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
+  long long int curr_expected_line = 0;
+  while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
     ++curr_expected_line;
-  if (curr_expected_line == expected_lines.size()) return true;
+  if (curr_expected_line == SIZE(expected_lines)) return true;
   Trace_stream->newline();
   vector<string> layers = split(layer, ",");
   for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
@@ -394,9 +394,9 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
     if (p->second.second != expected_lines.at(curr_expected_line))
       continue;
     ++curr_expected_line;
-    while (curr_expected_line < expected_lines.size() && expected_lines.at(curr_expected_line).empty())
+    while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
-    if (curr_expected_line == expected_lines.size()) return true;
+    if (curr_expected_line == SIZE(expected_lines)) return true;
   }
 
   ++Num_failures;
@@ -412,14 +412,14 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, 
 
 vector<string> split(string s, string delim) {
   vector<string> result;
-  index_t begin=0, end=s.find(delim);
+  size_t begin=0, end=s.find(delim);
   while (true) {
-    if (end == NOT_FOUND) {
-      result.push_back(string(s, begin, NOT_FOUND));
+    if (end == string::npos) {
+      result.push_back(string(s, begin, string::npos));
       break;
     }
     result.push_back(string(s, begin, end-begin));
-    begin = end+delim.size();
+    begin = SIZE(end+delim);
     end = s.find(delim, begin);
   }
   return result;
@@ -444,7 +444,7 @@ bool prefix_match(const string& pat, const string& needle) {
 }
 
 bool headmatch(const string& s, const string& pat) {
-  if (pat.size() > s.size()) return false;
+  if (SIZE(pat) > SIZE(s)) return false;
   return std::mismatch(pat.begin(), pat.end(), s.begin()).first == pat.end();
 }
 

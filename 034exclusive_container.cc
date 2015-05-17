@@ -11,15 +11,15 @@ type_number tmp = Type_number["number-or-point"] = Next_type_number++;
 Type[tmp].size = 2;
 Type[tmp].kind = exclusive_container;
 Type[tmp].name = "number-or-point";
-//? cout << tmp << ": " << Type[tmp].elements.size() << '\n'; //? 1
+//? cout << tmp << ": " << SIZE(Type[tmp].elements) << '\n'; //? 1
 vector<type_number> t1;
 t1.push_back(number);
 Type[tmp].elements.push_back(t1);
-//? cout << Type[tmp].elements.size() << '\n'; //? 1
+//? cout << SIZE(Type[tmp].elements) << '\n'; //? 1
 vector<type_number> t2;
 t2.push_back(point);
 Type[tmp].elements.push_back(t2);
-//? cout << Type[tmp].elements.size() << '\n'; //? 1
+//? cout << SIZE(Type[tmp].elements) << '\n'; //? 1
 //? cout << "point: " << point << '\n'; //? 1
 Type[tmp].element_names.push_back("i");
 Type[tmp].element_names.push_back("p");
@@ -43,10 +43,10 @@ if (t.kind == exclusive_container) {
   // (So like containers, it can't contain arrays.)
 //?   cout << "--- " << types.at(0) << ' ' << t.size << '\n'; //? 1
 //?   cout << "point: " << Type_number["point"] << " " << Type[Type_number["point"]].name << " " << Type[Type_number["point"]].size << '\n'; //? 1
-//?   cout << t.name << ' ' << t.size << ' ' << t.elements.size() << '\n'; //? 1
-  size_t result = 0;
-  for (index_t i = 0; i < t.size; ++i) {
-    size_t tmp = size_of(t.elements.at(i));
+//?   cout << t.name << ' ' << t.size << ' ' << SIZE(t.elements) << '\n'; //? 1
+  long long int result = 0;
+  for (long long int i = 0; i < t.size; ++i) {
+    long long int tmp = size_of(t.elements.at(i));
 //?     cout << i << ": " << t.elements.at(i).at(0) << ' ' << tmp << ' ' << result << '\n'; //? 1
     if (tmp > result) result = tmp;
   }
@@ -89,13 +89,13 @@ Recipe_number["maybe-convert"] = MAYBE_CONVERT;
 :(before "End Primitive Recipe Implementations")
 case MAYBE_CONVERT: {
   reagent base = canonize(current_instruction().ingredients.at(0));
-  index_t base_address = base.value;
+  long long int base_address = base.value;
   type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == exclusive_container);
   assert(isa_literal(current_instruction().ingredients.at(1)));
-  index_t tag = current_instruction().ingredients.at(1).value;
+  long long int tag = current_instruction().ingredients.at(1).value;
   long long int result;
-  if (tag == static_cast<index_t>(Memory[base_address])) {
+  if (tag == static_cast<long long int>(Memory[base_address])) {
     result = base_address+1;
   }
   else {

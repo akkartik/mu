@@ -29,6 +29,37 @@ bool is_equal(char* s, const char* lit) {
   return strncmp(s, lit, strlen(lit)) == 0;
 }
 
+// I'll throw some style conventions here for want of a better place for them.
+// As a rule I hate style guides. Do what you want, that's my motto. But since
+// we're dealing with C/C++, the one big thing we want to avoid is undefined
+// behavior. So, conventions:
+
+// 0. Initialize all primitive variables in methods and constructors.
+
+// 1. Avoid 'new' and 'delete' as far as possible. Rely on STL to perform
+// memory management to avoid use-after-free issues (and memory leaks).
+
+// 2. Avoid arrays to avoid out-of-bounds access. Never use operator[] except
+// with map. Use at() with STL vectors and so on.
+
+// 3. Valgrind all the things.
+
+// 4. Avoid unsigned numbers. Not strictly an undefined-behavior issue, but
+// the extra range doesn't matter, and it's one less confusing category of
+// interaction gotchas to worry about.
+//
+// We're screwed on overflow (undefined behavior). Use a decent compiler. But
+// we're more likely to try to subtract unsigned 2 from 1 than we are to
+// create integers that don't fit in 64 bits.
+//
+// Corollary: don't use the size() method on containers, since it returns an
+// unsigned and that'll cause warnings about mixing signed and unsigned,
+// yadda-yadda. Instead use this macro below to perform an unsafe cast to
+// signed. (Implementation-defined behavior, so not as bad as undefined;
+// should cause immediate failures on overflow by failing to enter loops.)
+:(before "End Includes")
+#define SIZE(X) static_cast<long long int>(X.size())
+
 :(before "End Includes")
 #include<assert.h>
 
@@ -43,8 +74,3 @@ using std::cerr;
 #include<cstring>
 #include<string>
 using std::string;
-typedef size_t index_t;
-const index_t NOT_FOUND = string::npos;
-:(after "int main(int argc, char* argv[])")
-assert(sizeof(string::size_type) == sizeof(size_t));
-assert(sizeof(index_t) == sizeof(size_t));

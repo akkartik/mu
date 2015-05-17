@@ -23,7 +23,7 @@ recipe f2 [
 WAITING,
 :(before "End routine Fields")
 // only if state == WAITING
-index_t waiting_on_location;
+long long int waiting_on_location;
 int old_value_of_waiting_location;
 :(before "End routine Constructor")
 waiting_on_location = old_value_of_waiting_location = 0;
@@ -48,7 +48,7 @@ case WAIT_FOR_LOCATION: {
 //: scheduler tweak to get routines out of that state
 
 :(before "End Scheduler State Transitions")
-for (index_t i = 0; i < Routines.size(); ++i) {
+for (long long int i = 0; i < SIZE(Routines); ++i) {
 //?   trace("schedule") << "wake up loop 1: routine " << Routines.at(i)->id << " has state " << Routines.at(i)->state; //? 1
   if (Routines.at(i)->state != WAITING) continue;
 //?   trace("schedule") << "waiting on location: " << Routines.at(i)->waiting_on_location; //? 1
@@ -86,7 +86,7 @@ recipe f2 [
 
 :(before "End routine Fields")
 // only if state == WAITING
-index_t waiting_on_routine;
+long long int waiting_on_routine;
 :(before "End routine Constructor")
 waiting_on_routine = 0;
 
@@ -97,7 +97,7 @@ Recipe_number["wait-for-routine"] = WAIT_FOR_ROUTINE;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_ROUTINE: {
   Current_routine->state = WAITING;
-  assert(ingredients.at(0).size() == 1);  // scalar
+  assert(scalar(ingredients.at(0)));
   Current_routine->waiting_on_routine = ingredients.at(0).at(0);
   trace("run") << "waiting for routine " << ingredients.at(0).at(0);
   break;
@@ -107,12 +107,12 @@ case WAIT_FOR_ROUTINE: {
 // Wake up any routines waiting for other routines to go to sleep.
 // Important: this must come after the scheduler loop above giving routines
 // waiting for locations to change a chance to wake up.
-for (index_t i = 0; i < Routines.size(); ++i) {
+for (long long int i = 0; i < SIZE(Routines); ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   if (!Routines.at(i)->waiting_on_routine) continue;
-  index_t id = Routines.at(i)->waiting_on_routine;
+  long long int id = Routines.at(i)->waiting_on_routine;
   assert(id != Routines.at(i)->id);
-  for (index_t j = 0; j < Routines.size(); ++j) {
+  for (long long int j = 0; j < SIZE(Routines); ++j) {
     if (Routines.at(j)->id == id && Routines.at(j)->state != RUNNING) {
       trace("schedule") << "waking up routine " << Routines.at(i)->id;
       Routines.at(i)->state = RUNNING;
@@ -127,7 +127,7 @@ SWITCH,
 Recipe_number["switch"] = SWITCH;
 :(before "End Primitive Recipe Implementations")
 case SWITCH: {
-  index_t id = some_other_running_routine();
+  long long int id = some_other_running_routine();
   if (id) {
     assert(id != Current_routine->id);
 //?     cerr << "waiting on " << id << " from " << Current_routine->id << '\n'; //? 1
@@ -138,8 +138,8 @@ case SWITCH: {
 }
 
 :(code)
-index_t some_other_running_routine() {
-  for (index_t i = 0; i < Routines.size(); ++i) {
+long long int some_other_running_routine() {
+  for (long long int i = 0; i < SIZE(Routines); ++i) {
     if (i == Current_routine_index) continue;
     assert(Routines.at(i) != Current_routine);
     assert(Routines.at(i)->id != Current_routine->id);

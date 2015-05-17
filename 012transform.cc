@@ -4,7 +4,7 @@
 //: deconstructed alternative to conventional compilers.
 
 :(before "End recipe Fields")
-index_t transformed_until;
+long long int transformed_until;
   recipe() :transformed_until(-1) {}
 
 :(before "End Types")
@@ -16,7 +16,7 @@ vector<transform_fn> Transform;
 :(code)
 void transform_all() {
 //?   cout << "AAA transform_all\n"; //? 1
-  for (index_t t = 0; t < Transform.size(); ++t) {
+  for (long long int t = 0; t < SIZE(Transform); ++t) {
     for (map<recipe_number, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
       recipe& r = p->second;
       if (r.steps.empty()) continue;
@@ -33,12 +33,12 @@ void parse_int_reagents() {
   for (map<recipe_number, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
     recipe& r = p->second;
     if (r.steps.empty()) continue;
-    for (index_t index = 0; index < r.steps.size(); ++index) {
+    for (long long int index = 0; index < SIZE(r.steps); ++index) {
       instruction& inst = r.steps.at(index);
-      for (index_t i = 0; i < inst.ingredients.size(); ++i) {
+      for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
         populate_value(inst.ingredients.at(i));
       }
-      for (index_t i = 0; i < inst.products.size(); ++i) {
+      for (long long int i = 0; i < SIZE(inst.products); ++i) {
         populate_value(inst.products.at(i));
       }
     }
