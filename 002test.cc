@@ -81,7 +81,7 @@ void run_test(index_t i) {
 }
 
 bool is_integer(const string& s) {
-  return s.find_first_not_of("0123456789-") == string::npos;
+  return s.find_first_not_of("0123456789-") == NOT_FOUND;
 }
 
 long long int to_integer(string n) {
