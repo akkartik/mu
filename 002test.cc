@@ -86,6 +86,7 @@ bool is_integer(const string& s) {
 
 long long int to_integer(string n) {
   char* end = NULL;
+  // safe because string.c_str() is guaranteed to be null-terminated
   long long int result = strtoll(n.c_str(), &end, /*any base*/0);
   assert(*end == '\0');
   return result;
