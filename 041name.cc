@@ -217,7 +217,7 @@ if (inst.operation == Recipe_number["get"]
   assert(inst.ingredients.size() >= 2);
 //?   cout << inst.ingredients.at(1).to_string() << '\n'; //? 1
   assert(isa_literal(inst.ingredients.at(1)));
-  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
+  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == NOT_FOUND) continue;
   // since first non-address in base type must be a container, we don't have to canonize
   type_number base_type = skip_addresses(inst.ingredients.at(0).types);
   inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
@@ -253,7 +253,7 @@ if (inst.operation == Recipe_number["maybe-convert"]) {
   // at least 2 args, and second arg is offset
   assert(inst.ingredients.size() >= 2);
   assert(isa_literal(inst.ingredients.at(1)));
-  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
+  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == NOT_FOUND) continue;
   // since first non-address in base type must be an exclusive container, we don't have to canonize
   type_number base_type = skip_addresses(inst.ingredients.at(0).types);
   inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
