@@ -40,21 +40,23 @@ void transform_braces(const recipe_number r) {
 //?   cout << "AAA transform_braces\n"; //? 1
 //?   exit(0); //? 1
   const int OPEN = 0, CLOSE = 1;
-  list<pair<int/*OPEN/CLOSE*/, /*step*/index_t> > braces;
-  for (index_t index = 0; index < Recipe[r].steps.size(); ++index) {
+  // use signed integer for step index because we'll be doing arithmetic on it
+  list<pair<int/*OPEN/CLOSE*/, /*step*/long long int> > braces;
+  for (long long int index = 0; index < static_cast<long long int>(Recipe[r].steps.size()); ++index) {
     const instruction& inst = Recipe[r].steps.at(index);
     if (inst.label == "{") {
       trace("brace") << r << ": push (open, " << index << ")";
-      braces.push_back(pair<int,index_t>(OPEN, index));
+      braces.push_back(pair<int,long long int>(OPEN, index));
     }
     if (inst.label == "}") {
       trace("brace") << "push (close, " << index << ")";
-      braces.push_back(pair<int,index_t>(CLOSE, index));
+      braces.push_back(pair<int,long long int>(CLOSE, index));
     }
   }
-  stack</*step*/index_t> open_braces;
+  stack</*step*/long long int> open_braces;
   trace("after-brace") << "recipe " << Recipe[r].name;
-  for (index_t index = 0; index < Recipe[r].steps.size(); ++index) {
+  for (long long int index = 0; index < static_cast<long long int>(Recipe[r].steps.size()); ++index) {
+//?     cerr << index << '\n'; //? 1
     instruction& inst = Recipe[r].steps.at(index);
 //?     cout << "AAA " << inst.name << ": " << inst.operation << '\n'; //? 1
     if (inst.label == "{") open_braces.push(index);
@@ -154,9 +156,11 @@ void transform_braces(const recipe_number r) {
   }
 }
 
-int matching_brace(index_t index, const list<pair<int, index_t> >& braces) {
+// returns a signed integer not just so that we can return -1 but also to
+// enable future signed arithmetic
+long long int matching_brace(long long int index, const list<pair<int, long long int> >& braces) {
   int stacksize = 0;
-  for (list<pair<int, index_t> >::const_iterator p = braces.begin(); p != braces.end(); ++p) {
+  for (list<pair<int, long long int> >::const_iterator p = braces.begin(); p != braces.end(); ++p) {
     if (p->second < index) continue;
     stacksize += (p->first ? 1 : -1);
     if (stacksize == 0) return p->second;

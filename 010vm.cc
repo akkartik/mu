@@ -41,12 +41,12 @@ struct instruction {
 struct reagent {
   vector<pair<string, vector<string> > > properties;
   string name;
-  long long int value;
+  double value;
   bool initialized;
   vector<type_number> types;
   reagent(string s);
   reagent();
-  void set_value(long long int v) { value = v; initialized = true; }
+  void set_value(double v) { value = v; initialized = true; }
   string to_string() const;
 };
 
