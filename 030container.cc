@@ -132,11 +132,6 @@ case GET: {
   break;
 }
 
-//: 'get' requires a literal in ingredient 1. We'll use a synonym called
-//: 'offset'.
-:(before "End Mu Types Initialization")
-Type_number["offset"] = 0;
-
 :(scenario get_handles_nested_container_elements)
 recipe main [
   12:number <- copy 34:literal

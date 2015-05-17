@@ -1,5 +1,15 @@
 //: Jump primitives
 
+:(scenario jump_can_skip_instructions)
+recipe main [
+  jump 1:offset
+  1:number <- copy 1:literal
+]
++run: instruction main/0
++run: ingredient 0 is 1
+-run: instruction main/1
+-mem: storing 1 in location 1
+
 :(before "End Primitive Recipe Declarations")
 JUMP,
 :(before "End Primitive Recipe Numbers")
@@ -14,15 +24,9 @@ case JUMP: {
   break;
 }
 
-:(scenario jump_can_skip_instructions)
-recipe main [
-  jump 1:offset
-  1:number <- copy 1:literal
-]
-+run: instruction main/0
-+run: ingredient 0 is 1
--run: instruction main/1
--mem: storing 1 in location 1
+//: special type to designate jump targets
+:(before "End Mu Types Initialization")
+Type_number["offset"] = 0;
 
 :(scenario jump_backward)
 recipe main [
