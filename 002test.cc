@@ -80,11 +80,11 @@ void run_test(index_t i) {
   if (Passed) cerr << ".";
 }
 
-bool is_number(const string& s) {
-  return s.find_first_not_of("0123456789-.") == string::npos;
+bool is_integer(const string& s) {
+  return s.find_first_not_of("0123456789-") == string::npos;
 }
 
-long long int to_number(string n) {
+long long int to_integer(string n) {
   char* end = NULL;
   long long int result = strtoll(n.c_str(), &end, /*any base*/0);
   assert(*end == '\0');

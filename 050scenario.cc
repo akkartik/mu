@@ -207,11 +207,11 @@ void check_memory(const string& s) {
     skip_whitespace_and_comments(in);
     if (in.eof()) break;
     string lhs = next_word(in);
-    if (!is_number(lhs)) {
+    if (!is_integer(lhs)) {
       check_type(lhs, in);
       continue;
     }
-    int address = to_number(lhs);
+    int address = to_integer(lhs);
     skip_whitespace_and_comments(in);
     string _assign;  in >> _assign;  assert(_assign == "<-");
     skip_whitespace_and_comments(in);
@@ -234,7 +234,7 @@ void check_memory(const string& s) {
 void check_type(const string& lhs, istream& in) {
   reagent x(lhs);
   if (x.properties.at(0).second.at(0) == "string") {
-    x.set_value(to_number(x.name));
+    x.set_value(to_integer(x.name));
     skip_whitespace_and_comments(in);
     string _assign = next_word(in);
     assert(_assign == "<-");

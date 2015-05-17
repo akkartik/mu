@@ -70,7 +70,7 @@ bool disqualified(/*mutable*/ reagent& x) {
   assert(!x.types.empty());
   if (is_raw(x)) return true;
   if (isa_literal(x)) return true;
-  if (is_number(x.name)) return true;
+  if (is_integer(x.name)) return true;
   if (x.name == "default-space")
     x.initialized = true;
   if (x.initialized) return true;
@@ -107,14 +107,14 @@ bool is_numeric_location(const reagent& x) {
   if (isa_literal(x)) return false;
   if (is_raw(x)) return false;
   if (x.name == "0") return false;  // used for chaining lexical scopes
-  return is_number(x.name);
+  return is_integer(x.name);
 }
 
 bool is_named_location(const reagent& x) {
   if (isa_literal(x)) return false;
   if (is_raw(x)) return false;
   if (is_special_name(x.name)) return false;
-  return !is_number(x.name);
+  return !is_integer(x.name);
 }
 
 bool is_raw(const reagent& r) {
