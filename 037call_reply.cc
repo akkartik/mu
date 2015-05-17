@@ -33,7 +33,7 @@ case REPLY: {
     if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
       vector<string> tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
       assert(tmp.size() == 1);
-      long long int ingredient_index = to_number(tmp.at(0));
+      long long int ingredient_index = to_integer(tmp.at(0));
       if (caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
         raise << "'same-as-ingredient' result " << caller_instruction.products.at(i).value << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n';
     }
