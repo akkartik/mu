@@ -199,6 +199,25 @@ container foo [
 +parse:   element name: y
 +parse:   type: 1
 
+:(scenario container_use_before_definition)
+container foo [
+  x:number
+  y:bar
+]
+
+container bar [
+  x:number
+  y:number
+]
++parse: reading container foo
++parse: type number: 1000
++parse:   element name: x
++parse:   type: 1
++parse:   element name: y
++parse:   type: 1001
++parse: reading container bar
++parse: type number: 1001
+
 :(before "End Command Handlers")
 else if (command == "container") {
   insert_container(command, container, in);
@@ -216,6 +235,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
       || Type_number[name] == 0) {
     Type_number[name] = Next_type_number++;
   }
+  trace("parse") << "type number: " << Type_number[name];
   skip_bracket(in, "'container' must begin with '['");
   assert(Type.find(Type_number[name]) == Type.end());
   type_info& t = Type[Type_number[name]];
@@ -232,8 +252,9 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     vector<type_number> types;
     while (!inner.eof()) {
       string type_name = slurp_until(inner, ':');
-      if (Type_number.find(type_name) == Type_number.end())
-        raise << "unknown type " << type_name << '\n';
+      if (Type_number.find(type_name) == Type_number.end()
+          || Type_number[type_name] == 0)
+        Type_number[type_name] = Next_type_number++;
       types.push_back(Type_number[type_name]);
       trace("parse") << "  type: " << types.back();
     }
