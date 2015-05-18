@@ -20,6 +20,22 @@ scenario screen-in-scenario [
 #?   $exit
 ]
 
+:(scenario screen_in_scenario_unicode)
+# screen-should-contain can check unicode characters in the fake screen
+scenario screen-in-scenario [
+  assume-screen 5:literal/width, 3:literal/height
+  run [
+    screen:address <- print-character screen:address, 955:literal  # 'λ'
+  ]
+  screen-should-contain [
+  #  01234
+    .λ    .
+    .     .
+    .     .
+  ]
+#?   $exit
+]
+
 :(scenario screen_in_scenario_error)
 #? % cerr << "AAA\n";
 % Hide_warnings = true;
@@ -35,7 +51,7 @@ scenario screen-in-scenario-error [
     .     .
   ]
 ]
-+warn: expected screen location (0, 0) to contain 'b' instead of 'a'
++warn: expected screen location (0, 0) to contain 98 ('b') instead of 97 ('a')
 
 :(before "End Globals")
 // Scenarios may not define default-space, so they should fit within the
@@ -83,8 +99,22 @@ case SCREEN_SHOULD_CONTAIN: {
   break;
 }
 
+:(before "End Types")
+// scan an array of characters in a unicode-aware, bounds-checked manner
+struct raw_string_stream {
+  long long int index;
+  const long long int max;
+  const char* buf;
+
+  raw_string_stream(const string&);
+  uint32_t get();  // unicode codepoint
+  uint32_t peek();  // unicode codepoint
+  bool at_end() const;
+  void skip_whitespace_and_comments();
+};
+
 :(code)
-void check_screen(const string& contents) {
+void check_screen(const string& expected_contents) {
 //?   cerr << "Checking screen\n"; //? 1
   assert(!Current_routine->calls.front().default_space);  // not supported
   long long int screen_location = Memory[SCREEN];
@@ -96,40 +126,38 @@ void check_screen(const string& contents) {
   long long int screen_width = Memory[screen_location+width_offset];
   int height_offset = find_element_name(Type_number["screen"], "num-rows");
   long long int screen_height = Memory[screen_location+height_offset];
-  string expected_contents;
-  istringstream in(contents);
-  in >> std::noskipws;
+  raw_string_stream cursor(expected_contents);
+  // todo: too-long expected_contents should fail
+  long long int addr = screen_data_start+1;  // skip length
   for (long long int row = 0; row < screen_height; ++row) {
-    skip_whitespace_and_comments(in);
-    assert(!in.eof());
-    assert(in.get() == '.');
-    for (long long int column = 0; column < screen_width; ++column) {
-      assert(!in.eof());
-      expected_contents += in.get();
-    }
-    assert(in.get() == '.');
-  }
-  skip_whitespace_and_comments(in);
-//?   assert(in.get() == ']');
-  trace("run") << "checking screen size at " << screen_data_start;
-//?   cout << SIZE(expected_contents) << '\n'; //? 1
-  if (Memory[screen_data_start] > SIZE(expected_contents))
-    raise << "expected contents are larger than screen size " << Memory[screen_data_start] << '\n';
-  ++screen_data_start;  // now skip length
-  for (long long int i = 0; i < SIZE(expected_contents); ++i) {
-    trace("run") << "checking location " << screen_data_start+i;
-//?     cerr << "comparing " << i/screen_width << ", " << i%screen_width << ": " << Memory[screen_data_start+i] << " vs " << (int)expected_contents.at(i) << '\n'; //? 1
-    if ((!Memory[screen_data_start+i] && !isspace(expected_contents.at(i)))  // uninitialized memory => spaces
-        || (Memory[screen_data_start+i] && Memory[screen_data_start+i] != expected_contents.at(i))) {
-//?       cerr << "CCC " << Trace_stream << " " << Hide_warnings << '\n'; //? 1
+    cursor.skip_whitespace_and_comments();
+    if (cursor.at_end()) break;
+    assert(cursor.get() == '.');
+    for (long long int column = 0;  column < screen_width;  ++column, ++addr) {
+      uint32_t curr = cursor.get();
+      if (Memory[addr] == 0 && isspace(curr)) continue;
+      if (Memory[addr] != 0 && Memory[addr] == curr) continue;
+      // mismatch
+      // can't print multi-byte unicode characters in warnings just yet. not very useful for debugging anyway.
+      char expected_pretty[10] = {0};
+      if (curr < 256) {
+        // " ('<curr>')"
+        expected_pretty[0] = ' ', expected_pretty[1] = '(', expected_pretty[2] = '\'', expected_pretty[3] = static_cast<unsigned char>(curr), expected_pretty[4] = '\'', expected_pretty[5] = ')', expected_pretty[6] = '\0';
+      }
+      char actual_pretty[10] = {0};
+      if (Memory[addr] < 256) {
+        // " ('<curr>')"
+        actual_pretty[0] = ' ', actual_pretty[1] = '(', actual_pretty[2] = '\'', actual_pretty[3] = static_cast<unsigned char>(Memory[addr]), actual_pretty[4] = '\'', actual_pretty[5] = ')', actual_pretty[6] = '\0';
+      }
+
       if (Current_scenario && !Hide_warnings) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
+        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << Memory[addr] << actual_pretty << "'\n";
         dump_screen();
       }
       else {
         // just testing check_screen
-        raise << "expected screen location (" << i/screen_width << ", " << i%screen_width << ") to contain '" << expected_contents.at(i) << "' instead of '" << static_cast<char>(Memory[screen_data_start+i]) << "'\n";
+        raise << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << Memory[addr] << actual_pretty << '\n';
       }
       if (!Hide_warnings) {
         Passed = false;
@@ -137,6 +165,49 @@ void check_screen(const string& contents) {
       }
       return;
     }
+    assert(cursor.get() == '.');
+  }
+  cursor.skip_whitespace_and_comments();
+  assert(cursor.at_end());
+}
+
+raw_string_stream::raw_string_stream(const string& backing) :index(0), max(backing.size()), buf(backing.c_str()) {}
+
+bool raw_string_stream::at_end() const {
+  if (index >= max) return true;
+  if (tb_utf8_char_length(buf[index]) > max-index) {
+    raise << "unicode string seems corrupted at index "<< index << " character " << static_cast<int>(buf[index]) << '\n';
+    return true;
+  }
+  return false;
+}
+
+uint32_t raw_string_stream::get() {
+  assert(index < max);  // caller must check bounds before calling 'get'
+  uint32_t result = 0;
+  int length = tb_utf8_char_to_unicode(&result, &buf[index]);
+  assert(length != TB_EOF);
+  index += length;
+  return result;
+}
+
+uint32_t raw_string_stream::peek() {
+  assert(index < max);  // caller must check bounds before calling 'get'
+  uint32_t result = 0;
+  int length = tb_utf8_char_to_unicode(&result, &buf[index]);
+  assert(length != TB_EOF);
+  return result;
+}
+
+void raw_string_stream::skip_whitespace_and_comments() {
+  while (!at_end()) {
+    if (isspace(peek())) get();
+    else if (peek() == '#') {
+      // skip comment
+      get();
+      while (peek() != '\n') get();  // implicitly also handles CRLF
+    }
+    else break;
   }
 }
 

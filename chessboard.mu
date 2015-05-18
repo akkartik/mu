@@ -33,6 +33,8 @@ scenario print-board-and-read-move [
 ]
   run [
     screen:address, keyboard:address <- chessboard screen:address, keyboard:address
+    # icon for the cursor
+    screen:address <- print-character screen:address, 9251:literal  # '␣'
 #?     $dump-screen #? 1
   ]
   screen-should-contain [
@@ -55,11 +57,10 @@ scenario print-board-and-read-move [
     .                                                                                                                        .
     .Hit 'q' to exit.                                                                                                        .
     .                                                                                                                        .
-    .move:                                                                                                                   .
+    .move: ␣                                                                                                                 .
     .                                                                                                                        .
     .                                                                                                                        .
   ]
-  # todo: doesn't show the cursor position yet (it's right after the 'move: ')
 ]
 
 recipe chessboard [
