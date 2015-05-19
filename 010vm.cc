@@ -184,8 +184,10 @@ reagent::reagent(string s) :value(0), initialized(false) {
   name = properties.at(0).first;
   for (long long int i = 0; i < SIZE(properties.at(0).second); ++i) {
     string type = properties.at(0).second.at(i);
-    if (Type_number.find(type) == Type_number.end())
-      raise << "unknown type: " << type << '\n';
+    if (Type_number.find(type) == Type_number.end()) {
+//?       cerr << type << " is " << Next_type_number << '\n'; //? 1
+      Type_number[type] = Next_type_number++;
+    }
     types.push_back(Type_number[type]);
   }
   if (name == "_" && types.empty()) {
