@@ -154,7 +154,7 @@ assert(MAX_PRIMITIVE_RECIPES < 100);  // level 0 is primitives; until 99
 Next_recipe_number = 100;
 // End Load Recipes
 :(before "End Test Run Initialization")
-assert(Next_recipe_number < 1000);  // functions being tested didn't overflow into test space
+assert(Next_recipe_number < 1000);  // recipes being tested didn't overflow into test space
 :(before "End Setup")
 Next_recipe_number = 1000;  // consistent new numbers for each test
 
