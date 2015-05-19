@@ -1,3 +1,8 @@
+# A list links up multiple objects together to make them easier to manage.
+#
+# Try to make all objects in a single list of the same type, it'll help avoid bugs.
+# If you want to store multiple types in a single list, use an exclusive-container.
+
 container list [
   value:location
   next:address:list
