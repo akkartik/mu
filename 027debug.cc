@@ -47,6 +47,19 @@ case _STOP_TRACING: {
 }
 
 :(before "End Primitive Recipe Declarations")
+_CLOSE_TRACE,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["$close-trace"] = _CLOSE_TRACE;
+:(before "End Primitive Recipe Implementations")
+case _CLOSE_TRACE: {
+  if (Trace_stream) {
+    delete Trace_stream;
+    Trace_stream = NULL;
+  }
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
 _EXIT,
 :(before "End Primitive Recipe Numbers")
 Recipe_number["$exit"] = _EXIT;

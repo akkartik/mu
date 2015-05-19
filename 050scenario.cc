@@ -116,7 +116,7 @@ void run_mu_scenario(const scenario& s) {
     setup();
   }
   run("recipe "+s.name+" [ " + s.to_run + " ]");
-  if (not_already_inside_test) {
+  if (not_already_inside_test && Trace_stream) {
     teardown();
     ofstream fout((Trace_dir+Trace_file).c_str());
     fout << Trace_stream->readable_contents("");

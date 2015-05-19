@@ -26,6 +26,7 @@ recipe main [
 # program.
 
 scenario print-board-and-read-move [
+  $close-trace  # this test generates a 300+ MB trace!
   # we'll make the screen really wide because the program currently prints out a long line
   assume-screen 120:literal/width, 20:literal/height
   # initialize keyboard to type in a move
