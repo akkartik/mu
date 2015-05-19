@@ -82,6 +82,8 @@ if (t.kind == container) {
   // size of a container is the sum of the sizes of its elements
   long long int result = 0;
   for (long long int i = 0; i < SIZE(t.elements); ++i) {
+    // todo: strengthen assertion to disallow mutual type recursion
+    assert(types.at(0) != t.elements.at(i).at(0));
     result += size_of(t.elements.at(i));
   }
   return result;
@@ -237,7 +239,6 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   }
   trace("parse") << "type number: " << Type_number[name];
   skip_bracket(in, "'container' must begin with '['");
-  assert(Type.find(Type_number[name]) == Type.end());
   type_info& t = Type[Type_number[name]];
   recently_added_types.push_back(Type_number[name]);
   t.name = name;
@@ -252,9 +253,10 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     vector<type_number> types;
     while (!inner.eof()) {
       string type_name = slurp_until(inner, ':');
-      if (Type_number.find(type_name) == Type_number.end()
-          || Type_number[type_name] == 0)
+      if (Type_number.find(type_name) == Type_number.end()) {
+//?         cerr << type_name << " is " << Next_type_number << '\n'; //? 1
         Type_number[type_name] = Next_type_number++;
+      }
       types.push_back(Type_number[type_name]);
       trace("parse") << "  type: " << types.back();
     }
@@ -276,6 +278,21 @@ for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
   Type.erase(recently_added_types.at(i));
 }
 recently_added_types.clear();
+// delete recent type references
+// can't rely on recently_added_types to cleanup Type_number, because of deliberately misbehaving tests with references to undefined types
+map<string, type_number>::iterator p = Type_number.begin();
+while(p != Type_number.end()) {
+  // save current item
+  string name = p->first;
+  type_number t = p->second;
+  // increment iterator
+  ++p;
+  // now delete current item if necessary
+  if (t >= 1000) {
+//?     cerr << "AAA " << name << " " << t << '\n'; //? 1
+    Type_number.erase(name);
+  }
+}
 //: lastly, ensure scenarios are consistent by always starting them at the
 //: same type number.
 Next_type_number = 1000;
@@ -283,6 +300,80 @@ Next_type_number = 1000;
 assert(Next_type_number < 1000);
 :(before "End Setup")
 Next_type_number = 1000;
+
+//:: Allow container definitions anywhere in the codebase, but warn if you
+//:: can't find a definition.
+
+:(scenarios run)
+:(scenario run_warns_on_unknown_types)
+% Hide_warnings = true;
+#? % Trace_stream->dump_layer = "run";
+recipe main [
+  # integer is not a type
+  1:integer <- copy 0:literal
+]
++warn: unknown type: integer
+
+:(scenario run_allows_type_definition_after_use)
+% Hide_warnings = true;
+recipe main [
+  1:bar <- copy 0:literal
+]
+
+container bar [
+  x:number
+]
+-warn: unknown type: bar
+
+:(after "int main")
+  Transform.push_back(check_invalid_types);
+
+:(code)
+void check_invalid_types(const recipe_number r) {
+  for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
+    const instruction& inst = Recipe[r].steps.at(index);
+    for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
+      check_invalid_types(inst.ingredients.at(i));
+    }
+    for (long long int i = 0; i < SIZE(inst.products); ++i) {
+      check_invalid_types(inst.products.at(i));
+    }
+  }
+}
+
+void check_invalid_types(const reagent& r) {
+  for (long long int i = 0; i < SIZE(r.types); ++i) {
+    if (r.types.at(i) == 0) continue;
+    if (Type.find(r.types.at(i)) == Type.end())
+      raise << "unknown type: " << r.properties.at(0).second.at(i) << '\n';
+  }
+}
+
+:(scenario container_unknown_field)
+% Hide_warnings = true;
+container foo [
+  x:number
+  y:bar
+]
++warn: unknown type for field y in foo
+
+:(before "End Load Sanity Checks")
+check_container_field_types();
+
+:(code)
+void check_container_field_types() {
+  for (map<type_number, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
+    const type_info& info = p->second;
+//?     cerr << "checking " << p->first << '\n'; //? 1
+    for (long long int i = 0; i < SIZE(info.elements); ++i) {
+      for (long long int j = 0; j < SIZE(info.elements.at(i)); ++j) {
+        if (info.elements.at(i).at(j) == 0) continue;
+        if (Type.find(info.elements.at(i).at(j)) == Type.end())
+          raise << "unknown type for field " << info.element_names.at(i) << " in " << info.name << '\n';
+      }
+    }
+  }
+}
 
 //:: helpers
 

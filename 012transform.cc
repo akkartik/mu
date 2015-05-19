@@ -15,7 +15,7 @@ vector<transform_fn> Transform;
 
 :(code)
 void transform_all() {
-//?   cout << "AAA transform_all\n"; //? 1
+//?   cerr << "AAA transform_all\n"; //? 2
   for (long long int t = 0; t < SIZE(Transform); ++t) {
     for (map<recipe_number, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
       recipe& r = p->second;

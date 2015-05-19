@@ -46,6 +46,7 @@ vector<recipe_number> load(istream& in) {
       raise << "unknown top-level command: " << command << '\n';
     }
   }
+  // End Load Sanity Checks
   return result;
 }
 
