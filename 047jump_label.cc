@@ -4,7 +4,7 @@
 
 :(scenario jump_to_label)
 recipe main [
-  jump +target:offset
+  jump +target:label
   1:number <- copy 0:literal
   +target
 ]
@@ -63,7 +63,7 @@ recipe main [
 #?   $print [aaa]
   {
     {
-      break +target:offset
+      break +target:label
       1:number <- copy 0:literal
     }
   }
@@ -75,7 +75,7 @@ recipe main [
 recipe main [
   {
     {
-      jump-if 1:literal, +target:offset
+      jump-if 1:literal, +target:label
       1:number <- copy 0:literal
     }
   }
@@ -87,7 +87,7 @@ recipe main [
 recipe main [
   {
     {
-      loop-unless 0:literal, +target:offset  # loop/break with a label don't care about braces
+      loop-unless 0:literal, +target:label  # loop/break with a label don't care about braces
       1:number <- copy 0:literal
     }
   }
@@ -101,7 +101,7 @@ recipe main [
   1:number <- copy 0:literal
   2:number <- copy 0:literal
   3:number <- copy 0:literal
-  jump +target:offset
+  jump +target:label
   4:number <- copy 0:literal
   +target
   5:number <- copy 0:literal
