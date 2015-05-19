@@ -1,4 +1,4 @@
-//: Spaces help isolate functions from each other. You can create them at will,
+//: Spaces help isolate recipes from each other. You can create them at will,
 //: and all addresses in arguments are implicitly based on the 'default-space'
 //: (unless they have the /raw property)
 
@@ -18,7 +18,7 @@ recipe main [
   3:number <- copy 34:literal
   # pretend array
   1000:number <- copy 5:literal
-  # actual start of this function
+  # actual start of this recipe
   default-space:address:array:location <- copy 1000:literal
   1:address:number <- copy 3:literal
   8:number/raw <- copy 1:address:number/deref
@@ -60,7 +60,7 @@ recipe main [
   13:number <- copy 35:literal
   # pretend array
   1000:number <- copy 5:literal
-  # actual start of this function
+  # actual start of this recipe
   default-space:address:array:location <- copy 1000:literal
   1:address:point <- copy 12:literal
   9:number/raw <- get 1:address:point/deref, 1:offset
@@ -80,7 +80,7 @@ recipe main [
   14:number <- copy 35:literal
   # pretend array
   1000:number <- copy 5:literal
-  # actual start of this function
+  # actual start of this recipe
   default-space:address:array:location <- copy 1000:literal
   1:address:array:number <- copy 12:literal
   9:number/raw <- index 1:address:array:number/deref, 1:literal
