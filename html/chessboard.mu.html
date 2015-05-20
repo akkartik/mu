@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>chessboard.mu</title>
+<title>~/Desktop/s/mu/chessboard.mu.html</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="none">
@@ -55,11 +55,10 @@ recipe main [
   return-to-console  <span class="Comment"># cleanup screen and keyboard</span>
 ]
 
-<span class="Comment"># But enough about mu. Here's what it looks like to run the chessboard</span>
-<span class="Comment"># program.</span>
+<span class="SalientComment">## But enough about mu. Here's what it looks like to run the chessboard program.</span>
 
 scenario print-board-and-read-move [
- <span class="Identifier"> $close-trace</span>  <span class="Comment"># this test generates a 300+ MB trace!</span>
+ <span class="Identifier"> $close-trace</span>  <span class="Comment"># administrivia: most scenarios save and check traces, but this one gets too large/slow</span>
   <span class="Comment"># we'll make the screen really wide because the program currently prints out a long line</span>
   assume-screen <span class="Constant">120:literal/width</span>, <span class="Constant">20:literal/height</span>
   <span class="Comment"># initialize keyboard to type in a move</span>
@@ -69,7 +68,6 @@ scenario print-board-and-read-move [
     screen:address, keyboard:address<span class="Special"> &lt;- </span>chessboard screen:address, keyboard:address
     <span class="Comment"># icon for the cursor</span>
     screen:address<span class="Special"> &lt;- </span>print-character screen:address, <span class="Constant">9251:literal</span>  <span class="Comment"># '␣'</span>
-<span class="CommentedCode">#?     $dump-screen #? 1</span>
   ]
   screen-should-contain [
   <span class="Comment">#            1         2         3         4         5         6         7         8         9         10        11</span>
@@ -96,6 +94,8 @@ scenario print-board-and-read-move [
    <span class="Constant"> .                                                                                                                        .</span>
   ]
 ]
+
+<span class="SalientComment">## Here's how 'chessboard' is implemented.</span>
 
 recipe chessboard [
 <span class="CommentedCode">#?   $start-tracing [schedule] #? 2</span>
