@@ -19,7 +19,8 @@ set cpo&vim
 "? let b:syntax = "mu"
 
 setlocal iskeyword=@,48-57,?,!,_,$,-
-setlocal textwidth&  " mu programs have long lines
+setlocal formatoptions-=t  " mu programs have long lines
+setlocal formatoptions+=c  " but comments should still wrap
 
 syntax match muComment /#.*$/ | highlight link muComment Comment
 syntax match muSalientComment /##.*$/ | highlight link muSalientComment SalientComment
