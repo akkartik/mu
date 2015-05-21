@@ -340,9 +340,9 @@ bool check_trace(const string& expected) {
 //?   cerr << "BBB " << SIZE(expected_lines) << '\n'; //? 1
   if (expected_lines.empty()) return true;
   long long int curr_expected_line = 0;
-  for (vector<pair<string, pair<int, string> > >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+  for (vector<pair<string, string> >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (expected_lines.at(curr_expected_line).first != p->first) continue;
-    if (expected_lines.at(curr_expected_line).second != p->second.second) continue;
+    if (expected_lines.at(curr_expected_line).second != p->second) continue;
     // match
     ++curr_expected_line;
     if (curr_expected_line == SIZE(expected_lines)) {
