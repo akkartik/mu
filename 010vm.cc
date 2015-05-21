@@ -39,6 +39,7 @@ struct instruction {
 // us how to interpret them. They also can contain arbitrary other lists of
 // properties besides types, but we're getting ahead of ourselves.
 struct reagent {
+  string original_string;
   vector<pair<string, vector<string> > > properties;
   string name;
   double value;
@@ -167,7 +168,7 @@ instruction::instruction() :is_label(false), operation(IDLE) {}
 void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingredients.clear(); products.clear(); }
 
 // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
-reagent::reagent(string s) :value(0), initialized(false) {
+reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
   istringstream in(s);
   in >> std::noskipws;
   // properties
@@ -203,11 +204,7 @@ reagent::reagent() :value(0), initialized(false) {
 }
 string reagent::to_string() const {
   ostringstream out;
-  out << "{name: \"" << name << "\", value: " << value << ", type: ";
-  for (long long int i = 0; i < SIZE(types); ++i) {
-    if (i > 0) out << '-';
-    out << types.at(i);
-  }
+  out << "{name: \"" << name << "\"";
   if (!properties.empty()) {
     out << ", properties: [";
     for (long long int i = 0; i < SIZE(properties); ++i) {
@@ -229,13 +226,13 @@ string instruction::to_string() const {
   ostringstream out;
   for (long long int i = 0; i < SIZE(products); ++i) {
     if (i > 0) out << ", ";
-    out << products.at(i).to_string();
+    out << products.at(i).original_string;
   }
   if (!products.empty()) out << " <- ";
-  out << name << '/' << operation << ' ';
+  out << name << ' ';
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
     if (i > 0) out << ", ";
-    out << ingredients.at(i).to_string();
+    out << ingredients.at(i).original_string;
   }
   return out.str();
 }

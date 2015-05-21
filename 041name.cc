@@ -7,7 +7,6 @@ recipe main [
   x:number <- copy 0:literal
 ]
 +name: assign x 1
-+run: instruction main/0
 +mem: storing 0 in location 1
 
 :(scenario convert_names_warns)

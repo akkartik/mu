@@ -13,8 +13,7 @@
 recipe main [
   1:number <- copy 23:literal
 ]
-+run: instruction main/0
-+run: ingredient 0 is 23
++run: 1:number <- copy 23:literal
 +mem: storing 23 in location 1
 
 :(scenario copy)
@@ -22,8 +21,7 @@ recipe main [
   1:number <- copy 23:literal
   2:number <- copy 1:number
 ]
-+run: instruction main/1
-+run: ingredient 0 is 1
++run: 2:number <- copy 1:number
 +mem: location 1 is 23
 +mem: storing 23 in location 2
 
@@ -31,8 +29,6 @@ recipe main [
 recipe main [
   1:number, 2:number <- copy 23:literal, 24:literal
 ]
-+run: ingredient 0 is 23
-+run: ingredient 1 is 24
 +mem: storing 23 in location 1
 +mem: storing 24 in location 2
 
@@ -62,7 +58,7 @@ void run_current_routine()
   {
     // Running One Instruction.
     if (current_instruction().is_label) { ++current_step_index(); continue; }
-    trace("run") << "instruction " << current_recipe_name() << '/' << current_step_index();
+//?     trace("run") << "instruction " << current_recipe_name() << '/' << current_step_index();
     trace("run") << current_instruction().to_string();
     assert(Memory[0] == 0);
     // Read all ingredients from memory.
@@ -70,7 +66,7 @@ void run_current_routine()
     // permits operating on reagents spanning multiple locations.
     vector<vector<double> > ingredients;
     for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
-      trace("run") << "ingredient " << i << " is " << current_instruction().ingredients.at(i).name;
+//?       trace("run") << "ingredient " << i << " is " << current_instruction().ingredients.at(i).name;
       ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
     }
     // Instructions below will write to 'products' or to 'instruction_counter'.
@@ -93,7 +89,7 @@ void run_current_routine()
       raise << "failed to write to all products! " << current_instruction().to_string();
 //?     cout << "CCC: " << current_instruction().to_string() << '\n'; //? 1
     for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
-      trace("run") << "product " << i << " is " << current_instruction().products.at(i).name;
+//?       trace("run") << "product " << i << " is " << current_instruction().products.at(i).name;
       write_memory(current_instruction().products.at(i), products.at(i));
     }
 //?     cout << "DDD: " << current_instruction().to_string() << '\n'; //? 1
@@ -230,12 +226,12 @@ recipe main [
   1:number <- copy 23:literal
   2:number <- copy 1:number
 ]
-+run: instruction main/1
-+run: instruction main/2
--run: instruction main/0
++run: 1:number <- copy 23:literal
++run: 2:number <- copy 1:number
+-run: +foo
 
 :(scenario run_dummy)
 recipe main [
   _ <- copy 0:literal
 ]
-+run: instruction main/0
++run: _ <- copy 0:literal

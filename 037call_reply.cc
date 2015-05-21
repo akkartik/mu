@@ -9,7 +9,6 @@ recipe f [
   13:number <- add 1:literal, 12:number
   reply 12:number, 13:number
 ]
-+run: instruction main/0
 +mem: storing 34 in location 1
 +mem: storing 35 in location 2
 
@@ -53,7 +52,6 @@ recipe f [
   13:number <- copy 35:literal
   reply 12:point
 ]
-+run: instruction main/0
 +run: result 0 is [2, 35]
 +mem: storing 2 in location 3
 +mem: storing 35 in location 4

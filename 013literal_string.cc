@@ -10,13 +10,13 @@
 recipe main [
   1:address:array:character <- copy [abc def]  # copy can't really take a string
 ]
-+parse:   ingredient: {name: "abc def", value: 0, type: 0, properties: ["abc def": "literal-string"]}
++parse:   ingredient: {name: "abc def", properties: ["abc def": "literal-string"]}
 
 :(scenario string_literal_with_colons)
 recipe main [
   1:address:array:character <- copy [abc:def/ghi]
 ]
-+parse:   ingredient: {name: "abc:def/ghi", value: 0, type: 0, properties: ["abc:def/ghi": "literal-string"]}
++parse:   ingredient: {name: "abc:def/ghi", properties: ["abc:def/ghi": "literal-string"]}
 
 :(before "End Mu Types Initialization")
 Type_number["literal-string"] = 0;
@@ -65,14 +65,14 @@ string slurp_quoted(istream& in) {
 recipe main [
   1:address:array:character <- copy [abc [def]]
 ]
-+parse:   ingredient: {name: "abc [def]", value: 0, type: 0, properties: ["abc [def]": "literal-string"]}
++parse:   ingredient: {name: "abc [def]", properties: ["abc [def]": "literal-string"]}
 
 :(scenario string_literal_and_comment)
 recipe main [
   1:address:array:character <- copy [abc]  # comment
 ]
 +parse: instruction: copy
-+parse:   ingredient: {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
-+parse:   product: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character"]}
++parse:   ingredient: {name: "abc", properties: ["abc": "literal-string"]}
++parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
 # no other ingredients
 $parse: 3

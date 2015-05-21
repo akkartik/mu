@@ -482,17 +482,3 @@ void slurp_until_matching_bracket(istream& in, ostream& out) {
     out << c;
   }
 }
-
-// see tests for this function in tangle/030tangle.test.cc
-string trim(const string& s) {
-  string::const_iterator first = s.begin();
-  while (first != s.end() && isspace(*first))
-    ++first;
-  if (first == s.end()) return "";
-
-  string::const_iterator last = --s.end();
-  while (last != s.begin() && isspace(*last))
-    --last;
-  ++last;
-  return string(first, last);
-}

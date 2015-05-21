@@ -8,9 +8,6 @@ recipe main [
   # This loads location 1 as an address and looks up *that* location.
   3:number <- copy 1:address:number/deref
 ]
-+run: instruction main/2
-+mem: location 1 is 2
-+mem: location 2 is 34
 +mem: storing 34 in location 3
 
 :(before "long long int base = x.value" following "vector<double> read_memory(reagent x)")
@@ -23,8 +20,6 @@ recipe main [
   1:address:number <- copy 2:literal
   1:address:number/deref <- copy 34:literal
 ]
-+run: instruction main/1
-+mem: location 1 is 2
 +mem: storing 34 in location 2
 
 :(before "long long int base = x.value" following "void write_memory(reagent x, vector<double> data)")
@@ -76,9 +71,6 @@ recipe main [
   3:number <- copy 35:literal
   4:number <- get 1:address:point/deref, 0:offset
 ]
-+run: instruction main/3
-+run: address to copy is 2
-+run: product 0 is 4
 +mem: storing 34 in location 4
 
 :(scenario include_nonderef_properties)
@@ -88,9 +80,6 @@ recipe main [
   3:number <- copy 35:literal
   4:number <- get 1:address:point/deref/foo, 0:offset
 ]
-+run: instruction main/3
-+run: address to copy is 2
-+run: product 0 is 4
 +mem: storing 34 in location 4
 
 :(after "reagent base = " following "case GET:")
@@ -104,9 +93,7 @@ recipe main [
   3:number <- copy 35:literal
   4:number <- get-address 1:address:point/deref, 0:offset
 ]
-+run: instruction main/3
-+run: address to copy is 2
-+run: product 0 is 4
++mem: storing 2 in location 4
 
 :(after "reagent base = " following "case GET_ADDRESS:")
 base = canonize(base);

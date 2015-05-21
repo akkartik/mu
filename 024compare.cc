@@ -25,12 +25,8 @@ recipe main [
   2:number <- copy 33:literal
   3:number <- equal 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
 +mem: location 1 is 34
-+run: ingredient 1 is 2
 +mem: location 2 is 33
-+run: product 0 is 3
 +mem: storing 0 in location 3
 
 :(scenario equal2)
@@ -39,12 +35,8 @@ recipe main [
   2:number <- copy 34:literal
   3:number <- equal 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
 +mem: location 1 is 34
-+run: ingredient 1 is 2
 +mem: location 2 is 34
-+run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario equal_multiple)
@@ -85,12 +77,6 @@ recipe main [
   2:number <- copy 33:literal
   3:boolean <- greater-than 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 34
-+run: ingredient 1 is 2
-+mem: location 2 is 33
-+run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario greater_than2)
@@ -99,12 +85,6 @@ recipe main [
   2:number <- copy 34:literal
   3:boolean <- greater-than 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 34
-+run: ingredient 1 is 2
-+mem: location 2 is 34
-+run: product 0 is 3
 +mem: storing 0 in location 3
 
 :(scenario greater_than_multiple)
@@ -145,12 +125,6 @@ recipe main [
   2:number <- copy 33:literal
   3:boolean <- lesser-than 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 32
-+run: ingredient 1 is 2
-+mem: location 2 is 33
-+run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario lesser_than2)
@@ -159,12 +133,6 @@ recipe main [
   2:number <- copy 33:literal
   3:boolean <- lesser-than 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 34
-+run: ingredient 1 is 2
-+mem: location 2 is 33
-+run: product 0 is 3
 +mem: storing 0 in location 3
 
 :(scenario lesser_than_multiple)
@@ -205,12 +173,6 @@ recipe main [
   2:number <- copy 33:literal
   3:boolean <- greater-or-equal 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 34
-+run: ingredient 1 is 2
-+mem: location 2 is 33
-+run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario greater_or_equal2)
@@ -219,12 +181,6 @@ recipe main [
   2:number <- copy 34:literal
   3:boolean <- greater-or-equal 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 34
-+run: ingredient 1 is 2
-+mem: location 2 is 34
-+run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario greater_or_equal3)
@@ -233,12 +189,6 @@ recipe main [
   2:number <- copy 35:literal
   3:boolean <- greater-or-equal 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 34
-+run: ingredient 1 is 2
-+mem: location 2 is 35
-+run: product 0 is 3
 +mem: storing 0 in location 3
 
 :(scenario greater_or_equal_multiple)
@@ -279,12 +229,6 @@ recipe main [
   2:number <- copy 33:literal
   3:boolean <- lesser-or-equal 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 32
-+run: ingredient 1 is 2
-+mem: location 2 is 33
-+run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario lesser_or_equal2)
@@ -293,12 +237,6 @@ recipe main [
   2:number <- copy 33:literal
   3:boolean <- lesser-or-equal 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 33
-+run: ingredient 1 is 2
-+mem: location 2 is 33
-+run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario lesser_or_equal3)
@@ -307,12 +245,6 @@ recipe main [
   2:number <- copy 33:literal
   3:boolean <- lesser-or-equal 1:number, 2:number
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 34
-+run: ingredient 1 is 2
-+mem: location 2 is 33
-+run: product 0 is 3
 +mem: storing 0 in location 3
 
 :(scenario lesser_or_equal_multiple)

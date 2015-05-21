@@ -14,11 +14,11 @@ recipe main [
   1:number <- copy 32:literal
   1:number/space:1 <- copy 33:literal
 ]
-+run: instruction main/3
+# chain space
 +mem: storing 20 in location 11
-+run: instruction main/4
+# store to default-space
 +mem: storing 32 in location 12
-+run: instruction main/5
+# store to chained space
 +mem: storing 33 in location 22
 
 //: If you think of a space as a collection of variables with a common

@@ -6,7 +6,7 @@
 recipe main [
   1:number <- copy 3.14159
 ]
-+parse:   ingredient: {name: "3.14159", value: 3.14159, type: 0, properties: ["3.14159": "literal-number"]}
++parse:   ingredient: {name: "3.14159", properties: ["3.14159": "literal-number"]}
 
 :(after "reagent::reagent(string s)")
   if (is_noninteger(s)) {

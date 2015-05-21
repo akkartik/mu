@@ -22,12 +22,6 @@ recipe main [
   2:boolean <- copy 0:literal
   3:boolean <- and 1:boolean, 2:boolean
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 1
-+run: ingredient 1 is 2
-+mem: location 2 is 0
-+run: product 0 is 3
 +mem: storing 0 in location 3
 
 :(scenario and2)
@@ -70,12 +64,6 @@ recipe main [
   2:boolean <- copy 0:literal
   3:boolean <- or 1:boolean, 2:boolean
 ]
-+run: instruction main/2
-+run: ingredient 0 is 1
-+mem: location 1 is 1
-+run: ingredient 1 is 2
-+mem: location 2 is 0
-+run: product 0 is 3
 +mem: storing 1 in location 3
 
 :(scenario or2)
@@ -115,10 +103,6 @@ recipe main [
   1:boolean <- copy 1:literal
   2:boolean <- not 1:boolean
 ]
-+run: instruction main/1
-+run: ingredient 0 is 1
-+mem: location 1 is 1
-+run: product 0 is 2
 +mem: storing 0 in location 2
 
 :(scenario not_multiple)
