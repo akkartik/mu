@@ -1,64 +1,37 @@
 void test_trace_check_compares() {
-  CHECK_TRACE_CONTENTS("test layer", "");
   trace("test layer") << "foo";
-  CHECK_TRACE_CONTENTS("test layer", "foo");
+  CHECK_TRACE_CONTENTS("test layer: foo");
 }
 
-void test_trace_check_filters_layers() {
+void test_trace_check_ignores_other_layers() {
   trace("test layer 1") << "foo";
   trace("test layer 2") << "bar";
-  CHECK_TRACE_CONTENTS("test layer 1", "foo");
+  CHECK_TRACE_CONTENTS("test layer 1: foo");
+  CHECK_TRACE_DOESNT_CONTAIN("test layer 2: foo");
 }
 
 void test_trace_check_ignores_other_lines() {
   trace("test layer 1") << "foo";
   trace("test layer 1") << "bar";
-  CHECK_TRACE_CONTENTS("test layer 1", "foo");
+  CHECK_TRACE_CONTENTS("test layer 1: foo");
+}
+
+void test_trace_check_ignores_other_lines2() {
+  trace("test layer 1") << "foo";
+  trace("test layer 1") << "bar";
+  CHECK_TRACE_CONTENTS("test layer 1: bar");
 }
 
 void test_trace_ignores_trailing_whitespace() {
   trace("test layer 1") << "foo\n";
-  CHECK_TRACE_CONTENTS("test layer 1", "foo");
-}
-
-void test_trace_check_always_finds_empty_lines() {
-  CHECK_TRACE_CONTENTS("test layer 1", "");
-}
-
-void test_trace_check_treats_empty_layers_as_wildcards() {
-  trace("test layer 1") << "foo";
-  CHECK_TRACE_CONTENTS("", "foo");
-}
-
-void test_trace_check_multiple_lines_at_once() {
-  trace("test layer 1") << "foo";
-  trace("test layer 2") << "bar";
-  CHECK_TRACE_CONTENTS("", "foobar");
-}
-
-void test_trace_check_always_finds_empty_lines2() {
-  CHECK_TRACE_CONTENTS("test layer 1", "");
+  CHECK_TRACE_CONTENTS("test layer 1: foo");
 }
 
 void test_trace_orders_across_layers() {
   trace("test layer 1") << "foo";
   trace("test layer 2") << "bar";
   trace("test layer 1") << "qux";
-  CHECK_TRACE_CONTENTS("", "foobarqux");
-}
-
-void test_trace_orders_across_layers2() {
-  trace("test layer 1") << "foo";
-  trace("test layer 2") << "bar";
-  trace("test layer 1") << "qux";
-  CHECK_TRACE_CONTENTS("foobarqux");
-}
-
-void test_trace_checks_ordering_spanning_multiple_layers() {
-  trace("layer1") << "foo";
-  trace("layer2") << "bar";
-  trace("layer1") << "qux";
-  CHECK_TRACE_CONTENTS("layer1: foolayer2: barlayer1: qux");
+  CHECK_TRACE_CONTENTS("test layer 1: footest layer 2: bartest layer 1: qux");
 }
 
 void test_trace_supports_count() {

@@ -184,6 +184,8 @@ struct lease_tracer {
 START_TRACING_UNTIL_END_OF_SCOPE
 //? Trace_stream->dump_layer = "all"; //? 1
 
+#define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
+
 :(before "End Tracing")
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {  // missing layer == anywhere
   vector<string> expected_lines = split(expected, "");
@@ -195,7 +197,7 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   string layer, contents;
   split_layer_contents(expected_lines.at(curr_expected_line), &layer, &contents);
   for (vector<pair<string, string> >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (!layer.empty() && layer != p->first)
+    if (layer != p->first)
       continue;
 
     if (contents != p->second)
@@ -229,33 +231,6 @@ void split_layer_contents(const string& s, string* layer, string* contents) {
 }
 
 
-
-bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, string expected) {  // empty layer == everything
-  vector<string> expected_lines = split(expected, "");
-  long long int curr_expected_line = 0;
-  while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
-    ++curr_expected_line;
-  if (curr_expected_line == SIZE(expected_lines)) return true;
-  Trace_stream->newline();
-  for (vector<pair<string, string> >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (!layer.empty() && layer != p->first)
-      continue;
-    if (p->second != expected_lines.at(curr_expected_line))
-      continue;
-    ++curr_expected_line;
-    while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
-      ++curr_expected_line;
-    if (curr_expected_line == SIZE(expected_lines)) return true;
-  }
-
-  ++Num_failures;
-  cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << expected_lines.at(curr_expected_line) << "] in trace:\n";
-  DUMP(layer);
-  Passed = false;
-  return false;
-}
-
-#define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 
 int trace_count(string layer) {
   return trace_count(layer, "");
