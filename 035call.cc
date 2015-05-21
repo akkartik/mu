@@ -12,20 +12,22 @@ recipe f [
 :(scenario return_on_fallthrough)
 recipe main [
   f
-  1:number <- copy 34:literal
-  2:number <- copy 34:literal
-  3:number <- copy 34:literal
+  1:number <- copy 0:literal
+  2:number <- copy 0:literal
+  3:number <- copy 0:literal
 ]
 recipe f [
-  4:number <- copy 34:literal
-  5:number <- copy 34:literal
+  4:number <- copy 0:literal
+  5:number <- copy 0:literal
 ]
-+run: instruction main/0
-+run: instruction f/0
-+run: instruction f/1
-+run: instruction main/1
-+run: instruction main/2
-+run: instruction main/3
++run: f
+# running f
++run: 4:number <- copy 0:literal
++run: 5:number <- copy 0:literal
+# back out to main
++run: 1:number <- copy 0:literal
++run: 2:number <- copy 0:literal
++run: 3:number <- copy 0:literal
 
 :(before "struct routine {")
 // Everytime a recipe runs another, we interrupt it and start running the new

@@ -3,7 +3,7 @@ parse:   ingredient: {name: "
     default-space:address:array:location <- new location:type, 30:literal
     x:address:array:character <- new [abc]
     3:boolean/raw <- string-equal x:address:array:character, x:address:array:character
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     default-space:address:array:location <- new location:type, 30:literal
     x:address:array:character <- new [abc]
     3:boolean/raw <- string-equal x:address:array:character, x:address:array:character
@@ -11,7 +11,7 @@ parse:   ingredient: {name: "
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "
     3 <- 1  # x == x for all x
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     3 <- 1  # x == x for all x
   ": "literal-string"]}
 after-brace: recipe string-equal-reflexive
@@ -19,32 +19,22 @@ after-brace: run ...
 after-brace: memory-should-contain ...
 new: routine allocated memory from 1000 to 101000
 schedule: string-equal-reflexive
-run: instruction string-equal-reflexive/0
-run: run/55 {name: "
+run: run [
     default-space:address:array:location <- new location:type, 30:literal
     x:address:array:character <- new [abc]
     3:boolean/raw <- string-equal x:address:array:character, x:address:array:character
-  ", value: 0, type: 0, properties: ["
-    default-space:address:array:location <- new location:type, 30:literal
-    x:address:array:character <- new [abc]
-    3:boolean/raw <- string-equal x:address:array:character, x:address:array:character
-  ": "literal-string"]}
-run: ingredient 0 is 
-    default-space:address:array:location <- new location:type, 30:literal
-    x:address:array:character <- new [abc]
-    3:boolean/raw <- string-equal x:address:array:character, x:address:array:character
-  
+  ]
 parse: instruction: new
-parse:   ingredient: {name: "location", value: 0, type: 0, properties: ["location": "type"]}
-parse:   ingredient: {name: "30", value: 0, type: 0, properties: ["30": "literal"]}
-parse:   product: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]}
+parse:   ingredient: {name: "location", properties: ["location": "type"]}
+parse:   ingredient: {name: "30", properties: ["30": "literal"]}
+parse:   product: {name: "default-space", properties: ["default-space": "address":"array":"location"]}
 parse: instruction: new
-parse:   ingredient: {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
-parse:   product: {name: "x", value: 0, type: 2-5-4, properties: ["x": "address":"array":"character"]}
+parse:   ingredient: {name: "abc", properties: ["abc": "literal-string"]}
+parse:   product: {name: "x", properties: ["x": "address":"array":"character"]}
 parse: instruction: string-equal
-parse:   ingredient: {name: "x", value: 0, type: 2-5-4, properties: ["x": "address":"array":"character"]}
-parse:   ingredient: {name: "x", value: 0, type: 2-5-4, properties: ["x": "address":"array":"character"]}
-parse:   product: {name: "3", value: 0, type: 3, properties: ["3": "boolean", "raw": ]}
+parse:   ingredient: {name: "x", properties: ["x": "address":"array":"character"]}
+parse:   ingredient: {name: "x", properties: ["x": "address":"array":"character"]}
+parse:   product: {name: "3", properties: ["3": "boolean", "raw": ]}
 new: location -> 1
 new: abc -> 0
 name: assign x 1
@@ -52,336 +42,196 @@ after-brace: recipe run1001
 after-brace: new ...
 after-brace: new ...
 after-brace: string-equal ...
-run: instruction run1001/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1000
-run: product 0 is default-space
-run: instruction run1001/1
-run: {name: "x", value: 1, type: 2-5-4, properties: ["x": "address":"array":"character"]} <- new/52 {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
-run: ingredient 0 is abc
-run: product 0 is x
+run: x:address:array:character <- new [abc]
 mem: storing 1031 in location 1002
-run: instruction run1001/2
-run: {name: "3", value: 3, type: 3, properties: ["3": "boolean", "raw": ]} <- string-equal/100 {name: "x", value: 1, type: 2-5-4, properties: ["x": "address":"array":"character"]}, {name: "x", value: 1, type: 2-5-4, properties: ["x": "address":"array":"character"]}
-run: ingredient 0 is x
+run: 3:boolean/raw <- string-equal x:address:array:character, x:address:array:character
 mem: location 1002 is 1031
-run: ingredient 1 is x
 mem: location 1002 is 1031
-run: instruction string-equal/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1035
-run: product 0 is default-space
-run: instruction string-equal/1
-run: {name: "a", value: 1, type: 2-5-4, properties: ["a": "address":"array":"character"]} <- next-ingredient/34 
-run: product 0 is a
+run: a:address:array:character <- next-ingredient 
 mem: storing 1031 in location 1037
-run: instruction string-equal/2
-run: {name: "a-len", value: 2, type: 1, properties: ["a-len": "number"]} <- length/32 {name: "a", value: 1, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}
-run: ingredient 0 is a
+run: a-len:number <- length a:address:array:character/deref
 mem: location 1037 is 1031
 mem: location 1031 is 3
 mem: location 1032 is 97
 mem: location 1033 is 98
 mem: location 1034 is 99
 mem: location 1037 is 1031
-run: product 0 is a-len
 mem: storing 3 in location 1038
-run: instruction string-equal/3
-run: {name: "b", value: 3, type: 2-5-4, properties: ["b": "address":"array":"character"]} <- next-ingredient/34 
-run: product 0 is b
+run: b:address:array:character <- next-ingredient 
 mem: storing 1031 in location 1039
-run: instruction string-equal/4
-run: {name: "b-len", value: 4, type: 1, properties: ["b-len": "number"]} <- length/32 {name: "b", value: 3, type: 2-5-4, properties: ["b": "address":"array":"character", "deref": ]}
-run: ingredient 0 is b
+run: b-len:number <- length b:address:array:character/deref
 mem: location 1039 is 1031
 mem: location 1031 is 3
 mem: location 1032 is 97
 mem: location 1033 is 98
 mem: location 1034 is 99
 mem: location 1039 is 1031
-run: product 0 is b-len
 mem: storing 3 in location 1040
-run: instruction string-equal/6
-run: trace/18 {name: "string-equal", value: 0, type: 0, properties: ["string-equal": "literal-string"]}, {name: "comparing lengths", value: 0, type: 0, properties: ["comparing lengths": "literal-string"]}
-run: ingredient 0 is string-equal
-run: ingredient 1 is comparing lengths
+run: trace [string-equal], [comparing lengths]
 string-equal: comparing lengths
-run: instruction string-equal/7
-run: {name: "length-equal?", value: 5, type: 3, properties: ["length-equal?": "boolean"]} <- equal/13 {name: "a-len", value: 2, type: 1, properties: ["a-len": "number"]}, {name: "b-len", value: 4, type: 1, properties: ["b-len": "number"]}
-run: ingredient 0 is a-len
+run: length-equal?:boolean <- equal a-len:number, b-len:number
 mem: location 1038 is 3
-run: ingredient 1 is b-len
 mem: location 1040 is 3
-run: product 0 is length-equal?
 mem: storing 1 in location 1041
-run: instruction string-equal/8
-run: break-if/11 {name: "length-equal?", value: 5, type: 3, properties: ["length-equal?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is length-equal?
+run: break-if length-equal?:boolean, 
 mem: location 1041 is 1
-run: ingredient 1 is 
 run: jumping to instruction 10
-run: instruction string-equal/11
-run: trace/18 {name: "string-equal", value: 0, type: 0, properties: ["string-equal": "literal-string"]}, {name: "comparing characters", value: 0, type: 0, properties: ["comparing characters": "literal-string"]}
-run: ingredient 0 is string-equal
-run: ingredient 1 is comparing characters
+run: trace [string-equal], [comparing characters]
 string-equal: comparing characters
-run: instruction string-equal/12
-run: {name: "i", value: 6, type: 1, properties: ["i": "number"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is i
+run: i:number <- copy 0:literal
 mem: storing 0 in location 1042
-run: instruction string-equal/14
-run: {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "a-len", value: 2, type: 1, properties: ["a-len": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, a-len:number
 mem: location 1042 is 0
-run: ingredient 1 is a-len
 mem: location 1038 is 3
-run: product 0 is done?
 mem: storing 0 in location 1043
-run: instruction string-equal/15
-run: break-if/11 {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 9, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1043 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction string-equal/16
-run: {name: "a2", value: 8, type: 4, properties: ["a2": "character"]} <- index/30 {name: "a", value: 1, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is a
+run: a2:character <- index a:address:array:character/deref, i:number
 mem: location 1037 is 1031
 mem: location 1031 is 3
 mem: location 1032 is 97
 mem: location 1033 is 98
 mem: location 1034 is 99
-run: ingredient 1 is i
 mem: location 1042 is 0
 mem: location 1037 is 1031
 mem: location 1042 is 0
 run: address to copy is 1032
 run: its type is 4
 mem: location 1032 is 97
-run: product 0 is a2
 mem: storing 97 in location 1044
-run: instruction string-equal/17
-run: {name: "b2", value: 9, type: 4, properties: ["b2": "character"]} <- index/30 {name: "b", value: 3, type: 2-5-4, properties: ["b": "address":"array":"character", "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is b
+run: b2:character <- index b:address:array:character/deref, i:number
 mem: location 1039 is 1031
 mem: location 1031 is 3
 mem: location 1032 is 97
 mem: location 1033 is 98
 mem: location 1034 is 99
-run: ingredient 1 is i
 mem: location 1042 is 0
 mem: location 1039 is 1031
 mem: location 1042 is 0
 run: address to copy is 1032
 run: its type is 4
 mem: location 1032 is 97
-run: product 0 is b2
 mem: storing 97 in location 1045
-run: instruction string-equal/19
-run: {name: "chars-match?", value: 10, type: 3, properties: ["chars-match?": "boolean"]} <- equal/13 {name: "a2", value: 8, type: 4, properties: ["a2": "character"]}, {name: "b2", value: 9, type: 4, properties: ["b2": "character"]}
-run: ingredient 0 is a2
+run: chars-match?:boolean <- equal a2:character, b2:character
 mem: location 1044 is 97
-run: ingredient 1 is b2
 mem: location 1045 is 97
-run: product 0 is chars-match?
 mem: storing 1 in location 1046
-run: instruction string-equal/20
-run: break-if/11 {name: "chars-match?", value: 10, type: 3, properties: ["chars-match?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is chars-match?
+run: break-if chars-match?:boolean, 
 mem: location 1046 is 1
-run: ingredient 1 is 
 run: jumping to instruction 22
-run: instruction string-equal/23
-run: {name: "i", value: 6, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1042 is 0
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 1 in location 1042
-run: instruction string-equal/24
-run: loop/10 {name: "", value: -11, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 14
-run: instruction string-equal/14
-run: {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "a-len", value: 2, type: 1, properties: ["a-len": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, a-len:number
 mem: location 1042 is 1
-run: ingredient 1 is a-len
 mem: location 1038 is 3
-run: product 0 is done?
 mem: storing 0 in location 1043
-run: instruction string-equal/15
-run: break-if/11 {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 9, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1043 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction string-equal/16
-run: {name: "a2", value: 8, type: 4, properties: ["a2": "character"]} <- index/30 {name: "a", value: 1, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is a
+run: a2:character <- index a:address:array:character/deref, i:number
 mem: location 1037 is 1031
 mem: location 1031 is 3
 mem: location 1032 is 97
 mem: location 1033 is 98
 mem: location 1034 is 99
-run: ingredient 1 is i
 mem: location 1042 is 1
 mem: location 1037 is 1031
 mem: location 1042 is 1
 run: address to copy is 1033
 run: its type is 4
 mem: location 1033 is 98
-run: product 0 is a2
 mem: storing 98 in location 1044
-run: instruction string-equal/17
-run: {name: "b2", value: 9, type: 4, properties: ["b2": "character"]} <- index/30 {name: "b", value: 3, type: 2-5-4, properties: ["b": "address":"array":"character", "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is b
+run: b2:character <- index b:address:array:character/deref, i:number
 mem: location 1039 is 1031
 mem: location 1031 is 3
 mem: location 1032 is 97
 mem: location 1033 is 98
 mem: location 1034 is 99
-run: ingredient 1 is i
 mem: location 1042 is 1
 mem: location 1039 is 1031
 mem: location 1042 is 1
 run: address to copy is 1033
 run: its type is 4
 mem: location 1033 is 98
-run: product 0 is b2
 mem: storing 98 in location 1045
-run: instruction string-equal/19
-run: {name: "chars-match?", value: 10, type: 3, properties: ["chars-match?": "boolean"]} <- equal/13 {name: "a2", value: 8, type: 4, properties: ["a2": "character"]}, {name: "b2", value: 9, type: 4, properties: ["b2": "character"]}
-run: ingredient 0 is a2
+run: chars-match?:boolean <- equal a2:character, b2:character
 mem: location 1044 is 98
-run: ingredient 1 is b2
 mem: location 1045 is 98
-run: product 0 is chars-match?
 mem: storing 1 in location 1046
-run: instruction string-equal/20
-run: break-if/11 {name: "chars-match?", value: 10, type: 3, properties: ["chars-match?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is chars-match?
+run: break-if chars-match?:boolean, 
 mem: location 1046 is 1
-run: ingredient 1 is 
 run: jumping to instruction 22
-run: instruction string-equal/23
-run: {name: "i", value: 6, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1042 is 1
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 2 in location 1042
-run: instruction string-equal/24
-run: loop/10 {name: "", value: -11, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 14
-run: instruction string-equal/14
-run: {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "a-len", value: 2, type: 1, properties: ["a-len": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, a-len:number
 mem: location 1042 is 2
-run: ingredient 1 is a-len
 mem: location 1038 is 3
-run: product 0 is done?
 mem: storing 0 in location 1043
-run: instruction string-equal/15
-run: break-if/11 {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 9, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1043 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction string-equal/16
-run: {name: "a2", value: 8, type: 4, properties: ["a2": "character"]} <- index/30 {name: "a", value: 1, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is a
+run: a2:character <- index a:address:array:character/deref, i:number
 mem: location 1037 is 1031
 mem: location 1031 is 3
 mem: location 1032 is 97
 mem: location 1033 is 98
 mem: location 1034 is 99
-run: ingredient 1 is i
 mem: location 1042 is 2
 mem: location 1037 is 1031
 mem: location 1042 is 2
 run: address to copy is 1034
 run: its type is 4
 mem: location 1034 is 99
-run: product 0 is a2
 mem: storing 99 in location 1044
-run: instruction string-equal/17
-run: {name: "b2", value: 9, type: 4, properties: ["b2": "character"]} <- index/30 {name: "b", value: 3, type: 2-5-4, properties: ["b": "address":"array":"character", "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is b
+run: b2:character <- index b:address:array:character/deref, i:number
 mem: location 1039 is 1031
 mem: location 1031 is 3
 mem: location 1032 is 97
 mem: location 1033 is 98
 mem: location 1034 is 99
-run: ingredient 1 is i
 mem: location 1042 is 2
 mem: location 1039 is 1031
 mem: location 1042 is 2
 run: address to copy is 1034
 run: its type is 4
 mem: location 1034 is 99
-run: product 0 is b2
 mem: storing 99 in location 1045
-run: instruction string-equal/19
-run: {name: "chars-match?", value: 10, type: 3, properties: ["chars-match?": "boolean"]} <- equal/13 {name: "a2", value: 8, type: 4, properties: ["a2": "character"]}, {name: "b2", value: 9, type: 4, properties: ["b2": "character"]}
-run: ingredient 0 is a2
+run: chars-match?:boolean <- equal a2:character, b2:character
 mem: location 1044 is 99
-run: ingredient 1 is b2
 mem: location 1045 is 99
-run: product 0 is chars-match?
 mem: storing 1 in location 1046
-run: instruction string-equal/20
-run: break-if/11 {name: "chars-match?", value: 10, type: 3, properties: ["chars-match?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is chars-match?
+run: break-if chars-match?:boolean, 
 mem: location 1046 is 1
-run: ingredient 1 is 
 run: jumping to instruction 22
-run: instruction string-equal/23
-run: {name: "i", value: 6, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1042 is 2
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 3 in location 1042
-run: instruction string-equal/24
-run: loop/10 {name: "", value: -11, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 14
-run: instruction string-equal/14
-run: {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "a-len", value: 2, type: 1, properties: ["a-len": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, a-len:number
 mem: location 1042 is 3
-run: ingredient 1 is a-len
 mem: location 1038 is 3
-run: product 0 is done?
 mem: storing 1 in location 1043
-run: instruction string-equal/15
-run: break-if/11 {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 9, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1043 is 1
-run: ingredient 1 is 
 run: jumping to instruction 25
-run: instruction string-equal/26
-run: reply/37 {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is 1
+run: reply 1:literal
 run: result 0 is 1
-run: product 0 is 3
 mem: storing 1 in location 3
-run: instruction string-equal-reflexive/1
-run: memory-should-contain/56 {name: "
+run: memory-should-contain [
     3 <- 1  # x == x for all x
-  ", value: 0, type: 0, properties: ["
-    3 <- 1  # x == x for all x
-  ": "literal-string"]}
-run: ingredient 0 is 
-    3 <- 1  # x == x for all x
-  
+  ]
 run: checking location 3

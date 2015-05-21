@@ -2,26 +2,26 @@ parse: instruction: run
 parse:   ingredient: {name: "
     1:number <- copy 13:literal
     trace [a], [a b c]
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     1:number <- copy 13:literal
     trace [a], [a b c]
   ": "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "
     1 <- 13
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     1 <- 13
   ": "literal-string"]}
 parse: instruction: trace-should-contain
 parse:   ingredient: {name: "
     a: a b c
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     a: a b c
   ": "literal-string"]}
 parse: instruction: trace-should-not-contain
 parse:   ingredient: {name: "
     a: x y z
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     a: x y z
   ": "literal-string"]}
 after-brace: recipe foo
@@ -31,62 +31,30 @@ after-brace: trace-should-contain ...
 after-brace: trace-should-not-contain ...
 new: routine allocated memory from 1000 to 101000
 schedule: foo
-run: instruction foo/0
-run: run/55 {name: "
+run: run [
     1:number <- copy 13:literal
     trace [a], [a b c]
-  ", value: 0, type: 0, properties: ["
-    1:number <- copy 13:literal
-    trace [a], [a b c]
-  ": "literal-string"]}
-run: ingredient 0 is 
-    1:number <- copy 13:literal
-    trace [a], [a b c]
-  
+  ]
 parse: instruction: copy
-parse:   ingredient: {name: "13", value: 0, type: 0, properties: ["13": "literal"]}
-parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
+parse:   ingredient: {name: "13", properties: ["13": "literal"]}
+parse:   product: {name: "1", properties: ["1": "number"]}
 parse: instruction: trace
-parse:   ingredient: {name: "a", value: 0, type: 0, properties: ["a": "literal-string"]}
-parse:   ingredient: {name: "a b c", value: 0, type: 0, properties: ["a b c": "literal-string"]}
+parse:   ingredient: {name: "a", properties: ["a": "literal-string"]}
+parse:   ingredient: {name: "a b c", properties: ["a b c": "literal-string"]}
 after-brace: recipe run1001
 after-brace: copy ...
 after-brace: trace ...
-run: instruction run1001/0
-run: {name: "1", value: 1, type: 1, properties: ["1": "number"]} <- copy/1 {name: "13", value: 13, type: 0, properties: ["13": "literal"]}
-run: ingredient 0 is 13
-run: product 0 is 1
+run: 1:number <- copy 13:literal
 mem: storing 13 in location 1
-run: instruction run1001/1
-run: trace/18 {name: "a", value: 0, type: 0, properties: ["a": "literal-string"]}, {name: "a b c", value: 0, type: 0, properties: ["a b c": "literal-string"]}
-run: ingredient 0 is a
-run: ingredient 1 is a b c
+run: trace [a], [a b c]
 a: a b c
-run: instruction foo/1
-run: memory-should-contain/56 {name: "
+run: memory-should-contain [
     1 <- 13
-  ", value: 0, type: 0, properties: ["
-    1 <- 13
-  ": "literal-string"]}
-run: ingredient 0 is 
-    1 <- 13
-  
+  ]
 run: checking location 1
-run: instruction foo/2
-run: trace-should-contain/57 {name: "
+run: trace-should-contain [
     a: a b c
-  ", value: 0, type: 0, properties: ["
-    a: a b c
-  ": "literal-string"]}
-run: ingredient 0 is 
-    a: a b c
-  
-run: instruction foo/3
-run: trace-should-not-contain/58 {name: "
+  ]
+run: trace-should-not-contain [
     a: x y z
-  ", value: 0, type: 0, properties: ["
-    a: x y z
-  ": "literal-string"]}
-run: ingredient 0 is 
-    a: x y z
-  
+  ]

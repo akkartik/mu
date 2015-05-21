@@ -20,9 +20,6 @@ recipe main [
   2:number <- copy 35:literal
   3:point <- copy 1:point
 ]
-+run: ingredient 0 is 1
-+mem: location 1 is 34
-+mem: location 2 is 35
 +mem: storing 34 in location 3
 +mem: storing 35 in location 4
 
@@ -96,13 +93,6 @@ recipe main [
   13:number <- copy 35:literal
   15:number <- get 12:point, 1:offset
 ]
-+run: instruction main/2
-+run: ingredient 0 is 12
-+run: ingredient 1 is 1
-+run: address to copy is 13
-+run: its type is 1
-+mem: location 13 is 35
-+run: product 0 is 15
 +mem: storing 35 in location 15
 
 :(before "End Primitive Recipe Declarations")
@@ -141,13 +131,6 @@ recipe main [
   14:number <- copy 36:literal
   15:number <- get 12:point-number, 1:offset
 ]
-+run: instruction main/2
-+run: ingredient 0 is 12
-+run: ingredient 1 is 1
-+run: address to copy is 14
-+run: its type is 1
-+mem: location 14 is 36
-+run: product 0 is 15
 +mem: storing 36 in location 15
 
 //:: To write to elements of containers, you need their address.
@@ -158,10 +141,6 @@ recipe main [
   13:number <- copy 35:literal
   15:address:number <- get-address 12:point, 1:offset
 ]
-+run: instruction main/2
-+run: ingredient 0 is 12
-+run: ingredient 1 is 1
-+run: address to copy is 13
 +mem: storing 13 in location 15
 
 :(before "End Primitive Recipe Declarations")

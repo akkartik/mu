@@ -107,8 +107,7 @@ struct trace_stream {
   void newline() {
     if (!curr_stream) return;
     string curr_contents = curr_stream->str();
-    curr_contents.erase(curr_contents.find_last_not_of("\r\n")+1);
-    past_lines.push_back(pair<string, string>(curr_layer, curr_contents));
+    past_lines.push_back(pair<string, string>(trim(curr_layer), curr_contents));  // preserve indent in contents
     if (curr_layer == dump_layer || curr_layer == "dump" || dump_layer == "all" ||
         (!Hide_warnings && curr_layer == "warn"))
 //?     if (dump_layer == "all" && (Current_routine->id == 3 || curr_layer == "schedule")) //? 1
@@ -197,12 +196,15 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   string layer, contents;
   split_layer_contents(expected_lines.at(curr_expected_line), &layer, &contents);
   for (vector<pair<string, string> >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+//?     cerr << "AAA " << layer << ' ' << p->first << '\n'; //? 1
     if (layer != p->first)
       continue;
 
-    if (contents != p->second)
+//?     cerr << "BBB ^" << contents << "$ ^" << p->second << "$\n"; //? 1
+    if (contents != trim(p->second))
       continue;
 
+//?     cerr << "CCC\n"; //? 1
     ++curr_expected_line;
     while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
@@ -213,6 +215,7 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   ++Num_failures;
   cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << contents << "] in trace:\n";
   DUMP(layer);
+//?   exit(0); //? 1
   Passed = false;
   return false;
 }
@@ -222,11 +225,11 @@ void split_layer_contents(const string& s, string* layer, string* contents) {
   size_t pos = s.find(delim);
   if (pos == string::npos) {
     *layer = "";
-    *contents = s;
+    *contents = trim(s);
   }
   else {
-    *layer = s.substr(0, pos);
-    *contents = s.substr(pos+SIZE(delim));
+    *layer = trim(s.substr(0, pos));
+    *contents = trim(s.substr(pos+SIZE(delim)));
   }
 }
 
@@ -306,6 +309,19 @@ bool prefix_match(const string& pat, const string& needle) {
 bool headmatch(const string& s, const string& pat) {
   if (SIZE(pat) > SIZE(s)) return false;
   return std::mismatch(pat.begin(), pat.end(), s.begin()).first == pat.end();
+}
+
+string trim(const string& s) {
+  string::const_iterator first = s.begin();
+  while (first != s.end() && isspace(*first))
+    ++first;
+  if (first == s.end()) return "";
+
+  string::const_iterator last = --s.end();
+  while (last != s.begin() && isspace(*last))
+    --last;
+  ++last;
+  return string(first, last);
 }
 
 :(before "End Includes")

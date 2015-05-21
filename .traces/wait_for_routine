@@ -1,17 +1,17 @@
 parse: instruction: copy
-parse:   ingredient: {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
+parse:   ingredient: {name: "0", properties: ["0": "literal"]}
+parse:   product: {name: "1", properties: ["1": "number"]}
 parse: instruction: start-running
-parse:   ingredient: {name: "f2", value: 0, type: 0, properties: ["f2": "recipe"]}
-parse:   product: {name: "12", value: 0, type: 1, properties: ["12": "number", "routine": ]}
+parse:   ingredient: {name: "f2", properties: ["f2": "recipe"]}
+parse:   product: {name: "12", properties: ["12": "number", "routine": ]}
 parse: instruction: wait-for-routine
-parse:   ingredient: {name: "12", value: 0, type: 1, properties: ["12": "number", "routine": ]}
+parse:   ingredient: {name: "12", properties: ["12": "number", "routine": ]}
 parse: instruction: copy
-parse:   ingredient: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
-parse:   product: {name: "3", value: 0, type: 1, properties: ["3": "number"]}
+parse:   ingredient: {name: "1", properties: ["1": "number"]}
+parse:   product: {name: "3", properties: ["3": "number"]}
 parse: instruction: copy
-parse:   ingredient: {name: "34", value: 0, type: 0, properties: ["34": "literal"]}
-parse:   product: {name: "1", value: 0, type: 1, properties: ["1": "number"]}
+parse:   ingredient: {name: "34", properties: ["34": "literal"]}
+parse:   product: {name: "1", properties: ["1": "number"]}
 after-brace: recipe f1
 after-brace: copy ...
 after-brace: start-running ...
@@ -21,33 +21,19 @@ after-brace: recipe f2
 after-brace: copy ...
 new: routine allocated memory from 1000 to 101000
 schedule: f1
-run: instruction f1/0
-run: {name: "1", value: 1, type: 1, properties: ["1": "number"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is 1
+run: 1:number <- copy 0:literal
 mem: storing 0 in location 1
-run: instruction f1/1
-run: {name: "12", value: 12, type: 1, properties: ["12": "number", "routine": ]} <- start-running/38 {name: "f2", value: 0, type: 0, properties: ["f2": "recipe"]}
-run: ingredient 0 is f2
+run: 12:number/routine <- start-running f2:recipe
 new: routine allocated memory from 101000 to 201000
-run: product 0 is 12
 mem: storing 2 in location 12
-run: instruction f1/2
-run: wait-for-routine/44 {name: "12", value: 12, type: 1, properties: ["12": "number", "routine": ]}
-run: ingredient 0 is 12
+run: wait-for-routine 12:number/routine
 mem: location 12 is 2
 run: waiting for routine 2
 schedule: f2
-run: instruction f2/0
-run: {name: "1", value: 1, type: 1, properties: ["1": "number"]} <- copy/1 {name: "34", value: 34, type: 0, properties: ["34": "literal"]}
-run: ingredient 0 is 34
-run: product 0 is 1
+run: 1:number <- copy 34:literal
 mem: storing 34 in location 1
 schedule: waking up routine 1
 schedule: f1
-run: instruction f1/3
-run: {name: "3", value: 3, type: 1, properties: ["3": "number"]} <- copy/1 {name: "1", value: 1, type: 1, properties: ["1": "number"]}
-run: ingredient 0 is 1
+run: 3:number <- copy 1:number
 mem: location 1 is 34
-run: product 0 is 3
 mem: storing 34 in location 3

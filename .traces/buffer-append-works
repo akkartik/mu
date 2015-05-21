@@ -29,7 +29,7 @@ parse:   ingredient: {name: "
     10:boolean/raw <- equal s1:address:array:character, s3:address:array:character
     11:number/raw <- get x:address:buffer/deref, length:offset
     12:array:character/raw <- copy s3:address:array:character/deref
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     default-space:address:array:location <- new location:type, 30:literal
     x:address:buffer <- init-buffer 3:literal
     s1:address:array:character <- get x:address:buffer/deref, data:offset
@@ -78,7 +78,7 @@ parse:   ingredient: {name: "
     16 <- 100
     17 <- 0
     18 <- 0
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     # before +buffer-filled
     1 <- 1   # no change in data pointer
     2 <- 3   # size of data
@@ -101,8 +101,7 @@ after-brace: run ...
 after-brace: memory-should-contain ...
 new: routine allocated memory from 1000 to 101000
 schedule: buffer-append-works
-run: instruction buffer-append-works/0
-run: run/55 {name: "
+run: run [
     default-space:address:array:location <- new location:type, 30:literal
     x:address:buffer <- init-buffer 3:literal
     s1:address:array:character <- get x:address:buffer/deref, data:offset
@@ -132,122 +131,61 @@ run: run/55 {name: "
     10:boolean/raw <- equal s1:address:array:character, s3:address:array:character
     11:number/raw <- get x:address:buffer/deref, length:offset
     12:array:character/raw <- copy s3:address:array:character/deref
-  ", value: 0, type: 0, properties: ["
-    default-space:address:array:location <- new location:type, 30:literal
-    x:address:buffer <- init-buffer 3:literal
-    s1:address:array:character <- get x:address:buffer/deref, data:offset
-    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
-    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
-    x:address:buffer <- buffer-append x:address:buffer, 99:literal  # 'c'
-    s2:address:array:character <- get x:address:buffer/deref, data:offset
-    1:boolean/raw <- equal s1:address:array:character, s2:address:array:character
-#?     $print s2:address:array:character, [
-#? ]
-#?     $print 1060:number/raw, [
-#? ]
-#?     $print 1061:number/raw, [
-#? ]
-#?     $print 1062:number/raw, [
-#? ]
-#?     $print 1063:number/raw, [
-#? ]
-#?     $print 1064:number/raw, [
-#? ]
-#?     $print 1065:number/raw, [
-#? ]
-    2:array:character/raw <- copy s2:address:array:character/deref
-    +buffer-filled
-    x:address:buffer <- buffer-append x:address:buffer, 100:literal  # 'd'
-    s3:address:array:character <- get x:address:buffer/deref, data:offset
-    10:boolean/raw <- equal s1:address:array:character, s3:address:array:character
-    11:number/raw <- get x:address:buffer/deref, length:offset
-    12:array:character/raw <- copy s3:address:array:character/deref
-  ": "literal-string"]}
-run: ingredient 0 is 
-    default-space:address:array:location <- new location:type, 30:literal
-    x:address:buffer <- init-buffer 3:literal
-    s1:address:array:character <- get x:address:buffer/deref, data:offset
-    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
-    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
-    x:address:buffer <- buffer-append x:address:buffer, 99:literal  # 'c'
-    s2:address:array:character <- get x:address:buffer/deref, data:offset
-    1:boolean/raw <- equal s1:address:array:character, s2:address:array:character
-#?     $print s2:address:array:character, [
-#? ]
-#?     $print 1060:number/raw, [
-#? ]
-#?     $print 1061:number/raw, [
-#? ]
-#?     $print 1062:number/raw, [
-#? ]
-#?     $print 1063:number/raw, [
-#? ]
-#?     $print 1064:number/raw, [
-#? ]
-#?     $print 1065:number/raw, [
-#? ]
-    2:array:character/raw <- copy s2:address:array:character/deref
-    +buffer-filled
-    x:address:buffer <- buffer-append x:address:buffer, 100:literal  # 'd'
-    s3:address:array:character <- get x:address:buffer/deref, data:offset
-    10:boolean/raw <- equal s1:address:array:character, s3:address:array:character
-    11:number/raw <- get x:address:buffer/deref, length:offset
-    12:array:character/raw <- copy s3:address:array:character/deref
-  
+  ]
 parse: instruction: new
-parse:   ingredient: {name: "location", value: 0, type: 0, properties: ["location": "type"]}
-parse:   ingredient: {name: "30", value: 0, type: 0, properties: ["30": "literal"]}
-parse:   product: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]}
+parse:   ingredient: {name: "location", properties: ["location": "type"]}
+parse:   ingredient: {name: "30", properties: ["30": "literal"]}
+parse:   product: {name: "default-space", properties: ["default-space": "address":"array":"location"]}
 parse: instruction: init-buffer
-parse:   ingredient: {name: "3", value: 0, type: 0, properties: ["3": "literal"]}
-parse:   product: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "3", properties: ["3": "literal"]}
+parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
 parse: instruction: get
-parse:   ingredient: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer", "deref": ]}
-parse:   ingredient: {name: "data", value: 0, type: 0, properties: ["data": "offset"]}
-parse:   product: {name: "s1", value: 0, type: 2-5-4, properties: ["s1": "address":"array":"character"]}
+parse:   ingredient: {name: "x", properties: ["x": "address":"buffer", "deref": ]}
+parse:   ingredient: {name: "data", properties: ["data": "offset"]}
+parse:   product: {name: "s1", properties: ["s1": "address":"array":"character"]}
 parse: instruction: buffer-append
-parse:   ingredient: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer"]}
-parse:   ingredient: {name: "97", value: 0, type: 0, properties: ["97": "literal"]}
-parse:   product: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "97", properties: ["97": "literal"]}
+parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
 parse: instruction: buffer-append
-parse:   ingredient: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer"]}
-parse:   ingredient: {name: "98", value: 0, type: 0, properties: ["98": "literal"]}
-parse:   product: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "98", properties: ["98": "literal"]}
+parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
 parse: instruction: buffer-append
-parse:   ingredient: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer"]}
-parse:   ingredient: {name: "99", value: 0, type: 0, properties: ["99": "literal"]}
-parse:   product: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "99", properties: ["99": "literal"]}
+parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
 parse: instruction: get
-parse:   ingredient: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer", "deref": ]}
-parse:   ingredient: {name: "data", value: 0, type: 0, properties: ["data": "offset"]}
-parse:   product: {name: "s2", value: 0, type: 2-5-4, properties: ["s2": "address":"array":"character"]}
+parse:   ingredient: {name: "x", properties: ["x": "address":"buffer", "deref": ]}
+parse:   ingredient: {name: "data", properties: ["data": "offset"]}
+parse:   product: {name: "s2", properties: ["s2": "address":"array":"character"]}
 parse: instruction: equal
-parse:   ingredient: {name: "s1", value: 0, type: 2-5-4, properties: ["s1": "address":"array":"character"]}
-parse:   ingredient: {name: "s2", value: 0, type: 2-5-4, properties: ["s2": "address":"array":"character"]}
-parse:   product: {name: "1", value: 0, type: 3, properties: ["1": "boolean", "raw": ]}
+parse:   ingredient: {name: "s1", properties: ["s1": "address":"array":"character"]}
+parse:   ingredient: {name: "s2", properties: ["s2": "address":"array":"character"]}
+parse:   product: {name: "1", properties: ["1": "boolean", "raw": ]}
 parse: instruction: copy
-parse:   ingredient: {name: "s2", value: 0, type: 2-5-4, properties: ["s2": "address":"array":"character", "deref": ]}
-parse:   product: {name: "2", value: 0, type: 5-4, properties: ["2": "array":"character", "raw": ]}
+parse:   ingredient: {name: "s2", properties: ["s2": "address":"array":"character", "deref": ]}
+parse:   product: {name: "2", properties: ["2": "array":"character", "raw": ]}
 parse: label: +buffer-filled
 parse: instruction: buffer-append
-parse:   ingredient: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer"]}
-parse:   ingredient: {name: "100", value: 0, type: 0, properties: ["100": "literal"]}
-parse:   product: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "x", properties: ["x": "address":"buffer"]}
+parse:   ingredient: {name: "100", properties: ["100": "literal"]}
+parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
 parse: instruction: get
-parse:   ingredient: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer", "deref": ]}
-parse:   ingredient: {name: "data", value: 0, type: 0, properties: ["data": "offset"]}
-parse:   product: {name: "s3", value: 0, type: 2-5-4, properties: ["s3": "address":"array":"character"]}
+parse:   ingredient: {name: "x", properties: ["x": "address":"buffer", "deref": ]}
+parse:   ingredient: {name: "data", properties: ["data": "offset"]}
+parse:   product: {name: "s3", properties: ["s3": "address":"array":"character"]}
 parse: instruction: equal
-parse:   ingredient: {name: "s1", value: 0, type: 2-5-4, properties: ["s1": "address":"array":"character"]}
-parse:   ingredient: {name: "s3", value: 0, type: 2-5-4, properties: ["s3": "address":"array":"character"]}
-parse:   product: {name: "10", value: 0, type: 3, properties: ["10": "boolean", "raw": ]}
+parse:   ingredient: {name: "s1", properties: ["s1": "address":"array":"character"]}
+parse:   ingredient: {name: "s3", properties: ["s3": "address":"array":"character"]}
+parse:   product: {name: "10", properties: ["10": "boolean", "raw": ]}
 parse: instruction: get
-parse:   ingredient: {name: "x", value: 0, type: 2-10, properties: ["x": "address":"buffer", "deref": ]}
-parse:   ingredient: {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-parse:   product: {name: "11", value: 0, type: 1, properties: ["11": "number", "raw": ]}
+parse:   ingredient: {name: "x", properties: ["x": "address":"buffer", "deref": ]}
+parse:   ingredient: {name: "length", properties: ["length": "offset"]}
+parse:   product: {name: "11", properties: ["11": "number", "raw": ]}
 parse: instruction: copy
-parse:   ingredient: {name: "s3", value: 0, type: 2-5-4, properties: ["s3": "address":"array":"character", "deref": ]}
-parse:   product: {name: "12", value: 0, type: 5-4, properties: ["12": "array":"character", "raw": ]}
+parse:   ingredient: {name: "s3", properties: ["s3": "address":"array":"character", "deref": ]}
+parse:   product: {name: "12", properties: ["12": "array":"character", "raw": ]}
 new: location -> 1
 name: assign x 1
 name: element data of type buffer is at offset 1
@@ -272,715 +210,427 @@ after-brace: get ...
 after-brace: equal ...
 after-brace: get ...
 after-brace: copy ...
-run: instruction run1001/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1000
-run: product 0 is default-space
-run: instruction run1001/1
-run: {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer"]} <- init-buffer/101 {name: "3", value: 3, type: 0, properties: ["3": "literal"]}
-run: ingredient 0 is 3
-run: instruction init-buffer/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: x:address:buffer <- init-buffer 3:literal
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1031
-run: product 0 is default-space
-run: instruction init-buffer/1
-run: {name: "result", value: 1, type: 2-10, properties: ["result": "address":"buffer"]} <- new/52 {name: "buffer", value: 10, type: 0, properties: ["buffer": "type"]}
-run: ingredient 0 is buffer
+run: result:address:buffer <- new buffer:type
 mem: new alloc: 1062
-run: product 0 is result
 mem: storing 1062 in location 1033
-run: instruction init-buffer/2
-run: {name: "len", value: 2, type: 2-1, properties: ["len": "address":"number"]} <- get-address/29 {name: "result", value: 1, type: 2-10, properties: ["result": "address":"buffer", "deref": ]}, {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-run: ingredient 0 is result
+run: len:address:number <- get-address result:address:buffer/deref, length:offset
 mem: location 1033 is 1062
 mem: location 1062 is 0
 mem: location 1063 is 0
-run: ingredient 1 is length
 mem: location 1033 is 1062
 run: address to copy is 1062
-run: product 0 is len
 mem: storing 1062 in location 1034
-run: instruction init-buffer/3
-run: {name: "len", value: 2, type: 2-1, properties: ["len": "address":"number", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is len
+run: len:address:number/deref <- copy 0:literal
 mem: location 1034 is 1062
 mem: storing 0 in location 1062
-run: instruction init-buffer/4
-run: {name: "s", value: 3, type: 2-2-5-4, properties: ["s": "address":"address":"array":"character"]} <- get-address/29 {name: "result", value: 1, type: 2-10, properties: ["result": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is result
+run: s:address:address:array:character <- get-address result:address:buffer/deref, data:offset
 mem: location 1033 is 1062
 mem: location 1062 is 0
 mem: location 1063 is 0
-run: ingredient 1 is data
 mem: location 1033 is 1062
 run: address to copy is 1063
-run: product 0 is s
 mem: storing 1063 in location 1035
-run: instruction init-buffer/5
-run: {name: "capacity", value: 4, type: 1, properties: ["capacity": "number"]} <- next-ingredient/34 
-run: product 0 is capacity
+run: capacity:number <- next-ingredient 
 mem: storing 3 in location 1036
-run: instruction init-buffer/6
-run: {name: "s", value: 3, type: 2-2-5-4, properties: ["s": "address":"address":"array":"character", "deref": ]} <- new/52 {name: "character", value: 4, type: 0, properties: ["character": "type"]}, {name: "capacity", value: 4, type: 1, properties: ["capacity": "number"]}
-run: ingredient 0 is character
-run: ingredient 1 is capacity
+run: s:address:address:array:character/deref <- new character:type, capacity:number
 mem: location 1036 is 3
 mem: array size is 3
 mem: new alloc: 1064
-run: product 0 is s
 mem: location 1035 is 1063
 mem: storing 1064 in location 1063
-run: instruction init-buffer/7
-run: reply/37 {name: "result", value: 1, type: 2-10, properties: ["result": "address":"buffer"]}
-run: ingredient 0 is result
+run: reply result:address:buffer
 mem: location 1033 is 1062
 run: result 0 is 1062
-run: product 0 is x
 mem: storing 1062 in location 1002
-run: instruction run1001/2
-run: {name: "s1", value: 2, type: 2-5-4, properties: ["s1": "address":"array":"character"]} <- get/28 {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is x
+run: s1:address:array:character <- get x:address:buffer/deref, data:offset
 mem: location 1002 is 1062
 mem: location 1062 is 0
 mem: location 1063 is 1064
-run: ingredient 1 is data
 mem: location 1002 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1064
-run: product 0 is s1
 mem: storing 1064 in location 1003
-run: instruction run1001/3
-run: {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer"]} <- buffer-append/104 {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer"]}, {name: "97", value: 97, type: 0, properties: ["97": "literal"]}
-run: ingredient 0 is x
+run: x:address:buffer <- buffer-append x:address:buffer, 97:literal
 mem: location 1002 is 1062
-run: ingredient 1 is 97
-run: instruction buffer-append/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1068
-run: product 0 is default-space
-run: instruction buffer-append/1
-run: {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]} <- next-ingredient/34 
-run: product 0 is in
+run: in:address:buffer <- next-ingredient 
 mem: storing 1062 in location 1070
-run: instruction buffer-append/2
-run: {name: "c", value: 2, type: 4, properties: ["c": "character"]} <- next-ingredient/34 
-run: product 0 is c
+run: c:character <- next-ingredient 
 mem: storing 97 in location 1071
-run: instruction buffer-append/4
-run: {name: "full?", value: 3, type: 3, properties: ["full?": "boolean"]} <- buffer-full?/103 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]}
-run: ingredient 0 is in
+run: full?:boolean <- buffer-full? in:address:buffer
 mem: location 1070 is 1062
-run: instruction buffer-full?/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1099
-run: product 0 is default-space
-run: instruction buffer-full?/1
-run: {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]} <- next-ingredient/34 
-run: product 0 is in
+run: in:address:buffer <- next-ingredient 
 mem: storing 1062 in location 1101
-run: instruction buffer-full?/2
-run: {name: "len", value: 2, type: 1, properties: ["len": "number"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-run: ingredient 0 is in
+run: len:number <- get in:address:buffer/deref, length:offset
 mem: location 1101 is 1062
 mem: location 1062 is 0
 mem: location 1063 is 1064
-run: ingredient 1 is length
 mem: location 1101 is 1062
 run: address to copy is 1062
 run: its type is 1
 mem: location 1062 is 0
-run: product 0 is len
 mem: storing 0 in location 1102
-run: instruction buffer-full?/3
-run: {name: "s", value: 3, type: 2-5-4, properties: ["s": "address":"array":"character"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is in
+run: s:address:array:character <- get in:address:buffer/deref, data:offset
 mem: location 1101 is 1062
 mem: location 1062 is 0
 mem: location 1063 is 1064
-run: ingredient 1 is data
 mem: location 1101 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1064
-run: product 0 is s
 mem: storing 1064 in location 1103
-run: instruction buffer-full?/4
-run: {name: "capacity", value: 4, type: 1, properties: ["capacity": "number"]} <- length/32 {name: "s", value: 3, type: 2-5-4, properties: ["s": "address":"array":"character", "deref": ]}
-run: ingredient 0 is s
+run: capacity:number <- length s:address:array:character/deref
 mem: location 1103 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 0
 mem: location 1066 is 0
 mem: location 1067 is 0
 mem: location 1103 is 1064
-run: product 0 is capacity
 mem: storing 3 in location 1104
-run: instruction buffer-full?/5
-run: {name: "result", value: 5, type: 3, properties: ["result": "boolean"]} <- greater-or-equal/16 {name: "len", value: 2, type: 1, properties: ["len": "number"]}, {name: "capacity", value: 4, type: 1, properties: ["capacity": "number"]}
-run: ingredient 0 is len
+run: result:boolean <- greater-or-equal len:number, capacity:number
 mem: location 1102 is 0
-run: ingredient 1 is capacity
 mem: location 1104 is 3
-run: product 0 is result
 mem: storing 0 in location 1105
-run: instruction buffer-full?/6
-run: reply/37 {name: "result", value: 5, type: 3, properties: ["result": "boolean"]}
-run: ingredient 0 is result
+run: reply result:boolean
 mem: location 1105 is 0
 run: result 0 is 0
-run: product 0 is full?
 mem: storing 0 in location 1072
-run: instruction buffer-append/5
-run: break-unless/12 {name: "full?", value: 3, type: 3, properties: ["full?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is full?
+run: break-unless full?:boolean, 
 mem: location 1072 is 0
-run: ingredient 1 is 
 run: jumping to instruction 7
-run: instruction buffer-append/8
-run: {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number"]} <- get-address/29 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-run: ingredient 0 is in
+run: len:address:number <- get-address in:address:buffer/deref, length:offset
 mem: location 1070 is 1062
 mem: location 1062 is 0
 mem: location 1063 is 1064
-run: ingredient 1 is length
 mem: location 1070 is 1062
 run: address to copy is 1062
-run: product 0 is len
 mem: storing 1062 in location 1073
-run: instruction buffer-append/9
-run: {name: "s", value: 5, type: 2-5-4, properties: ["s": "address":"array":"character"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is in
+run: s:address:array:character <- get in:address:buffer/deref, data:offset
 mem: location 1070 is 1062
 mem: location 1062 is 0
 mem: location 1063 is 1064
-run: ingredient 1 is data
 mem: location 1070 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1064
-run: product 0 is s
 mem: storing 1064 in location 1074
-run: instruction buffer-append/10
-run: {name: "dest", value: 6, type: 2-4, properties: ["dest": "address":"character"]} <- index-address/31 {name: "s", value: 5, type: 2-5-4, properties: ["s": "address":"array":"character", "deref": ]}, {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]}
-run: ingredient 0 is s
+run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
 mem: location 1074 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 0
 mem: location 1066 is 0
 mem: location 1067 is 0
-run: ingredient 1 is len
 mem: location 1073 is 1062
 mem: location 1062 is 0
 mem: location 1074 is 1064
 mem: location 1073 is 1062
 mem: location 1062 is 0
-run: product 0 is dest
 mem: storing 1065 in location 1075
-run: instruction buffer-append/11
-run: {name: "dest", value: 6, type: 2-4, properties: ["dest": "address":"character", "deref": ]} <- copy/1 {name: "c", value: 2, type: 4, properties: ["c": "character"]}
-run: ingredient 0 is c
+run: dest:address:character/deref <- copy c:character
 mem: location 1071 is 97
-run: product 0 is dest
 mem: location 1075 is 1065
 mem: storing 97 in location 1065
-run: instruction buffer-append/12
-run: {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]} <- add/2 {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is len
+run: len:address:number/deref <- add len:address:number/deref, 1:literal
 mem: location 1073 is 1062
 mem: location 1062 is 0
-run: ingredient 1 is 1
-run: product 0 is len
 mem: location 1073 is 1062
 mem: storing 1 in location 1062
-run: instruction buffer-append/13
-run: reply/37 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "same-as-ingredient": "0"]}
-run: ingredient 0 is in
+run: reply in:address:buffer/same-as-ingredient:0
 mem: location 1070 is 1062
 run: result 0 is 1062
-run: product 0 is x
 mem: storing 1062 in location 1002
-run: instruction run1001/4
-run: {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer"]} <- buffer-append/104 {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer"]}, {name: "98", value: 98, type: 0, properties: ["98": "literal"]}
-run: ingredient 0 is x
+run: x:address:buffer <- buffer-append x:address:buffer, 98:literal
 mem: location 1002 is 1062
-run: ingredient 1 is 98
-run: instruction buffer-append/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1130
-run: product 0 is default-space
-run: instruction buffer-append/1
-run: {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]} <- next-ingredient/34 
-run: product 0 is in
+run: in:address:buffer <- next-ingredient 
 mem: storing 1062 in location 1132
-run: instruction buffer-append/2
-run: {name: "c", value: 2, type: 4, properties: ["c": "character"]} <- next-ingredient/34 
-run: product 0 is c
+run: c:character <- next-ingredient 
 mem: storing 98 in location 1133
-run: instruction buffer-append/4
-run: {name: "full?", value: 3, type: 3, properties: ["full?": "boolean"]} <- buffer-full?/103 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]}
-run: ingredient 0 is in
+run: full?:boolean <- buffer-full? in:address:buffer
 mem: location 1132 is 1062
-run: instruction buffer-full?/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1161
-run: product 0 is default-space
-run: instruction buffer-full?/1
-run: {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]} <- next-ingredient/34 
-run: product 0 is in
+run: in:address:buffer <- next-ingredient 
 mem: storing 1062 in location 1163
-run: instruction buffer-full?/2
-run: {name: "len", value: 2, type: 1, properties: ["len": "number"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-run: ingredient 0 is in
+run: len:number <- get in:address:buffer/deref, length:offset
 mem: location 1163 is 1062
 mem: location 1062 is 1
 mem: location 1063 is 1064
-run: ingredient 1 is length
 mem: location 1163 is 1062
 run: address to copy is 1062
 run: its type is 1
 mem: location 1062 is 1
-run: product 0 is len
 mem: storing 1 in location 1164
-run: instruction buffer-full?/3
-run: {name: "s", value: 3, type: 2-5-4, properties: ["s": "address":"array":"character"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is in
+run: s:address:array:character <- get in:address:buffer/deref, data:offset
 mem: location 1163 is 1062
 mem: location 1062 is 1
 mem: location 1063 is 1064
-run: ingredient 1 is data
 mem: location 1163 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1064
-run: product 0 is s
 mem: storing 1064 in location 1165
-run: instruction buffer-full?/4
-run: {name: "capacity", value: 4, type: 1, properties: ["capacity": "number"]} <- length/32 {name: "s", value: 3, type: 2-5-4, properties: ["s": "address":"array":"character", "deref": ]}
-run: ingredient 0 is s
+run: capacity:number <- length s:address:array:character/deref
 mem: location 1165 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 97
 mem: location 1066 is 0
 mem: location 1067 is 0
 mem: location 1165 is 1064
-run: product 0 is capacity
 mem: storing 3 in location 1166
-run: instruction buffer-full?/5
-run: {name: "result", value: 5, type: 3, properties: ["result": "boolean"]} <- greater-or-equal/16 {name: "len", value: 2, type: 1, properties: ["len": "number"]}, {name: "capacity", value: 4, type: 1, properties: ["capacity": "number"]}
-run: ingredient 0 is len
+run: result:boolean <- greater-or-equal len:number, capacity:number
 mem: location 1164 is 1
-run: ingredient 1 is capacity
 mem: location 1166 is 3
-run: product 0 is result
 mem: storing 0 in location 1167
-run: instruction buffer-full?/6
-run: reply/37 {name: "result", value: 5, type: 3, properties: ["result": "boolean"]}
-run: ingredient 0 is result
+run: reply result:boolean
 mem: location 1167 is 0
 run: result 0 is 0
-run: product 0 is full?
 mem: storing 0 in location 1134
-run: instruction buffer-append/5
-run: break-unless/12 {name: "full?", value: 3, type: 3, properties: ["full?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is full?
+run: break-unless full?:boolean, 
 mem: location 1134 is 0
-run: ingredient 1 is 
 run: jumping to instruction 7
-run: instruction buffer-append/8
-run: {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number"]} <- get-address/29 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-run: ingredient 0 is in
+run: len:address:number <- get-address in:address:buffer/deref, length:offset
 mem: location 1132 is 1062
 mem: location 1062 is 1
 mem: location 1063 is 1064
-run: ingredient 1 is length
 mem: location 1132 is 1062
 run: address to copy is 1062
-run: product 0 is len
 mem: storing 1062 in location 1135
-run: instruction buffer-append/9
-run: {name: "s", value: 5, type: 2-5-4, properties: ["s": "address":"array":"character"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is in
+run: s:address:array:character <- get in:address:buffer/deref, data:offset
 mem: location 1132 is 1062
 mem: location 1062 is 1
 mem: location 1063 is 1064
-run: ingredient 1 is data
 mem: location 1132 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1064
-run: product 0 is s
 mem: storing 1064 in location 1136
-run: instruction buffer-append/10
-run: {name: "dest", value: 6, type: 2-4, properties: ["dest": "address":"character"]} <- index-address/31 {name: "s", value: 5, type: 2-5-4, properties: ["s": "address":"array":"character", "deref": ]}, {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]}
-run: ingredient 0 is s
+run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
 mem: location 1136 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 97
 mem: location 1066 is 0
 mem: location 1067 is 0
-run: ingredient 1 is len
 mem: location 1135 is 1062
 mem: location 1062 is 1
 mem: location 1136 is 1064
 mem: location 1135 is 1062
 mem: location 1062 is 1
-run: product 0 is dest
 mem: storing 1066 in location 1137
-run: instruction buffer-append/11
-run: {name: "dest", value: 6, type: 2-4, properties: ["dest": "address":"character", "deref": ]} <- copy/1 {name: "c", value: 2, type: 4, properties: ["c": "character"]}
-run: ingredient 0 is c
+run: dest:address:character/deref <- copy c:character
 mem: location 1133 is 98
-run: product 0 is dest
 mem: location 1137 is 1066
 mem: storing 98 in location 1066
-run: instruction buffer-append/12
-run: {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]} <- add/2 {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is len
+run: len:address:number/deref <- add len:address:number/deref, 1:literal
 mem: location 1135 is 1062
 mem: location 1062 is 1
-run: ingredient 1 is 1
-run: product 0 is len
 mem: location 1135 is 1062
 mem: storing 2 in location 1062
-run: instruction buffer-append/13
-run: reply/37 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "same-as-ingredient": "0"]}
-run: ingredient 0 is in
+run: reply in:address:buffer/same-as-ingredient:0
 mem: location 1132 is 1062
 run: result 0 is 1062
-run: product 0 is x
 mem: storing 1062 in location 1002
-run: instruction run1001/5
-run: {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer"]} <- buffer-append/104 {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer"]}, {name: "99", value: 99, type: 0, properties: ["99": "literal"]}
-run: ingredient 0 is x
+run: x:address:buffer <- buffer-append x:address:buffer, 99:literal
 mem: location 1002 is 1062
-run: ingredient 1 is 99
-run: instruction buffer-append/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1192
-run: product 0 is default-space
-run: instruction buffer-append/1
-run: {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]} <- next-ingredient/34 
-run: product 0 is in
+run: in:address:buffer <- next-ingredient 
 mem: storing 1062 in location 1194
-run: instruction buffer-append/2
-run: {name: "c", value: 2, type: 4, properties: ["c": "character"]} <- next-ingredient/34 
-run: product 0 is c
+run: c:character <- next-ingredient 
 mem: storing 99 in location 1195
-run: instruction buffer-append/4
-run: {name: "full?", value: 3, type: 3, properties: ["full?": "boolean"]} <- buffer-full?/103 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]}
-run: ingredient 0 is in
+run: full?:boolean <- buffer-full? in:address:buffer
 mem: location 1194 is 1062
-run: instruction buffer-full?/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1223
-run: product 0 is default-space
-run: instruction buffer-full?/1
-run: {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]} <- next-ingredient/34 
-run: product 0 is in
+run: in:address:buffer <- next-ingredient 
 mem: storing 1062 in location 1225
-run: instruction buffer-full?/2
-run: {name: "len", value: 2, type: 1, properties: ["len": "number"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-run: ingredient 0 is in
+run: len:number <- get in:address:buffer/deref, length:offset
 mem: location 1225 is 1062
 mem: location 1062 is 2
 mem: location 1063 is 1064
-run: ingredient 1 is length
 mem: location 1225 is 1062
 run: address to copy is 1062
 run: its type is 1
 mem: location 1062 is 2
-run: product 0 is len
 mem: storing 2 in location 1226
-run: instruction buffer-full?/3
-run: {name: "s", value: 3, type: 2-5-4, properties: ["s": "address":"array":"character"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is in
+run: s:address:array:character <- get in:address:buffer/deref, data:offset
 mem: location 1225 is 1062
 mem: location 1062 is 2
 mem: location 1063 is 1064
-run: ingredient 1 is data
 mem: location 1225 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1064
-run: product 0 is s
 mem: storing 1064 in location 1227
-run: instruction buffer-full?/4
-run: {name: "capacity", value: 4, type: 1, properties: ["capacity": "number"]} <- length/32 {name: "s", value: 3, type: 2-5-4, properties: ["s": "address":"array":"character", "deref": ]}
-run: ingredient 0 is s
+run: capacity:number <- length s:address:array:character/deref
 mem: location 1227 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 97
 mem: location 1066 is 98
 mem: location 1067 is 0
 mem: location 1227 is 1064
-run: product 0 is capacity
 mem: storing 3 in location 1228
-run: instruction buffer-full?/5
-run: {name: "result", value: 5, type: 3, properties: ["result": "boolean"]} <- greater-or-equal/16 {name: "len", value: 2, type: 1, properties: ["len": "number"]}, {name: "capacity", value: 4, type: 1, properties: ["capacity": "number"]}
-run: ingredient 0 is len
+run: result:boolean <- greater-or-equal len:number, capacity:number
 mem: location 1226 is 2
-run: ingredient 1 is capacity
 mem: location 1228 is 3
-run: product 0 is result
 mem: storing 0 in location 1229
-run: instruction buffer-full?/6
-run: reply/37 {name: "result", value: 5, type: 3, properties: ["result": "boolean"]}
-run: ingredient 0 is result
+run: reply result:boolean
 mem: location 1229 is 0
 run: result 0 is 0
-run: product 0 is full?
 mem: storing 0 in location 1196
-run: instruction buffer-append/5
-run: break-unless/12 {name: "full?", value: 3, type: 3, properties: ["full?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is full?
+run: break-unless full?:boolean, 
 mem: location 1196 is 0
-run: ingredient 1 is 
 run: jumping to instruction 7
-run: instruction buffer-append/8
-run: {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number"]} <- get-address/29 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-run: ingredient 0 is in
+run: len:address:number <- get-address in:address:buffer/deref, length:offset
 mem: location 1194 is 1062
 mem: location 1062 is 2
 mem: location 1063 is 1064
-run: ingredient 1 is length
 mem: location 1194 is 1062
 run: address to copy is 1062
-run: product 0 is len
 mem: storing 1062 in location 1197
-run: instruction buffer-append/9
-run: {name: "s", value: 5, type: 2-5-4, properties: ["s": "address":"array":"character"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is in
+run: s:address:array:character <- get in:address:buffer/deref, data:offset
 mem: location 1194 is 1062
 mem: location 1062 is 2
 mem: location 1063 is 1064
-run: ingredient 1 is data
 mem: location 1194 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1064
-run: product 0 is s
 mem: storing 1064 in location 1198
-run: instruction buffer-append/10
-run: {name: "dest", value: 6, type: 2-4, properties: ["dest": "address":"character"]} <- index-address/31 {name: "s", value: 5, type: 2-5-4, properties: ["s": "address":"array":"character", "deref": ]}, {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]}
-run: ingredient 0 is s
+run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
 mem: location 1198 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 97
 mem: location 1066 is 98
 mem: location 1067 is 0
-run: ingredient 1 is len
 mem: location 1197 is 1062
 mem: location 1062 is 2
 mem: location 1198 is 1064
 mem: location 1197 is 1062
 mem: location 1062 is 2
-run: product 0 is dest
 mem: storing 1067 in location 1199
-run: instruction buffer-append/11
-run: {name: "dest", value: 6, type: 2-4, properties: ["dest": "address":"character", "deref": ]} <- copy/1 {name: "c", value: 2, type: 4, properties: ["c": "character"]}
-run: ingredient 0 is c
+run: dest:address:character/deref <- copy c:character
 mem: location 1195 is 99
-run: product 0 is dest
 mem: location 1199 is 1067
 mem: storing 99 in location 1067
-run: instruction buffer-append/12
-run: {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]} <- add/2 {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is len
+run: len:address:number/deref <- add len:address:number/deref, 1:literal
 mem: location 1197 is 1062
 mem: location 1062 is 2
-run: ingredient 1 is 1
-run: product 0 is len
 mem: location 1197 is 1062
 mem: storing 3 in location 1062
-run: instruction buffer-append/13
-run: reply/37 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "same-as-ingredient": "0"]}
-run: ingredient 0 is in
+run: reply in:address:buffer/same-as-ingredient:0
 mem: location 1194 is 1062
 run: result 0 is 1062
-run: product 0 is x
 mem: storing 1062 in location 1002
-run: instruction run1001/6
-run: {name: "s2", value: 3, type: 2-5-4, properties: ["s2": "address":"array":"character"]} <- get/28 {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is x
+run: s2:address:array:character <- get x:address:buffer/deref, data:offset
 mem: location 1002 is 1062
 mem: location 1062 is 3
 mem: location 1063 is 1064
-run: ingredient 1 is data
 mem: location 1002 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1064
-run: product 0 is s2
 mem: storing 1064 in location 1004
-run: instruction run1001/7
-run: {name: "1", value: 1, type: 3, properties: ["1": "boolean", "raw": ]} <- equal/13 {name: "s1", value: 2, type: 2-5-4, properties: ["s1": "address":"array":"character"]}, {name: "s2", value: 3, type: 2-5-4, properties: ["s2": "address":"array":"character"]}
-run: ingredient 0 is s1
+run: 1:boolean/raw <- equal s1:address:array:character, s2:address:array:character
 mem: location 1003 is 1064
-run: ingredient 1 is s2
 mem: location 1004 is 1064
-run: product 0 is 1
 mem: storing 1 in location 1
-run: instruction run1001/8
-run: {name: "2", value: 2, type: 5-4, properties: ["2": "array":"character", "raw": ]} <- copy/1 {name: "s2", value: 3, type: 2-5-4, properties: ["s2": "address":"array":"character", "deref": ]}
-run: ingredient 0 is s2
+run: 2:array:character/raw <- copy s2:address:array:character/deref
 mem: location 1004 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 97
 mem: location 1066 is 98
 mem: location 1067 is 99
-run: product 0 is 2
 mem: storing 3 in location 2
 mem: storing 97 in location 3
 mem: storing 98 in location 4
 mem: storing 99 in location 5
-run: instruction run1001/10
-run: {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer"]} <- buffer-append/104 {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer"]}, {name: "100", value: 100, type: 0, properties: ["100": "literal"]}
-run: ingredient 0 is x
+run: x:address:buffer <- buffer-append x:address:buffer, 100:literal
 mem: location 1002 is 1062
-run: ingredient 1 is 100
-run: instruction buffer-append/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1254
-run: product 0 is default-space
-run: instruction buffer-append/1
-run: {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]} <- next-ingredient/34 
-run: product 0 is in
+run: in:address:buffer <- next-ingredient 
 mem: storing 1062 in location 1256
-run: instruction buffer-append/2
-run: {name: "c", value: 2, type: 4, properties: ["c": "character"]} <- next-ingredient/34 
-run: product 0 is c
+run: c:character <- next-ingredient 
 mem: storing 100 in location 1257
-run: instruction buffer-append/4
-run: {name: "full?", value: 3, type: 3, properties: ["full?": "boolean"]} <- buffer-full?/103 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]}
-run: ingredient 0 is in
+run: full?:boolean <- buffer-full? in:address:buffer
 mem: location 1256 is 1062
-run: instruction buffer-full?/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1285
-run: product 0 is default-space
-run: instruction buffer-full?/1
-run: {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]} <- next-ingredient/34 
-run: product 0 is in
+run: in:address:buffer <- next-ingredient 
 mem: storing 1062 in location 1287
-run: instruction buffer-full?/2
-run: {name: "len", value: 2, type: 1, properties: ["len": "number"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-run: ingredient 0 is in
+run: len:number <- get in:address:buffer/deref, length:offset
 mem: location 1287 is 1062
 mem: location 1062 is 3
 mem: location 1063 is 1064
-run: ingredient 1 is length
 mem: location 1287 is 1062
 run: address to copy is 1062
 run: its type is 1
 mem: location 1062 is 3
-run: product 0 is len
 mem: storing 3 in location 1288
-run: instruction buffer-full?/3
-run: {name: "s", value: 3, type: 2-5-4, properties: ["s": "address":"array":"character"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is in
+run: s:address:array:character <- get in:address:buffer/deref, data:offset
 mem: location 1287 is 1062
 mem: location 1062 is 3
 mem: location 1063 is 1064
-run: ingredient 1 is data
 mem: location 1287 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1064
-run: product 0 is s
 mem: storing 1064 in location 1289
-run: instruction buffer-full?/4
-run: {name: "capacity", value: 4, type: 1, properties: ["capacity": "number"]} <- length/32 {name: "s", value: 3, type: 2-5-4, properties: ["s": "address":"array":"character", "deref": ]}
-run: ingredient 0 is s
+run: capacity:number <- length s:address:array:character/deref
 mem: location 1289 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 97
 mem: location 1066 is 98
 mem: location 1067 is 99
 mem: location 1289 is 1064
-run: product 0 is capacity
 mem: storing 3 in location 1290
-run: instruction buffer-full?/5
-run: {name: "result", value: 5, type: 3, properties: ["result": "boolean"]} <- greater-or-equal/16 {name: "len", value: 2, type: 1, properties: ["len": "number"]}, {name: "capacity", value: 4, type: 1, properties: ["capacity": "number"]}
-run: ingredient 0 is len
+run: result:boolean <- greater-or-equal len:number, capacity:number
 mem: location 1288 is 3
-run: ingredient 1 is capacity
 mem: location 1290 is 3
-run: product 0 is result
 mem: storing 1 in location 1291
-run: instruction buffer-full?/6
-run: reply/37 {name: "result", value: 5, type: 3, properties: ["result": "boolean"]}
-run: ingredient 0 is result
+run: reply result:boolean
 mem: location 1291 is 1
 run: result 0 is 1
-run: product 0 is full?
 mem: storing 1 in location 1258
-run: instruction buffer-append/5
-run: break-unless/12 {name: "full?", value: 3, type: 3, properties: ["full?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is full?
+run: break-unless full?:boolean, 
 mem: location 1258 is 1
-run: ingredient 1 is 
 run: jump-unless fell through
-run: instruction buffer-append/6
-run: {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]} <- grow-buffer/102 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]}
-run: ingredient 0 is in
+run: in:address:buffer <- grow-buffer in:address:buffer
 mem: location 1256 is 1062
-run: instruction grow-buffer/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1316
-run: product 0 is default-space
-run: instruction grow-buffer/1
-run: {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]} <- next-ingredient/34 
-run: product 0 is in
+run: in:address:buffer <- next-ingredient 
 mem: storing 1062 in location 1318
-run: instruction grow-buffer/2
-run: {name: "x", value: 2, type: 2-2-5-4, properties: ["x": "address":"address":"array":"character"]} <- get-address/29 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is in
+run: x:address:address:array:character <- get-address in:address:buffer/deref, data:offset
 mem: location 1318 is 1062
 mem: location 1062 is 3
 mem: location 1063 is 1064
-run: ingredient 1 is data
 mem: location 1318 is 1062
 run: address to copy is 1063
-run: product 0 is x
 mem: storing 1063 in location 1319
-run: instruction grow-buffer/3
-run: {name: "oldlen", value: 3, type: 1, properties: ["oldlen": "number"]} <- length/32 {name: "x", value: 2, type: 2-2-5-4, properties: ["x": "address":"address":"array":"character", "deref": , "deref": ]}
-run: ingredient 0 is x
+run: oldlen:number <- length x:address:address:array:character/deref/deref
 mem: location 1319 is 1063
 mem: location 1063 is 1064
 mem: location 1064 is 3
@@ -989,71 +639,43 @@ mem: location 1066 is 98
 mem: location 1067 is 99
 mem: location 1319 is 1063
 mem: location 1063 is 1064
-run: product 0 is oldlen
 mem: storing 3 in location 1320
-run: instruction grow-buffer/4
-run: {name: "newlen", value: 4, type: 1, properties: ["newlen": "number"]} <- multiply/4 {name: "oldlen", value: 3, type: 1, properties: ["oldlen": "number"]}, {name: "2", value: 2, type: 0, properties: ["2": "literal"]}
-run: ingredient 0 is oldlen
+run: newlen:number <- multiply oldlen:number, 2:literal
 mem: location 1320 is 3
-run: ingredient 1 is 2
-run: product 0 is newlen
 mem: storing 6 in location 1321
-run: instruction grow-buffer/5
-run: {name: "olddata", value: 5, type: 2-5-4, properties: ["olddata": "address":"array":"character"]} <- copy/1 {name: "x", value: 2, type: 2-2-5-4, properties: ["x": "address":"address":"array":"character", "deref": ]}
-run: ingredient 0 is x
+run: olddata:address:array:character <- copy x:address:address:array:character/deref
 mem: location 1319 is 1063
 mem: location 1063 is 1064
-run: product 0 is olddata
 mem: storing 1064 in location 1322
-run: instruction grow-buffer/6
-run: {name: "x", value: 2, type: 2-2-5-4, properties: ["x": "address":"address":"array":"character", "deref": ]} <- new/52 {name: "character", value: 4, type: 0, properties: ["character": "type"]}, {name: "newlen", value: 4, type: 1, properties: ["newlen": "number"]}
-run: ingredient 0 is character
-run: ingredient 1 is newlen
+run: x:address:address:array:character/deref <- new character:type, newlen:number
 mem: location 1321 is 6
 mem: array size is 6
 mem: new alloc: 1347
-run: product 0 is x
 mem: location 1319 is 1063
 mem: storing 1347 in location 1063
-run: instruction grow-buffer/7
-run: {name: "i", value: 6, type: 1, properties: ["i": "number"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is i
+run: i:number <- copy 0:literal
 mem: storing 0 in location 1323
-run: instruction grow-buffer/9
-run: {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "oldlen", value: 3, type: 1, properties: ["oldlen": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, oldlen:number
 mem: location 1323 is 0
-run: ingredient 1 is oldlen
 mem: location 1320 is 3
-run: product 0 is done?
 mem: storing 0 in location 1324
-run: instruction grow-buffer/10
-run: break-if/11 {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1324 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction grow-buffer/11
-run: {name: "src", value: 8, type: 4, properties: ["src": "character"]} <- index/30 {name: "olddata", value: 5, type: 2-5-4, properties: ["olddata": "address":"array":"character", "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is olddata
+run: src:character <- index olddata:address:array:character/deref, i:number
 mem: location 1322 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 97
 mem: location 1066 is 98
 mem: location 1067 is 99
-run: ingredient 1 is i
 mem: location 1323 is 0
 mem: location 1322 is 1064
 mem: location 1323 is 0
 run: address to copy is 1065
 run: its type is 4
 mem: location 1065 is 97
-run: product 0 is src
 mem: storing 97 in location 1325
-run: instruction grow-buffer/12
-run: {name: "dest", value: 9, type: 2-4, properties: ["dest": "address":"character"]} <- index-address/31 {name: "x", value: 2, type: 2-2-5-4, properties: ["x": "address":"address":"array":"character", "deref": , "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is x
+run: dest:address:character <- index-address x:address:address:array:character/deref/deref, i:number
 mem: location 1319 is 1063
 mem: location 1063 is 1347
 mem: location 1347 is 6
@@ -1063,65 +685,41 @@ mem: location 1350 is 0
 mem: location 1351 is 0
 mem: location 1352 is 0
 mem: location 1353 is 0
-run: ingredient 1 is i
 mem: location 1323 is 0
 mem: location 1319 is 1063
 mem: location 1063 is 1347
 mem: location 1323 is 0
-run: product 0 is dest
 mem: storing 1348 in location 1326
-run: instruction grow-buffer/13
-run: {name: "dest", value: 9, type: 2-4, properties: ["dest": "address":"character", "deref": ]} <- copy/1 {name: "src", value: 8, type: 4, properties: ["src": "character"]}
-run: ingredient 0 is src
+run: dest:address:character/deref <- copy src:character
 mem: location 1325 is 97
-run: product 0 is dest
 mem: location 1326 is 1348
 mem: storing 97 in location 1348
-run: instruction grow-buffer/14
-run: {name: "i", value: 6, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1323 is 0
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 1 in location 1323
-run: instruction grow-buffer/15
-run: loop/10 {name: "", value: -7, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 9
-run: instruction grow-buffer/9
-run: {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "oldlen", value: 3, type: 1, properties: ["oldlen": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, oldlen:number
 mem: location 1323 is 1
-run: ingredient 1 is oldlen
 mem: location 1320 is 3
-run: product 0 is done?
 mem: storing 0 in location 1324
-run: instruction grow-buffer/10
-run: break-if/11 {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1324 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction grow-buffer/11
-run: {name: "src", value: 8, type: 4, properties: ["src": "character"]} <- index/30 {name: "olddata", value: 5, type: 2-5-4, properties: ["olddata": "address":"array":"character", "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is olddata
+run: src:character <- index olddata:address:array:character/deref, i:number
 mem: location 1322 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 97
 mem: location 1066 is 98
 mem: location 1067 is 99
-run: ingredient 1 is i
 mem: location 1323 is 1
 mem: location 1322 is 1064
 mem: location 1323 is 1
 run: address to copy is 1066
 run: its type is 4
 mem: location 1066 is 98
-run: product 0 is src
 mem: storing 98 in location 1325
-run: instruction grow-buffer/12
-run: {name: "dest", value: 9, type: 2-4, properties: ["dest": "address":"character"]} <- index-address/31 {name: "x", value: 2, type: 2-2-5-4, properties: ["x": "address":"address":"array":"character", "deref": , "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is x
+run: dest:address:character <- index-address x:address:address:array:character/deref/deref, i:number
 mem: location 1319 is 1063
 mem: location 1063 is 1347
 mem: location 1347 is 6
@@ -1131,65 +729,41 @@ mem: location 1350 is 0
 mem: location 1351 is 0
 mem: location 1352 is 0
 mem: location 1353 is 0
-run: ingredient 1 is i
 mem: location 1323 is 1
 mem: location 1319 is 1063
 mem: location 1063 is 1347
 mem: location 1323 is 1
-run: product 0 is dest
 mem: storing 1349 in location 1326
-run: instruction grow-buffer/13
-run: {name: "dest", value: 9, type: 2-4, properties: ["dest": "address":"character", "deref": ]} <- copy/1 {name: "src", value: 8, type: 4, properties: ["src": "character"]}
-run: ingredient 0 is src
+run: dest:address:character/deref <- copy src:character
 mem: location 1325 is 98
-run: product 0 is dest
 mem: location 1326 is 1349
 mem: storing 98 in location 1349
-run: instruction grow-buffer/14
-run: {name: "i", value: 6, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1323 is 1
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 2 in location 1323
-run: instruction grow-buffer/15
-run: loop/10 {name: "", value: -7, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 9
-run: instruction grow-buffer/9
-run: {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "oldlen", value: 3, type: 1, properties: ["oldlen": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, oldlen:number
 mem: location 1323 is 2
-run: ingredient 1 is oldlen
 mem: location 1320 is 3
-run: product 0 is done?
 mem: storing 0 in location 1324
-run: instruction grow-buffer/10
-run: break-if/11 {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1324 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction grow-buffer/11
-run: {name: "src", value: 8, type: 4, properties: ["src": "character"]} <- index/30 {name: "olddata", value: 5, type: 2-5-4, properties: ["olddata": "address":"array":"character", "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is olddata
+run: src:character <- index olddata:address:array:character/deref, i:number
 mem: location 1322 is 1064
 mem: location 1064 is 3
 mem: location 1065 is 97
 mem: location 1066 is 98
 mem: location 1067 is 99
-run: ingredient 1 is i
 mem: location 1323 is 2
 mem: location 1322 is 1064
 mem: location 1323 is 2
 run: address to copy is 1067
 run: its type is 4
 mem: location 1067 is 99
-run: product 0 is src
 mem: storing 99 in location 1325
-run: instruction grow-buffer/12
-run: {name: "dest", value: 9, type: 2-4, properties: ["dest": "address":"character"]} <- index-address/31 {name: "x", value: 2, type: 2-2-5-4, properties: ["x": "address":"address":"array":"character", "deref": , "deref": ]}, {name: "i", value: 6, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is x
+run: dest:address:character <- index-address x:address:address:array:character/deref/deref, i:number
 mem: location 1319 is 1063
 mem: location 1063 is 1347
 mem: location 1347 is 6
@@ -1199,79 +773,48 @@ mem: location 1350 is 0
 mem: location 1351 is 0
 mem: location 1352 is 0
 mem: location 1353 is 0
-run: ingredient 1 is i
 mem: location 1323 is 2
 mem: location 1319 is 1063
 mem: location 1063 is 1347
 mem: location 1323 is 2
-run: product 0 is dest
 mem: storing 1350 in location 1326
-run: instruction grow-buffer/13
-run: {name: "dest", value: 9, type: 2-4, properties: ["dest": "address":"character", "deref": ]} <- copy/1 {name: "src", value: 8, type: 4, properties: ["src": "character"]}
-run: ingredient 0 is src
+run: dest:address:character/deref <- copy src:character
 mem: location 1325 is 99
-run: product 0 is dest
 mem: location 1326 is 1350
 mem: storing 99 in location 1350
-run: instruction grow-buffer/14
-run: {name: "i", value: 6, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1323 is 2
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 3 in location 1323
-run: instruction grow-buffer/15
-run: loop/10 {name: "", value: -7, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 9
-run: instruction grow-buffer/9
-run: {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 6, type: 1, properties: ["i": "number"]}, {name: "oldlen", value: 3, type: 1, properties: ["oldlen": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, oldlen:number
 mem: location 1323 is 3
-run: ingredient 1 is oldlen
 mem: location 1320 is 3
-run: product 0 is done?
 mem: storing 1 in location 1324
-run: instruction grow-buffer/10
-run: break-if/11 {name: "done?", value: 7, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1324 is 1
-run: ingredient 1 is 
 run: jumping to instruction 16
-run: instruction grow-buffer/17
-run: reply/37 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer"]}
-run: ingredient 0 is in
+run: reply in:address:buffer
 mem: location 1318 is 1062
 run: result 0 is 1062
-run: product 0 is in
 mem: storing 1062 in location 1256
-run: instruction buffer-append/8
-run: {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number"]} <- get-address/29 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-run: ingredient 0 is in
+run: len:address:number <- get-address in:address:buffer/deref, length:offset
 mem: location 1256 is 1062
 mem: location 1062 is 3
 mem: location 1063 is 1347
-run: ingredient 1 is length
 mem: location 1256 is 1062
 run: address to copy is 1062
-run: product 0 is len
 mem: storing 1062 in location 1259
-run: instruction buffer-append/9
-run: {name: "s", value: 5, type: 2-5-4, properties: ["s": "address":"array":"character"]} <- get/28 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is in
+run: s:address:array:character <- get in:address:buffer/deref, data:offset
 mem: location 1256 is 1062
 mem: location 1062 is 3
 mem: location 1063 is 1347
-run: ingredient 1 is data
 mem: location 1256 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1347
-run: product 0 is s
 mem: storing 1347 in location 1260
-run: instruction buffer-append/10
-run: {name: "dest", value: 6, type: 2-4, properties: ["dest": "address":"character"]} <- index-address/31 {name: "s", value: 5, type: 2-5-4, properties: ["s": "address":"array":"character", "deref": ]}, {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]}
-run: ingredient 0 is s
+run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
 mem: location 1260 is 1347
 mem: location 1347 is 6
 mem: location 1348 is 97
@@ -1280,74 +823,48 @@ mem: location 1350 is 99
 mem: location 1351 is 0
 mem: location 1352 is 0
 mem: location 1353 is 0
-run: ingredient 1 is len
 mem: location 1259 is 1062
 mem: location 1062 is 3
 mem: location 1260 is 1347
 mem: location 1259 is 1062
 mem: location 1062 is 3
-run: product 0 is dest
 mem: storing 1351 in location 1261
-run: instruction buffer-append/11
-run: {name: "dest", value: 6, type: 2-4, properties: ["dest": "address":"character", "deref": ]} <- copy/1 {name: "c", value: 2, type: 4, properties: ["c": "character"]}
-run: ingredient 0 is c
+run: dest:address:character/deref <- copy c:character
 mem: location 1257 is 100
-run: product 0 is dest
 mem: location 1261 is 1351
 mem: storing 100 in location 1351
-run: instruction buffer-append/12
-run: {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]} <- add/2 {name: "len", value: 4, type: 2-1, properties: ["len": "address":"number", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is len
+run: len:address:number/deref <- add len:address:number/deref, 1:literal
 mem: location 1259 is 1062
 mem: location 1062 is 3
-run: ingredient 1 is 1
-run: product 0 is len
 mem: location 1259 is 1062
 mem: storing 4 in location 1062
-run: instruction buffer-append/13
-run: reply/37 {name: "in", value: 1, type: 2-10, properties: ["in": "address":"buffer", "same-as-ingredient": "0"]}
-run: ingredient 0 is in
+run: reply in:address:buffer/same-as-ingredient:0
 mem: location 1256 is 1062
 run: result 0 is 1062
-run: product 0 is x
 mem: storing 1062 in location 1002
-run: instruction run1001/11
-run: {name: "s3", value: 4, type: 2-5-4, properties: ["s3": "address":"array":"character"]} <- get/28 {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is x
+run: s3:address:array:character <- get x:address:buffer/deref, data:offset
 mem: location 1002 is 1062
 mem: location 1062 is 4
 mem: location 1063 is 1347
-run: ingredient 1 is data
 mem: location 1002 is 1062
 run: address to copy is 1063
 run: its type is 2
 mem: location 1063 is 1347
-run: product 0 is s3
 mem: storing 1347 in location 1005
-run: instruction run1001/12
-run: {name: "10", value: 10, type: 3, properties: ["10": "boolean", "raw": ]} <- equal/13 {name: "s1", value: 2, type: 2-5-4, properties: ["s1": "address":"array":"character"]}, {name: "s3", value: 4, type: 2-5-4, properties: ["s3": "address":"array":"character"]}
-run: ingredient 0 is s1
+run: 10:boolean/raw <- equal s1:address:array:character, s3:address:array:character
 mem: location 1003 is 1064
-run: ingredient 1 is s3
 mem: location 1005 is 1347
-run: product 0 is 10
 mem: storing 0 in location 10
-run: instruction run1001/13
-run: {name: "11", value: 11, type: 1, properties: ["11": "number", "raw": ]} <- get/28 {name: "x", value: 1, type: 2-10, properties: ["x": "address":"buffer", "deref": ]}, {name: "length", value: 0, type: 0, properties: ["length": "offset"]}
-run: ingredient 0 is x
+run: 11:number/raw <- get x:address:buffer/deref, length:offset
 mem: location 1002 is 1062
 mem: location 1062 is 4
 mem: location 1063 is 1347
-run: ingredient 1 is length
 mem: location 1002 is 1062
 run: address to copy is 1062
 run: its type is 1
 mem: location 1062 is 4
-run: product 0 is 11
 mem: storing 4 in location 11
-run: instruction run1001/14
-run: {name: "12", value: 12, type: 5-4, properties: ["12": "array":"character", "raw": ]} <- copy/1 {name: "s3", value: 4, type: 2-5-4, properties: ["s3": "address":"array":"character", "deref": ]}
-run: ingredient 0 is s3
+run: 12:array:character/raw <- copy s3:address:array:character/deref
 mem: location 1005 is 1347
 mem: location 1347 is 6
 mem: location 1348 is 97
@@ -1356,7 +873,6 @@ mem: location 1350 is 99
 mem: location 1351 is 100
 mem: location 1352 is 0
 mem: location 1353 is 0
-run: product 0 is 12
 mem: storing 6 in location 12
 mem: storing 97 in location 13
 mem: storing 98 in location 14
@@ -1364,8 +880,7 @@ mem: storing 99 in location 15
 mem: storing 100 in location 16
 mem: storing 0 in location 17
 mem: storing 0 in location 18
-run: instruction buffer-append-works/1
-run: memory-should-contain/56 {name: "
+run: memory-should-contain [
     # before +buffer-filled
     1 <- 1   # no change in data pointer
     2 <- 3   # size of data
@@ -1382,42 +897,7 @@ run: memory-should-contain/56 {name: "
     16 <- 100
     17 <- 0
     18 <- 0
-  ", value: 0, type: 0, properties: ["
-    # before +buffer-filled
-    1 <- 1   # no change in data pointer
-    2 <- 3   # size of data
-    3 <- 97  # data
-    4 <- 98
-    5 <- 99
-    # in the end
-    10 <- 0   # data pointer has grown
-    11 <- 4   # final length
-    12 <- 6   # but data's capacity has doubled
-    13 <- 97  # data
-    14 <- 98
-    15 <- 99
-    16 <- 100
-    17 <- 0
-    18 <- 0
-  ": "literal-string"]}
-run: ingredient 0 is 
-    # before +buffer-filled
-    1 <- 1   # no change in data pointer
-    2 <- 3   # size of data
-    3 <- 97  # data
-    4 <- 98
-    5 <- 99
-    # in the end
-    10 <- 0   # data pointer has grown
-    11 <- 4   # final length
-    12 <- 6   # but data's capacity has doubled
-    13 <- 97  # data
-    14 <- 98
-    15 <- 99
-    16 <- 100
-    17 <- 0
-    18 <- 0
-  
+  ]
 run: checking location 1
 run: checking location 2
 run: checking location 3

@@ -1,22 +1,22 @@
 parse: instruction: copy
-parse:   ingredient: {name: "34", value: 0, type: 0, properties: ["34": "literal"]}
-parse:   product: {name: "12", value: 0, type: 1, properties: ["12": "number"]}
+parse:   ingredient: {name: "34", properties: ["34": "literal"]}
+parse:   product: {name: "12", properties: ["12": "number"]}
 parse: instruction: copy
-parse:   ingredient: {name: "35", value: 0, type: 0, properties: ["35": "literal"]}
-parse:   product: {name: "13", value: 0, type: 1, properties: ["13": "number"]}
+parse:   ingredient: {name: "35", properties: ["35": "literal"]}
+parse:   product: {name: "13", properties: ["13": "number"]}
 parse: instruction: copy
-parse:   ingredient: {name: "5", value: 0, type: 0, properties: ["5": "literal"]}
-parse:   product: {name: "1000", value: 0, type: 1, properties: ["1000": "number"]}
+parse:   ingredient: {name: "5", properties: ["5": "literal"]}
+parse:   product: {name: "1000", properties: ["1000": "number"]}
 parse: instruction: copy
-parse:   ingredient: {name: "1000", value: 0, type: 0, properties: ["1000": "literal"]}
-parse:   product: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]}
+parse:   ingredient: {name: "1000", properties: ["1000": "literal"]}
+parse:   product: {name: "default-space", properties: ["default-space": "address":"array":"location"]}
 parse: instruction: copy
-parse:   ingredient: {name: "12", value: 0, type: 0, properties: ["12": "literal"]}
-parse:   product: {name: "1", value: 0, type: 2-6, properties: ["1": "address":"point"]}
+parse:   ingredient: {name: "12", properties: ["12": "literal"]}
+parse:   product: {name: "1", properties: ["1": "address":"point"]}
 parse: instruction: get
-parse:   ingredient: {name: "1", value: 0, type: 2-6, properties: ["1": "address":"point", "deref": ]}
-parse:   ingredient: {name: "1", value: 0, type: 0, properties: ["1": "offset"]}
-parse:   product: {name: "9", value: 0, type: 1, properties: ["9": "number", "raw": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"point", "deref": ]}
+parse:   ingredient: {name: "1", properties: ["1": "offset"]}
+parse:   product: {name: "9", properties: ["9": "number", "raw": ]}
 after-brace: recipe main
 after-brace: copy ...
 after-brace: copy ...
@@ -26,40 +26,21 @@ after-brace: copy ...
 after-brace: get ...
 new: routine allocated memory from 1000 to 101000
 schedule: main
-run: instruction main/0
-run: {name: "12", value: 12, type: 1, properties: ["12": "number"]} <- copy/1 {name: "34", value: 34, type: 0, properties: ["34": "literal"]}
-run: ingredient 0 is 34
-run: product 0 is 12
+run: 12:number <- copy 34:literal
 mem: storing 34 in location 12
-run: instruction main/1
-run: {name: "13", value: 13, type: 1, properties: ["13": "number"]} <- copy/1 {name: "35", value: 35, type: 0, properties: ["35": "literal"]}
-run: ingredient 0 is 35
-run: product 0 is 13
+run: 13:number <- copy 35:literal
 mem: storing 35 in location 13
-run: instruction main/2
-run: {name: "1000", value: 1000, type: 1, properties: ["1000": "number"]} <- copy/1 {name: "5", value: 5, type: 0, properties: ["5": "literal"]}
-run: ingredient 0 is 5
-run: product 0 is 1000
+run: 1000:number <- copy 5:literal
 mem: storing 5 in location 1000
-run: instruction main/3
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- copy/1 {name: "1000", value: 1000, type: 0, properties: ["1000": "literal"]}
-run: ingredient 0 is 1000
-run: product 0 is default-space
-run: instruction main/4
-run: {name: "1", value: 1, type: 2-6, properties: ["1": "address":"point"]} <- copy/1 {name: "12", value: 12, type: 0, properties: ["12": "literal"]}
-run: ingredient 0 is 12
-run: product 0 is 1
+run: default-space:address:array:location <- copy 1000:literal
+run: 1:address:point <- copy 12:literal
 mem: storing 12 in location 1002
-run: instruction main/5
-run: {name: "9", value: 9, type: 1, properties: ["9": "number", "raw": ]} <- get/28 {name: "1", value: 1, type: 2-6, properties: ["1": "address":"point", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "offset"]}
-run: ingredient 0 is 1
+run: 9:number/raw <- get 1:address:point/deref, 1:offset
 mem: location 1002 is 12
 mem: location 12 is 34
 mem: location 13 is 35
-run: ingredient 1 is 1
 mem: location 1002 is 12
 run: address to copy is 13
 run: its type is 1
 mem: location 13 is 35
-run: product 0 is 9
 mem: storing 35 in location 9

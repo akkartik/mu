@@ -4,7 +4,7 @@ parse:   ingredient: {name: "
     2:address:array:character/raw <- new [abc]
     3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
     4:array:character/raw <- copy 3:address:array:character/raw/deref
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     1:address:array:character/raw <- new [hello, _]
     2:address:array:character/raw <- new [abc]
     3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
@@ -13,7 +13,7 @@ parse:   ingredient: {name: "
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "
     4:string <- [hello, abc]
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     4:string <- [hello, abc]
   ": "literal-string"]}
 after-brace: recipe interpolate-at-end
@@ -21,37 +21,25 @@ after-brace: run ...
 after-brace: memory-should-contain ...
 new: routine allocated memory from 1000 to 101000
 schedule: interpolate-at-end
-run: instruction interpolate-at-end/0
-run: run/55 {name: "
+run: run [
     1:address:array:character/raw <- new [hello, _]
     2:address:array:character/raw <- new [abc]
     3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
     4:array:character/raw <- copy 3:address:array:character/raw/deref
-  ", value: 0, type: 0, properties: ["
-    1:address:array:character/raw <- new [hello, _]
-    2:address:array:character/raw <- new [abc]
-    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
-    4:array:character/raw <- copy 3:address:array:character/raw/deref
-  ": "literal-string"]}
-run: ingredient 0 is 
-    1:address:array:character/raw <- new [hello, _]
-    2:address:array:character/raw <- new [abc]
-    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
-    4:array:character/raw <- copy 3:address:array:character/raw/deref
-  
+  ]
 parse: instruction: new
-parse:   ingredient: {name: "hello, _", value: 0, type: 0, properties: ["hello, _": "literal-string"]}
-parse:   product: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]}
+parse:   ingredient: {name: "hello, _", properties: ["hello, _": "literal-string"]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"character", "raw": ]}
 parse: instruction: new
-parse:   ingredient: {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
-parse:   product: {name: "2", value: 0, type: 2-5-4, properties: ["2": "address":"array":"character", "raw": ]}
+parse:   ingredient: {name: "abc", properties: ["abc": "literal-string"]}
+parse:   product: {name: "2", properties: ["2": "address":"array":"character", "raw": ]}
 parse: instruction: interpolate
-parse:   ingredient: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]}
-parse:   ingredient: {name: "2", value: 0, type: 2-5-4, properties: ["2": "address":"array":"character", "raw": ]}
-parse:   product: {name: "3", value: 0, type: 2-5-4, properties: ["3": "address":"array":"character", "raw": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character", "raw": ]}
+parse:   ingredient: {name: "2", properties: ["2": "address":"array":"character", "raw": ]}
+parse:   product: {name: "3", properties: ["3": "address":"array":"character", "raw": ]}
 parse: instruction: copy
-parse:   ingredient: {name: "3", value: 0, type: 2-5-4, properties: ["3": "address":"array":"character", "raw": , "deref": ]}
-parse:   product: {name: "4", value: 0, type: 5-4, properties: ["4": "array":"character", "raw": ]}
+parse:   ingredient: {name: "3", properties: ["3": "address":"array":"character", "raw": , "deref": ]}
+parse:   product: {name: "4", properties: ["4": "array":"character", "raw": ]}
 new: hello, _ -> 0
 new: abc -> 0
 after-brace: recipe run1001
@@ -59,36 +47,19 @@ after-brace: new ...
 after-brace: new ...
 after-brace: interpolate ...
 after-brace: copy ...
-run: instruction run1001/0
-run: {name: "1", value: 1, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]} <- new/52 {name: "hello, _", value: 0, type: 0, properties: ["hello, _": "literal-string"]}
-run: ingredient 0 is hello, _
-run: product 0 is 1
+run: 1:address:array:character/raw <- new [hello, _]
 mem: storing 1000 in location 1
-run: instruction run1001/1
-run: {name: "2", value: 2, type: 2-5-4, properties: ["2": "address":"array":"character", "raw": ]} <- new/52 {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
-run: ingredient 0 is abc
-run: product 0 is 2
+run: 2:address:array:character/raw <- new [abc]
 mem: storing 1009 in location 2
-run: instruction run1001/2
-run: {name: "3", value: 3, type: 2-5-4, properties: ["3": "address":"array":"character", "raw": ]} <- interpolate/107 {name: "1", value: 1, type: 2-5-4, properties: ["1": "address":"array":"character", "raw": ]}, {name: "2", value: 2, type: 2-5-4, properties: ["2": "address":"array":"character", "raw": ]}
-run: ingredient 0 is 1
+run: 3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
 mem: location 1 is 1000
-run: ingredient 1 is 2
 mem: location 2 is 1009
-run: instruction interpolate/0
-run: {name: "default-space", value: 0, type: 5-2-1, properties: ["default-space": "array":"address":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "60", value: 60, type: 0, properties: ["60": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 60
+run: default-space:array:address:location <- new location:type, 60:literal
 mem: array size is 60
 mem: new alloc: 1013
-run: product 0 is default-space
-run: instruction interpolate/1
-run: {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character"]} <- next-ingredient/34 
-run: product 0 is template
+run: template:address:array:character <- next-ingredient 
 mem: storing 1000 in location 1015
-run: instruction interpolate/2
-run: {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]} <- length/32 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}
-run: ingredient 0 is template
+run: tem-len:number <- length template:address:array:character/deref
 mem: location 1015 is 1000
 mem: location 1000 is 8
 mem: location 1001 is 104
@@ -100,121 +71,64 @@ mem: location 1006 is 44
 mem: location 1007 is 32
 mem: location 1008 is 95
 mem: location 1015 is 1000
-run: product 0 is tem-len
 mem: storing 8 in location 1016
-run: instruction interpolate/3
-run: {name: "result-len", value: 3, type: 1, properties: ["result-len": "number"]} <- copy/1 {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]}
-run: ingredient 0 is tem-len
+run: result-len:number <- copy tem-len:number
 mem: location 1016 is 8
-run: product 0 is result-len
 mem: storing 8 in location 1017
-run: instruction interpolate/5
-run: {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character"]}, {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]} <- next-ingredient/34 
-run: product 0 is a
+run: a:address:array:character, arg-received?:boolean <- next-ingredient 
 mem: storing 1009 in location 1018
-run: product 1 is arg-received?
 mem: storing 1 in location 1019
-run: instruction interpolate/6
-run: break-unless/12 {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]}, {name: "", value: 4, type: 0, properties: ["": ]}
-run: ingredient 0 is arg-received?
+run: break-unless arg-received?:boolean, 
 mem: location 1019 is 1
-run: ingredient 1 is 
 run: jump-unless fell through
-run: instruction interpolate/7
-run: {name: "a-len", value: 6, type: 1, properties: ["a-len": "number"]} <- length/32 {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}
-run: ingredient 0 is a
+run: a-len:number <- length a:address:array:character/deref
 mem: location 1018 is 1009
 mem: location 1009 is 3
 mem: location 1010 is 97
 mem: location 1011 is 98
 mem: location 1012 is 99
 mem: location 1018 is 1009
-run: product 0 is a-len
 mem: storing 3 in location 1020
-run: instruction interpolate/8
-run: {name: "result-len", value: 3, type: 1, properties: ["result-len": "number"]} <- add/2 {name: "result-len", value: 3, type: 1, properties: ["result-len": "number"]}, {name: "a-len", value: 6, type: 1, properties: ["a-len": "number"]}
-run: ingredient 0 is result-len
+run: result-len:number <- add result-len:number, a-len:number
 mem: location 1017 is 8
-run: ingredient 1 is a-len
 mem: location 1020 is 3
-run: product 0 is result-len
 mem: storing 11 in location 1017
-run: instruction interpolate/9
-run: {name: "result-len", value: 3, type: 1, properties: ["result-len": "number"]} <- subtract/3 {name: "result-len", value: 3, type: 1, properties: ["result-len": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-len
+run: result-len:number <- subtract result-len:number, 1:literal
 mem: location 1017 is 11
-run: ingredient 1 is 1
-run: product 0 is result-len
 mem: storing 10 in location 1017
-run: instruction interpolate/10
-run: loop/10 {name: "", value: -6, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 5
-run: instruction interpolate/5
-run: {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character"]}, {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]} <- next-ingredient/34 
-run: product 0 is a
+run: a:address:array:character, arg-received?:boolean <- next-ingredient 
 mem: storing 0 in location 1018
-run: product 1 is arg-received?
 mem: storing 0 in location 1019
-run: instruction interpolate/6
-run: break-unless/12 {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]}, {name: "", value: 4, type: 0, properties: ["": ]}
-run: ingredient 0 is arg-received?
+run: break-unless arg-received?:boolean, 
 mem: location 1019 is 0
-run: ingredient 1 is 
 run: jumping to instruction 11
-run: instruction interpolate/12
-run: rewind-ingredients/35 
-run: instruction interpolate/13
-run: {name: "_", value: 0, type: 0, properties: ["_": "dummy"]} <- next-ingredient/34 
-run: product 0 is _
-run: instruction interpolate/14
-run: {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character"]} <- new/52 {name: "character", value: 4, type: 0, properties: ["character": "type"]}, {name: "result-len", value: 3, type: 1, properties: ["result-len": "number"]}
-run: ingredient 0 is character
-run: ingredient 1 is result-len
+run: rewind-ingredients 
+run: _ <- next-ingredient 
+run: result:address:array:character <- new character:type, result-len:number
 mem: location 1017 is 10
 mem: array size is 10
 mem: new alloc: 1074
-run: product 0 is result
 mem: storing 1074 in location 1021
-run: instruction interpolate/15
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is result-idx
+run: result-idx:number <- copy 0:literal
 mem: storing 0 in location 1022
-run: instruction interpolate/16
-run: {name: "i", value: 9, type: 1, properties: ["i": "number"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is i
+run: i:number <- copy 0:literal
 mem: storing 0 in location 1023
-run: instruction interpolate/18
-run: {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character"]}, {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]} <- next-ingredient/34 
-run: product 0 is a
+run: a:address:array:character, arg-received?:boolean <- next-ingredient 
 mem: storing 1009 in location 1018
-run: product 1 is arg-received?
 mem: storing 1 in location 1019
-run: instruction interpolate/19
-run: break-unless/12 {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]}, {name: "", value: 25, type: 0, properties: ["": ]}
-run: ingredient 0 is arg-received?
+run: break-unless arg-received?:boolean, 
 mem: location 1019 is 1
-run: ingredient 1 is 
 run: jump-unless fell through
-run: instruction interpolate/21
-run: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]}
-run: ingredient 0 is i
+run: tem-done?:boolean <- greater-or-equal i:number, tem-len:number
 mem: location 1023 is 0
-run: ingredient 1 is tem-len
 mem: location 1016 is 8
-run: product 0 is tem-done?
 mem: storing 0 in location 1024
-run: instruction interpolate/22
-run: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "+done", value: 24, type: 0, properties: ["+done": "label"]}
-run: ingredient 0 is tem-done?
+run: break-if tem-done?:boolean, +done:label
 mem: location 1024 is 0
-run: ingredient 1 is +done
 run: jump-if fell through
-run: instruction interpolate/23
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is template
+run: in:character <- index template:address:array:character/deref, i:number
 mem: location 1015 is 1000
 mem: location 1000 is 8
 mem: location 1001 is 104
@@ -225,31 +139,20 @@ mem: location 1005 is 111
 mem: location 1006 is 44
 mem: location 1007 is 32
 mem: location 1008 is 95
-run: ingredient 1 is i
 mem: location 1023 is 0
 mem: location 1015 is 1000
 mem: location 1023 is 0
 run: address to copy is 1001
 run: its type is 4
 mem: location 1001 is 104
-run: product 0 is in
 mem: storing 104 in location 1025
-run: instruction interpolate/24
-run: {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]} <- equal/13 {name: "in", value: 11, type: 4, properties: ["in": "character"]}, {name: "95", value: 95, type: 0, properties: ["95": "literal"]}
-run: ingredient 0 is in
+run: underscore?:boolean <- equal in:character, 95:literal
 mem: location 1025 is 104
-run: ingredient 1 is 95
-run: product 0 is underscore?
 mem: storing 0 in location 1026
-run: instruction interpolate/25
-run: break-if/11 {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is underscore?
+run: break-if underscore?:boolean, 
 mem: location 1026 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction interpolate/26
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/31 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}
-run: ingredient 0 is result
+run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
 mem: location 1021 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 0
@@ -262,54 +165,30 @@ mem: location 1081 is 0
 mem: location 1082 is 0
 mem: location 1083 is 0
 mem: location 1084 is 0
-run: ingredient 1 is result-idx
 mem: location 1022 is 0
 mem: location 1021 is 1074
 mem: location 1022 is 0
-run: product 0 is out
 mem: storing 1075 in location 1027
-run: instruction interpolate/27
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
-run: ingredient 0 is in
+run: out:address:character/deref <- copy in:character
 mem: location 1025 is 104
-run: product 0 is out
 mem: location 1027 is 1075
 mem: storing 104 in location 1075
-run: instruction interpolate/28
-run: {name: "i", value: 9, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1023 is 0
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 1 in location 1023
-run: instruction interpolate/29
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-idx
+run: result-idx:number <- add result-idx:number, 1:literal
 mem: location 1022 is 0
-run: ingredient 1 is 1
-run: product 0 is result-idx
 mem: storing 1 in location 1022
-run: instruction interpolate/30
-run: loop/10 {name: "", value: -10, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 21
-run: instruction interpolate/21
-run: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]}
-run: ingredient 0 is i
+run: tem-done?:boolean <- greater-or-equal i:number, tem-len:number
 mem: location 1023 is 1
-run: ingredient 1 is tem-len
 mem: location 1016 is 8
-run: product 0 is tem-done?
 mem: storing 0 in location 1024
-run: instruction interpolate/22
-run: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "+done", value: 24, type: 0, properties: ["+done": "label"]}
-run: ingredient 0 is tem-done?
+run: break-if tem-done?:boolean, +done:label
 mem: location 1024 is 0
-run: ingredient 1 is +done
 run: jump-if fell through
-run: instruction interpolate/23
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is template
+run: in:character <- index template:address:array:character/deref, i:number
 mem: location 1015 is 1000
 mem: location 1000 is 8
 mem: location 1001 is 104
@@ -320,31 +199,20 @@ mem: location 1005 is 111
 mem: location 1006 is 44
 mem: location 1007 is 32
 mem: location 1008 is 95
-run: ingredient 1 is i
 mem: location 1023 is 1
 mem: location 1015 is 1000
 mem: location 1023 is 1
 run: address to copy is 1002
 run: its type is 4
 mem: location 1002 is 101
-run: product 0 is in
 mem: storing 101 in location 1025
-run: instruction interpolate/24
-run: {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]} <- equal/13 {name: "in", value: 11, type: 4, properties: ["in": "character"]}, {name: "95", value: 95, type: 0, properties: ["95": "literal"]}
-run: ingredient 0 is in
+run: underscore?:boolean <- equal in:character, 95:literal
 mem: location 1025 is 101
-run: ingredient 1 is 95
-run: product 0 is underscore?
 mem: storing 0 in location 1026
-run: instruction interpolate/25
-run: break-if/11 {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is underscore?
+run: break-if underscore?:boolean, 
 mem: location 1026 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction interpolate/26
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/31 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}
-run: ingredient 0 is result
+run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
 mem: location 1021 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 104
@@ -357,54 +225,30 @@ mem: location 1081 is 0
 mem: location 1082 is 0
 mem: location 1083 is 0
 mem: location 1084 is 0
-run: ingredient 1 is result-idx
 mem: location 1022 is 1
 mem: location 1021 is 1074
 mem: location 1022 is 1
-run: product 0 is out
 mem: storing 1076 in location 1027
-run: instruction interpolate/27
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
-run: ingredient 0 is in
+run: out:address:character/deref <- copy in:character
 mem: location 1025 is 101
-run: product 0 is out
 mem: location 1027 is 1076
 mem: storing 101 in location 1076
-run: instruction interpolate/28
-run: {name: "i", value: 9, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1023 is 1
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 2 in location 1023
-run: instruction interpolate/29
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-idx
+run: result-idx:number <- add result-idx:number, 1:literal
 mem: location 1022 is 1
-run: ingredient 1 is 1
-run: product 0 is result-idx
 mem: storing 2 in location 1022
-run: instruction interpolate/30
-run: loop/10 {name: "", value: -10, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 21
-run: instruction interpolate/21
-run: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]}
-run: ingredient 0 is i
+run: tem-done?:boolean <- greater-or-equal i:number, tem-len:number
 mem: location 1023 is 2
-run: ingredient 1 is tem-len
 mem: location 1016 is 8
-run: product 0 is tem-done?
 mem: storing 0 in location 1024
-run: instruction interpolate/22
-run: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "+done", value: 24, type: 0, properties: ["+done": "label"]}
-run: ingredient 0 is tem-done?
+run: break-if tem-done?:boolean, +done:label
 mem: location 1024 is 0
-run: ingredient 1 is +done
 run: jump-if fell through
-run: instruction interpolate/23
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is template
+run: in:character <- index template:address:array:character/deref, i:number
 mem: location 1015 is 1000
 mem: location 1000 is 8
 mem: location 1001 is 104
@@ -415,31 +259,20 @@ mem: location 1005 is 111
 mem: location 1006 is 44
 mem: location 1007 is 32
 mem: location 1008 is 95
-run: ingredient 1 is i
 mem: location 1023 is 2
 mem: location 1015 is 1000
 mem: location 1023 is 2
 run: address to copy is 1003
 run: its type is 4
 mem: location 1003 is 108
-run: product 0 is in
 mem: storing 108 in location 1025
-run: instruction interpolate/24
-run: {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]} <- equal/13 {name: "in", value: 11, type: 4, properties: ["in": "character"]}, {name: "95", value: 95, type: 0, properties: ["95": "literal"]}
-run: ingredient 0 is in
+run: underscore?:boolean <- equal in:character, 95:literal
 mem: location 1025 is 108
-run: ingredient 1 is 95
-run: product 0 is underscore?
 mem: storing 0 in location 1026
-run: instruction interpolate/25
-run: break-if/11 {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is underscore?
+run: break-if underscore?:boolean, 
 mem: location 1026 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction interpolate/26
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/31 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}
-run: ingredient 0 is result
+run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
 mem: location 1021 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 104
@@ -452,54 +285,30 @@ mem: location 1081 is 0
 mem: location 1082 is 0
 mem: location 1083 is 0
 mem: location 1084 is 0
-run: ingredient 1 is result-idx
 mem: location 1022 is 2
 mem: location 1021 is 1074
 mem: location 1022 is 2
-run: product 0 is out
 mem: storing 1077 in location 1027
-run: instruction interpolate/27
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
-run: ingredient 0 is in
+run: out:address:character/deref <- copy in:character
 mem: location 1025 is 108
-run: product 0 is out
 mem: location 1027 is 1077
 mem: storing 108 in location 1077
-run: instruction interpolate/28
-run: {name: "i", value: 9, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1023 is 2
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 3 in location 1023
-run: instruction interpolate/29
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-idx
+run: result-idx:number <- add result-idx:number, 1:literal
 mem: location 1022 is 2
-run: ingredient 1 is 1
-run: product 0 is result-idx
 mem: storing 3 in location 1022
-run: instruction interpolate/30
-run: loop/10 {name: "", value: -10, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 21
-run: instruction interpolate/21
-run: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]}
-run: ingredient 0 is i
+run: tem-done?:boolean <- greater-or-equal i:number, tem-len:number
 mem: location 1023 is 3
-run: ingredient 1 is tem-len
 mem: location 1016 is 8
-run: product 0 is tem-done?
 mem: storing 0 in location 1024
-run: instruction interpolate/22
-run: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "+done", value: 24, type: 0, properties: ["+done": "label"]}
-run: ingredient 0 is tem-done?
+run: break-if tem-done?:boolean, +done:label
 mem: location 1024 is 0
-run: ingredient 1 is +done
 run: jump-if fell through
-run: instruction interpolate/23
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is template
+run: in:character <- index template:address:array:character/deref, i:number
 mem: location 1015 is 1000
 mem: location 1000 is 8
 mem: location 1001 is 104
@@ -510,31 +319,20 @@ mem: location 1005 is 111
 mem: location 1006 is 44
 mem: location 1007 is 32
 mem: location 1008 is 95
-run: ingredient 1 is i
 mem: location 1023 is 3
 mem: location 1015 is 1000
 mem: location 1023 is 3
 run: address to copy is 1004
 run: its type is 4
 mem: location 1004 is 108
-run: product 0 is in
 mem: storing 108 in location 1025
-run: instruction interpolate/24
-run: {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]} <- equal/13 {name: "in", value: 11, type: 4, properties: ["in": "character"]}, {name: "95", value: 95, type: 0, properties: ["95": "literal"]}
-run: ingredient 0 is in
+run: underscore?:boolean <- equal in:character, 95:literal
 mem: location 1025 is 108
-run: ingredient 1 is 95
-run: product 0 is underscore?
 mem: storing 0 in location 1026
-run: instruction interpolate/25
-run: break-if/11 {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is underscore?
+run: break-if underscore?:boolean, 
 mem: location 1026 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction interpolate/26
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/31 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}
-run: ingredient 0 is result
+run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
 mem: location 1021 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 104
@@ -547,54 +345,30 @@ mem: location 1081 is 0
 mem: location 1082 is 0
 mem: location 1083 is 0
 mem: location 1084 is 0
-run: ingredient 1 is result-idx
 mem: location 1022 is 3
 mem: location 1021 is 1074
 mem: location 1022 is 3
-run: product 0 is out
 mem: storing 1078 in location 1027
-run: instruction interpolate/27
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
-run: ingredient 0 is in
+run: out:address:character/deref <- copy in:character
 mem: location 1025 is 108
-run: product 0 is out
 mem: location 1027 is 1078
 mem: storing 108 in location 1078
-run: instruction interpolate/28
-run: {name: "i", value: 9, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1023 is 3
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 4 in location 1023
-run: instruction interpolate/29
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-idx
+run: result-idx:number <- add result-idx:number, 1:literal
 mem: location 1022 is 3
-run: ingredient 1 is 1
-run: product 0 is result-idx
 mem: storing 4 in location 1022
-run: instruction interpolate/30
-run: loop/10 {name: "", value: -10, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 21
-run: instruction interpolate/21
-run: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]}
-run: ingredient 0 is i
+run: tem-done?:boolean <- greater-or-equal i:number, tem-len:number
 mem: location 1023 is 4
-run: ingredient 1 is tem-len
 mem: location 1016 is 8
-run: product 0 is tem-done?
 mem: storing 0 in location 1024
-run: instruction interpolate/22
-run: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "+done", value: 24, type: 0, properties: ["+done": "label"]}
-run: ingredient 0 is tem-done?
+run: break-if tem-done?:boolean, +done:label
 mem: location 1024 is 0
-run: ingredient 1 is +done
 run: jump-if fell through
-run: instruction interpolate/23
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is template
+run: in:character <- index template:address:array:character/deref, i:number
 mem: location 1015 is 1000
 mem: location 1000 is 8
 mem: location 1001 is 104
@@ -605,31 +379,20 @@ mem: location 1005 is 111
 mem: location 1006 is 44
 mem: location 1007 is 32
 mem: location 1008 is 95
-run: ingredient 1 is i
 mem: location 1023 is 4
 mem: location 1015 is 1000
 mem: location 1023 is 4
 run: address to copy is 1005
 run: its type is 4
 mem: location 1005 is 111
-run: product 0 is in
 mem: storing 111 in location 1025
-run: instruction interpolate/24
-run: {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]} <- equal/13 {name: "in", value: 11, type: 4, properties: ["in": "character"]}, {name: "95", value: 95, type: 0, properties: ["95": "literal"]}
-run: ingredient 0 is in
+run: underscore?:boolean <- equal in:character, 95:literal
 mem: location 1025 is 111
-run: ingredient 1 is 95
-run: product 0 is underscore?
 mem: storing 0 in location 1026
-run: instruction interpolate/25
-run: break-if/11 {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is underscore?
+run: break-if underscore?:boolean, 
 mem: location 1026 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction interpolate/26
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/31 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}
-run: ingredient 0 is result
+run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
 mem: location 1021 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 104
@@ -642,54 +405,30 @@ mem: location 1081 is 0
 mem: location 1082 is 0
 mem: location 1083 is 0
 mem: location 1084 is 0
-run: ingredient 1 is result-idx
 mem: location 1022 is 4
 mem: location 1021 is 1074
 mem: location 1022 is 4
-run: product 0 is out
 mem: storing 1079 in location 1027
-run: instruction interpolate/27
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
-run: ingredient 0 is in
+run: out:address:character/deref <- copy in:character
 mem: location 1025 is 111
-run: product 0 is out
 mem: location 1027 is 1079
 mem: storing 111 in location 1079
-run: instruction interpolate/28
-run: {name: "i", value: 9, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1023 is 4
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 5 in location 1023
-run: instruction interpolate/29
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-idx
+run: result-idx:number <- add result-idx:number, 1:literal
 mem: location 1022 is 4
-run: ingredient 1 is 1
-run: product 0 is result-idx
 mem: storing 5 in location 1022
-run: instruction interpolate/30
-run: loop/10 {name: "", value: -10, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 21
-run: instruction interpolate/21
-run: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]}
-run: ingredient 0 is i
+run: tem-done?:boolean <- greater-or-equal i:number, tem-len:number
 mem: location 1023 is 5
-run: ingredient 1 is tem-len
 mem: location 1016 is 8
-run: product 0 is tem-done?
 mem: storing 0 in location 1024
-run: instruction interpolate/22
-run: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "+done", value: 24, type: 0, properties: ["+done": "label"]}
-run: ingredient 0 is tem-done?
+run: break-if tem-done?:boolean, +done:label
 mem: location 1024 is 0
-run: ingredient 1 is +done
 run: jump-if fell through
-run: instruction interpolate/23
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is template
+run: in:character <- index template:address:array:character/deref, i:number
 mem: location 1015 is 1000
 mem: location 1000 is 8
 mem: location 1001 is 104
@@ -700,31 +439,20 @@ mem: location 1005 is 111
 mem: location 1006 is 44
 mem: location 1007 is 32
 mem: location 1008 is 95
-run: ingredient 1 is i
 mem: location 1023 is 5
 mem: location 1015 is 1000
 mem: location 1023 is 5
 run: address to copy is 1006
 run: its type is 4
 mem: location 1006 is 44
-run: product 0 is in
 mem: storing 44 in location 1025
-run: instruction interpolate/24
-run: {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]} <- equal/13 {name: "in", value: 11, type: 4, properties: ["in": "character"]}, {name: "95", value: 95, type: 0, properties: ["95": "literal"]}
-run: ingredient 0 is in
+run: underscore?:boolean <- equal in:character, 95:literal
 mem: location 1025 is 44
-run: ingredient 1 is 95
-run: product 0 is underscore?
 mem: storing 0 in location 1026
-run: instruction interpolate/25
-run: break-if/11 {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is underscore?
+run: break-if underscore?:boolean, 
 mem: location 1026 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction interpolate/26
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/31 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}
-run: ingredient 0 is result
+run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
 mem: location 1021 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 104
@@ -737,54 +465,30 @@ mem: location 1081 is 0
 mem: location 1082 is 0
 mem: location 1083 is 0
 mem: location 1084 is 0
-run: ingredient 1 is result-idx
 mem: location 1022 is 5
 mem: location 1021 is 1074
 mem: location 1022 is 5
-run: product 0 is out
 mem: storing 1080 in location 1027
-run: instruction interpolate/27
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
-run: ingredient 0 is in
+run: out:address:character/deref <- copy in:character
 mem: location 1025 is 44
-run: product 0 is out
 mem: location 1027 is 1080
 mem: storing 44 in location 1080
-run: instruction interpolate/28
-run: {name: "i", value: 9, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1023 is 5
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 6 in location 1023
-run: instruction interpolate/29
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-idx
+run: result-idx:number <- add result-idx:number, 1:literal
 mem: location 1022 is 5
-run: ingredient 1 is 1
-run: product 0 is result-idx
 mem: storing 6 in location 1022
-run: instruction interpolate/30
-run: loop/10 {name: "", value: -10, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 21
-run: instruction interpolate/21
-run: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]}
-run: ingredient 0 is i
+run: tem-done?:boolean <- greater-or-equal i:number, tem-len:number
 mem: location 1023 is 6
-run: ingredient 1 is tem-len
 mem: location 1016 is 8
-run: product 0 is tem-done?
 mem: storing 0 in location 1024
-run: instruction interpolate/22
-run: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "+done", value: 24, type: 0, properties: ["+done": "label"]}
-run: ingredient 0 is tem-done?
+run: break-if tem-done?:boolean, +done:label
 mem: location 1024 is 0
-run: ingredient 1 is +done
 run: jump-if fell through
-run: instruction interpolate/23
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is template
+run: in:character <- index template:address:array:character/deref, i:number
 mem: location 1015 is 1000
 mem: location 1000 is 8
 mem: location 1001 is 104
@@ -795,31 +499,20 @@ mem: location 1005 is 111
 mem: location 1006 is 44
 mem: location 1007 is 32
 mem: location 1008 is 95
-run: ingredient 1 is i
 mem: location 1023 is 6
 mem: location 1015 is 1000
 mem: location 1023 is 6
 run: address to copy is 1007
 run: its type is 4
 mem: location 1007 is 32
-run: product 0 is in
 mem: storing 32 in location 1025
-run: instruction interpolate/24
-run: {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]} <- equal/13 {name: "in", value: 11, type: 4, properties: ["in": "character"]}, {name: "95", value: 95, type: 0, properties: ["95": "literal"]}
-run: ingredient 0 is in
+run: underscore?:boolean <- equal in:character, 95:literal
 mem: location 1025 is 32
-run: ingredient 1 is 95
-run: product 0 is underscore?
 mem: storing 0 in location 1026
-run: instruction interpolate/25
-run: break-if/11 {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is underscore?
+run: break-if underscore?:boolean, 
 mem: location 1026 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction interpolate/26
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/31 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}
-run: ingredient 0 is result
+run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
 mem: location 1021 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 104
@@ -832,54 +525,30 @@ mem: location 1081 is 0
 mem: location 1082 is 0
 mem: location 1083 is 0
 mem: location 1084 is 0
-run: ingredient 1 is result-idx
 mem: location 1022 is 6
 mem: location 1021 is 1074
 mem: location 1022 is 6
-run: product 0 is out
 mem: storing 1081 in location 1027
-run: instruction interpolate/27
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
-run: ingredient 0 is in
+run: out:address:character/deref <- copy in:character
 mem: location 1025 is 32
-run: product 0 is out
 mem: location 1027 is 1081
 mem: storing 32 in location 1081
-run: instruction interpolate/28
-run: {name: "i", value: 9, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1023 is 6
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 7 in location 1023
-run: instruction interpolate/29
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-idx
+run: result-idx:number <- add result-idx:number, 1:literal
 mem: location 1022 is 6
-run: ingredient 1 is 1
-run: product 0 is result-idx
 mem: storing 7 in location 1022
-run: instruction interpolate/30
-run: loop/10 {name: "", value: -10, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 21
-run: instruction interpolate/21
-run: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]}
-run: ingredient 0 is i
+run: tem-done?:boolean <- greater-or-equal i:number, tem-len:number
 mem: location 1023 is 7
-run: ingredient 1 is tem-len
 mem: location 1016 is 8
-run: product 0 is tem-done?
 mem: storing 0 in location 1024
-run: instruction interpolate/22
-run: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "+done", value: 24, type: 0, properties: ["+done": "label"]}
-run: ingredient 0 is tem-done?
+run: break-if tem-done?:boolean, +done:label
 mem: location 1024 is 0
-run: ingredient 1 is +done
 run: jump-if fell through
-run: instruction interpolate/23
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "template", value: 1, type: 2-5-4, properties: ["template": "address":"array":"character", "deref": ]}, {name: "i", value: 9, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is template
+run: in:character <- index template:address:array:character/deref, i:number
 mem: location 1015 is 1000
 mem: location 1000 is 8
 mem: location 1001 is 104
@@ -890,67 +559,42 @@ mem: location 1005 is 111
 mem: location 1006 is 44
 mem: location 1007 is 32
 mem: location 1008 is 95
-run: ingredient 1 is i
 mem: location 1023 is 7
 mem: location 1015 is 1000
 mem: location 1023 is 7
 run: address to copy is 1008
 run: its type is 4
 mem: location 1008 is 95
-run: product 0 is in
 mem: storing 95 in location 1025
-run: instruction interpolate/24
-run: {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]} <- equal/13 {name: "in", value: 11, type: 4, properties: ["in": "character"]}, {name: "95", value: 95, type: 0, properties: ["95": "literal"]}
-run: ingredient 0 is in
+run: underscore?:boolean <- equal in:character, 95:literal
 mem: location 1025 is 95
-run: ingredient 1 is 95
-run: product 0 is underscore?
 mem: storing 1 in location 1026
-run: instruction interpolate/25
-run: break-if/11 {name: "underscore?", value: 12, type: 3, properties: ["underscore?": "boolean"]}, {name: "", value: 5, type: 0, properties: ["": ]}
-run: ingredient 0 is underscore?
+run: break-if underscore?:boolean, 
 mem: location 1026 is 1
-run: ingredient 1 is 
 run: jumping to instruction 31
-run: instruction interpolate/32
-run: {name: "j", value: 14, type: 1, properties: ["j": "number"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is j
+run: j:number <- copy 0:literal
 mem: storing 0 in location 1028
-run: instruction interpolate/34
-run: {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]} <- greater-or-equal/16 {name: "j", value: 14, type: 1, properties: ["j": "number"]}, {name: "a-len", value: 6, type: 1, properties: ["a-len": "number"]}
-run: ingredient 0 is j
+run: arg-done?:boolean <- greater-or-equal j:number, a-len:number
 mem: location 1028 is 0
-run: ingredient 1 is a-len
 mem: location 1020 is 3
-run: product 0 is arg-done?
 mem: storing 0 in location 1029
-run: instruction interpolate/35
-run: break-if/11 {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]}, {name: "", value: 6, type: 0, properties: ["": ]}
-run: ingredient 0 is arg-done?
+run: break-if arg-done?:boolean, 
 mem: location 1029 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction interpolate/36
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}, {name: "j", value: 14, type: 1, properties: ["j": "number"]}
-run: ingredient 0 is a
+run: in:character <- index a:address:array:character/deref, j:number
 mem: location 1018 is 1009
 mem: location 1009 is 3
 mem: location 1010 is 97
 mem: location 1011 is 98
 mem: location 1012 is 99
-run: ingredient 1 is j
 mem: location 1028 is 0
 mem: location 1018 is 1009
 mem: location 1028 is 0
 run: address to copy is 1010
 run: its type is 4
 mem: location 1010 is 97
-run: product 0 is in
 mem: storing 97 in location 1025
-run: instruction interpolate/37
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/31 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}
-run: ingredient 0 is result
+run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
 mem: location 1021 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 104
@@ -963,71 +607,43 @@ mem: location 1081 is 32
 mem: location 1082 is 0
 mem: location 1083 is 0
 mem: location 1084 is 0
-run: ingredient 1 is result-idx
 mem: location 1022 is 7
 mem: location 1021 is 1074
 mem: location 1022 is 7
-run: product 0 is out
 mem: storing 1082 in location 1027
-run: instruction interpolate/38
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
-run: ingredient 0 is in
+run: out:address:character/deref <- copy in:character
 mem: location 1025 is 97
-run: product 0 is out
 mem: location 1027 is 1082
 mem: storing 97 in location 1082
-run: instruction interpolate/39
-run: {name: "j", value: 14, type: 1, properties: ["j": "number"]} <- add/2 {name: "j", value: 14, type: 1, properties: ["j": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is j
+run: j:number <- add j:number, 1:literal
 mem: location 1028 is 0
-run: ingredient 1 is 1
-run: product 0 is j
 mem: storing 1 in location 1028
-run: instruction interpolate/40
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-idx
+run: result-idx:number <- add result-idx:number, 1:literal
 mem: location 1022 is 7
-run: ingredient 1 is 1
-run: product 0 is result-idx
 mem: storing 8 in location 1022
-run: instruction interpolate/41
-run: loop/10 {name: "", value: -8, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 34
-run: instruction interpolate/34
-run: {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]} <- greater-or-equal/16 {name: "j", value: 14, type: 1, properties: ["j": "number"]}, {name: "a-len", value: 6, type: 1, properties: ["a-len": "number"]}
-run: ingredient 0 is j
+run: arg-done?:boolean <- greater-or-equal j:number, a-len:number
 mem: location 1028 is 1
-run: ingredient 1 is a-len
 mem: location 1020 is 3
-run: product 0 is arg-done?
 mem: storing 0 in location 1029
-run: instruction interpolate/35
-run: break-if/11 {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]}, {name: "", value: 6, type: 0, properties: ["": ]}
-run: ingredient 0 is arg-done?
+run: break-if arg-done?:boolean, 
 mem: location 1029 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction interpolate/36
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}, {name: "j", value: 14, type: 1, properties: ["j": "number"]}
-run: ingredient 0 is a
+run: in:character <- index a:address:array:character/deref, j:number
 mem: location 1018 is 1009
 mem: location 1009 is 3
 mem: location 1010 is 97
 mem: location 1011 is 98
 mem: location 1012 is 99
-run: ingredient 1 is j
 mem: location 1028 is 1
 mem: location 1018 is 1009
 mem: location 1028 is 1
 run: address to copy is 1011
 run: its type is 4
 mem: location 1011 is 98
-run: product 0 is in
 mem: storing 98 in location 1025
-run: instruction interpolate/37
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/31 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}
-run: ingredient 0 is result
+run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
 mem: location 1021 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 104
@@ -1040,71 +656,43 @@ mem: location 1081 is 32
 mem: location 1082 is 97
 mem: location 1083 is 0
 mem: location 1084 is 0
-run: ingredient 1 is result-idx
 mem: location 1022 is 8
 mem: location 1021 is 1074
 mem: location 1022 is 8
-run: product 0 is out
 mem: storing 1083 in location 1027
-run: instruction interpolate/38
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
-run: ingredient 0 is in
+run: out:address:character/deref <- copy in:character
 mem: location 1025 is 98
-run: product 0 is out
 mem: location 1027 is 1083
 mem: storing 98 in location 1083
-run: instruction interpolate/39
-run: {name: "j", value: 14, type: 1, properties: ["j": "number"]} <- add/2 {name: "j", value: 14, type: 1, properties: ["j": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is j
+run: j:number <- add j:number, 1:literal
 mem: location 1028 is 1
-run: ingredient 1 is 1
-run: product 0 is j
 mem: storing 2 in location 1028
-run: instruction interpolate/40
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-idx
+run: result-idx:number <- add result-idx:number, 1:literal
 mem: location 1022 is 8
-run: ingredient 1 is 1
-run: product 0 is result-idx
 mem: storing 9 in location 1022
-run: instruction interpolate/41
-run: loop/10 {name: "", value: -8, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 34
-run: instruction interpolate/34
-run: {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]} <- greater-or-equal/16 {name: "j", value: 14, type: 1, properties: ["j": "number"]}, {name: "a-len", value: 6, type: 1, properties: ["a-len": "number"]}
-run: ingredient 0 is j
+run: arg-done?:boolean <- greater-or-equal j:number, a-len:number
 mem: location 1028 is 2
-run: ingredient 1 is a-len
 mem: location 1020 is 3
-run: product 0 is arg-done?
 mem: storing 0 in location 1029
-run: instruction interpolate/35
-run: break-if/11 {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]}, {name: "", value: 6, type: 0, properties: ["": ]}
-run: ingredient 0 is arg-done?
+run: break-if arg-done?:boolean, 
 mem: location 1029 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction interpolate/36
-run: {name: "in", value: 11, type: 4, properties: ["in": "character"]} <- index/30 {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character", "deref": ]}, {name: "j", value: 14, type: 1, properties: ["j": "number"]}
-run: ingredient 0 is a
+run: in:character <- index a:address:array:character/deref, j:number
 mem: location 1018 is 1009
 mem: location 1009 is 3
 mem: location 1010 is 97
 mem: location 1011 is 98
 mem: location 1012 is 99
-run: ingredient 1 is j
 mem: location 1028 is 2
 mem: location 1018 is 1009
 mem: location 1028 is 2
 run: address to copy is 1012
 run: its type is 4
 mem: location 1012 is 99
-run: product 0 is in
 mem: storing 99 in location 1025
-run: instruction interpolate/37
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character"]} <- index-address/31 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character", "deref": ]}, {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}
-run: ingredient 0 is result
+run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
 mem: location 1021 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 104
@@ -1117,98 +705,52 @@ mem: location 1081 is 32
 mem: location 1082 is 97
 mem: location 1083 is 98
 mem: location 1084 is 0
-run: ingredient 1 is result-idx
 mem: location 1022 is 9
 mem: location 1021 is 1074
 mem: location 1022 is 9
-run: product 0 is out
 mem: storing 1084 in location 1027
-run: instruction interpolate/38
-run: {name: "out", value: 13, type: 2-4, properties: ["out": "address":"character", "deref": ]} <- copy/1 {name: "in", value: 11, type: 4, properties: ["in": "character"]}
-run: ingredient 0 is in
+run: out:address:character/deref <- copy in:character
 mem: location 1025 is 99
-run: product 0 is out
 mem: location 1027 is 1084
 mem: storing 99 in location 1084
-run: instruction interpolate/39
-run: {name: "j", value: 14, type: 1, properties: ["j": "number"]} <- add/2 {name: "j", value: 14, type: 1, properties: ["j": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is j
+run: j:number <- add j:number, 1:literal
 mem: location 1028 is 2
-run: ingredient 1 is 1
-run: product 0 is j
 mem: storing 3 in location 1028
-run: instruction interpolate/40
-run: {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]} <- add/2 {name: "result-idx", value: 8, type: 1, properties: ["result-idx": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is result-idx
+run: result-idx:number <- add result-idx:number, 1:literal
 mem: location 1022 is 9
-run: ingredient 1 is 1
-run: product 0 is result-idx
 mem: storing 10 in location 1022
-run: instruction interpolate/41
-run: loop/10 {name: "", value: -8, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 34
-run: instruction interpolate/34
-run: {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]} <- greater-or-equal/16 {name: "j", value: 14, type: 1, properties: ["j": "number"]}, {name: "a-len", value: 6, type: 1, properties: ["a-len": "number"]}
-run: ingredient 0 is j
+run: arg-done?:boolean <- greater-or-equal j:number, a-len:number
 mem: location 1028 is 3
-run: ingredient 1 is a-len
 mem: location 1020 is 3
-run: product 0 is arg-done?
 mem: storing 1 in location 1029
-run: instruction interpolate/35
-run: break-if/11 {name: "arg-done?", value: 15, type: 3, properties: ["arg-done?": "boolean"]}, {name: "", value: 6, type: 0, properties: ["": ]}
-run: ingredient 0 is arg-done?
+run: break-if arg-done?:boolean, 
 mem: location 1029 is 1
-run: ingredient 1 is 
 run: jumping to instruction 42
-run: instruction interpolate/43
-run: {name: "i", value: 9, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1023 is 7
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 8 in location 1023
-run: instruction interpolate/44
-run: loop/10 {name: "", value: -27, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 18
-run: instruction interpolate/18
-run: {name: "a", value: 4, type: 2-5-4, properties: ["a": "address":"array":"character"]}, {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]} <- next-ingredient/34 
-run: product 0 is a
+run: a:address:array:character, arg-received?:boolean <- next-ingredient 
 mem: storing 0 in location 1018
-run: product 1 is arg-received?
 mem: storing 0 in location 1019
-run: instruction interpolate/19
-run: break-unless/12 {name: "arg-received?", value: 5, type: 3, properties: ["arg-received?": "boolean"]}, {name: "", value: 25, type: 0, properties: ["": ]}
-run: ingredient 0 is arg-received?
+run: break-unless arg-received?:boolean, 
 mem: location 1019 is 0
-run: ingredient 1 is 
 run: jumping to instruction 45
-run: instruction interpolate/48
-run: {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 9, type: 1, properties: ["i": "number"]}, {name: "tem-len", value: 2, type: 1, properties: ["tem-len": "number"]}
-run: ingredient 0 is i
+run: tem-done?:boolean <- greater-or-equal i:number, tem-len:number
 mem: location 1023 is 8
-run: ingredient 1 is tem-len
 mem: location 1016 is 8
-run: product 0 is tem-done?
 mem: storing 1 in location 1024
-run: instruction interpolate/49
-run: break-if/11 {name: "tem-done?", value: 10, type: 3, properties: ["tem-done?": "boolean"]}, {name: "", value: 6, type: 0, properties: ["": ]}
-run: ingredient 0 is tem-done?
+run: break-if tem-done?:boolean, 
 mem: location 1024 is 1
-run: ingredient 1 is 
 run: jumping to instruction 56
-run: instruction interpolate/57
-run: reply/37 {name: "result", value: 7, type: 2-5-4, properties: ["result": "address":"array":"character"]}
-run: ingredient 0 is result
+run: reply result:address:array:character
 mem: location 1021 is 1074
 run: result 0 is 1074
-run: product 0 is 3
 mem: storing 1074 in location 3
-run: instruction run1001/3
-run: {name: "4", value: 4, type: 5-4, properties: ["4": "array":"character", "raw": ]} <- copy/1 {name: "3", value: 3, type: 2-5-4, properties: ["3": "address":"array":"character", "raw": , "deref": ]}
-run: ingredient 0 is 3
+run: 4:array:character/raw <- copy 3:address:array:character/raw/deref
 mem: location 3 is 1074
 mem: location 1074 is 10
 mem: location 1075 is 104
@@ -1221,7 +763,6 @@ mem: location 1081 is 32
 mem: location 1082 is 97
 mem: location 1083 is 98
 mem: location 1084 is 99
-run: product 0 is 4
 mem: storing 10 in location 4
 mem: storing 104 in location 5
 mem: storing 101 in location 6
@@ -1233,15 +774,9 @@ mem: storing 32 in location 11
 mem: storing 97 in location 12
 mem: storing 98 in location 13
 mem: storing 99 in location 14
-run: instruction interpolate-at-end/1
-run: memory-should-contain/56 {name: "
+run: memory-should-contain [
     4:string <- [hello, abc]
-  ", value: 0, type: 0, properties: ["
-    4:string <- [hello, abc]
-  ": "literal-string"]}
-run: ingredient 0 is 
-    4:string <- [hello, abc]
-  
+  ]
 run: checking string length at 4
 run: checking location 5
 run: checking location 6

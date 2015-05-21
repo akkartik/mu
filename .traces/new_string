@@ -1,24 +1,19 @@
 parse: instruction: new
-parse:   ingredient: {name: "abc def", value: 0, type: 0, properties: ["abc def": "literal-string"]}
-parse:   product: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character"]}
+parse:   ingredient: {name: "abc def", properties: ["abc def": "literal-string"]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
 parse: instruction: index
-parse:   ingredient: {name: "1", value: 0, type: 2-5-4, properties: ["1": "address":"array":"character", "deref": ]}
-parse:   ingredient: {name: "5", value: 0, type: 0, properties: ["5": "literal"]}
-parse:   product: {name: "2", value: 0, type: 4, properties: ["2": "character"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character", "deref": ]}
+parse:   ingredient: {name: "5", properties: ["5": "literal"]}
+parse:   product: {name: "2", properties: ["2": "character"]}
 new: abc def -> 0
 after-brace: recipe main
 after-brace: new ...
 after-brace: index ...
 new: routine allocated memory from 1000 to 101000
 schedule: main
-run: instruction main/0
-run: {name: "1", value: 1, type: 2-5-4, properties: ["1": "address":"array":"character"]} <- new/52 {name: "abc def", value: 0, type: 0, properties: ["abc def": "literal-string"]}
-run: ingredient 0 is abc def
-run: product 0 is 1
+run: 1:address:array:character <- new [abc def]
 mem: storing 1000 in location 1
-run: instruction main/1
-run: {name: "2", value: 2, type: 4, properties: ["2": "character"]} <- index/30 {name: "1", value: 1, type: 2-5-4, properties: ["1": "address":"array":"character", "deref": ]}, {name: "5", value: 5, type: 0, properties: ["5": "literal"]}
-run: ingredient 0 is 1
+run: 2:character <- index 1:address:array:character/deref, 5:literal
 mem: location 1 is 1000
 mem: location 1000 is 7
 mem: location 1001 is 97
@@ -28,10 +23,8 @@ mem: location 1004 is 32
 mem: location 1005 is 100
 mem: location 1006 is 101
 mem: location 1007 is 102
-run: ingredient 1 is 5
 mem: location 1 is 1000
 run: address to copy is 1006
 run: its type is 4
 mem: location 1006 is 101
-run: product 0 is 2
 mem: storing 101 in location 2

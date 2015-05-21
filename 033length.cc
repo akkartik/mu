@@ -8,7 +8,6 @@ recipe main [
   4:number <- copy 16:literal
   5:number <- length 1:array:number
 ]
-+run: instruction main/4
 +mem: storing 3 in location 5
 
 :(before "End Primitive Recipe Declarations")

@@ -119,10 +119,8 @@ recipe main [
   2:address:number/raw <- new number:type
   3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
 ]
-+run: instruction main/0
++run: 1:address:array:number/raw <- new number:type, 5:literal
 +mem: array size is 5
-+run: instruction main/1
-+run: instruction main/2
 # don't forget the extra location for array size
 +mem: storing 6 in location 3
 

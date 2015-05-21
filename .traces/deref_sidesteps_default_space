@@ -1,18 +1,18 @@
 parse: instruction: copy
-parse:   ingredient: {name: "34", value: 0, type: 0, properties: ["34": "literal"]}
-parse:   product: {name: "3", value: 0, type: 1, properties: ["3": "number"]}
+parse:   ingredient: {name: "34", properties: ["34": "literal"]}
+parse:   product: {name: "3", properties: ["3": "number"]}
 parse: instruction: copy
-parse:   ingredient: {name: "5", value: 0, type: 0, properties: ["5": "literal"]}
-parse:   product: {name: "1000", value: 0, type: 1, properties: ["1000": "number"]}
+parse:   ingredient: {name: "5", properties: ["5": "literal"]}
+parse:   product: {name: "1000", properties: ["1000": "number"]}
 parse: instruction: copy
-parse:   ingredient: {name: "1000", value: 0, type: 0, properties: ["1000": "literal"]}
-parse:   product: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]}
+parse:   ingredient: {name: "1000", properties: ["1000": "literal"]}
+parse:   product: {name: "default-space", properties: ["default-space": "address":"array":"location"]}
 parse: instruction: copy
-parse:   ingredient: {name: "3", value: 0, type: 0, properties: ["3": "literal"]}
-parse:   product: {name: "1", value: 0, type: 2-1, properties: ["1": "address":"number"]}
+parse:   ingredient: {name: "3", properties: ["3": "literal"]}
+parse:   product: {name: "1", properties: ["1": "address":"number"]}
 parse: instruction: copy
-parse:   ingredient: {name: "1", value: 0, type: 2-1, properties: ["1": "address":"number", "deref": ]}
-parse:   product: {name: "8", value: 0, type: 1, properties: ["8": "number", "raw": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"number", "deref": ]}
+parse:   product: {name: "8", properties: ["8": "number", "raw": ]}
 after-brace: recipe main
 after-brace: copy ...
 after-brace: copy ...
@@ -21,29 +21,14 @@ after-brace: copy ...
 after-brace: copy ...
 new: routine allocated memory from 1000 to 101000
 schedule: main
-run: instruction main/0
-run: {name: "3", value: 3, type: 1, properties: ["3": "number"]} <- copy/1 {name: "34", value: 34, type: 0, properties: ["34": "literal"]}
-run: ingredient 0 is 34
-run: product 0 is 3
+run: 3:number <- copy 34:literal
 mem: storing 34 in location 3
-run: instruction main/1
-run: {name: "1000", value: 1000, type: 1, properties: ["1000": "number"]} <- copy/1 {name: "5", value: 5, type: 0, properties: ["5": "literal"]}
-run: ingredient 0 is 5
-run: product 0 is 1000
+run: 1000:number <- copy 5:literal
 mem: storing 5 in location 1000
-run: instruction main/2
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- copy/1 {name: "1000", value: 1000, type: 0, properties: ["1000": "literal"]}
-run: ingredient 0 is 1000
-run: product 0 is default-space
-run: instruction main/3
-run: {name: "1", value: 1, type: 2-1, properties: ["1": "address":"number"]} <- copy/1 {name: "3", value: 3, type: 0, properties: ["3": "literal"]}
-run: ingredient 0 is 3
-run: product 0 is 1
+run: default-space:address:array:location <- copy 1000:literal
+run: 1:address:number <- copy 3:literal
 mem: storing 3 in location 1002
-run: instruction main/4
-run: {name: "8", value: 8, type: 1, properties: ["8": "number", "raw": ]} <- copy/1 {name: "1", value: 1, type: 2-1, properties: ["1": "address":"number", "deref": ]}
-run: ingredient 0 is 1
+run: 8:number/raw <- copy 1:address:number/deref
 mem: location 1002 is 3
 mem: location 3 is 34
-run: product 0 is 8
 mem: storing 34 in location 8

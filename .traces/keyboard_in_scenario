@@ -1,12 +1,12 @@
 parse: instruction: assume-keyboard
-parse:   ingredient: {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
+parse:   ingredient: {name: "abc", properties: ["abc": "literal-string"]}
 parse: instruction: run
 parse:   ingredient: {name: "
     1:character, 2:boolean, keyboard:address <- read-key keyboard:address
     3:character, 4:boolean, keyboard:address <- read-key keyboard:address
     5:character, 6:boolean, keyboard:address <- read-key keyboard:address
     7:character, 8:boolean, keyboard:address <- read-key keyboard:address
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     1:character, 2:boolean, keyboard:address <- read-key keyboard:address
     3:character, 4:boolean, keyboard:address <- read-key keyboard:address
     5:character, 6:boolean, keyboard:address <- read-key keyboard:address
@@ -22,7 +22,7 @@ parse:   ingredient: {name: "
     6 <- 1
     7 <- 0  # eof
     8 <- 1
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     1 <- 97  # 'a'
     2 <- 1
     3 <- 98  # 'b'
@@ -40,191 +40,119 @@ after-brace: run ...
 after-brace: memory-should-contain ...
 new: routine allocated memory from 1000 to 101000
 schedule: keyboard-in-scenario
-run: instruction keyboard-in-scenario/0
-run: {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]} <- assume-keyboard/52 {name: "abc", value: 0, type: 0, properties: ["abc": "literal-string"]}
-run: ingredient 0 is abc
-run: product 0 is keyboard
+run: keyboard:address <- assume-keyboard [abc]
 mem: storing 1000 in location 901
-run: instruction keyboard-in-scenario/1
-run: {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]} <- assume-keyboard/134 {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]}
-run: ingredient 0 is keyboard
+run: keyboard:address <- assume-keyboard keyboard:address
 mem: location 901 is 1000
-run: instruction init-fake-keyboard/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1004
-run: product 0 is default-space
-run: instruction init-fake-keyboard/1
-run: {name: "result", value: 1, type: 2-14, properties: ["result": "address":"keyboard"]} <- new/52 {name: "keyboard", value: 14, type: 0, properties: ["keyboard": "type"]}
-run: ingredient 0 is keyboard
+run: result:address:keyboard <- new keyboard:type
 mem: new alloc: 1035
-run: product 0 is result
 mem: storing 1035 in location 1006
-run: instruction init-fake-keyboard/2
-run: {name: "buf", value: 2, type: 2-2-5-4, properties: ["buf": "address":"address":"array":"character"]} <- get-address/29 {name: "result", value: 1, type: 2-14, properties: ["result": "address":"keyboard", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is result
+run: buf:address:address:array:character <- get-address result:address:keyboard/deref, data:offset
 mem: location 1006 is 1035
 mem: location 1035 is 0
 mem: location 1036 is 0
-run: ingredient 1 is data
 mem: location 1006 is 1035
 run: address to copy is 1036
-run: product 0 is buf
 mem: storing 1036 in location 1007
-run: instruction init-fake-keyboard/3
-run: {name: "buf", value: 2, type: 2-2-5-4, properties: ["buf": "address":"address":"array":"character", "deref": ]} <- next-ingredient/34 
-run: product 0 is buf
+run: buf:address:address:array:character/deref <- next-ingredient 
 mem: location 1007 is 1036
 mem: storing 1000 in location 1036
-run: instruction init-fake-keyboard/4
-run: {name: "idx", value: 3, type: 2-1, properties: ["idx": "address":"number"]} <- get-address/29 {name: "result", value: 1, type: 2-14, properties: ["result": "address":"keyboard", "deref": ]}, {name: "index", value: 0, type: 0, properties: ["index": "offset"]}
-run: ingredient 0 is result
+run: idx:address:number <- get-address result:address:keyboard/deref, index:offset
 mem: location 1006 is 1035
 mem: location 1035 is 0
 mem: location 1036 is 1000
-run: ingredient 1 is index
 mem: location 1006 is 1035
 run: address to copy is 1035
-run: product 0 is idx
 mem: storing 1035 in location 1008
-run: instruction init-fake-keyboard/5
-run: {name: "idx", value: 3, type: 2-1, properties: ["idx": "address":"number", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is idx
+run: idx:address:number/deref <- copy 0:literal
 mem: location 1008 is 1035
 mem: storing 0 in location 1035
-run: instruction init-fake-keyboard/6
-run: reply/37 {name: "result", value: 1, type: 2-14, properties: ["result": "address":"keyboard"]}
-run: ingredient 0 is result
+run: reply result:address:keyboard
 mem: location 1006 is 1035
 run: result 0 is 1035
-run: product 0 is keyboard
 mem: storing 1035 in location 901
-run: instruction keyboard-in-scenario/2
-run: run/55 {name: "
+run: run [
     1:character, 2:boolean, keyboard:address <- read-key keyboard:address
     3:character, 4:boolean, keyboard:address <- read-key keyboard:address
     5:character, 6:boolean, keyboard:address <- read-key keyboard:address
     7:character, 8:boolean, keyboard:address <- read-key keyboard:address
-  ", value: 0, type: 0, properties: ["
-    1:character, 2:boolean, keyboard:address <- read-key keyboard:address
-    3:character, 4:boolean, keyboard:address <- read-key keyboard:address
-    5:character, 6:boolean, keyboard:address <- read-key keyboard:address
-    7:character, 8:boolean, keyboard:address <- read-key keyboard:address
-  ": "literal-string"]}
-run: ingredient 0 is 
-    1:character, 2:boolean, keyboard:address <- read-key keyboard:address
-    3:character, 4:boolean, keyboard:address <- read-key keyboard:address
-    5:character, 6:boolean, keyboard:address <- read-key keyboard:address
-    7:character, 8:boolean, keyboard:address <- read-key keyboard:address
-  
+  ]
 parse: instruction: read-key
-parse:   ingredient: {name: "keyboard", value: 0, type: 2, properties: ["keyboard": "address"]}
-parse:   product: {name: "1", value: 0, type: 4, properties: ["1": "character"]}
-parse:   product: {name: "2", value: 0, type: 3, properties: ["2": "boolean"]}
-parse:   product: {name: "keyboard", value: 0, type: 2, properties: ["keyboard": "address"]}
+parse:   ingredient: {name: "keyboard", properties: ["keyboard": "address"]}
+parse:   product: {name: "1", properties: ["1": "character"]}
+parse:   product: {name: "2", properties: ["2": "boolean"]}
+parse:   product: {name: "keyboard", properties: ["keyboard": "address"]}
 parse: instruction: read-key
-parse:   ingredient: {name: "keyboard", value: 0, type: 2, properties: ["keyboard": "address"]}
-parse:   product: {name: "3", value: 0, type: 4, properties: ["3": "character"]}
-parse:   product: {name: "4", value: 0, type: 3, properties: ["4": "boolean"]}
-parse:   product: {name: "keyboard", value: 0, type: 2, properties: ["keyboard": "address"]}
+parse:   ingredient: {name: "keyboard", properties: ["keyboard": "address"]}
+parse:   product: {name: "3", properties: ["3": "character"]}
+parse:   product: {name: "4", properties: ["4": "boolean"]}
+parse:   product: {name: "keyboard", properties: ["keyboard": "address"]}
 parse: instruction: read-key
-parse:   ingredient: {name: "keyboard", value: 0, type: 2, properties: ["keyboard": "address"]}
-parse:   product: {name: "5", value: 0, type: 4, properties: ["5": "character"]}
-parse:   product: {name: "6", value: 0, type: 3, properties: ["6": "boolean"]}
-parse:   product: {name: "keyboard", value: 0, type: 2, properties: ["keyboard": "address"]}
+parse:   ingredient: {name: "keyboard", properties: ["keyboard": "address"]}
+parse:   product: {name: "5", properties: ["5": "character"]}
+parse:   product: {name: "6", properties: ["6": "boolean"]}
+parse:   product: {name: "keyboard", properties: ["keyboard": "address"]}
 parse: instruction: read-key
-parse:   ingredient: {name: "keyboard", value: 0, type: 2, properties: ["keyboard": "address"]}
-parse:   product: {name: "7", value: 0, type: 4, properties: ["7": "character"]}
-parse:   product: {name: "8", value: 0, type: 3, properties: ["8": "boolean"]}
-parse:   product: {name: "keyboard", value: 0, type: 2, properties: ["keyboard": "address"]}
+parse:   ingredient: {name: "keyboard", properties: ["keyboard": "address"]}
+parse:   product: {name: "7", properties: ["7": "character"]}
+parse:   product: {name: "8", properties: ["8": "boolean"]}
+parse:   product: {name: "keyboard", properties: ["keyboard": "address"]}
 after-brace: recipe run1002
 after-brace: read-key ...
 after-brace: read-key ...
 after-brace: read-key ...
 after-brace: read-key ...
-run: instruction run1002/0
-run: {name: "1", value: 1, type: 4, properties: ["1": "character"]}, {name: "2", value: 2, type: 3, properties: ["2": "boolean"]}, {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]} <- read-key/135 {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]}
-run: ingredient 0 is keyboard
+run: 1:character, 2:boolean, keyboard:address <- read-key keyboard:address
 mem: location 901 is 1035
-run: instruction read-key/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1037
-run: product 0 is default-space
-run: instruction read-key/1
-run: {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard"]} <- next-ingredient/34 
-run: product 0 is x
+run: x:address:keyboard <- next-ingredient 
 mem: storing 1035 in location 1039
-run: instruction read-key/3
-run: break-unless/12 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard"]}, {name: "", value: 11, type: 0, properties: ["": ]}
-run: ingredient 0 is x
+run: break-unless x:address:keyboard, 
 mem: location 1039 is 1035
-run: ingredient 1 is 
 run: jump-unless fell through
-run: instruction read-key/4
-run: {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number"]} <- get-address/29 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "deref": ]}, {name: "index", value: 0, type: 0, properties: ["index": "offset"]}
-run: ingredient 0 is x
+run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 mem: location 1039 is 1035
 mem: location 1035 is 0
 mem: location 1036 is 1000
-run: ingredient 1 is index
 mem: location 1039 is 1035
 run: address to copy is 1035
-run: product 0 is idx
 mem: storing 1035 in location 1040
-run: instruction read-key/5
-run: {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character"]} <- get/28 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is x
+run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 mem: location 1039 is 1035
 mem: location 1035 is 0
 mem: location 1036 is 1000
-run: ingredient 1 is data
 mem: location 1039 is 1035
 run: address to copy is 1036
 run: its type is 2
 mem: location 1036 is 1000
-run: product 0 is buf
 mem: storing 1000 in location 1041
-run: instruction read-key/6
-run: {name: "max", value: 4, type: 1, properties: ["max": "number"]} <- length/32 {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}
-run: ingredient 0 is buf
+run: max:number <- length buf:address:array:character/deref
 mem: location 1041 is 1000
 mem: location 1000 is 3
 mem: location 1001 is 97
 mem: location 1002 is 98
 mem: location 1003 is 99
 mem: location 1041 is 1000
-run: product 0 is max
 mem: storing 3 in location 1042
-run: instruction read-key/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]}, {name: "max", value: 4, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is idx
+run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 mem: location 1040 is 1035
 mem: location 1035 is 0
-run: ingredient 1 is max
 mem: location 1042 is 3
-run: product 0 is done?
 mem: storing 0 in location 1043
-run: instruction read-key/9
-run: break-unless/12 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-unless done?:boolean, 
 mem: location 1043 is 0
-run: ingredient 1 is 
 run: jumping to instruction 11
-run: instruction read-key/12
-run: {name: "c", value: 6, type: 4, properties: ["c": "character"]} <- index/30 {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}, {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]}
-run: ingredient 0 is buf
+run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
 mem: location 1041 is 1000
 mem: location 1000 is 3
 mem: location 1001 is 97
 mem: location 1002 is 98
 mem: location 1003 is 99
-run: ingredient 1 is idx
 mem: location 1040 is 1035
 mem: location 1035 is 0
 mem: location 1041 is 1000
@@ -233,113 +161,69 @@ mem: location 1035 is 0
 run: address to copy is 1001
 run: its type is 4
 mem: location 1001 is 97
-run: product 0 is c
 mem: storing 97 in location 1044
-run: instruction read-key/13
-run: {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]} <- add/2 {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is idx
+run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 mem: location 1040 is 1035
 mem: location 1035 is 0
-run: ingredient 1 is 1
-run: product 0 is idx
 mem: location 1040 is 1035
 mem: storing 1 in location 1035
-run: instruction read-key/14
-run: reply/37 {name: "c", value: 6, type: 4, properties: ["c": "character"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal", "found": ]}, {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "same-as-ingredient": "0"]}
-run: ingredient 0 is c
+run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 mem: location 1044 is 97
-run: ingredient 1 is 1
-run: ingredient 2 is x
 mem: location 1039 is 1035
 run: result 0 is 97
 run: result 1 is 1
 run: result 2 is 1035
-run: product 0 is 1
 mem: storing 97 in location 1
-run: product 1 is 2
 mem: storing 1 in location 2
-run: product 2 is keyboard
 mem: storing 1035 in location 901
-run: instruction run1002/1
-run: {name: "3", value: 3, type: 4, properties: ["3": "character"]}, {name: "4", value: 4, type: 3, properties: ["4": "boolean"]}, {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]} <- read-key/135 {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]}
-run: ingredient 0 is keyboard
+run: 3:character, 4:boolean, keyboard:address <- read-key keyboard:address
 mem: location 901 is 1035
-run: instruction read-key/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1068
-run: product 0 is default-space
-run: instruction read-key/1
-run: {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard"]} <- next-ingredient/34 
-run: product 0 is x
+run: x:address:keyboard <- next-ingredient 
 mem: storing 1035 in location 1070
-run: instruction read-key/3
-run: break-unless/12 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard"]}, {name: "", value: 11, type: 0, properties: ["": ]}
-run: ingredient 0 is x
+run: break-unless x:address:keyboard, 
 mem: location 1070 is 1035
-run: ingredient 1 is 
 run: jump-unless fell through
-run: instruction read-key/4
-run: {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number"]} <- get-address/29 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "deref": ]}, {name: "index", value: 0, type: 0, properties: ["index": "offset"]}
-run: ingredient 0 is x
+run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 mem: location 1070 is 1035
 mem: location 1035 is 1
 mem: location 1036 is 1000
-run: ingredient 1 is index
 mem: location 1070 is 1035
 run: address to copy is 1035
-run: product 0 is idx
 mem: storing 1035 in location 1071
-run: instruction read-key/5
-run: {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character"]} <- get/28 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is x
+run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 mem: location 1070 is 1035
 mem: location 1035 is 1
 mem: location 1036 is 1000
-run: ingredient 1 is data
 mem: location 1070 is 1035
 run: address to copy is 1036
 run: its type is 2
 mem: location 1036 is 1000
-run: product 0 is buf
 mem: storing 1000 in location 1072
-run: instruction read-key/6
-run: {name: "max", value: 4, type: 1, properties: ["max": "number"]} <- length/32 {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}
-run: ingredient 0 is buf
+run: max:number <- length buf:address:array:character/deref
 mem: location 1072 is 1000
 mem: location 1000 is 3
 mem: location 1001 is 97
 mem: location 1002 is 98
 mem: location 1003 is 99
 mem: location 1072 is 1000
-run: product 0 is max
 mem: storing 3 in location 1073
-run: instruction read-key/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]}, {name: "max", value: 4, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is idx
+run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 mem: location 1071 is 1035
 mem: location 1035 is 1
-run: ingredient 1 is max
 mem: location 1073 is 3
-run: product 0 is done?
 mem: storing 0 in location 1074
-run: instruction read-key/9
-run: break-unless/12 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-unless done?:boolean, 
 mem: location 1074 is 0
-run: ingredient 1 is 
 run: jumping to instruction 11
-run: instruction read-key/12
-run: {name: "c", value: 6, type: 4, properties: ["c": "character"]} <- index/30 {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}, {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]}
-run: ingredient 0 is buf
+run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
 mem: location 1072 is 1000
 mem: location 1000 is 3
 mem: location 1001 is 97
 mem: location 1002 is 98
 mem: location 1003 is 99
-run: ingredient 1 is idx
 mem: location 1071 is 1035
 mem: location 1035 is 1
 mem: location 1072 is 1000
@@ -348,113 +232,69 @@ mem: location 1035 is 1
 run: address to copy is 1002
 run: its type is 4
 mem: location 1002 is 98
-run: product 0 is c
 mem: storing 98 in location 1075
-run: instruction read-key/13
-run: {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]} <- add/2 {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is idx
+run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 mem: location 1071 is 1035
 mem: location 1035 is 1
-run: ingredient 1 is 1
-run: product 0 is idx
 mem: location 1071 is 1035
 mem: storing 2 in location 1035
-run: instruction read-key/14
-run: reply/37 {name: "c", value: 6, type: 4, properties: ["c": "character"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal", "found": ]}, {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "same-as-ingredient": "0"]}
-run: ingredient 0 is c
+run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 mem: location 1075 is 98
-run: ingredient 1 is 1
-run: ingredient 2 is x
 mem: location 1070 is 1035
 run: result 0 is 98
 run: result 1 is 1
 run: result 2 is 1035
-run: product 0 is 3
 mem: storing 98 in location 3
-run: product 1 is 4
 mem: storing 1 in location 4
-run: product 2 is keyboard
 mem: storing 1035 in location 901
-run: instruction run1002/2
-run: {name: "5", value: 5, type: 4, properties: ["5": "character"]}, {name: "6", value: 6, type: 3, properties: ["6": "boolean"]}, {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]} <- read-key/135 {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]}
-run: ingredient 0 is keyboard
+run: 5:character, 6:boolean, keyboard:address <- read-key keyboard:address
 mem: location 901 is 1035
-run: instruction read-key/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1099
-run: product 0 is default-space
-run: instruction read-key/1
-run: {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard"]} <- next-ingredient/34 
-run: product 0 is x
+run: x:address:keyboard <- next-ingredient 
 mem: storing 1035 in location 1101
-run: instruction read-key/3
-run: break-unless/12 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard"]}, {name: "", value: 11, type: 0, properties: ["": ]}
-run: ingredient 0 is x
+run: break-unless x:address:keyboard, 
 mem: location 1101 is 1035
-run: ingredient 1 is 
 run: jump-unless fell through
-run: instruction read-key/4
-run: {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number"]} <- get-address/29 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "deref": ]}, {name: "index", value: 0, type: 0, properties: ["index": "offset"]}
-run: ingredient 0 is x
+run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 mem: location 1101 is 1035
 mem: location 1035 is 2
 mem: location 1036 is 1000
-run: ingredient 1 is index
 mem: location 1101 is 1035
 run: address to copy is 1035
-run: product 0 is idx
 mem: storing 1035 in location 1102
-run: instruction read-key/5
-run: {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character"]} <- get/28 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is x
+run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 mem: location 1101 is 1035
 mem: location 1035 is 2
 mem: location 1036 is 1000
-run: ingredient 1 is data
 mem: location 1101 is 1035
 run: address to copy is 1036
 run: its type is 2
 mem: location 1036 is 1000
-run: product 0 is buf
 mem: storing 1000 in location 1103
-run: instruction read-key/6
-run: {name: "max", value: 4, type: 1, properties: ["max": "number"]} <- length/32 {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}
-run: ingredient 0 is buf
+run: max:number <- length buf:address:array:character/deref
 mem: location 1103 is 1000
 mem: location 1000 is 3
 mem: location 1001 is 97
 mem: location 1002 is 98
 mem: location 1003 is 99
 mem: location 1103 is 1000
-run: product 0 is max
 mem: storing 3 in location 1104
-run: instruction read-key/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]}, {name: "max", value: 4, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is idx
+run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 mem: location 1102 is 1035
 mem: location 1035 is 2
-run: ingredient 1 is max
 mem: location 1104 is 3
-run: product 0 is done?
 mem: storing 0 in location 1105
-run: instruction read-key/9
-run: break-unless/12 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-unless done?:boolean, 
 mem: location 1105 is 0
-run: ingredient 1 is 
 run: jumping to instruction 11
-run: instruction read-key/12
-run: {name: "c", value: 6, type: 4, properties: ["c": "character"]} <- index/30 {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}, {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]}
-run: ingredient 0 is buf
+run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
 mem: location 1103 is 1000
 mem: location 1000 is 3
 mem: location 1001 is 97
 mem: location 1002 is 98
 mem: location 1003 is 99
-run: ingredient 1 is idx
 mem: location 1102 is 1035
 mem: location 1035 is 2
 mem: location 1103 is 1000
@@ -463,121 +303,72 @@ mem: location 1035 is 2
 run: address to copy is 1003
 run: its type is 4
 mem: location 1003 is 99
-run: product 0 is c
 mem: storing 99 in location 1106
-run: instruction read-key/13
-run: {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]} <- add/2 {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is idx
+run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 mem: location 1102 is 1035
 mem: location 1035 is 2
-run: ingredient 1 is 1
-run: product 0 is idx
 mem: location 1102 is 1035
 mem: storing 3 in location 1035
-run: instruction read-key/14
-run: reply/37 {name: "c", value: 6, type: 4, properties: ["c": "character"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal", "found": ]}, {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "same-as-ingredient": "0"]}
-run: ingredient 0 is c
+run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 mem: location 1106 is 99
-run: ingredient 1 is 1
-run: ingredient 2 is x
 mem: location 1101 is 1035
 run: result 0 is 99
 run: result 1 is 1
 run: result 2 is 1035
-run: product 0 is 5
 mem: storing 99 in location 5
-run: product 1 is 6
 mem: storing 1 in location 6
-run: product 2 is keyboard
 mem: storing 1035 in location 901
-run: instruction run1002/3
-run: {name: "7", value: 7, type: 4, properties: ["7": "character"]}, {name: "8", value: 8, type: 3, properties: ["8": "boolean"]}, {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]} <- read-key/135 {name: "keyboard", value: 901, type: 2, properties: ["keyboard": "address"]}
-run: ingredient 0 is keyboard
+run: 7:character, 8:boolean, keyboard:address <- read-key keyboard:address
 mem: location 901 is 1035
-run: instruction read-key/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1130
-run: product 0 is default-space
-run: instruction read-key/1
-run: {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard"]} <- next-ingredient/34 
-run: product 0 is x
+run: x:address:keyboard <- next-ingredient 
 mem: storing 1035 in location 1132
-run: instruction read-key/3
-run: break-unless/12 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard"]}, {name: "", value: 11, type: 0, properties: ["": ]}
-run: ingredient 0 is x
+run: break-unless x:address:keyboard, 
 mem: location 1132 is 1035
-run: ingredient 1 is 
 run: jump-unless fell through
-run: instruction read-key/4
-run: {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number"]} <- get-address/29 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "deref": ]}, {name: "index", value: 0, type: 0, properties: ["index": "offset"]}
-run: ingredient 0 is x
+run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 mem: location 1132 is 1035
 mem: location 1035 is 3
 mem: location 1036 is 1000
-run: ingredient 1 is index
 mem: location 1132 is 1035
 run: address to copy is 1035
-run: product 0 is idx
 mem: storing 1035 in location 1133
-run: instruction read-key/5
-run: {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character"]} <- get/28 {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "deref": ]}, {name: "data", value: 1, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is x
+run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 mem: location 1132 is 1035
 mem: location 1035 is 3
 mem: location 1036 is 1000
-run: ingredient 1 is data
 mem: location 1132 is 1035
 run: address to copy is 1036
 run: its type is 2
 mem: location 1036 is 1000
-run: product 0 is buf
 mem: storing 1000 in location 1134
-run: instruction read-key/6
-run: {name: "max", value: 4, type: 1, properties: ["max": "number"]} <- length/32 {name: "buf", value: 3, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}
-run: ingredient 0 is buf
+run: max:number <- length buf:address:array:character/deref
 mem: location 1134 is 1000
 mem: location 1000 is 3
 mem: location 1001 is 97
 mem: location 1002 is 98
 mem: location 1003 is 99
 mem: location 1134 is 1000
-run: product 0 is max
 mem: storing 3 in location 1135
-run: instruction read-key/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "idx", value: 2, type: 2-1, properties: ["idx": "address":"number", "deref": ]}, {name: "max", value: 4, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is idx
+run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 mem: location 1133 is 1035
 mem: location 1035 is 3
-run: ingredient 1 is max
 mem: location 1135 is 3
-run: product 0 is done?
 mem: storing 1 in location 1136
-run: instruction read-key/9
-run: break-unless/12 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-unless done?:boolean, 
 mem: location 1136 is 1
-run: ingredient 1 is 
 run: jump-unless fell through
-run: instruction read-key/10
-run: reply/37 {name: "0", value: 0, type: 0, properties: ["0": "literal", "eof": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal", "found": ]}, {name: "x", value: 1, type: 2-14, properties: ["x": "address":"keyboard", "same-as-ingredient": "0"]}
-run: ingredient 0 is 0
-run: ingredient 1 is 1
-run: ingredient 2 is x
+run: reply 0:literal/eof, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 mem: location 1132 is 1035
 run: result 0 is 0
 run: result 1 is 1
 run: result 2 is 1035
-run: product 0 is 7
 mem: storing 0 in location 7
-run: product 1 is 8
 mem: storing 1 in location 8
-run: product 2 is keyboard
 mem: storing 1035 in location 901
-run: instruction keyboard-in-scenario/3
-run: memory-should-contain/56 {name: "
+run: memory-should-contain [
     1 <- 97  # 'a'
     2 <- 1
     3 <- 98  # 'b'
@@ -586,26 +377,7 @@ run: memory-should-contain/56 {name: "
     6 <- 1
     7 <- 0  # eof
     8 <- 1
-  ", value: 0, type: 0, properties: ["
-    1 <- 97  # 'a'
-    2 <- 1
-    3 <- 98  # 'b'
-    4 <- 1
-    5 <- 99  # 'c'
-    6 <- 1
-    7 <- 0  # eof
-    8 <- 1
-  ": "literal-string"]}
-run: ingredient 0 is 
-    1 <- 97  # 'a'
-    2 <- 1
-    3 <- 98  # 'b'
-    4 <- 1
-    5 <- 99  # 'c'
-    6 <- 1
-    7 <- 0  # eof
-    8 <- 1
-  
+  ]
 run: checking location 1
 run: checking location 2
 run: checking location 3

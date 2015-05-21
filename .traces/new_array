@@ -1,14 +1,14 @@
 parse: instruction: new
-parse:   ingredient: {name: "number", value: 0, type: 0, properties: ["number": "type"]}
-parse:   ingredient: {name: "5", value: 0, type: 0, properties: ["5": "literal"]}
-parse:   product: {name: "1", value: 0, type: 2-5-1, properties: ["1": "address":"array":"number", "raw": ]}
+parse:   ingredient: {name: "number", properties: ["number": "type"]}
+parse:   ingredient: {name: "5", properties: ["5": "literal"]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"number", "raw": ]}
 parse: instruction: new
-parse:   ingredient: {name: "number", value: 0, type: 0, properties: ["number": "type"]}
-parse:   product: {name: "2", value: 0, type: 2-1, properties: ["2": "address":"number", "raw": ]}
+parse:   ingredient: {name: "number", properties: ["number": "type"]}
+parse:   product: {name: "2", properties: ["2": "address":"number", "raw": ]}
 parse: instruction: subtract
-parse:   ingredient: {name: "2", value: 0, type: 2-1, properties: ["2": "address":"number", "raw": ]}
-parse:   ingredient: {name: "1", value: 0, type: 2-5-1, properties: ["1": "address":"array":"number", "raw": ]}
-parse:   product: {name: "3", value: 0, type: 1, properties: ["3": "number", "raw": ]}
+parse:   ingredient: {name: "2", properties: ["2": "address":"number", "raw": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"number", "raw": ]}
+parse:   product: {name: "3", properties: ["3": "number", "raw": ]}
 new: number -> 1
 new: number -> 1
 after-brace: recipe main
@@ -17,25 +17,14 @@ after-brace: new ...
 after-brace: subtract ...
 new: routine allocated memory from 1000 to 101000
 schedule: main
-run: instruction main/0
-run: {name: "1", value: 1, type: 2-5-1, properties: ["1": "address":"array":"number", "raw": ]} <- new/52 {name: "number", value: 1, type: 0, properties: ["number": "type"]}, {name: "5", value: 5, type: 0, properties: ["5": "literal"]}
-run: ingredient 0 is number
-run: ingredient 1 is 5
+run: 1:address:array:number/raw <- new number:type, 5:literal
 mem: array size is 5
 mem: new alloc: 1000
-run: product 0 is 1
 mem: storing 1000 in location 1
-run: instruction main/1
-run: {name: "2", value: 2, type: 2-1, properties: ["2": "address":"number", "raw": ]} <- new/52 {name: "number", value: 1, type: 0, properties: ["number": "type"]}
-run: ingredient 0 is number
+run: 2:address:number/raw <- new number:type
 mem: new alloc: 1006
-run: product 0 is 2
 mem: storing 1006 in location 2
-run: instruction main/2
-run: {name: "3", value: 3, type: 1, properties: ["3": "number", "raw": ]} <- subtract/3 {name: "2", value: 2, type: 2-1, properties: ["2": "address":"number", "raw": ]}, {name: "1", value: 1, type: 2-5-1, properties: ["1": "address":"array":"number", "raw": ]}
-run: ingredient 0 is 2
+run: 3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
 mem: location 2 is 1006
-run: ingredient 1 is 1
 mem: location 1 is 1000
-run: product 0 is 3
 mem: storing 6 in location 3

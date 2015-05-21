@@ -5,9 +5,8 @@ recipe main [
   jump 1:offset
   1:number <- copy 1:literal
 ]
-+run: instruction main/0
-+run: ingredient 0 is 1
--run: instruction main/1
++run: jump 1:offset
+-run: 1:number <- copy 1:literal
 -mem: storing 1 in location 1
 
 :(before "End Primitive Recipe Declarations")
@@ -31,13 +30,13 @@ Type_number["offset"] = 0;
 :(scenario jump_backward)
 recipe main [
   jump 1:offset  # 0 -+
-  jump 1:offset  #    |   +-+ 1
+  jump 3:offset  #    |   +-+ 1
                  #   \/  /\ |
   jump -2:offset #  2 +-->+ |
 ]                #         \/ 3
-+run: instruction main/0
-+run: instruction main/2
-+run: instruction main/1
++run: jump 1:offset
++run: jump -2:offset
++run: jump 3:offset
 
 :(before "End Primitive Recipe Declarations")
 JUMP_IF,
@@ -61,22 +60,21 @@ case JUMP_IF: {
 :(scenario jump_if)
 recipe main [
   jump-if 999:literal, 1:offset
-  1:number <- copy 1:literal
+  123:number <- copy 1:literal
 ]
-+run: instruction main/0
-+run: ingredient 1 is 1
++run: jump-if 999:literal, 1:offset
 +run: jumping to instruction 2
--run: instruction main/1
--mem: storing 1 in location 1
+-run: 1:number <- copy 1:literal
+-mem: storing 1 in location 123
 
 :(scenario jump_if_fallthrough)
 recipe main [
   jump-if 0:literal, 1:offset
   123:number <- copy 1:literal
 ]
-+run: instruction main/0
++run: jump-if 0:literal, 1:offset
 +run: jump-if fell through
-+run: instruction main/1
++run: 123:number <- copy 1:literal
 +mem: storing 1 in location 123
 
 :(before "End Primitive Recipe Declarations")
@@ -101,21 +99,19 @@ case JUMP_UNLESS: {
 :(scenario jump_unless)
 recipe main [
   jump-unless 0:literal, 1:offset
-  1:number <- copy 1:literal
+  123:number <- copy 1:literal
 ]
-+run: instruction main/0
-+run: ingredient 1 is 1
++run: jump-unless 0:literal, 1:offset
 +run: jumping to instruction 2
--run: instruction main/1
--mem: storing 1 in location 1
+-run: 123:number <- copy 1:literal
+-mem: storing 1 in location 123
 
 :(scenario jump_unless_fallthrough)
 recipe main [
   jump-unless 999:literal, 1:offset
   123:number <- copy 1:literal
 ]
-+run: instruction main/0
-+run: ingredient 0 is 999
++run: jump-unless 999:literal, 1:offset
 +run: jump-unless fell through
-+run: instruction main/1
++run: 123:number <- copy 1:literal
 +mem: storing 1 in location 123

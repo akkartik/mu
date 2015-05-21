@@ -9,8 +9,6 @@ recipe f [
   12:number <- next-ingredient
   13:number <- add 1:literal, 12:number
 ]
-+run: instruction f/1
-+mem: location 12 is 2
 +mem: storing 3 in location 13
 
 :(scenario next_ingredient_missing)

@@ -1,17 +1,17 @@
 parse: instruction: assume-screen
-parse:   ingredient: {name: "3", value: 0, type: 0, properties: ["3": "literal", "width": ]}
-parse:   ingredient: {name: "2", value: 0, type: 0, properties: ["2": "literal", "height": ]}
+parse:   ingredient: {name: "3", properties: ["3": "literal", "width": ]}
+parse:   ingredient: {name: "2", properties: ["2": "literal", "height": ]}
 parse: instruction: run
 parse:   ingredient: {name: "
     screen:address <- print-character screen:address, 97:literal  # 'a'
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     screen:address <- print-character screen:address, 97:literal  # 'a'
   ": "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "
     .a  .
     .   .
-  ", value: 0, type: 0, properties: ["
+  ", properties: ["
     .a  .
     .   .
   ": "literal-string"]}
@@ -21,175 +21,110 @@ after-brace: run ...
 after-brace: screen-should-contain ...
 new: routine allocated memory from 1000 to 101000
 schedule: print-character-at-top-left2
-run: instruction print-character-at-top-left2/0
-run: {name: "screen", value: 900, type: 2, properties: ["screen": "address"]} <- assume-screen/120 {name: "3", value: 3, type: 0, properties: ["3": "literal", "width": ]}, {name: "2", value: 2, type: 0, properties: ["2": "literal", "height": ]}
-run: ingredient 0 is 3
-run: ingredient 1 is 2
-run: instruction init-fake-screen/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal", "capacity": ]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: screen:address <- assume-screen 3:literal/width, 2:literal/height
+run: default-space:address:array:location <- new location:type, 30:literal/capacity
 mem: array size is 30
 mem: new alloc: 1000
-run: product 0 is default-space
-run: instruction init-fake-screen/1
-run: {name: "result", value: 1, type: 2-13, properties: ["result": "address":"screen"]} <- new/52 {name: "screen", value: 13, type: 0, properties: ["screen": "type"]}
-run: ingredient 0 is screen
+run: result:address:screen <- new screen:type
 mem: new alloc: 1031
-run: product 0 is result
 mem: storing 1031 in location 1002
-run: instruction init-fake-screen/2
-run: {name: "width", value: 2, type: 2-1, properties: ["width": "address":"number"]} <- get-address/29 {name: "result", value: 1, type: 2-13, properties: ["result": "address":"screen", "deref": ]}, {name: "num-columns", value: 1, type: 0, properties: ["num-columns": "offset"]}
-run: ingredient 0 is result
+run: width:address:number <- get-address result:address:screen/deref, num-columns:offset
 mem: location 1002 is 1031
 mem: location 1031 is 0
 mem: location 1032 is 0
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 0
-run: ingredient 1 is num-columns
 mem: location 1002 is 1031
 run: address to copy is 1032
-run: product 0 is width
 mem: storing 1032 in location 1003
-run: instruction init-fake-screen/3
-run: {name: "width", value: 2, type: 2-1, properties: ["width": "address":"number", "deref": ]} <- next-ingredient/34 
-run: product 0 is width
+run: width:address:number/deref <- next-ingredient 
 mem: location 1003 is 1032
 mem: storing 3 in location 1032
-run: instruction init-fake-screen/4
-run: {name: "height", value: 3, type: 2-1, properties: ["height": "address":"number"]} <- get-address/29 {name: "result", value: 1, type: 2-13, properties: ["result": "address":"screen", "deref": ]}, {name: "num-rows", value: 0, type: 0, properties: ["num-rows": "offset"]}
-run: ingredient 0 is result
+run: height:address:number <- get-address result:address:screen/deref, num-rows:offset
 mem: location 1002 is 1031
 mem: location 1031 is 0
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 0
-run: ingredient 1 is num-rows
 mem: location 1002 is 1031
 run: address to copy is 1031
-run: product 0 is height
 mem: storing 1031 in location 1004
-run: instruction init-fake-screen/5
-run: {name: "height", value: 3, type: 2-1, properties: ["height": "address":"number", "deref": ]} <- next-ingredient/34 
-run: product 0 is height
+run: height:address:number/deref <- next-ingredient 
 mem: location 1004 is 1031
 mem: storing 2 in location 1031
-run: instruction init-fake-screen/6
-run: {name: "row", value: 4, type: 2-1, properties: ["row": "address":"number"]} <- get-address/29 {name: "result", value: 1, type: 2-13, properties: ["result": "address":"screen", "deref": ]}, {name: "cursor-row", value: 2, type: 0, properties: ["cursor-row": "offset"]}
-run: ingredient 0 is result
+run: row:address:number <- get-address result:address:screen/deref, cursor-row:offset
 mem: location 1002 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 0
-run: ingredient 1 is cursor-row
 mem: location 1002 is 1031
 run: address to copy is 1033
-run: product 0 is row
 mem: storing 1033 in location 1005
-run: instruction init-fake-screen/7
-run: {name: "row", value: 4, type: 2-1, properties: ["row": "address":"number", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is row
+run: row:address:number/deref <- copy 0:literal
 mem: location 1005 is 1033
 mem: storing 0 in location 1033
-run: instruction init-fake-screen/8
-run: {name: "column", value: 5, type: 2-1, properties: ["column": "address":"number"]} <- get-address/29 {name: "result", value: 1, type: 2-13, properties: ["result": "address":"screen", "deref": ]}, {name: "cursor-column", value: 3, type: 0, properties: ["cursor-column": "offset"]}
-run: ingredient 0 is result
+run: column:address:number <- get-address result:address:screen/deref, cursor-column:offset
 mem: location 1002 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 0
-run: ingredient 1 is cursor-column
 mem: location 1002 is 1031
 run: address to copy is 1034
-run: product 0 is column
 mem: storing 1034 in location 1006
-run: instruction init-fake-screen/9
-run: {name: "column", value: 5, type: 2-1, properties: ["column": "address":"number", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is column
+run: column:address:number/deref <- copy 0:literal
 mem: location 1006 is 1034
 mem: storing 0 in location 1034
-run: instruction init-fake-screen/10
-run: {name: "bufsize", value: 6, type: 1, properties: ["bufsize": "number"]} <- multiply/4 {name: "width", value: 2, type: 2-1, properties: ["width": "address":"number", "deref": ]}, {name: "height", value: 3, type: 2-1, properties: ["height": "address":"number", "deref": ]}
-run: ingredient 0 is width
+run: bufsize:number <- multiply width:address:number/deref, height:address:number/deref
 mem: location 1003 is 1032
 mem: location 1032 is 3
-run: ingredient 1 is height
 mem: location 1004 is 1031
 mem: location 1031 is 2
-run: product 0 is bufsize
 mem: storing 6 in location 1007
-run: instruction init-fake-screen/11
-run: {name: "buf", value: 7, type: 2-2-5-4, properties: ["buf": "address":"address":"array":"character"]} <- get-address/29 {name: "result", value: 1, type: 2-13, properties: ["result": "address":"screen", "deref": ]}, {name: "data", value: 4, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is result
+run: buf:address:address:array:character <- get-address result:address:screen/deref, data:offset
 mem: location 1002 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 0
-run: ingredient 1 is data
 mem: location 1002 is 1031
 run: address to copy is 1035
-run: product 0 is buf
 mem: storing 1035 in location 1008
-run: instruction init-fake-screen/12
-run: {name: "buf", value: 7, type: 2-2-5-4, properties: ["buf": "address":"address":"array":"character", "deref": ]} <- new/52 {name: "character", value: 0, type: 0, properties: ["character": "literal"]}, {name: "bufsize", value: 6, type: 1, properties: ["bufsize": "number"]}
-run: ingredient 0 is character
-run: ingredient 1 is bufsize
+run: buf:address:address:array:character/deref <- new character:literal, bufsize:number
 mem: location 1007 is 6
 mem: array size is 6
 mem: new alloc: 1036
-run: product 0 is buf
 mem: location 1008 is 1035
 mem: storing 1036 in location 1035
-run: instruction init-fake-screen/13
-run: clear-screen/121 {name: "result", value: 1, type: 2-13, properties: ["result": "address":"screen"]}
-run: ingredient 0 is result
+run: clear-screen result:address:screen
 mem: location 1002 is 1031
-run: instruction clear-screen/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1043
-run: product 0 is default-space
-run: instruction clear-screen/1
-run: {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen"]} <- next-ingredient/34 
-run: product 0 is x
+run: x:address:screen <- next-ingredient 
 mem: storing 1031 in location 1045
-run: instruction clear-screen/3
-run: break-unless/12 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen"]}, {name: "", value: 16, type: 0, properties: ["": ]}
-run: ingredient 0 is x
+run: break-unless x:address:screen, 
 mem: location 1045 is 1031
-run: ingredient 1 is 
 run: jump-unless fell through
-run: instruction clear-screen/4
-run: {name: "buf", value: 2, type: 2-5-4, properties: ["buf": "address":"array":"character"]} <- get/28 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen", "deref": ]}, {name: "data", value: 4, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is x
+run: buf:address:array:character <- get x:address:screen/deref, data:offset
 mem: location 1045 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 1036
-run: ingredient 1 is data
 mem: location 1045 is 1031
 run: address to copy is 1035
 run: its type is 2
 mem: location 1035 is 1036
-run: product 0 is buf
 mem: storing 1036 in location 1046
-run: instruction clear-screen/5
-run: {name: "max", value: 3, type: 1, properties: ["max": "number"]} <- length/32 {name: "buf", value: 2, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}
-run: ingredient 0 is buf
+run: max:number <- length buf:address:array:character/deref
 mem: location 1046 is 1036
 mem: location 1036 is 6
 mem: location 1037 is 0
@@ -199,30 +134,17 @@ mem: location 1040 is 0
 mem: location 1041 is 0
 mem: location 1042 is 0
 mem: location 1046 is 1036
-run: product 0 is max
 mem: storing 6 in location 1047
-run: instruction clear-screen/6
-run: {name: "i", value: 4, type: 1, properties: ["i": "number"]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is i
+run: i:number <- copy 0:literal
 mem: storing 0 in location 1048
-run: instruction clear-screen/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "max", value: 3, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, max:number
 mem: location 1048 is 0
-run: ingredient 1 is max
 mem: location 1047 is 6
-run: product 0 is done?
 mem: storing 0 in location 1049
-run: instruction clear-screen/9
-run: break-if/11 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 4, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1049 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction clear-screen/10
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character"]} <- index-address/31 {name: "buf", value: 2, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}, {name: "i", value: 4, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is buf
+run: c:address:character <- index-address buf:address:array:character/deref, i:number
 mem: location 1046 is 1036
 mem: location 1036 is 6
 mem: location 1037 is 0
@@ -231,46 +153,26 @@ mem: location 1039 is 0
 mem: location 1040 is 0
 mem: location 1041 is 0
 mem: location 1042 is 0
-run: ingredient 1 is i
 mem: location 1048 is 0
 mem: location 1046 is 1036
 mem: location 1048 is 0
-run: product 0 is c
 mem: storing 1037 in location 1050
-run: instruction clear-screen/11
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character", "deref": ]} <- copy/1 {name: " ", value: 0, type: 0, properties: [" ": "literal-string"]}
-run: ingredient 0 is  
-run: product 0 is c
+run: c:address:character/deref <- copy [ ]
 mem: location 1050 is 1037
 mem: storing 0 in location 1037
-run: instruction clear-screen/12
-run: {name: "i", value: 4, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1048 is 0
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 1 in location 1048
-run: instruction clear-screen/13
-run: loop/10 {name: "", value: -6, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 8
-run: instruction clear-screen/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "max", value: 3, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, max:number
 mem: location 1048 is 1
-run: ingredient 1 is max
 mem: location 1047 is 6
-run: product 0 is done?
 mem: storing 0 in location 1049
-run: instruction clear-screen/9
-run: break-if/11 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 4, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1049 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction clear-screen/10
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character"]} <- index-address/31 {name: "buf", value: 2, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}, {name: "i", value: 4, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is buf
+run: c:address:character <- index-address buf:address:array:character/deref, i:number
 mem: location 1046 is 1036
 mem: location 1036 is 6
 mem: location 1037 is 0
@@ -279,46 +181,26 @@ mem: location 1039 is 0
 mem: location 1040 is 0
 mem: location 1041 is 0
 mem: location 1042 is 0
-run: ingredient 1 is i
 mem: location 1048 is 1
 mem: location 1046 is 1036
 mem: location 1048 is 1
-run: product 0 is c
 mem: storing 1038 in location 1050
-run: instruction clear-screen/11
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character", "deref": ]} <- copy/1 {name: " ", value: 0, type: 0, properties: [" ": "literal-string"]}
-run: ingredient 0 is  
-run: product 0 is c
+run: c:address:character/deref <- copy [ ]
 mem: location 1050 is 1038
 mem: storing 0 in location 1038
-run: instruction clear-screen/12
-run: {name: "i", value: 4, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1048 is 1
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 2 in location 1048
-run: instruction clear-screen/13
-run: loop/10 {name: "", value: -6, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 8
-run: instruction clear-screen/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "max", value: 3, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, max:number
 mem: location 1048 is 2
-run: ingredient 1 is max
 mem: location 1047 is 6
-run: product 0 is done?
 mem: storing 0 in location 1049
-run: instruction clear-screen/9
-run: break-if/11 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 4, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1049 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction clear-screen/10
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character"]} <- index-address/31 {name: "buf", value: 2, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}, {name: "i", value: 4, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is buf
+run: c:address:character <- index-address buf:address:array:character/deref, i:number
 mem: location 1046 is 1036
 mem: location 1036 is 6
 mem: location 1037 is 0
@@ -327,46 +209,26 @@ mem: location 1039 is 0
 mem: location 1040 is 0
 mem: location 1041 is 0
 mem: location 1042 is 0
-run: ingredient 1 is i
 mem: location 1048 is 2
 mem: location 1046 is 1036
 mem: location 1048 is 2
-run: product 0 is c
 mem: storing 1039 in location 1050
-run: instruction clear-screen/11
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character", "deref": ]} <- copy/1 {name: " ", value: 0, type: 0, properties: [" ": "literal-string"]}
-run: ingredient 0 is  
-run: product 0 is c
+run: c:address:character/deref <- copy [ ]
 mem: location 1050 is 1039
 mem: storing 0 in location 1039
-run: instruction clear-screen/12
-run: {name: "i", value: 4, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1048 is 2
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 3 in location 1048
-run: instruction clear-screen/13
-run: loop/10 {name: "", value: -6, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 8
-run: instruction clear-screen/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "max", value: 3, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, max:number
 mem: location 1048 is 3
-run: ingredient 1 is max
 mem: location 1047 is 6
-run: product 0 is done?
 mem: storing 0 in location 1049
-run: instruction clear-screen/9
-run: break-if/11 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 4, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1049 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction clear-screen/10
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character"]} <- index-address/31 {name: "buf", value: 2, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}, {name: "i", value: 4, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is buf
+run: c:address:character <- index-address buf:address:array:character/deref, i:number
 mem: location 1046 is 1036
 mem: location 1036 is 6
 mem: location 1037 is 0
@@ -375,46 +237,26 @@ mem: location 1039 is 0
 mem: location 1040 is 0
 mem: location 1041 is 0
 mem: location 1042 is 0
-run: ingredient 1 is i
 mem: location 1048 is 3
 mem: location 1046 is 1036
 mem: location 1048 is 3
-run: product 0 is c
 mem: storing 1040 in location 1050
-run: instruction clear-screen/11
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character", "deref": ]} <- copy/1 {name: " ", value: 0, type: 0, properties: [" ": "literal-string"]}
-run: ingredient 0 is  
-run: product 0 is c
+run: c:address:character/deref <- copy [ ]
 mem: location 1050 is 1040
 mem: storing 0 in location 1040
-run: instruction clear-screen/12
-run: {name: "i", value: 4, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1048 is 3
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 4 in location 1048
-run: instruction clear-screen/13
-run: loop/10 {name: "", value: -6, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 8
-run: instruction clear-screen/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "max", value: 3, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, max:number
 mem: location 1048 is 4
-run: ingredient 1 is max
 mem: location 1047 is 6
-run: product 0 is done?
 mem: storing 0 in location 1049
-run: instruction clear-screen/9
-run: break-if/11 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 4, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1049 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction clear-screen/10
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character"]} <- index-address/31 {name: "buf", value: 2, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}, {name: "i", value: 4, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is buf
+run: c:address:character <- index-address buf:address:array:character/deref, i:number
 mem: location 1046 is 1036
 mem: location 1036 is 6
 mem: location 1037 is 0
@@ -423,46 +265,26 @@ mem: location 1039 is 0
 mem: location 1040 is 0
 mem: location 1041 is 0
 mem: location 1042 is 0
-run: ingredient 1 is i
 mem: location 1048 is 4
 mem: location 1046 is 1036
 mem: location 1048 is 4
-run: product 0 is c
 mem: storing 1041 in location 1050
-run: instruction clear-screen/11
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character", "deref": ]} <- copy/1 {name: " ", value: 0, type: 0, properties: [" ": "literal-string"]}
-run: ingredient 0 is  
-run: product 0 is c
+run: c:address:character/deref <- copy [ ]
 mem: location 1050 is 1041
 mem: storing 0 in location 1041
-run: instruction clear-screen/12
-run: {name: "i", value: 4, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1048 is 4
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 5 in location 1048
-run: instruction clear-screen/13
-run: loop/10 {name: "", value: -6, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 8
-run: instruction clear-screen/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "max", value: 3, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, max:number
 mem: location 1048 is 5
-run: ingredient 1 is max
 mem: location 1047 is 6
-run: product 0 is done?
 mem: storing 0 in location 1049
-run: instruction clear-screen/9
-run: break-if/11 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 4, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1049 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction clear-screen/10
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character"]} <- index-address/31 {name: "buf", value: 2, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}, {name: "i", value: 4, type: 1, properties: ["i": "number"]}
-run: ingredient 0 is buf
+run: c:address:character <- index-address buf:address:array:character/deref, i:number
 mem: location 1046 is 1036
 mem: location 1036 is 6
 mem: location 1037 is 0
@@ -471,252 +293,154 @@ mem: location 1039 is 0
 mem: location 1040 is 0
 mem: location 1041 is 0
 mem: location 1042 is 0
-run: ingredient 1 is i
 mem: location 1048 is 5
 mem: location 1046 is 1036
 mem: location 1048 is 5
-run: product 0 is c
 mem: storing 1042 in location 1050
-run: instruction clear-screen/11
-run: {name: "c", value: 6, type: 2-4, properties: ["c": "address":"character", "deref": ]} <- copy/1 {name: " ", value: 0, type: 0, properties: [" ": "literal-string"]}
-run: ingredient 0 is  
-run: product 0 is c
+run: c:address:character/deref <- copy [ ]
 mem: location 1050 is 1042
 mem: storing 0 in location 1042
-run: instruction clear-screen/12
-run: {name: "i", value: 4, type: 1, properties: ["i": "number"]} <- add/2 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is i
+run: i:number <- add i:number, 1:literal
 mem: location 1048 is 5
-run: ingredient 1 is 1
-run: product 0 is i
 mem: storing 6 in location 1048
-run: instruction clear-screen/13
-run: loop/10 {name: "", value: -6, type: 0, properties: ["": ]}
-run: ingredient 0 is 
+run: loop 
 run: jumping to instruction 8
-run: instruction clear-screen/8
-run: {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]} <- greater-or-equal/16 {name: "i", value: 4, type: 1, properties: ["i": "number"]}, {name: "max", value: 3, type: 1, properties: ["max": "number"]}
-run: ingredient 0 is i
+run: done?:boolean <- greater-or-equal i:number, max:number
 mem: location 1048 is 6
-run: ingredient 1 is max
 mem: location 1047 is 6
-run: product 0 is done?
 mem: storing 1 in location 1049
-run: instruction clear-screen/9
-run: break-if/11 {name: "done?", value: 5, type: 3, properties: ["done?": "boolean"]}, {name: "", value: 4, type: 0, properties: ["": ]}
-run: ingredient 0 is done?
+run: break-if done?:boolean, 
 mem: location 1049 is 1
-run: ingredient 1 is 
 run: jumping to instruction 14
-run: instruction clear-screen/15
-run: {name: "cur", value: 7, type: 2-1, properties: ["cur": "address":"number"]} <- get-address/29 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen", "deref": ]}, {name: "cursor-row", value: 2, type: 0, properties: ["cursor-row": "offset"]}
-run: ingredient 0 is x
+run: cur:address:number <- get-address x:address:screen/deref, cursor-row:offset
 mem: location 1045 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 1036
-run: ingredient 1 is cursor-row
 mem: location 1045 is 1031
 run: address to copy is 1033
-run: product 0 is cur
 mem: storing 1033 in location 1051
-run: instruction clear-screen/16
-run: {name: "cur", value: 7, type: 2-1, properties: ["cur": "address":"number", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is cur
+run: cur:address:number/deref <- copy 0:literal
 mem: location 1051 is 1033
 mem: storing 0 in location 1033
-run: instruction clear-screen/17
-run: {name: "cur", value: 7, type: 2-1, properties: ["cur": "address":"number"]} <- get-address/29 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen", "deref": ]}, {name: "cursor-column", value: 3, type: 0, properties: ["cursor-column": "offset"]}
-run: ingredient 0 is x
+run: cur:address:number <- get-address x:address:screen/deref, cursor-column:offset
 mem: location 1045 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 1036
-run: ingredient 1 is cursor-column
 mem: location 1045 is 1031
 run: address to copy is 1034
-run: product 0 is cur
 mem: storing 1034 in location 1051
-run: instruction clear-screen/18
-run: {name: "cur", value: 7, type: 2-1, properties: ["cur": "address":"number", "deref": ]} <- copy/1 {name: "0", value: 0, type: 0, properties: ["0": "literal"]}
-run: ingredient 0 is 0
-run: product 0 is cur
+run: cur:address:number/deref <- copy 0:literal
 mem: location 1051 is 1034
 mem: storing 0 in location 1034
-run: instruction clear-screen/19
-run: reply/37 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen", "same-as-ingredient": "0"]}
-run: ingredient 0 is x
+run: reply x:address:screen/same-as-ingredient:0
 mem: location 1045 is 1031
-run: instruction init-fake-screen/14
-run: reply/37 {name: "result", value: 1, type: 2-13, properties: ["result": "address":"screen"]}
-run: ingredient 0 is result
+run: reply result:address:screen
 mem: location 1002 is 1031
 run: result 0 is 1031
-run: product 0 is screen
 mem: storing 1031 in location 900
-run: instruction print-character-at-top-left2/1
-run: run/55 {name: "
+run: run [
     screen:address <- print-character screen:address, 97:literal  # 'a'
-  ", value: 0, type: 0, properties: ["
-    screen:address <- print-character screen:address, 97:literal  # 'a'
-  ": "literal-string"]}
-run: ingredient 0 is 
-    screen:address <- print-character screen:address, 97:literal  # 'a'
-  
+  ]
 parse: instruction: print-character
-parse:   ingredient: {name: "screen", value: 0, type: 2, properties: ["screen": "address"]}
-parse:   ingredient: {name: "97", value: 0, type: 0, properties: ["97": "literal"]}
-parse:   product: {name: "screen", value: 0, type: 2, properties: ["screen": "address"]}
+parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
+parse:   ingredient: {name: "97", properties: ["97": "literal"]}
+parse:   product: {name: "screen", properties: ["screen": "address"]}
 after-brace: recipe run1001
 after-brace: print-character ...
-run: instruction run1001/0
-run: {name: "screen", value: 900, type: 2, properties: ["screen": "address"]} <- print-character/122 {name: "screen", value: 900, type: 2, properties: ["screen": "address"]}, {name: "97", value: 97, type: 0, properties: ["97": "literal"]}
-run: ingredient 0 is screen
+run: screen:address <- print-character screen:address, 97:literal
 mem: location 900 is 1031
-run: ingredient 1 is 97
-run: instruction print-character/0
-run: {name: "default-space", value: 0, type: 2-5-1, properties: ["default-space": "address":"array":"location"]} <- new/52 {name: "location", value: 1, type: 0, properties: ["location": "type"]}, {name: "30", value: 30, type: 0, properties: ["30": "literal"]}
-run: ingredient 0 is location
-run: ingredient 1 is 30
+run: default-space:address:array:location <- new location:type, 30:literal
 mem: array size is 30
 mem: new alloc: 1074
-run: product 0 is default-space
-run: instruction print-character/1
-run: {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen"]} <- next-ingredient/34 
-run: product 0 is x
+run: x:address:screen <- next-ingredient 
 mem: storing 1031 in location 1076
-run: instruction print-character/2
-run: {name: "c", value: 2, type: 4, properties: ["c": "character"]} <- next-ingredient/34 
-run: product 0 is c
+run: c:character <- next-ingredient 
 mem: storing 97 in location 1077
-run: instruction print-character/4
-run: break-unless/12 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen"]}, {name: "", value: 39, type: 0, properties: ["": ]}
-run: ingredient 0 is x
+run: break-unless x:address:screen, 
 mem: location 1076 is 1031
-run: ingredient 1 is 
 run: jump-unless fell through
-run: instruction print-character/5
-run: {name: "row", value: 3, type: 2-1, properties: ["row": "address":"number"]} <- get-address/29 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen", "deref": ]}, {name: "cursor-row", value: 2, type: 0, properties: ["cursor-row": "offset"]}
-run: ingredient 0 is x
+run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
 mem: location 1076 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 1036
-run: ingredient 1 is cursor-row
 mem: location 1076 is 1031
 run: address to copy is 1033
-run: product 0 is row
 mem: storing 1033 in location 1078
-run: instruction print-character/6
-run: {name: "column", value: 4, type: 2-1, properties: ["column": "address":"number"]} <- get-address/29 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen", "deref": ]}, {name: "cursor-column", value: 3, type: 0, properties: ["cursor-column": "offset"]}
-run: ingredient 0 is x
+run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
 mem: location 1076 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 1036
-run: ingredient 1 is cursor-column
 mem: location 1076 is 1031
 run: address to copy is 1034
-run: product 0 is column
 mem: storing 1034 in location 1079
-run: instruction print-character/7
-run: {name: "width", value: 5, type: 1, properties: ["width": "number"]} <- get/28 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen", "deref": ]}, {name: "num-columns", value: 1, type: 0, properties: ["num-columns": "offset"]}
-run: ingredient 0 is x
+run: width:number <- get x:address:screen/deref, num-columns:offset
 mem: location 1076 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 1036
-run: ingredient 1 is num-columns
 mem: location 1076 is 1031
 run: address to copy is 1032
 run: its type is 1
 mem: location 1032 is 3
-run: product 0 is width
 mem: storing 3 in location 1080
-run: instruction print-character/8
-run: {name: "height", value: 6, type: 1, properties: ["height": "number"]} <- get/28 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen", "deref": ]}, {name: "num-rows", value: 0, type: 0, properties: ["num-rows": "offset"]}
-run: ingredient 0 is x
+run: height:number <- get x:address:screen/deref, num-rows:offset
 mem: location 1076 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 1036
-run: ingredient 1 is num-rows
 mem: location 1076 is 1031
 run: address to copy is 1031
 run: its type is 1
 mem: location 1031 is 2
-run: product 0 is height
 mem: storing 2 in location 1081
-run: instruction print-character/9
-run: {name: "max-row", value: 7, type: 1, properties: ["max-row": "number"]} <- subtract/3 {name: "height", value: 6, type: 1, properties: ["height": "number"]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is height
+run: max-row:number <- subtract height:number, 1:literal
 mem: location 1081 is 2
-run: ingredient 1 is 1
-run: product 0 is max-row
 mem: storing 1 in location 1082
-run: instruction print-character/11
-run: {name: "newline?", value: 8, type: 3, properties: ["newline?": "boolean"]} <- equal/13 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "10", value: 10, type: 0, properties: ["10": "literal", "newlin": ]}
-run: ingredient 0 is c
+run: newline?:boolean <- equal c:character, 10:literal/newlin
 mem: location 1077 is 97
-run: ingredient 1 is 10
-run: product 0 is newline?
 mem: storing 0 in location 1083
-run: instruction print-character/12
-run: break-unless/12 {name: "newline?", value: 8, type: 3, properties: ["newline?": "boolean"]}, {name: "", value: 7, type: 0, properties: ["": ]}
-run: ingredient 0 is newline?
+run: break-unless newline?:boolean, 
 mem: location 1083 is 0
-run: ingredient 1 is 
 run: jumping to instruction 20
-run: instruction print-character/21
-run: {name: "index", value: 10, type: 1, properties: ["index": "number"]} <- multiply/4 {name: "row", value: 3, type: 2-1, properties: ["row": "address":"number", "deref": ]}, {name: "width", value: 5, type: 1, properties: ["width": "number"]}
-run: ingredient 0 is row
+run: index:number <- multiply row:address:number/deref, width:number
 mem: location 1078 is 1033
 mem: location 1033 is 0
-run: ingredient 1 is width
 mem: location 1080 is 3
-run: product 0 is index
 mem: storing 0 in location 1085
-run: instruction print-character/22
-run: {name: "index", value: 10, type: 1, properties: ["index": "number"]} <- add/2 {name: "index", value: 10, type: 1, properties: ["index": "number"]}, {name: "column", value: 4, type: 2-1, properties: ["column": "address":"number", "deref": ]}
-run: ingredient 0 is index
+run: index:number <- add index:number, column:address:number/deref
 mem: location 1085 is 0
-run: ingredient 1 is column
 mem: location 1079 is 1034
 mem: location 1034 is 0
-run: product 0 is index
 mem: storing 0 in location 1085
-run: instruction print-character/23
-run: {name: "buf", value: 11, type: 2-5-4, properties: ["buf": "address":"array":"character"]} <- get/28 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen", "deref": ]}, {name: "data", value: 4, type: 0, properties: ["data": "offset"]}
-run: ingredient 0 is x
+run: buf:address:array:character <- get x:address:screen/deref, data:offset
 mem: location 1076 is 1031
 mem: location 1031 is 2
 mem: location 1032 is 3
 mem: location 1033 is 0
 mem: location 1034 is 0
 mem: location 1035 is 1036
-run: ingredient 1 is data
 mem: location 1076 is 1031
 run: address to copy is 1035
 run: its type is 2
 mem: location 1035 is 1036
-run: product 0 is buf
 mem: storing 1036 in location 1086
-run: instruction print-character/24
-run: {name: "cursor", value: 12, type: 2-4, properties: ["cursor": "address":"character"]} <- index-address/31 {name: "buf", value: 11, type: 2-5-4, properties: ["buf": "address":"array":"character", "deref": ]}, {name: "index", value: 10, type: 1, properties: ["index": "number"]}
-run: ingredient 0 is buf
+run: cursor:address:character <- index-address buf:address:array:character/deref, index:number
 mem: location 1086 is 1036
 mem: location 1036 is 6
 mem: location 1037 is 0
@@ -725,72 +449,38 @@ mem: location 1039 is 0
 mem: location 1040 is 0
 mem: location 1041 is 0
 mem: location 1042 is 0
-run: ingredient 1 is index
 mem: location 1085 is 0
 mem: location 1086 is 1036
 mem: location 1085 is 0
-run: product 0 is cursor
 mem: storing 1037 in location 1087
-run: instruction print-character/26
-run: {name: "backspace?", value: 13, type: 3, properties: ["backspace?": "boolean"]} <- equal/13 {name: "c", value: 2, type: 4, properties: ["c": "character"]}, {name: "8", value: 8, type: 0, properties: ["8": "literal"]}
-run: ingredient 0 is c
+run: backspace?:boolean <- equal c:character, 8:literal
 mem: location 1077 is 97
-run: ingredient 1 is 8
-run: product 0 is backspace?
 mem: storing 0 in location 1088
-run: instruction print-character/27
-run: break-unless/12 {name: "backspace?", value: 13, type: 3, properties: ["backspace?": "boolean"]}, {name: "", value: 8, type: 0, properties: ["": ]}
-run: ingredient 0 is backspace?
+run: break-unless backspace?:boolean, 
 mem: location 1088 is 0
-run: ingredient 1 is 
 run: jumping to instruction 36
-run: instruction print-character/37
-run: {name: "cursor", value: 12, type: 2-4, properties: ["cursor": "address":"character", "deref": ]} <- copy/1 {name: "c", value: 2, type: 4, properties: ["c": "character"]}
-run: ingredient 0 is c
+run: cursor:address:character/deref <- copy c:character
 mem: location 1077 is 97
-run: product 0 is cursor
 mem: location 1087 is 1037
 mem: storing 97 in location 1037
-run: instruction print-character/39
-run: {name: "at-right?", value: 15, type: 3, properties: ["at-right?": "boolean"]} <- equal/13 {name: "column", value: 4, type: 2-1, properties: ["column": "address":"number", "deref": ]}, {name: "width", value: 5, type: 1, properties: ["width": "number"]}
-run: ingredient 0 is column
+run: at-right?:boolean <- equal column:address:number/deref, width:number
 mem: location 1079 is 1034
 mem: location 1034 is 0
-run: ingredient 1 is width
 mem: location 1080 is 3
-run: product 0 is at-right?
 mem: storing 0 in location 1090
-run: instruction print-character/40
-run: break-if/11 {name: "at-right?", value: 15, type: 3, properties: ["at-right?": "boolean"]}, {name: "", value: 1, type: 0, properties: ["": ]}
-run: ingredient 0 is at-right?
+run: break-if at-right?:boolean, 
 mem: location 1090 is 0
-run: ingredient 1 is 
 run: jump-if fell through
-run: instruction print-character/41
-run: {name: "column", value: 4, type: 2-1, properties: ["column": "address":"number", "deref": ]} <- add/2 {name: "column", value: 4, type: 2-1, properties: ["column": "address":"number", "deref": ]}, {name: "1", value: 1, type: 0, properties: ["1": "literal"]}
-run: ingredient 0 is column
+run: column:address:number/deref <- add column:address:number/deref, 1:literal
 mem: location 1079 is 1034
 mem: location 1034 is 0
-run: ingredient 1 is 1
-run: product 0 is column
 mem: location 1079 is 1034
 mem: storing 1 in location 1034
-run: instruction print-character/43
-run: reply/37 {name: "x", value: 1, type: 2-13, properties: ["x": "address":"screen", "same-as-ingredient": "0"]}
-run: ingredient 0 is x
+run: reply x:address:screen/same-as-ingredient:0
 mem: location 1076 is 1031
 run: result 0 is 1031
-run: product 0 is screen
 mem: storing 1031 in location 900
-run: instruction print-character-at-top-left2/2
-run: screen-should-contain/72 {name: "
+run: screen-should-contain [
     .a  .
     .   .
-  ", value: 0, type: 0, properties: ["
-    .a  .
-    .   .
-  ": "literal-string"]}
-run: ingredient 0 is 
-    .a  .
-    .   .
-  
+  ]

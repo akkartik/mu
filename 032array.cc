@@ -15,12 +15,6 @@ recipe main [
   4:number <- copy 16:literal
   5:array:number <- copy 1:array:number
 ]
-+run: instruction main/4
-+run: ingredient 0 is 1
-+mem: location 1 is 3
-+mem: location 2 is 14
-+mem: location 3 is 15
-+mem: location 4 is 16
 +mem: storing 3 in location 5
 +mem: storing 14 in location 6
 +mem: storing 15 in location 7
@@ -35,12 +29,6 @@ recipe main [
   5:address:array:number <- copy 1:literal
   6:array:number <- copy 5:address:array:number/deref
 ]
-+run: instruction main/5
-+run: ingredient 0 is 5
-+mem: location 1 is 3
-+mem: location 2 is 14
-+mem: location 3 is 15
-+mem: location 4 is 16
 +mem: storing 3 in location 6
 +mem: storing 14 in location 7
 +mem: storing 15 in location 8
@@ -66,11 +54,6 @@ recipe main [
   4:number <- copy 16:literal
   5:number <- index 1:array:number, 0:literal
 ]
-+run: instruction main/4
-+run: address to copy is 2
-+run: its type is 1
-+mem: location 2 is 14
-+run: product 0 is 5
 +mem: storing 14 in location 5
 
 :(scenario index_direct_offset)
@@ -82,11 +65,6 @@ recipe main [
   5:number <- copy 0:literal
   6:number <- index 1:array:number, 5:number
 ]
-+run: instruction main/5
-+run: address to copy is 2
-+run: its type is 1
-+mem: location 2 is 14
-+run: product 0 is 6
 +mem: storing 14 in location 6
 
 :(before "End Primitive Recipe Declarations")
@@ -129,7 +107,6 @@ recipe main [
   4:number <- copy 16:literal
   5:number <- index-address 1:array:number, 0:literal
 ]
-+run: instruction main/4
 +mem: storing 2 in location 5
 
 //:: To write to elements of containers, you need their address.
@@ -143,7 +120,6 @@ recipe main [
   5:address:array:number <- copy 1:literal
   6:number <- index 5:address:array:number/deref, 1:literal
 ]
-+run: instruction main/5
 +mem: storing 15 in location 6
 
 :(before "End Primitive Recipe Declarations")

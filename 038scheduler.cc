@@ -161,9 +161,9 @@ recipe f1 [
   2:number <- copy 0:literal
 ]
 +schedule: f1
-+run: instruction f1/0
++run: 1:number <- copy 0:literal
 +schedule: f1
-+run: instruction f1/1
++run: 2:number <- copy 0:literal
 
 :(scenario scheduler_interleaves_routines)
 % Scheduling_interval = 1;
@@ -173,19 +173,19 @@ recipe f1 [
   2:number <- copy 0:literal
 ]
 recipe f2 [
-  3:number <- copy 4:literal
-  4:number <- copy 4:literal
+  3:number <- copy 0:literal
+  4:number <- copy 0:literal
 ]
 +schedule: f1
-+run: instruction f1/0
++run: start-running f2:recipe
 +schedule: f2
-+run: instruction f2/0
++run: 3:number <- copy 0:literal
 +schedule: f1
-+run: instruction f1/1
++run: 1:number <- copy 0:literal
 +schedule: f2
-+run: instruction f2/1
++run: 4:number <- copy 0:literal
 +schedule: f1
-+run: instruction f1/2
++run: 2:number <- copy 0:literal
 
 :(scenario start_running_takes_args)
 recipe f1 [

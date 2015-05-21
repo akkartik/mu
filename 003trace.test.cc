@@ -27,6 +27,11 @@ void test_trace_ignores_trailing_whitespace() {
   CHECK_TRACE_CONTENTS("test layer 1: foo");
 }
 
+void test_trace_ignores_trailing_whitespace2() {
+  trace("test layer 1") << "foo ";
+  CHECK_TRACE_CONTENTS("test layer 1: foo");
+}
+
 void test_trace_orders_across_layers() {
   trace("test layer 1") << "foo";
   trace("test layer 2") << "bar";
@@ -92,4 +97,20 @@ void test_split_handles_multichar_delim() {
   CHECK_EQ(result.at(0), "abc");
   CHECK_EQ(result.at(1), "def");
   CHECK_EQ(result.at(2), "ghi");
+}
+
+void test_trim() {
+  CHECK_EQ(trim(""), "");
+  CHECK_EQ(trim(" "), "");
+  CHECK_EQ(trim("  "), "");
+  CHECK_EQ(trim("a"), "a");
+  CHECK_EQ(trim(" a"), "a");
+  CHECK_EQ(trim("  a"), "a");
+  CHECK_EQ(trim("  ab"), "ab");
+  CHECK_EQ(trim("a "), "a");
+  CHECK_EQ(trim("a  "), "a");
+  CHECK_EQ(trim("ab  "), "ab");
+  CHECK_EQ(trim(" a "), "a");
+  CHECK_EQ(trim("  a  "), "a");
+  CHECK_EQ(trim("  ab  "), "ab");
 }
