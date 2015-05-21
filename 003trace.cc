@@ -47,8 +47,11 @@
 //: right test to debug can be an important skill to pick up.
 //:
 //: A final wrinkle is for recursive functions; it's often useful to segment
-//: calls of different depth in the trace:
-//:   +eval/1: => 34  # the topmost call to eval should have logged this line
+//: calls of different depth in the trace. Assuming a recursive function emits
+//: this line:
+//:   foo: 34
+//: this checks that the *topmost* call to the function emits it:
+//:   +foo/1: 34
 //: (look at new_trace_frame below)
 //:
 //: To build robust tests, trace facts about your domain rather than details of
