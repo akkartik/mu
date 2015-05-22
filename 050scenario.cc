@@ -336,13 +336,13 @@ case TRACE_SHOULD_CONTAIN: {
 bool check_trace(const string& expected) {
 //?   cerr << "AAA " << expected << '\n'; //? 1
   Trace_stream->newline();
-  vector<pair<string, string> > expected_lines = parse_trace(expected);
+  vector<trace_line> expected_lines = parse_trace(expected);
 //?   cerr << "BBB " << SIZE(expected_lines) << '\n'; //? 1
   if (expected_lines.empty()) return true;
   long long int curr_expected_line = 0;
-  for (vector<pair<string, string> >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (expected_lines.at(curr_expected_line).first != p->first) continue;
-    if (expected_lines.at(curr_expected_line).second != p->second) continue;
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+    if (expected_lines.at(curr_expected_line).label != p->label) continue;
+    if (expected_lines.at(curr_expected_line).contents != trim(p->contents)) continue;
     // match
     ++curr_expected_line;
     if (curr_expected_line == SIZE(expected_lines)) {
@@ -351,20 +351,20 @@ bool check_trace(const string& expected) {
     }
   }
 
-  raise << "missing [" << expected_lines.at(curr_expected_line).second << "] "
-        << "in trace layer " << expected_lines.at(curr_expected_line).first << '\n';
+  raise << "missing [" << expected_lines.at(curr_expected_line).contents << "] "
+        << "in trace layer " << expected_lines.at(curr_expected_line).label << '\n';
   Passed = false;
   return false;
 }
 
-vector<pair<string, string> > parse_trace(const string& expected) {
+vector<trace_line> parse_trace(const string& expected) {
   vector<string> buf = split(expected, "\n");
-  vector<pair<string, string> > result;
+  vector<trace_line> result;
   for (long long int i = 0; i < SIZE(buf); ++i) {
     buf.at(i) = trim(buf.at(i));
     if (buf.at(i).empty()) continue;
     long long int delim = buf.at(i).find(": ");
-    result.push_back(pair<string, string>(buf.at(i).substr(0, delim), buf.at(i).substr(delim+2)));
+    result.push_back(trace_line(trim(buf.at(i).substr(0, delim)),  trim(buf.at(i).substr(delim+2))));
   }
   return result;
 }
@@ -425,10 +425,10 @@ case TRACE_SHOULD_NOT_CONTAIN: {
 // than just printing to stderr
 bool check_trace_missing(const string& in) {
   Trace_stream->newline();
-  vector<pair<string, string> > lines = parse_trace(in);
+  vector<trace_line> lines = parse_trace(in);
   for (long long int i = 0; i < SIZE(lines); ++i) {
-    if (trace_count(lines.at(i).first, lines.at(i).second) != 0) {
-      raise << "unexpected [" << lines.at(i).second << "] in trace layer " << lines.at(i).first << '\n';
+    if (trace_count(lines.at(i).label, lines.at(i).contents) != 0) {
+      raise << "unexpected [" << lines.at(i).contents << "] in trace layer " << lines.at(i).label << '\n';
       Passed = false;
       return false;
     }
