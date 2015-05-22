@@ -88,9 +88,11 @@ Hide_warnings = false;
 
 :(before "End Types")
 struct trace_line {
+  int depth;  // optional field just to help browse traces later
   string label;
   string contents;
-  trace_line(string l, string c) :label(l), contents(c) {}
+  trace_line(string l, string c) :depth(0), label(l), contents(c) {}
+  trace_line(int d, string l, string c) :depth(d), label(l), contents(c) {}
 };
 
 :(before "End Tracing")
@@ -99,14 +101,20 @@ struct trace_stream {
   // accumulator for current line
   ostringstream* curr_stream;
   string curr_layer;
+  int curr_depth;
   string dump_layer;
-  trace_stream() :curr_stream(NULL) {}
+  trace_stream() :curr_stream(NULL), curr_depth(0) {}
   ~trace_stream() { if (curr_stream) delete curr_stream; }
 
   ostringstream& stream(string layer) {
+    return stream(0, layer);
+  }
+
+  ostringstream& stream(int depth, string layer) {
     newline();
     curr_stream = new ostringstream;
     curr_layer = layer;
+    curr_depth = depth;
     return *curr_stream;
   }
 
@@ -114,13 +122,15 @@ struct trace_stream {
   void newline() {
     if (!curr_stream) return;
     string curr_contents = curr_stream->str();
-    past_lines.push_back(trace_line(trim(curr_layer), curr_contents));  // preserve indent in contents
+    past_lines.push_back(trace_line(curr_depth, trim(curr_layer), curr_contents));  // preserve indent in contents
     if (curr_layer == dump_layer || curr_layer == "dump" || dump_layer == "all" ||
         (!Hide_warnings && curr_layer == "warn"))
 //?     if (dump_layer == "all" && (Current_routine->id == 3 || curr_layer == "schedule")) //? 1
       cerr << curr_layer << ": " << curr_contents << '\n';
     delete curr_stream;
     curr_stream = NULL;
+    curr_layer.clear();
+    curr_depth = 0;
   }
 
   // Useful for debugging.
@@ -130,6 +140,8 @@ struct trace_stream {
     layer = trim(layer);
     for (vector<trace_line>::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
       if (layer.empty() || layer == p->label) {
+        if (p->depth)
+          output << std::setw(4) << p->depth << ' ';
         output << p->label << ": " << p->contents << '\n';
       }
     return output.str();
@@ -141,7 +153,7 @@ struct trace_stream {
 trace_stream* Trace_stream = NULL;
 
 // Top-level helper. IMPORTANT: can't nest.
-#define trace(layer)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(layer)
+#define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
 // Warnings should go straight to cerr by default since calls to trace() have
 // some unfriendly constraints (they delay printing, they can't nest)
 #define raise  ((!Trace_stream || !Hide_warnings) ? cerr /*do print*/ : Trace_stream->stream("warn"))
@@ -338,3 +350,24 @@ using std::ifstream;
 using std::ofstream;
 
 #define unused  __attribute__((unused))
+
+:(before "End Globals")
+//: In future layers we'll use the depth field as follows:
+//:
+//: Mu 'applications' will be able to use depths 1-99 as they like.
+//: Depth 100 will be for scheduling (more on that later).
+const int Scheduling_depth = 100;
+//: Primitive statements will occupy 101-9998
+const int Initial_callstack_depth = 101;
+const int Max_callstack_depth = 9998;
+//: (ignore this until the call layer)
+:(before "End Globals")
+int Callstack_depth = 0;
+:(before "End Setup")
+Callstack_depth = 0;
+//: Finally, details of primitive mu statements will occupy depth 9999 (more on that later as well)
+:(before "End Globals")
+const int Primitive_recipe_depth = 9999;
+//:
+//: This framework should help us hide some details at each level, mixing
+//: static ideas like layers with the dynamic notion of call-stack depth.

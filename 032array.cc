@@ -75,18 +75,18 @@ Recipe_number["index"] = INDEX;
 case INDEX: {
 //?   if (Trace_stream) Trace_stream->dump_layer = "run"; //? 1
   reagent base = canonize(current_instruction().ingredients.at(0));
-//?   trace("run") << "ingredient 0 after canonize: " << base.to_string(); //? 1
+//?   trace(Primitive_recipe_depth, "run") << "ingredient 0 after canonize: " << base.to_string(); //? 1
   long long int base_address = base.value;
   assert(base.types.at(0) == Type_number["array"]);
   reagent offset = canonize(current_instruction().ingredients.at(1));
-//?   trace("run") << "ingredient 1 after canonize: " << offset.to_string(); //? 1
+//?   trace(Primitive_recipe_depth, "run") << "ingredient 1 after canonize: " << offset.to_string(); //? 1
   vector<double> offset_val(read_memory(offset));
   vector<type_number> element_type = array_element(base.types);
-//?   trace("run") << "offset: " << offset_val.at(0); //? 1
-//?   trace("run") << "size of elements: " << size_of(element_type); //? 1
+//?   trace(Primitive_recipe_depth, "run") << "offset: " << offset_val.at(0); //? 1
+//?   trace(Primitive_recipe_depth, "run") << "size of elements: " << size_of(element_type); //? 1
   long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
-  trace("run") << "address to copy is " << src;
-  trace("run") << "its type is " << element_type.at(0);
+  trace(Primitive_recipe_depth, "run") << "address to copy is " << src;
+  trace(Primitive_recipe_depth, "run") << "its type is " << element_type.at(0);
   reagent tmp;
   tmp.set_value(src);
   copy(element_type.begin(), element_type.end(), inserter(tmp.types, tmp.types.begin()));

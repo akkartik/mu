@@ -40,7 +40,7 @@ case WAIT_FOR_LOCATION: {
   Current_routine->state = WAITING;
   Current_routine->waiting_on_location = loc.value;
   Current_routine->old_value_of_waiting_location = Memory[loc.value];
-  trace("run") << "waiting for location " << loc.value << " to change from " << Memory[loc.value];
+  trace(Primitive_recipe_depth, "run") << "waiting for location " << loc.value << " to change from " << Memory[loc.value];
 //?   trace("schedule") << Current_routine->id << ": waiting for location " << loc.value << " to change from " << Memory[loc.value]; //? 2
   break;
 }
@@ -99,7 +99,7 @@ case WAIT_FOR_ROUTINE: {
   Current_routine->state = WAITING;
   assert(scalar(ingredients.at(0)));
   Current_routine->waiting_on_routine = ingredients.at(0).at(0);
-  trace("run") << "waiting for routine " << ingredients.at(0).at(0);
+  trace(Primitive_recipe_depth, "run") << "waiting for routine " << ingredients.at(0).at(0);
   break;
 }
 

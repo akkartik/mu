@@ -218,7 +218,7 @@ void check_memory(const string& s) {
     int value = 0;  in >> value;
     if (locations_checked.find(address) != locations_checked.end())
       raise << "duplicate expectation for location " << address << '\n';
-    trace("run") << "checking location " << address;
+    trace(Primitive_recipe_depth, "run") << "checking location " << address;
     if (Memory[address] != value) {
       if (Current_scenario)
         raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
@@ -251,12 +251,12 @@ void check_type(const string& lhs, istream& in) {
 }
 
 void check_string(long long int address, const string& literal) {
-  trace("run") << "checking string length at " << address;
+  trace(Primitive_recipe_depth, "run") << "checking string length at " << address;
   if (Memory[address] != SIZE(literal))
     raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n';
   ++address;  // now skip length
   for (long long int i = 0; i < SIZE(literal); ++i) {
-    trace("run") << "checking location " << address+i;
+    trace(Primitive_recipe_depth, "run") << "checking location " << address+i;
     if (Memory[address+i] != literal.at(i))
       raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
   }

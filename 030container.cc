@@ -112,11 +112,11 @@ case GET: {
   for (long long int i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements.at(i));
   }
-  trace("run") << "address to copy is " << src;
+  trace(Primitive_recipe_depth, "run") << "address to copy is " << src;
   assert(Type[base_type].kind == container);
   assert(SIZE(Type[base_type].elements) > offset);
   type_number src_type = Type[base_type].elements.at(offset).at(0);
-  trace("run") << "its type is " << src_type;
+  trace(Primitive_recipe_depth, "run") << "its type is " << src_type;
   reagent tmp;
   tmp.set_value(src);
   tmp.types.push_back(src_type);
@@ -160,7 +160,7 @@ case GET_ADDRESS: {
   for (long long int i = 0; i < offset; ++i) {
     result += size_of(Type[base_type].elements.at(i));
   }
-  trace("run") << "address to copy is " << result;
+  trace(Primitive_recipe_depth, "run") << "address to copy is " << result;
   products.resize(1);
   products.at(0).push_back(result);
   break;
