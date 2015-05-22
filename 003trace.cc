@@ -117,11 +117,12 @@ struct trace_stream {
   }
 
   // Useful for debugging.
-  string readable_contents(string layer) {  // missing layer = everything, hierarchical layers
+  string readable_contents(string layer) {  // missing layer = everything
     newline();
     ostringstream output;
+    layer = trim(layer);
     for (vector<pair<string, string> >::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
-      if (layer.empty() || prefix_match(layer, p->first))
+      if (layer.empty() || layer == p->first)
         output << p->first << ": " << p->second << '\n';
     return output.str();
   }
@@ -286,29 +287,6 @@ vector<string> split(string s, string delim) {
     end = s.find(delim, begin);
   }
   return result;
-}
-
-bool any_prefix_match(const vector<string>& pats, const string& needle) {
-  if (pats.empty()) return false;
-  if (*pats.at(0).rbegin() != '/')
-    // prefix match not requested
-    return find(pats.begin(), pats.end(), needle) != pats.end();
-  // first pat ends in a '/'; assume all pats do.
-  for (vector<string>::const_iterator p = pats.begin(); p != pats.end(); ++p)
-    if (headmatch(needle, *p)) return true;
-  return false;
-}
-
-bool prefix_match(const string& pat, const string& needle) {
-  if (*pat.rbegin() != '/')
-    // prefix match not requested
-    return pat == needle;
-  return headmatch(needle, pat);
-}
-
-bool headmatch(const string& s, const string& pat) {
-  if (SIZE(pat) > SIZE(s)) return false;
-  return std::mismatch(pat.begin(), pat.end(), s.begin()).first == pat.end();
 }
 
 string trim(const string& s) {
