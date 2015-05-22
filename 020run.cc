@@ -58,21 +58,18 @@ void run_current_routine()
   {
     // Running One Instruction.
     if (current_instruction().is_label) { ++current_step_index(); continue; }
-//?     trace("run") << "instruction " << current_recipe_name() << '/' << current_step_index();
-    trace("run") << current_instruction().to_string();
+    trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string();
     assert(Memory[0] == 0);
     // Read all ingredients from memory.
     // Each ingredient loads a vector of values rather than a single value; mu
     // permits operating on reagents spanning multiple locations.
     vector<vector<double> > ingredients;
     for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
-//?       trace("run") << "ingredient " << i << " is " << current_instruction().ingredients.at(i).name;
       ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
     }
     // Instructions below will write to 'products' or to 'instruction_counter'.
     vector<vector<double> > products;
     long long int instruction_counter = current_step_index();
-//?     cout << "AAA: " << current_instruction().to_string() << '\n'; //? 1
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
       case COPY: {
@@ -84,17 +81,12 @@ void run_current_routine()
         cout << "not a primitive op: " << current_instruction().operation << '\n';
       }
     }
-//?     cout << "BBB: " << current_instruction().to_string() << '\n'; //? 1
     if (SIZE(products) < SIZE(current_instruction().products))
       raise << "failed to write to all products! " << current_instruction().to_string();
-//?     cout << "CCC: " << current_instruction().to_string() << '\n'; //? 1
     for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
-//?       trace("run") << "product " << i << " is " << current_instruction().products.at(i).name;
       write_memory(current_instruction().products.at(i), products.at(i));
     }
-//?     cout << "DDD: " << current_instruction().to_string() << '\n'; //? 1
     current_step_index() = instruction_counter+1;
-//?     cerr << "screen: " << Memory[SCREEN] << '\n'; //? 1
   }
   stop_running_current_routine:;
 }
@@ -186,7 +178,7 @@ vector<double> read_memory(reagent x) {
   long long int size = size_of(x);
   for (long long int offset = 0; offset < size; ++offset) {
     double val = Memory[base+offset];
-    trace("mem") << "location " << base+offset << " is " << val;
+    trace(Primitive_recipe_depth, "mem") << "location " << base+offset << " is " << val;
     result.push_back(val);
   }
   return result;
@@ -198,7 +190,7 @@ void write_memory(reagent x, vector<double> data) {
   if (size_of(x) != SIZE(data))
     raise << "size mismatch in storing to " << x.to_string() << '\n';
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
-    trace("mem") << "storing " << data.at(offset) << " in location " << base+offset;
+    trace(Primitive_recipe_depth, "mem") << "storing " << data.at(offset) << " in location " << base+offset;
     Memory[base+offset] = data.at(offset);
   }
 }

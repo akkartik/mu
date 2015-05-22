@@ -20,3 +20,14 @@ assert(Reserved_for_tests == 1000);
 //: 1-99 - primitives
 //: 100-999 - defined in .mu files as sequences of primitives
 //: 1000 onwards - reserved for tests, cleared between tests
+
+//:: Depths for tracing
+//:
+//: 0 - unused
+//: 1-99 - app-level trace statements in mu
+//: 100 - schedule
+//: 101-9998 - call-stack statements (mostly label run)
+assert(Initial_callstack_depth == 101);
+assert(Max_callstack_depth == 9998);
+//: 9999 - intra-instruction lines (mostly label mem)
+assert(Primitive_recipe_depth == 9999);

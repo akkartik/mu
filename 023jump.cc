@@ -19,7 +19,7 @@ case JUMP: {
   assert(SIZE(ingredients) == 1);
   assert(scalar(ingredients.at(0)));
   instruction_counter += ingredients.at(0).at(0);
-  trace("run") << "jumping to instruction " << instruction_counter+1;
+  trace(Primitive_recipe_depth, "run") << "jumping to instruction " << instruction_counter+1;
   break;
 }
 
@@ -48,12 +48,12 @@ case JUMP_IF: {
   assert(SIZE(ingredients) == 2);
   assert(scalar(ingredients.at(0)));
   if (!ingredients.at(0).at(0)) {
-    trace("run") << "jump-if fell through";
+    trace(Primitive_recipe_depth, "run") << "jump-if fell through";
     break;
   }
   assert(scalar(ingredients.at(1)));
   instruction_counter += ingredients.at(1).at(0);
-  trace("run") << "jumping to instruction " << instruction_counter+1;
+  trace(Primitive_recipe_depth, "run") << "jumping to instruction " << instruction_counter+1;
   break;
 }
 
@@ -87,12 +87,12 @@ case JUMP_UNLESS: {
   assert(SIZE(ingredients) == 2);
   assert(scalar(ingredients.at(0)));
   if (ingredients.at(0).at(0)) {
-    trace("run") << "jump-unless fell through";
+    trace(Primitive_recipe_depth, "run") << "jump-unless fell through";
     break;
   }
   assert(scalar(ingredients.at(1)));
   instruction_counter += ingredients.at(1).at(0);
-  trace("run") << "jumping to instruction " << instruction_counter+1;
+  trace(Primitive_recipe_depth, "run") << "jumping to instruction " << instruction_counter+1;
   break;
 }
 

@@ -80,6 +80,8 @@ default: {
     raise << "undefined operation " << current_instruction().operation << ": " << current_instruction().to_string() << '\n';
     break;
   }
+  ++Callstack_depth;
+  assert(Callstack_depth < 9000);  // 9998-101 plus cushion
   Current_routine->calls.push_front(call(current_instruction().operation));
   continue;  // not done with caller; don't increment current_step_index()
 }
@@ -100,6 +102,7 @@ inline const vector<instruction>& routine::steps() const {
 // when we reach the end of one call, we may reach the end of the one below
 // it, and the one below that, and so on
 while (current_step_index() >= SIZE(Current_routine->steps())) {
+  --Callstack_depth;
   Current_routine->calls.pop_front();
   if (Current_routine->calls.empty()) return;
   // todo: no results returned warning

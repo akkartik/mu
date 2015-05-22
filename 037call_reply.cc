@@ -19,6 +19,7 @@ Recipe_number["reply"] = REPLY;
 :(before "End Primitive Recipe Implementations")
 case REPLY: {
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
+  --Callstack_depth;
   Current_routine->calls.pop_front();
   // just in case 'main' returns a value, drop it for now
   if (Current_routine->calls.empty()) goto stop_running_current_routine;
@@ -28,7 +29,7 @@ case REPLY: {
   // check that any reply ingredients with /same-as-ingredient connect up
   // the corresponding ingredient and product in the caller.
   for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
-    trace("run") << "result " << i << " is " << to_string(ingredients.at(i));
+    trace(Primitive_recipe_depth, "run") << "result " << i << " is " << to_string(ingredients.at(i));
     if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
       vector<string> tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
       assert(SIZE(tmp) == 1);

@@ -23,7 +23,7 @@ long long int alloc, alloc_max;
 alloc = Memory_allocated_until;
 Memory_allocated_until += Initial_memory_per_routine;
 alloc_max = Memory_allocated_until;
-trace("new") << "routine allocated memory from " << alloc << " to " << alloc_max;
+trace(Primitive_recipe_depth, "new") << "routine allocated memory from " << alloc << " to " << alloc_max;
 
 //:: First handle 'type' operands.
 
@@ -39,7 +39,7 @@ if (inst.operation == Recipe_number["new"]) {
   if (inst.ingredients.at(0).properties.at(0).second.at(0) == "type") {
     inst.ingredients.at(0).set_value(Type_number[inst.ingredients.at(0).name]);
   }
-  trace("new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).value;
+  trace(Primitive_recipe_depth, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).value;
 }
 
 //:: Now implement the primitive recipe.
@@ -61,7 +61,7 @@ case NEW: {
     if (SIZE(current_instruction().ingredients) > 1) {
       // array
       array_length = ingredients.at(1).at(0);
-      trace("mem") << "array size is " << array_length;
+      trace(Primitive_recipe_depth, "mem") << "array size is " << array_length;
       size = array_length*size_of(type) + /*space for length*/1;
     }
     else {
@@ -73,7 +73,7 @@ case NEW: {
   // really crappy at the moment
   ensure_space(size);
   const long long int result = Current_routine->alloc;
-  trace("mem") << "new alloc: " << result;
+  trace(Primitive_recipe_depth, "mem") << "new alloc: " << result;
   // save result
   products.resize(1);
   products.at(0).push_back(result);
@@ -100,7 +100,7 @@ void ensure_space(long long int size) {
     Current_routine->alloc = Memory_allocated_until;
     Memory_allocated_until += Initial_memory_per_routine;
     Current_routine->alloc_max = Memory_allocated_until;
-    trace("new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max;
+    trace(Primitive_recipe_depth, "new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max;
   }
 }
 
