@@ -86,9 +86,16 @@ bool Hide_warnings = false;
 //? cerr << "AAA setup\n"; //? 2
 Hide_warnings = false;
 
+:(before "End Types")
+struct trace_line {
+  string label;
+  string contents;
+  trace_line(string l, string c) :label(l), contents(c) {}
+};
+
 :(before "End Tracing")
 struct trace_stream {
-  vector<pair<string, string> > past_lines;  // [(layer label, line)]
+  vector<trace_line> past_lines;
   // accumulator for current line
   ostringstream* curr_stream;
   string curr_layer;
@@ -107,7 +114,7 @@ struct trace_stream {
   void newline() {
     if (!curr_stream) return;
     string curr_contents = curr_stream->str();
-    past_lines.push_back(pair<string, string>(trim(curr_layer), curr_contents));  // preserve indent in contents
+    past_lines.push_back(trace_line(trim(curr_layer), curr_contents));  // preserve indent in contents
     if (curr_layer == dump_layer || curr_layer == "dump" || dump_layer == "all" ||
         (!Hide_warnings && curr_layer == "warn"))
 //?     if (dump_layer == "all" && (Current_routine->id == 3 || curr_layer == "schedule")) //? 1
@@ -121,9 +128,10 @@ struct trace_stream {
     newline();
     ostringstream output;
     layer = trim(layer);
-    for (vector<pair<string, string> >::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
-      if (layer.empty() || layer == p->first)
-        output << p->first << ": " << p->second << '\n';
+    for (vector<trace_line>::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
+      if (layer.empty() || layer == p->label) {
+        output << p->label << ": " << p->contents << '\n';
+      }
     return output.str();
   }
 };
@@ -196,13 +204,13 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   Trace_stream->newline();
   string layer, contents;
   split_layer_contents(expected_lines.at(curr_expected_line), &layer, &contents);
-  for (vector<pair<string, string> >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-//?     cerr << "AAA " << layer << ' ' << p->first << '\n'; //? 1
-    if (layer != p->first)
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+//?     cerr << "AAA " << layer << ' ' << p->label << '\n'; //? 1
+    if (layer != p->label)
       continue;
 
-//?     cerr << "BBB ^" << contents << "$ ^" << p->second << "$\n"; //? 1
-    if (contents != trim(p->second))
+//?     cerr << "BBB ^" << contents << "$ ^" << p->contents << "$\n"; //? 1
+    if (contents != trim(p->contents))
       continue;
 
 //?     cerr << "CCC\n"; //? 1
@@ -243,9 +251,9 @@ int trace_count(string layer) {
 int trace_count(string layer, string line) {
   Trace_stream->newline();
   long result = 0;
-  for (vector<pair<string, string> >::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (p->first == layer)
-      if (line == "" || p->second == line)
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+    if (layer == p->label)
+      if (line == "" || line == p->contents)
         ++result;
   }
   return result;
@@ -307,8 +315,6 @@ string trim(const string& s) {
 using std::vector;
 #include<list>
 using std::list;
-#include<utility>
-using std::pair;
 #include<map>
 using std::map;
 #include<set>
@@ -321,6 +327,7 @@ using std::ostream;
 using std::cin;
 using std::cout;
 using std::cerr;
+#include<iomanip>
 
 #include<sstream>
 using std::istringstream;
