@@ -47,8 +47,9 @@ syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
 syntax match muLabel " [^a-zA-Z0-9 \[\.][a-zA-Z0-9-]\+" | highlight link muLabel Function
 syntax match muAssign " <- " | highlight link muAssign SpecialChar
 syntax match muAssign "\<raw\>"
-syntax keyword muControl reply reply-if reply-unless jump jump-if jump-unless loop loop-if loop-unless break-if break-unless | highlight link muControl Function
+syntax keyword muControl reply reply-if reply-unless jump jump-if jump-unless loop loop-if loop-unless break-if break-unless default-space next-ingredient ingredient | highlight link muControl Function
 " common keywords
-syntax keyword muFunc recipe default-space next-ingredient ingredient before after scenario run memory trace screen keyboard stalled finished | highlight link muFunc Statement
+syntax keyword muRecipe recipe before after | highlight muRecipe ctermfg=208
+syntax keyword muScenario scenario | highlight muScenario ctermfg=34
 
 let &cpo = s:save_cpo
