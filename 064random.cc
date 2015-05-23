@@ -4,8 +4,9 @@ RANDOM,
 Recipe_number["random"] = RANDOM;
 :(before "End Primitive Recipe Implementations")
 case RANDOM: {
+  // todo: limited range of numbers, might be imperfectly random
+  // todo: thread state in extra ingredients and results
   products.resize(1);
-  // todo: replace rand()
   products.at(0).push_back(rand());
   break;
 }
