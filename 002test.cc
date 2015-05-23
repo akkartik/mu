@@ -88,7 +88,7 @@ long long int to_integer(string n) {
   char* end = NULL;
   // safe because string.c_str() is guaranteed to be null-terminated
   long long int result = strtoll(n.c_str(), &end, /*any base*/0);
-  if (*end != '\0') raise << "tried to convert " << n << " to number\n";
+  if (*end != '\0') cerr << "tried to convert " << n << " to number\n";
   assert(*end == '\0');
   return result;
 }
