@@ -1,5 +1,5 @@
 tangle: makefile type_list function_list file_list test_file_list test_list
-	g++ -g -O3 -Wall -Wextra -fno-strict-aliasing boot.cc -o tangle
+	c++ -g -O3 -Wall -Wextra -fno-strict-aliasing boot.cc -o tangle
 
 type_list: boot.cc [0-9]*.cc
 	@# assumes struct decl has space before '{'
