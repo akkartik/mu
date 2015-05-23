@@ -26,6 +26,7 @@ assert(Reserved_for_tests == 1000);
 //: 0 - unused
 //: 1-99 - app-level trace statements in mu
 //: 100 - schedule
+assert(Scheduling_depth == 100);
 //: 101-9998 - call-stack statements (mostly label run)
 assert(Initial_callstack_depth == 101);
 assert(Max_callstack_depth == 9998);
