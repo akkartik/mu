@@ -3,7 +3,7 @@
 recipe main [
   default-space:address:space <- new location:type, 30:literal
   x:number <- factorial 5:literal
-  $print [result: ], x:number, [
+  $print [result: ], x:number, [ 
 ]
 ]
 
