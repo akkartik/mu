@@ -112,23 +112,18 @@ void start_trace_browser() {
       assert(Trace_index.find(Display_row) != Trace_index.end());
       long long int start_index = Trace_index[Display_row];
       long long int index = 0;
-      // simultaneously compute end_index and max_depth
-      // (until the first time a line has lower depth than its predecessor)
-      int max_depth = 0;
+      // end_index is the next line at a depth same as or lower than start_index
+      int initial_depth = Trace_stream->past_lines.at(start_index).depth;
       for (index = start_index+1; index < SIZE(Trace_stream->past_lines); ++index) {
         if (Visible.find(index) == Visible.end()) continue;
         trace_line& curr_line = Trace_stream->past_lines.at(index);
         if (curr_line.depth == 0) continue;
-        if (curr_line.depth > max_depth) max_depth = curr_line.depth;
-        if (curr_line.depth < max_depth) break;
+        if (curr_line.depth <= initial_depth) break;
       }
       long long int end_index = index;
       // mark as visible all intervening indices at min_depth
-      for (index = start_index; index < end_index; ++index) {
-        trace_line& curr_line = Trace_stream->past_lines.at(index);
-        if (curr_line.depth == max_depth) {
-          Visible.erase(index);
-        }
+      for (index = start_index+1; index < end_index; ++index) {
+        Visible.erase(index);
       }
       refresh_screen_rows();
     }
