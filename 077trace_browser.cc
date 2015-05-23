@@ -108,6 +108,33 @@ void start_trace_browser() {
 //?       exit(0);
       refresh_screen_rows();
     }
+    if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
+//?       tb_shutdown();
+      assert(Trace_index.find(Display_row) != Trace_index.end());
+      long long int start_index = Trace_index[Display_row];
+      long long int index = 0;
+      // simultaneously compute end_index and max_depth
+      // (until the first time a line has lower depth than its predecessor)
+      int max_depth = 0;
+      int initial_depth = Trace_stream->past_lines.at(start_index).depth;
+      for (index = start_index+1; index < SIZE(Trace_stream->past_lines); ++index) {
+        if (Visible.find(index) == Visible.end()) continue;
+        trace_line& curr_line = Trace_stream->past_lines.at(index);
+        if (curr_line.depth == 0) continue;
+        if (curr_line.depth < initial_depth) break;
+        if (max_depth == 0) max_depth = curr_line.depth;
+        if (curr_line.depth < max_depth) break;
+      }
+      long long int end_index = index;
+      // mark as visible all intervening indices at min_depth
+      for (index = start_index; index < end_index; ++index) {
+        trace_line& curr_line = Trace_stream->past_lines.at(index);
+        if (curr_line.depth == max_depth) {
+          Visible.erase(index);
+        }
+      }
+      refresh_screen_rows();
+    }
   }
   tb_shutdown();
 }
