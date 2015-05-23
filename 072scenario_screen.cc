@@ -53,6 +53,10 @@ scenario screen-in-scenario-error [
 ]
 +warn: expected screen location (0, 0) to contain 98 ('b') instead of 97 ('a')
 
+//: allow naming just for 'screen'
+:(before "End is_special_name Cases")
+if (s == "screen") return true;
+
 :(before "End Globals")
 // Scenarios may not define default-space, so they should fit within the
 // initial area of memory reserved for tests. We'll put the predefined

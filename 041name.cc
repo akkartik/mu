@@ -125,9 +125,6 @@ bool is_raw(const reagent& r) {
 bool is_special_name(const string& s) {
   if (s == "_") return true;
   if (s == "0") return true;
-  // tests will use these in later layers even though tests will mostly use numeric addresses
-  if (s == "screen") return true;
-  if (s == "keyboard") return true;
   // End is_special_name Cases
   return false;
 }
