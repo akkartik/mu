@@ -23,10 +23,14 @@ CURRENT_CONTINUATION,
 Recipe_number["current-continuation"] = CURRENT_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
 case CURRENT_CONTINUATION: {
+  // copy the current call stack
   Continuation[Next_continuation_id] = Current_routine->calls;  // deep copy because calls have no pointers
+  // make sure calling the copy doesn't spawn the same continuation again
+  ++Continuation[Next_continuation_id].front().running_step_index;
   products.resize(1);
   products.at(0).push_back(Next_continuation_id);
   ++Next_continuation_id;
+  trace("current-continuation") << "new continuation " << Next_continuation_id;
   break;
 }
 
@@ -61,6 +65,8 @@ recipe main [
 +mem: storing 2 in location 1
 +mem: storing 3 in location 1
 -mem: storing 4 in location 1
+# ensure every iteration doesn't copy the stack over and over
+$current-continuation: 1
 
 :(scenario continuation_inside_caller)
 recipe main [
