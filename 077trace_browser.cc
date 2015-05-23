@@ -27,7 +27,7 @@ void start_trace_browser() {
   cerr << "depth is " << min_depth << '\n';
   cerr << "computing lines to display\n";
   for (long long int i = 0; i < SIZE(Trace_stream->past_lines); ++i) {
-    if (Trace_stream->past_lines.at(i).depth == min_depth)
+    if (Trace_stream->past_lines.at(i).depth < 110 && Trace_stream->past_lines.at(i).depth) //== min_depth)
       Visible.insert(i);
   }
   tb_init();
@@ -42,11 +42,42 @@ void start_trace_browser() {
     } while (event.type != TB_EVENT_KEY);
     long long int key = event.key ? event.key : event.ch;
     if (key == 'q' || key == 'Q') break;
-    if (key == 'j' || key == 'J') {
+    if (key == 'j') {
       if (Display_row < Last_printed_row) ++Display_row;
     }
-    if (key == 'k' || key == 'K') {
+    if (key == 'k') {
       if (Display_row > 0) --Display_row;
+    }
+    if (key == 'H') {
+      Display_row = 0;
+    }
+    if (key == 'M') {
+      Display_row = tb_height()/2;
+    }
+    if (key == 'L') {
+      Display_row = tb_height()-1;
+    }
+    if (key == 'J') {
+      if (Trace_index.find(tb_height()-1) != Trace_index.end()) {
+        Top_of_screen = Trace_index[tb_height()-1]+1;
+        refresh_screen_rows();
+      }
+    }
+    if (key == 'K') {
+      int max = tb_height();
+//?       tb_shutdown(); //? 1
+//?       cerr << "page-up: Top_of_screen is currently " << Top_of_screen << '\n'; //? 1
+      // page-up is more convoluted
+      for (int screen_row = max; screen_row > 0 && Top_of_screen > 0; --screen_row) {
+        --Top_of_screen;
+        if (Top_of_screen <= 0) break;
+        while (Top_of_screen > 0 && Visible.find(Top_of_screen) == Visible.end())
+          --Top_of_screen;
+//?         cerr << "now " << Top_of_screen << '\n'; //? 1
+      }
+//?       exit(0); //? 1
+      if (Top_of_screen > 0)
+        refresh_screen_rows();
     }
   }
   tb_shutdown();
