@@ -493,3 +493,99 @@ scenario interpolate-at-end [
     4:string <- [hello, abc]
   ]
 ]
+
+recipe trim [
+  default-space:array:address:location <- new location:type, 30:literal
+  s:address:array:character <- next-ingredient
+  len:number <- length s:address:array:character/deref
+  # left trim: compute start
+  start:number <- copy 0:literal
+  {
+    {
+      at-end?:boolean <- greater-or-equal start:number, len:number
+      break-unless at-end?:boolean
+      result:address:array:character <- new character:type, 0:literal
+      reply result:address:array:character
+    }
+    curr:character <- index s:address:array:character/deref, start:number
+    whitespace?:boolean <- equal curr:character, 32:literal/space
+    break-unless whitespace?:boolean
+    start:number <- add start:number, 1:literal
+    loop
+  }
+  # right trim: compute end
+  end:number <- subtract len:number, 1:literal
+  {
+    not-at-start?:boolean <- greater-than end:number, start:number
+    assert not-at-start?:boolean [end ran up against start]
+    curr:character <- index s:address:array:character/deref, end:number
+    whitespace?:boolean <- equal curr:character, 32:literal/space
+    break-unless whitespace?:boolean
+    end:number <- subtract end:number, 1:literal
+    loop
+  }
+  # create result
+  new-len:number <- subtract end:number, start:number, -1:literal  # end-start+1
+  result:address:array:character <- new character:type, new-len:number
+  # i = start, j = 0
+  i:number <- copy start:number
+  j:number <- copy 0:literal
+  {
+    # while i <= end
+    done?:boolean <- greater-than i:number, end:number
+    break-if done?:boolean
+    # result[j] = s[i]
+    src:character <- index s:address:array:character/deref, i:number
+    dest:address:character <- index-address result:address:array:character/deref, j:number
+    dest:address:character/deref <- copy src:character
+    # ++i, ++j
+    i:number <- add i:number, 1:literal
+    j:number <- add j:number, 1:literal
+    loop
+  }
+  reply result:address:array:character
+]
+
+scenario trim-unmodified [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- trim 1:address:array:character
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+  memory-should-contain [
+    3:string <- [abc]
+  ]
+]
+
+scenario trim-left [
+  run [
+    1:address:array:character <- new [  abc]
+    2:address:array:character <- trim 1:address:array:character
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+  memory-should-contain [
+    3:string <- [abc]
+  ]
+]
+
+scenario trim-right [
+  run [
+    1:address:array:character <- new [abc  ]
+    2:address:array:character <- trim 1:address:array:character
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+  memory-should-contain [
+    3:string <- [abc]
+  ]
+]
+
+scenario trim-left-right [
+  run [
+    1:address:array:character <- new [  abc   ]
+    2:address:array:character <- trim 1:address:array:character
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+  memory-should-contain [
+    3:string <- [abc]
+  ]
+]
