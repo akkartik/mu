@@ -11,6 +11,7 @@ case _BROWSE_TRACE: {
 :(before "End Globals")
 set<long long int> Visible;
 long long int Top_of_screen = 0;
+long long int Last_printed_row = 0;
 
 :(code)
 void start_trace_browser() {
@@ -38,6 +39,12 @@ void start_trace_browser() {
     } while (event.type != TB_EVENT_KEY);
     long long int key = event.key ? event.key : event.ch;
     if (key == 'q' || key == 'Q') break;
+    if (key == 'j' || key == 'J') {
+      if (Display_row < Last_printed_row) ++Display_row;
+    }
+    if (key == 'k' || key == 'K') {
+      if (Display_row > 0) --Display_row;
+    }
   }
   tb_shutdown();
 }
@@ -59,6 +66,7 @@ void render() {
   }
 done:
   // clear rest of screen
+  Last_printed_row = screen_row-1;
   for (; screen_row < tb_height(); ++screen_row) {
     render_line(screen_row, "~");
   }
