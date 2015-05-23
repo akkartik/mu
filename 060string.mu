@@ -494,6 +494,69 @@ scenario interpolate-at-end [
   ]
 ]
 
+recipe space? [
+  default-space:array:address:location <- new location:type, 30:literal
+  c:character <- next-ingredient
+  result:boolean <- equal c:character, 32:literal/space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 10:literal/newline
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 9:literal/tab
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 13:literal/carriage-return
+  # remaining uncommon cases in sorted order
+  # http://unicode.org code-points in unicode-set Z and Pattern_White_Space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 11:literal/ctrl-k
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 12:literal/ctrl-l
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 133:literal/ctrl-0085
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 160:literal/no-break-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 5760:literal/ogham-space-mark
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8192:literal/en-quad
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8193:literal/em-quad
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8194:literal/en-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8195:literal/em-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8196:literal/three-per-em-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8197:literal/four-per-em-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8198:literal/six-per-em-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8199:literal/figure-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8200:literal/punctuation-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8201:literal/thin-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8202:literal/hair-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8206:literal/left-to-right
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8207:literal/right-to-left
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8232:literal/line-separator
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8233:literal/paragraph-separator
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8239:literal/narrow-no-break-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 8287:literal/medium-mathematical-space
+  jump-if result:boolean, +reply:label
+  result:boolean <- equal c:character, 12288:literal/ideographic-space
+  jump-if result:boolean, +reply:label
+  +reply
+  reply result:boolean
+]
+
 recipe trim [
   default-space:array:address:location <- new location:type, 30:literal
   s:address:array:character <- next-ingredient
@@ -508,7 +571,7 @@ recipe trim [
       reply result:address:array:character
     }
     curr:character <- index s:address:array:character/deref, start:number
-    whitespace?:boolean <- equal curr:character, 32:literal/space
+    whitespace?:boolean <- space? curr:character
     break-unless whitespace?:boolean
     start:number <- add start:number, 1:literal
     loop
@@ -519,7 +582,7 @@ recipe trim [
     not-at-start?:boolean <- greater-than end:number, start:number
     assert not-at-start?:boolean [end ran up against start]
     curr:character <- index s:address:array:character/deref, end:number
-    whitespace?:boolean <- equal curr:character, 32:literal/space
+    whitespace?:boolean <- space? curr:character
     break-unless whitespace?:boolean
     end:number <- subtract end:number, 1:literal
     loop
@@ -582,6 +645,18 @@ scenario trim-right [
 scenario trim-left-right [
   run [
     1:address:array:character <- new [  abc   ]
+    2:address:array:character <- trim 1:address:array:character
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+  memory-should-contain [
+    3:string <- [abc]
+  ]
+]
+
+scenario trim-newline-tab [
+  run [
+    1:address:array:character <- new [	abc
+]
     2:address:array:character <- trim 1:address:array:character
     3:array:character <- copy 2:address:array:character/deref
   ]

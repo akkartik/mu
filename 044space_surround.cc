@@ -27,11 +27,13 @@ recipe main [
 
 :(replace{} "long long int space_base(const reagent& x)")
 long long int space_base(const reagent& x) {
+//?   cerr << "space_base: " << x.to_string() << '\n'; //? 1
   return space_base(x, space_index(x), Current_routine->calls.front().default_space);
 }
 
 long long int space_base(const reagent& x, long long int space_index, long long int base) {
 //?   trace("foo") << "base of space " << space_index << '\n'; //? 1
+//?   cerr << "space_base sub: " << x.to_string() << '\n'; //? 1
   if (space_index == 0) {
 //?     trace("foo") << "base of space " << space_index << " is " << base << '\n'; //? 1
     return base;
@@ -42,7 +44,8 @@ long long int space_base(const reagent& x, long long int space_index, long long 
 }
 
 long long int space_index(const reagent& x) {
-  for (long long int i = 0; i < SIZE(x.properties); ++i) {
+//?   cerr << "space_index: " << x.to_string() << '\n'; //? 1
+  for (long long int i = /*skip name:type*/1; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == "space") {
       assert(SIZE(x.properties.at(i).second) == 1);
       return to_integer(x.properties.at(i).second.at(0));
@@ -50,3 +53,8 @@ long long int space_index(const reagent& x) {
   }
   return 0;
 }
+
+:(scenario permit_space_as_variable_name)
+recipe main [
+  space:number <- copy 0:literal
+]

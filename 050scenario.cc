@@ -252,13 +252,31 @@ void check_type(const string& lhs, istream& in) {
 
 void check_string(long long int address, const string& literal) {
   trace(Primitive_recipe_depth, "run") << "checking string length at " << address;
-  if (Memory[address] != SIZE(literal))
-    raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n';
+  if (Memory[address] != SIZE(literal)) {
+    if (Current_scenario && !Hide_warnings)
+      raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n';
+    else
+      raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n';
+    if (!Hide_warnings) {
+      Passed = false;
+      ++Num_failures;
+    }
+    return;
+  }
   ++address;  // now skip length
   for (long long int i = 0; i < SIZE(literal); ++i) {
     trace(Primitive_recipe_depth, "run") << "checking location " << address+i;
-    if (Memory[address+i] != literal.at(i))
-      raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
+    if (Memory[address+i] != literal.at(i)) {
+      if (Current_scenario && !Hide_warnings)
+        raise << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
+      else
+        raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
+      if (!Hide_warnings) {
+        Passed = false;
+        ++Num_failures;
+      }
+      return;
+    }
   }
 }
 
