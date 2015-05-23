@@ -12,6 +12,7 @@ case _BROWSE_TRACE: {
 set<long long int> Visible;
 long long int Top_of_screen = 0;
 long long int Last_printed_row = 0;
+map<int, long long int> Trace_index;  // screen row -> trace index
 
 :(code)
 void start_trace_browser() {
@@ -32,6 +33,8 @@ void start_trace_browser() {
   tb_init();
   Display_row = Display_column = 0;
   struct tb_event event;
+  Top_of_screen = 0;
+  refresh_screen_rows();
   while (true) {
     render();
     do {
@@ -49,8 +52,10 @@ void start_trace_browser() {
   tb_shutdown();
 }
 
-void render() {
+// update Trace_indices for each screen_row on the basis of Top_of_screen and Visible
+void refresh_screen_rows() {
   long long int screen_row = 0, index = 0;
+  Trace_index.clear();
   for (screen_row = 0, index = Top_of_screen; screen_row < tb_height() && index < SIZE(Trace_stream->past_lines); ++screen_row, ++index) {
     // skip lines without depth for now
     while (Visible.find(index) == Visible.end()) {
@@ -58,13 +63,20 @@ void render() {
       if (index >= SIZE(Trace_stream->past_lines)) goto done;
     }
     assert(index < SIZE(Trace_stream->past_lines));
-    // render trace line at index
-    trace_line& curr_line = Trace_stream->past_lines.at(index);
+    Trace_index[screen_row] = index;
+  }
+done:;
+}
+
+void render() {
+  long long int screen_row = 0;
+  for (screen_row = 0; screen_row < tb_height(); ++screen_row) {
+    if (Trace_index.find(screen_row) == Trace_index.end()) break;
+    trace_line& curr_line = Trace_stream->past_lines.at(Trace_index[screen_row]);
     ostringstream out;
     out << std::setw(4) << curr_line.depth << ' ' << curr_line.label << ": " << curr_line.contents;
     render_line(screen_row, out.str());
   }
-done:
   // clear rest of screen
   Last_printed_row = screen_row-1;
   for (; screen_row < tb_height(); ++screen_row) {
