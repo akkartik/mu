@@ -25,6 +25,21 @@ recipe main [
 ]
 +mem: storing 34 in location 8
 
+//:: first disable name conversion for 'default-space'
+:(scenario convert_names_passes_default_space)
+recipe main [
+  default-space:number, x:number <- copy 0:literal, 1:literal
+]
++name: assign x 1
+-name: assign default-space 1
+
+:(before "End Disqualified Reagents")
+if (x.name == "default-space")
+  x.initialized = true;
+:(before "End is_special_name Cases")
+if (s == "default-space") return true;
+
+//:: now implement space support
 :(before "End call Fields")
 long long int default_space;
 :(replace "call(recipe_number r) :running_recipe(r)")

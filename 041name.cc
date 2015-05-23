@@ -70,8 +70,7 @@ bool disqualified(/*mutable*/ reagent& x) {
   if (is_raw(x)) return true;
   if (isa_literal(x)) return true;
   if (is_integer(x.name)) return true;
-  if (x.name == "default-space")
-    x.initialized = true;
+  // End Disqualified Reagents
   if (x.initialized) return true;
   return false;
 }
@@ -125,12 +124,11 @@ bool is_raw(const reagent& r) {
 
 bool is_special_name(const string& s) {
   if (s == "_") return true;
-  // lexical scopes
-  if (s == "default-space") return true;
   if (s == "0") return true;
   // tests will use these in later layers even though tests will mostly use numeric addresses
   if (s == "screen") return true;
   if (s == "keyboard") return true;
+  // End is_special_name Cases
   return false;
 }
 
@@ -141,14 +139,6 @@ recipe main [
 ]
 +name: assign x 1
 -name: assign _ 1
-
-//: one reserved word that we'll need later
-:(scenario convert_names_passes_default_space)
-recipe main [
-  default-space:number, x:number <- copy 0:literal, 1:literal
-]
-+name: assign x 1
--name: assign default-space 1
 
 //: an escape hatch to suppress name conversion that we'll use later
 :(scenario convert_names_passes_raw)

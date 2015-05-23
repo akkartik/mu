@@ -1,10 +1,12 @@
 parse: instruction: run
 parse:   ingredient: {name: "
-    1:address:array:character <- new [  abc]
+    1:address:array:character <- new [	abc
+]
     2:address:array:character <- trim 1:address:array:character
     3:array:character <- copy 2:address:array:character/deref
   ", properties: ["
-    1:address:array:character <- new [  abc]
+    1:address:array:character <- new [	abc
+]
     2:address:array:character <- trim 1:address:array:character
     3:array:character <- copy 2:address:array:character/deref
   ": "literal-string"]}
@@ -14,18 +16,21 @@ parse:   ingredient: {name: "
   ", properties: ["
     3:string <- [abc]
   ": "literal-string"]}
-after-brace: recipe trim-left
+after-brace: recipe trim-newline-tab
 after-brace: run ...
 after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
-schedule: trim-left
+schedule: trim-newline-tab
  101 run: run [
-    1:address:array:character <- new [  abc]
+    1:address:array:character <- new [	abc
+]
     2:address:array:character <- trim 1:address:array:character
     3:array:character <- copy 2:address:array:character/deref
   ]
 parse: instruction: new
-parse:   ingredient: {name: "  abc", properties: ["  abc": "literal-string"]}
+parse:   ingredient: {name: "	abc
+", properties: ["	abc
+": "literal-string"]}
 parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
 parse: instruction: trim
 parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"]}
@@ -33,12 +38,14 @@ parse:   product: {name: "2", properties: ["2": "address":"array":"character"]}
 parse: instruction: copy
 parse:   ingredient: {name: "2", properties: ["2": "address":"array":"character", "deref": ]}
 parse:   product: {name: "3", properties: ["3": "array":"character"]}
-9999 new:   abc -> 0
+9999 new: 	abc
+ -> 0
 after-brace: recipe run1001
 after-brace: new ...
 after-brace: trim ...
 after-brace: copy ...
- 101 run: 1:address:array:character <- new [  abc]
+ 101 run: 1:address:array:character <- new [	abc
+]
 9999 mem: storing 1000 in location 1
  101 run: 2:address:array:character <- trim 1:address:array:character
 9999 mem: location 1 is 1000
@@ -50,11 +57,11 @@ after-brace: copy ...
  102 run: len:number <- length s:address:array:character/deref
 9999 mem: location 1008 is 1000
 9999 mem: location 1000 is 5
-9999 mem: location 1001 is 32
-9999 mem: location 1002 is 32
-9999 mem: location 1003 is 97
-9999 mem: location 1004 is 98
-9999 mem: location 1005 is 99
+9999 mem: location 1001 is 9
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 98
+9999 mem: location 1004 is 99
+9999 mem: location 1005 is 10
 9999 mem: location 1008 is 1000
 9999 mem: storing 5 in location 1009
  102 run: start:number <- copy 0:literal
@@ -69,27 +76,39 @@ after-brace: copy ...
  102 run: curr:character <- index s:address:array:character/deref, start:number
 9999 mem: location 1008 is 1000
 9999 mem: location 1000 is 5
-9999 mem: location 1001 is 32
-9999 mem: location 1002 is 32
-9999 mem: location 1003 is 97
-9999 mem: location 1004 is 98
-9999 mem: location 1005 is 99
+9999 mem: location 1001 is 9
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 98
+9999 mem: location 1004 is 99
+9999 mem: location 1005 is 10
 9999 mem: location 1010 is 0
 9999 mem: location 1008 is 1000
 9999 mem: location 1010 is 0
 9999 run: address to copy is 1001
 9999 run: its type is 4
-9999 mem: location 1001 is 32
-9999 mem: storing 32 in location 1013
+9999 mem: location 1001 is 9
+9999 mem: storing 9 in location 1013
  102 run: whitespace?:boolean <- space? curr:character
-9999 mem: location 1013 is 32
+9999 mem: location 1013 is 9
  103 run: default-space:array:address:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1037
  103 run: c:character <- next-ingredient 
-9999 mem: storing 32 in location 1039
+9999 mem: storing 9 in location 1039
  103 run: result:boolean <- equal c:character, 32:literal/space
-9999 mem: location 1039 is 32
+9999 mem: location 1039 is 9
+9999 mem: storing 0 in location 1040
+ 103 run: jump-if result:boolean, +reply:label
+9999 mem: location 1040 is 0
+9999 run: jump-if fell through
+ 103 run: result:boolean <- equal c:character, 10:literal/newline
+9999 mem: location 1039 is 9
+9999 mem: storing 0 in location 1040
+ 103 run: jump-if result:boolean, +reply:label
+9999 mem: location 1040 is 0
+9999 run: jump-if fell through
+ 103 run: result:boolean <- equal c:character, 9:literal/tab
+9999 mem: location 1039 is 9
 9999 mem: storing 1 in location 1040
  103 run: jump-if result:boolean, +reply:label
 9999 mem: location 1040 is 1
@@ -116,236 +135,189 @@ after-brace: copy ...
  102 run: curr:character <- index s:address:array:character/deref, start:number
 9999 mem: location 1008 is 1000
 9999 mem: location 1000 is 5
-9999 mem: location 1001 is 32
-9999 mem: location 1002 is 32
-9999 mem: location 1003 is 97
-9999 mem: location 1004 is 98
-9999 mem: location 1005 is 99
+9999 mem: location 1001 is 9
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 98
+9999 mem: location 1004 is 99
+9999 mem: location 1005 is 10
 9999 mem: location 1010 is 1
 9999 mem: location 1008 is 1000
 9999 mem: location 1010 is 1
 9999 run: address to copy is 1002
 9999 run: its type is 4
-9999 mem: location 1002 is 32
-9999 mem: storing 32 in location 1013
- 102 run: whitespace?:boolean <- space? curr:character
-9999 mem: location 1013 is 32
- 103 run: default-space:array:address:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 1068
- 103 run: c:character <- next-ingredient 
-9999 mem: storing 32 in location 1070
- 103 run: result:boolean <- equal c:character, 32:literal/space
-9999 mem: location 1070 is 32
-9999 mem: storing 1 in location 1071
- 103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1071 is 1
-9999 run: jumping to instruction 57
- 103 run: reply result:boolean
-9999 mem: location 1071 is 1
-9999 run: result 0 is 1
-9999 mem: storing 1 in location 1014
- 102 run: break-unless whitespace?:boolean, 
-9999 mem: location 1014 is 1
-9999 run: jump-unless fell through
- 102 run: start:number <- add start:number, 1:literal
-9999 mem: location 1010 is 1
-9999 mem: storing 2 in location 1010
- 102 run: loop 
-9999 run: jumping to instruction 5
- 102 run: at-end?:boolean <- greater-or-equal start:number, len:number
-9999 mem: location 1010 is 2
-9999 mem: location 1009 is 5
-9999 mem: storing 0 in location 1011
- 102 run: break-unless at-end?:boolean, 
-9999 mem: location 1011 is 0
-9999 run: jumping to instruction 10
- 102 run: curr:character <- index s:address:array:character/deref, start:number
-9999 mem: location 1008 is 1000
-9999 mem: location 1000 is 5
-9999 mem: location 1001 is 32
-9999 mem: location 1002 is 32
-9999 mem: location 1003 is 97
-9999 mem: location 1004 is 98
-9999 mem: location 1005 is 99
-9999 mem: location 1010 is 2
-9999 mem: location 1008 is 1000
-9999 mem: location 1010 is 2
-9999 run: address to copy is 1003
-9999 run: its type is 4
-9999 mem: location 1003 is 97
+9999 mem: location 1002 is 97
 9999 mem: storing 97 in location 1013
  102 run: whitespace?:boolean <- space? curr:character
 9999 mem: location 1013 is 97
  103 run: default-space:array:address:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 1099
+9999 mem: new alloc: 1068
  103 run: c:character <- next-ingredient 
-9999 mem: storing 97 in location 1101
+9999 mem: storing 97 in location 1070
  103 run: result:boolean <- equal c:character, 32:literal/space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 9:literal/tab
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 13:literal/carriage-return
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 11:literal/ctrl-k
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 12:literal/ctrl-l
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 133:literal/ctrl-0085
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 160:literal/no-break-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 5760:literal/ogham-space-mark
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8192:literal/en-quad
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8193:literal/em-quad
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8194:literal/en-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8195:literal/em-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8196:literal/three-per-em-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8197:literal/four-per-em-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8198:literal/six-per-em-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8199:literal/figure-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8200:literal/punctuation-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8201:literal/thin-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8202:literal/hair-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8206:literal/left-to-right
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8207:literal/right-to-left
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8232:literal/line-separator
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8233:literal/paragraph-separator
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8239:literal/narrow-no-break-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 8287:literal/medium-mathematical-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: result:boolean <- equal c:character, 12288:literal/ideographic-space
-9999 mem: location 1101 is 97
-9999 mem: storing 0 in location 1102
+9999 mem: location 1070 is 97
+9999 mem: storing 0 in location 1071
  103 run: jump-if result:boolean, +reply:label
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: jump-if fell through
  103 run: reply result:boolean
-9999 mem: location 1102 is 0
+9999 mem: location 1071 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1014
  102 run: break-unless whitespace?:boolean, 
@@ -356,24 +328,76 @@ after-brace: copy ...
 9999 mem: storing 4 in location 1015
  102 run: not-at-start?:boolean <- greater-than end:number, start:number
 9999 mem: location 1015 is 4
-9999 mem: location 1010 is 2
+9999 mem: location 1010 is 1
 9999 mem: storing 1 in location 1016
  102 run: assert not-at-start?:boolean, [end ran up against start]
 9999 mem: location 1016 is 1
  102 run: curr:character <- index s:address:array:character/deref, end:number
 9999 mem: location 1008 is 1000
 9999 mem: location 1000 is 5
-9999 mem: location 1001 is 32
-9999 mem: location 1002 is 32
-9999 mem: location 1003 is 97
-9999 mem: location 1004 is 98
-9999 mem: location 1005 is 99
+9999 mem: location 1001 is 9
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 98
+9999 mem: location 1004 is 99
+9999 mem: location 1005 is 10
 9999 mem: location 1015 is 4
 9999 mem: location 1008 is 1000
 9999 mem: location 1015 is 4
 9999 run: address to copy is 1005
 9999 run: its type is 4
-9999 mem: location 1005 is 99
+9999 mem: location 1005 is 10
+9999 mem: storing 10 in location 1013
+ 102 run: whitespace?:boolean <- space? curr:character
+9999 mem: location 1013 is 10
+ 103 run: default-space:array:address:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1099
+ 103 run: c:character <- next-ingredient 
+9999 mem: storing 10 in location 1101
+ 103 run: result:boolean <- equal c:character, 32:literal/space
+9999 mem: location 1101 is 10
+9999 mem: storing 0 in location 1102
+ 103 run: jump-if result:boolean, +reply:label
+9999 mem: location 1102 is 0
+9999 run: jump-if fell through
+ 103 run: result:boolean <- equal c:character, 10:literal/newline
+9999 mem: location 1101 is 10
+9999 mem: storing 1 in location 1102
+ 103 run: jump-if result:boolean, +reply:label
+9999 mem: location 1102 is 1
+9999 run: jumping to instruction 57
+ 103 run: reply result:boolean
+9999 mem: location 1102 is 1
+9999 run: result 0 is 1
+9999 mem: storing 1 in location 1014
+ 102 run: break-unless whitespace?:boolean, 
+9999 mem: location 1014 is 1
+9999 run: jump-unless fell through
+ 102 run: end:number <- subtract end:number, 1:literal
+9999 mem: location 1015 is 4
+9999 mem: storing 3 in location 1015
+ 102 run: loop 
+9999 run: jumping to instruction 19
+ 102 run: not-at-start?:boolean <- greater-than end:number, start:number
+9999 mem: location 1015 is 3
+9999 mem: location 1010 is 1
+9999 mem: storing 1 in location 1016
+ 102 run: assert not-at-start?:boolean, [end ran up against start]
+9999 mem: location 1016 is 1
+ 102 run: curr:character <- index s:address:array:character/deref, end:number
+9999 mem: location 1008 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 9
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 98
+9999 mem: location 1004 is 99
+9999 mem: location 1005 is 10
+9999 mem: location 1015 is 3
+9999 mem: location 1008 is 1000
+9999 mem: location 1015 is 3
+9999 run: address to copy is 1004
+9999 run: its type is 4
+9999 mem: location 1004 is 99
 9999 mem: storing 99 in location 1013
  102 run: whitespace?:boolean <- space? curr:character
 9999 mem: location 1013 is 99
@@ -552,8 +576,8 @@ after-brace: copy ...
 9999 mem: location 1014 is 0
 9999 run: jumping to instruction 26
  102 run: new-len:number <- subtract end:number, start:number, -1:literal
-9999 mem: location 1015 is 4
-9999 mem: location 1010 is 2
+9999 mem: location 1015 is 3
+9999 mem: location 1010 is 1
 9999 mem: storing 3 in location 1017
  102 run: result:address:array:character <- new character:type, new-len:number
 9999 mem: location 1017 is 3
@@ -561,13 +585,13 @@ after-brace: copy ...
 9999 mem: new alloc: 1161
 9999 mem: storing 1161 in location 1012
  102 run: i:number <- copy start:number
-9999 mem: location 1010 is 2
-9999 mem: storing 2 in location 1018
+9999 mem: location 1010 is 1
+9999 mem: storing 1 in location 1018
  102 run: j:number <- copy 0:literal
 9999 mem: storing 0 in location 1019
  102 run: done?:boolean <- greater-than i:number, end:number
-9999 mem: location 1018 is 2
-9999 mem: location 1015 is 4
+9999 mem: location 1018 is 1
+9999 mem: location 1015 is 3
 9999 mem: storing 0 in location 1020
  102 run: break-if done?:boolean, 
 9999 mem: location 1020 is 0
@@ -575,17 +599,17 @@ after-brace: copy ...
  102 run: src:character <- index s:address:array:character/deref, i:number
 9999 mem: location 1008 is 1000
 9999 mem: location 1000 is 5
-9999 mem: location 1001 is 32
-9999 mem: location 1002 is 32
-9999 mem: location 1003 is 97
-9999 mem: location 1004 is 98
-9999 mem: location 1005 is 99
-9999 mem: location 1018 is 2
+9999 mem: location 1001 is 9
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 98
+9999 mem: location 1004 is 99
+9999 mem: location 1005 is 10
+9999 mem: location 1018 is 1
 9999 mem: location 1008 is 1000
-9999 mem: location 1018 is 2
-9999 run: address to copy is 1003
+9999 mem: location 1018 is 1
+9999 run: address to copy is 1002
 9999 run: its type is 4
-9999 mem: location 1003 is 97
+9999 mem: location 1002 is 97
 9999 mem: storing 97 in location 1021
  102 run: dest:address:character <- index-address result:address:array:character/deref, j:number
 9999 mem: location 1012 is 1161
@@ -602,16 +626,16 @@ after-brace: copy ...
 9999 mem: location 1022 is 1162
 9999 mem: storing 97 in location 1162
  102 run: i:number <- add i:number, 1:literal
-9999 mem: location 1018 is 2
-9999 mem: storing 3 in location 1018
+9999 mem: location 1018 is 1
+9999 mem: storing 2 in location 1018
  102 run: j:number <- add j:number, 1:literal
 9999 mem: location 1019 is 0
 9999 mem: storing 1 in location 1019
  102 run: loop 
 9999 run: jumping to instruction 32
  102 run: done?:boolean <- greater-than i:number, end:number
-9999 mem: location 1018 is 3
-9999 mem: location 1015 is 4
+9999 mem: location 1018 is 2
+9999 mem: location 1015 is 3
 9999 mem: storing 0 in location 1020
  102 run: break-if done?:boolean, 
 9999 mem: location 1020 is 0
@@ -619,17 +643,17 @@ after-brace: copy ...
  102 run: src:character <- index s:address:array:character/deref, i:number
 9999 mem: location 1008 is 1000
 9999 mem: location 1000 is 5
-9999 mem: location 1001 is 32
-9999 mem: location 1002 is 32
-9999 mem: location 1003 is 97
-9999 mem: location 1004 is 98
-9999 mem: location 1005 is 99
-9999 mem: location 1018 is 3
+9999 mem: location 1001 is 9
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 98
+9999 mem: location 1004 is 99
+9999 mem: location 1005 is 10
+9999 mem: location 1018 is 2
 9999 mem: location 1008 is 1000
-9999 mem: location 1018 is 3
-9999 run: address to copy is 1004
+9999 mem: location 1018 is 2
+9999 run: address to copy is 1003
 9999 run: its type is 4
-9999 mem: location 1004 is 98
+9999 mem: location 1003 is 98
 9999 mem: storing 98 in location 1021
  102 run: dest:address:character <- index-address result:address:array:character/deref, j:number
 9999 mem: location 1012 is 1161
@@ -646,16 +670,16 @@ after-brace: copy ...
 9999 mem: location 1022 is 1163
 9999 mem: storing 98 in location 1163
  102 run: i:number <- add i:number, 1:literal
-9999 mem: location 1018 is 3
-9999 mem: storing 4 in location 1018
+9999 mem: location 1018 is 2
+9999 mem: storing 3 in location 1018
  102 run: j:number <- add j:number, 1:literal
 9999 mem: location 1019 is 1
 9999 mem: storing 2 in location 1019
  102 run: loop 
 9999 run: jumping to instruction 32
  102 run: done?:boolean <- greater-than i:number, end:number
-9999 mem: location 1018 is 4
-9999 mem: location 1015 is 4
+9999 mem: location 1018 is 3
+9999 mem: location 1015 is 3
 9999 mem: storing 0 in location 1020
  102 run: break-if done?:boolean, 
 9999 mem: location 1020 is 0
@@ -663,17 +687,17 @@ after-brace: copy ...
  102 run: src:character <- index s:address:array:character/deref, i:number
 9999 mem: location 1008 is 1000
 9999 mem: location 1000 is 5
-9999 mem: location 1001 is 32
-9999 mem: location 1002 is 32
-9999 mem: location 1003 is 97
-9999 mem: location 1004 is 98
-9999 mem: location 1005 is 99
-9999 mem: location 1018 is 4
+9999 mem: location 1001 is 9
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 98
+9999 mem: location 1004 is 99
+9999 mem: location 1005 is 10
+9999 mem: location 1018 is 3
 9999 mem: location 1008 is 1000
-9999 mem: location 1018 is 4
-9999 run: address to copy is 1005
+9999 mem: location 1018 is 3
+9999 run: address to copy is 1004
 9999 run: its type is 4
-9999 mem: location 1005 is 99
+9999 mem: location 1004 is 99
 9999 mem: storing 99 in location 1021
  102 run: dest:address:character <- index-address result:address:array:character/deref, j:number
 9999 mem: location 1012 is 1161
@@ -690,16 +714,16 @@ after-brace: copy ...
 9999 mem: location 1022 is 1164
 9999 mem: storing 99 in location 1164
  102 run: i:number <- add i:number, 1:literal
-9999 mem: location 1018 is 4
-9999 mem: storing 5 in location 1018
+9999 mem: location 1018 is 3
+9999 mem: storing 4 in location 1018
  102 run: j:number <- add j:number, 1:literal
 9999 mem: location 1019 is 2
 9999 mem: storing 3 in location 1019
  102 run: loop 
 9999 run: jumping to instruction 32
  102 run: done?:boolean <- greater-than i:number, end:number
-9999 mem: location 1018 is 5
-9999 mem: location 1015 is 4
+9999 mem: location 1018 is 4
+9999 mem: location 1015 is 3
 9999 mem: storing 1 in location 1020
  102 run: break-if done?:boolean, 
 9999 mem: location 1020 is 1
