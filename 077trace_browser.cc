@@ -43,31 +43,37 @@ void start_trace_browser() {
     long long int key = event.key ? event.key : event.ch;
     if (key == 'q' || key == 'Q') break;
     if (key == 'j') {
+      // move cursor one line down
       if (Display_row < Last_printed_row) ++Display_row;
     }
     if (key == 'k') {
+      // move cursor one line up
       if (Display_row > 0) --Display_row;
     }
     if (key == 'H') {
+      // move cursor to top of screen
       Display_row = 0;
     }
     if (key == 'M') {
+      // move cursor to center of screen
       Display_row = tb_height()/2;
     }
     if (key == 'L') {
+      // move cursor to bottom of screen
       Display_row = tb_height()-1;
     }
     if (key == 'J') {
+      // page-down
       if (Trace_index.find(tb_height()-1) != Trace_index.end()) {
         Top_of_screen = Trace_index[tb_height()-1]+1;
         refresh_screen_rows();
       }
     }
     if (key == 'K') {
+      // page-up is more convoluted
       int max = tb_height();
 //?       tb_shutdown(); //? 1
 //?       cerr << "page-up: Top_of_screen is currently " << Top_of_screen << '\n'; //? 1
-      // page-up is more convoluted
       for (int screen_row = max; screen_row > 0 && Top_of_screen > 0; --screen_row) {
         --Top_of_screen;
         if (Top_of_screen <= 0) break;
@@ -80,6 +86,7 @@ void start_trace_browser() {
         refresh_screen_rows();
     }
     if (key == TB_KEY_CARRIAGE_RETURN) {
+      // expand lines under current by one level
 //?       tb_shutdown();
       assert(Trace_index.find(Display_row) != Trace_index.end());
       long long int start_index = Trace_index[Display_row];
@@ -109,6 +116,7 @@ void start_trace_browser() {
       refresh_screen_rows();
     }
     if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
+      // collapse all lines under current
       assert(Trace_index.find(Display_row) != Trace_index.end());
       long long int start_index = Trace_index[Display_row];
       long long int index = 0;
