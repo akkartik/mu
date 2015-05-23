@@ -9,11 +9,25 @@ case _BROWSE_TRACE: {
 }
 
 :(before "End Globals")
+set<long long int> Visible;
 long long int Top_of_screen = 0;
 
 :(code)
 void start_trace_browser() {
   if (!Trace_stream) return;
+  cerr << "computing depth to display\n";
+  long long int min_depth = 9999;
+  for (long long int i = 0; i < SIZE(Trace_stream->past_lines); ++i) {
+    trace_line& curr_line = Trace_stream->past_lines.at(i);
+    if (curr_line.depth == 0) continue;
+    if (curr_line.depth < min_depth) min_depth = curr_line.depth;
+  }
+  cerr << "depth is " << min_depth << '\n';
+  cerr << "computing lines to display\n";
+  for (long long int i = 0; i < SIZE(Trace_stream->past_lines); ++i) {
+    if (Trace_stream->past_lines.at(i).depth == min_depth)
+      Visible.insert(i);
+  }
   tb_init();
   Display_row = Display_column = 0;
   struct tb_event event;
@@ -32,7 +46,7 @@ void render() {
   long long int screen_row = 0, index = 0;
   for (screen_row = 0, index = Top_of_screen; screen_row < tb_height() && index < SIZE(Trace_stream->past_lines); ++screen_row, ++index) {
     // skip lines without depth for now
-    while (Trace_stream->past_lines.at(index).depth == 0) {
+    while (Visible.find(index) == Visible.end()) {
       ++index;
       if (index >= SIZE(Trace_stream->past_lines)) goto done;
     }
@@ -58,7 +72,7 @@ void render_line(int screen_row, const string& s) {
   for (col = 0; col < tb_width() && col < SIZE(s); ++col) {
     char c = s.at(col);
     if (c == '\n') c = ';';  // replace newlines with semi-colons
-    tb_change_cell(col, screen_row, s.at(col), TB_WHITE, TB_DEFAULT);
+    tb_change_cell(col, screen_row, c, TB_WHITE, TB_DEFAULT);
   }
   for (; col < tb_width(); ++col) {
     tb_change_cell(col, screen_row, ' ', TB_WHITE, TB_DEFAULT);
