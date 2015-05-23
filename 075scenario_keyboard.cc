@@ -30,6 +30,10 @@ const long long int KEYBOARD = Next_predefined_global_for_scenarios++;
 :(before "End Predefined Scenario Locals In Run")
 Name[tmp_recipe.at(0)]["keyboard"] = KEYBOARD;
 
+//: allow naming just for 'keyword'
+:(before "End is_special_name Cases")
+if (s == "keyboard") return true;
+
 :(before "End Rewrite Instruction(curr)")
 // rewrite `assume-keyboard string` to
 //   ```
