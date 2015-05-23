@@ -25,7 +25,7 @@ recipe main [
 ## But enough about mu. Here's what it looks like to run the chessboard program.
 
 scenario print-board-and-read-move [
-  $close-trace  # administrivia: most scenarios save and check traces, but this one gets too large/slow
+#?   $close-trace  # administrivia: most scenarios save and check traces, but this one gets too large/slow
   # we'll make the screen really wide because the program currently prints out a long line
   assume-screen 120:literal/width, 20:literal/height
   # initialize keyboard to type in a move
@@ -33,6 +33,8 @@ scenario print-board-and-read-move [
 ]
   run [
     screen:address, keyboard:address <- chessboard screen:address, keyboard:address
+    $browse-trace
+    $close-trace
     # icon for the cursor
     screen:address <- print-character screen:address, 9251:literal  # '␣'
   ]
