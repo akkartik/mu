@@ -27,7 +27,7 @@ void start_trace_browser() {
   cerr << "depth is " << min_depth << '\n';
   cerr << "computing lines to display\n";
   for (long long int i = 0; i < SIZE(Trace_stream->past_lines); ++i) {
-    if (Trace_stream->past_lines.at(i).depth < 110 && Trace_stream->past_lines.at(i).depth) //== min_depth)
+    if (Trace_stream->past_lines.at(i).depth == min_depth)
       Visible.insert(i);
   }
   tb_init();
@@ -78,6 +78,39 @@ void start_trace_browser() {
 //?       exit(0); //? 1
       if (Top_of_screen > 0)
         refresh_screen_rows();
+    }
+    if (key == TB_KEY_CARRIAGE_RETURN) {
+//?       tb_shutdown();
+      assert(Trace_index.find(Display_row) != Trace_index.end());
+      long long int start_index = Trace_index[Display_row];
+//?       cerr << "start_index is " << start_index << '\n';
+      long long int index = 0;
+      // simultaneously compute end_index and min_depth
+      int min_depth = 9999;
+      for (index = start_index+1; index < SIZE(Trace_stream->past_lines); ++index) {
+        if (Visible.find(index) != Visible.end()) break;
+        trace_line& curr_line = Trace_stream->past_lines.at(index);
+        if (curr_line.depth == 0) continue;
+        assert(curr_line.depth > Trace_stream->past_lines.at(start_index).depth);
+        if (curr_line.depth < min_depth) min_depth = curr_line.depth;
+      }
+//?       cerr << "min_depth is " << min_depth << '\n';
+      long long int end_index = index;
+//?       cerr << "end_index is " << end_index << '\n';
+      // min_depth must be greater than the depths of the end-points
+      assert(min_depth > Trace_stream->past_lines.at(start_index).depth);
+      if (end_index < SIZE(Trace_stream->past_lines))
+        assert(min_depth > Trace_stream->past_lines.at(end_index).depth);
+      // mark as visible all intervening indices at min_depth
+      for (index = start_index; index < end_index; ++index) {
+        trace_line& curr_line = Trace_stream->past_lines.at(index);
+        if (curr_line.depth == min_depth) {
+//?           cerr << "adding " << index << '\n';
+          Visible.insert(index);
+        }
+      }
+//?       exit(0);
+      refresh_screen_rows();
     }
   }
   tb_shutdown();
