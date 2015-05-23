@@ -97,10 +97,6 @@ void start_trace_browser() {
 //?       cerr << "min_depth is " << min_depth << '\n';
       long long int end_index = index;
 //?       cerr << "end_index is " << end_index << '\n';
-      // min_depth must be greater than the depths of the end-points
-      assert(min_depth > Trace_stream->past_lines.at(start_index).depth);
-      if (end_index < SIZE(Trace_stream->past_lines))
-        assert(min_depth > Trace_stream->past_lines.at(end_index).depth);
       // mark as visible all intervening indices at min_depth
       for (index = start_index; index < end_index; ++index) {
         trace_line& curr_line = Trace_stream->past_lines.at(index);
