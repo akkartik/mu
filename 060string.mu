@@ -311,9 +311,10 @@ scenario integer-to-decimal-digit-negative [
   ]
 ]
 
+# result:address:array:character <- string-append a:address:array:character, b:address:array:character
 recipe string-append [
   default-space:address:array:location <- new location:type, 30:literal
-  # result = new string[a.length + b.length]
+  # result = new character[a.length + b.length]
   a:address:array:character <- next-ingredient
   a-len:number <- length a:address:array:character/deref
   b:address:array:character <- next-ingredient
@@ -494,9 +495,11 @@ scenario interpolate-at-end [
   ]
 ]
 
+# result:boolean <- space? c:character
 recipe space? [
   default-space:array:address:location <- new location:type, 30:literal
   c:character <- next-ingredient
+  # most common case first
   result:boolean <- equal c:character, 32:literal/space
   jump-if result:boolean, +reply:label
   result:boolean <- equal c:character, 10:literal/newline
@@ -557,6 +560,7 @@ recipe space? [
   reply result:boolean
 ]
 
+# result:address:array:character <- trim s:address:array:character
 recipe trim [
   default-space:array:address:location <- new location:type, 30:literal
   s:address:array:character <- next-ingredient
@@ -587,8 +591,8 @@ recipe trim [
     end:number <- subtract end:number, 1:literal
     loop
   }
-  # create result
-  new-len:number <- subtract end:number, start:number, -1:literal  # end-start+1
+  # result = new character[end+1 - start]
+  new-len:number <- subtract end:number, start:number, -1:literal
   result:address:array:character <- new character:type, new-len:number
   # i = start, j = 0
   i:number <- copy start:number
