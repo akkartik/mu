@@ -84,9 +84,10 @@ default: {
     raise << "undefined operation " << current_instruction().operation << ": " << current_instruction().to_string() << '\n';
     break;
   }
+  Current_routine->calls.push_front(call(current_instruction().operation));
+complete_call:
   ++Callstack_depth;
   assert(Callstack_depth < 9000);  // 9998-101 plus cushion
-  Current_routine->calls.push_front(call(current_instruction().operation));
   continue;  // not done with caller; don't increment current_step_index()
 }
 
