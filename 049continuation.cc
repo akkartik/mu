@@ -89,20 +89,25 @@ recipe loop-body [
 -mem: storing 4 in location 1
 
 //:: A variant of continuations is the 'delimited' continuation that can be called like any other recipe.
-//: In mu, this is constructed out of three primitives:
-//:   'reset-and-call' lays down a 'reset mark' on the call stack
-//:   'current-delimited_continuation' copies the top of the stack until the reset mark
-//:   'call-continuation' calls a delimited continuation like a normal recipe
+//:
+//: In mu, this is constructed out of two primitives:
+//:
+//:  * 'create-delimited-continuation' lays down a mark on the call
+//:    stack and calls the provided function (it is sometimes called 'prompt')
+//:  * 'reply-current-continuation' copies the top of the stack until the
+//:    mark, and returns it as the response of create-delimited-continuation
+//:    (which might be a distant ancestor on the call stack; intervening calls
+//:    don't return)
+//:
+//: The resulting slice of the stack can now be called just like a regular
+//: function.
 
-//: todo: come up with a simpler, more obviously correct test
 :(scenario delimited_continuation)
-# too hacky to distinguish initial call from later calls by #ingredients?
 recipe main [
-#?   $start-tracing
-  1:continuation, 2:number <- reset-and-call f:recipe  # initial call without ingredients
+  1:continuation <- create-delimited-continuation f:recipe 12:literal  # 12 is an argument to f
   2:number <- copy 5:literal
   {
-    1:continuation, 2:number <- call-continuation 1:continuation, 2:number  # subsequent calls
+    2:number <- call-delimited-continuation 1:continuation, 2:number  # 2 is an argument to g, the 'top' of the continuation
     3:boolean <- greater-or-equal 2:number, 8:literal
     break-if 3:boolean
     loop
@@ -110,34 +115,29 @@ recipe main [
 ]
 
 recipe f [
-  11:continuation, 12:number <- g
-  # calls of the continuation end here
-  reply 11:continuation, 12:number
+  11:number <- g
+  reply 11:number
 ]
 
-# when constructing the continuation, just returns 0
-# on subsequent calls of the continuation, increments the number passed in
 recipe g [
-  21:continuation <- current-delimited-continuation
+  reply-delimited-continuation
   # calls of the continuation start from here
-  22:number, 23:boolean/found? <- next-ingredient
-  {
-    break-if 23:boolean/found?
-    reply 21:continuation, 0:literal
-  }
+  22:number <- next-ingredient
   22:number <- add 22:number, 1:literal
-  reply 21:continuation, 22:number
+  reply 22:number
 ]
-+mem: storing 0 in location 2
--mem: storing 4 in location 2
++run: 2:number <- copy 5:literal
 +mem: storing 5 in location 2
++run: 2:number <- call-delimited-continuation 1:continuation, 2:number
 +mem: storing 6 in location 2
++run: 2:number <- call-delimited-continuation 1:continuation, 2:number
 +mem: storing 7 in location 2
++run: 2:number <- call-delimited-continuation 1:continuation, 2:number
 +mem: storing 8 in location 2
 -mem: storing 9 in location 2
 
-//: 'reset-and-call' is like 'call' except it inserts a label to the call stack
-//: before performing the call
+//: 'create-delimited-continuation' is like 'call' except it adds a 'reset' mark to
+//: the call stack
 
 :(before "End call Fields")
 bool is_reset;
@@ -147,11 +147,11 @@ is_reset = false;
 //: like call, but mark the current call as a 'reset' call before pushing the next one on it
 
 :(before "End Primitive Recipe Declarations")
-RESET_AND_CALL,
+CREATE_DELIMITED_CONTINUATION,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["reset-and-call"] = RESET_AND_CALL;
+Recipe_number["create-delimited-continuation"] = CREATE_DELIMITED_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
-case RESET_AND_CALL: {
+case CREATE_DELIMITED_CONTINUATION: {
   Current_routine->calls.front().is_reset = true;
   ++Callstack_depth;
   assert(Callstack_depth < 9000);  // 9998-101 plus cushion
@@ -163,7 +163,8 @@ case RESET_AND_CALL: {
   continue;  // not done with caller; don't increment current_step_index()
 }
 
-//: create a copy of the slice of current call stack until a 'reset' call
+//: save the slice of current call stack until the 'create-delimited-continuation'
+//: call, and return it as the result.
 //: todo: implement delimited continuations in mu's memory
 :(before "End Globals")
 map<long long int, call_stack> Delimited_continuation;
@@ -173,33 +174,41 @@ Delimited_continuation.clear();
 Next_delimited_continuation_id = 0;
 
 :(before "End Primitive Recipe Declarations")
-CURRENT_DELIMITED_CONTINUATION,
+REPLY_DELIMITED_CONTINUATION,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["current-delimited-continuation"] = CURRENT_DELIMITED_CONTINUATION;
+Recipe_number["reply-delimited-continuation"] = REPLY_DELIMITED_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
-case CURRENT_DELIMITED_CONTINUATION: {
-  // copy the current call stack until the first reset call
-  for (call_stack::iterator p = Current_routine->calls.begin(); p != Current_routine->calls.end(); ++p) {
-//?     cerr << "copying " << Recipe[p->running_recipe].name << '\n'; //? 1
-    if (p->is_reset) break;
-    Delimited_continuation[Next_delimited_continuation_id].push_back(*p);  // deep copy because calls have no pointers
-  }
-  // make sure calling the copy doesn't spawn the same continuation again
-  ++Delimited_continuation[Next_delimited_continuation_id].front().running_step_index;
+case REPLY_DELIMITED_CONTINUATION: {
+  // manual prototype containing '::'
+  call_stack::iterator find_reset(call_stack& c);
+  // copy the current call stack until the most recent 'reset' call
+  call_stack::iterator reset = find_reset(Current_routine->calls);
+  assert(reset != Current_routine->calls.end());
+  Delimited_continuation[Next_delimited_continuation_id] = call_stack(Current_routine->calls.begin(), reset);
+  while (Current_routine->calls.begin() != reset) Current_routine->calls.pop_front();
+  // return it as the result of the 'reset' call
   products.resize(1);
   products.at(0).push_back(Next_delimited_continuation_id);
   ++Next_delimited_continuation_id;
-  trace("current-continuation") << "new continuation " << Next_continuation_id;
+  // refresh instruction_counter to caller's step_index
+  instruction_counter = current_step_index();
   break;
+}
+
+:(code)
+call_stack::iterator find_reset(call_stack& c) {
+  for (call_stack::iterator p = c.begin(); p != c.end(); ++p)
+    if (p->is_reset) return p;
+  return c.end();
 }
 
 //: copy slice of calls back on to current call stack
 :(before "End Primitive Recipe Declarations")
-CALL_CONTINUATION,
+CALL_DELIMITED_CONTINUATION,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["call-continuation"] = CALL_CONTINUATION;
+Recipe_number["call-delimited-continuation"] = CALL_DELIMITED_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
-case CALL_CONTINUATION: {
+case CALL_DELIMITED_CONTINUATION: {
   ++Callstack_depth;
   assert(Callstack_depth < 9000);  // 9998-101 plus cushion
   assert(scalar(ingredients.at(0)));
