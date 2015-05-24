@@ -45,7 +45,7 @@ case CONTINUE_FROM: {
   Current_routine->calls = Continuation[c];  // deep copy because calls have no pointers
   // refresh instruction_counter to next instruction after current-continuation
   instruction_counter = current_step_index()+1;
-  continue;  // not done with caller; don't increment current_step_index()
+  continue;  // not done with caller; don't increment current_step_index() further
 }
 
 :(scenario continuation)
