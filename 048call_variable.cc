@@ -28,14 +28,9 @@ CALL,
 Recipe_number["call"] = CALL;
 :(before "End Primitive Recipe Implementations")
 case CALL: {
-  ++Callstack_depth;
-  assert(Callstack_depth < 9000);  // 9998-101 plus cushion
   recipe_number r = 0;
-//?   cerr << current_instruction().to_string() << '\n'; //? 1
-//?   cerr << current_instruction().ingredients.at(0).to_string() << '\n'; //? 1
   if (current_instruction().ingredients.at(0).initialized) {
     assert(scalar(ingredients.at(0)));
-//?     cerr << current_instruction().ingredients.at(0).value << '\n'; //? 1
     // 'call' received an integer recipe_number
     r = ingredients.at(0).at(0);
   }
@@ -43,11 +38,7 @@ case CALL: {
     // 'call' received a literal recipe name
     r = Recipe_number[current_instruction().ingredients.at(0).name];
   }
-  call callee(r);
-  for (long long int i = 1; i < SIZE(ingredients); ++i) {
-//?     cerr << ingredients.at(i).at(0) << '\n'; //? 1
-    callee.ingredient_atoms.push_back(ingredients.at(i));
-  }
-  Current_routine->calls.push_front(callee);
-  continue;  // not done with caller; don't increment current_step_index()
+  Current_routine->calls.push_front(call(r));
+  ingredients.erase(ingredients.begin());  // drop the function
+  goto complete_call;
 }

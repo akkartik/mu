@@ -209,18 +209,11 @@ CALL_DELIMITED_CONTINUATION,
 Recipe_number["call-delimited-continuation"] = CALL_DELIMITED_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
 case CALL_DELIMITED_CONTINUATION: {
-  ++Callstack_depth;
-  assert(Callstack_depth < 9000);  // 9998-101 plus cushion
   assert(scalar(ingredients.at(0)));
   assert(Delimited_continuation.find(ingredients.at(0).at(0)) != Delimited_continuation.end());
   const call_stack& new_calls = Delimited_continuation[ingredients.at(0).at(0)];
-  for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p) {
-//?     cerr << "copying back " << Recipe[p->running_recipe].name << '\n'; //? 1
+  for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p)
     Current_routine->calls.push_front(*p);
-  }
-  for (long long int i = /*skip continuation*/1; i < SIZE(ingredients); ++i) {
-//?     cerr << "copying ingredient " << i << ": " << ingredients.at(i).at(0) << '\n'; //? 1
-    Current_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
-  }
-  continue;  // not done with caller; don't increment current_step_index()
+  ingredients.erase(ingredients.begin());  // drop the function
+  goto complete_call;
 }

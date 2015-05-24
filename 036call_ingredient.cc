@@ -26,12 +26,10 @@ long long int next_ingredient_to_process;
 :(before "End call Constructor")
 next_ingredient_to_process = 0;
 
-:(replace "Current_routine->calls.push_front(call(current_instruction().operation))" following "End Primitive Recipe Implementations")
-call callee(current_instruction().operation);
+:(after "complete_call:")
 for (long long int i = 0; i < SIZE(ingredients); ++i) {
-  callee.ingredient_atoms.push_back(ingredients.at(i));
+  Current_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
 }
-Current_routine->calls.push_front(callee);
 
 :(before "End Primitive Recipe Declarations")
 NEXT_INGREDIENT,
