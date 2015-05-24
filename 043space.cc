@@ -42,8 +42,8 @@ if (s == "default-space") return true;
 //:: now implement space support
 :(before "End call Fields")
 long long int default_space;
-:(replace "call(recipe_number r) :running_recipe(r)")
-call(recipe_number r) :running_recipe(r), running_step_index(0), next_ingredient_to_process(0), default_space(0) {}
+:(before "End call Constructor")
+default_space = 0;
 
 :(replace "reagent r = x" following "reagent canonize(reagent x)")
 reagent r = absolutize(x);
