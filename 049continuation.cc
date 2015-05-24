@@ -111,6 +111,7 @@ recipe main [
 
 recipe f [
   11:continuation, 12:number <- g
+  # calls of the continuation end here
   reply 11:continuation, 12:number
 ]
 
