@@ -115,25 +115,42 @@ recipe main [
 ]
 
 recipe f [
-  11:number <- g
-  reply 11:number
+  11:number <- next-ingredient
+  12:number <- g 11:number
+  reply 12:number
 ]
 
 recipe g [
+  21:number <- next-ingredient
+  rewind-ingredients
   reply-delimited-continuation
   # calls of the continuation start from here
   22:number <- next-ingredient
   22:number <- add 22:number, 1:literal
   reply 22:number
 ]
+#? ?
+# first call of 'g' executes the part before reply-delimited-continuation
++mem: storing 12 in location 21
 +run: 2:number <- copy 5:literal
 +mem: storing 5 in location 2
+# calls of the continuation execute the part after reply-delimited-continuation
 +run: 2:number <- call-delimited-continuation 1:continuation, 2:number
++mem: storing 5 in location 22
 +mem: storing 6 in location 2
 +run: 2:number <- call-delimited-continuation 1:continuation, 2:number
++mem: storing 6 in location 22
 +mem: storing 7 in location 2
 +run: 2:number <- call-delimited-continuation 1:continuation, 2:number
++mem: storing 7 in location 22
 +mem: storing 8 in location 2
+# first call of 'g' does not execute the part after reply-delimited-continuation
+-mem: storing 12 in location 22
+# calls of the continuation don't execute the part before reply-delimited-continuation
+-mem: storing 5 in location 21
+-mem: storing 6 in location 21
+-mem: storing 7 in location 21
+# termination
 -mem: storing 9 in location 2
 
 //: 'create-delimited-continuation' is like 'call' except it adds a 'reset' mark to
@@ -153,14 +170,9 @@ Recipe_number["create-delimited-continuation"] = CREATE_DELIMITED_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
 case CREATE_DELIMITED_CONTINUATION: {
   Current_routine->calls.front().is_reset = true;
-  ++Callstack_depth;
-  assert(Callstack_depth < 9000);  // 9998-101 plus cushion
-  call callee(Recipe_number[current_instruction().ingredients.at(0).name]);
-  for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    callee.ingredient_atoms.push_back(ingredients.at(i));
-  }
-  Current_routine->calls.push_front(callee);
-  continue;  // not done with caller; don't increment current_step_index()
+  Current_routine->calls.push_front(call(Recipe_number[current_instruction().ingredients.at(0).name]));
+  ingredients.erase(ingredients.begin());  // drop the function
+  goto complete_call;
 }
 
 //: save the slice of current call stack until the 'create-delimited-continuation'
@@ -179,13 +191,19 @@ REPLY_DELIMITED_CONTINUATION,
 Recipe_number["reply-delimited-continuation"] = REPLY_DELIMITED_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
 case REPLY_DELIMITED_CONTINUATION: {
-  // manual prototype containing '::'
-  call_stack::iterator find_reset(call_stack& c);
+  // first clear any existing ingredients, to isolate the creation of the
+  // continuation from its calls
+  Current_routine->calls.front().ingredient_atoms.clear();
+  Current_routine->calls.front().next_ingredient_to_process = 0;
   // copy the current call stack until the most recent 'reset' call
+  call_stack::iterator find_reset(call_stack& c);  // manual prototype containing '::'
   call_stack::iterator reset = find_reset(Current_routine->calls);
   assert(reset != Current_routine->calls.end());
   Delimited_continuation[Next_delimited_continuation_id] = call_stack(Current_routine->calls.begin(), reset);
-  while (Current_routine->calls.begin() != reset) Current_routine->calls.pop_front();
+  while (Current_routine->calls.begin() != reset) {
+    --Callstack_depth;
+    Current_routine->calls.pop_front();
+  }
   // return it as the result of the 'reset' call
   products.resize(1);
   products.at(0).push_back(Next_delimited_continuation_id);
@@ -214,6 +232,7 @@ case CALL_DELIMITED_CONTINUATION: {
   const call_stack& new_calls = Delimited_continuation[ingredients.at(0).at(0)];
   for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p)
     Current_routine->calls.push_front(*p);
+  ++current_step_index();  // skip past the reply-delimited-continuation
   ingredients.erase(ingredients.begin());  // drop the function
   goto complete_call;
 }
