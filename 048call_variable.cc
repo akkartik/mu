@@ -39,6 +39,6 @@ case CALL: {
     r = Recipe_number[current_instruction().ingredients.at(0).name];
   }
   Current_routine->calls.push_front(call(r));
-  ingredients.erase(ingredients.begin());  // drop the function
+  ingredients.erase(ingredients.begin());  // drop the callee
   goto complete_call;
 }

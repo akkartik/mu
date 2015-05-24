@@ -171,7 +171,7 @@ Recipe_number["create-delimited-continuation"] = CREATE_DELIMITED_CONTINUATION;
 case CREATE_DELIMITED_CONTINUATION: {
   Current_routine->calls.front().is_reset = true;
   Current_routine->calls.push_front(call(Recipe_number[current_instruction().ingredients.at(0).name]));
-  ingredients.erase(ingredients.begin());  // drop the function
+  ingredients.erase(ingredients.begin());  // drop the callee
   goto complete_call;
 }
 
@@ -230,6 +230,6 @@ call_stack::iterator find_reset(call_stack& c) {
     for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p)
       Current_routine->calls.push_front(*p);
     ++current_step_index();  // skip past the reply-delimited-continuation
-    ingredients.erase(ingredients.begin());  // drop the function
+    ingredients.erase(ingredients.begin());  // drop the callee
     goto complete_call;
   }
