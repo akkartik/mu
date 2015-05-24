@@ -107,7 +107,7 @@ recipe main [
   1:continuation <- create-delimited-continuation f:recipe 12:literal  # 12 is an argument to f
   2:number <- copy 5:literal
   {
-    2:number <- call-delimited-continuation 1:continuation, 2:number  # 2 is an argument to g, the 'top' of the continuation
+    2:number <- call 1:continuation, 2:number  # 2 is an argument to g, the 'top' of the continuation
     3:boolean <- greater-or-equal 2:number, 8:literal
     break-if 3:boolean
     loop
@@ -135,13 +135,13 @@ recipe g [
 +run: 2:number <- copy 5:literal
 +mem: storing 5 in location 2
 # calls of the continuation execute the part after reply-delimited-continuation
-+run: 2:number <- call-delimited-continuation 1:continuation, 2:number
++run: 2:number <- call 1:continuation, 2:number
 +mem: storing 5 in location 22
 +mem: storing 6 in location 2
-+run: 2:number <- call-delimited-continuation 1:continuation, 2:number
++run: 2:number <- call 1:continuation, 2:number
 +mem: storing 6 in location 22
 +mem: storing 7 in location 2
-+run: 2:number <- call-delimited-continuation 1:continuation, 2:number
++run: 2:number <- call 1:continuation, 2:number
 +mem: storing 7 in location 22
 +mem: storing 8 in location 2
 # first call of 'g' does not execute the part after reply-delimited-continuation
@@ -220,19 +220,16 @@ call_stack::iterator find_reset(call_stack& c) {
   return c.end();
 }
 
-//: copy slice of calls back on to current call stack
-:(before "End Primitive Recipe Declarations")
-CALL_DELIMITED_CONTINUATION,
-:(before "End Primitive Recipe Numbers")
-Recipe_number["call-delimited-continuation"] = CALL_DELIMITED_CONTINUATION;
-:(before "End Primitive Recipe Implementations")
-case CALL_DELIMITED_CONTINUATION: {
-  assert(scalar(ingredients.at(0)));
-  assert(Delimited_continuation.find(ingredients.at(0).at(0)) != Delimited_continuation.end());
-  const call_stack& new_calls = Delimited_continuation[ingredients.at(0).at(0)];
-  for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p)
-    Current_routine->calls.push_front(*p);
-  ++current_step_index();  // skip past the reply-delimited-continuation
-  ingredients.erase(ingredients.begin());  // drop the function
-  goto complete_call;
-}
+//: overload 'call' for continuations
+:(after "case CALL:")
+  if (current_instruction().ingredients.at(0).properties.at(0).second.at(0) == "continuation") {
+    // copy multiple calls on to current call stack
+    assert(scalar(ingredients.at(0)));
+    assert(Delimited_continuation.find(ingredients.at(0).at(0)) != Delimited_continuation.end());
+    const call_stack& new_calls = Delimited_continuation[ingredients.at(0).at(0)];
+    for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p)
+      Current_routine->calls.push_front(*p);
+    ++current_step_index();  // skip past the reply-delimited-continuation
+    ingredients.erase(ingredients.begin());  // drop the function
+    goto complete_call;
+  }
