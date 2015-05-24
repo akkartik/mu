@@ -18,10 +18,16 @@ parse: instruction: break-if
 parse:   ingredient: {name: "3", properties: ["3": "boolean"]}
 parse: instruction: loop
 parse: label: }
-parse: instruction: g
+parse: instruction: next-ingredient
 parse:   product: {name: "11", properties: ["11": "number"]}
-parse: instruction: reply
+parse: instruction: g
 parse:   ingredient: {name: "11", properties: ["11": "number"]}
+parse:   product: {name: "12", properties: ["12": "number"]}
+parse: instruction: reply
+parse:   ingredient: {name: "12", properties: ["12": "number"]}
+parse: instruction: next-ingredient
+parse:   product: {name: "21", properties: ["21": "number"]}
+parse: instruction: rewind-ingredients
 parse: instruction: reply-delimited-continuation
 parse: instruction: next-ingredient
 parse:   product: {name: "22", properties: ["22": "number"]}
@@ -43,9 +49,12 @@ after-brace: jump -4:offset
 after-brace: 6: {name: "", properties: ["": ]}
 after-brace: 6: {name: "", properties: ["": ]}
 after-brace: recipe f
+after-brace: next-ingredient ...
 after-brace: g ...
 after-brace: reply ...
 after-brace: recipe g
+after-brace: next-ingredient ...
+after-brace: rewind-ingredients ...
 after-brace: reply-delimited-continuation ...
 after-brace: next-ingredient ...
 after-brace: add ...
@@ -53,110 +62,84 @@ after-brace: reply ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: main
  101 run: 1:continuation <- create-delimited-continuation f:recipe, 12:literal
- 102 run: 11:number <- g 
+ 102 run: 11:number <- next-ingredient 
+9999 mem: storing 12 in location 11
+ 102 run: 12:number <- g 11:number
+9999 mem: location 11 is 12
+ 103 run: 21:number <- next-ingredient 
+9999 mem: storing 12 in location 21
+ 103 run: rewind-ingredients 
  103 run: reply-delimited-continuation 
 9999 mem: storing 0 in location 1
- 103 run: 2:number <- copy 5:literal
+ 101 run: 2:number <- copy 5:literal
 9999 mem: storing 5 in location 2
- 103 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
+ 101 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
 9999 mem: location 1 is 0
 9999 mem: location 2 is 5
- 104 run: reply-delimited-continuation 
-9999 mem: storing 1 in location 2
- 104 run: 3:boolean <- greater-or-equal 2:number, 8:literal
-9999 mem: location 2 is 1
-9999 mem: storing 0 in location 3
- 104 run: break-if 3:boolean, 
-9999 mem: location 3 is 0
-9999 run: jump-if fell through
- 104 run: loop 
-9999 run: jumping to instruction 3
- 104 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
-9999 mem: location 1 is 0
-9999 mem: location 2 is 1
- 105 run: reply-delimited-continuation 
-9999 mem: storing 2 in location 2
- 105 run: 3:boolean <- greater-or-equal 2:number, 8:literal
-9999 mem: location 2 is 2
-9999 mem: storing 0 in location 3
- 105 run: break-if 3:boolean, 
-9999 mem: location 3 is 0
-9999 run: jump-if fell through
- 105 run: loop 
-9999 run: jumping to instruction 3
- 105 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
-9999 mem: location 1 is 0
-9999 mem: location 2 is 2
- 106 run: reply-delimited-continuation 
-9999 mem: storing 3 in location 2
- 106 run: 3:boolean <- greater-or-equal 2:number, 8:literal
-9999 mem: location 2 is 3
-9999 mem: storing 0 in location 3
- 106 run: break-if 3:boolean, 
-9999 mem: location 3 is 0
-9999 run: jump-if fell through
- 106 run: loop 
-9999 run: jumping to instruction 3
- 106 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
-9999 mem: location 1 is 0
-9999 mem: location 2 is 3
- 107 run: reply-delimited-continuation 
-9999 mem: storing 4 in location 2
- 107 run: 3:boolean <- greater-or-equal 2:number, 8:literal
-9999 mem: location 2 is 4
-9999 mem: storing 0 in location 3
- 107 run: break-if 3:boolean, 
-9999 mem: location 3 is 0
-9999 run: jump-if fell through
- 107 run: loop 
-9999 run: jumping to instruction 3
- 107 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
-9999 mem: location 1 is 0
-9999 mem: location 2 is 4
- 108 run: reply-delimited-continuation 
-9999 mem: storing 5 in location 2
- 108 run: 3:boolean <- greater-or-equal 2:number, 8:literal
-9999 mem: location 2 is 5
-9999 mem: storing 0 in location 3
- 108 run: break-if 3:boolean, 
-9999 mem: location 3 is 0
-9999 run: jump-if fell through
- 108 run: loop 
-9999 run: jumping to instruction 3
- 108 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
-9999 mem: location 1 is 0
-9999 mem: location 2 is 5
- 109 run: reply-delimited-continuation 
+ 102 run: 22:number <- next-ingredient 
+9999 mem: storing 5 in location 22
+ 102 run: 22:number <- add 22:number, 1:literal
+9999 mem: location 22 is 5
+9999 mem: storing 6 in location 22
+ 102 run: reply 22:number
+9999 mem: location 22 is 6
+9999 run: result 0 is 6
+9999 mem: storing 6 in location 12
+ 101 run: reply 12:number
+9999 mem: location 12 is 6
+9999 run: result 0 is 6
 9999 mem: storing 6 in location 2
- 109 run: 3:boolean <- greater-or-equal 2:number, 8:literal
+ 100 run: 3:boolean <- greater-or-equal 2:number, 8:literal
 9999 mem: location 2 is 6
 9999 mem: storing 0 in location 3
- 109 run: break-if 3:boolean, 
+ 100 run: break-if 3:boolean, 
 9999 mem: location 3 is 0
 9999 run: jump-if fell through
- 109 run: loop 
+ 100 run: loop 
 9999 run: jumping to instruction 3
- 109 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
+ 100 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
 9999 mem: location 1 is 0
 9999 mem: location 2 is 6
- 110 run: reply-delimited-continuation 
+ 101 run: 22:number <- next-ingredient 
+9999 mem: storing 6 in location 22
+ 101 run: 22:number <- add 22:number, 1:literal
+9999 mem: location 22 is 6
+9999 mem: storing 7 in location 22
+ 101 run: reply 22:number
+9999 mem: location 22 is 7
+9999 run: result 0 is 7
+9999 mem: storing 7 in location 12
+ 100 run: reply 12:number
+9999 mem: location 12 is 7
+9999 run: result 0 is 7
 9999 mem: storing 7 in location 2
- 110 run: 3:boolean <- greater-or-equal 2:number, 8:literal
+  99 run: 3:boolean <- greater-or-equal 2:number, 8:literal
 9999 mem: location 2 is 7
 9999 mem: storing 0 in location 3
- 110 run: break-if 3:boolean, 
+  99 run: break-if 3:boolean, 
 9999 mem: location 3 is 0
 9999 run: jump-if fell through
- 110 run: loop 
+  99 run: loop 
 9999 run: jumping to instruction 3
- 110 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
+  99 run: 2:number <- call-delimited-continuation 1:continuation, 2:number
 9999 mem: location 1 is 0
 9999 mem: location 2 is 7
- 111 run: reply-delimited-continuation 
+ 100 run: 22:number <- next-ingredient 
+9999 mem: storing 7 in location 22
+ 100 run: 22:number <- add 22:number, 1:literal
+9999 mem: location 22 is 7
+9999 mem: storing 8 in location 22
+ 100 run: reply 22:number
+9999 mem: location 22 is 8
+9999 run: result 0 is 8
+9999 mem: storing 8 in location 12
+  99 run: reply 12:number
+9999 mem: location 12 is 8
+9999 run: result 0 is 8
 9999 mem: storing 8 in location 2
- 111 run: 3:boolean <- greater-or-equal 2:number, 8:literal
+  98 run: 3:boolean <- greater-or-equal 2:number, 8:literal
 9999 mem: location 2 is 8
 9999 mem: storing 1 in location 3
- 111 run: break-if 3:boolean, 
+  98 run: break-if 3:boolean, 
 9999 mem: location 3 is 1
 9999 run: jumping to instruction 7
