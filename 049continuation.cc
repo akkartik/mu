@@ -135,27 +135,9 @@ recipe g [
 +mem: storing 8 in location 2
 -mem: storing 9 in location 2
 
-//: push a variable recipe on the call stack
-//: todo: doesn't really belong in this layer
+//: 'reset-and-call' is like 'call' except it inserts a label to the call stack
+//: before performing the call
 
-:(before "End Primitive Recipe Declarations")
-CALL,
-:(before "End Primitive Recipe Numbers")
-Recipe_number["call"] = CALL;
-:(before "End Primitive Recipe Implementations")
-case CALL: {
-  ++Callstack_depth;
-  assert(Callstack_depth < 9000);  // 9998-101 plus cushion
-  call callee(Recipe_number[current_instruction().ingredients.at(0).name]);
-  for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    callee.ingredient_atoms.push_back(ingredients.at(i));
-  }
-  Current_routine->calls.push_front(callee);
-  continue;  // not done with caller; don't increment current_step_index()
-}
-
-// 'reset-and-call' is like 'call' except it inserts a label to the call stack
-// before performing the call
 :(before "End call Fields")
 bool is_reset;
 :(before "End call Constructor")
