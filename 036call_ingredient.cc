@@ -23,8 +23,8 @@ recipe f [
 :(before "End call Fields")
 vector<vector<double> > ingredient_atoms;
 long long int next_ingredient_to_process;
-:(replace{} "call(recipe_number r)")
-call(recipe_number r) :running_recipe(r), running_step_index(0), next_ingredient_to_process(0) {}
+:(before "End call Constructor")
+next_ingredient_to_process = 0;
 
 :(replace "Current_routine->calls.push_front(call(current_instruction().operation))" following "End Primitive Recipe Implementations")
 call callee(current_instruction().operation);

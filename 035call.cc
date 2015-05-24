@@ -37,7 +37,11 @@ struct call {
   recipe_number running_recipe;
   long long int running_step_index;
   // End call Fields
-  call(recipe_number r) :running_recipe(r), running_step_index(0) {}
+  call(recipe_number r) {
+    running_recipe = r;
+    running_step_index = 0;
+    // End call Constructor
+  }
 };
 typedef list<call> call_stack;
 
