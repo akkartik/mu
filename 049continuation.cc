@@ -126,8 +126,8 @@ recipe g [
   reply-delimited-continuation
   # calls of the continuation start from here
   22:number <- next-ingredient
-  22:number <- add 22:number, 1:literal
-  reply 22:number
+  23:number <- add 22:number, 1:literal
+  reply 23:number
 ]
 #? ?
 # first call of 'g' executes the part before reply-delimited-continuation
