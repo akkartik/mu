@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/039wait.cc</title>
+<title>039wait.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -57,7 +57,7 @@ recipe f2 [
 WAITING<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
 <span class="Comment">// only if state == WAITING</span>
-index_t waiting_on_location<span class="Delimiter">;</span>
+long long int waiting_on_location<span class="Delimiter">;</span>
 int old_value_of_waiting_location<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 waiting_on_location = old_value_of_waiting_location = <span class="Constant">0</span><span class="Delimiter">;</span>
@@ -74,7 +74,7 @@ case WAIT_FOR_LOCATION: <span class="Delimiter">{</span>
   Current_routine<span class="Delimiter">-&gt;</span>state = WAITING<span class="Delimiter">;</span>
   Current_routine<span class="Delimiter">-&gt;</span>waiting_on_location = loc<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   Current_routine<span class="Delimiter">-&gt;</span>old_value_of_waiting_location = Memory[loc<span class="Delimiter">.</span>value]<span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;waiting for location &quot;</span> &lt;&lt; loc<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; to change from &quot;</span> &lt;&lt; Memory[loc<span class="Delimiter">.</span>value]<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;waiting for location &quot;</span> &lt;&lt; loc<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; to change from &quot;</span> &lt;&lt; Memory[loc<span class="Delimiter">.</span>value]<span class="Delimiter">;</span>
 <span class="CommentedCode">//?   trace(&quot;schedule&quot;) &lt;&lt; Current_routine-&gt;id &lt;&lt; &quot;: waiting for location &quot; &lt;&lt; loc.value &lt;&lt; &quot; to change from &quot; &lt;&lt; Memory[loc.value]; //? 2</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -82,7 +82,7 @@ case WAIT_FOR_LOCATION: <span class="Delimiter">{</span>
 <span class="Comment">//: scheduler tweak to get routines out of that state</span>
 
 <span class="Delimiter">:(before &quot;End Scheduler State Transitions&quot;)</span>
-for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; Routines<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   trace(&quot;schedule&quot;) &lt;&lt; &quot;wake up loop 1: routine &quot; &lt;&lt; Routines.at(i)-&gt;id &lt;&lt; &quot; has state &quot; &lt;&lt; Routines.at(i)-&gt;state; //? 1</span>
   if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state != WAITING<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
 <span class="CommentedCode">//?   trace(&quot;schedule&quot;) &lt;&lt; &quot;waiting on location: &quot; &lt;&lt; Routines.at(i)-&gt;waiting_on_location; //? 1</span>
@@ -120,7 +120,7 @@ recipe f2 [
 
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
 <span class="Comment">// only if state == WAITING</span>
-index_t waiting_on_routine<span class="Delimiter">;</span>
+long long int waiting_on_routine<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 waiting_on_routine = <span class="Constant">0</span><span class="Delimiter">;</span>
 
@@ -131,9 +131,9 @@ Recipe_number[<span class="Constant">&quot;wait-for-routine&quot;</span>] = WAIT
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case WAIT_FOR_ROUTINE: <span class="Delimiter">{</span>
   Current_routine<span class="Delimiter">-&gt;</span>state = WAITING<span class="Delimiter">;</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   Current_routine<span class="Delimiter">-&gt;</span>waiting_on_routine = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;waiting for routine &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;waiting for routine &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -141,12 +141,12 @@ case WAIT_FOR_ROUTINE: <span class="Delimiter">{</span>
 <span class="Comment">// Wake up any routines waiting for other routines to go to sleep.</span>
 <span class="Comment">// Important: this must come after the scheduler loop above giving routines</span>
 <span class="Comment">// waiting for locations to change a chance to wake up.</span>
-for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; Routines<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state != WAITING<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>!Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_routine<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-  index_t id = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_routine<span class="Delimiter">;</span>
+  long long int id = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>waiting_on_routine<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>id != Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id<span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>index_t j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; Routines<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>id == id &amp;&amp; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>state != RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       trace<span class="Delimiter">(</span><span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;waking up routine &quot;</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id<span class="Delimiter">;</span>
       Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = RUNNING<span class="Delimiter">;</span>
@@ -161,7 +161,7 @@ SWITCH<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;switch&quot;</span>] = SWITCH<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case SWITCH: <span class="Delimiter">{</span>
-  index_t id = some_other_running_routine<span class="Delimiter">();</span>
+  long long int id = some_other_running_routine<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>id != Current_routine<span class="Delimiter">-&gt;</span>id<span class="Delimiter">);</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; &quot;waiting on &quot; &lt;&lt; id &lt;&lt; &quot; from &quot; &lt;&lt; Current_routine-&gt;id &lt;&lt; '\n'; //? 1</span>
@@ -172,8 +172,8 @@ case SWITCH: <span class="Delimiter">{</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-index_t some_other_running_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; Routines<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+long long int some_other_running_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>i == Current_routine_index<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     assert<span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> != Current_routine<span class="Delimiter">);</span>
     assert<span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id != Current_routine<span class="Delimiter">-&gt;</span>id<span class="Delimiter">);</span>

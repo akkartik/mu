@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/027debug.cc</title>
+<title>027debug.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -37,14 +37,14 @@ _PRINT<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;$print&quot;</span>] = _PRINT<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case _PRINT: <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-      trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;$print: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+      trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;$print: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
       cout &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     else <span class="Delimiter">{</span>
-      for <span class="Delimiter">(</span>index_t j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>size<span class="Delimiter">();</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;$print: &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
+      for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;$print: &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
         if <span class="Delimiter">(</span>j &gt; <span class="Constant">0</span><span class="Delimiter">)</span> cout &lt;&lt; <span class="Constant">&quot; &quot;</span><span class="Delimiter">;</span>
         cout &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
       <span class="Delimiter">}</span>
@@ -74,6 +74,19 @@ Recipe_number[<span class="Constant">&quot;$stop-tracing&quot;</span>] = _STOP_T
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case _STOP_TRACING: <span class="Delimiter">{</span>
   Trace_stream<span class="Delimiter">-&gt;</span>dump_layer = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_CLOSE_TRACE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;$close-trace&quot;</span>] = _CLOSE_TRACE<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case _CLOSE_TRACE: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    delete Trace_stream<span class="Delimiter">;</span>
+    Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

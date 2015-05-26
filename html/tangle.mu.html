@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>tangle.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.Delimiter { color: #c000c0; }
+.Comment { color: #8080ff; }
+.Constant { color: #008080; }
+.Special { color: #ff6060; }
+.Identifier { color: #008080; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># example program: constructing recipes out of order</span>
+<span class="Comment">#</span>
+<span class="Comment"># We construct a factorial function with separate base and recursive cases.</span>
+<span class="Comment"># Compare factorial.mu.</span>
+<span class="Comment">#</span>
+<span class="Comment"># This isn't a very tasteful example, just a simple demonstration of</span>
+<span class="Comment"># possibilities.</span>
+
+<span class="muRecipe">recipe</span> factorial [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  n:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Delimiter">{</span>
+   <span class="Identifier"> +base-case</span>
+  <span class="Delimiter">}</span>
+ <span class="Identifier"> +recursive-case</span>
+]
+
+<span class="muRecipe">after</span><span class="Identifier"> +base-case</span> [
+  <span class="Comment"># if n=0 return 1</span>
+  zero?:boolean<span class="Special"> &lt;- </span>equal n:number, <span class="Constant">0:literal</span>
+  <span class="Identifier">break-unless</span> zero?:boolean
+  <span class="Identifier">reply</span> <span class="Constant">1:literal</span>
+]
+
+<span class="muRecipe">after</span><span class="Identifier"> +recursive-case</span> [
+  <span class="Comment"># return n * factorial(n - 1)</span>
+  x:number<span class="Special"> &lt;- </span>subtract n:number, <span class="Constant">1:literal</span>
+  subresult:number<span class="Special"> &lt;- </span>factorial x:number
+  result:number<span class="Special"> &lt;- </span>multiply subresult:number, n:number
+  <span class="Identifier">reply</span> result:number
+]
+
+<span class="muRecipe">recipe</span> main [
+  1:number<span class="Special"> &lt;- </span>factorial <span class="Constant">5:literal</span>
+ <span class="Identifier"> $print</span> <span class="Constant">[result: ]</span>, 1:number, [
+]
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

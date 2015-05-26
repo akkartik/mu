@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/023jump.cc</title>
+<title>023jump.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -33,6 +33,15 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 <pre id='vimCodeElement'>
 <span class="Comment">//: Jump primitives</span>
 
+<span class="Delimiter">:(scenario jump_can_skip_instructions)</span>
+recipe main [
+  jump <span class="Constant">1</span>:offset
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
+]
+<span class="traceContains">+run: jump 1:offset</span>
+<span class="traceAbsent">-run: 1:number &lt;- copy 1:literal</span>
+<span class="traceAbsent">-mem: storing 1 in location 1</span>
+
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 JUMP<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
@@ -40,33 +49,27 @@ Recipe_number[<span class="Constant">&quot;jump&quot;</span>] = JUMP<span class=
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case JUMP: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>initialized<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   instruction_counter += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(scenario jump_can_skip_instructions)</span>
-recipe main [
-  jump <span class="Constant">1</span>:offset
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-]
-<span class="traceContains">+run: instruction main/0</span>
-<span class="traceContains">+run: ingredient 0 is 1</span>
-<span class="traceAbsent">-run: instruction main/1</span>
-<span class="traceAbsent">-mem: storing 1 in location 1</span>
+<span class="Comment">//: special type to designate jump targets</span>
+<span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
+Type_number[<span class="Constant">&quot;offset&quot;</span>] = <span class="Constant">0</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(scenario jump_backward)</span>
 recipe main [
   jump <span class="Constant">1</span>:offset  <span class="Comment"># 0 -+</span>
-  jump <span class="Constant">1</span>:offset  <span class="Comment">#    |   +-+ 1</span>
+  jump <span class="Constant">3</span>:offset  <span class="Comment">#    |   +-+ 1</span>
                  <span class="Comment">#   \/  /\ |</span>
   jump -<span class="Constant">2</span>:offset <span class="Comment">#  2 +--&gt;+ |</span>
 ]                <span class="Comment">#         \/ 3</span>
-<span class="traceContains">+run: instruction main/0</span>
-<span class="traceContains">+run: instruction main/2</span>
-<span class="traceContains">+run: instruction main/1</span>
+<span class="traceContains">+run: jump 1:offset</span>
+<span class="traceContains">+run: jump -2:offset</span>
+<span class="traceContains">+run: jump 3:offset</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 JUMP_IF<span class="Delimiter">,</span>
@@ -75,37 +78,36 @@ Recipe_number[<span class="Constant">&quot;jump-if&quot;</span>] = JUMP_IF<span 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case JUMP_IF: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>initialized<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">2</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> == <span class="Constant">2</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   if <span class="Delimiter">(</span>!ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump-if fell through&quot;</span><span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump-if fell through&quot;</span><span class="Delimiter">;</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   instruction_counter += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario jump_if)</span>
 recipe main [
   jump-if <span class="Constant">999</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
+  <span class="Constant">123</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
 ]
-<span class="traceContains">+run: instruction main/0</span>
-<span class="traceContains">+run: ingredient 1 is 1</span>
+<span class="traceContains">+run: jump-if 999:literal, 1:offset</span>
 <span class="traceContains">+run: jumping to instruction 2</span>
-<span class="traceAbsent">-run: instruction main/1</span>
-<span class="traceAbsent">-mem: storing 1 in location 1</span>
+<span class="traceAbsent">-run: 1:number &lt;- copy 1:literal</span>
+<span class="traceAbsent">-mem: storing 1 in location 123</span>
 
 <span class="Delimiter">:(scenario jump_if_fallthrough)</span>
 recipe main [
   jump-if <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
   <span class="Constant">123</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
 ]
-<span class="traceContains">+run: instruction main/0</span>
+<span class="traceContains">+run: jump-if 0:literal, 1:offset</span>
 <span class="traceContains">+run: jump-if fell through</span>
-<span class="traceContains">+run: instruction main/1</span>
+<span class="traceContains">+run: 123:number &lt;- copy 1:literal</span>
 <span class="traceContains">+mem: storing 1 in location 123</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
@@ -115,38 +117,36 @@ Recipe_number[<span class="Constant">&quot;jump-unless&quot;</span>] = JUMP_UNLE
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case JUMP_UNLESS: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>initialized<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">2</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> == <span class="Constant">2</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump-unless fell through&quot;</span><span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump-unless fell through&quot;</span><span class="Delimiter">;</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   instruction_counter += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario jump_unless)</span>
 recipe main [
   jump-unless <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
+  <span class="Constant">123</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
 ]
-<span class="traceContains">+run: instruction main/0</span>
-<span class="traceContains">+run: ingredient 1 is 1</span>
+<span class="traceContains">+run: jump-unless 0:literal, 1:offset</span>
 <span class="traceContains">+run: jumping to instruction 2</span>
-<span class="traceAbsent">-run: instruction main/1</span>
-<span class="traceAbsent">-mem: storing 1 in location 1</span>
+<span class="traceAbsent">-run: 123:number &lt;- copy 1:literal</span>
+<span class="traceAbsent">-mem: storing 1 in location 123</span>
 
 <span class="Delimiter">:(scenario jump_unless_fallthrough)</span>
 recipe main [
   jump-unless <span class="Constant">999</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
   <span class="Constant">123</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
 ]
-<span class="traceContains">+run: instruction main/0</span>
-<span class="traceContains">+run: ingredient 0 is 999</span>
+<span class="traceContains">+run: jump-unless 999:literal, 1:offset</span>
 <span class="traceContains">+run: jump-unless fell through</span>
-<span class="traceContains">+run: instruction main/1</span>
+<span class="traceContains">+run: 123:number &lt;- copy 1:literal</span>
 <span class="traceContains">+mem: storing 1 in location 123</span>
 </pre>
 </body>

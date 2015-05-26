@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/034exclusive_container.cc</title>
+<title>034exclusive_container.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -45,15 +45,15 @@ type_number tmp = Type_number[<span class="Constant">&quot;number-or-point&quot;
 Type[tmp]<span class="Delimiter">.</span>size = <span class="Constant">2</span><span class="Delimiter">;</span>
 Type[tmp]<span class="Delimiter">.</span>kind = exclusive_container<span class="Delimiter">;</span>
 Type[tmp]<span class="Delimiter">.</span>name = <span class="Constant">&quot;number-or-point&quot;</span><span class="Delimiter">;</span>
-<span class="CommentedCode">//? cout &lt;&lt; tmp &lt;&lt; &quot;: &quot; &lt;&lt; Type[tmp].elements.size() &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//? cout &lt;&lt; tmp &lt;&lt; &quot;: &quot; &lt;&lt; SIZE(Type[tmp].elements) &lt;&lt; '\n'; //? 1</span>
 vector&lt;type_number&gt; t1<span class="Delimiter">;</span>
 t1<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>number<span class="Delimiter">);</span>
 Type[tmp]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>t1<span class="Delimiter">);</span>
-<span class="CommentedCode">//? cout &lt;&lt; Type[tmp].elements.size() &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//? cout &lt;&lt; SIZE(Type[tmp].elements) &lt;&lt; '\n'; //? 1</span>
 vector&lt;type_number&gt; t2<span class="Delimiter">;</span>
 t2<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>point<span class="Delimiter">);</span>
 Type[tmp]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>t2<span class="Delimiter">);</span>
-<span class="CommentedCode">//? cout &lt;&lt; Type[tmp].elements.size() &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//? cout &lt;&lt; SIZE(Type[tmp].elements) &lt;&lt; '\n'; //? 1</span>
 <span class="CommentedCode">//? cout &lt;&lt; &quot;point: &quot; &lt;&lt; point &lt;&lt; '\n'; //? 1</span>
 Type[tmp]<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;i&quot;</span><span class="Delimiter">);</span>
 Type[tmp]<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;p&quot;</span><span class="Delimiter">);</span>
@@ -77,10 +77,10 @@ if <span class="Delimiter">(</span>t<span class="Delimiter">.</span>kind == excl
   <span class="Comment">// (So like containers, it can't contain arrays.)</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;--- &quot; &lt;&lt; types.at(0) &lt;&lt; ' ' &lt;&lt; t.size &lt;&lt; '\n'; //? 1</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;point: &quot; &lt;&lt; Type_number[&quot;point&quot;] &lt;&lt; &quot; &quot; &lt;&lt; Type[Type_number[&quot;point&quot;]].name &lt;&lt; &quot; &quot; &lt;&lt; Type[Type_number[&quot;point&quot;]].size &lt;&lt; '\n'; //? 1</span>
-<span class="CommentedCode">//?   cout &lt;&lt; t.name &lt;&lt; ' ' &lt;&lt; t.size &lt;&lt; ' ' &lt;&lt; t.elements.size() &lt;&lt; '\n'; //? 1</span>
-  size_t result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; t<span class="Delimiter">.</span>size<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    size_t tmp = size_of<span class="Delimiter">(</span>t<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+<span class="CommentedCode">//?   cout &lt;&lt; t.name &lt;&lt; ' ' &lt;&lt; t.size &lt;&lt; ' ' &lt;&lt; SIZE(t.elements) &lt;&lt; '\n'; //? 1</span>
+  long long int result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; t<span class="Delimiter">.</span>size<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    long long int tmp = size_of<span class="Delimiter">(</span>t<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
 <span class="CommentedCode">//?     cout &lt;&lt; i &lt;&lt; &quot;: &quot; &lt;&lt; t.elements.at(i).at(0) &lt;&lt; ' ' &lt;&lt; tmp &lt;&lt; ' ' &lt;&lt; result &lt;&lt; '\n'; //? 1</span>
     if <span class="Delimiter">(</span>tmp &gt; result<span class="Delimiter">)</span> result = tmp<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -123,13 +123,13 @@ Recipe_number[<span class="Constant">&quot;maybe-convert&quot;</span>] = MAYBE_C
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case MAYBE_CONVERT: <span class="Delimiter">{</span>
   reagent base = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  index_t base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  long long int base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   type_number base_type = base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>kind == exclusive_container<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
-  index_t tag = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>value<span class="Delimiter">;</span>
+  long long int tag = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>value<span class="Delimiter">;</span>
   long long int result<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>tag == static_cast&lt;index_t&gt;<span class="Delimiter">(</span>Memory[base_address]<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>tag == static_cast&lt;long long int&gt;<span class="Delimiter">(</span>Memory[base_address]<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     result = base_address+<span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   else <span class="Delimiter">{</span>

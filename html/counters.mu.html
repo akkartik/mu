@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>counters.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.Comment { color: #8080ff; }
+.Constant { color: #008080; }
+.Special { color: #ff6060; }
+.Identifier { color: #008080; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># example program: maintain multiple counters with isolated lexical scopes</span>
+<span class="Comment"># (spaces)</span>
+
+<span class="muRecipe">recipe</span> init-counter [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  n:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Identifier">reply</span> <span class="Identifier">default-space</span>:address:space
+]
+
+<span class="muRecipe">recipe</span> increment-counter [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  0:address:array:location/names:init-counter<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>  <span class="Comment"># setup outer space; it *must* come from 'init-counter'</span>
+  x:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  n:number/space:1<span class="Special"> &lt;- </span>add n:number/space:1, x:number
+  <span class="Identifier">reply</span> n:number/space:1
+]
+
+<span class="muRecipe">recipe</span> main [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Comment"># counter A</span>
+  a:address:space<span class="Special"> &lt;- </span>init-counter <span class="Constant">34:literal</span>
+  <span class="Comment"># counter B</span>
+  b:address:space<span class="Special"> &lt;- </span>init-counter <span class="Constant">23:literal</span>
+  <span class="Comment"># increment both by 2 but in different ways</span>
+  increment-counter a:address:space, <span class="Constant">1:literal</span>
+  b-value:number<span class="Special"> &lt;- </span>increment-counter b:address:space, <span class="Constant">2:literal</span>
+  a-value:number<span class="Special"> &lt;- </span>increment-counter a:address:space, <span class="Constant">1:literal</span>
+  <span class="Comment"># check results</span>
+ <span class="Identifier"> $print</span> <span class="Constant">[Contents of counters</span>
+<span class="Constant">]</span>
+  <span class="Comment"># trailing space in next line is to help with syntax highlighting</span>
+ <span class="Identifier"> $print</span> <span class="Constant">[a: ]</span>, a-value:number, <span class="Constant">[ b: ]</span>, b-value:number, <span class="Constant">[ </span>
+<span class="Constant">]</span>
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

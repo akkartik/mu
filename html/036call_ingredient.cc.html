@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/036call_ingredient.cc</title>
+<title>036call_ingredient.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -41,8 +41,6 @@ recipe f [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
   <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">12</span>:number
 ]
-<span class="traceContains">+run: instruction f/1</span>
-<span class="traceContains">+mem: location 12 is 2</span>
 <span class="traceContains">+mem: storing 3 in location 13</span>
 
 <span class="Delimiter">:(scenario next_ingredient_missing)</span>
@@ -56,16 +54,14 @@ recipe f [
 
 <span class="Delimiter">:(before &quot;End call Fields&quot;)</span>
 vector&lt;vector&lt;double&gt; &gt; ingredient_atoms<span class="Delimiter">;</span>
-index_t next_ingredient_to_process<span class="Delimiter">;</span>
-<span class="Delimiter">:(replace{} &quot;call(recipe_number r)&quot;)</span>
-call<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)</span> :running_recipe<span class="Delimiter">(</span>r<span class="Delimiter">),</span> running_step_index<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> next_ingredient_to_process<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+long long int next_ingredient_to_process<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End call Constructor&quot;)</span>
+next_ingredient_to_process = <span class="Constant">0</span><span class="Delimiter">;</span>
 
-<span class="Delimiter">:(replace &quot;Current_routine-&gt;calls.push_front(call(current_instruction().operation))&quot; following &quot;End Primitive Recipe Implementations&quot;)</span>
-call callee<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">);</span>
-for <span class="Delimiter">(</span>size_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  callee<span class="Delimiter">.</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+<span class="Delimiter">:(after &quot;complete_call:&quot;)</span>
+for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
-Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>callee<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 NEXT_INGREDIENT<span class="Delimiter">,</span>
@@ -74,10 +70,10 @@ Recipe_number[<span class="Constant">&quot;next-ingredient&quot;</span>] = NEXT_
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case NEXT_INGREDIENT: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process &lt; Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process &lt; SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>
         Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">));</span>
-    assert<span class="Delimiter">(</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">// push a new vector</span>
+    assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>products<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">// push a new vector</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
     ++Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -132,17 +128,17 @@ Recipe_number[<span class="Constant">&quot;ingredient&quot;</span>] = INGREDIENT
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case INGREDIENT: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
-  if <span class="Delimiter">(</span>static_cast&lt;index_t&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt; Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
+  if <span class="Delimiter">(</span>static_cast&lt;long long int&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt; SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>
         Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">));</span>
-    assert<span class="Delimiter">(</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">// push a new vector</span>
+    assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>products<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">// push a new vector</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
     ++Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>next_ingredient_to_process<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   else <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
       products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// todo: will fail noisily if we try to read a compound value</span>
       products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
