@@ -5,7 +5,7 @@
 
 recipe main [
   switch-to-display
-  print-character 0:literal/screen, 97:literal
+  print-character 0:literal/screen, 97:literal, 2:literal/red
   1:number/raw, 2:number/raw <- cursor-position 0:literal/screen
   wait-for-key 0:literal/keyboard
   clear-screen 0:literal/screen

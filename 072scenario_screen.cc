@@ -6,7 +6,7 @@
 :(scenarios run_mu_scenario)
 :(scenario screen_in_scenario)
 scenario screen-in-scenario [
-#?   $start-tracing
+#?   $start-tracing #? 2
   assume-screen 5:literal/width, 3:literal/height
   run [
     screen:address <- print-character screen:address, 97:literal  # 'a'
@@ -17,7 +17,7 @@ scenario screen-in-scenario [
     .     .
     .     .
   ]
-#?   $exit
+#?   $exit #? 1
 ]
 
 :(scenario screen_in_scenario_unicode)
@@ -137,7 +137,7 @@ void check_screen(const string& expected_contents) {
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
     assert(cursor.get() == '.');
-    for (long long int column = 0;  column < screen_width;  ++column, ++addr) {
+    for (long long int column = 0;  column < screen_width;  ++column, addr+= /*size of screen-cell*/2) {
       uint32_t curr = cursor.get();
       if (Memory[addr] == 0 && isspace(curr)) continue;
       if (Memory[addr] != 0 && Memory[addr] == curr) continue;

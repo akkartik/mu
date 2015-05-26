@@ -117,7 +117,7 @@ long long int address(long long int offset, long long int base) {
 //?   cout << base << '\n'; //? 2
   if (offset >= static_cast<long long int>(Memory[base])) {
     // todo: test
-    raise << "location " << offset << " is out of bounds " << Memory[base] << '\n';
+    raise << "location " << offset << " is out of bounds " << Memory[base] << " at " << base << '\n';
   }
   return base+1 + offset;
 }
