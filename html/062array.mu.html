@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/062array.mu</title>
+<title>062array.mu</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="none">
@@ -13,6 +13,8 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
 body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 * { font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.muScenario { color: #00af00; }
 .Delimiter { color: #c000c0; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
@@ -29,7 +31,7 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 </head>
 <body>
 <pre id='vimCodeElement'>
-scenario array-from-args [
+<span class="muScenario">scenario</span> array-from-args [
   run [
     1:address:array:location<span class="Special"> &lt;- </span>init-array <span class="Constant">0:literal</span>, <span class="Constant">1:literal</span>, <span class="Constant">2:literal</span>
     2:array:location<span class="Special"> &lt;- </span>copy 1:address:array:location/deref
@@ -43,12 +45,12 @@ scenario array-from-args [
 ]
 
 <span class="Comment"># create an array out of a list of scalar args</span>
-recipe init-array [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+<span class="muRecipe">recipe</span> init-array [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   capacity:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># while read curr-value</span>
-    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span>next-ingredient
+    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
     <span class="Identifier">break-unless</span> exists?:boolean
     capacity:number<span class="Special"> &lt;- </span>add capacity:number, <span class="Constant">1:literal</span>
     <span class="Identifier">loop</span>
@@ -60,7 +62,7 @@ recipe init-array [
     <span class="Comment"># while read curr-value</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, capacity:number
     <span class="Identifier">break-if</span> done?:boolean
-    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span>next-ingredient
+    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
     assert exists?:boolean, <span class="Constant">[error in rewinding ingredients to init-array]</span>
     tmp:address:location<span class="Special"> &lt;- </span>index-address result:address:array:location/deref, i:number
     tmp:address:location/deref<span class="Special"> &lt;- </span>copy curr-value:location

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/003trace.cc</title>
+<title>003trace.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -80,11 +80,6 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 <span class="Comment">//: where changes can cause breakages in faraway subsystems, and picking the</span>
 <span class="Comment">//: right test to debug can be an important skill to pick up.</span>
 <span class="Comment">//:</span>
-<span class="Comment">//: A final wrinkle is for recursive functions; it's often useful to segment</span>
-<span class="Comment">//: calls of different depth in the trace:</span>
-<span class="Comment">//:   +eval/1: =&gt; 34  # the topmost call to eval should have logged this line</span>
-<span class="Comment">//: (look at new_trace_frame below)</span>
-<span class="Comment">//:</span>
 <span class="Comment">//: To build robust tests, trace facts about your domain rather than details of</span>
 <span class="Comment">//: how you computed them.</span>
 <span class="Comment">//:</span>
@@ -125,63 +120,65 @@ bool Hide_warnings = <span class="Constant">false</span><span class="Delimiter">
 <span class="CommentedCode">//? cerr &lt;&lt; &quot;AAA setup\n&quot;; //? 2</span>
 Hide_warnings = <span class="Constant">false</span><span class="Delimiter">;</span>
 
+<span class="Delimiter">:(before &quot;End Types&quot;)</span>
+struct trace_line <span class="Delimiter">{</span>
+  int depth<span class="Delimiter">;</span>  <span class="Comment">// optional field just to help browse traces later</span>
+  string label<span class="Delimiter">;</span>
+  string contents<span class="Delimiter">;</span>
+  trace_line<span class="Delimiter">(</span>string l<span class="Delimiter">,</span> string c<span class="Delimiter">)</span> :depth<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> label<span class="Delimiter">(</span>l<span class="Delimiter">),</span> contents<span class="Delimiter">(</span>c<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  trace_line<span class="Delimiter">(</span>int d<span class="Delimiter">,</span> string l<span class="Delimiter">,</span> string c<span class="Delimiter">)</span> :depth<span class="Delimiter">(</span>d<span class="Delimiter">),</span> label<span class="Delimiter">(</span>l<span class="Delimiter">),</span> contents<span class="Delimiter">(</span>c<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+<span class="Delimiter">};</span>
+
 <span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
 struct trace_stream <span class="Delimiter">{</span>
-  vector&lt;pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt; &gt; past_lines<span class="Delimiter">;</span>  <span class="Comment">// [(layer label, frame, line)]</span>
-  map&lt;string<span class="Delimiter">,</span> int&gt; frame<span class="Delimiter">;</span>
+  vector&lt;trace_line&gt; past_lines<span class="Delimiter">;</span>
   <span class="Comment">// accumulator for current line</span>
   ostringstream* curr_stream<span class="Delimiter">;</span>
   string curr_layer<span class="Delimiter">;</span>
+  int curr_depth<span class="Delimiter">;</span>
   string dump_layer<span class="Delimiter">;</span>
-  trace_stream<span class="Delimiter">()</span> :curr_stream<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  trace_stream<span class="Delimiter">()</span> :curr_stream<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> curr_depth<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
   ~trace_stream<span class="Delimiter">()</span> <span class="Delimiter">{</span> if <span class="Delimiter">(</span>curr_stream<span class="Delimiter">)</span> delete curr_stream<span class="Delimiter">;</span> <span class="Delimiter">}</span>
 
   ostringstream&amp; stream<span class="Delimiter">(</span>string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Identifier">return</span> stream<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> layer<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+
+  ostringstream&amp; stream<span class="Delimiter">(</span>int depth<span class="Delimiter">,</span> string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     newline<span class="Delimiter">();</span>
     curr_stream = new ostringstream<span class="Delimiter">;</span>
     curr_layer = layer<span class="Delimiter">;</span>
+    curr_depth = depth<span class="Delimiter">;</span>
     <span class="Identifier">return</span> *curr_stream<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
-  <span class="Comment">// be sure to call this before messing with curr_stream or curr_layer or frame</span>
+  <span class="Comment">// be sure to call this before messing with curr_stream or curr_layer</span>
   void newline<span class="Delimiter">()</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>!curr_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
     string curr_contents = curr_stream<span class="Delimiter">-&gt;</span>str<span class="Delimiter">();</span>
-    curr_contents<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>curr_contents<span class="Delimiter">.</span>find_last_not_of<span class="Delimiter">(</span><span class="Constant">&quot;</span><span class="cSpecial">\r\n</span><span class="Constant">&quot;</span><span class="Delimiter">)</span>+<span class="Constant">1</span><span class="Delimiter">);</span>
-    past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt;<span class="Delimiter">(</span>curr_layer<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt;<span class="Delimiter">(</span>frame[curr_layer]<span class="Delimiter">,</span> curr_contents<span class="Delimiter">)));</span>
+    past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>curr_depth<span class="Delimiter">,</span> trim<span class="Delimiter">(</span>curr_layer<span class="Delimiter">),</span> curr_contents<span class="Delimiter">));</span>  <span class="Comment">// preserve indent in contents</span>
     if <span class="Delimiter">(</span>curr_layer == dump_layer || curr_layer == <span class="Constant">&quot;dump&quot;</span> || dump_layer == <span class="Constant">&quot;all&quot;</span> ||
         <span class="Delimiter">(</span>!Hide_warnings &amp;&amp; curr_layer == <span class="Constant">&quot;warn&quot;</span><span class="Delimiter">))</span>
 <span class="CommentedCode">//?     if (dump_layer == &quot;all&quot; &amp;&amp; (Current_routine-&gt;id == 3 || curr_layer == &quot;schedule&quot;)) //? 1</span>
-      cerr &lt;&lt; curr_layer &lt;&lt; <span class="Constant">'/'</span> &lt;&lt; frame[curr_layer] &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+      cerr &lt;&lt; curr_layer &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     delete curr_stream<span class="Delimiter">;</span>
     curr_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+    curr_layer<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+    curr_depth = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
   <span class="Comment">// Useful for debugging.</span>
-  string readable_contents<span class="Delimiter">(</span>string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// missing layer = everything, frame, hierarchical layers</span>
+  string readable_contents<span class="Delimiter">(</span>string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// missing layer = everything</span>
     newline<span class="Delimiter">();</span>
     ostringstream output<span class="Delimiter">;</span>
-    string real_layer<span class="Delimiter">,</span> frame<span class="Delimiter">;</span>
-    parse_layer_and_frame<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> &amp;real_layer<span class="Delimiter">,</span> &amp;frame<span class="Delimiter">);</span>
-    for <span class="Delimiter">(</span>vector&lt;pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt; &gt;::iterator p = past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
-      if <span class="Delimiter">(</span>layer<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || prefix_match<span class="Delimiter">(</span>real_layer<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
-        output &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="Constant">&quot;/&quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>first &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    layer = trim<span class="Delimiter">(</span>layer<span class="Delimiter">);</span>
+    for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+      if <span class="Delimiter">(</span>layer<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || layer == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>depth<span class="Delimiter">)</span>
+          output &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">)</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>depth &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
+        output &lt;&lt; p<span class="Delimiter">-&gt;</span>label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
     <span class="Identifier">return</span> output<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
-  <span class="Delimiter">}</span>
-
-  <span class="Comment">// Useful for a newcomer to visualize the program at work.</span>
-  void dump_browseable_contents<span class="Delimiter">(</span>string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    ofstream dump<span class="Delimiter">(</span><span class="Constant">&quot;dump&quot;</span><span class="Delimiter">);</span>
-    dump &lt;&lt; <span class="Constant">&quot;&lt;div class='frame' frame_index='1'&gt;start&lt;/div&gt;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-    for <span class="Delimiter">(</span>vector&lt;pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt; &gt;::iterator p = past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first != layer<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-      dump &lt;&lt; <span class="Constant">&quot;&lt;div class='frame&quot;</span><span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>first &gt; <span class="Constant">1</span><span class="Delimiter">)</span> dump &lt;&lt; <span class="Constant">&quot; hidden&quot;</span><span class="Delimiter">;</span>
-      dump &lt;&lt; <span class="Constant">&quot;' frame_index='&quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>first &lt;&lt; <span class="Constant">&quot;'&gt;&quot;</span><span class="Delimiter">;</span>
-      dump &lt;&lt; p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second<span class="Delimiter">;</span>
-      dump &lt;&lt; <span class="Constant">&quot;&lt;/div&gt;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    dump<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">};</span>
 
@@ -190,7 +187,7 @@ struct trace_stream <span class="Delimiter">{</span>
 trace_stream* Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 
 <span class="Comment">// Top-level helper. IMPORTANT: can't nest.</span>
-<span class="PreProc">#define trace(layer)  !Trace_stream ? cerr </span><span class="Comment">/*</span><span class="Comment">print nothing</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(layer)</span>
+<span class="PreProc">#define trace(</span><span class="Delimiter">...</span><span class="PreProc">)  !Trace_stream ? cerr </span><span class="Comment">/*</span><span class="Comment">print nothing</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(__VA_ARGS__)</span>
 <span class="Comment">// Warnings should go straight to cerr by default since calls to trace() have</span>
 <span class="Comment">// some unfriendly constraints (they delay printing, they can't nest)</span>
 <span class="PreProc">#define raise  ((!Trace_stream || !Hide_warnings) ? cerr </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(</span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">))</span>
@@ -241,105 +238,57 @@ struct lease_tracer <span class="Delimiter">{</span>
 START_TRACING_UNTIL_END_OF_SCOPE
 <span class="CommentedCode">//? Trace_stream-&gt;dump_layer = &quot;all&quot;; //? 1</span>
 
+<span class="PreProc">#define CHECK_TRACE_CONTENTS(</span><span class="Delimiter">...</span><span class="PreProc">)  check_trace_contents(__FUNCTION__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__FILE__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__LINE__</span><span class="Delimiter">,</span><span class="PreProc"> __VA_ARGS__)</span>
+
 <span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
-void trace_all<span class="Delimiter">(</span>const string&amp; label<span class="Delimiter">,</span> const list&lt;string&gt;&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>list&lt;string&gt;::const_iterator p = in<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != in<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
-    trace<span class="Delimiter">(</span>label<span class="Delimiter">)</span> &lt;&lt; *p<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string FILE<span class="Delimiter">,</span> int LINE<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// missing layer == anywhere, frame, hierarchical layers</span>
+bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string FILE<span class="Delimiter">,</span> int LINE<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// missing layer == anywhere</span>
   vector&lt;string&gt; expected_lines = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>
-  index_t curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
+  long long int curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>curr_expected_line &lt; SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">)</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
     ++curr_expected_line<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>curr_expected_line == SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
-  string layer<span class="Delimiter">,</span> frame<span class="Delimiter">,</span> contents<span class="Delimiter">;</span>
-  parse_layer_frame_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;layer<span class="Delimiter">,</span> &amp;frame<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>vector&lt;pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt; &gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!layer<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; !prefix_match<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
+  string layer<span class="Delimiter">,</span> contents<span class="Delimiter">;</span>
+  split_layer_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;layer<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
+  for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;AAA &quot; &lt;&lt; layer &lt;&lt; ' ' &lt;&lt; p-&gt;label &lt;&lt; '\n'; //? 1</span>
+    if <span class="Delimiter">(</span>layer != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
 
-    if <span class="Delimiter">(</span>!frame<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; strtol<span class="Delimiter">(</span>frame<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> <span class="Constant">NULL</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">)</span> != p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>first<span class="Delimiter">)</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;BBB ^&quot; &lt;&lt; contents &lt;&lt; &quot;$ ^&quot; &lt;&lt; p-&gt;contents &lt;&lt; &quot;$\n&quot;; //? 1</span>
+    if <span class="Delimiter">(</span>contents != trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
 
-    if <span class="Delimiter">(</span>contents != p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second<span class="Delimiter">)</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;CCC\n&quot;; //? 1</span>
     ++curr_expected_line<span class="Delimiter">;</span>
-    while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
+    while <span class="Delimiter">(</span>curr_expected_line &lt; SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">)</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
       ++curr_expected_line<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-    parse_layer_frame_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;layer<span class="Delimiter">,</span> &amp;frame<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>curr_expected_line == SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+    split_layer_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;layer<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 
   ++Num_failures<span class="Delimiter">;</span>
   cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; FILE &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;] in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   DUMP<span class="Delimiter">(</span>layer<span class="Delimiter">);</span>
+<span class="CommentedCode">//?   exit(0); //? 1</span>
   Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-void parse_layer_frame_contents<span class="Delimiter">(</span>const string&amp; orig<span class="Delimiter">,</span> string* layer<span class="Delimiter">,</span> string* frame<span class="Delimiter">,</span> string* contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  string layer_and_frame<span class="Delimiter">;</span>
-  parse_contents<span class="Delimiter">(</span>orig<span class="Delimiter">,</span> <span class="Constant">&quot;: &quot;</span><span class="Delimiter">,</span> &amp;layer_and_frame<span class="Delimiter">,</span> contents<span class="Delimiter">);</span>
-  parse_layer_and_frame<span class="Delimiter">(</span>layer_and_frame<span class="Delimiter">,</span> layer<span class="Delimiter">,</span> frame<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void parse_contents<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">,</span> const string&amp; delim<span class="Delimiter">,</span> string* prefix<span class="Delimiter">,</span> string* contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  index_t pos = s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>pos == NOT_FOUND<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    *prefix = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-    *contents = s<span class="Delimiter">;</span>
+void split_layer_contents<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">,</span> string* layer<span class="Delimiter">,</span> string* contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  static const string delim<span class="Delimiter">(</span><span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
+  size_t pos = s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>pos == string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    *layer = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+    *contents = trim<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   else <span class="Delimiter">{</span>
-    *prefix = s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> pos<span class="Delimiter">);</span>
-    *contents = s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span>pos+delim<span class="Delimiter">.</span>size<span class="Delimiter">());</span>
-  <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
-
-void parse_layer_and_frame<span class="Delimiter">(</span>const string&amp; orig<span class="Delimiter">,</span> string* layer<span class="Delimiter">,</span> string* frame<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  index_t last_slash = orig<span class="Delimiter">.</span>rfind<span class="Delimiter">(</span><span class="Constant">'/'</span><span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>last_slash == NOT_FOUND
-      || orig<span class="Delimiter">.</span>find_last_not_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789&quot;</span><span class="Delimiter">)</span> != last_slash<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    *layer = orig<span class="Delimiter">;</span>
-    *frame = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  else <span class="Delimiter">{</span>
-    *layer = orig<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> last_slash<span class="Delimiter">);</span>
-    *frame = orig<span class="Delimiter">.</span>substr<span class="Delimiter">(</span>last_slash+<span class="Constant">1</span><span class="Delimiter">);</span>
+    *layer = trim<span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> pos<span class="Delimiter">));</span>
+    *contents = trim<span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span>pos+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">)));</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 ^L
-
-bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string FILE<span class="Delimiter">,</span> int LINE<span class="Delimiter">,</span> string layer<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// empty layer == everything, multiple layers, hierarchical layers</span>
-  vector&lt;string&gt; expected_lines = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>
-  index_t curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
-    ++curr_expected_line<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
-  vector&lt;string&gt; layers = split<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> <span class="Constant">&quot;,&quot;</span><span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>vector&lt;pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt; &gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!layer<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; !any_prefix_match<span class="Delimiter">(</span>layers<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second != expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">))</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    ++curr_expected_line<span class="Delimiter">;</span>
-    while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
-      ++curr_expected_line<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-
-  ++Num_failures<span class="Delimiter">;</span>
-  cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; FILE &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;] in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-  DUMP<span class="Delimiter">(</span>layer<span class="Delimiter">);</span>
-  Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="PreProc">#define CHECK_TRACE_CONTENTS(</span><span class="Delimiter">...</span><span class="PreProc">)  check_trace_contents(__FUNCTION__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__FILE__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__LINE__</span><span class="Delimiter">,</span><span class="PreProc"> __VA_ARGS__)</span>
 
 int trace_count<span class="Delimiter">(</span>string layer<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
@@ -348,22 +297,9 @@ int trace_count<span class="Delimiter">(</span>string layer<span class="Delimite
 int trace_count<span class="Delimiter">(</span>string layer<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
   long result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  vector&lt;string&gt; layers = split<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> <span class="Constant">&quot;,&quot;</span><span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>vector&lt;pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt; &gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>any_prefix_match<span class="Delimiter">(</span>layers<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
-      if <span class="Delimiter">(</span>line == <span class="Constant">&quot;&quot;</span> || p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second == line<span class="Delimiter">)</span>
-        ++result<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-int trace_count<span class="Delimiter">(</span>string layer<span class="Delimiter">,</span> int frame<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
-  long result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  vector&lt;string&gt; layers = split<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> <span class="Constant">&quot;,&quot;</span><span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>vector&lt;pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt; &gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>any_prefix_match<span class="Delimiter">(</span>layers<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">)</span> &amp;&amp; p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>first == frame<span class="Delimiter">)</span>
-      if <span class="Delimiter">(</span>line == <span class="Constant">&quot;&quot;</span> || p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second == line<span class="Delimiter">)</span>
+  for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>layer == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span>
+      if <span class="Delimiter">(</span>line == <span class="Constant">&quot;&quot;</span> || line == p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">)</span>
         ++result<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
@@ -388,98 +324,36 @@ bool trace_doesnt_contain<span class="Delimiter">(</span>string expected<span cl
   <span class="Identifier">return</span> trace_doesnt_contain<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
-bool trace_doesnt_contain<span class="Delimiter">(</span>string layer<span class="Delimiter">,</span> int frame<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> frame<span class="Delimiter">,</span> line<span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
 <span class="PreProc">#define CHECK_TRACE_DOESNT_CONTAIN(</span><span class="Delimiter">...</span><span class="PreProc">)  CHECK(trace_doesnt_contain(__VA_ARGS__))</span>
-
-^L
-
-<span class="Comment">// manage layer counts in Trace_stream using RAII</span>
-struct lease_trace_frame <span class="Delimiter">{</span>
-  string layer<span class="Delimiter">;</span>
-  lease_trace_frame<span class="Delimiter">(</span>string l<span class="Delimiter">)</span> :layer<span class="Delimiter">(</span>l<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-    Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
-    ++Trace_stream<span class="Delimiter">-&gt;</span>frame[layer]<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  ~lease_trace_frame<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-    Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
-    --Trace_stream<span class="Delimiter">-&gt;</span>frame[layer]<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-<span class="Delimiter">};</span>
-<span class="PreProc">#define new_trace_frame(layer)  lease_trace_frame leased_frame(layer)</span><span class="Delimiter">;</span>
-
-bool check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string FILE<span class="Delimiter">,</span> int LINE<span class="Delimiter">,</span> string layer<span class="Delimiter">,</span> int frame<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// multiple layers, hierarchical layers</span>
-  vector&lt;string&gt; expected_lines = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>  <span class="Comment">// hack: doesn't handle newlines in embedded in lines</span>
-  index_t curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
-    ++curr_expected_line<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
-  vector&lt;string&gt; layers = split<span class="Delimiter">(</span>layer<span class="Delimiter">,</span> <span class="Constant">&quot;,&quot;</span><span class="Delimiter">);</span>
-  for <span class="Delimiter">(</span>vector&lt;pair&lt;string<span class="Delimiter">,</span> pair&lt;int<span class="Delimiter">,</span> string&gt; &gt; &gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!layer<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; !any_prefix_match<span class="Delimiter">(</span>layers<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>first != frame<span class="Delimiter">)</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>second != expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">))</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    ++curr_expected_line<span class="Delimiter">;</span>
-    while <span class="Delimiter">(</span>curr_expected_line &lt; expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
-      ++curr_expected_line<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>curr_expected_line == expected_lines<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-
-  ++Num_failures<span class="Delimiter">;</span>
-  cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; FILE &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;] in trace/&quot;</span> &lt;&lt; frame &lt;&lt; <span class="Constant">&quot;:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-  DUMP<span class="Delimiter">(</span>layer<span class="Delimiter">);</span>
-  Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="PreProc">#define CHECK_TRACE_TOP(layer</span><span class="Delimiter">,</span><span class="PreProc"> expected)  CHECK_TRACE_CONTENTS(layer</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">1</span><span class="Delimiter">,</span><span class="PreProc"> expected)</span>
 
 ^L
 
 vector&lt;string&gt; split<span class="Delimiter">(</span>string s<span class="Delimiter">,</span> string delim<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   vector&lt;string&gt; result<span class="Delimiter">;</span>
-  index_t begin=<span class="Constant">0</span><span class="Delimiter">,</span> end=s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
+  size_t begin=<span class="Constant">0</span><span class="Delimiter">,</span> end=s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">);</span>
   while <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>end == NOT_FOUND<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> begin<span class="Delimiter">,</span> NOT_FOUND<span class="Delimiter">));</span>
+    if <span class="Delimiter">(</span>end == string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> begin<span class="Delimiter">,</span> string::npos<span class="Delimiter">));</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>string<span class="Delimiter">(</span>s<span class="Delimiter">,</span> begin<span class="Delimiter">,</span> end-begin<span class="Delimiter">));</span>
-    begin = end+delim<span class="Delimiter">.</span>size<span class="Delimiter">();</span>
+    begin = SIZE<span class="Delimiter">(</span>end+delim<span class="Delimiter">);</span>
     end = s<span class="Delimiter">.</span>find<span class="Delimiter">(</span>delim<span class="Delimiter">,</span> begin<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-bool any_prefix_match<span class="Delimiter">(</span>const vector&lt;string&gt;&amp; pats<span class="Delimiter">,</span> const string&amp; needle<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>pats<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>*pats<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">'/'</span><span class="Delimiter">)</span>
-    <span class="Comment">// prefix match not requested</span>
-    <span class="Identifier">return</span> find<span class="Delimiter">(</span>pats<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> pats<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> needle<span class="Delimiter">)</span> != pats<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
-  <span class="Comment">// first pat ends in a '/'; assume all pats do.</span>
-  for <span class="Delimiter">(</span>vector&lt;string&gt;::const_iterator p = pats<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != pats<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
-    if <span class="Delimiter">(</span>headmatch<span class="Delimiter">(</span>needle<span class="Delimiter">,</span> *p<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
+string trim<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  string::const_iterator first = s<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>
+  while <span class="Delimiter">(</span>first != s<span class="Delimiter">.</span>end<span class="Delimiter">()</span> &amp;&amp; isspace<span class="Delimiter">(</span>*first<span class="Delimiter">))</span>
+    ++first<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>first == s<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 
-bool prefix_match<span class="Delimiter">(</span>const string&amp; pat<span class="Delimiter">,</span> const string&amp; needle<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>*pat<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">'/'</span><span class="Delimiter">)</span>
-    <span class="Comment">// prefix match not requested</span>
-    <span class="Identifier">return</span> pat == needle<span class="Delimiter">;</span>
-  <span class="Identifier">return</span> headmatch<span class="Delimiter">(</span>needle<span class="Delimiter">,</span> pat<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-bool headmatch<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">,</span> const string&amp; pat<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>pat<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt; s<span class="Delimiter">.</span>size<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Identifier">return</span> std::mismatch<span class="Delimiter">(</span>pat<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> pat<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> s<span class="Delimiter">.</span>begin<span class="Delimiter">()).</span>first == pat<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+  string::const_iterator last = --s<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+  while <span class="Delimiter">(</span>last != s<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> &amp;&amp; isspace<span class="Delimiter">(</span>*last<span class="Delimiter">))</span>
+    --last<span class="Delimiter">;</span>
+  ++last<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> string<span class="Delimiter">(</span>first<span class="Delimiter">,</span> last<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
@@ -487,8 +361,6 @@ bool headmatch<span class="Delimiter">(</span>const string&amp; s<span class="De
 using std::vector<span class="Delimiter">;</span>
 <span class="PreProc">#include</span><span class="Constant">&lt;list&gt;</span>
 using std::list<span class="Delimiter">;</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;utility&gt;</span>
-using std::pair<span class="Delimiter">;</span>
 <span class="PreProc">#include</span><span class="Constant">&lt;map&gt;</span>
 using std::map<span class="Delimiter">;</span>
 <span class="PreProc">#include</span><span class="Constant">&lt;set&gt;</span>
@@ -501,6 +373,7 @@ using std::ostream<span class="Delimiter">;</span>
 using std::cin<span class="Delimiter">;</span>
 using std::cout<span class="Delimiter">;</span>
 using std::cerr<span class="Delimiter">;</span>
+<span class="PreProc">#include</span><span class="Constant">&lt;iomanip&gt;</span>
 
 <span class="PreProc">#include</span><span class="Constant">&lt;sstream&gt;</span>
 using std::istringstream<span class="Delimiter">;</span>
@@ -511,6 +384,27 @@ using std::ifstream<span class="Delimiter">;</span>
 using std::ofstream<span class="Delimiter">;</span>
 
 <span class="PreProc">#define unused  __attribute__((unused))</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Comment">//: In future layers we'll use the depth field as follows:</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Mu 'applications' will be able to use depths 1-99 as they like.</span>
+<span class="Comment">//: Depth 100 will be for scheduling (more on that later).</span>
+const int Scheduling_depth = <span class="Constant">100</span><span class="Delimiter">;</span>
+<span class="Comment">//: Primitive statements will occupy 101-9998</span>
+const int Initial_callstack_depth = <span class="Constant">101</span><span class="Delimiter">;</span>
+const int Max_callstack_depth = <span class="Constant">9998</span><span class="Delimiter">;</span>
+<span class="Comment">//: (ignore this until the call layer)</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+int Callstack_depth = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+Callstack_depth = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Comment">//: Finally, details of primitive mu statements will occupy depth 9999 (more on that later as well)</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+const int Primitive_recipe_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: This framework should help us hide some details at each level, mixing</span>
+<span class="Comment">//: static ideas like layers with the dynamic notion of call-stack depth.</span>
 </pre>
 </body>
 </html>

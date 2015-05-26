@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/003trace.test.cc</title>
+<title>003trace.test.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -17,7 +17,6 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 .Constant { color: #008080; }
 .Delimiter { color: #c000c0; }
 .Comment { color: #8080ff; }
-.Identifier { color: #008080; }
 -->
 </style>
 
@@ -30,113 +29,44 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 <body>
 <pre id='vimCodeElement'>
 void test_trace_check_compares<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">);</span>
+  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer: foo&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-void test_trace_check_filters_layers<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+void test_trace_check_ignores_other_layers<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 2&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">);</span>
+  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1: foo&quot;</span><span class="Delimiter">);</span>
+  CHECK_TRACE_DOESNT_CONTAIN<span class="Delimiter">(</span><span class="Constant">&quot;test layer 2: foo&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 void test_trace_check_ignores_other_lines<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">);</span>
+  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1: foo&quot;</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+void test_trace_check_ignores_other_lines2<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
+  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1: bar&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 void test_trace_ignores_trailing_whitespace<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">);</span>
+  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1: foo&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-void test_trace_check_always_finds_empty_lines<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void test_trace_check_treats_empty_layers_as_wildcards<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void test_trace_check_multiple_lines_at_once<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 2&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo^Dbar^D&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void test_trace_check_always_finds_empty_lines2<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;^D^D^D&quot;</span><span class="Delimiter">);</span>
+void test_trace_ignores_trailing_whitespace2<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo &quot;</span><span class="Delimiter">;</span>
+  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1: foo&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 void test_trace_orders_across_layers<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 2&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;qux&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo^Dbar^Dqux^D&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void test_trace_orders_across_layers2<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 2&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;qux&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;foo^Dbar^Dqux^D&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void test_trace_checks_ordering_spanning_multiple_layers<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;layer1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;layer2&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;layer1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;qux&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;layer1: foo^Dlayer2: bar^Dlayer1: qux^D&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void test_trace_segments_within_layers<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 2&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
-  new_trace_frame<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;qux&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo^Dqux^D&quot;</span><span class="Delimiter">);</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo^D&quot;</span><span class="Delimiter">);</span>
-  CHECK_TRACE_DOESNT_CONTAIN<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo^D&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void test_trace_checks_ordering_across_layers_and_frames<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 2&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
-  new_trace_frame<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;qux&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1/0: foo^Dtest layer 2: bar^Dtest layer 1: qux&quot;</span><span class="Delimiter">);</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1: foo^Dtest layer 2: bar^Dtest layer 1/1: qux&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void trace_test_fn<span class="Delimiter">(</span>int n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>n == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  new_trace_frame<span class="Delimiter">(</span><span class="Constant">&quot;foo&quot;</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;foo&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;before: &quot;</span> &lt;&lt; n<span class="Delimiter">;</span>
-  trace_test_fn<span class="Delimiter">(</span>n-<span class="Constant">1</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;foo&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;after: &quot;</span> &lt;&lt; n<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-void test_trace_keeps_level_together<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;foo&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-  trace_test_fn<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">);</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;foo&quot;</span><span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;before: 3^Dafter: 3^D&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void test_trace_supports_multiple_layers<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 2&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;qux&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1,test layer 2&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo^Dbar^Dqux^D&quot;</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-void test_trace_supports_hierarchical_layers<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer/a&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;different layer/c&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;foo 2&quot;</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;test layer/b&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;bar&quot;</span><span class="Delimiter">;</span>
-  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer/&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;foo^Dbar^D&quot;</span><span class="Delimiter">);</span>
+  CHECK_TRACE_CONTENTS<span class="Delimiter">(</span><span class="Constant">&quot;test layer 1: foo^Dtest layer 2: bar^Dtest layer 1: qux^D&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 void test_trace_supports_count<span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -197,6 +127,22 @@ void test_split_handles_multichar_delim<span class="Delimiter">()</span> <span c
   CHECK_EQ<span class="Delimiter">(</span>result<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> <span class="Constant">&quot;abc&quot;</span><span class="Delimiter">);</span>
   CHECK_EQ<span class="Delimiter">(</span>result<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">),</span> <span class="Constant">&quot;def&quot;</span><span class="Delimiter">);</span>
   CHECK_EQ<span class="Delimiter">(</span>result<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">),</span> <span class="Constant">&quot;ghi&quot;</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+void test_trim<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot; &quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot;  &quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot;a&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;a&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot; a&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;a&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot;  a&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;a&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot;  ab&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;ab&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot;a &quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;a&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot;a  &quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;a&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot;ab  &quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;ab&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot; a &quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;a&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot;  a  &quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;a&quot;</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trim<span class="Delimiter">(</span><span class="Constant">&quot;  ab  &quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;ab&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>

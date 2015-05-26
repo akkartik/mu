@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/074keyboard.mu</title>
+<title>074keyboard.mu</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="none">
@@ -13,12 +13,13 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
 body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 * { font-size: 1em; }
-.Identifier { color: #008080; }
+.CommentedCode { color: #6c6c6c; }
+.muRecipe { color: #ff8700; }
 .Delimiter { color: #c000c0; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
+.Identifier { color: #008080; }
 -->
 </style>
 
@@ -38,21 +39,21 @@ container keyboard <span class="Constant">[  # can't think of another word like 
 <span class="Constant">  data:address:array:character</span>
 <span class="Constant">]</span>
 
-recipe init-fake-keyboard [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+<span class="muRecipe">recipe</span> init-fake-keyboard [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   result:address:keyboard<span class="Special"> &lt;- </span>new keyboard:type
   buf:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:keyboard/deref, data:offset
 <span class="CommentedCode">#?   $start-tracing #? 1</span>
-  buf:address:address:array:character/deref<span class="Special"> &lt;- </span>next-ingredient
+  buf:address:address:array:character/deref<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
 <span class="CommentedCode">#?   $stop-tracing #? 1</span>
   idx:address:number<span class="Special"> &lt;- </span>get-address result:address:keyboard/deref, index:offset
   idx:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Identifier">reply</span> result:address:keyboard
 ]
 
-recipe read-key [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:keyboard<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> read-key [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:keyboard<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Identifier">break-unless</span> x:address:keyboard
     idx:address:number<span class="Special"> &lt;- </span>get-address x:address:keyboard/deref, index:offset
@@ -73,9 +74,9 @@ recipe read-key [
   <span class="Identifier">reply</span> c:character, found?:boolean, x:address:keyboard/same-as-ingredient:0
 ]
 
-recipe wait-for-key [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:keyboard<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> wait-for-key [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:keyboard<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Identifier">break-unless</span> x:address:keyboard
     <span class="Comment"># on fake keyboards 'wait-for-key' behaves just like 'read-key'</span>
@@ -86,11 +87,11 @@ recipe wait-for-key [
   <span class="Identifier">reply</span> c:character, x:address:keyboard/same-as-ingredient:0
 ]
 
-recipe send-keys-to-channel [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  keyboard:address<span class="Special"> &lt;- </span>next-ingredient
-  chan:address:channel<span class="Special"> &lt;- </span>next-ingredient
-  screen:address<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> send-keys-to-channel [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  keyboard:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   <span class="Delimiter">{</span>
     c:character, found?:boolean<span class="Special"> &lt;- </span>read-key keyboard:address
     <span class="Identifier">loop-unless</span> found?:boolean

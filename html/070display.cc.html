@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/070display.cc</title>
+<title>070display.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -14,8 +14,8 @@ pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-
 body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 * { font-size: 1em; }
 .cSpecial { color: #008000; }
-.Identifier { color: #008080; }
 .Constant { color: #008080; }
+.Identifier { color: #008080; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .SalientComment { color: #00ffff; }
@@ -41,7 +41,7 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 <span class="SalientComment">//:: Display management</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-index_t Display_row = <span class="Constant">0</span><span class="Delimiter">,</span> Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
+long long int Display_row = <span class="Constant">0</span><span class="Delimiter">,</span> Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 SWITCH_TO_DISPLAY<span class="Delimiter">,</span>
@@ -85,8 +85,8 @@ CLEAR_LINE_ON_DISPLAY<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;clear-line-on-display&quot;</span>] = CLEAR_LINE_ON_DISPLAY<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case CLEAR_LINE_ON_DISPLAY: <span class="Delimiter">{</span>
-  size_t width = tb_width<span class="Delimiter">();</span>
-  for <span class="Delimiter">(</span>index_t x = Display_column<span class="Delimiter">;</span> x &lt; width<span class="Delimiter">;</span> ++x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  long long int width = tb_width<span class="Delimiter">();</span>
+  for <span class="Delimiter">(</span>long long int x = Display_column<span class="Delimiter">;</span> x &lt; width<span class="Delimiter">;</span> ++x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     tb_change_cell<span class="Delimiter">(</span>x<span class="Delimiter">,</span> Display_row<span class="Delimiter">,</span> <span class="Constant">' '</span><span class="Delimiter">,</span> TB_WHITE<span class="Delimiter">,</span> TB_DEFAULT<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   tb_set_cursor<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
@@ -101,9 +101,9 @@ Recipe_number[<span class="Constant">&quot;print-character-to-display&quot;</spa
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case PRINT_CHARACTER_TO_DISPLAY: <span class="Delimiter">{</span>
   int h=tb_height<span class="Delimiter">(),</span> w=tb_width<span class="Delimiter">();</span>
-  size_t height = <span class="Delimiter">(</span>h &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? h : <span class="Constant">0</span><span class="Delimiter">;</span>
-  size_t width = <span class="Delimiter">(</span>w &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? w : <span class="Constant">0</span><span class="Delimiter">;</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  long long int height = <span class="Delimiter">(</span>h &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? h : <span class="Constant">0</span><span class="Delimiter">;</span>
+  long long int width = <span class="Delimiter">(</span>w &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? w : <span class="Constant">0</span><span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   long long int c = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>c == <span class="cSpecial">'\n'</span> || c == <span class="cSpecial">'\r'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>Display_row &lt; height-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -123,7 +123,12 @@ case PRINT_CHARACTER_TO_DISPLAY: <span class="Delimiter">{</span>
     <span class="Delimiter">}</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  tb_change_cell<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">,</span> c<span class="Delimiter">,</span> TB_WHITE<span class="Delimiter">,</span> TB_DEFAULT<span class="Delimiter">);</span>
+  int color = TB_WHITE<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
+    color = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  tb_change_cell<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">,</span> c<span class="Delimiter">,</span> color<span class="Delimiter">,</span> TB_DEFAULT<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>Display_column &lt; width-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     ++Display_column<span class="Delimiter">;</span>
     tb_set_cursor<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
@@ -150,9 +155,9 @@ MOVE_CURSOR_ON_DISPLAY<span class="Delimiter">,</span>
 Recipe_number[<span class="Constant">&quot;move-cursor-on-display&quot;</span>] = MOVE_CURSOR_ON_DISPLAY<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case MOVE_CURSOR_ON_DISPLAY: <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   Display_row = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   Display_column = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   tb_set_cursor<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
   tb_present<span class="Delimiter">();</span>
@@ -166,7 +171,7 @@ Recipe_number[<span class="Constant">&quot;move-cursor-down-on-display&quot;</sp
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case MOVE_CURSOR_DOWN_ON_DISPLAY: <span class="Delimiter">{</span>
   int h=tb_height<span class="Delimiter">();</span>
-  size_t height = <span class="Delimiter">(</span>h &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? h : <span class="Constant">0</span><span class="Delimiter">;</span>
+  long long int height = <span class="Delimiter">(</span>h &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? h : <span class="Constant">0</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>Display_row &lt; height-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Display_row++<span class="Delimiter">;</span>
     tb_set_cursor<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
@@ -196,7 +201,7 @@ Recipe_number[<span class="Constant">&quot;move-cursor-right-on-display&quot;</s
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case MOVE_CURSOR_RIGHT_ON_DISPLAY: <span class="Delimiter">{</span>
   int w=tb_width<span class="Delimiter">();</span>
-  size_t width = <span class="Delimiter">(</span>w &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? w : <span class="Constant">0</span><span class="Delimiter">;</span>
+  long long int width = <span class="Delimiter">(</span>w &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? w : <span class="Constant">0</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>Display_column &lt; width-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Display_column++<span class="Delimiter">;</span>
     tb_set_cursor<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>

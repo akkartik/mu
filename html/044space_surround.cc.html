@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/044space_surround.cc</title>
+<title>044space_surround.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -13,12 +13,12 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
 body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 * { font-size: 1em; }
-.CommentedCode { color: #6c6c6c; }
+.Identifier { color: #008080; }
 .Constant { color: #008080; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
-.Identifier { color: #008080; }
+.CommentedCode { color: #6c6c6c; }
 .traceContains { color: #008000; }
 -->
 </style>
@@ -47,42 +47,50 @@ recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">32</span>:literal
   <span class="Constant">1</span>:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">33</span>:literal
 ]
-<span class="traceContains">+run: instruction main/3</span>
+<span class="Comment"># chain space</span>
 <span class="traceContains">+mem: storing 20 in location 11</span>
-<span class="traceContains">+run: instruction main/4</span>
+<span class="Comment"># store to default-space</span>
 <span class="traceContains">+mem: storing 32 in location 12</span>
-<span class="traceContains">+run: instruction main/5</span>
+<span class="Comment"># store to chained space</span>
 <span class="traceContains">+mem: storing 33 in location 22</span>
 
 <span class="Comment">//: If you think of a space as a collection of variables with a common</span>
 <span class="Comment">//: lifetime, surrounding allows managing shorter lifetimes inside a longer</span>
 <span class="Comment">//: one.</span>
 
-<span class="Delimiter">:(replace{} &quot;index_t space_base(const reagent&amp; x)&quot;)</span>
-index_t space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Delimiter">:(replace{} &quot;long long int space_base(const reagent&amp; x)&quot;)</span>
+long long int space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;space_base: &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
   <span class="Identifier">return</span> space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index<span class="Delimiter">(</span>x<span class="Delimiter">),</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-index_t space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">,</span> index_t space_index<span class="Delimiter">,</span> index_t base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+long long int space_base<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">,</span> long long int space_index<span class="Delimiter">,</span> long long int base<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   trace(&quot;foo&quot;) &lt;&lt; &quot;base of space &quot; &lt;&lt; space_index &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;space_base sub: &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
   if <span class="Delimiter">(</span>space_index == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?     trace(&quot;foo&quot;) &lt;&lt; &quot;base of space &quot; &lt;&lt; space_index &lt;&lt; &quot; is &quot; &lt;&lt; base &lt;&lt; '\n'; //? 1</span>
     <span class="Identifier">return</span> base<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="CommentedCode">//?   trace(&quot;foo&quot;) &lt;&lt; &quot;base of space &quot; &lt;&lt; space_index &lt;&lt; &quot; is &quot; &lt;&lt; Memory[base+1] &lt;&lt; '\n'; //? 1</span>
-  index_t result = space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index-<span class="Constant">1</span><span class="Delimiter">,</span> Memory[base+<span class="Constant">1</span>]<span class="Delimiter">);</span>
+  long long int result = space_base<span class="Delimiter">(</span>x<span class="Delimiter">,</span> space_index-<span class="Constant">1</span><span class="Delimiter">,</span> Memory[base+<span class="Constant">1</span>]<span class="Delimiter">);</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-index_t space_index<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+long long int space_index<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;space_index: &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Comment">/*</span><span class="Comment">skip name:type</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      assert<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-      <span class="Identifier">return</span> to_number<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+      assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+      <span class="Identifier">return</span> to_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario permit_space_as_variable_name)</span>
+recipe main [
+  space:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+]
 </pre>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/022boolean.cc</title>
+<title>022boolean.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -39,8 +39,8 @@ Recipe_number[<span class="Constant">&quot;and&quot;</span>] = AND<span class="D
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case AND: <span class="Delimiter">{</span>
   bool result = <span class="Constant">true</span><span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     result = result &amp;&amp; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
@@ -54,12 +54,6 @@ recipe main [
   <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
   <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean
 ]
-<span class="traceContains">+run: instruction main/2</span>
-<span class="traceContains">+run: ingredient 0 is 1</span>
-<span class="traceContains">+mem: location 1 is 1</span>
-<span class="traceContains">+run: ingredient 1 is 2</span>
-<span class="traceContains">+mem: location 2 is 0</span>
-<span class="traceContains">+run: product 0 is 3</span>
 <span class="traceContains">+mem: storing 0 in location 3</span>
 
 <span class="Delimiter">:(scenario and2)</span>
@@ -87,8 +81,8 @@ Recipe_number[<span class="Constant">&quot;or&quot;</span>] = OR<span class="Del
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case OR: <span class="Delimiter">{</span>
   bool result = <span class="Constant">false</span><span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     result = result || ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
@@ -102,12 +96,6 @@ recipe main [
   <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
   <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>or <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean
 ]
-<span class="traceContains">+run: instruction main/2</span>
-<span class="traceContains">+run: ingredient 0 is 1</span>
-<span class="traceContains">+mem: location 1 is 1</span>
-<span class="traceContains">+run: ingredient 1 is 2</span>
-<span class="traceContains">+mem: location 2 is 0</span>
-<span class="traceContains">+run: product 0 is 3</span>
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
 <span class="Delimiter">:(scenario or2)</span>
@@ -135,8 +123,8 @@ Recipe_number[<span class="Constant">&quot;not&quot;</span>] = NOT<span class="D
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case NOT: <span class="Delimiter">{</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>size<span class="Delimiter">());</span>
-  for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; ingredients<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    assert<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// scalar</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>!ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -147,10 +135,6 @@ recipe main [
   <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
   <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>not <span class="Constant">1</span>:boolean
 ]
-<span class="traceContains">+run: instruction main/1</span>
-<span class="traceContains">+run: ingredient 0 is 1</span>
-<span class="traceContains">+mem: location 1 is 1</span>
-<span class="traceContains">+run: product 0 is 2</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
 
 <span class="Delimiter">:(scenario not_multiple)</span>

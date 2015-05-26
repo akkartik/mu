@@ -13,6 +13,8 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
 body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 * { font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.muScenario { color: #00af00; }
 .CommentedCode { color: #6c6c6c; }
 .Delimiter { color: #c000c0; }
 .Comment { color: #8080ff; }
@@ -35,7 +37,7 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 <span class="Comment"># display the position after each move.</span>
 
 <span class="Comment"># recipes are mu's names for functions</span>
-recipe main [
+<span class="muRecipe">recipe</span> main [
   switch-to-display  <span class="Comment"># take control of screen and keyboard</span>
 
   <span class="Comment"># The chessboard recipe takes keyboard and screen objects as 'ingredients'.</span>
@@ -57,7 +59,7 @@ recipe main [
 
 <span class="SalientComment">## But enough about mu. Here's what it looks like to run the chessboard program.</span>
 
-scenario print-board-and-read-move [
+<span class="muScenario">scenario</span> print-board-and-read-move [
  <span class="Identifier"> $close-trace</span>  <span class="Comment"># administrivia: most scenarios save and check traces, but this one gets too large/slow</span>
   <span class="Comment"># we'll make the screen really wide because the program currently prints out a long line</span>
   assume-screen <span class="Constant">120:literal/width</span>, <span class="Constant">20:literal/height</span>
@@ -66,6 +68,8 @@ scenario print-board-and-read-move [
 <span class="Constant">]</span>
   run [
     screen:address, keyboard:address<span class="Special"> &lt;- </span>chessboard screen:address, keyboard:address
+<span class="CommentedCode">#?     $browse-trace #? 1</span>
+<span class="CommentedCode">#?     $close-trace #? 1</span>
     <span class="Comment"># icon for the cursor</span>
     screen:address<span class="Special"> &lt;- </span>print-character screen:address, <span class="Constant">9251:literal</span>  <span class="Comment"># '␣'</span>
   ]
@@ -97,21 +101,21 @@ scenario print-board-and-read-move [
 
 <span class="SalientComment">## Here's how 'chessboard' is implemented.</span>
 
-recipe chessboard [
+<span class="muRecipe">recipe</span> chessboard [
 <span class="CommentedCode">#?   $start-tracing [schedule] #? 2</span>
 <span class="CommentedCode">#?   $start-tracing #? 1</span>
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  screen:address<span class="Special"> &lt;- </span>next-ingredient
-  keyboard:address<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  keyboard:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
 <span class="CommentedCode">#?   $print [screen: ], screen:address, [, keyboard: ], keyboard:address, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
   board:address:array:address:array:character<span class="Special"> &lt;- </span>initial-position
   <span class="Comment"># hook up stdin</span>
   stdin:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">10:literal/capacity</span>
-  start-running send-keys-to-channel:recipe, keyboard:address, stdin:address:channel, screen:address
+  start-running send-keys-to-channel:<span class="muRecipe">recipe</span>, keyboard:address, stdin:address:channel, screen:address
   <span class="Comment"># buffer lines in stdin</span>
   buffered-stdin:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">10:literal/capacity</span>
-  start-running buffer-lines:recipe, stdin:address:channel, buffered-stdin:address:channel
+  start-running buffer-lines:<span class="muRecipe">recipe</span>, stdin:address:channel, buffered-stdin:address:channel
   <span class="Delimiter">{</span>
     msg:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.</span>
 <span class="Constant">]</span>
@@ -155,9 +159,9 @@ recipe chessboard [
 
 <span class="SalientComment">## a board is an array of files, a file is an array of characters (squares)</span>
 
-recipe init-board [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  initial-position:address:array:number<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> init-board [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  initial-position:address:array:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   <span class="Comment"># assert(length(initial-position) == 64)</span>
   len:number<span class="Special"> &lt;- </span>length initial-position:address:array:number/deref
   correct-length?:boolean<span class="Special"> &lt;- </span>equal len:number, <span class="Constant">64:literal</span>
@@ -176,10 +180,10 @@ recipe init-board [
   <span class="Identifier">reply</span> board:address:array:address:array:character
 ]
 
-recipe init-file [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  position:address:array:number<span class="Special"> &lt;- </span>next-ingredient
-  index:number<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> init-file [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  position:address:array:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  index:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   index:number<span class="Special"> &lt;- </span>multiply index:number, <span class="Constant">8:literal</span>
   result:address:array:character<span class="Special"> &lt;- </span>new character:type, <span class="Constant">8:literal</span>
   row:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
@@ -195,10 +199,10 @@ recipe init-file [
   <span class="Identifier">reply</span> result:address:array:character
 ]
 
-recipe print-board [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  screen:address<span class="Special"> &lt;- </span>next-ingredient
-  board:address:array:address:array:character<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> print-board [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  board:address:array:address:array:character<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   row:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal</span>  <span class="Comment"># start printing from the top of the board</span>
   <span class="Comment"># print each row</span>
 <span class="CommentedCode">#?   $print [printing board to screen ], screen:address, [ </span>
@@ -244,8 +248,8 @@ recipe print-board [
 ]
 
 <span class="Comment"># board:address:array:address:array:character &lt;- initial-position</span>
-recipe initial-position [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+<span class="muRecipe">recipe</span> initial-position [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   <span class="Comment"># layout in memory (in raster order):</span>
   <span class="Comment">#   R P _ _ _ _ p r</span>
   <span class="Comment">#   N P _ _ _ _ p n</span>
@@ -268,7 +272,7 @@ recipe initial-position [
   <span class="Identifier">reply</span> board:address:array:address:array:character
 ]
 
-scenario printing-the-board [
+<span class="muScenario">scenario</span> printing-the-board [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">12:literal/height</span>
   run [
     1:address:array:address:array:character/board<span class="Special"> &lt;- </span>initial-position
@@ -304,10 +308,10 @@ container move [
 
 <span class="Comment"># result:address:move, quit?:boolean, error?:boolean &lt;- read-move stdin:address:channel, screen:address</span>
 <span class="Comment"># prints only error messages to screen</span>
-recipe read-move [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  stdin:address:channel<span class="Special"> &lt;- </span>next-ingredient
-  screen:address<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> read-move [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  stdin:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
 <span class="CommentedCode">#?   $print screen:address #? 1</span>
   from-file:number, quit?:boolean, error?:boolean<span class="Special"> &lt;- </span>read-file stdin:address:channel, screen:address
   <span class="Identifier">reply-if</span> quit?:boolean, <span class="Constant">0:literal/dummy</span>, quit?:boolean, error?:boolean
@@ -339,10 +343,10 @@ recipe read-move [
 
 <span class="Comment"># file:number, quit:boolean, error:boolean &lt;- read-file stdin:address:channel, screen:address</span>
 <span class="Comment"># valid values for file: 0-7</span>
-recipe read-file [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  stdin:address:channel<span class="Special"> &lt;- </span>next-ingredient
-  screen:address<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> read-file [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  stdin:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   c:character, stdin:address:channel<span class="Special"> &lt;- </span>read stdin:address:channel
   <span class="Delimiter">{</span>
     q-pressed?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">81:literal</span>  <span class="Comment"># 'Q'</span>
@@ -392,10 +396,10 @@ recipe read-file [
 
 <span class="Comment"># rank:number &lt;- read-rank stdin:address:channel, screen:address</span>
 <span class="Comment"># valid values: 0-7, -1 (quit), -2 (error)</span>
-recipe read-rank [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  stdin:address:channel<span class="Special"> &lt;- </span>next-ingredient
-  screen:address<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> read-rank [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  stdin:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   c:character, stdin:address:channel<span class="Special"> &lt;- </span>read stdin:address:channel
   <span class="Delimiter">{</span>
     q-pressed?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">81:literal</span>  <span class="Comment"># 'Q'</span>
@@ -439,11 +443,11 @@ recipe read-rank [
 
 <span class="Comment"># read a character from the given channel and check that it's what we expect</span>
 <span class="Comment"># return true on error</span>
-recipe expect-from-channel [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  stdin:address:channel<span class="Special"> &lt;- </span>next-ingredient
-  expected:character<span class="Special"> &lt;- </span>next-ingredient
-  screen:address<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> expect-from-channel [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  stdin:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  expected:character<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   c:character, stdin:address:channel<span class="Special"> &lt;- </span>read stdin:address:channel
   match?:boolean<span class="Special"> &lt;- </span>equal c:character, expected:character
   <span class="Delimiter">{</span>
@@ -455,14 +459,14 @@ recipe expect-from-channel [
   <span class="Identifier">reply</span> result:boolean
 ]
 
-scenario read-move-blocking [
+<span class="muScenario">scenario</span> read-move-blocking [
   assume-screen <span class="Constant">20:literal/width</span>, <span class="Constant">2:literal/height</span>
   run [
 <span class="CommentedCode">#?     $start-tracing #? 1</span>
     1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">2:literal</span>
 <span class="CommentedCode">#?     $print [aaa channel address: ], 1:address:channel, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
-    2:number/routine<span class="Special"> &lt;- </span>start-running read-move:recipe, 1:address:channel, screen:address
+    2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine 2:number
 <span class="CommentedCode">#?     $print [bbb channel address: ], 1:address:channel, [ </span>
@@ -472,7 +476,7 @@ scenario read-move-blocking [
 <span class="CommentedCode">#? ] #? 1</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
-F read-move-blocking: routine failed to pause after coming up<span class="Identifier"> (before</span> any keys were pressed)]
+F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> coming up<span class="Identifier"> (before</span> any keys were pressed)]
     <span class="Comment"># press 'a'</span>
 <span class="CommentedCode">#?     $print [ccc channel address: ], 1:address:channel, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
@@ -486,7 +490,7 @@ F read-move-blocking: routine failed to pause after coming up<span class="Identi
 <span class="CommentedCode">#? ] #? 1</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
-F read-move-blocking: routine failed to pause after rank<span class="Identifier"> 'a</span>']
+F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> rank<span class="Identifier"> 'a</span>']
     <span class="Comment"># press '2'</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">50:literal</span>  <span class="Comment"># '2'</span>
     restart 2:number/routine
@@ -497,7 +501,7 @@ F read-move-blocking: routine failed to pause after rank<span class="Identifier"
 <span class="CommentedCode">#? ] #? 1</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
-F read-move-blocking: routine failed to pause after file<span class="Identifier"> 'a2</span>']
+F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> file<span class="Identifier"> 'a2</span>']
     <span class="Comment"># press '-'</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">45:literal</span>  <span class="Comment"># '-'</span>
     restart 2:number/routine
@@ -508,7 +512,7 @@ F read-move-blocking: routine failed to pause after file<span class="Identifier"
 <span class="CommentedCode">#? ] #? 1</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?/routine-state, [
-F read-move-blocking: routine failed to pause after hyphen<span class="Identifier"> 'a2-</span>']
+F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> hyphen<span class="Identifier"> 'a2-</span>']
     <span class="Comment"># press 'a'</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
     restart 2:number/routine
@@ -519,7 +523,7 @@ F read-move-blocking: routine failed to pause after hyphen<span class="Identifie
 <span class="CommentedCode">#? ] #? 1</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?/routine-state, [
-F read-move-blocking: routine failed to pause after rank<span class="Identifier"> 'a2-a</span>']
+F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> rank<span class="Identifier"> 'a2-a</span>']
     <span class="Comment"># press '4'</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">52:literal</span>  <span class="Comment"># '4'</span>
     restart 2:number/routine
@@ -530,7 +534,7 @@ F read-move-blocking: routine failed to pause after rank<span class="Identifier"
 <span class="CommentedCode">#? ] #? 1</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
-F read-move-blocking: routine failed to pause after file<span class="Identifier"> 'a2-a4</span>']
+F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> file<span class="Identifier"> 'a2-a4</span>']
     <span class="Comment"># press 'newline'</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">10:literal</span>  <span class="Comment"># newline</span>
     restart 2:number/routine
@@ -549,17 +553,17 @@ F read-move-blocking: routine failed to terminate on newline]
   ]
 ]
 
-scenario read-move-quit [
+<span class="muScenario">scenario</span> read-move-quit [
   assume-screen <span class="Constant">20:literal/width</span>, <span class="Constant">2:literal/height</span>
   run [
     1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">2:literal</span>
-    2:number/routine<span class="Special"> &lt;- </span>start-running read-move:recipe, 1:address:channel, screen:address
+    2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine 2:number
     3:number<span class="Special"> &lt;- </span>routine-state 2:number/id
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
-F read-move-quit: routine failed to pause after coming up<span class="Identifier"> (before</span> any keys were pressed)]
+F read-move-quit: routine failed to pause <span class="muRecipe">after</span> coming up<span class="Identifier"> (before</span> any keys were pressed)]
     <span class="Comment"># press 'q'</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">113:literal</span>  <span class="Comment"># 'q'</span>
     restart 2:number/routine
@@ -576,17 +580,17 @@ F read-move-quit: routine failed to terminate on<span class="Identifier"> 'q</sp
   ]
 ]
 
-scenario read-move-illegal-file [
+<span class="muScenario">scenario</span> read-move-illegal-file [
   assume-screen <span class="Constant">20:literal/width</span>, <span class="Constant">2:literal/height</span>
   run [
     1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">2:literal</span>
-    2:number/routine<span class="Special"> &lt;- </span>start-running read-move:recipe, 1:address:channel, screen:address
+    2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine 2:number
     3:number<span class="Special"> &lt;- </span>routine-state 2:number/id
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
-F read-move-file: routine failed to pause after coming up<span class="Identifier"> (before</span> any keys were pressed)]
+F read-move-file: routine failed to pause <span class="muRecipe">after</span> coming up<span class="Identifier"> (before</span> any keys were pressed)]
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">50:literal</span>  <span class="Comment"># '2'</span>
     restart 2:number/routine
     wait-for-routine 2:number
@@ -597,17 +601,17 @@ F read-move-file: routine failed to pause after coming up<span class="Identifier
   ]
 ]
 
-scenario read-move-illegal-rank [
+<span class="muScenario">scenario</span> read-move-illegal-rank [
   assume-screen <span class="Constant">20:literal/width</span>, <span class="Constant">2:literal/height</span>
   run [
     1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">2:literal</span>
-    2:number/routine<span class="Special"> &lt;- </span>start-running read-move:recipe, 1:address:channel, screen:address
+    2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine 2:number
     3:number<span class="Special"> &lt;- </span>routine-state 2:number/id
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
-F read-move-file: routine failed to pause after coming up<span class="Identifier"> (before</span> any keys were pressed)]
+F read-move-file: routine failed to pause <span class="muRecipe">after</span> coming up<span class="Identifier"> (before</span> any keys were pressed)]
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
     restart 2:number/routine
@@ -619,17 +623,17 @@ F read-move-file: routine failed to pause after coming up<span class="Identifier
   ]
 ]
 
-scenario read-move-empty [
+<span class="muScenario">scenario</span> read-move-empty [
   assume-screen <span class="Constant">20:literal/width</span>, <span class="Constant">2:literal/height</span>
   run [
     1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">2:literal</span>
-    2:number/routine<span class="Special"> &lt;- </span>start-running read-move:recipe, 1:address:channel, screen:address
+    2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine 2:number
     3:number<span class="Special"> &lt;- </span>routine-state 2:number/id
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
-F read-move-file: routine failed to pause after coming up<span class="Identifier"> (before</span> any keys were pressed)]
+F read-move-file: routine failed to pause <span class="muRecipe">after</span> coming up<span class="Identifier"> (before</span> any keys were pressed)]
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">10:literal/newline</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
     restart 2:number/routine
@@ -641,10 +645,10 @@ F read-move-file: routine failed to pause after coming up<span class="Identifier
   ]
 ]
 
-recipe make-move [
-  default-space:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  b:address:array:address:array:character<span class="Special"> &lt;- </span>next-ingredient
-  m:address:move<span class="Special"> &lt;- </span>next-ingredient
+<span class="muRecipe">recipe</span> make-move [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  b:address:array:address:array:character<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  m:address:move<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   from-file:number<span class="Special"> &lt;- </span>get m:address:move/deref, from-file:offset
 <span class="CommentedCode">#?   $print from-file:number, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
@@ -668,7 +672,7 @@ recipe make-move [
   <span class="Identifier">reply</span> b:address:array:address:array:character/same-as-ingredient:0
 ]
 
-scenario making-a-move [
+<span class="muScenario">scenario</span> making-a-move [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">12:literal/height</span>
   run [
     2:address:array:address:array:character/board<span class="Special"> &lt;- </span>initial-position

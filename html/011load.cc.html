@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/011load.cc</title>
+<title>011load.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -40,8 +40,8 @@ recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
 
 <span class="Delimiter">:(code)</span>
 vector&lt;recipe_number&gt; load<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -68,6 +68,7 @@ vector&lt;recipe_number&gt; load<span class="Delimiter">(</span>istream&amp; in<
         raise &lt;&lt; <span class="Constant">&quot;redefining recipe &quot;</span> &lt;&lt; Recipe[Recipe_number[recipe_name]]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
         Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recipe_number[recipe_name]<span class="Delimiter">);</span>
       <span class="Delimiter">}</span>
+      <span class="Comment">// todo: save user-defined recipes to mu's memory</span>
       Recipe[Recipe_number[recipe_name]] = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
       Recipe[Recipe_number[recipe_name]]<span class="Delimiter">.</span>name = recipe_name<span class="Delimiter">;</span>
       <span class="Comment">// track added recipes because we may need to undo them in tests; see below</span>
@@ -79,6 +80,7 @@ vector&lt;recipe_number&gt; load<span class="Delimiter">(</span>istream&amp; in<
       raise &lt;&lt; <span class="Constant">&quot;unknown top-level command: &quot;</span> &lt;&lt; command &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
+  <span class="Comment">// End Load Sanity Checks</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -115,13 +117,13 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
   <span class="Delimiter">}</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 
-<span class="CommentedCode">//?   if (words.size() == 1) cout &lt;&lt; words.at(0) &lt;&lt; ' ' &lt;&lt; words.at(0).size() &lt;&lt; '\n'; //? 1</span>
-  if <span class="Delimiter">(</span>words<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;]&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   if (SIZE(words) == 1) cout &lt;&lt; words.at(0) &lt;&lt; ' ' &lt;&lt; SIZE(words.at(0)) &lt;&lt; '\n'; //? 1</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>words<span class="Delimiter">)</span> == <span class="Constant">1</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;]&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?     cout &lt;&lt; &quot;AAA\n&quot;; //? 1</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// end of recipe</span>
   <span class="Delimiter">}</span>
 
-  if <span class="Delimiter">(</span>words<span class="Delimiter">.</span>size<span class="Delimiter">()</span> == <span class="Constant">1</span> &amp;&amp; !isalnum<span class="Delimiter">(</span>words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'$'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>words<span class="Delimiter">)</span> == <span class="Constant">1</span> &amp;&amp; !isalnum<span class="Delimiter">(</span>words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &amp;&amp; words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'$'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     curr<span class="Delimiter">-&gt;</span>is_label = <span class="Constant">true</span><span class="Delimiter">;</span>
     curr<span class="Delimiter">-&gt;</span>label = words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     trace<span class="Delimiter">(</span><span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;label: &quot;</span> &lt;&lt; curr<span class="Delimiter">-&gt;</span>label<span class="Delimiter">;</span>
@@ -236,7 +238,7 @@ void show_rest_of_stream<span class="Delimiter">(</span>istream&amp; in<span cla
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 vector&lt;recipe_number&gt; recently_added_recipes<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-for <span class="Delimiter">(</span>index_t i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; recently_added_recipes<span class="Delimiter">.</span>size<span class="Delimiter">();</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recently_added_recipes<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;AAA clearing &quot; &lt;&lt; Recipe[recently_added_recipes.at(i)].name &lt;&lt; '\n'; //? 2</span>
   Recipe_number<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recipe[recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span>]<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
   Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
@@ -252,8 +254,8 @@ recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction)</span>
 recipe main [
@@ -261,8 +263,8 @@ recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction2)</span>
 recipe main [
@@ -271,8 +273,8 @@ recipe main [
   <span class="Comment"># comment</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction3)</span>
 recipe main [
@@ -281,19 +283,19 @@ recipe main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;2&quot;, value: 0, type: 1, properties: [&quot;2&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;2&quot;, properties: [&quot;2&quot;: &quot;number&quot;]}</span>
 
 <span class="Delimiter">:(scenario parse_comment_after_instruction)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal  <span class="Comment"># comment</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
 
 <span class="Delimiter">:(scenario parse_label)</span>
 recipe main [
@@ -312,43 +314,43 @@ recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal/foo:bar:baz
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;, &quot;foo&quot;: &quot;bar&quot;:&quot;baz&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;, &quot;foo&quot;: &quot;bar&quot;:&quot;baz&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
 
 <span class="Delimiter">:(scenario parse_multiple_products)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;2&quot;, value: 0, type: 1, properties: [&quot;2&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;2&quot;, properties: [&quot;2&quot;: &quot;number&quot;]}</span>
 
 <span class="Delimiter">:(scenario parse_multiple_ingredients)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal<span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;4&quot;, value: 0, type: 1, properties: [&quot;4&quot;: &quot;number&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;2&quot;, value: 0, type: 1, properties: [&quot;2&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;4&quot;, properties: [&quot;4&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;2&quot;, properties: [&quot;2&quot;: &quot;number&quot;]}</span>
 
 <span class="Delimiter">:(scenario parse_multiple_types)</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal<span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, value: 0, type: 0, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;4&quot;, value: 0, type: 1, properties: [&quot;4&quot;: &quot;number&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
-<span class="traceContains">+parse:   product: {name: &quot;2&quot;, value: 0, type: 2-1, properties: [&quot;2&quot;: &quot;address&quot;:&quot;number&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;23&quot;, properties: [&quot;23&quot;: &quot;literal&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;4&quot;, properties: [&quot;4&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;2&quot;, properties: [&quot;2&quot;: &quot;address&quot;:&quot;number&quot;]}</span>
 
 <span class="Delimiter">:(scenario parse_properties)</span>
 recipe main [
   <span class="Constant">1</span>:number:address/deref<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
 ]
-<span class="traceContains">+parse:   product: {name: &quot;1&quot;, value: 0, type: 1-2, properties: [&quot;1&quot;: &quot;number&quot;:&quot;address&quot;, &quot;deref&quot;: ]}</span>
+<span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;:&quot;address&quot;, &quot;deref&quot;: ]}</span>
 </pre>
 </body>
 </html>

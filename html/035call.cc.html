@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/035call.cc</title>
+<title>035call.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -47,20 +47,22 @@ recipe f [
 <span class="Delimiter">:(scenario return_on_fallthrough)</span>
 recipe main [
   f
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
 recipe f [
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
 ]
-<span class="traceContains">+run: instruction main/0</span>
-<span class="traceContains">+run: instruction f/0</span>
-<span class="traceContains">+run: instruction f/1</span>
-<span class="traceContains">+run: instruction main/1</span>
-<span class="traceContains">+run: instruction main/2</span>
-<span class="traceContains">+run: instruction main/3</span>
+<span class="traceContains">+run: f</span>
+<span class="Comment"># running f</span>
+<span class="traceContains">+run: 4:number &lt;- copy 0:literal</span>
+<span class="traceContains">+run: 5:number &lt;- copy 0:literal</span>
+<span class="Comment"># back out to main</span>
+<span class="traceContains">+run: 1:number &lt;- copy 0:literal</span>
+<span class="traceContains">+run: 2:number &lt;- copy 0:literal</span>
+<span class="traceContains">+run: 3:number &lt;- copy 0:literal</span>
 
 <span class="Delimiter">:(before &quot;struct routine {&quot;)</span>
 <span class="Comment">// Everytime a recipe runs another, we interrupt it and start running the new</span>
@@ -68,9 +70,13 @@ recipe f [
 <span class="Comment">// This requires maintaining a 'stack' of interrupted recipes or 'calls'.</span>
 struct call <span class="Delimiter">{</span>
   recipe_number running_recipe<span class="Delimiter">;</span>
-  index_t running_step_index<span class="Delimiter">;</span>
+  long long int running_step_index<span class="Delimiter">;</span>
   <span class="Comment">// End call Fields</span>
-  call<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)</span> :running_recipe<span class="Delimiter">(</span>r<span class="Delimiter">),</span> running_step_index<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  call<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    running_recipe = r<span class="Delimiter">;</span>
+    running_step_index = <span class="Constant">0</span><span class="Delimiter">;</span>
+    <span class="Comment">// End call Constructor</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">};</span>
 typedef list&lt;call&gt; call_stack<span class="Delimiter">;</span>
 
@@ -90,8 +96,8 @@ routine::routine<span class="Delimiter">(</span>recipe_number r<span class="Deli
 
 <span class="SalientComment">//:: now update routine's helpers</span>
 
-<span class="Delimiter">:(replace{} &quot;inline index_t&amp; current_step_index()&quot;)</span>
-inline index_t&amp; current_step_index<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Delimiter">:(replace{} &quot;inline long long int&amp; current_step_index()&quot;)</span>
+inline long long int&amp; current_step_index<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_step_index<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -114,6 +120,9 @@ default: <span class="Delimiter">{</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">));</span>
+complete_call:
+  ++Callstack_depth<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>Callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
   <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not done with caller; don't increment current_step_index()</span>
 <span class="Delimiter">}</span>
 
@@ -132,7 +141,8 @@ inline const vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter
 <span class="Delimiter">:(before &quot;Running One Instruction&quot;)</span>
 <span class="Comment">// when we reach the end of one call, we may reach the end of the one below</span>
 <span class="Comment">// it, and the one below that, and so on</span>
-while <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &gt;= Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">().</span>size<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+while <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &gt;= SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
+  --Callstack_depth<span class="Delimiter">;</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Comment">// todo: no results returned warning</span>

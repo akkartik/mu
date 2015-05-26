@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>~/Desktop/s/mu/032array.cc</title>
+<title>032array.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -49,12 +49,6 @@ recipe main [
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
   <span class="Constant">5</span>:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:array:number
 ]
-<span class="traceContains">+run: instruction main/4</span>
-<span class="traceContains">+run: ingredient 0 is 1</span>
-<span class="traceContains">+mem: location 1 is 3</span>
-<span class="traceContains">+mem: location 2 is 14</span>
-<span class="traceContains">+mem: location 3 is 15</span>
-<span class="traceContains">+mem: location 4 is 16</span>
 <span class="traceContains">+mem: storing 3 in location 5</span>
 <span class="traceContains">+mem: storing 14 in location 6</span>
 <span class="traceContains">+mem: storing 15 in location 7</span>
@@ -69,23 +63,17 @@ recipe main [
   <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
   <span class="Constant">6</span>:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:address:array:number/deref
 ]
-<span class="traceContains">+run: instruction main/5</span>
-<span class="traceContains">+run: ingredient 0 is 5</span>
-<span class="traceContains">+mem: location 1 is 3</span>
-<span class="traceContains">+mem: location 2 is 14</span>
-<span class="traceContains">+mem: location 3 is 15</span>
-<span class="traceContains">+mem: location 4 is 16</span>
 <span class="traceContains">+mem: storing 3 in location 6</span>
 <span class="traceContains">+mem: storing 14 in location 7</span>
 <span class="traceContains">+mem: storing 15 in location 8</span>
 <span class="traceContains">+mem: storing 16 in location 9</span>
 
 <span class="Comment">//: disable the size mismatch check since the destination array need not be initialized</span>
-<span class="Delimiter">:(replace &quot;if (size_of(x) != data.size())&quot; following &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
-if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_number[<span class="Constant">&quot;array&quot;</span>] &amp;&amp; size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> != data<span class="Delimiter">.</span>size<span class="Delimiter">())</span>
-<span class="Delimiter">:(after &quot;size_t size_of(const reagent&amp; r)&quot;)</span>
+<span class="Delimiter">:(replace &quot;if (size_of(x) != SIZE(data))&quot; following &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
+if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_number[<span class="Constant">&quot;array&quot;</span>] &amp;&amp; size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>data<span class="Delimiter">))</span>
+<span class="Delimiter">:(after &quot;long long int size_of(const reagent&amp; r)&quot;)</span>
   if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Type_number[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    assert<span class="Delimiter">(</span>r<span class="Delimiter">.</span>types<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &gt; <span class="Constant">1</span><span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>types<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">);</span>
     <span class="Comment">// skip the 'array' type to get at the element type</span>
     <span class="Identifier">return</span> <span class="Constant">1</span> + Memory[r<span class="Delimiter">.</span>value]*size_of<span class="Delimiter">(</span>array_element<span class="Delimiter">(</span>r<span class="Delimiter">.</span>types<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
@@ -100,11 +88,6 @@ recipe main [
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:number<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
 ]
-<span class="traceContains">+run: instruction main/4</span>
-<span class="traceContains">+run: address to copy is 2</span>
-<span class="traceContains">+run: its type is 1</span>
-<span class="traceContains">+mem: location 2 is 14</span>
-<span class="traceContains">+run: product 0 is 5</span>
 <span class="traceContains">+mem: storing 14 in location 5</span>
 
 <span class="Delimiter">:(scenario index_direct_offset)</span>
@@ -116,11 +99,6 @@ recipe main [
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:number<span class="Delimiter">,</span> <span class="Constant">5</span>:number
 ]
-<span class="traceContains">+run: instruction main/5</span>
-<span class="traceContains">+run: address to copy is 2</span>
-<span class="traceContains">+run: its type is 1</span>
-<span class="traceContains">+mem: location 2 is 14</span>
-<span class="traceContains">+run: product 0 is 6</span>
 <span class="traceContains">+mem: storing 14 in location 6</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
@@ -131,18 +109,18 @@ Recipe_number[<span class="Constant">&quot;index&quot;</span>] = INDEX<span clas
 case INDEX: <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   if (Trace_stream) Trace_stream-&gt;dump_layer = &quot;run&quot;; //? 1</span>
   reagent base = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-<span class="CommentedCode">//?   trace(&quot;run&quot;) &lt;&lt; &quot;ingredient 0 after canonize: &quot; &lt;&lt; base.to_string(); //? 1</span>
-  index_t base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+<span class="CommentedCode">//?   trace(Primitive_recipe_depth, &quot;run&quot;) &lt;&lt; &quot;ingredient 0 after canonize: &quot; &lt;&lt; base.to_string(); //? 1</span>
+  long long int base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Type_number[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">);</span>
   reagent offset = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
-<span class="CommentedCode">//?   trace(&quot;run&quot;) &lt;&lt; &quot;ingredient 1 after canonize: &quot; &lt;&lt; offset.to_string(); //? 1</span>
+<span class="CommentedCode">//?   trace(Primitive_recipe_depth, &quot;run&quot;) &lt;&lt; &quot;ingredient 1 after canonize: &quot; &lt;&lt; offset.to_string(); //? 1</span>
   vector&lt;double&gt; offset_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>offset<span class="Delimiter">));</span>
   vector&lt;type_number&gt; element_type = array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>types<span class="Delimiter">);</span>
-<span class="CommentedCode">//?   trace(&quot;run&quot;) &lt;&lt; &quot;offset: &quot; &lt;&lt; offset_val.at(0); //? 1</span>
-<span class="CommentedCode">//?   trace(&quot;run&quot;) &lt;&lt; &quot;size of elements: &quot; &lt;&lt; size_of(element_type); //? 1</span>
-  index_t src = base_address + <span class="Constant">1</span> + offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy is &quot;</span> &lt;&lt; src<span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;its type is &quot;</span> &lt;&lt; element_type<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="CommentedCode">//?   trace(Primitive_recipe_depth, &quot;run&quot;) &lt;&lt; &quot;offset: &quot; &lt;&lt; offset_val.at(0); //? 1</span>
+<span class="CommentedCode">//?   trace(Primitive_recipe_depth, &quot;run&quot;) &lt;&lt; &quot;size of elements: &quot; &lt;&lt; size_of(element_type); //? 1</span>
+  long long int src = base_address + <span class="Constant">1</span> + offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy is &quot;</span> &lt;&lt; src<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;its type is &quot;</span> &lt;&lt; element_type<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   reagent tmp<span class="Delimiter">;</span>
   tmp<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>src<span class="Delimiter">);</span>
   copy<span class="Delimiter">(</span>element_type<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> element_type<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>types<span class="Delimiter">,</span> tmp<span class="Delimiter">.</span>types<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
@@ -163,7 +141,6 @@ recipe main [
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index-address <span class="Constant">1</span>:array:number<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
 ]
-<span class="traceContains">+run: instruction main/4</span>
 <span class="traceContains">+mem: storing 2 in location 5</span>
 
 <span class="SalientComment">//:: To write to elements of containers, you need their address.</span>
@@ -177,7 +154,6 @@ recipe main [
   <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">5</span>:address:array:number/deref<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
 ]
-<span class="traceContains">+run: instruction main/5</span>
 <span class="traceContains">+mem: storing 15 in location 6</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
@@ -187,12 +163,12 @@ Recipe_number[<span class="Constant">&quot;index-address&quot;</span>] = INDEX_A
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case INDEX_ADDRESS: <span class="Delimiter">{</span>
   reagent base = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  index_t base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  long long int base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Type_number[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">);</span>
   reagent offset = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
   vector&lt;double&gt; offset_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>offset<span class="Delimiter">));</span>
   vector&lt;type_number&gt; element_type = array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>types<span class="Delimiter">);</span>
-  index_t result = base_address + <span class="Constant">1</span> + offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
+  long long int result = base_address + <span class="Constant">1</span> + offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>

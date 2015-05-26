@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>channel.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
+body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+* { font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.Delimiter { color: #c000c0; }
+.Comment { color: #8080ff; }
+.Constant { color: #008080; }
+.Special { color: #ff6060; }
+.Identifier { color: #008080; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># example program: communicating between routines using channels</span>
+
+<span class="muRecipe">recipe</span> producer [
+  <span class="Comment"># produce numbers 1 to 5 on a channel</span>
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Comment"># n = 0</span>
+  n:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>lesser-than n:number, <span class="Constant">5:literal</span>
+    <span class="Identifier">break-unless</span> done?:boolean
+    <span class="Comment"># other threads might get between these prints</span>
+   <span class="Identifier"> $print</span> <span class="Constant">[produce: ]</span>, n:number, <span class="Constant">[ </span>
+<span class="Constant">]</span>
+    chan:address:channel<span class="Special"> &lt;- </span>write chan:address:channel, n:number
+    n:number<span class="Special"> &lt;- </span>add n:number, <span class="Constant">1:literal</span>
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> consumer [
+  <span class="Comment"># consume and print integers from a channel</span>
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># read an integer from the channel</span>
+    n:number, chan:address:channel<span class="Special"> &lt;- </span>read chan:address:channel
+    <span class="Comment"># other threads might get between these prints</span>
+   <span class="Identifier"> $print</span> <span class="Constant">[consume: ]</span>, n:number, <span class="Constant">[ </span>
+<span class="Constant">]</span>
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> main [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">3:literal</span>
+  <span class="Comment"># create two background 'routines' that communicate by a channel</span>
+  routine1:number<span class="Special"> &lt;- </span>start-running producer:<span class="muRecipe">recipe</span>, chan:address:channel
+  routine2:number<span class="Special"> &lt;- </span>start-running consumer:<span class="muRecipe">recipe</span>, chan:address:channel
+  wait-for-routine routine1:number
+  wait-for-routine routine2:number
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
