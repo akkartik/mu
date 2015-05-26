@@ -89,7 +89,12 @@ case PRINT_CHARACTER_TO_DISPLAY: {
     }
     break;
   }
-  tb_change_cell(Display_column, Display_row, c, TB_WHITE, TB_DEFAULT);
+  int color = TB_WHITE;
+  if (SIZE(ingredients) > 1) {
+    assert(scalar(ingredients.at(1)));
+    color = ingredients.at(1).at(0);
+  }
+  tb_change_cell(Display_column, Display_row, c, color, TB_DEFAULT);
   if (Display_column < width-1) {
     ++Display_column;
     tb_set_cursor(Display_column, Display_row);
