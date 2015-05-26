@@ -220,11 +220,18 @@ void check_memory(const string& s) {
       raise << "duplicate expectation for location " << address << '\n';
     trace(Primitive_recipe_depth, "run") << "checking location " << address;
     if (Memory[address] != value) {
-      if (Current_scenario)
+      if (Current_scenario && !Hide_warnings) {
+        // genuine test in a mu file
         raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
-      else
+      }
+      else {
+        // just testing scenario support
         raise << "expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
-      Passed = false;
+      }
+      if (!Hide_warnings) {
+        Passed = false;
+        ++Num_failures;
+      }
       return;
     }
     locations_checked.insert(address);
@@ -267,10 +274,14 @@ void check_string(long long int address, const string& literal) {
   for (long long int i = 0; i < SIZE(literal); ++i) {
     trace(Primitive_recipe_depth, "run") << "checking location " << address+i;
     if (Memory[address+i] != literal.at(i)) {
-      if (Current_scenario && !Hide_warnings)
+      if (Current_scenario && !Hide_warnings) {
+        // genuine test in a mu file
         raise << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
-      else
+      }
+      else {
+        // just testing scenario support
         raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
+      }
       if (!Hide_warnings) {
         Passed = false;
         ++Num_failures;
