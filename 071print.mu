@@ -22,7 +22,7 @@ recipe init-fake-screen [
   column:address:number/deref <- copy 0:literal
   bufsize:number <- multiply width:address:number/deref, height:address:number/deref
   buf:address:address:array:character <- get-address result:address:screen/deref, data:offset
-  buf:address:address:array:character/deref <- new character:literal, bufsize:number
+  buf:address:address:array:character/deref <- new character:type, bufsize:number
   clear-screen result:address:screen
   reply result:address:screen
 ]
