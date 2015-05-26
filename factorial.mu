@@ -1,7 +1,7 @@
 # example program: compute the factorial of 5
 
 recipe main [
-  default-space:address:space <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30:literal
   x:number <- factorial 5:literal
   $print [result: ], x:number, [ 
 ]
@@ -28,7 +28,7 @@ scenario factorial-test [
   run [
     1:number <- factorial 5:literal
   ]
-  memory should contain [
+  memory-should-contain [
     1 <- 120
   ]
 ]

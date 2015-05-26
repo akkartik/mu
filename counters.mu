@@ -4,7 +4,7 @@
 recipe init-counter [
   default-space:address:array:location <- new location:type, 30:literal
   n:number <- next-ingredient
-  reply default-space:address:space
+  reply default-space:address:array:location
 ]
 
 recipe increment-counter [
@@ -18,13 +18,13 @@ recipe increment-counter [
 recipe main [
   default-space:address:array:location <- new location:type, 30:literal
   # counter A
-  a:address:space <- init-counter 34:literal
+  a:address:array:location <- init-counter 34:literal
   # counter B
-  b:address:space <- init-counter 23:literal
+  b:address:array:location <- init-counter 23:literal
   # increment both by 2 but in different ways
-  increment-counter a:address:space, 1:literal
-  b-value:number <- increment-counter b:address:space, 2:literal
-  a-value:number <- increment-counter a:address:space, 1:literal
+  increment-counter a:address:array:location, 1:literal
+  b-value:number <- increment-counter b:address:array:location, 2:literal
+  a-value:number <- increment-counter a:address:array:location, 1:literal
   # check results
   $print [Contents of counters
 ]
