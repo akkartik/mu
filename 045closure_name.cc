@@ -21,7 +21,7 @@ recipe init-counter [
 ]
 
 recipe increment-counter [
-  default-space:address:array:location <- new space:literal, 30:literal
+  default-space:address:array:location <- new location:type, 30:literal
   0:address:array:location/names:init-counter <- next-ingredient  # outer space must be created by 'init-counter' above
   y:number/space:1 <- add y:number/space:1, 1:literal  # increment
   y:number <- copy 234:literal  # dummy

@@ -32,14 +32,18 @@ Type_number["type"] = 0;
 :(after "Per-recipe Transforms")
 // replace type names with type_numbers
 if (inst.operation == Recipe_number["new"]) {
+  // End NEW Transform Special-cases
   // first arg must be of type 'type'
   assert(SIZE(inst.ingredients) >= 1);
-//?   cout << inst.ingredients.at(0).to_string() << '\n'; //? 1
   assert(isa_literal(inst.ingredients.at(0)));
-  if (inst.ingredients.at(0).properties.at(0).second.at(0) == "type") {
-    inst.ingredients.at(0).set_value(Type_number[inst.ingredients.at(0).name]);
-  }
+  if (inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
+    raise << "tried to allocate non-type " << inst.ingredients.at(0).to_string() << " in recipe " << Recipe[r].name << '\n' << die();
+  if (Type_number.find(inst.ingredients.at(0).name) == Type_number.end())
+    raise << "unknown type " << inst.ingredients.at(0).name << " in recipe " << Recipe[r].name << '\n' << die();
+//?   cerr << "type " << inst.ingredients.at(0).name << " => " << Type_number[inst.ingredients.at(0).name] << '\n'; //? 1
+  inst.ingredients.at(0).set_value(Type_number[inst.ingredients.at(0).name]);
   trace(Primitive_recipe_depth, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).value;
+  end_new_transform:;
 }
 
 //:: Now implement the primitive recipe.
@@ -58,6 +62,7 @@ case NEW: {
     vector<type_number> type;
     assert(isa_literal(current_instruction().ingredients.at(0)));
     type.push_back(current_instruction().ingredients.at(0).value);
+//?     trace(Primitive_recipe_depth, "mem") << "type " << current_instruction().ingredients.at(0).to_string() << ' ' << type.size() << ' ' << type.back() << " has size " << size_of(type); //? 1
     if (SIZE(current_instruction().ingredients) > 1) {
       // array
       array_length = ingredients.at(1).at(0);
@@ -74,6 +79,7 @@ case NEW: {
   ensure_space(size);
   const long long int result = Current_routine->alloc;
   trace(Primitive_recipe_depth, "mem") << "new alloc: " << result;
+//?   trace(Primitive_recipe_depth, "mem") << "size: " << size << " locations"; //? 1
   // save result
   products.resize(1);
   products.at(0).push_back(result);
@@ -162,6 +168,13 @@ recipe main [
 ]
 # number code for 'e'
 +mem: storing 101 in location 2
+
+:(before "End NEW Transform Special-cases")
+  if (inst.ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
+    // skip transform
+    inst.ingredients.at(0).initialized = true;
+    goto end_new_transform;
+  }
 
 :(after "case NEW" following "Primitive Recipe Implementations")
 if (isa_literal(current_instruction().ingredients.at(0))
