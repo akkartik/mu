@@ -31,6 +31,7 @@ void transform_names(const recipe_number r) {
   bool names_used = false;
   bool numeric_locations_used = false;
   map<string, long long int>& names = Name[r];
+  map<string, vector<type_number> > metadata;
   // store the indices 'used' so far in the map
   long long int& curr_idx = names[""];
   ++curr_idx;  // avoid using index 0, benign skip in some other cases
@@ -39,6 +40,7 @@ void transform_names(const recipe_number r) {
     // Per-recipe Transforms
     // map names to addresses
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
+      check_metadata(metadata, inst.ingredients.at(in), r);
       if (is_numeric_location(inst.ingredients.at(in))) numeric_locations_used = true;
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
       if (disqualified(inst.ingredients.at(in))) continue;
@@ -48,6 +50,7 @@ void transform_names(const recipe_number r) {
       inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
     }
     for (long long int out = 0; out < SIZE(inst.products); ++out) {
+      check_metadata(metadata, inst.products.at(out), r);
       if (is_numeric_location(inst.products.at(out))) numeric_locations_used = true;
       if (is_named_location(inst.products.at(out))) names_used = true;
       if (disqualified(inst.products.at(out))) continue;
@@ -61,6 +64,15 @@ void transform_names(const recipe_number r) {
   }
   if (names_used && numeric_locations_used)
     raise << "mixing variable names and numeric addresses in " << Recipe[r].name << '\n';
+}
+
+void check_metadata(map<string, vector<type_number> >& metadata, const reagent& x, const recipe_number r) {
+  if (isa_literal(x)) return;
+  if (is_raw(x)) return;
+  if (metadata.find(x.name) == metadata.end())
+    metadata[x.name] = x.types;
+  if (metadata[x.name] != x.types)
+    raise << x.name << " used with multiple types in " << Recipe[r].name << '\n';
 }
 
 bool disqualified(/*mutable*/ reagent& x) {
@@ -180,6 +192,14 @@ recipe main [
 ]
 -warn: mixing variable names and numeric addresses in main
 
+:(scenario convert_names_warns_on_reusing_name_with_different_type)
+% Hide_warnings = true;
+recipe main [
+  x:number <- copy 1:literal
+  x:boolean <- copy 1:literal
+]
++warn: x used with multiple types in main
+
 //:: Support element names for containers in 'get' and 'get-address'.
 
 //: update our running example container for the next test
@@ -228,7 +248,7 @@ recipe main [
   12:number <- copy 1:literal
   13:number <- copy 35:literal
   14:number <- copy 36:literal
-  20:address:point <- maybe-convert 12:number-or-point, p:variant
+  20:address:point <- maybe-convert 12:number-or-point/raw, p:variant  # unsafe
 ]
 +name: variant p of type number-or-point has tag 1
 +mem: storing 13 in location 20

@@ -25,13 +25,16 @@ Type[tmp].element_names.push_back("i");
 Type[tmp].element_names.push_back("p");
 }
 
+//: Tests in this layer often explicitly setup memory before reading it as an
+//: array. Don't do this in general. I'm tagging exceptions with /raw to
+//: avoid warnings.
 :(scenario copy_exclusive_container)
 # Copying exclusive containers copies all their contents and an extra location for the tag.
 recipe main [
   1:number <- copy 1:literal  # 'point' variant
   2:number <- copy 34:literal
   3:number <- copy 35:literal
-  4:number-or-point <- copy 1:number-or-point
+  4:number-or-point <- copy 1:number-or-point/raw  # unsafe
 ]
 +mem: storing 1 in location 4
 +mem: storing 34 in location 5
@@ -69,7 +72,7 @@ recipe main [
   12:number <- copy 1:literal
   13:number <- copy 35:literal
   14:number <- copy 36:literal
-  20:address:point <- maybe-convert 12:number-or-point, 1:variant
+  20:address:point <- maybe-convert 12:number-or-point/raw, 1:variant  # unsafe
 ]
 +mem: storing 13 in location 20
 
@@ -78,7 +81,7 @@ recipe main [
   12:number <- copy 1:literal
   13:number <- copy 35:literal
   14:number <- copy 36:literal
-  20:address:point <- maybe-convert 12:number-or-point, 0:variant
+  20:address:point <- maybe-convert 12:number-or-point/raw, 0:variant  # unsafe
 ]
 +mem: storing 0 in location 20
 

@@ -5,6 +5,9 @@
 //: elements of a fixed size, so you can't create containers containing arrays.
 //: Create containers containing addresses to arrays instead.
 
+//: Tests in this layer often explicitly setup memory before reading it as an
+//: array. Don't do this in general. I'm tagging exceptions with /raw to
+//: avoid warnings.
 :(scenario copy_array)
 # Arrays can be copied around with a single instruction just like numbers,
 # no matter how large they are.
@@ -13,7 +16,7 @@ recipe main [
   2:number <- copy 14:literal
   3:number <- copy 15:literal
   4:number <- copy 16:literal
-  5:array:number <- copy 1:array:number
+  5:array:number <- copy 1:array:number/raw  # unsafe
 ]
 +mem: storing 3 in location 5
 +mem: storing 14 in location 6
@@ -52,7 +55,7 @@ recipe main [
   2:number <- copy 14:literal
   3:number <- copy 15:literal
   4:number <- copy 16:literal
-  5:number <- index 1:array:number, 0:literal
+  5:number <- index 1:array:number/raw, 0:literal  # unsafe
 ]
 +mem: storing 14 in location 5
 
@@ -63,7 +66,7 @@ recipe main [
   3:number <- copy 15:literal
   4:number <- copy 16:literal
   5:number <- copy 0:literal
-  6:number <- index 1:array:number, 5:number
+  6:number <- index 1:array:number/raw, 5:number  # unsafe
 ]
 +mem: storing 14 in location 6
 
@@ -105,7 +108,7 @@ recipe main [
   2:number <- copy 14:literal
   3:number <- copy 15:literal
   4:number <- copy 16:literal
-  5:number <- index-address 1:array:number, 0:literal
+  5:number <- index-address 1:array:number/raw, 0:literal  # unsafe
 ]
 +mem: storing 2 in location 5
 
@@ -148,7 +151,7 @@ recipe main [
   2:number <- copy 14:literal
   3:number <- copy 15:literal
   4:number <- copy 16:literal
-  5:number <- length 1:array:number
+  5:number <- length 1:array:number/raw  # unsafe
 ]
 +mem: storing 3 in location 5
 
