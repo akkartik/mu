@@ -14,11 +14,14 @@ Type[point].elements.push_back(i);
 //: Containers can be copied around with a single instruction just like
 //: numbers, no matter how large they are.
 
+//: Tests in this layer often explicitly setup memory before reading it as a
+//: container. Don't do this in general. I'm tagging exceptions with /raw to
+//: avoid warnings.
 :(scenario copy_multiple_locations)
 recipe main [
   1:number <- copy 34:literal
   2:number <- copy 35:literal
-  3:point <- copy 1:point
+  3:point <- copy 1:point/raw  # unsafe
 ]
 +mem: storing 34 in location 3
 +mem: storing 35 in location 4
@@ -42,7 +45,7 @@ recipe main [
   12:number <- copy 34:literal
   13:number <- copy 35:literal
   14:number <- copy 36:literal
-  15:point-number <- copy 12:point-number
+  15:point-number <- copy 12:point-number/raw  # unsafe
 ]
 +mem: storing 36 in location 17
 
@@ -57,7 +60,7 @@ recipe main [
   4:number <- copy 34:literal  # second
   5:number <- copy 35:literal
   6:number <- copy 36:literal
-  7:boolean <- equal 1:point-number, 4:point-number
+  7:boolean <- equal 1:point-number/raw, 4:point-number/raw  # unsafe
 ]
 +mem: storing 1 in location 7
 
@@ -69,7 +72,7 @@ recipe main [
   4:number <- copy 34:literal  # second
   5:number <- copy 35:literal
   6:number <- copy 37:literal  # different
-  7:boolean <- equal 1:point-number, 4:point-number
+  7:boolean <- equal 1:point-number/raw, 4:point-number/raw  # unsafe
 ]
 +mem: storing 0 in location 7
 
@@ -91,7 +94,7 @@ if (t.kind == container) {
 recipe main [
   12:number <- copy 34:literal
   13:number <- copy 35:literal
-  15:number <- get 12:point, 1:offset
+  15:number <- get 12:point/raw, 1:offset  # unsafe
 ]
 +mem: storing 35 in location 15
 
@@ -129,7 +132,7 @@ recipe main [
   12:number <- copy 34:literal
   13:number <- copy 35:literal
   14:number <- copy 36:literal
-  15:number <- get 12:point-number, 1:offset
+  15:number <- get 12:point-number/raw, 1:offset  # unsafe
 ]
 +mem: storing 36 in location 15
 
@@ -139,7 +142,7 @@ recipe main [
 recipe main [
   12:number <- copy 34:literal
   13:number <- copy 35:literal
-  15:address:number <- get-address 12:point, 1:offset
+  15:address:number <- get-address 12:point/raw, 1:offset  # unsafe
 ]
 +mem: storing 13 in location 15
 

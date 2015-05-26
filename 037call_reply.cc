@@ -51,7 +51,7 @@ recipe main [
 recipe f [
   12:number <- next-ingredient
   13:number <- copy 35:literal
-  reply 12:point
+  reply 12:point/raw  # unsafe
 ]
 +run: result 0 is [2, 35]
 +mem: storing 2 in location 3
