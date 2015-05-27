@@ -279,6 +279,34 @@ recipe integer-to-decimal-string [
   reply result:address:array:character
 ]
 
+recipe buffer-to-array [
+  default-space:address:array:character <- new location:type, 30:literal
+  in:address:buffer <- next-ingredient
+  len:number <- get in:address:buffer/deref, length:offset
+#?   $print [size ], len:number, [ 
+#? ] #? 1
+  s:address:array:character <- get in:address:buffer/deref, data:offset
+  {
+    # propagate null buffer
+    break-if s:address:array:character
+    reply 0:literal
+  }
+  # we can't just return s because it is usually the wrong length
+  result:address:array:character <- new character:type, len:number
+  i:number <- copy 0:literal
+  {
+#?     $print i:number #? 1
+    done?:boolean <- greater-or-equal i:number, len:number
+    break-if done?:boolean
+    src:character <- index s:address:array:character/deref, i:number
+    dest:address:character <- index-address result:address:array:character/deref, i:number
+    dest:address:character/deref <- copy src:character
+    i:number <- add i:number, 1:literal
+    loop
+  }
+  reply result:address:array:character
+]
+
 scenario integer-to-decimal-digit-zero [
   run [
     1:address:array:character/raw <- integer-to-decimal-string 0:literal
