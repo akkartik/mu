@@ -12,7 +12,6 @@ recipe main [
     0:literal/real-screen <- print-string 0:literal/real-screen, inst:address:array:character
     loop
   }
-  wait-for-key-from-keyboard
   return-to-console
 ]
 
@@ -45,10 +44,10 @@ recipe read-instruction [
   x:address:screen <- next-ingredient
   result:address:buffer <- init-buffer 10:literal  # string to maybe add to
   {
+    # read character
     c:character, k:address:keyboard <- wait-for-key k:address:keyboard
 #?     $print c:character, [ 
 #? ] #? 1
-    print-character x:address:screen, c:character
     # quit?
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
@@ -60,6 +59,8 @@ recipe read-instruction [
       break-unless null?:boolean
       reply 0:literal, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
     }
+    # print
+    print-character x:address:screen, c:character
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
     # done with this instruction?

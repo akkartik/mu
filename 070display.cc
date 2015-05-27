@@ -92,15 +92,15 @@ case PRINT_CHARACTER_TO_DISPLAY: {
     }
     break;
   }
-  int color = TB_WHITE;
+  int color = TB_DEFAULT;
   if (SIZE(ingredients) > 1) {
     assert(scalar(ingredients.at(1)));
-    color = ingredients.at(1).at(0);
+    color = ingredients.at(1).at(0)+1/*skip default*/;
 //?     tb_shutdown(); //? 1
 //?     cerr << "AAA " << color << '\n'; //? 1
 //?     exit(1); //? 1
   }
-  tb_change_cell(Display_column, Display_row, c, 7, TB_DEFAULT);
+  tb_change_cell(Display_column, Display_row, c, color, TB_DEFAULT);
   if (Display_column < width-1) {
     ++Display_column;
     tb_set_cursor(Display_column, Display_row);
