@@ -283,7 +283,7 @@ recipe read-move [
   reply-if error?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
 #?   return-to-console #? 1
   # construct the move object
-  result:address:move <- new move:literal
+  result:address:move <- new move:type
   x:address:number <- get-address result:address:move/deref, from-file:offset
   x:address:number/deref <- copy from-file:number
   x:address:number <- get-address result:address:move/deref, from-rank:offset
