@@ -37,6 +37,39 @@ scenario screen-in-scenario-unicode-color [
 #?   $exit
 ]
 
+:(scenario screen_in_scenario_color)
+# screen-should-contain can check unicode characters in the fake screen
+scenario screen-in-scenario-color [
+  assume-screen 5:literal/width, 3:literal/height
+  run [
+    screen:address <- print-character screen:address, 955:literal/greek-small-lambda, 1:literal/red
+    screen:address <- print-character screen:address, 97:literal/a, 7:literal/white
+  ]
+  # screen-should-contain shows everything
+  screen-should-contain [
+  #  01234
+    .λa   .
+    .     .
+    .     .
+  ]
+  # screen-should-contain-in-color filters out everything except the given
+  # color, all you see is the 'a' in white.
+  screen-should-contain-in-color 7:literal/white, [
+  #  01234
+    . a   .
+    .     .
+    .     .
+  ]
+  # ..and the λ in red.
+  screen-should-contain-in-color 1:literal/red, [
+  #  01234
+    .λ    .
+    .     .
+    .     .
+  ]
+#?   $exit
+]
+
 :(scenario screen_in_scenario_error)
 #? % cerr << "AAA\n";
 % Hide_warnings = true;
@@ -99,8 +132,18 @@ SCREEN_SHOULD_CONTAIN,
 Recipe_number["screen-should-contain"] = SCREEN_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case SCREEN_SHOULD_CONTAIN: {
-//?   cout << "AAA\n"; //? 1
-  check_screen(current_instruction().ingredients.at(0).name);
+  check_screen(current_instruction().ingredients.at(0).name, -1);
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+SCREEN_SHOULD_CONTAIN_IN_COLOR,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["screen-should-contain-in-color"] = SCREEN_SHOULD_CONTAIN_IN_COLOR;
+:(before "End Primitive Recipe Implementations")
+case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
+  assert(scalar(ingredients.at(0)));
+  check_screen(current_instruction().ingredients.at(1).name, ingredients.at(0).at(0));
   break;
 }
 
@@ -119,7 +162,7 @@ struct raw_string_stream {
 };
 
 :(code)
-void check_screen(const string& expected_contents) {
+void check_screen(const string& expected_contents, const int color) {
 //?   cerr << "Checking screen\n"; //? 1
   assert(!Current_routine->calls.front().default_space);  // not supported
   long long int screen_location = Memory[SCREEN];
@@ -139,9 +182,11 @@ void check_screen(const string& expected_contents) {
     if (cursor.at_end()) break;
     assert(cursor.get() == '.');
     for (long long int column = 0;  column < screen_width;  ++column, addr+= /*size of screen-cell*/2) {
+      const int cell_color_offset = 1;
       uint32_t curr = cursor.get();
       if (Memory[addr] == 0 && isspace(curr)) continue;
       if (Memory[addr] != 0 && Memory[addr] == curr) continue;
+      if (color != -1 && color != Memory[addr+cell_color_offset]) continue;
       // mismatch
       // can't print multi-byte unicode characters in warnings just yet. not very useful for debugging anyway.
       char expected_pretty[10] = {0};
