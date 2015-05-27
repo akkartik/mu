@@ -47,7 +47,7 @@ recipe wait-for-key [
   {
     break-unless x:address:keyboard
     # on fake keyboards 'wait-for-key' behaves just like 'read-key'
-    c:character, x:address:keyboard <- read-key x:address:keyboard
+    c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
     reply c:character, x:address:keyboard/same-as-ingredient:0
   }
   c:character <- wait-for-key-from-keyboard
@@ -60,7 +60,7 @@ recipe send-keys-to-channel [
   chan:address:channel <- next-ingredient
   screen:address <- next-ingredient
   {
-    c:character, found?:boolean <- read-key keyboard:address
+    c:character, found?:boolean, keyboard:address <- read-key keyboard:address
     loop-unless found?:boolean
 #?     print-integer screen:address, c:character #? 1
     print-character screen:address, c:character
