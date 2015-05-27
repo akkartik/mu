@@ -188,8 +188,8 @@ recipe print-board [
       done?:boolean <- equal col:number, 8:literal
       break-if done?:boolean
       f:address:array:character <- index board:address:array:address:array:character/deref, col:number
-      s:character <- index f:address:array:character/deref, row:number
-      print-character screen:address, s:character
+      c:character <- index f:address:array:character/deref, row:number
+      print-character screen:address, c:character
       print-character screen:address, 32:literal  # ' '
       col:number <- add col:number, 1:literal
       loop
@@ -665,7 +665,6 @@ scenario making-a-move [
     .1 | R N B Q K B N R           .
     .  +----------------           .
     .    a b c d e f g h           .
-    .                              .
     .                              .
   ]
 ]
