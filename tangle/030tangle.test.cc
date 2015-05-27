@@ -221,6 +221,18 @@ void test_tangle_can_hide_warnings_in_scenarios() {
   CHECK(lines.empty());
 }
 
+void test_tangle_can_handle_in_scenarios() {
+  istringstream in(":(scenario does_bar)\n% Hide_warnings = true;\nabc def\n+layer1: pqr\n+layer2: xyz");
+  list<Line> lines;
+  tangle(in, lines);
+  CHECK_EQ(lines.front().contents, "TEST(does_bar)");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  Hide_warnings = true;");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  run(\"abc def\\n\");");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: xyz\");");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
+  CHECK(lines.empty());
+}
+
 void test_tangle_supports_strings_in_scenarios() {
   istringstream in(":(scenario does_bar)\nabc \"def\"\n+layer1: pqr\n+layer2: \"xyz\"");
   list<Line> lines;
@@ -311,18 +323,6 @@ void test_tangle_can_handle_mu_comments_in_scenario() {
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer1: xyz\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_DOESNT_CONTAIN(\"layer1: z\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_EQ(trace_count(\"layer1\"), 2);");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
-  CHECK(lines.empty());
-}
-
-void test_tangle_can_handle_escaped_setup_after_mu_comments() {
-  istringstream in(":(scenario does_bar)\n# comment\n% int x = 1;\nabc\n+layer1: pqr\n");
-  list<Line> lines;
-  tangle(in, lines);
-  CHECK_EQ(lines.front().contents, "TEST(does_bar)");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  int x = 1;"); lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  run(\"abc\\n\");");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqr\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
   CHECK(lines.empty());
 }

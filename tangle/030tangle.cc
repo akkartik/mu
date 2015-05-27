@@ -301,11 +301,6 @@ list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
 void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
   result.push_back(Line("TEST("+name+")", front(lines).filename, front(lines).line_number-1));  // use line number of directive
   while (!lines.empty()) {
-    // hack: drop mu comments at the start, just in case there's a '%' line after them
-    // So the tangler only passes through mu comments inside scenarios between
-    // the first input line and the last input line.
-    while (!lines.empty() && starts_with(front(lines).contents, "#"))
-      lines.pop_front();
     while (!lines.empty() && starts_with(front(lines).contents, "% ")) {
       result.push_back(Line("  "+front(lines).contents.substr(strlen("% ")), front(lines)));
       lines.pop_front();

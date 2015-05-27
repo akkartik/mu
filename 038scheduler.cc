@@ -210,9 +210,9 @@ recipe f2 [
 ]
 +mem: storing 2 in location 1
 
+//: this scenario will require some careful setup in escaped C++
+//: (straining our tangle capabilities to near-breaking point)
 :(scenario scheduler_skips_completed_routines)
-# this scenario will require some careful setup in escaped C++
-# (straining our tangle capabilities to near-breaking point)
 % recipe_number f1 = load("recipe f1 [\n1:number <- copy 0:literal\n]").front();
 % recipe_number f2 = load("recipe f2 [\n2:number <- copy 0:literal\n]").front();
 % Routines.push_back(new routine(f1));  // f1 meant to run

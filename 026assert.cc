@@ -1,5 +1,5 @@
 :(scenario assert)
-% Hide_warnings = true;
+% Hide_warnings = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.
 recipe main [
   assert 0:literal, [this is an assert in mu]
 ]

@@ -1,6 +1,6 @@
 //: Phase 1 of running mu code: load it from a textual representation.
 
-:(scenarios load)
+:(scenarios load)  // use 'load' instead of 'run' in all scenarios in this layer
 :(scenario first_recipe)
 recipe main [
   1:number <- copy 23:literal
