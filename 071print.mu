@@ -161,6 +161,21 @@ scenario print-character-at-top-left [
   ]
 ]
 
+scenario print-character-color [
+  run [
+    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- print-character 1:address:screen, 97:literal/a, 2:literal/red
+    2:address:array:screen-cell <- get 1:address:screen/deref, data:offset
+    3:array:screen-cell <- copy 2:address:array:screen-cell/deref
+  ]
+  memory-should-contain [
+    3 <- 6  # width*height
+    4 <- 97  # 'a'
+    5 <- 2  # red
+    6 <- 0
+  ]
+]
+
 scenario print-backspace-character [
   run [
 #?     $start-tracing #? 3
