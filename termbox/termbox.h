@@ -44,6 +44,8 @@ int tb_init(void);
 /* Restore terminal mode. */
 void tb_shutdown(void);
 
+int tb_is_active(void);
+
 /* Size of the screen. Return negative values before tb_init() or after
  * tb_shutdown() */
 int tb_width(void);

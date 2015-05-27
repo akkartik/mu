@@ -71,6 +71,9 @@ case PRINT_CHARACTER_TO_DISPLAY: {
   long long int width = (w >= 0) ? w : 0;
   assert(scalar(ingredients.at(0)));
   long long int c = ingredients.at(0).at(0);
+//?   tb_shutdown(); //? 1
+//?   cerr << "AAA " << c << ' ' << (int)'\n' << ' ' << (int)'\r' << '\n'; //? 1
+//?   exit(1); //? 1
   if (c == '\n' || c == '\r') {
     if (Display_row < height-1) {
       Display_column = 0;
@@ -93,8 +96,11 @@ case PRINT_CHARACTER_TO_DISPLAY: {
   if (SIZE(ingredients) > 1) {
     assert(scalar(ingredients.at(1)));
     color = ingredients.at(1).at(0);
+//?     tb_shutdown(); //? 1
+//?     cerr << "AAA " << color << '\n'; //? 1
+//?     exit(1); //? 1
   }
-  tb_change_cell(Display_column, Display_row, c, color, TB_DEFAULT);
+  tb_change_cell(Display_column, Display_row, c, 7, TB_DEFAULT);
   if (Display_column < width-1) {
     ++Display_column;
     tb_set_cursor(Display_column, Display_row);
@@ -202,8 +208,12 @@ case WAIT_FOR_KEY_FROM_KEYBOARD: {
   do {
     tb_poll_event(&event);
   } while (event.type != TB_EVENT_KEY);
+  long long int result = event.key ? event.key : event.ch;
+  if (result == TB_KEY_CTRL_C) tb_shutdown(), exit(1);
+  if (result == TB_KEY_BACKSPACE2) result = TB_KEY_BACKSPACE;
+  if (result == TB_KEY_CARRIAGE_RETURN) result = TB_KEY_NEWLINE;
   products.resize(1);
-  products.at(0).push_back(event.ch);
+  products.at(0).push_back(result);
   break;
 }
 
