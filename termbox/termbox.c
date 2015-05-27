@@ -153,6 +153,11 @@ void tb_shutdown(void)
   termw = termh = -1;
 }
 
+int tb_is_active(void)
+{
+  return termw != -1;
+}
+
 void tb_present(void)
 {
   int x,y,w,i;

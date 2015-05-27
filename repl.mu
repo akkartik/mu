@@ -68,5 +68,5 @@ recipe read-instruction [
     loop
   }
   result2:address:array:character <- buffer-to-array result:address:buffer
-  reply result2:address:array:character
+  reply result2:address:array:character, k:address:keyboard, x:address:screen
 ]
