@@ -47,11 +47,11 @@ recipe clear-screen [
     {
       done?:boolean <- greater-or-equal i:number, max:number
       break-if done?:boolean
-      c:address:screen-cell <- index-address buf:address:array:screen-cell/deref, i:number
-      c2:address:character <- get-address c:address:screen-cell/deref, contents:offset
-      c2:address:character/deref <- copy [ ]
-      fg:address:character <- get-address c:address:screen-cell/deref, color:offset
-      fg:address:character/deref <- copy 7:literal/white
+      curr:address:screen-cell <- index-address buf:address:array:screen-cell/deref, i:number
+      curr-content:address:character <- get-address curr:address:screen-cell/deref, contents:offset
+      curr-content:address:character/deref <- copy [ ]
+      curr-color:address:character <- get-address curr:address:screen-cell/deref, color:offset
+      curr-color:address:character/deref <- copy 7:literal/white
       i:number <- add i:number, 1:literal
       loop
     }
