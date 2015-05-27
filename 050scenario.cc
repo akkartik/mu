@@ -494,8 +494,9 @@ recipe main [
 void run_mu_scenario(const string& form) {
   istringstream in(form);
   in >> std::noskipws;
+  skip_whitespace_and_comments(in);
   string _scenario = next_word(in);
-//?   cout << _scenario << '\n'; //? 1
+//?   cout << _scenario << '\n'; //? 2
   assert(_scenario == "scenario");
   scenario s = parse_scenario(in);
   run_mu_scenario(s);

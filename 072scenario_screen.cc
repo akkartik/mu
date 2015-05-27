@@ -71,7 +71,6 @@ scenario screen-in-scenario-color [
 ]
 
 :(scenario screen_in_scenario_error)
-#? % cerr << "AAA\n";
 % Hide_warnings = true;
 scenario screen-in-scenario-error [
   assume-screen 5:literal/width, 3:literal/height
@@ -86,6 +85,23 @@ scenario screen-in-scenario-error [
   ]
 ]
 +warn: expected screen location (0, 0) to contain 98 ('b') instead of 97 ('a')
+
+:(scenario screen_in_scenario_color_error)
+% Hide_warnings = true;
+# screen-should-contain can check unicode characters in the fake screen
+scenario screen-in-scenario-color [
+  assume-screen 5:literal/width, 3:literal/height
+  run [
+    screen:address <- print-character screen:address, 97:literal/a, 1:literal/red
+  ]
+  screen-should-contain-in-color 2:literal/green, [
+  #  01234
+    .a    .
+    .     .
+    .     .
+  ]
+]
++warn: expected screen location (0, 0) to be in color 2 instead of 1
 
 //: allow naming just for 'screen'
 :(before "End is_special_name Cases")
@@ -163,7 +179,7 @@ struct raw_string_stream {
 
 :(code)
 void check_screen(const string& expected_contents, const int color) {
-//?   cerr << "Checking screen\n"; //? 1
+//?   cerr << "Checking screen for color " << color << "\n"; //? 2
   assert(!Current_routine->calls.front().default_space);  // not supported
   long long int screen_location = Memory[SCREEN];
   int data_offset = find_element_name(Type_number["screen"], "data");
@@ -185,9 +201,29 @@ void check_screen(const string& expected_contents, const int color) {
       const int cell_color_offset = 1;
       uint32_t curr = cursor.get();
       if (Memory[addr] == 0 && isspace(curr)) continue;
-      if (Memory[addr] != 0 && Memory[addr] == curr) continue;
-      if (color != -1 && color != Memory[addr+cell_color_offset]) continue;
-      // mismatch
+//?       cerr << color << " vs " << Memory[addr+1] << '\n'; //? 1
+      if (Memory[addr] != 0 && Memory[addr] == curr) {
+        if (color == -1 || color == Memory[addr+cell_color_offset]) continue;
+        // contents match but color is off
+        if (Current_scenario && !Hide_warnings) {
+          // genuine test in a mu file
+          raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << Memory[addr+cell_color_offset] << "'\n";
+        }
+        else {
+          // just testing check_screen
+          raise << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << Memory[addr+cell_color_offset] << '\n';
+        }
+        if (!Hide_warnings) {
+          Passed = false;
+          ++Num_failures;
+        }
+        return;
+      }
+
+      // mismatch; check if we should ignore because of the color
+      if (curr == ' ' && color != -1 && color != Memory[addr+cell_color_offset]) continue;
+
+      // really a mismatch
       // can't print multi-byte unicode characters in warnings just yet. not very useful for debugging anyway.
       char expected_pretty[10] = {0};
       if (curr < 256) {
@@ -290,7 +326,7 @@ void dump_screen() {
 //?     cerr << curr << ":\n"; //? 1
     for (long long int col = 0; col < screen_width; ++col) {
       cerr << static_cast<char>(Memory[curr]);
-      ++curr;
+      curr += /*size of screen-cell*/2;
     }
     cerr << '\n';
   }
