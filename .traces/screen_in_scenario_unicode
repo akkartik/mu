@@ -3,28 +3,30 @@ parse:   ingredient: {name: "5", properties: ["5": "literal", "width": ]}
 parse:   ingredient: {name: "3", properties: ["3": "literal", "height": ]}
 parse: instruction: run
 parse:   ingredient: {name: "
-    screen:address <- print-character screen:address, 955:literal  # 'λ'
+    screen:address <- print-character screen:address, 955:literal/greek-small-lambda, 1:literal/red
+    screen:address <- print-character screen:address, 97:literal/a
   ", properties: ["
-    screen:address <- print-character screen:address, 955:literal  # 'λ'
+    screen:address <- print-character screen:address, 955:literal/greek-small-lambda, 1:literal/red
+    screen:address <- print-character screen:address, 97:literal/a
   ": "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "
   #  01234
-    .λ    .
+    .λa   .
     .     .
     .     .
   ", properties: ["
   #  01234
-    .λ    .
+    .λa   .
     .     .
     .     .
   ": "literal-string"]}
-after-brace: recipe screen-in-scenario
+after-brace: recipe screen-in-scenario-unicode-color
 after-brace: assume-screen ...
 after-brace: run ...
 after-brace: screen-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
-schedule: screen-in-scenario
+schedule: screen-in-scenario-unicode-color
  101 run: screen:address <- assume-screen 5:literal/width, 3:literal/height
  102 run: default-space:address:array:location <- new location:type, 30:literal/capacity
 9999 mem: array size is 30
@@ -1240,15 +1242,22 @@ schedule: screen-in-scenario
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 900
  101 run: run [
-    screen:address <- print-character screen:address, 955:literal  # 'λ'
+    screen:address <- print-character screen:address, 955:literal/greek-small-lambda, 1:literal/red
+    screen:address <- print-character screen:address, 97:literal/a
   ]
 parse: instruction: print-character
 parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
-parse:   ingredient: {name: "955", properties: ["955": "literal"]}
+parse:   ingredient: {name: "955", properties: ["955": "literal", "greek-small-lambda": ]}
+parse:   ingredient: {name: "1", properties: ["1": "literal", "red": ]}
+parse:   product: {name: "screen", properties: ["screen": "address"]}
+parse: instruction: print-character
+parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
+parse:   ingredient: {name: "97", properties: ["97": "literal", "a": ]}
 parse:   product: {name: "screen", properties: ["screen": "address"]}
 after-brace: recipe run1001
 after-brace: print-character ...
- 101 run: screen:address <- print-character screen:address, 955:literal
+after-brace: print-character ...
+ 101 run: screen:address <- print-character screen:address, 955:literal/greek-small-lambda, 1:literal/red
 9999 mem: location 900 is 1031
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
@@ -1258,13 +1267,11 @@ after-brace: print-character ...
  102 run: c:character <- next-ingredient 
 9999 mem: storing 955 in location 1101
  102 run: color:number, color-found?:boolean <- next-ingredient 
-9999 mem: storing 0 in location 1102
-9999 mem: storing 0 in location 1103
+9999 mem: storing 1 in location 1102
+9999 mem: storing 1 in location 1103
  102 run: break-if color-found?:boolean, 
-9999 mem: location 1103 is 0
-9999 run: jump-if fell through
- 102 run: color:number <- copy 7:literal/white
-9999 mem: storing 7 in location 1102
+9999 mem: location 1103 is 1
+9999 run: jumping to instruction 7
  102 run: break-unless x:address:screen, 
 9999 mem: location 1100 is 1031
 9999 run: jump-unless fell through
@@ -1405,9 +1412,9 @@ after-brace: print-character ...
 9999 mem: location 1116 is 1037
 9999 mem: storing 955 in location 1037
  102 run: cursor-color:address:number/deref <- copy color:number
-9999 mem: location 1102 is 7
+9999 mem: location 1102 is 1
 9999 mem: location 1117 is 1038
-9999 mem: storing 7 in location 1038
+9999 mem: storing 1 in location 1038
  102 run: at-right?:boolean <- equal column:address:number/deref, width:number
 9999 mem: location 1105 is 1034
 9999 mem: location 1034 is 0
@@ -1425,9 +1432,186 @@ after-brace: print-character ...
 9999 mem: location 1100 is 1031
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 900
+ 101 run: screen:address <- print-character screen:address, 97:literal/a
+9999 mem: location 900 is 1031
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1129
+ 102 run: x:address:screen <- next-ingredient 
+9999 mem: storing 1031 in location 1131
+ 102 run: c:character <- next-ingredient 
+9999 mem: storing 97 in location 1132
+ 102 run: color:number, color-found?:boolean <- next-ingredient 
+9999 mem: storing 0 in location 1133
+9999 mem: storing 0 in location 1134
+ 102 run: break-if color-found?:boolean, 
+9999 mem: location 1134 is 0
+9999 run: jump-if fell through
+ 102 run: color:number <- copy 7:literal/white
+9999 mem: storing 7 in location 1133
+ 102 run: break-unless x:address:screen, 
+9999 mem: location 1131 is 1031
+9999 run: jump-unless fell through
+ 102 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
+9999 mem: location 1131 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 5
+9999 mem: location 1033 is 0
+9999 mem: location 1034 is 1
+9999 mem: location 1035 is 1036
+9999 mem: location 1131 is 1031
+9999 run: address to copy is 1033
+9999 mem: storing 1033 in location 1135
+ 102 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
+9999 mem: location 1131 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 5
+9999 mem: location 1033 is 0
+9999 mem: location 1034 is 1
+9999 mem: location 1035 is 1036
+9999 mem: location 1131 is 1031
+9999 run: address to copy is 1034
+9999 mem: storing 1034 in location 1136
+ 102 run: width:number <- get x:address:screen/deref, num-columns:offset
+9999 mem: location 1131 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 5
+9999 mem: location 1033 is 0
+9999 mem: location 1034 is 1
+9999 mem: location 1035 is 1036
+9999 mem: location 1131 is 1031
+9999 run: address to copy is 1032
+9999 run: its type is 1
+9999 mem: location 1032 is 5
+9999 mem: storing 5 in location 1137
+ 102 run: height:number <- get x:address:screen/deref, num-rows:offset
+9999 mem: location 1131 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 5
+9999 mem: location 1033 is 0
+9999 mem: location 1034 is 1
+9999 mem: location 1035 is 1036
+9999 mem: location 1131 is 1031
+9999 run: address to copy is 1031
+9999 run: its type is 1
+9999 mem: location 1031 is 3
+9999 mem: storing 3 in location 1138
+ 102 run: max-row:number <- subtract height:number, 1:literal
+9999 mem: location 1138 is 3
+9999 mem: storing 2 in location 1139
+ 102 run: newline?:boolean <- equal c:character, 10:literal/newline
+9999 mem: location 1132 is 97
+9999 mem: storing 0 in location 1140
+ 102 run: break-unless newline?:boolean, 
+9999 mem: location 1140 is 0
+9999 run: jumping to instruction 25
+ 102 run: index:number <- multiply row:address:number/deref, width:number
+9999 mem: location 1135 is 1033
+9999 mem: location 1033 is 0
+9999 mem: location 1137 is 5
+9999 mem: storing 0 in location 1142
+ 102 run: index:number <- add index:number, column:address:number/deref
+9999 mem: location 1142 is 0
+9999 mem: location 1136 is 1034
+9999 mem: location 1034 is 1
+9999 mem: storing 1 in location 1142
+ 102 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
+9999 mem: location 1131 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 5
+9999 mem: location 1033 is 0
+9999 mem: location 1034 is 1
+9999 mem: location 1035 is 1036
+9999 mem: location 1131 is 1031
+9999 run: address to copy is 1035
+9999 run: its type is 2
+9999 mem: location 1035 is 1036
+9999 mem: storing 1036 in location 1143
+ 102 run: backspace?:boolean <- equal c:character, 8:literal
+9999 mem: location 1132 is 97
+9999 mem: storing 0 in location 1144
+ 102 run: break-unless backspace?:boolean, 
+9999 mem: location 1144 is 0
+9999 run: jumping to instruction 44
+ 102 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
+9999 mem: location 1143 is 1036
+9999 mem: location 1036 is 15
+9999 mem: location 1037 is 955
+9999 mem: location 1038 is 1
+9999 mem: location 1039 is 0
+9999 mem: location 1040 is 7
+9999 mem: location 1041 is 0
+9999 mem: location 1042 is 7
+9999 mem: location 1043 is 0
+9999 mem: location 1044 is 7
+9999 mem: location 1045 is 0
+9999 mem: location 1046 is 7
+9999 mem: location 1047 is 0
+9999 mem: location 1048 is 7
+9999 mem: location 1049 is 0
+9999 mem: location 1050 is 7
+9999 mem: location 1051 is 0
+9999 mem: location 1052 is 7
+9999 mem: location 1053 is 0
+9999 mem: location 1054 is 7
+9999 mem: location 1055 is 0
+9999 mem: location 1056 is 7
+9999 mem: location 1057 is 0
+9999 mem: location 1058 is 7
+9999 mem: location 1059 is 0
+9999 mem: location 1060 is 7
+9999 mem: location 1061 is 0
+9999 mem: location 1062 is 7
+9999 mem: location 1063 is 0
+9999 mem: location 1064 is 7
+9999 mem: location 1065 is 0
+9999 mem: location 1066 is 7
+9999 mem: location 1142 is 1
+9999 mem: location 1143 is 1036
+9999 mem: location 1142 is 1
+9999 mem: storing 1039 in location 1146
+ 102 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
+9999 mem: location 1146 is 1039
+9999 mem: location 1039 is 0
+9999 mem: location 1040 is 7
+9999 mem: location 1146 is 1039
+9999 run: address to copy is 1039
+9999 mem: storing 1039 in location 1147
+ 102 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
+9999 mem: location 1146 is 1039
+9999 mem: location 1039 is 0
+9999 mem: location 1040 is 7
+9999 mem: location 1146 is 1039
+9999 run: address to copy is 1040
+9999 mem: storing 1040 in location 1148
+ 102 run: cursor-contents:address:character/deref <- copy c:character
+9999 mem: location 1132 is 97
+9999 mem: location 1147 is 1039
+9999 mem: storing 97 in location 1039
+ 102 run: cursor-color:address:number/deref <- copy color:number
+9999 mem: location 1133 is 7
+9999 mem: location 1148 is 1040
+9999 mem: storing 7 in location 1040
+ 102 run: at-right?:boolean <- equal column:address:number/deref, width:number
+9999 mem: location 1136 is 1034
+9999 mem: location 1034 is 1
+9999 mem: location 1137 is 5
+9999 mem: storing 0 in location 1149
+ 102 run: break-if at-right?:boolean, 
+9999 mem: location 1149 is 0
+9999 run: jump-if fell through
+ 102 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+9999 mem: location 1136 is 1034
+9999 mem: location 1034 is 1
+9999 mem: location 1136 is 1034
+9999 mem: storing 2 in location 1034
+ 102 run: reply x:address:screen/same-as-ingredient:0
+9999 mem: location 1131 is 1031
+9999 run: result 0 is 1031
+9999 mem: storing 1031 in location 900
  100 run: screen-should-contain [
   #  01234
-    .λ    .
+    .λa   .
     .     .
     .     .
   ]

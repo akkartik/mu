@@ -22,14 +22,15 @@ scenario screen-in-scenario [
 
 :(scenario screen_in_scenario_unicode)
 # screen-should-contain can check unicode characters in the fake screen
-scenario screen-in-scenario [
+scenario screen-in-scenario-unicode-color [
   assume-screen 5:literal/width, 3:literal/height
   run [
-    screen:address <- print-character screen:address, 955:literal  # 'λ'
+    screen:address <- print-character screen:address, 955:literal/greek-small-lambda, 1:literal/red
+    screen:address <- print-character screen:address, 97:literal/a
   ]
   screen-should-contain [
   #  01234
-    .λ    .
+    .λa   .
     .     .
     .     .
   ]
