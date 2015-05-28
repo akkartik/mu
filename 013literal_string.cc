@@ -34,19 +34,19 @@ string slurp_quoted(istream& in) {
   assert(!in.eof());
   assert(in.peek() == '[');
   ostringstream out;
-  int size = 0;
+  int brace_depth = 0;
   while (!in.eof()) {
     char c = in.get();
-//?     cout << (int)c << ": " << size << '\n'; //? 2
+//?     cout << (int)c << ": " << brace_depth << '\n'; //? 2
     if (c == '\\') {
       out << (char)in.get();
       continue;
     }
     out << c;
 //?     cout << out.str() << "$\n"; //? 1
-    if (c == '[') ++size;
-    if (c == ']') --size;
-    if (size == 0) break;
+    if (c == '[') ++brace_depth;
+    if (c == ']') --brace_depth;
+    if (brace_depth == 0) break;
   }
   return out.str();
 }
