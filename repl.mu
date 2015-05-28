@@ -85,7 +85,7 @@ recipe read-instruction [
 #?       $print [decremented to ], current-color-count:number, [ 
 #? ] #? 1
       {
-        reset-color?:boolean <- lesser-or-equal current-color-count:number, 1:literal  # last key we're about to backspace over in this iteration
+        reset-color?:boolean <- lesser-or-equal current-color-count:number, 0:literal
         break-unless reset-color?:boolean
 #?         $print [resetting color
 #?   ] #? 1
@@ -172,6 +172,29 @@ scenario read-instruction-cancel-comment-on-backspace2 [
   ]
   screen-should-contain-in-color 7:literal/white, [
     .z                             .
+    .                              .
+  ]
+]
+
+scenario read-instruction-cancel-comment-on-backspace3 [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [#a<z
+]
+  # setup: replace '<'s with backspace key since we can't represent backspace in strings
+  run [
+    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
+    first:address:character <- index-address buf:address:array:character/deref, 2:literal
+    first:address:character/deref <- copy 8:literal/backspace
+  ]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain-in-color 4:literal/blue, [
+    .#z                            .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .                              .
     .                              .
   ]
 ]
