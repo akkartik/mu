@@ -43,13 +43,16 @@ recipe read-instruction [
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
   result:address:buffer <- init-buffer 10:literal  # string to maybe add to
+  # certain keys may trigger a change in the color
   color:number <- copy 7:literal/white
+  # use this to track when backspace should reset color
+  current-color-count:number <- copy 0:literal
   {
     +next-character
     # read character
     c:character, k:address:keyboard <- wait-for-key k:address:keyboard
-#?     $print c:character, [ 
-#? ] #? 1
+#?     $print [next character: ], c:character, [ 
+#? ] #? 2
     # quit?
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
@@ -66,12 +69,35 @@ recipe read-instruction [
       comment?:boolean <- equal c:character, 35:literal/hash
       break-unless comment?:boolean
       color:number <- copy 4:literal/blue
+      # start new color count; don't need to save old color since it's guaranteed to be white
+      current-color-count:number <- copy 0:literal
       # fall through
     }
     # print
     print-character x:address:screen, c:character, color:number
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
+    # backspace? decrement
+    {
+      backspace?:boolean <- equal c:character, 8:literal/backspace
+      break-unless backspace?:boolean
+      current-color-count:number <- subtract current-color-count:number, 1:literal
+#?       $print [decremented to ], current-color-count:number, [ 
+#? ] #? 1
+      {
+        reset-color?:boolean <- lesser-or-equal current-color-count:number, 1:literal  # last key we're about to backspace over in this iteration
+        break-unless reset-color?:boolean
+#?         $print [resetting color
+#?   ] #? 1
+        color:number <- copy 7:literal/white
+        current-color-count:number <- copy 0:literal  # doesn't matter what count is when the color is white
+      }
+      loop +next-character:label
+    }
+    # otherwise increment
+    current-color-count:number <- add current-color-count:number, 1:literal
+#?     $print [incremented to ], current-color-count:number, [ 
+#? ] #? 1
     # done with this instruction?
     done?:boolean <- equal c:character, 10:literal/newline
     break-if done?:boolean
@@ -94,6 +120,58 @@ scenario read-instruction-color-comment [
   ]
   screen-should-contain-in-color 7:literal/white, [
     .                              .
+    .                              .
+  ]
+]
+
+scenario read-instruction-cancel-comment-on-backspace [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [#a<<z
+]
+  # setup: replace '<'s with backspace key since we can't represent backspace in strings
+  run [
+    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
+    first:address:character <- index-address buf:address:array:character/deref, 2:literal
+    first:address:character/deref <- copy 8:literal/backspace
+    second:address:character <- index-address buf:address:array:character/deref, 3:literal
+    second:address:character/deref <- copy 8:literal/backspace
+  ]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain-in-color 4:literal/blue, [
+    .                              .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .z                             .
+    .                              .
+  ]
+]
+
+scenario read-instruction-cancel-comment-on-backspace2 [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [#ab<<<z
+]
+  # setup: replace '<'s with backspace key since we can't represent backspace in strings
+  run [
+    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
+    first:address:character <- index-address buf:address:array:character/deref, 3:literal
+    first:address:character/deref <- copy 8:literal/backspace
+    second:address:character <- index-address buf:address:array:character/deref, 4:literal
+    second:address:character/deref <- copy 8:literal/backspace
+    third:address:character <- index-address buf:address:array:character/deref, 5:literal
+    third:address:character/deref <- copy 8:literal/backspace
+  ]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain-in-color 4:literal/blue, [
+    .                              .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .z                             .
     .                              .
   ]
 ]
