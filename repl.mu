@@ -166,6 +166,15 @@ recipe slurp-string [
       break-unless null?:boolean
       reply 0:literal, 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
+    # string
+    {
+      string?:boolean <- equal c:character, 91:literal/open-bracket
+      break-unless string?:boolean
+      print-character x:address:screen, c:character, 6:literal/cyan
+      result:address:buffer <- buffer-append result:address:buffer, c:character
+      result:address:buffer, tmp:number, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen
+      loop +next-character:label
+    }
     # print
     print-character x:address:screen, c:character, 6:literal/cyan
     # append
@@ -402,6 +411,27 @@ scenario read-instruction-ignore-string-inside-comment [
   ]
   screen-should-contain-in-color 4:literal/blue, [
     .    # comment [not a string]  .
+    .                              .
+  ]
+]
+
+scenario read-instruction-color-string-inside-string [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [abc [string [inner string]]
+]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain [
+    .abc [string [inner string]]   .
+    .                              .
+  ]
+  screen-should-contain-in-color 6:literal/cyan, [
+    .    [string [inner string]]   .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .abc                           .
     .                              .
   ]
 ]
