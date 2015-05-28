@@ -193,6 +193,7 @@ MEMORY_SHOULD_CONTAIN,
 Recipe_number["memory-should-contain"] = MEMORY_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case MEMORY_SHOULD_CONTAIN: {
+  if (!Passed) break;
 //?   cout << current_instruction().ingredients.at(0).name << '\n'; //? 1
   check_memory(current_instruction().ingredients.at(0).name);
   break;
@@ -355,6 +356,7 @@ TRACE_SHOULD_CONTAIN,
 Recipe_number["trace-should-contain"] = TRACE_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case TRACE_SHOULD_CONTAIN: {
+  if (!Passed) break;
   check_trace(current_instruction().ingredients.at(0).name);
   break;
 }
@@ -445,6 +447,7 @@ TRACE_SHOULD_NOT_CONTAIN,
 Recipe_number["trace-should-not-contain"] = TRACE_SHOULD_NOT_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case TRACE_SHOULD_NOT_CONTAIN: {
+  if (!Passed) break;
   check_trace_missing(current_instruction().ingredients.at(0).name);
   break;
 }
