@@ -71,14 +71,29 @@ else if (command == "scenario") {
 
 :(code)
 scenario parse_scenario(istream& in) {
+//?   cerr << "parse scenario\n"; //? 1
   scenario result;
   result.name = next_word(in);
-  skip_bracket(in, "'scenario' must begin with '['");
-  ostringstream buffer;
-  slurp_until_matching_bracket(in, buffer);
-  result.to_run = buffer.str();
+  skip_whitespace_and_comments(in);
+  assert(in.peek() == '[');
+  // scenarios are take special 'code' strings so we need to ignore brackets
+  // inside comments
+  result.to_run = slurp_quoted_ignoring_comments(in);
   return result;
 }
+
+:(scenario read_scenario_with_bracket_in_comment)
+scenario foo [
+  # ']' in comment
+  1:number <- copy 0:literal
+]
++run: 1:number <- copy 0:literal
+
+:(scenario read_scenario_with_bracket_in_comment_in_nested_string)
+scenario foo [
+  1:address:array:character <- new [# not a comment]
+]
++run: 1:address:array:character <- new [# not a comment]
 
 //:: Run scenarios when we run 'mu test'.
 //: Treat the text of the scenario as a regular series of instructions.
@@ -115,6 +130,7 @@ void run_mu_scenario(const scenario& s) {
     Trace_stream = new trace_stream;
     setup();
   }
+//?   cerr << '^' << s.to_run << "$\n"; //? 1
   run("recipe "+s.name+" [ " + s.to_run + " ]");
   if (not_already_inside_test && Trace_stream) {
     teardown();
@@ -495,6 +511,7 @@ recipe main [
 :(code)
 // just for the scenarios running scenarios in C++ layers
 void run_mu_scenario(const string& form) {
+//?   cerr << form << '\n'; //? 1
   istringstream in(form);
   in >> std::noskipws;
   skip_whitespace_and_comments(in);
@@ -505,13 +522,20 @@ void run_mu_scenario(const string& form) {
   run_mu_scenario(s);
 }
 
-void slurp_until_matching_bracket(istream& in, ostream& out) {
-  int brace_depth = 1;  // just scanned '['
+string slurp_quoted_ignoring_comments(istream& in) {
+  assert(in.get() == '[');  // drop initial '['
+  int brace_depth = 1;
   char c;
+  ostringstream out;
   while (in >> c) {
+//?     cerr << c << '\n'; //? 2
+    // Still can't handle scenarios inside strings inside scenarios..
+    if (brace_depth == 1 && c == '#') { in.putback(c); skip_comment(in); continue; }
     if (c == '[') ++brace_depth;
     if (c == ']') --brace_depth;
     if (brace_depth == 0) break;  // drop final ']'
     out << c;
   }
+//?   cerr << "done\n"; //? 1
+  return out.str();
 }

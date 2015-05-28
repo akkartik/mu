@@ -37,7 +37,11 @@ string slurp_quoted(istream& in) {
   int size = 0;
   while (!in.eof()) {
     char c = in.get();
-//?     cout << c << '\n'; //? 1
+//?     cout << (int)c << ": " << size << '\n'; //? 2
+    if (c == '\\') {
+      out << (char)in.get();
+      continue;
+    }
     out << c;
 //?     cout << out.str() << "$\n"; //? 1
     if (c == '[') ++size;
@@ -66,6 +70,12 @@ recipe main [
   1:address:array:character <- copy [abc [def]]
 ]
 +parse:   ingredient: {name: "abc [def]", properties: ["abc [def]": "literal-string"]}
+
+:(scenario string_literal_escaped)
+recipe main [
+  1:address:array:character <- copy [abc \[def]
+]
++parse:   ingredient: {name: "abc [def", properties: ["abc [def": "literal-string"]}
 
 :(scenario string_literal_and_comment)
 recipe main [
