@@ -202,6 +202,10 @@ void check_screen(const string& expected_contents, const int color) {
       uint32_t curr = cursor.get();
       if (Memory[addr] == 0 && isspace(curr)) continue;
 //?       cerr << color << " vs " << Memory[addr+1] << '\n'; //? 1
+      if (curr == ' ' && color != -1 && color != Memory[addr+cell_color_offset]) {
+        // filter out other colors
+        continue;
+      }
       if (Memory[addr] != 0 && Memory[addr] == curr) {
         if (color == -1 || color == Memory[addr+cell_color_offset]) continue;
         // contents match but color is off
@@ -219,9 +223,6 @@ void check_screen(const string& expected_contents, const int color) {
         }
         return;
       }
-
-      // mismatch; check if we should ignore because of the color
-      if (curr == ' ' && color != -1 && color != Memory[addr+cell_color_offset]) continue;
 
       // really a mismatch
       // can't print multi-byte unicode characters in warnings just yet. not very useful for debugging anyway.
