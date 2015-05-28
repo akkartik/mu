@@ -339,6 +339,18 @@ container foo [
 ]
 +warn: unknown type for field y in foo
 
+:(scenario read_container_with_bracket_in_comment)
+container foo [
+  x:number
+  # ']' in comment
+  y:number
+]
++parse: reading container foo
++parse:   element name: x
++parse:   type: 1
++parse:   element name: y
++parse:   type: 1
+
 :(before "End Load Sanity Checks")
 check_container_field_types();
 
