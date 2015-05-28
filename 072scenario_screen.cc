@@ -229,19 +229,19 @@ void check_screen(const string& expected_contents, const int color) {
       // really a mismatch
       // can't print multi-byte unicode characters in warnings just yet. not very useful for debugging anyway.
       char expected_pretty[10] = {0};
-      if (curr < 256) {
+      if (curr < 256 && !iscntrl(curr)) {
         // " ('<curr>')"
         expected_pretty[0] = ' ', expected_pretty[1] = '(', expected_pretty[2] = '\'', expected_pretty[3] = static_cast<unsigned char>(curr), expected_pretty[4] = '\'', expected_pretty[5] = ')', expected_pretty[6] = '\0';
       }
       char actual_pretty[10] = {0};
-      if (Memory[addr] < 256) {
+      if (Memory[addr] < 256 && !iscntrl(Memory[addr])) {
         // " ('<curr>')"
         actual_pretty[0] = ' ', actual_pretty[1] = '(', actual_pretty[2] = '\'', actual_pretty[3] = static_cast<unsigned char>(Memory[addr]), actual_pretty[4] = '\'', actual_pretty[5] = ')', actual_pretty[6] = '\0';
       }
 
       if (Current_scenario && !Hide_warnings) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << Memory[addr] << actual_pretty << "'\n";
+        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << Memory[addr] << actual_pretty << '\n';
         dump_screen();
       }
       else {
