@@ -43,7 +43,9 @@ recipe read-instruction [
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
   result:address:buffer <- init-buffer 10:literal  # string to maybe add to
+  color:number <- copy 7:literal/white
   {
+    +next-character
     # read character
     c:character, k:address:keyboard <- wait-for-key k:address:keyboard
 #?     $print c:character, [ 
@@ -59,8 +61,15 @@ recipe read-instruction [
       break-unless null?:boolean
       reply 0:literal, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
     }
+    # comment?
+    {
+      comment?:boolean <- equal c:character, 35:literal/hash
+      break-unless comment?:boolean
+      color:number <- copy 4:literal/blue
+      # fall through
+    }
     # print
-    print-character x:address:screen, c:character
+    print-character x:address:screen, c:character, color:number
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
     # done with this instruction?
@@ -70,4 +79,21 @@ recipe read-instruction [
   }
   result2:address:array:character <- buffer-to-array result:address:buffer
   reply result2:address:array:character, k:address:keyboard, x:address:screen
+]
+
+scenario read-instruction-color-comment [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [# comment
+]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain-in-color 4:literal/blue, [
+    .# comment                     .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .                              .
+    .                              .
+  ]
 ]
