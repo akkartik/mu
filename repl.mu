@@ -38,11 +38,27 @@ scenario read-instruction1 [
   ]
 ]
 
+# Read characters as they're typed at the keyboard, print them to the screen,
+# accumulate them in a string, return the string at the end.
+# Most of the complexity is for the printing to screen, to highlight strings
+# and comments specially. Especially in the presence of backspacing.
 recipe read-instruction [
   default-space:address:array:location <- new location:type, 60:literal
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
   result:address:buffer <- init-buffer 10:literal  # string to maybe add to
+  result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen
+  result2:address:array:character <- buffer-to-array result:address:buffer
+  reply result2:address:array:character, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+]
+
+# read characters from the keyboard, print them to the screen in *white*.
+# Transition to other routines for comments and strings.
+recipe slurp-regular-characters [
+  default-space:address:array:location <- new location:type, 60:literal
+  result:address:buffer <- next-ingredient
+  k:address:keyboard <- next-ingredient
+  x:address:screen <- next-ingredient
   {
     +next-character
     # read character
@@ -51,12 +67,12 @@ recipe read-instruction [
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
       break-unless ctrl-d?:boolean
-      reply 0:literal, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
-      reply 0:literal, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     # comment?
     {
@@ -86,13 +102,13 @@ recipe read-instruction [
     break-if done?:boolean
     loop
   }
-  result2:address:array:character <- buffer-to-array result:address:buffer
-  reply result2:address:array:character, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+  reply result:address:buffer/same-as-ingredient:0, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
 ]
 
-# Simpler version of read-instruction that prints in the comment color and
-# doesn't handle comments or strings. Tracks an extra count in case we
-# backspace out of it
+# read characters from keyboard, print them to screen in the comment color.
+#
+# Simpler version of slurp-regular-characters; doesn't handle comments or
+# strings. Tracks an extra count in case we backspace out of it
 recipe slurp-comment [
   default-space:address:array:location <- new location:type, 60:literal
   result:address:buffer <- next-ingredient
@@ -141,9 +157,13 @@ recipe slurp-comment [
   reply result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
 ]
 
-# Version of read-instruction that prints in the string color and doesn't
-# handle comments. Does handle nested strings. Tracks an extra count in case
-# we backspace out of it, which it needs to return because recursion.
+# read characters from keyboard, print them to screen in the string color and
+# accumulate them into a buffer.
+#
+# Version of slurp-regular-characters that:
+#   a) doesn't handle comments
+#   b) handles nested strings using recursive calls to itself. Tracks an extra
+#   count in case we backspace out of it.
 recipe slurp-string [
   default-space:address:array:location <- new location:type, 60:literal
   result:address:buffer <- next-ingredient
@@ -174,7 +194,7 @@ recipe slurp-string [
       result:address:buffer <- buffer-append result:address:buffer, c:character
       # make a recursive call to handle nested strings
       result:address:buffer, tmp:number, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen
-      # but if we backspace over a completed string handle it in the caller
+      # but if we backspace over a completed nested string, handle it in the caller
       characters-slurped:number <- add characters-slurped:number, tmp:number, 1:literal  # for the leading '['
       loop +next-character:label
     }
@@ -484,6 +504,30 @@ scenario read-instruction-cancel-string-inside-string-on-backspace [
   ]
   screen-should-contain-in-color 6:literal/cyan, [
     .[ab]                          .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .                              .
+    .                              .
+  ]
+]
+
+scenario read-instruction-backspace-back-into-string [
+  assume-screen 30:literal/width, 5:literal/height
+  # need to escape the '[' once for 'scenario' and once for 'assume-keyboard'
+  assume-keyboard [\[a\]<b
+]
+  # setup: replace '<'s with backspace key since we can't represent backspace in strings
+  run [
+    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
+    first-backspace:address:character <- index-address buf:address:array:character/deref, 3:literal
+    first-backspace:address:character/deref <- copy 8:literal/backspace
+  ]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain-in-color 6:literal/cyan, [
+    .[ab                           .
     .                              .
   ]
   screen-should-contain-in-color 7:literal/white, [
