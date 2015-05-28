@@ -63,8 +63,18 @@ recipe read-instruction [
       comment?:boolean <- equal c:character, 35:literal/hash
       break-unless comment?:boolean
       print-character x:address:screen, c:character, 4:literal/blue
+      result:address:buffer <- buffer-append result:address:buffer, c:character
       result:address:buffer, k:address:keyboard, x:address:screen <- slurp-comment result:address:buffer, k:address:keyboard, x:address:screen
       # continue appending to this instruction, whether comment ended or was backspaced out of
+      loop +next-character:label
+    }
+    # string
+    {
+      string?:boolean <- equal c:character, 91:literal/open-bracket
+      break-unless string?:boolean
+      print-character x:address:screen, c:character, 6:literal/cyan
+      result:address:buffer <- buffer-append result:address:buffer, c:character
+      result:address:buffer, _, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen
       loop +next-character:label
     }
     # print
@@ -77,7 +87,7 @@ recipe read-instruction [
     loop
   }
   result2:address:array:character <- buffer-to-array result:address:buffer
-  reply result2:address:array:character, k:address:keyboard, x:address:screen
+  reply result2:address:array:character, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
 ]
 
 # Simpler version of read-instruction that prints in the comment color and
@@ -98,12 +108,12 @@ recipe slurp-comment [
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
       break-unless ctrl-d?:boolean
-      reply 0:literal, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
-      reply 0:literal, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     # print
     print-character x:address:screen, c:character, 4:literal/blue
@@ -117,7 +127,7 @@ recipe slurp-comment [
       {
         reset-color?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
         break-unless reset-color?:boolean
-        reply result:address:buffer, k:address:keyboard, x:address:screen
+        reply result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
       }
       loop +next-character:label
     }
@@ -128,7 +138,58 @@ recipe slurp-comment [
     break-if done?:boolean
     loop
   }
-  reply result:address:buffer, k:address:keyboard, x:address:screen
+  reply result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+]
+
+# Version of read-instruction that prints in the string color and doesn't
+# handle comments. Does handle nested strings. Tracks an extra count in case
+# we backspace out of it, which it needs to return because recursion.
+recipe slurp-string [
+  default-space:address:array:location <- new location:type, 60:literal
+  result:address:buffer <- next-ingredient
+  k:address:keyboard <- next-ingredient
+  x:address:screen <- next-ingredient
+  # use this to track when backspace should reset color
+  characters-slurped:number <- copy 1:literal  # for the initial '[' that's already appended to result
+  {
+    +next-character
+    # read character
+    c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+    # quit?
+    {
+      ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+      break-unless ctrl-d?:boolean
+      reply 0:literal, 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+    }
+    {
+      null?:boolean <- equal c:character, 0:literal/null
+      break-unless null?:boolean
+      reply 0:literal, 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+    }
+    # print
+    print-character x:address:screen, c:character, 6:literal/cyan
+    # append
+    result:address:buffer <- buffer-append result:address:buffer, c:character
+    # backspace? decrement
+    {
+      backspace?:boolean <- equal c:character, 8:literal/backspace
+      break-unless backspace?:boolean
+      characters-slurped:number <- subtract characters-slurped:number, 1:literal
+      {
+        reset-color?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
+        break-unless reset-color?:boolean
+        reply result:address:buffer/same-as-ingredient:0, 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      }
+      loop +next-character:label
+    }
+    # otherwise increment
+    characters-slurped:number <- add characters-slurped:number, 1:literal
+    # done with this instruction?
+    done?:boolean <- equal c:character, 93:literal/close-bracket
+    break-if done?:boolean
+    loop
+  }
+  reply result:address:buffer/same-as-ingredient:0, characters-slurped:number, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
 ]
 
 scenario read-instruction-color-comment [
@@ -219,6 +280,128 @@ scenario read-instruction-cancel-comment-on-backspace3 [
   ]
   screen-should-contain-in-color 7:literal/white, [
     .                              .
+    .                              .
+  ]
+]
+
+scenario read-instruction-color-string [
+#?   $start-tracing #? 1
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [abc [string]
+]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain [
+    .abc [string]                  .
+    .                              .
+  ]
+  screen-should-contain-in-color 6:literal/cyan, [
+    .    [string]                  .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .abc                           .
+    .                              .
+  ]
+]
+
+scenario read-instruction-color-string-multiline [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [abc [line1
+line2]
+]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain [
+    .abc [line1                    .
+    .line2]                        .
+    .                              .
+  ]
+  screen-should-contain-in-color 6:literal/cyan, [
+    .    [line1                    .
+    .line2]                        .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .abc                           .
+    .                              .
+    .                              .
+  ]
+]
+
+scenario read-instruction-color-string-and-comment [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [abc [string]  # comment
+]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain [
+    .abc [string]  # comment       .
+    .                              .
+  ]
+  screen-should-contain-in-color 4:literal/blue, [
+    .              # comment       .
+    .                              .
+  ]
+  screen-should-contain-in-color 6:literal/cyan, [
+    .    [string]                  .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .abc                           .
+    .                              .
+  ]
+]
+
+scenario read-instruction-ignore-comment-inside-string [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [abc [string # not a comment]
+]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain [
+    .abc [string # not a comment]  .
+    .                              .
+  ]
+  screen-should-contain-in-color 6:literal/cyan, [
+    .    [string # not a comment]  .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .abc                           .
+    .                              .
+  ]
+  screen-should-contain-in-color 4:literal/blue, [
+    .                              .
+    .                              .
+  ]
+]
+
+scenario read-instruction-ignore-string-inside-comment [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [abc # comment [not a string]
+]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain [
+    .abc # comment [not a string]  .
+    .                              .
+  ]
+  screen-should-contain-in-color 6:literal/cyan, [
+    .                              .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .abc                           .
+    .                              .
+  ]
+  screen-should-contain-in-color 4:literal/blue, [
+    .    # comment [not a string]  .
     .                              .
   ]
 ]
