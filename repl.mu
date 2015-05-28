@@ -47,7 +47,18 @@ recipe read-instruction [
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
   result:address:buffer <- init-buffer 10:literal  # string to maybe add to
-  result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen
+  # start state machine by calling slurp-regular-characters, which will return
+  # by calling the complete continuation
+  complete:continuation <- current-continuation
+  # If result is not empty, we've run slurp-regular-characters below, called
+  # the continuation and so bounced back here. We're done.
+  len:number <- get result:address:buffer/deref, length:offset
+  completed?:boolean <- greater-than len:number, 0:literal
+  jump-if completed?:boolean, +completed:label
+  # Otherwise we're just getting started.
+  result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+  trace [error], [slurp-regular-characters should never return normally]
+  +completed
   result2:address:array:character <- buffer-to-array result:address:buffer
   reply result2:address:array:character, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
 ]
@@ -59,6 +70,7 @@ recipe slurp-regular-characters [
   result:address:buffer <- next-ingredient
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
+  complete:continuation <- next-ingredient
   {
     +next-character
     # read character
@@ -80,7 +92,7 @@ recipe slurp-regular-characters [
       break-unless comment?:boolean
       print-character x:address:screen, c:character, 4:literal/blue
       result:address:buffer <- buffer-append result:address:buffer, c:character
-      result:address:buffer, k:address:keyboard, x:address:screen <- slurp-comment result:address:buffer, k:address:keyboard, x:address:screen
+      result:address:buffer, k:address:keyboard, x:address:screen <- slurp-comment result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
       # continue appending to this instruction, whether comment ended or was backspaced out of
       loop +next-character:label
     }
@@ -90,7 +102,7 @@ recipe slurp-regular-characters [
       break-unless string?:boolean
       print-character x:address:screen, c:character, 6:literal/cyan
       result:address:buffer <- buffer-append result:address:buffer, c:character
-      result:address:buffer, _, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen
+      result:address:buffer, _, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
       loop +next-character:label
     }
     # print
@@ -102,7 +114,10 @@ recipe slurp-regular-characters [
     break-if done?:boolean
     loop
   }
-  reply result:address:buffer/same-as-ingredient:0, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+  # terminate all recursive calls
+#?   xx:address:array:character <- new [completing!] #? 1
+#?   print-string x:address:screen, xx:address:array:character #? 1
+  continue-from complete:continuation
 ]
 
 # read characters from keyboard, print them to screen in the comment color.
@@ -114,6 +129,7 @@ recipe slurp-comment [
   result:address:buffer <- next-ingredient
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
+  complete:continuation <- next-ingredient
   # use this to track when backspace should reset color
   characters-slurped:number <- copy 1:literal  # for the initial '#' that's already appended to result
   {
@@ -169,6 +185,7 @@ recipe slurp-string [
   result:address:buffer <- next-ingredient
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
+  complete:continuation <- next-ingredient
   # use this to track when backspace should reset color
   characters-slurped:number <- copy 1:literal  # for the initial '[' that's already appended to result
   {
@@ -193,7 +210,7 @@ recipe slurp-string [
       print-character x:address:screen, c:character, 6:literal/cyan
       result:address:buffer <- buffer-append result:address:buffer, c:character
       # make a recursive call to handle nested strings
-      result:address:buffer, tmp:number, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen
+      result:address:buffer, tmp:number, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
       # but if we backspace over a completed nested string, handle it in the caller
       characters-slurped:number <- add characters-slurped:number, tmp:number, 1:literal  # for the leading '['
       loop +next-character:label
@@ -221,6 +238,8 @@ recipe slurp-string [
     break-if done?:boolean
     loop
   }
+  result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+  # should only get here on end of session
   reply result:address:buffer/same-as-ingredient:0, characters-slurped:number, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
 ]
 
