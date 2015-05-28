@@ -1,6 +1,11 @@
 tangle: makefile type_list function_list file_list test_file_list test_list
 	c++ -g -O3 -Wall -Wextra -fno-strict-aliasing boot.cc -o tangle
 
+.PHONY: test
+
+test: tangle
+	./tangle test
+
 type_list: boot.cc [0-9]*.cc
 	@# assumes struct decl has space before '{'
 	@grep -h "^struct .* {" [0-9]*.cc |perl -pwe 's/(struct *[^ ]*).*/$$1;/' > type_list
