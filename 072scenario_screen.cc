@@ -148,6 +148,7 @@ SCREEN_SHOULD_CONTAIN,
 Recipe_number["screen-should-contain"] = SCREEN_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case SCREEN_SHOULD_CONTAIN: {
+  if (!Passed) break;
   check_screen(current_instruction().ingredients.at(0).name, -1);
   break;
 }
@@ -158,6 +159,7 @@ SCREEN_SHOULD_CONTAIN_IN_COLOR,
 Recipe_number["screen-should-contain-in-color"] = SCREEN_SHOULD_CONTAIN_IN_COLOR;
 :(before "End Primitive Recipe Implementations")
 case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
+  if (!Passed) break;
   assert(scalar(ingredients.at(0)));
   check_screen(current_instruction().ingredients.at(1).name, ingredients.at(0).at(0));
   break;
