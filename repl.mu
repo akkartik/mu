@@ -173,6 +173,7 @@ recipe slurp-string [
       print-character x:address:screen, c:character, 6:literal/cyan
       result:address:buffer <- buffer-append result:address:buffer, c:character
       result:address:buffer, tmp:number, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen
+      characters-slurped:number <- add characters-slurped:number, tmp:number, 1:literal  # for the leading '['
       loop +next-character:label
     }
     # print
@@ -432,6 +433,59 @@ scenario read-instruction-color-string-inside-string [
   ]
   screen-should-contain-in-color 7:literal/white, [
     .abc                           .
+    .                              .
+  ]
+]
+
+scenario read-instruction-cancel-string-on-backspace [
+  assume-screen 30:literal/width, 5:literal/height
+  # need to escape the '[' once for 'scenario' and once for 'assume-keyboard'
+  assume-keyboard [\\\[a<<z
+]
+  # setup: replace '<'s with backspace key since we can't represent backspace in strings
+  run [
+    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
+    first-backspace:address:character <- index-address buf:address:array:character/deref, 2:literal
+    first-backspace:address:character/deref <- copy 8:literal/backspace
+    second-backspace:address:character <- index-address buf:address:array:character/deref, 3:literal
+    second-backspace:address:character/deref <- copy 8:literal/backspace
+  ]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain-in-color 6:literal/cyan, [
+    .                              .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .z                             .
+    .                              .
+  ]
+]
+
+scenario read-instruction-cancel-string-inside-string-on-backspace [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [\[a\[b\]<<<b\]
+]
+  # setup: replace '<'s with backspace key since we can't represent backspace in strings
+  run [
+    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
+    first-backspace:address:character <- index-address buf:address:array:character/deref, 5:literal
+    first-backspace:address:character/deref <- copy 8:literal/backspace
+    second-backspace:address:character <- index-address buf:address:array:character/deref, 6:literal
+    second-backspace:address:character/deref <- copy 8:literal/backspace
+    third-backspace:address:character <- index-address buf:address:array:character/deref, 7:literal
+    third-backspace:address:character/deref <- copy 8:literal/backspace
+  ]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain-in-color 6:literal/cyan, [
+    .[ab]                          .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .                              .
     .                              .
   ]
 ]
