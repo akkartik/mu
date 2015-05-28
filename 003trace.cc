@@ -179,9 +179,12 @@ ostream& operator<<(ostream& os, unused die) {
 
 #define DUMP(layer)  if (Trace_stream) cerr << Trace_stream->readable_contents(layer);
 
-// Trace_stream is a resource, lease_tracer uses RAII to manage it.
-string Trace_file;
+// All scenarios save their traces in the repo, just like code. This gives
+// future readers more meat when they try to make sense of a new project.
 static string Trace_dir = ".traces/";
+string Trace_file;
+
+// Trace_stream is a resource, lease_tracer uses RAII to manage it.
 struct lease_tracer {
   lease_tracer() { Trace_stream = new trace_stream; }
   ~lease_tracer() {
@@ -195,9 +198,6 @@ struct lease_tracer {
     delete Trace_stream, Trace_stream = NULL, Trace_file = "";
   }
 };
-
-// To transparently save traces, start tests with the TEST() macro.
-#define TEST(name) void test_##name() { Trace_file = #name;
 
 #define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;
 :(before "End Test Setup")

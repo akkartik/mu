@@ -299,7 +299,8 @@ list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
 //     a directive to print the trace just for debugging ('?')
 // Remember to update is_input below if you add to this format.
 void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
-  result.push_back(Line("TEST("+name+")", front(lines).filename, front(lines).line_number-1));  // use line number of directive
+  result.push_back(Line("void test_"+name+"() {", front(lines).filename, front(lines).line_number-1));  // use line number of directive
+  result.push_back(Line("  Trace_file = \""+name+"\";", front(lines).filename, front(lines).line_number-1));
   while (!lines.empty()) {
     while (!lines.empty() && starts_with(front(lines).contents, "% ")) {
       result.push_back(Line("  "+front(lines).contents.substr(strlen("% ")), front(lines)));
