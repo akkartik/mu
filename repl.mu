@@ -43,16 +43,10 @@ recipe read-instruction [
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
   result:address:buffer <- init-buffer 10:literal  # string to maybe add to
-  # certain keys may trigger a change in the color
-  color:number <- copy 7:literal/white
-  # use this to track when backspace should reset color
-  current-color-count:number <- copy 0:literal
   {
     +next-character
     # read character
     c:character, k:address:keyboard <- wait-for-key k:address:keyboard
-#?     $print [next character: ], c:character, [ 
-#? ] #? 2
     # quit?
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
@@ -68,36 +62,15 @@ recipe read-instruction [
     {
       comment?:boolean <- equal c:character, 35:literal/hash
       break-unless comment?:boolean
-      color:number <- copy 4:literal/blue
-      # start new color count; don't need to save old color since it's guaranteed to be white
-      current-color-count:number <- copy 0:literal
-      # fall through
-    }
-    # print
-    print-character x:address:screen, c:character, color:number
-    # append
-    result:address:buffer <- buffer-append result:address:buffer, c:character
-    # backspace? decrement
-    {
-      backspace?:boolean <- equal c:character, 8:literal/backspace
-      break-unless backspace?:boolean
-      current-color-count:number <- subtract current-color-count:number, 1:literal
-#?       $print [decremented to ], current-color-count:number, [ 
-#? ] #? 1
-      {
-        reset-color?:boolean <- lesser-or-equal current-color-count:number, 0:literal
-        break-unless reset-color?:boolean
-#?         $print [resetting color
-#?   ] #? 1
-        color:number <- copy 7:literal/white
-        current-color-count:number <- copy 0:literal  # doesn't matter what count is when the color is white
-      }
+      print-character x:address:screen, c:character, 4:literal/blue
+      result:address:buffer, k:address:keyboard, x:address:screen <- slurp-comment result:address:buffer, k:address:keyboard, x:address:screen
+      # continue appending to this instruction, whether comment ended or was backspaced out of
       loop +next-character:label
     }
-    # otherwise increment
-    current-color-count:number <- add current-color-count:number, 1:literal
-#?     $print [incremented to ], current-color-count:number, [ 
-#? ] #? 1
+    # print
+    print-character x:address:screen, c:character  # default color
+    # append
+    result:address:buffer <- buffer-append result:address:buffer, c:character
     # done with this instruction?
     done?:boolean <- equal c:character, 10:literal/newline
     break-if done?:boolean
@@ -105,6 +78,57 @@ recipe read-instruction [
   }
   result2:address:array:character <- buffer-to-array result:address:buffer
   reply result2:address:array:character, k:address:keyboard, x:address:screen
+]
+
+# Simpler version of read-instruction that prints in the comment color and
+# doesn't handle comments or strings. Tracks an extra count in case we
+# backspace out of it
+recipe slurp-comment [
+  default-space:address:array:location <- new location:type, 60:literal
+  result:address:buffer <- next-ingredient
+  k:address:keyboard <- next-ingredient
+  x:address:screen <- next-ingredient
+  # use this to track when backspace should reset color
+  characters-slurped:number <- copy 1:literal  # for the initial '#' that's already appended to result
+  {
+    +next-character
+    # read character
+    c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+    # quit?
+    {
+      ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+      break-unless ctrl-d?:boolean
+      reply 0:literal, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+    }
+    {
+      null?:boolean <- equal c:character, 0:literal/null
+      break-unless null?:boolean
+      reply 0:literal, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+    }
+    # print
+    print-character x:address:screen, c:character, 4:literal/blue
+    # append
+    result:address:buffer <- buffer-append result:address:buffer, c:character
+    # backspace? decrement
+    {
+      backspace?:boolean <- equal c:character, 8:literal/backspace
+      break-unless backspace?:boolean
+      characters-slurped:number <- subtract characters-slurped:number, 1:literal
+      {
+        reset-color?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
+        break-unless reset-color?:boolean
+        reply result:address:buffer, k:address:keyboard, x:address:screen
+      }
+      loop +next-character:label
+    }
+    # otherwise increment
+    characters-slurped:number <- add characters-slurped:number, 1:literal
+    # done with this instruction?
+    done?:boolean <- equal c:character, 10:literal/newline
+    break-if done?:boolean
+    loop
+  }
+  reply result:address:buffer, k:address:keyboard, x:address:screen
 ]
 
 scenario read-instruction-color-comment [
