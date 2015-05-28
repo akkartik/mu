@@ -524,18 +524,30 @@ void run_mu_scenario(const string& form) {
 
 string slurp_quoted_ignoring_comments(istream& in) {
   assert(in.get() == '[');  // drop initial '['
-  int brace_depth = 1;
   char c;
   ostringstream out;
   while (in >> c) {
-//?     cerr << c << '\n'; //? 2
-    // Still can't handle scenarios inside strings inside scenarios..
-    if (brace_depth == 1 && c == '#') { in.putback(c); skip_comment(in); continue; }
-    if (c == '[') ++brace_depth;
-    if (c == ']') --brace_depth;
-    if (brace_depth == 0) break;  // drop final ']'
+//?     cerr << c << '\n'; //? 3
+    if (c == '#') {
+      // skip comment
+      in.putback(c);
+      skip_comment(in);
+      continue;
+    }
+    if (c == '[') {
+      // nested strings won't detect comments
+      // can't yet handle scenarios inside strings inside scenarios..
+      in.putback(c);
+      out << slurp_quoted(in);
+//?       cerr << "snapshot: ^" << out.str() << "$\n"; //? 1
+      continue;
+    }
+    if (c == ']') {
+      // must be at the outermost level; drop final ']'
+      break;
+    }
     out << c;
   }
-//?   cerr << "done\n"; //? 1
+//?   cerr << "done\n"; //? 2
   return out.str();
 }
