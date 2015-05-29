@@ -7,9 +7,15 @@ parse:   ingredient: {name: "abc [string [inner string]]
 ": "literal-string"]}
 parse: instruction: run
 parse:   ingredient: {name: "
+#?     $start-tracing #? 1
     read-instruction keyboard:address, screen:address
+#?     $stop-tracing #? 1
+    $browse-trace
   ", properties: ["
+#?     $start-tracing #? 1
     read-instruction keyboard:address, screen:address
+#?     $stop-tracing #? 1
+    $browse-trace
   ": "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "
@@ -51384,13 +51390,18 @@ schedule: clear-screen/init-fake-screen/read-instruction-color-string-inside-str
 9999 run: result 0 is 1428
 9999 mem: storing 1428 in location 901
  101 run: run [
+#?     $start-tracing #? 1
     read-instruction keyboard:address, screen:address
+#?     $stop-tracing #? 1
+    $browse-trace
   ]
 parse: instruction: read-instruction
 parse:   ingredient: {name: "keyboard", properties: ["keyboard": "address"]}
 parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
+parse: instruction: $browse-trace
 after-brace: recipe run1001
 after-brace: read-instruction ...
+after-brace: $browse-trace ...
  101 run: read-instruction keyboard:address, screen:address
 9999 mem: location 901 is 1428
 9999 mem: location 900 is 1031
@@ -77743,6 +77754,7 @@ schedule: buffer-to-array/read-instruction/run1001/read-instruction-color-string
 9999 mem: location 1438 is 6274
 9999 mem: location 1432 is 1428
 9999 mem: location 1433 is 1031
+ 105 run: $browse-trace 
  104 run: screen-should-contain [
     .abc [string [inner string]]   .
     .                              .

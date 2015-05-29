@@ -478,7 +478,10 @@ scenario read-instruction-color-string-inside-string [
   assume-keyboard [abc [string [inner string]]
 ]
   run [
+#?     $start-tracing #? 1
     read-instruction keyboard:address, screen:address
+#?     $stop-tracing #? 1
+    $browse-trace
   ]
   screen-should-contain [
     .abc [string [inner string]]   .
