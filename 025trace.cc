@@ -16,7 +16,7 @@ case TRACE: {
   string label = current_instruction().ingredients.at(0).name;
   assert(isa_literal(current_instruction().ingredients.at(1)));
   string message = current_instruction().ingredients.at(1).name;
-  trace(label) << message;
+  trace(1, label) << message;
   break;
 }
 
