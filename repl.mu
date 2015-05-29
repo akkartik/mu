@@ -116,7 +116,6 @@ recipe slurp-regular-characters [
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
     # backspace? decrement and maybe return
-    # todo: repl will exit if user types too many backspaces
     {
       backspace?:boolean <- equal c:character, 8:literal/backspace
       break-unless backspace?:boolean
