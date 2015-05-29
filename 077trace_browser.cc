@@ -71,10 +71,9 @@ void start_trace_browser() {
     }
     if (key == 'K') {
       // page-up is more convoluted
-      int max = tb_height();
 //?       tb_shutdown(); //? 1
 //?       cerr << "page-up: Top_of_screen is currently " << Top_of_screen << '\n'; //? 1
-      for (int screen_row = max; screen_row > 0 && Top_of_screen > 0; --screen_row) {
+      for (int screen_row = tb_height(); screen_row > 0 && Top_of_screen > 0; --screen_row) {
         --Top_of_screen;
         if (Top_of_screen <= 0) break;
         while (Top_of_screen > 0 && Visible.find(Top_of_screen) == Visible.end())
@@ -84,6 +83,20 @@ void start_trace_browser() {
 //?       exit(0); //? 1
       if (Top_of_screen > 0)
         refresh_screen_rows();
+    }
+    if (key == 'G') {
+      // go to bottom of screen; largely like page-up, interestingly
+      Top_of_screen = SIZE(Trace_stream->past_lines)-1;
+      for (int screen_row = tb_height(); screen_row > 0 && Top_of_screen > 0; --screen_row) {
+        --Top_of_screen;
+        if (Top_of_screen <= 0) break;
+        while (Top_of_screen > 0 && Visible.find(Top_of_screen) == Visible.end())
+          --Top_of_screen;
+      }
+      refresh_screen_rows();
+      // move cursor to bottom
+      Display_row = Last_printed_row;
+      refresh_screen_rows();
     }
     if (key == TB_KEY_CARRIAGE_RETURN) {
       // expand lines under current by one level
