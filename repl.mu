@@ -71,6 +71,7 @@ recipe slurp-regular-characters [
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
   complete:continuation <- next-ingredient
+  characters-slurped:number <- copy 0:literal
   {
     +next-character
     # read character
@@ -109,12 +110,27 @@ recipe slurp-regular-characters [
     print-character x:address:screen, c:character  # default color
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
+    # backspace? decrement and maybe return
+    # todo: repl will exit if user types too many backspaces
+    {
+      backspace?:boolean <- equal c:character, 8:literal/backspace
+      break-unless backspace?:boolean
+      characters-slurped:number <- subtract characters-slurped:number, 1:literal
+      {
+        done?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
+        break-unless done?:boolean
+        reply result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      }
+      loop +next-character:label
+    }
+    # otherwise increment
+    characters-slurped:number <- add characters-slurped:number, 1:literal
     # done with this instruction?
     done?:boolean <- equal c:character, 10:literal/newline
     break-if done?:boolean
     loop
   }
-  # terminate all recursive calls
+  # newline encountered; terminate all recursive calls
 #?   xx:address:array:character <- new [completing!] #? 1
 #?   print-string x:address:screen, xx:address:array:character #? 1
   continue-from complete:continuation
@@ -239,8 +255,8 @@ recipe slurp-string [
     loop
   }
   result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
-  # should only get here on end of session
-  reply result:address:buffer/same-as-ingredient:0, characters-slurped:number, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+  # backspaced back into this string
+  jump +next-character:label
 ]
 
 scenario read-instruction-color-comment [
@@ -522,7 +538,7 @@ scenario read-instruction-cancel-string-inside-string-on-backspace [
     read-instruction keyboard:address, screen:address
   ]
   screen-should-contain-in-color 6:literal/cyan, [
-    .[ab]                          .
+    .\[ab\]                          .
     .                              .
   ]
   screen-should-contain-in-color 7:literal/white, [
@@ -545,12 +561,22 @@ scenario read-instruction-backspace-back-into-string [
   run [
     read-instruction keyboard:address, screen:address
   ]
+  screen-should-contain [
+    .\[ab                           .
+    .                              .
+  ]
   screen-should-contain-in-color 6:literal/cyan, [
-    .[ab                           .
+    .\[ab                           .
     .                              .
   ]
   screen-should-contain-in-color 7:literal/white, [
     .                              .
     .                              .
   ]
+  # todo: trace sequence of events
+  #   slurp-regular-characters: [
+  #   slurp-regular-characters/slurp-string: a
+  #   slurp-regular-characters/slurp-string: ]
+  #   slurp-regular-characters/slurp-string/slurp-regular-characters: backspace
+  #   slurp-regular-characters/slurp-string: b
 ]
