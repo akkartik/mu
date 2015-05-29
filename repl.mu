@@ -214,6 +214,7 @@ recipe slurp-string [
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
   complete:continuation <- next-ingredient
+  nested-string?:boolean <- next-ingredient
   trace [app], [slurp-string]
   # use this to track when backspace should reset color
   characters-slurped:number <- copy 1:literal  # for the initial '[' that's already appended to result
@@ -242,7 +243,7 @@ recipe slurp-string [
       print-character x:address:screen, c:character, 6:literal/cyan
       result:address:buffer <- buffer-append result:address:buffer, c:character
       # make a recursive call to handle nested strings
-      result:address:buffer, tmp:number, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+      result:address:buffer, tmp:number, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation, 1:literal/nested?
       # but if we backspace over a completed nested string, handle it in the caller
       characters-slurped:number <- add characters-slurped:number, tmp:number, 1:literal  # for the leading '['
       loop +next-character:label
@@ -271,6 +272,12 @@ recipe slurp-string [
     break-if done?:boolean
     loop
   }
+  {
+    break-unless nested-string?:boolean
+    # nested string? return like a normal recipe
+    reply result:address:buffer, characters-slurped:number, k:address:keyboard, x:address:screen
+  }
+  # top-level string call? recurse
   trace [app], [slurp-string: close-bracket encountered; recursing to regular characters]
   result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
   # backspaced back into this string
@@ -500,7 +507,7 @@ scenario read-instruction-color-string-inside-string [
 #?     $start-tracing #? 1
     read-instruction keyboard:address, screen:address
 #?     $stop-tracing #? 1
-    $browse-trace
+#?     $browse-trace #? 1
   ]
   screen-should-contain [
     .abc [string [inner string]]   .
