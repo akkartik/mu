@@ -2,19 +2,12 @@ parse: instruction: assume-screen
 parse:   ingredient: {name: "30", properties: ["30": "literal", "width": ]}
 parse:   ingredient: {name: "5", properties: ["5": "literal", "height": ]}
 parse: instruction: assume-keyboard
-parse:   ingredient: {name: "[a]<b
-", properties: ["[a]<b
+parse:   ingredient: {name: "[a]«b
+", properties: ["[a]«b
 ": "literal-string"]}
-parse: instruction: run
-parse:   ingredient: {name: "
-    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
-    first-backspace:address:character <- index-address buf:address:array:character/deref, 3:literal
-    first-backspace:address:character/deref <- copy 8:literal/backspace
-  ", properties: ["
-    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
-    first-backspace:address:character <- index-address buf:address:array:character/deref, 3:literal
-    first-backspace:address:character/deref <- copy 8:literal/backspace
-  ": "literal-string"]}
+parse: instruction: replace-in-keyboard
+parse:   ingredient: {name: "171", properties: ["171": "literal", "«": ]}
+parse:   ingredient: {name: "8", properties: ["8": "literal", "backspace": ]}
 parse: instruction: run
 parse:   ingredient: {name: "
     read-instruction keyboard:address, screen:address
@@ -51,7 +44,7 @@ after-brace: recipe read-instruction-backspace-back-into-string
 after-brace: assume-screen ...
 after-brace: assume-keyboard ...
 after-brace: init-fake-keyboard ...
-after-brace: run ...
+after-brace: replace-in-keyboard ...
 after-brace: run ...
 after-brace: screen-should-contain ...
 after-brace: screen-should-contain-in-color ...
@@ -51359,7 +51352,7 @@ schedule: clear-screen/init-fake-screen/read-instruction-backspace-back-into-str
 9999 mem: location 1002 is 1031
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 900
- 101 run: keyboard:address <- assume-keyboard [[a]<b
+ 101 run: keyboard:address <- assume-keyboard [[a]«b
 ]
 9999 mem: storing 1368 in location 901
  101 run: keyboard:address <- init-fake-keyboard keyboard:address
@@ -51394,112 +51387,67 @@ schedule: clear-screen/init-fake-screen/read-instruction-backspace-back-into-str
 9999 mem: location 1377 is 1406
 9999 run: result 0 is 1406
 9999 mem: storing 1406 in location 901
+ 101 run: replace-in-keyboard 171:literal/«, 8:literal/backspace
  101 run: run [
-    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
-    first-backspace:address:character <- index-address buf:address:array:character/deref, 3:literal
-    first-backspace:address:character/deref <- copy 8:literal/backspace
-  ]
-parse: instruction: get
-parse:   ingredient: {name: "keyboard", properties: ["keyboard": "address":"keyboard", "deref": ]}
-parse:   ingredient: {name: "data", properties: ["data": "offset"]}
-parse:   product: {name: "buf", properties: ["buf": "address":"array":"character"]}
-parse: instruction: index-address
-parse:   ingredient: {name: "buf", properties: ["buf": "address":"array":"character", "deref": ]}
-parse:   ingredient: {name: "3", properties: ["3": "literal"]}
-parse:   product: {name: "first-backspace", properties: ["first-backspace": "address":"character"]}
-parse: instruction: copy
-parse:   ingredient: {name: "8", properties: ["8": "literal", "backspace": ]}
-parse:   product: {name: "first-backspace", properties: ["first-backspace": "address":"character", "deref": ]}
-name: element data of type keyboard is at offset 1
-name: assign buf 1
-name: assign first-backspace 2
-after-brace: recipe run1001
-after-brace: get ...
-after-brace: index-address ...
-after-brace: copy ...
- 101 run: buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
-9999 mem: location 901 is 1406
-9999 mem: location 1406 is 0
-9999 mem: location 1407 is 1368
-9999 mem: location 901 is 1406
-9999 run: address to copy is 1407
-9999 run: its type is 2
-9999 mem: location 1407 is 1368
-9999 mem: storing 1368 in location 1
- 101 run: first-backspace:address:character <- index-address buf:address:array:character/deref, 3:literal
-9999 mem: location 1 is 1368
-9999 mem: location 1368 is 6
-9999 mem: location 1369 is 91
-9999 mem: location 1370 is 97
-9999 mem: location 1371 is 93
-9999 mem: location 1372 is 60
-9999 mem: location 1373 is 98
-9999 mem: location 1374 is 10
-9999 mem: location 1 is 1368
-9999 mem: storing 1372 in location 2
- 101 run: first-backspace:address:character/deref <- copy 8:literal/backspace
-9999 mem: location 2 is 1372
-9999 mem: storing 8 in location 1372
- 100 run: run [
     read-instruction keyboard:address, screen:address
   ]
 parse: instruction: read-instruction
 parse:   ingredient: {name: "keyboard", properties: ["keyboard": "address"]}
 parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
-after-brace: recipe run1002
+after-brace: recipe run1001
 after-brace: read-instruction ...
- 100 run: read-instruction keyboard:address, screen:address
+ 101 run: read-instruction keyboard:address, screen:address
 9999 mem: location 901 is 1406
 9999 mem: location 900 is 1031
- 101 run: default-space:address:array:location <- new location:type, 60:literal
+ 102 run: default-space:address:array:location <- new location:type, 60:literal
 9999 mem: array size is 60
 9999 mem: new alloc: 1408
- 101 run: k:address:keyboard <- next-ingredient 
+ 102 run: k:address:keyboard <- next-ingredient 
 9999 mem: storing 1406 in location 1410
- 101 run: x:address:screen <- next-ingredient 
+ 102 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 1411
- 101 run: result:address:buffer <- init-buffer 10:literal
- 102 run: default-space:address:array:location <- new location:type, 30:literal
+ 102 run: result:address:buffer <- init-buffer 10:literal
+ 103 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1469
- 102 run: result:address:buffer <- new buffer:type
+ 103 run: result:address:buffer <- new buffer:type
 9999 mem: new alloc: 1500
 9999 mem: storing 1500 in location 1471
- 102 run: len:address:number <- get-address result:address:buffer/deref, length:offset
+ 103 run: len:address:number <- get-address result:address:buffer/deref, length:offset
 9999 mem: location 1471 is 1500
 9999 mem: location 1500 is 0
 9999 mem: location 1501 is 0
 9999 mem: location 1471 is 1500
 9999 run: address to copy is 1500
 9999 mem: storing 1500 in location 1472
- 102 run: len:address:number/deref <- copy 0:literal
+ 103 run: len:address:number/deref <- copy 0:literal
 9999 mem: location 1472 is 1500
 9999 mem: storing 0 in location 1500
- 102 run: s:address:address:array:character <- get-address result:address:buffer/deref, data:offset
+ 103 run: s:address:address:array:character <- get-address result:address:buffer/deref, data:offset
 9999 mem: location 1471 is 1500
 9999 mem: location 1500 is 0
 9999 mem: location 1501 is 0
 9999 mem: location 1471 is 1500
 9999 run: address to copy is 1501
 9999 mem: storing 1501 in location 1473
- 102 run: capacity:number <- next-ingredient 
+ 103 run: capacity:number <- next-ingredient 
 9999 mem: storing 10 in location 1474
- 102 run: s:address:address:array:character/deref <- new character:type, capacity:number
+ 103 run: s:address:address:array:character/deref <- new character:type, capacity:number
 9999 mem: location 1474 is 10
 9999 mem: array size is 10
 9999 mem: new alloc: 1502
 9999 mem: location 1473 is 1501
 9999 mem: storing 1502 in location 1501
- 102 run: reply result:address:buffer
+ 103 run: reply result:address:buffer
 9999 mem: location 1471 is 1500
 9999 run: result 0 is 1500
 9999 mem: storing 1500 in location 1412
- 101 run: trace [app], [read-instruction]
+ 102 run: trace [app], [read-instruction]
    1 app: read-instruction
- 101 run: complete:continuation <- current-continuation 
+ 102 run: complete:continuation <- current-continuation 
 current-continuation: new continuation 1
 9999 mem: storing 0 in location 1413
- 101 run: len:number <- get result:address:buffer/deref, length:offset
+ 102 run: len:number <- get result:address:buffer/deref, length:offset
 9999 mem: location 1412 is 1500
 9999 mem: location 1500 is 0
 9999 mem: location 1501 is 1502
@@ -51508,60 +51456,60 @@ current-continuation: new continuation 1
 9999 run: its type is 1
 9999 mem: location 1500 is 0
 9999 mem: storing 0 in location 1414
- 101 run: completed?:boolean <- greater-than len:number, 0:literal
+ 102 run: completed?:boolean <- greater-than len:number, 0:literal
 9999 mem: location 1414 is 0
 9999 mem: storing 0 in location 1415
- 101 run: jump-if completed?:boolean, +completed:label
+ 102 run: jump-if completed?:boolean, +completed:label
 9999 mem: location 1415 is 0
 9999 run: jump-if fell through
- 101 run: result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+ 102 run: result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
 9999 mem: location 1412 is 1500
 9999 mem: location 1410 is 1406
 9999 mem: location 1411 is 1031
 9999 mem: location 1413 is 0
- 102 run: default-space:address:array:location <- new location:type, 60:literal
+ 103 run: default-space:address:array:location <- new location:type, 60:literal
 9999 mem: array size is 60
 9999 mem: new alloc: 1513
- 102 run: result:address:buffer <- next-ingredient 
+ 103 run: result:address:buffer <- next-ingredient 
 9999 mem: storing 1500 in location 1515
- 102 run: k:address:keyboard <- next-ingredient 
+ 103 run: k:address:keyboard <- next-ingredient 
 9999 mem: storing 1406 in location 1516
- 102 run: x:address:screen <- next-ingredient 
+ 103 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 1517
- 102 run: complete:continuation <- next-ingredient 
+ 103 run: complete:continuation <- next-ingredient 
 9999 mem: storing 0 in location 1518
- 102 run: trace [app], [slurp-regular-characters]
+ 103 run: trace [app], [slurp-regular-characters]
    1 app: slurp-regular-characters
- 102 run: characters-slurped:number <- copy 0:literal
+ 103 run: characters-slurped:number <- copy 0:literal
 9999 mem: storing 0 in location 1519
- 102 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+ 103 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
 9999 mem: location 1516 is 1406
- 103 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 1574
- 103 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 1576
- 103 run: break-unless x:address:keyboard, 
-9999 mem: location 1576 is 1406
-9999 run: jump-unless fell through
- 103 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
-9999 mem: location 1576 is 1406
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 1605
+9999 mem: new alloc: 1574
  104 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 1607
+9999 mem: storing 1406 in location 1576
  104 run: break-unless x:address:keyboard, 
+9999 mem: location 1576 is 1406
+9999 run: jump-unless fell through
+ 104 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
+9999 mem: location 1576 is 1406
+ 105 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1605
+ 105 run: x:address:keyboard <- next-ingredient 
+9999 mem: storing 1406 in location 1607
+ 105 run: break-unless x:address:keyboard, 
 9999 mem: location 1607 is 1406
 9999 run: jump-unless fell through
- 104 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
+ 105 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 9999 mem: location 1607 is 1406
 9999 mem: location 1406 is 0
 9999 mem: location 1407 is 1368
 9999 mem: location 1607 is 1406
 9999 run: address to copy is 1406
 9999 mem: storing 1406 in location 1608
- 104 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
+ 105 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 9999 mem: location 1607 is 1406
 9999 mem: location 1406 is 0
 9999 mem: location 1407 is 1368
@@ -51570,7 +51518,7 @@ current-continuation: new continuation 1
 9999 run: its type is 2
 9999 mem: location 1407 is 1368
 9999 mem: storing 1368 in location 1609
- 104 run: max:number <- length buf:address:array:character/deref
+ 105 run: max:number <- length buf:address:array:character/deref
 9999 mem: location 1609 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -51581,15 +51529,15 @@ current-continuation: new continuation 1
 9999 mem: location 1374 is 10
 9999 mem: location 1609 is 1368
 9999 mem: storing 6 in location 1610
- 104 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+ 105 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 9999 mem: location 1608 is 1406
 9999 mem: location 1406 is 0
 9999 mem: location 1610 is 6
 9999 mem: storing 0 in location 1611
- 104 run: break-unless done?:boolean, 
+ 105 run: break-unless done?:boolean, 
 9999 mem: location 1611 is 0
 9999 run: jumping to instruction 11
- 104 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
+ 105 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
 9999 mem: location 1609 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -51607,12 +51555,12 @@ current-continuation: new continuation 1
 9999 run: its type is 4
 9999 mem: location 1369 is 91
 9999 mem: storing 91 in location 1612
- 104 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+ 105 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 9999 mem: location 1608 is 1406
 9999 mem: location 1406 is 0
 9999 mem: location 1608 is 1406
 9999 mem: storing 1 in location 1406
- 104 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
+ 105 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 1612 is 91
 9999 mem: location 1607 is 1406
 9999 run: result 0 is 91
@@ -51621,57 +51569,57 @@ current-continuation: new continuation 1
 9999 mem: storing 91 in location 1577
 9999 mem: storing 1 in location 1578
 9999 mem: storing 1406 in location 1576
- 103 run: reply c:character, x:address:keyboard/same-as-ingredient:0
+ 104 run: reply c:character, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 1577 is 91
 9999 mem: location 1576 is 1406
 9999 run: result 0 is 91
 9999 run: result 1 is 1406
 9999 mem: storing 91 in location 1520
 9999 mem: storing 1406 in location 1516
- 102 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+ 103 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
 9999 mem: location 1520 is 91
 9999 mem: storing 0 in location 1521
- 102 run: break-unless ctrl-d?:boolean, 
+ 103 run: break-unless ctrl-d?:boolean, 
 9999 mem: location 1521 is 0
 9999 run: jumping to instruction 15
- 102 run: null?:boolean <- equal c:character, 0:literal/null
+ 103 run: null?:boolean <- equal c:character, 0:literal/null
 9999 mem: location 1520 is 91
 9999 mem: storing 0 in location 1522
- 102 run: break-unless null?:boolean, 
+ 103 run: break-unless null?:boolean, 
 9999 mem: location 1522 is 0
 9999 run: jumping to instruction 21
- 102 run: comment?:boolean <- equal c:character, 35:literal/hash
+ 103 run: comment?:boolean <- equal c:character, 35:literal/hash
 9999 mem: location 1520 is 91
 9999 mem: storing 0 in location 1523
- 102 run: break-unless comment?:boolean, 
+ 103 run: break-unless comment?:boolean, 
 9999 mem: location 1523 is 0
 9999 run: jumping to instruction 29
- 102 run: string?:boolean <- equal c:character, 91:literal/open-bracket
+ 103 run: string?:boolean <- equal c:character, 91:literal/open-bracket
 9999 mem: location 1520 is 91
 9999 mem: storing 1 in location 1524
- 102 run: break-unless string?:boolean, 
+ 103 run: break-unless string?:boolean, 
 9999 mem: location 1524 is 1
 9999 run: jump-unless fell through
- 102 run: print-character x:address:screen, c:character, 6:literal/cyan
+ 103 run: print-character x:address:screen, c:character, 6:literal/cyan
 9999 mem: location 1517 is 1031
 9999 mem: location 1520 is 91
- 103 run: default-space:address:array:location <- new location:type, 30:literal
+ 104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1636
- 103 run: x:address:screen <- next-ingredient 
+ 104 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 1638
- 103 run: c:character <- next-ingredient 
+ 104 run: c:character <- next-ingredient 
 9999 mem: storing 91 in location 1639
- 103 run: color:number, color-found?:boolean <- next-ingredient 
+ 104 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 6 in location 1640
 9999 mem: storing 1 in location 1641
- 103 run: break-if color-found?:boolean, 
+ 104 run: break-if color-found?:boolean, 
 9999 mem: location 1641 is 1
 9999 run: jumping to instruction 7
- 103 run: break-unless x:address:screen, 
+ 104 run: break-unless x:address:screen, 
 9999 mem: location 1638 is 1031
 9999 run: jump-unless fell through
- 103 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
+ 104 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
 9999 mem: location 1638 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -51681,7 +51629,7 @@ current-continuation: new continuation 1
 9999 mem: location 1638 is 1031
 9999 run: address to copy is 1033
 9999 mem: storing 1033 in location 1642
- 103 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
+ 104 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
 9999 mem: location 1638 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -51691,7 +51639,7 @@ current-continuation: new continuation 1
 9999 mem: location 1638 is 1031
 9999 run: address to copy is 1034
 9999 mem: storing 1034 in location 1643
- 103 run: width:number <- get x:address:screen/deref, num-columns:offset
+ 104 run: width:number <- get x:address:screen/deref, num-columns:offset
 9999 mem: location 1638 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -51703,7 +51651,7 @@ current-continuation: new continuation 1
 9999 run: its type is 1
 9999 mem: location 1032 is 30
 9999 mem: storing 30 in location 1644
- 103 run: height:number <- get x:address:screen/deref, num-rows:offset
+ 104 run: height:number <- get x:address:screen/deref, num-rows:offset
 9999 mem: location 1638 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -51715,26 +51663,26 @@ current-continuation: new continuation 1
 9999 run: its type is 1
 9999 mem: location 1031 is 5
 9999 mem: storing 5 in location 1645
- 103 run: max-row:number <- subtract height:number, 1:literal
+ 104 run: max-row:number <- subtract height:number, 1:literal
 9999 mem: location 1645 is 5
 9999 mem: storing 4 in location 1646
- 103 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10:literal/newline
 9999 mem: location 1639 is 91
 9999 mem: storing 0 in location 1647
- 103 run: break-unless newline?:boolean, 
+ 104 run: break-unless newline?:boolean, 
 9999 mem: location 1647 is 0
 9999 run: jumping to instruction 25
- 103 run: index:number <- multiply row:address:number/deref, width:number
+ 104 run: index:number <- multiply row:address:number/deref, width:number
 9999 mem: location 1642 is 1033
 9999 mem: location 1033 is 0
 9999 mem: location 1644 is 30
 9999 mem: storing 0 in location 1649
- 103 run: index:number <- add index:number, column:address:number/deref
+ 104 run: index:number <- add index:number, column:address:number/deref
 9999 mem: location 1649 is 0
 9999 mem: location 1643 is 1034
 9999 mem: location 1034 is 0
 9999 mem: storing 0 in location 1649
- 103 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
+ 104 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
 9999 mem: location 1638 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -51746,13 +51694,13 @@ current-continuation: new continuation 1
 9999 run: its type is 2
 9999 mem: location 1035 is 1036
 9999 mem: storing 1036 in location 1650
- 103 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8:literal
 9999 mem: location 1639 is 91
 9999 mem: storing 0 in location 1651
- 103 run: break-unless backspace?:boolean, 
+ 104 run: break-unless backspace?:boolean, 
 9999 mem: location 1651 is 0
 9999 run: jumping to instruction 44
- 103 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
+ 104 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
 9999 mem: location 1650 is 1036
 9999 mem: location 1036 is 150
 9999 mem: location 1037 is 0
@@ -52059,62 +52007,62 @@ current-continuation: new continuation 1
 9999 mem: location 1650 is 1036
 9999 mem: location 1649 is 0
 9999 mem: storing 1037 in location 1653
- 103 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
+ 104 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
 9999 mem: location 1653 is 1037
 9999 mem: location 1037 is 0
 9999 mem: location 1038 is 7
 9999 mem: location 1653 is 1037
 9999 run: address to copy is 1037
 9999 mem: storing 1037 in location 1654
- 103 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
+ 104 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
 9999 mem: location 1653 is 1037
 9999 mem: location 1037 is 0
 9999 mem: location 1038 is 7
 9999 mem: location 1653 is 1037
 9999 run: address to copy is 1038
 9999 mem: storing 1038 in location 1655
- 103 run: cursor-contents:address:character/deref <- copy c:character
+ 104 run: cursor-contents:address:character/deref <- copy c:character
 9999 mem: location 1639 is 91
 9999 mem: location 1654 is 1037
 9999 mem: storing 91 in location 1037
- 103 run: cursor-color:address:number/deref <- copy color:number
+ 104 run: cursor-color:address:number/deref <- copy color:number
 9999 mem: location 1640 is 6
 9999 mem: location 1655 is 1038
 9999 mem: storing 6 in location 1038
- 103 run: at-right?:boolean <- equal column:address:number/deref, width:number
+ 104 run: at-right?:boolean <- equal column:address:number/deref, width:number
 9999 mem: location 1643 is 1034
 9999 mem: location 1034 is 0
 9999 mem: location 1644 is 30
 9999 mem: storing 0 in location 1656
- 103 run: break-if at-right?:boolean, 
+ 104 run: break-if at-right?:boolean, 
 9999 mem: location 1656 is 0
 9999 run: jump-if fell through
- 103 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
 9999 mem: location 1643 is 1034
 9999 mem: location 1034 is 0
 9999 mem: location 1643 is 1034
 9999 mem: storing 1 in location 1034
- 103 run: reply x:address:screen/same-as-ingredient:0
+ 104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1638 is 1031
- 102 run: result:address:buffer <- buffer-append result:address:buffer, c:character
+ 103 run: result:address:buffer <- buffer-append result:address:buffer, c:character
 9999 mem: location 1515 is 1500
 9999 mem: location 1520 is 91
- 103 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 1667
- 103 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1500 in location 1669
-schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-instruction-backspace-back-into-string
- 103 run: c:character <- next-ingredient 
-9999 mem: storing 91 in location 1670
- 103 run: full?:boolean <- buffer-full? in:address:buffer
-9999 mem: location 1669 is 1500
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 1698
+9999 mem: new alloc: 1667
  104 run: in:address:buffer <- next-ingredient 
+9999 mem: storing 1500 in location 1669
+ 104 run: c:character <- next-ingredient 
+9999 mem: storing 91 in location 1670
+ 104 run: full?:boolean <- buffer-full? in:address:buffer
+9999 mem: location 1669 is 1500
+schedule: buffer-full?/buffer-append/slurp-regular-characters/read-instruction/run1001/read-instruction-backspace-back-into-string
+ 105 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1698
+ 105 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1500 in location 1700
- 104 run: len:number <- get in:address:buffer/deref, length:offset
+ 105 run: len:number <- get in:address:buffer/deref, length:offset
 9999 mem: location 1700 is 1500
 9999 mem: location 1500 is 0
 9999 mem: location 1501 is 1502
@@ -52123,7 +52071,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1500 is 0
 9999 mem: storing 0 in location 1701
- 104 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 105 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 1700 is 1500
 9999 mem: location 1500 is 0
 9999 mem: location 1501 is 1502
@@ -52132,7 +52080,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 1702
- 104 run: capacity:number <- length s:address:array:character/deref
+ 105 run: capacity:number <- length s:address:array:character/deref
 9999 mem: location 1702 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 0
@@ -52147,25 +52095,25 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1512 is 0
 9999 mem: location 1702 is 1502
 9999 mem: storing 10 in location 1703
- 104 run: result:boolean <- greater-or-equal len:number, capacity:number
+ 105 run: result:boolean <- greater-or-equal len:number, capacity:number
 9999 mem: location 1701 is 0
 9999 mem: location 1703 is 10
 9999 mem: storing 0 in location 1704
- 104 run: reply result:boolean
+ 105 run: reply result:boolean
 9999 mem: location 1704 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1671
- 103 run: break-unless full?:boolean, 
+ 104 run: break-unless full?:boolean, 
 9999 mem: location 1671 is 0
 9999 run: jumping to instruction 7
- 103 run: len:address:number <- get-address in:address:buffer/deref, length:offset
+ 104 run: len:address:number <- get-address in:address:buffer/deref, length:offset
 9999 mem: location 1669 is 1500
 9999 mem: location 1500 is 0
 9999 mem: location 1501 is 1502
 9999 mem: location 1669 is 1500
 9999 run: address to copy is 1500
 9999 mem: storing 1500 in location 1672
- 103 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 104 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 1669 is 1500
 9999 mem: location 1500 is 0
 9999 mem: location 1501 is 1502
@@ -52174,7 +52122,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 1673
- 103 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
+ 104 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
 9999 mem: location 1673 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 0
@@ -52193,69 +52141,69 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1672 is 1500
 9999 mem: location 1500 is 0
 9999 mem: storing 1503 in location 1674
- 103 run: dest:address:character/deref <- copy c:character
+ 104 run: dest:address:character/deref <- copy c:character
 9999 mem: location 1670 is 91
 9999 mem: location 1674 is 1503
 9999 mem: storing 91 in location 1503
- 103 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 104 run: len:address:number/deref <- add len:address:number/deref, 1:literal
 9999 mem: location 1672 is 1500
 9999 mem: location 1500 is 0
 9999 mem: location 1672 is 1500
 9999 mem: storing 1 in location 1500
- 103 run: reply in:address:buffer/same-as-ingredient:0
+ 104 run: reply in:address:buffer/same-as-ingredient:0
 9999 mem: location 1669 is 1500
 9999 run: result 0 is 1500
 9999 mem: storing 1500 in location 1515
- 102 run: result:address:buffer, _, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+ 103 run: result:address:buffer, _, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
 9999 mem: location 1515 is 1500
 9999 mem: location 1516 is 1406
 9999 mem: location 1517 is 1031
 9999 mem: location 1518 is 0
- 103 run: default-space:address:array:location <- new location:type, 60:literal
+ 104 run: default-space:address:array:location <- new location:type, 60:literal
 9999 mem: array size is 60
 9999 mem: new alloc: 1729
- 103 run: result:address:buffer <- next-ingredient 
+ 104 run: result:address:buffer <- next-ingredient 
 9999 mem: storing 1500 in location 1731
- 103 run: k:address:keyboard <- next-ingredient 
+ 104 run: k:address:keyboard <- next-ingredient 
 9999 mem: storing 1406 in location 1732
- 103 run: x:address:screen <- next-ingredient 
+ 104 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 1733
- 103 run: complete:continuation <- next-ingredient 
+ 104 run: complete:continuation <- next-ingredient 
 9999 mem: storing 0 in location 1734
- 103 run: nested-string?:boolean <- next-ingredient 
+ 104 run: nested-string?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1735
- 103 run: trace [app], [slurp-string]
+ 104 run: trace [app], [slurp-string]
    1 app: slurp-string
- 103 run: characters-slurped:number <- copy 1:literal
+ 104 run: characters-slurped:number <- copy 1:literal
 9999 mem: storing 1 in location 1736
- 103 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+ 104 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
 9999 mem: location 1732 is 1406
- 104 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 1790
- 104 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 1792
- 104 run: break-unless x:address:keyboard, 
-9999 mem: location 1792 is 1406
-9999 run: jump-unless fell through
- 104 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
-9999 mem: location 1792 is 1406
  105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 1821
+9999 mem: new alloc: 1790
  105 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 1823
+9999 mem: storing 1406 in location 1792
  105 run: break-unless x:address:keyboard, 
+9999 mem: location 1792 is 1406
+9999 run: jump-unless fell through
+ 105 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
+9999 mem: location 1792 is 1406
+ 106 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1821
+ 106 run: x:address:keyboard <- next-ingredient 
+9999 mem: storing 1406 in location 1823
+ 106 run: break-unless x:address:keyboard, 
 9999 mem: location 1823 is 1406
 9999 run: jump-unless fell through
- 105 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
+ 106 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 9999 mem: location 1823 is 1406
 9999 mem: location 1406 is 1
 9999 mem: location 1407 is 1368
 9999 mem: location 1823 is 1406
 9999 run: address to copy is 1406
 9999 mem: storing 1406 in location 1824
- 105 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
+ 106 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 9999 mem: location 1823 is 1406
 9999 mem: location 1406 is 1
 9999 mem: location 1407 is 1368
@@ -52264,7 +52212,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1407 is 1368
 9999 mem: storing 1368 in location 1825
- 105 run: max:number <- length buf:address:array:character/deref
+ 106 run: max:number <- length buf:address:array:character/deref
 9999 mem: location 1825 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -52275,15 +52223,15 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1374 is 10
 9999 mem: location 1825 is 1368
 9999 mem: storing 6 in location 1826
- 105 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+ 106 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 9999 mem: location 1824 is 1406
 9999 mem: location 1406 is 1
 9999 mem: location 1826 is 6
 9999 mem: storing 0 in location 1827
- 105 run: break-unless done?:boolean, 
+ 106 run: break-unless done?:boolean, 
 9999 mem: location 1827 is 0
 9999 run: jumping to instruction 11
- 105 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
+ 106 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
 9999 mem: location 1825 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -52301,12 +52249,12 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 4
 9999 mem: location 1370 is 97
 9999 mem: storing 97 in location 1828
- 105 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+ 106 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 9999 mem: location 1824 is 1406
 9999 mem: location 1406 is 1
 9999 mem: location 1824 is 1406
 9999 mem: storing 2 in location 1406
- 105 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
+ 106 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 1828 is 97
 9999 mem: location 1823 is 1406
 9999 run: result 0 is 97
@@ -52315,51 +52263,51 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: storing 97 in location 1793
 9999 mem: storing 1 in location 1794
 9999 mem: storing 1406 in location 1792
- 104 run: reply c:character, x:address:keyboard/same-as-ingredient:0
+ 105 run: reply c:character, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 1793 is 97
 9999 mem: location 1792 is 1406
 9999 run: result 0 is 97
 9999 run: result 1 is 1406
 9999 mem: storing 97 in location 1737
 9999 mem: storing 1406 in location 1732
- 103 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+ 104 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
 9999 mem: location 1737 is 97
 9999 mem: storing 0 in location 1738
- 103 run: break-unless ctrl-d?:boolean, 
+ 104 run: break-unless ctrl-d?:boolean, 
 9999 mem: location 1738 is 0
 9999 run: jumping to instruction 16
- 103 run: null?:boolean <- equal c:character, 0:literal/null
+ 104 run: null?:boolean <- equal c:character, 0:literal/null
 9999 mem: location 1737 is 97
 9999 mem: storing 0 in location 1739
- 103 run: break-unless null?:boolean, 
+ 104 run: break-unless null?:boolean, 
 9999 mem: location 1739 is 0
 9999 run: jumping to instruction 22
- 103 run: string?:boolean <- equal c:character, 91:literal/open-bracket
+ 104 run: string?:boolean <- equal c:character, 91:literal/open-bracket
 9999 mem: location 1737 is 97
 9999 mem: storing 0 in location 1740
- 103 run: break-unless string?:boolean, 
+ 104 run: break-unless string?:boolean, 
 9999 mem: location 1740 is 0
 9999 run: jumping to instruction 32
- 103 run: print-character x:address:screen, c:character, 6:literal/cyan
+ 104 run: print-character x:address:screen, c:character, 6:literal/cyan
 9999 mem: location 1733 is 1031
 9999 mem: location 1737 is 97
- 104 run: default-space:address:array:location <- new location:type, 30:literal
+ 105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1852
- 104 run: x:address:screen <- next-ingredient 
+ 105 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 1854
- 104 run: c:character <- next-ingredient 
+ 105 run: c:character <- next-ingredient 
 9999 mem: storing 97 in location 1855
- 104 run: color:number, color-found?:boolean <- next-ingredient 
+ 105 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 6 in location 1856
 9999 mem: storing 1 in location 1857
- 104 run: break-if color-found?:boolean, 
+ 105 run: break-if color-found?:boolean, 
 9999 mem: location 1857 is 1
 9999 run: jumping to instruction 7
- 104 run: break-unless x:address:screen, 
+ 105 run: break-unless x:address:screen, 
 9999 mem: location 1854 is 1031
 9999 run: jump-unless fell through
- 104 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
+ 105 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
 9999 mem: location 1854 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -52369,7 +52317,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1854 is 1031
 9999 run: address to copy is 1033
 9999 mem: storing 1033 in location 1858
- 104 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
+ 105 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
 9999 mem: location 1854 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -52379,7 +52327,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1854 is 1031
 9999 run: address to copy is 1034
 9999 mem: storing 1034 in location 1859
- 104 run: width:number <- get x:address:screen/deref, num-columns:offset
+ 105 run: width:number <- get x:address:screen/deref, num-columns:offset
 9999 mem: location 1854 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -52391,7 +52339,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1032 is 30
 9999 mem: storing 30 in location 1860
- 104 run: height:number <- get x:address:screen/deref, num-rows:offset
+ 105 run: height:number <- get x:address:screen/deref, num-rows:offset
 9999 mem: location 1854 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -52403,26 +52351,26 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1031 is 5
 9999 mem: storing 5 in location 1861
- 104 run: max-row:number <- subtract height:number, 1:literal
+ 105 run: max-row:number <- subtract height:number, 1:literal
 9999 mem: location 1861 is 5
 9999 mem: storing 4 in location 1862
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 105 run: newline?:boolean <- equal c:character, 10:literal/newline
 9999 mem: location 1855 is 97
 9999 mem: storing 0 in location 1863
- 104 run: break-unless newline?:boolean, 
+ 105 run: break-unless newline?:boolean, 
 9999 mem: location 1863 is 0
 9999 run: jumping to instruction 25
- 104 run: index:number <- multiply row:address:number/deref, width:number
+ 105 run: index:number <- multiply row:address:number/deref, width:number
 9999 mem: location 1858 is 1033
 9999 mem: location 1033 is 0
 9999 mem: location 1860 is 30
 9999 mem: storing 0 in location 1865
- 104 run: index:number <- add index:number, column:address:number/deref
+ 105 run: index:number <- add index:number, column:address:number/deref
 9999 mem: location 1865 is 0
 9999 mem: location 1859 is 1034
 9999 mem: location 1034 is 1
 9999 mem: storing 1 in location 1865
- 104 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
+ 105 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
 9999 mem: location 1854 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -52434,13 +52382,13 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1035 is 1036
 9999 mem: storing 1036 in location 1866
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 105 run: backspace?:boolean <- equal c:character, 8:literal
 9999 mem: location 1855 is 97
 9999 mem: storing 0 in location 1867
- 104 run: break-unless backspace?:boolean, 
+ 105 run: break-unless backspace?:boolean, 
 9999 mem: location 1867 is 0
 9999 run: jumping to instruction 44
- 104 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
+ 105 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
 9999 mem: location 1866 is 1036
 9999 mem: location 1036 is 150
 9999 mem: location 1037 is 91
@@ -52747,61 +52695,61 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1866 is 1036
 9999 mem: location 1865 is 1
 9999 mem: storing 1039 in location 1869
- 104 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
+ 105 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
 9999 mem: location 1869 is 1039
 9999 mem: location 1039 is 0
 9999 mem: location 1040 is 7
 9999 mem: location 1869 is 1039
 9999 run: address to copy is 1039
 9999 mem: storing 1039 in location 1870
- 104 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
+ 105 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
 9999 mem: location 1869 is 1039
 9999 mem: location 1039 is 0
 9999 mem: location 1040 is 7
 9999 mem: location 1869 is 1039
 9999 run: address to copy is 1040
 9999 mem: storing 1040 in location 1871
- 104 run: cursor-contents:address:character/deref <- copy c:character
+ 105 run: cursor-contents:address:character/deref <- copy c:character
 9999 mem: location 1855 is 97
 9999 mem: location 1870 is 1039
 9999 mem: storing 97 in location 1039
- 104 run: cursor-color:address:number/deref <- copy color:number
+ 105 run: cursor-color:address:number/deref <- copy color:number
 9999 mem: location 1856 is 6
 9999 mem: location 1871 is 1040
 9999 mem: storing 6 in location 1040
- 104 run: at-right?:boolean <- equal column:address:number/deref, width:number
+ 105 run: at-right?:boolean <- equal column:address:number/deref, width:number
 9999 mem: location 1859 is 1034
 9999 mem: location 1034 is 1
 9999 mem: location 1860 is 30
 9999 mem: storing 0 in location 1872
- 104 run: break-if at-right?:boolean, 
+ 105 run: break-if at-right?:boolean, 
 9999 mem: location 1872 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 105 run: column:address:number/deref <- add column:address:number/deref, 1:literal
 9999 mem: location 1859 is 1034
 9999 mem: location 1034 is 1
 9999 mem: location 1859 is 1034
 9999 mem: storing 2 in location 1034
- 104 run: reply x:address:screen/same-as-ingredient:0
+ 105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 1854 is 1031
- 103 run: result:address:buffer <- buffer-append result:address:buffer, c:character
+ 104 run: result:address:buffer <- buffer-append result:address:buffer, c:character
 9999 mem: location 1731 is 1500
 9999 mem: location 1737 is 97
- 104 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 1883
- 104 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1500 in location 1885
- 104 run: c:character <- next-ingredient 
-9999 mem: storing 97 in location 1886
- 104 run: full?:boolean <- buffer-full? in:address:buffer
-9999 mem: location 1885 is 1500
  105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 1914
+9999 mem: new alloc: 1883
  105 run: in:address:buffer <- next-ingredient 
+9999 mem: storing 1500 in location 1885
+ 105 run: c:character <- next-ingredient 
+9999 mem: storing 97 in location 1886
+ 105 run: full?:boolean <- buffer-full? in:address:buffer
+9999 mem: location 1885 is 1500
+ 106 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1914
+ 106 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1500 in location 1916
- 105 run: len:number <- get in:address:buffer/deref, length:offset
+ 106 run: len:number <- get in:address:buffer/deref, length:offset
 9999 mem: location 1916 is 1500
 9999 mem: location 1500 is 1
 9999 mem: location 1501 is 1502
@@ -52810,7 +52758,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1500 is 1
 9999 mem: storing 1 in location 1917
- 105 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 106 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 1916 is 1500
 9999 mem: location 1500 is 1
 9999 mem: location 1501 is 1502
@@ -52819,7 +52767,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 1918
- 105 run: capacity:number <- length s:address:array:character/deref
+ 106 run: capacity:number <- length s:address:array:character/deref
 9999 mem: location 1918 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 91
@@ -52834,25 +52782,25 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1512 is 0
 9999 mem: location 1918 is 1502
 9999 mem: storing 10 in location 1919
- 105 run: result:boolean <- greater-or-equal len:number, capacity:number
+ 106 run: result:boolean <- greater-or-equal len:number, capacity:number
 9999 mem: location 1917 is 1
 9999 mem: location 1919 is 10
 9999 mem: storing 0 in location 1920
- 105 run: reply result:boolean
+ 106 run: reply result:boolean
 9999 mem: location 1920 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1887
- 104 run: break-unless full?:boolean, 
+ 105 run: break-unless full?:boolean, 
 9999 mem: location 1887 is 0
 9999 run: jumping to instruction 7
- 104 run: len:address:number <- get-address in:address:buffer/deref, length:offset
+ 105 run: len:address:number <- get-address in:address:buffer/deref, length:offset
 9999 mem: location 1885 is 1500
 9999 mem: location 1500 is 1
 9999 mem: location 1501 is 1502
 9999 mem: location 1885 is 1500
 9999 run: address to copy is 1500
 9999 mem: storing 1500 in location 1888
- 104 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 105 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 1885 is 1500
 9999 mem: location 1500 is 1
 9999 mem: location 1501 is 1502
@@ -52861,7 +52809,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 1889
- 104 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
+ 105 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
 9999 mem: location 1889 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 91
@@ -52880,64 +52828,64 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1888 is 1500
 9999 mem: location 1500 is 1
 9999 mem: storing 1504 in location 1890
- 104 run: dest:address:character/deref <- copy c:character
+ 105 run: dest:address:character/deref <- copy c:character
 9999 mem: location 1886 is 97
 9999 mem: location 1890 is 1504
 9999 mem: storing 97 in location 1504
- 104 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 105 run: len:address:number/deref <- add len:address:number/deref, 1:literal
 9999 mem: location 1888 is 1500
 9999 mem: location 1500 is 1
 9999 mem: location 1888 is 1500
 9999 mem: storing 2 in location 1500
- 104 run: reply in:address:buffer/same-as-ingredient:0
+ 105 run: reply in:address:buffer/same-as-ingredient:0
 9999 mem: location 1885 is 1500
 9999 run: result 0 is 1500
 9999 mem: storing 1500 in location 1731
- 103 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 104 run: backspace?:boolean <- equal c:character, 8:literal/backspace
 9999 mem: location 1737 is 97
 9999 mem: storing 0 in location 1742
- 103 run: break-unless backspace?:boolean, 
+ 104 run: break-unless backspace?:boolean, 
 9999 mem: location 1742 is 0
 9999 run: jumping to instruction 46
- 103 run: characters-slurped:number <- add characters-slurped:number, 1:literal
+ 104 run: characters-slurped:number <- add characters-slurped:number, 1:literal
 9999 mem: location 1736 is 1
 9999 mem: storing 2 in location 1736
- 103 run: done?:boolean <- equal c:character, 93:literal/close-bracket
+ 104 run: done?:boolean <- equal c:character, 93:literal/close-bracket
 9999 mem: location 1737 is 97
 9999 mem: storing 0 in location 1744
- 103 run: break-if done?:boolean, 
+ 104 run: break-if done?:boolean, 
 9999 mem: location 1744 is 0
 9999 run: jump-if fell through
- 103 run: loop 
+ 104 run: loop 
 9999 run: jumping to instruction 9
- 103 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+ 104 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
 9999 mem: location 1732 is 1406
- 104 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 1945
- 104 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 1947
- 104 run: break-unless x:address:keyboard, 
-9999 mem: location 1947 is 1406
-9999 run: jump-unless fell through
- 104 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
-9999 mem: location 1947 is 1406
  105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 1976
+9999 mem: new alloc: 1945
  105 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 1978
+9999 mem: storing 1406 in location 1947
  105 run: break-unless x:address:keyboard, 
+9999 mem: location 1947 is 1406
+9999 run: jump-unless fell through
+ 105 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
+9999 mem: location 1947 is 1406
+ 106 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1976
+ 106 run: x:address:keyboard <- next-ingredient 
+9999 mem: storing 1406 in location 1978
+ 106 run: break-unless x:address:keyboard, 
 9999 mem: location 1978 is 1406
 9999 run: jump-unless fell through
- 105 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
+ 106 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 9999 mem: location 1978 is 1406
 9999 mem: location 1406 is 2
 9999 mem: location 1407 is 1368
 9999 mem: location 1978 is 1406
 9999 run: address to copy is 1406
 9999 mem: storing 1406 in location 1979
- 105 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
+ 106 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 9999 mem: location 1978 is 1406
 9999 mem: location 1406 is 2
 9999 mem: location 1407 is 1368
@@ -52946,7 +52894,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1407 is 1368
 9999 mem: storing 1368 in location 1980
- 105 run: max:number <- length buf:address:array:character/deref
+ 106 run: max:number <- length buf:address:array:character/deref
 9999 mem: location 1980 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -52957,15 +52905,15 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1374 is 10
 9999 mem: location 1980 is 1368
 9999 mem: storing 6 in location 1981
- 105 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+ 106 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 9999 mem: location 1979 is 1406
 9999 mem: location 1406 is 2
 9999 mem: location 1981 is 6
 9999 mem: storing 0 in location 1982
- 105 run: break-unless done?:boolean, 
+ 106 run: break-unless done?:boolean, 
 9999 mem: location 1982 is 0
 9999 run: jumping to instruction 11
- 105 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
+ 106 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
 9999 mem: location 1980 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -52983,12 +52931,12 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 4
 9999 mem: location 1371 is 93
 9999 mem: storing 93 in location 1983
- 105 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+ 106 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 9999 mem: location 1979 is 1406
 9999 mem: location 1406 is 2
 9999 mem: location 1979 is 1406
 9999 mem: storing 3 in location 1406
- 105 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
+ 106 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 1983 is 93
 9999 mem: location 1978 is 1406
 9999 run: result 0 is 93
@@ -52997,51 +52945,51 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: storing 93 in location 1948
 9999 mem: storing 1 in location 1949
 9999 mem: storing 1406 in location 1947
- 104 run: reply c:character, x:address:keyboard/same-as-ingredient:0
+ 105 run: reply c:character, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 1948 is 93
 9999 mem: location 1947 is 1406
 9999 run: result 0 is 93
 9999 run: result 1 is 1406
 9999 mem: storing 93 in location 1737
 9999 mem: storing 1406 in location 1732
- 103 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+ 104 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
 9999 mem: location 1737 is 93
 9999 mem: storing 0 in location 1738
- 103 run: break-unless ctrl-d?:boolean, 
+ 104 run: break-unless ctrl-d?:boolean, 
 9999 mem: location 1738 is 0
 9999 run: jumping to instruction 16
- 103 run: null?:boolean <- equal c:character, 0:literal/null
+ 104 run: null?:boolean <- equal c:character, 0:literal/null
 9999 mem: location 1737 is 93
 9999 mem: storing 0 in location 1739
- 103 run: break-unless null?:boolean, 
+ 104 run: break-unless null?:boolean, 
 9999 mem: location 1739 is 0
 9999 run: jumping to instruction 22
- 103 run: string?:boolean <- equal c:character, 91:literal/open-bracket
+ 104 run: string?:boolean <- equal c:character, 91:literal/open-bracket
 9999 mem: location 1737 is 93
 9999 mem: storing 0 in location 1740
- 103 run: break-unless string?:boolean, 
+ 104 run: break-unless string?:boolean, 
 9999 mem: location 1740 is 0
 9999 run: jumping to instruction 32
- 103 run: print-character x:address:screen, c:character, 6:literal/cyan
+ 104 run: print-character x:address:screen, c:character, 6:literal/cyan
 9999 mem: location 1733 is 1031
 9999 mem: location 1737 is 93
- 104 run: default-space:address:array:location <- new location:type, 30:literal
+ 105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 2007
- 104 run: x:address:screen <- next-ingredient 
+ 105 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 2009
- 104 run: c:character <- next-ingredient 
+ 105 run: c:character <- next-ingredient 
 9999 mem: storing 93 in location 2010
- 104 run: color:number, color-found?:boolean <- next-ingredient 
+ 105 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 6 in location 2011
 9999 mem: storing 1 in location 2012
- 104 run: break-if color-found?:boolean, 
+ 105 run: break-if color-found?:boolean, 
 9999 mem: location 2012 is 1
 9999 run: jumping to instruction 7
- 104 run: break-unless x:address:screen, 
+ 105 run: break-unless x:address:screen, 
 9999 mem: location 2009 is 1031
 9999 run: jump-unless fell through
- 104 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
+ 105 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
 9999 mem: location 2009 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -53051,7 +52999,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2009 is 1031
 9999 run: address to copy is 1033
 9999 mem: storing 1033 in location 2013
- 104 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
+ 105 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
 9999 mem: location 2009 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -53061,7 +53009,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2009 is 1031
 9999 run: address to copy is 1034
 9999 mem: storing 1034 in location 2014
- 104 run: width:number <- get x:address:screen/deref, num-columns:offset
+ 105 run: width:number <- get x:address:screen/deref, num-columns:offset
 9999 mem: location 2009 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -53073,7 +53021,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1032 is 30
 9999 mem: storing 30 in location 2015
- 104 run: height:number <- get x:address:screen/deref, num-rows:offset
+ 105 run: height:number <- get x:address:screen/deref, num-rows:offset
 9999 mem: location 2009 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -53085,26 +53033,26 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1031 is 5
 9999 mem: storing 5 in location 2016
- 104 run: max-row:number <- subtract height:number, 1:literal
+ 105 run: max-row:number <- subtract height:number, 1:literal
 9999 mem: location 2016 is 5
 9999 mem: storing 4 in location 2017
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 105 run: newline?:boolean <- equal c:character, 10:literal/newline
 9999 mem: location 2010 is 93
 9999 mem: storing 0 in location 2018
- 104 run: break-unless newline?:boolean, 
+ 105 run: break-unless newline?:boolean, 
 9999 mem: location 2018 is 0
 9999 run: jumping to instruction 25
- 104 run: index:number <- multiply row:address:number/deref, width:number
+ 105 run: index:number <- multiply row:address:number/deref, width:number
 9999 mem: location 2013 is 1033
 9999 mem: location 1033 is 0
 9999 mem: location 2015 is 30
 9999 mem: storing 0 in location 2020
- 104 run: index:number <- add index:number, column:address:number/deref
+ 105 run: index:number <- add index:number, column:address:number/deref
 9999 mem: location 2020 is 0
 9999 mem: location 2014 is 1034
 9999 mem: location 1034 is 2
 9999 mem: storing 2 in location 2020
- 104 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
+ 105 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
 9999 mem: location 2009 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -53116,13 +53064,13 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1035 is 1036
 9999 mem: storing 1036 in location 2021
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 105 run: backspace?:boolean <- equal c:character, 8:literal
 9999 mem: location 2010 is 93
 9999 mem: storing 0 in location 2022
- 104 run: break-unless backspace?:boolean, 
+ 105 run: break-unless backspace?:boolean, 
 9999 mem: location 2022 is 0
 9999 run: jumping to instruction 44
- 104 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
+ 105 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
 9999 mem: location 2021 is 1036
 9999 mem: location 1036 is 150
 9999 mem: location 1037 is 91
@@ -53429,61 +53377,61 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2021 is 1036
 9999 mem: location 2020 is 2
 9999 mem: storing 1041 in location 2024
- 104 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
+ 105 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
 9999 mem: location 2024 is 1041
 9999 mem: location 1041 is 0
 9999 mem: location 1042 is 7
 9999 mem: location 2024 is 1041
 9999 run: address to copy is 1041
 9999 mem: storing 1041 in location 2025
- 104 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
+ 105 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
 9999 mem: location 2024 is 1041
 9999 mem: location 1041 is 0
 9999 mem: location 1042 is 7
 9999 mem: location 2024 is 1041
 9999 run: address to copy is 1042
 9999 mem: storing 1042 in location 2026
- 104 run: cursor-contents:address:character/deref <- copy c:character
+ 105 run: cursor-contents:address:character/deref <- copy c:character
 9999 mem: location 2010 is 93
 9999 mem: location 2025 is 1041
 9999 mem: storing 93 in location 1041
- 104 run: cursor-color:address:number/deref <- copy color:number
+ 105 run: cursor-color:address:number/deref <- copy color:number
 9999 mem: location 2011 is 6
 9999 mem: location 2026 is 1042
 9999 mem: storing 6 in location 1042
- 104 run: at-right?:boolean <- equal column:address:number/deref, width:number
+ 105 run: at-right?:boolean <- equal column:address:number/deref, width:number
 9999 mem: location 2014 is 1034
 9999 mem: location 1034 is 2
 9999 mem: location 2015 is 30
 9999 mem: storing 0 in location 2027
- 104 run: break-if at-right?:boolean, 
+ 105 run: break-if at-right?:boolean, 
 9999 mem: location 2027 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 105 run: column:address:number/deref <- add column:address:number/deref, 1:literal
 9999 mem: location 2014 is 1034
 9999 mem: location 1034 is 2
 9999 mem: location 2014 is 1034
 9999 mem: storing 3 in location 1034
- 104 run: reply x:address:screen/same-as-ingredient:0
+ 105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 2009 is 1031
- 103 run: result:address:buffer <- buffer-append result:address:buffer, c:character
+ 104 run: result:address:buffer <- buffer-append result:address:buffer, c:character
 9999 mem: location 1731 is 1500
 9999 mem: location 1737 is 93
- 104 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 2038
- 104 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1500 in location 2040
- 104 run: c:character <- next-ingredient 
-9999 mem: storing 93 in location 2041
- 104 run: full?:boolean <- buffer-full? in:address:buffer
-9999 mem: location 2040 is 1500
  105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 2069
+9999 mem: new alloc: 2038
  105 run: in:address:buffer <- next-ingredient 
+9999 mem: storing 1500 in location 2040
+ 105 run: c:character <- next-ingredient 
+9999 mem: storing 93 in location 2041
+ 105 run: full?:boolean <- buffer-full? in:address:buffer
+9999 mem: location 2040 is 1500
+ 106 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 2069
+ 106 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1500 in location 2071
- 105 run: len:number <- get in:address:buffer/deref, length:offset
+ 106 run: len:number <- get in:address:buffer/deref, length:offset
 9999 mem: location 2071 is 1500
 9999 mem: location 1500 is 2
 9999 mem: location 1501 is 1502
@@ -53492,7 +53440,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1500 is 2
 9999 mem: storing 2 in location 2072
- 105 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 106 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 2071 is 1500
 9999 mem: location 1500 is 2
 9999 mem: location 1501 is 1502
@@ -53501,7 +53449,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 2073
- 105 run: capacity:number <- length s:address:array:character/deref
+ 106 run: capacity:number <- length s:address:array:character/deref
 9999 mem: location 2073 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 91
@@ -53516,25 +53464,25 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1512 is 0
 9999 mem: location 2073 is 1502
 9999 mem: storing 10 in location 2074
- 105 run: result:boolean <- greater-or-equal len:number, capacity:number
+ 106 run: result:boolean <- greater-or-equal len:number, capacity:number
 9999 mem: location 2072 is 2
 9999 mem: location 2074 is 10
 9999 mem: storing 0 in location 2075
- 105 run: reply result:boolean
+ 106 run: reply result:boolean
 9999 mem: location 2075 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 2042
- 104 run: break-unless full?:boolean, 
+ 105 run: break-unless full?:boolean, 
 9999 mem: location 2042 is 0
 9999 run: jumping to instruction 7
- 104 run: len:address:number <- get-address in:address:buffer/deref, length:offset
+ 105 run: len:address:number <- get-address in:address:buffer/deref, length:offset
 9999 mem: location 2040 is 1500
 9999 mem: location 1500 is 2
 9999 mem: location 1501 is 1502
 9999 mem: location 2040 is 1500
 9999 run: address to copy is 1500
 9999 mem: storing 1500 in location 2043
- 104 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 105 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 2040 is 1500
 9999 mem: location 1500 is 2
 9999 mem: location 1501 is 1502
@@ -53543,7 +53491,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 2044
- 104 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
+ 105 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
 9999 mem: location 2044 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 91
@@ -53562,87 +53510,87 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2043 is 1500
 9999 mem: location 1500 is 2
 9999 mem: storing 1505 in location 2045
- 104 run: dest:address:character/deref <- copy c:character
+ 105 run: dest:address:character/deref <- copy c:character
 9999 mem: location 2041 is 93
 9999 mem: location 2045 is 1505
 9999 mem: storing 93 in location 1505
- 104 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 105 run: len:address:number/deref <- add len:address:number/deref, 1:literal
 9999 mem: location 2043 is 1500
 9999 mem: location 1500 is 2
 9999 mem: location 2043 is 1500
 9999 mem: storing 3 in location 1500
- 104 run: reply in:address:buffer/same-as-ingredient:0
+ 105 run: reply in:address:buffer/same-as-ingredient:0
 9999 mem: location 2040 is 1500
 9999 run: result 0 is 1500
 9999 mem: storing 1500 in location 1731
- 103 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 104 run: backspace?:boolean <- equal c:character, 8:literal/backspace
 9999 mem: location 1737 is 93
 9999 mem: storing 0 in location 1742
- 103 run: break-unless backspace?:boolean, 
+ 104 run: break-unless backspace?:boolean, 
 9999 mem: location 1742 is 0
 9999 run: jumping to instruction 46
- 103 run: characters-slurped:number <- add characters-slurped:number, 1:literal
+ 104 run: characters-slurped:number <- add characters-slurped:number, 1:literal
 9999 mem: location 1736 is 2
 9999 mem: storing 3 in location 1736
- 103 run: done?:boolean <- equal c:character, 93:literal/close-bracket
+ 104 run: done?:boolean <- equal c:character, 93:literal/close-bracket
 9999 mem: location 1737 is 93
 9999 mem: storing 1 in location 1744
- 103 run: break-if done?:boolean, 
+ 104 run: break-if done?:boolean, 
 9999 mem: location 1744 is 1
 9999 run: jumping to instruction 51
- 103 run: break-unless nested-string?:boolean, 
+ 104 run: break-unless nested-string?:boolean, 
 9999 mem: location 1735 is 0
 9999 run: jumping to instruction 55
- 103 run: trace [app], [slurp-string: close-bracket encountered; recursing to regular characters]
+ 104 run: trace [app], [slurp-string: close-bracket encountered; recursing to regular characters]
    1 app: slurp-string: close-bracket encountered; recursing to regular characters
- 103 run: result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+ 104 run: result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
 9999 mem: location 1731 is 1500
 9999 mem: location 1732 is 1406
 9999 mem: location 1733 is 1031
 9999 mem: location 1734 is 0
- 104 run: default-space:address:array:location <- new location:type, 60:literal
+ 105 run: default-space:address:array:location <- new location:type, 60:literal
 9999 mem: array size is 60
 9999 mem: new alloc: 2100
- 104 run: result:address:buffer <- next-ingredient 
+ 105 run: result:address:buffer <- next-ingredient 
 9999 mem: storing 1500 in location 2102
- 104 run: k:address:keyboard <- next-ingredient 
+ 105 run: k:address:keyboard <- next-ingredient 
 9999 mem: storing 1406 in location 2103
- 104 run: x:address:screen <- next-ingredient 
+ 105 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 2104
- 104 run: complete:continuation <- next-ingredient 
+ 105 run: complete:continuation <- next-ingredient 
 9999 mem: storing 0 in location 2105
- 104 run: trace [app], [slurp-regular-characters]
+ 105 run: trace [app], [slurp-regular-characters]
    1 app: slurp-regular-characters
- 104 run: characters-slurped:number <- copy 0:literal
+ 105 run: characters-slurped:number <- copy 0:literal
 9999 mem: storing 0 in location 2106
- 104 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+ 105 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
 9999 mem: location 2103 is 1406
- 105 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 2161
- 105 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 2163
- 105 run: break-unless x:address:keyboard, 
-9999 mem: location 2163 is 1406
-9999 run: jump-unless fell through
- 105 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
-9999 mem: location 2163 is 1406
  106 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 2192
+9999 mem: new alloc: 2161
  106 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 2194
+9999 mem: storing 1406 in location 2163
  106 run: break-unless x:address:keyboard, 
+9999 mem: location 2163 is 1406
+9999 run: jump-unless fell through
+ 106 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
+9999 mem: location 2163 is 1406
+ 107 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 2192
+ 107 run: x:address:keyboard <- next-ingredient 
+9999 mem: storing 1406 in location 2194
+ 107 run: break-unless x:address:keyboard, 
 9999 mem: location 2194 is 1406
 9999 run: jump-unless fell through
- 106 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
+ 107 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 9999 mem: location 2194 is 1406
 9999 mem: location 1406 is 3
 9999 mem: location 1407 is 1368
 9999 mem: location 2194 is 1406
 9999 run: address to copy is 1406
 9999 mem: storing 1406 in location 2195
- 106 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
+ 107 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 9999 mem: location 2194 is 1406
 9999 mem: location 1406 is 3
 9999 mem: location 1407 is 1368
@@ -53651,7 +53599,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1407 is 1368
 9999 mem: storing 1368 in location 2196
- 106 run: max:number <- length buf:address:array:character/deref
+ 107 run: max:number <- length buf:address:array:character/deref
 9999 mem: location 2196 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -53662,15 +53610,15 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1374 is 10
 9999 mem: location 2196 is 1368
 9999 mem: storing 6 in location 2197
- 106 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+ 107 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 9999 mem: location 2195 is 1406
 9999 mem: location 1406 is 3
 9999 mem: location 2197 is 6
 9999 mem: storing 0 in location 2198
- 106 run: break-unless done?:boolean, 
+ 107 run: break-unless done?:boolean, 
 9999 mem: location 2198 is 0
 9999 run: jumping to instruction 11
- 106 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
+ 107 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
 9999 mem: location 2196 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -53688,12 +53636,12 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 4
 9999 mem: location 1372 is 8
 9999 mem: storing 8 in location 2199
- 106 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+ 107 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 9999 mem: location 2195 is 1406
 9999 mem: location 1406 is 3
 9999 mem: location 2195 is 1406
 9999 mem: storing 4 in location 1406
- 106 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
+ 107 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 2199 is 8
 9999 mem: location 2194 is 1406
 9999 run: result 0 is 8
@@ -53702,59 +53650,59 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: storing 8 in location 2164
 9999 mem: storing 1 in location 2165
 9999 mem: storing 1406 in location 2163
- 105 run: reply c:character, x:address:keyboard/same-as-ingredient:0
+ 106 run: reply c:character, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 2164 is 8
 9999 mem: location 2163 is 1406
 9999 run: result 0 is 8
 9999 run: result 1 is 1406
 9999 mem: storing 8 in location 2107
 9999 mem: storing 1406 in location 2103
- 104 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+ 105 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
 9999 mem: location 2107 is 8
 9999 mem: storing 0 in location 2108
- 104 run: break-unless ctrl-d?:boolean, 
+ 105 run: break-unless ctrl-d?:boolean, 
 9999 mem: location 2108 is 0
 9999 run: jumping to instruction 15
- 104 run: null?:boolean <- equal c:character, 0:literal/null
+ 105 run: null?:boolean <- equal c:character, 0:literal/null
 9999 mem: location 2107 is 8
 9999 mem: storing 0 in location 2109
- 104 run: break-unless null?:boolean, 
+ 105 run: break-unless null?:boolean, 
 9999 mem: location 2109 is 0
 9999 run: jumping to instruction 21
- 104 run: comment?:boolean <- equal c:character, 35:literal/hash
+ 105 run: comment?:boolean <- equal c:character, 35:literal/hash
 9999 mem: location 2107 is 8
 9999 mem: storing 0 in location 2110
- 104 run: break-unless comment?:boolean, 
+ 105 run: break-unless comment?:boolean, 
 9999 mem: location 2110 is 0
 9999 run: jumping to instruction 29
- 104 run: string?:boolean <- equal c:character, 91:literal/open-bracket
+ 105 run: string?:boolean <- equal c:character, 91:literal/open-bracket
 9999 mem: location 2107 is 8
 9999 mem: storing 0 in location 2111
- 104 run: break-unless string?:boolean, 
+ 105 run: break-unless string?:boolean, 
 9999 mem: location 2111 is 0
 9999 run: jumping to instruction 37
- 104 run: print-character x:address:screen, c:character
+ 105 run: print-character x:address:screen, c:character
 9999 mem: location 2104 is 1031
 9999 mem: location 2107 is 8
- 105 run: default-space:address:array:location <- new location:type, 30:literal
+ 106 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 2223
- 105 run: x:address:screen <- next-ingredient 
+ 106 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 2225
- 105 run: c:character <- next-ingredient 
+ 106 run: c:character <- next-ingredient 
 9999 mem: storing 8 in location 2226
- 105 run: color:number, color-found?:boolean <- next-ingredient 
+ 106 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 2227
 9999 mem: storing 0 in location 2228
- 105 run: break-if color-found?:boolean, 
+ 106 run: break-if color-found?:boolean, 
 9999 mem: location 2228 is 0
 9999 run: jump-if fell through
- 105 run: color:number <- copy 7:literal/white
+ 106 run: color:number <- copy 7:literal/white
 9999 mem: storing 7 in location 2227
- 105 run: break-unless x:address:screen, 
+ 106 run: break-unless x:address:screen, 
 9999 mem: location 2225 is 1031
 9999 run: jump-unless fell through
- 105 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
+ 106 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
 9999 mem: location 2225 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -53764,7 +53712,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2225 is 1031
 9999 run: address to copy is 1033
 9999 mem: storing 1033 in location 2229
- 105 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
+ 106 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
 9999 mem: location 2225 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -53774,7 +53722,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2225 is 1031
 9999 run: address to copy is 1034
 9999 mem: storing 1034 in location 2230
- 105 run: width:number <- get x:address:screen/deref, num-columns:offset
+ 106 run: width:number <- get x:address:screen/deref, num-columns:offset
 9999 mem: location 2225 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -53786,7 +53734,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1032 is 30
 9999 mem: storing 30 in location 2231
- 105 run: height:number <- get x:address:screen/deref, num-rows:offset
+ 106 run: height:number <- get x:address:screen/deref, num-rows:offset
 9999 mem: location 2225 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -53798,26 +53746,26 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1031 is 5
 9999 mem: storing 5 in location 2232
- 105 run: max-row:number <- subtract height:number, 1:literal
+ 106 run: max-row:number <- subtract height:number, 1:literal
 9999 mem: location 2232 is 5
 9999 mem: storing 4 in location 2233
- 105 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 106 run: newline?:boolean <- equal c:character, 10:literal/newline
 9999 mem: location 2226 is 8
 9999 mem: storing 0 in location 2234
- 105 run: break-unless newline?:boolean, 
+ 106 run: break-unless newline?:boolean, 
 9999 mem: location 2234 is 0
 9999 run: jumping to instruction 25
- 105 run: index:number <- multiply row:address:number/deref, width:number
+ 106 run: index:number <- multiply row:address:number/deref, width:number
 9999 mem: location 2229 is 1033
 9999 mem: location 1033 is 0
 9999 mem: location 2231 is 30
 9999 mem: storing 0 in location 2236
- 105 run: index:number <- add index:number, column:address:number/deref
+ 106 run: index:number <- add index:number, column:address:number/deref
 9999 mem: location 2236 is 0
 9999 mem: location 2230 is 1034
 9999 mem: location 1034 is 3
 9999 mem: storing 3 in location 2236
- 105 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
+ 106 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
 9999 mem: location 2225 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -53829,28 +53777,28 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1035 is 1036
 9999 mem: storing 1036 in location 2237
- 105 run: backspace?:boolean <- equal c:character, 8:literal
+ 106 run: backspace?:boolean <- equal c:character, 8:literal
 9999 mem: location 2226 is 8
 9999 mem: storing 1 in location 2238
- 105 run: break-unless backspace?:boolean, 
+ 106 run: break-unless backspace?:boolean, 
 9999 mem: location 2238 is 1
 9999 run: jump-unless fell through
- 105 run: at-left?:boolean <- lesser-or-equal column:address:number/deref, 0:literal
+ 106 run: at-left?:boolean <- lesser-or-equal column:address:number/deref, 0:literal
 9999 mem: location 2230 is 1034
 9999 mem: location 1034 is 3
 9999 mem: storing 0 in location 2239
- 105 run: break-if at-left?:boolean, 
+ 106 run: break-if at-left?:boolean, 
 9999 mem: location 2239 is 0
 9999 run: jump-if fell through
- 105 run: column:address:number/deref <- subtract column:address:number/deref, 1:literal
+ 106 run: column:address:number/deref <- subtract column:address:number/deref, 1:literal
 9999 mem: location 2230 is 1034
 9999 mem: location 1034 is 3
 9999 mem: location 2230 is 1034
 9999 mem: storing 2 in location 1034
- 105 run: index:number <- subtract index:number, 1:literal
+ 106 run: index:number <- subtract index:number, 1:literal
 9999 mem: location 2236 is 3
 9999 mem: storing 2 in location 2236
- 105 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
+ 106 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
 9999 mem: location 2237 is 1036
 9999 mem: location 1036 is 150
 9999 mem: location 1037 is 91
@@ -54157,46 +54105,46 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2237 is 1036
 9999 mem: location 2236 is 2
 9999 mem: storing 1041 in location 2240
- 105 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
+ 106 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
 9999 mem: location 2240 is 1041
 9999 mem: location 1041 is 93
 9999 mem: location 1042 is 6
 9999 mem: location 2240 is 1041
 9999 run: address to copy is 1041
 9999 mem: storing 1041 in location 2241
- 105 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
+ 106 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
 9999 mem: location 2240 is 1041
 9999 mem: location 1041 is 93
 9999 mem: location 1042 is 6
 9999 mem: location 2240 is 1041
 9999 run: address to copy is 1042
 9999 mem: storing 1042 in location 2242
- 105 run: cursor-contents:address:character/deref <- copy 32:literal/space
+ 106 run: cursor-contents:address:character/deref <- copy 32:literal/space
 9999 mem: location 2241 is 1041
 9999 mem: storing 32 in location 1041
- 105 run: cursor-color:address:number/deref <- copy 7:literal/white
+ 106 run: cursor-color:address:number/deref <- copy 7:literal/white
 9999 mem: location 2242 is 1042
 9999 mem: storing 7 in location 1042
- 105 run: reply x:address:screen/same-as-ingredient:0
+ 106 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 2225 is 1031
- 104 run: result:address:buffer <- buffer-append result:address:buffer, c:character
+ 105 run: result:address:buffer <- buffer-append result:address:buffer, c:character
 9999 mem: location 2102 is 1500
 9999 mem: location 2107 is 8
- 105 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 2254
- 105 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1500 in location 2256
- 105 run: c:character <- next-ingredient 
-9999 mem: storing 8 in location 2257
- 105 run: full?:boolean <- buffer-full? in:address:buffer
-9999 mem: location 2256 is 1500
  106 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 2285
+9999 mem: new alloc: 2254
  106 run: in:address:buffer <- next-ingredient 
+9999 mem: storing 1500 in location 2256
+ 106 run: c:character <- next-ingredient 
+9999 mem: storing 8 in location 2257
+ 106 run: full?:boolean <- buffer-full? in:address:buffer
+9999 mem: location 2256 is 1500
+ 107 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 2285
+ 107 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1500 in location 2287
- 106 run: len:number <- get in:address:buffer/deref, length:offset
+ 107 run: len:number <- get in:address:buffer/deref, length:offset
 9999 mem: location 2287 is 1500
 9999 mem: location 1500 is 3
 9999 mem: location 1501 is 1502
@@ -54205,7 +54153,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1500 is 3
 9999 mem: storing 3 in location 2288
- 106 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 107 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 2287 is 1500
 9999 mem: location 1500 is 3
 9999 mem: location 1501 is 1502
@@ -54214,7 +54162,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 2289
- 106 run: capacity:number <- length s:address:array:character/deref
+ 107 run: capacity:number <- length s:address:array:character/deref
 9999 mem: location 2289 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 91
@@ -54229,25 +54177,25 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1512 is 0
 9999 mem: location 2289 is 1502
 9999 mem: storing 10 in location 2290
- 106 run: result:boolean <- greater-or-equal len:number, capacity:number
+ 107 run: result:boolean <- greater-or-equal len:number, capacity:number
 9999 mem: location 2288 is 3
 9999 mem: location 2290 is 10
 9999 mem: storing 0 in location 2291
- 106 run: reply result:boolean
+ 107 run: reply result:boolean
 9999 mem: location 2291 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 2258
- 105 run: break-unless full?:boolean, 
+ 106 run: break-unless full?:boolean, 
 9999 mem: location 2258 is 0
 9999 run: jumping to instruction 7
- 105 run: len:address:number <- get-address in:address:buffer/deref, length:offset
+ 106 run: len:address:number <- get-address in:address:buffer/deref, length:offset
 9999 mem: location 2256 is 1500
 9999 mem: location 1500 is 3
 9999 mem: location 1501 is 1502
 9999 mem: location 2256 is 1500
 9999 run: address to copy is 1500
 9999 mem: storing 1500 in location 2259
- 105 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 106 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 2256 is 1500
 9999 mem: location 1500 is 3
 9999 mem: location 1501 is 1502
@@ -54256,7 +54204,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 2260
- 105 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
+ 106 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
 9999 mem: location 2260 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 91
@@ -54275,37 +54223,37 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2259 is 1500
 9999 mem: location 1500 is 3
 9999 mem: storing 1506 in location 2261
- 105 run: dest:address:character/deref <- copy c:character
+ 106 run: dest:address:character/deref <- copy c:character
 9999 mem: location 2257 is 8
 9999 mem: location 2261 is 1506
 9999 mem: storing 8 in location 1506
- 105 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 106 run: len:address:number/deref <- add len:address:number/deref, 1:literal
 9999 mem: location 2259 is 1500
 9999 mem: location 1500 is 3
 9999 mem: location 2259 is 1500
 9999 mem: storing 4 in location 1500
- 105 run: reply in:address:buffer/same-as-ingredient:0
+ 106 run: reply in:address:buffer/same-as-ingredient:0
 9999 mem: location 2256 is 1500
 9999 run: result 0 is 1500
 9999 mem: storing 1500 in location 2102
- 104 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 105 run: backspace?:boolean <- equal c:character, 8:literal/backspace
 9999 mem: location 2107 is 8
 9999 mem: storing 1 in location 2112
- 104 run: break-unless backspace?:boolean, 
+ 105 run: break-unless backspace?:boolean, 
 9999 mem: location 2112 is 1
 9999 run: jump-unless fell through
- 104 run: characters-slurped:number <- subtract characters-slurped:number, 1:literal
+ 105 run: characters-slurped:number <- subtract characters-slurped:number, 1:literal
 9999 mem: location 2106 is 0
 9999 mem: storing -1 in location 2106
- 104 run: done?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
+ 105 run: done?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
 9999 mem: location 2106 is -1
 9999 mem: storing 1 in location 2113
- 104 run: break-unless done?:boolean, 
+ 105 run: break-unless done?:boolean, 
 9999 mem: location 2113 is 1
 9999 run: jump-unless fell through
- 104 run: trace [app], [slurp-regular-characters: too many backspaces; returning]
+ 105 run: trace [app], [slurp-regular-characters: too many backspaces; returning]
    1 app: slurp-regular-characters: too many backspaces; returning
- 104 run: reply result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+ 105 run: reply result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
 9999 mem: location 2102 is 1500
 9999 mem: location 2103 is 1406
 9999 mem: location 2104 is 1031
@@ -54315,38 +54263,38 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: storing 1500 in location 1731
 9999 mem: storing 1406 in location 1732
 9999 mem: storing 1031 in location 1733
- 103 run: trace [app], [slurp-string: backspaced back into string; restarting]
+ 104 run: trace [app], [slurp-string: backspaced back into string; restarting]
    1 app: slurp-string: backspaced back into string; restarting
- 103 run: jump +next-character:label
+ 104 run: jump +next-character:label
 9999 run: jumping to instruction 10
- 103 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+ 104 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
 9999 mem: location 1732 is 1406
- 104 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 2316
- 104 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 2318
- 104 run: break-unless x:address:keyboard, 
-9999 mem: location 2318 is 1406
-9999 run: jump-unless fell through
- 104 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
-9999 mem: location 2318 is 1406
  105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 2347
+9999 mem: new alloc: 2316
  105 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 2349
+9999 mem: storing 1406 in location 2318
  105 run: break-unless x:address:keyboard, 
+9999 mem: location 2318 is 1406
+9999 run: jump-unless fell through
+ 105 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
+9999 mem: location 2318 is 1406
+ 106 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 2347
+ 106 run: x:address:keyboard <- next-ingredient 
+9999 mem: storing 1406 in location 2349
+ 106 run: break-unless x:address:keyboard, 
 9999 mem: location 2349 is 1406
 9999 run: jump-unless fell through
- 105 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
+ 106 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 9999 mem: location 2349 is 1406
 9999 mem: location 1406 is 4
 9999 mem: location 1407 is 1368
 9999 mem: location 2349 is 1406
 9999 run: address to copy is 1406
 9999 mem: storing 1406 in location 2350
- 105 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
+ 106 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 9999 mem: location 2349 is 1406
 9999 mem: location 1406 is 4
 9999 mem: location 1407 is 1368
@@ -54355,7 +54303,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1407 is 1368
 9999 mem: storing 1368 in location 2351
- 105 run: max:number <- length buf:address:array:character/deref
+ 106 run: max:number <- length buf:address:array:character/deref
 9999 mem: location 2351 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -54366,15 +54314,15 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1374 is 10
 9999 mem: location 2351 is 1368
 9999 mem: storing 6 in location 2352
- 105 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+ 106 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 9999 mem: location 2350 is 1406
 9999 mem: location 1406 is 4
 9999 mem: location 2352 is 6
 9999 mem: storing 0 in location 2353
- 105 run: break-unless done?:boolean, 
+ 106 run: break-unless done?:boolean, 
 9999 mem: location 2353 is 0
 9999 run: jumping to instruction 11
- 105 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
+ 106 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
 9999 mem: location 2351 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -54392,12 +54340,12 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 4
 9999 mem: location 1373 is 98
 9999 mem: storing 98 in location 2354
- 105 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+ 106 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 9999 mem: location 2350 is 1406
 9999 mem: location 1406 is 4
 9999 mem: location 2350 is 1406
 9999 mem: storing 5 in location 1406
- 105 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
+ 106 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 2354 is 98
 9999 mem: location 2349 is 1406
 9999 run: result 0 is 98
@@ -54406,51 +54354,51 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: storing 98 in location 2319
 9999 mem: storing 1 in location 2320
 9999 mem: storing 1406 in location 2318
- 104 run: reply c:character, x:address:keyboard/same-as-ingredient:0
+ 105 run: reply c:character, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 2319 is 98
 9999 mem: location 2318 is 1406
 9999 run: result 0 is 98
 9999 run: result 1 is 1406
 9999 mem: storing 98 in location 1737
 9999 mem: storing 1406 in location 1732
- 103 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+ 104 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
 9999 mem: location 1737 is 98
 9999 mem: storing 0 in location 1738
- 103 run: break-unless ctrl-d?:boolean, 
+ 104 run: break-unless ctrl-d?:boolean, 
 9999 mem: location 1738 is 0
 9999 run: jumping to instruction 16
- 103 run: null?:boolean <- equal c:character, 0:literal/null
+ 104 run: null?:boolean <- equal c:character, 0:literal/null
 9999 mem: location 1737 is 98
 9999 mem: storing 0 in location 1739
- 103 run: break-unless null?:boolean, 
+ 104 run: break-unless null?:boolean, 
 9999 mem: location 1739 is 0
 9999 run: jumping to instruction 22
- 103 run: string?:boolean <- equal c:character, 91:literal/open-bracket
+ 104 run: string?:boolean <- equal c:character, 91:literal/open-bracket
 9999 mem: location 1737 is 98
 9999 mem: storing 0 in location 1740
- 103 run: break-unless string?:boolean, 
+ 104 run: break-unless string?:boolean, 
 9999 mem: location 1740 is 0
 9999 run: jumping to instruction 32
- 103 run: print-character x:address:screen, c:character, 6:literal/cyan
+ 104 run: print-character x:address:screen, c:character, 6:literal/cyan
 9999 mem: location 1733 is 1031
 9999 mem: location 1737 is 98
- 104 run: default-space:address:array:location <- new location:type, 30:literal
+ 105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 2378
- 104 run: x:address:screen <- next-ingredient 
+ 105 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 2380
- 104 run: c:character <- next-ingredient 
+ 105 run: c:character <- next-ingredient 
 9999 mem: storing 98 in location 2381
- 104 run: color:number, color-found?:boolean <- next-ingredient 
+ 105 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 6 in location 2382
 9999 mem: storing 1 in location 2383
- 104 run: break-if color-found?:boolean, 
+ 105 run: break-if color-found?:boolean, 
 9999 mem: location 2383 is 1
 9999 run: jumping to instruction 7
- 104 run: break-unless x:address:screen, 
+ 105 run: break-unless x:address:screen, 
 9999 mem: location 2380 is 1031
 9999 run: jump-unless fell through
- 104 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
+ 105 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
 9999 mem: location 2380 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -54460,7 +54408,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2380 is 1031
 9999 run: address to copy is 1033
 9999 mem: storing 1033 in location 2384
- 104 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
+ 105 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
 9999 mem: location 2380 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -54470,7 +54418,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2380 is 1031
 9999 run: address to copy is 1034
 9999 mem: storing 1034 in location 2385
- 104 run: width:number <- get x:address:screen/deref, num-columns:offset
+ 105 run: width:number <- get x:address:screen/deref, num-columns:offset
 9999 mem: location 2380 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -54482,7 +54430,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1032 is 30
 9999 mem: storing 30 in location 2386
- 104 run: height:number <- get x:address:screen/deref, num-rows:offset
+ 105 run: height:number <- get x:address:screen/deref, num-rows:offset
 9999 mem: location 2380 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -54494,26 +54442,26 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1031 is 5
 9999 mem: storing 5 in location 2387
- 104 run: max-row:number <- subtract height:number, 1:literal
+ 105 run: max-row:number <- subtract height:number, 1:literal
 9999 mem: location 2387 is 5
 9999 mem: storing 4 in location 2388
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 105 run: newline?:boolean <- equal c:character, 10:literal/newline
 9999 mem: location 2381 is 98
 9999 mem: storing 0 in location 2389
- 104 run: break-unless newline?:boolean, 
+ 105 run: break-unless newline?:boolean, 
 9999 mem: location 2389 is 0
 9999 run: jumping to instruction 25
- 104 run: index:number <- multiply row:address:number/deref, width:number
+ 105 run: index:number <- multiply row:address:number/deref, width:number
 9999 mem: location 2384 is 1033
 9999 mem: location 1033 is 0
 9999 mem: location 2386 is 30
 9999 mem: storing 0 in location 2391
- 104 run: index:number <- add index:number, column:address:number/deref
+ 105 run: index:number <- add index:number, column:address:number/deref
 9999 mem: location 2391 is 0
 9999 mem: location 2385 is 1034
 9999 mem: location 1034 is 2
 9999 mem: storing 2 in location 2391
- 104 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
+ 105 run: buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
 9999 mem: location 2380 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -54525,13 +54473,13 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1035 is 1036
 9999 mem: storing 1036 in location 2392
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 105 run: backspace?:boolean <- equal c:character, 8:literal
 9999 mem: location 2381 is 98
 9999 mem: storing 0 in location 2393
- 104 run: break-unless backspace?:boolean, 
+ 105 run: break-unless backspace?:boolean, 
 9999 mem: location 2393 is 0
 9999 run: jumping to instruction 44
- 104 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
+ 105 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
 9999 mem: location 2392 is 1036
 9999 mem: location 1036 is 150
 9999 mem: location 1037 is 91
@@ -54838,61 +54786,61 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2392 is 1036
 9999 mem: location 2391 is 2
 9999 mem: storing 1041 in location 2395
- 104 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
+ 105 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
 9999 mem: location 2395 is 1041
 9999 mem: location 1041 is 32
 9999 mem: location 1042 is 7
 9999 mem: location 2395 is 1041
 9999 run: address to copy is 1041
 9999 mem: storing 1041 in location 2396
- 104 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
+ 105 run: cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
 9999 mem: location 2395 is 1041
 9999 mem: location 1041 is 32
 9999 mem: location 1042 is 7
 9999 mem: location 2395 is 1041
 9999 run: address to copy is 1042
 9999 mem: storing 1042 in location 2397
- 104 run: cursor-contents:address:character/deref <- copy c:character
+ 105 run: cursor-contents:address:character/deref <- copy c:character
 9999 mem: location 2381 is 98
 9999 mem: location 2396 is 1041
 9999 mem: storing 98 in location 1041
- 104 run: cursor-color:address:number/deref <- copy color:number
+ 105 run: cursor-color:address:number/deref <- copy color:number
 9999 mem: location 2382 is 6
 9999 mem: location 2397 is 1042
 9999 mem: storing 6 in location 1042
- 104 run: at-right?:boolean <- equal column:address:number/deref, width:number
+ 105 run: at-right?:boolean <- equal column:address:number/deref, width:number
 9999 mem: location 2385 is 1034
 9999 mem: location 1034 is 2
 9999 mem: location 2386 is 30
 9999 mem: storing 0 in location 2398
- 104 run: break-if at-right?:boolean, 
+ 105 run: break-if at-right?:boolean, 
 9999 mem: location 2398 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 105 run: column:address:number/deref <- add column:address:number/deref, 1:literal
 9999 mem: location 2385 is 1034
 9999 mem: location 1034 is 2
 9999 mem: location 2385 is 1034
 9999 mem: storing 3 in location 1034
- 104 run: reply x:address:screen/same-as-ingredient:0
+ 105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 2380 is 1031
- 103 run: result:address:buffer <- buffer-append result:address:buffer, c:character
+ 104 run: result:address:buffer <- buffer-append result:address:buffer, c:character
 9999 mem: location 1731 is 1500
 9999 mem: location 1737 is 98
- 104 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 2409
- 104 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1500 in location 2411
- 104 run: c:character <- next-ingredient 
-9999 mem: storing 98 in location 2412
- 104 run: full?:boolean <- buffer-full? in:address:buffer
-9999 mem: location 2411 is 1500
  105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 2440
+9999 mem: new alloc: 2409
  105 run: in:address:buffer <- next-ingredient 
+9999 mem: storing 1500 in location 2411
+ 105 run: c:character <- next-ingredient 
+9999 mem: storing 98 in location 2412
+ 105 run: full?:boolean <- buffer-full? in:address:buffer
+9999 mem: location 2411 is 1500
+ 106 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 2440
+ 106 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1500 in location 2442
- 105 run: len:number <- get in:address:buffer/deref, length:offset
+ 106 run: len:number <- get in:address:buffer/deref, length:offset
 9999 mem: location 2442 is 1500
 9999 mem: location 1500 is 4
 9999 mem: location 1501 is 1502
@@ -54901,7 +54849,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1500 is 4
 9999 mem: storing 4 in location 2443
- 105 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 106 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 2442 is 1500
 9999 mem: location 1500 is 4
 9999 mem: location 1501 is 1502
@@ -54910,7 +54858,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 2444
- 105 run: capacity:number <- length s:address:array:character/deref
+ 106 run: capacity:number <- length s:address:array:character/deref
 9999 mem: location 2444 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 91
@@ -54925,25 +54873,25 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1512 is 0
 9999 mem: location 2444 is 1502
 9999 mem: storing 10 in location 2445
- 105 run: result:boolean <- greater-or-equal len:number, capacity:number
+ 106 run: result:boolean <- greater-or-equal len:number, capacity:number
 9999 mem: location 2443 is 4
 9999 mem: location 2445 is 10
 9999 mem: storing 0 in location 2446
- 105 run: reply result:boolean
+ 106 run: reply result:boolean
 9999 mem: location 2446 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 2413
- 104 run: break-unless full?:boolean, 
+ 105 run: break-unless full?:boolean, 
 9999 mem: location 2413 is 0
 9999 run: jumping to instruction 7
- 104 run: len:address:number <- get-address in:address:buffer/deref, length:offset
+ 105 run: len:address:number <- get-address in:address:buffer/deref, length:offset
 9999 mem: location 2411 is 1500
 9999 mem: location 1500 is 4
 9999 mem: location 1501 is 1502
 9999 mem: location 2411 is 1500
 9999 run: address to copy is 1500
 9999 mem: storing 1500 in location 2414
- 104 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 105 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 2411 is 1500
 9999 mem: location 1500 is 4
 9999 mem: location 1501 is 1502
@@ -54952,7 +54900,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 2415
- 104 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
+ 105 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
 9999 mem: location 2415 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 91
@@ -54971,64 +54919,64 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2414 is 1500
 9999 mem: location 1500 is 4
 9999 mem: storing 1507 in location 2416
- 104 run: dest:address:character/deref <- copy c:character
+ 105 run: dest:address:character/deref <- copy c:character
 9999 mem: location 2412 is 98
 9999 mem: location 2416 is 1507
 9999 mem: storing 98 in location 1507
- 104 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 105 run: len:address:number/deref <- add len:address:number/deref, 1:literal
 9999 mem: location 2414 is 1500
 9999 mem: location 1500 is 4
 9999 mem: location 2414 is 1500
 9999 mem: storing 5 in location 1500
- 104 run: reply in:address:buffer/same-as-ingredient:0
+ 105 run: reply in:address:buffer/same-as-ingredient:0
 9999 mem: location 2411 is 1500
 9999 run: result 0 is 1500
 9999 mem: storing 1500 in location 1731
- 103 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 104 run: backspace?:boolean <- equal c:character, 8:literal/backspace
 9999 mem: location 1737 is 98
 9999 mem: storing 0 in location 1742
- 103 run: break-unless backspace?:boolean, 
+ 104 run: break-unless backspace?:boolean, 
 9999 mem: location 1742 is 0
 9999 run: jumping to instruction 46
- 103 run: characters-slurped:number <- add characters-slurped:number, 1:literal
+ 104 run: characters-slurped:number <- add characters-slurped:number, 1:literal
 9999 mem: location 1736 is 3
 9999 mem: storing 4 in location 1736
- 103 run: done?:boolean <- equal c:character, 93:literal/close-bracket
+ 104 run: done?:boolean <- equal c:character, 93:literal/close-bracket
 9999 mem: location 1737 is 98
 9999 mem: storing 0 in location 1744
- 103 run: break-if done?:boolean, 
+ 104 run: break-if done?:boolean, 
 9999 mem: location 1744 is 0
 9999 run: jump-if fell through
- 103 run: loop 
+ 104 run: loop 
 9999 run: jumping to instruction 9
- 103 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+ 104 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
 9999 mem: location 1732 is 1406
- 104 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 2471
- 104 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 2473
- 104 run: break-unless x:address:keyboard, 
-9999 mem: location 2473 is 1406
-9999 run: jump-unless fell through
- 104 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
-9999 mem: location 2473 is 1406
  105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 2502
+9999 mem: new alloc: 2471
  105 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 2504
+9999 mem: storing 1406 in location 2473
  105 run: break-unless x:address:keyboard, 
+9999 mem: location 2473 is 1406
+9999 run: jump-unless fell through
+ 105 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
+9999 mem: location 2473 is 1406
+ 106 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 2502
+ 106 run: x:address:keyboard <- next-ingredient 
+9999 mem: storing 1406 in location 2504
+ 106 run: break-unless x:address:keyboard, 
 9999 mem: location 2504 is 1406
 9999 run: jump-unless fell through
- 105 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
+ 106 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 9999 mem: location 2504 is 1406
 9999 mem: location 1406 is 5
 9999 mem: location 1407 is 1368
 9999 mem: location 2504 is 1406
 9999 run: address to copy is 1406
 9999 mem: storing 1406 in location 2505
- 105 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
+ 106 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 9999 mem: location 2504 is 1406
 9999 mem: location 1406 is 5
 9999 mem: location 1407 is 1368
@@ -55037,7 +54985,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 2
 9999 mem: location 1407 is 1368
 9999 mem: storing 1368 in location 2506
- 105 run: max:number <- length buf:address:array:character/deref
+ 106 run: max:number <- length buf:address:array:character/deref
 9999 mem: location 2506 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -55048,15 +54996,15 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 1374 is 10
 9999 mem: location 2506 is 1368
 9999 mem: storing 6 in location 2507
- 105 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+ 106 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 9999 mem: location 2505 is 1406
 9999 mem: location 1406 is 5
 9999 mem: location 2507 is 6
 9999 mem: storing 0 in location 2508
- 105 run: break-unless done?:boolean, 
+ 106 run: break-unless done?:boolean, 
 9999 mem: location 2508 is 0
 9999 run: jumping to instruction 11
- 105 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
+ 106 run: c:character <- index buf:address:array:character/deref, idx:address:number/deref
 9999 mem: location 2506 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -55074,12 +55022,12 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 4
 9999 mem: location 1374 is 10
 9999 mem: storing 10 in location 2509
- 105 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+ 106 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 9999 mem: location 2505 is 1406
 9999 mem: location 1406 is 5
 9999 mem: location 2505 is 1406
 9999 mem: storing 6 in location 1406
- 105 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
+ 106 run: reply c:character, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 2509 is 10
 9999 mem: location 2504 is 1406
 9999 run: result 0 is 10
@@ -55088,51 +55036,51 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: storing 10 in location 2474
 9999 mem: storing 1 in location 2475
 9999 mem: storing 1406 in location 2473
- 104 run: reply c:character, x:address:keyboard/same-as-ingredient:0
+ 105 run: reply c:character, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 2474 is 10
 9999 mem: location 2473 is 1406
 9999 run: result 0 is 10
 9999 run: result 1 is 1406
 9999 mem: storing 10 in location 1737
 9999 mem: storing 1406 in location 1732
- 103 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+ 104 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
 9999 mem: location 1737 is 10
 9999 mem: storing 0 in location 1738
- 103 run: break-unless ctrl-d?:boolean, 
+ 104 run: break-unless ctrl-d?:boolean, 
 9999 mem: location 1738 is 0
 9999 run: jumping to instruction 16
- 103 run: null?:boolean <- equal c:character, 0:literal/null
+ 104 run: null?:boolean <- equal c:character, 0:literal/null
 9999 mem: location 1737 is 10
 9999 mem: storing 0 in location 1739
- 103 run: break-unless null?:boolean, 
+ 104 run: break-unless null?:boolean, 
 9999 mem: location 1739 is 0
 9999 run: jumping to instruction 22
- 103 run: string?:boolean <- equal c:character, 91:literal/open-bracket
+ 104 run: string?:boolean <- equal c:character, 91:literal/open-bracket
 9999 mem: location 1737 is 10
 9999 mem: storing 0 in location 1740
- 103 run: break-unless string?:boolean, 
+ 104 run: break-unless string?:boolean, 
 9999 mem: location 1740 is 0
 9999 run: jumping to instruction 32
- 103 run: print-character x:address:screen, c:character, 6:literal/cyan
+ 104 run: print-character x:address:screen, c:character, 6:literal/cyan
 9999 mem: location 1733 is 1031
 9999 mem: location 1737 is 10
- 104 run: default-space:address:array:location <- new location:type, 30:literal
+ 105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 2533
- 104 run: x:address:screen <- next-ingredient 
+ 105 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 2535
- 104 run: c:character <- next-ingredient 
+ 105 run: c:character <- next-ingredient 
 9999 mem: storing 10 in location 2536
- 104 run: color:number, color-found?:boolean <- next-ingredient 
+ 105 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 6 in location 2537
 9999 mem: storing 1 in location 2538
- 104 run: break-if color-found?:boolean, 
+ 105 run: break-if color-found?:boolean, 
 9999 mem: location 2538 is 1
 9999 run: jumping to instruction 7
- 104 run: break-unless x:address:screen, 
+ 105 run: break-unless x:address:screen, 
 9999 mem: location 2535 is 1031
 9999 run: jump-unless fell through
- 104 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
+ 105 run: row:address:number <- get-address x:address:screen/deref, cursor-row:offset
 9999 mem: location 2535 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -55142,7 +55090,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2535 is 1031
 9999 run: address to copy is 1033
 9999 mem: storing 1033 in location 2539
- 104 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
+ 105 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
 9999 mem: location 2535 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -55152,7 +55100,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 mem: location 2535 is 1031
 9999 run: address to copy is 1034
 9999 mem: storing 1034 in location 2540
- 104 run: width:number <- get x:address:screen/deref, num-columns:offset
+ 105 run: width:number <- get x:address:screen/deref, num-columns:offset
 9999 mem: location 2535 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -55164,7 +55112,7 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1032 is 30
 9999 mem: storing 30 in location 2541
- 104 run: height:number <- get x:address:screen/deref, num-rows:offset
+ 105 run: height:number <- get x:address:screen/deref, num-rows:offset
 9999 mem: location 2535 is 1031
 9999 mem: location 1031 is 5
 9999 mem: location 1032 is 30
@@ -55176,52 +55124,52 @@ schedule: buffer-append/slurp-regular-characters/read-instruction/run1002/read-i
 9999 run: its type is 1
 9999 mem: location 1031 is 5
 9999 mem: storing 5 in location 2542
- 104 run: max-row:number <- subtract height:number, 1:literal
+ 105 run: max-row:number <- subtract height:number, 1:literal
 9999 mem: location 2542 is 5
 9999 mem: storing 4 in location 2543
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 105 run: newline?:boolean <- equal c:character, 10:literal/newline
 9999 mem: location 2536 is 10
 9999 mem: storing 1 in location 2544
- 104 run: break-unless newline?:boolean, 
+ 105 run: break-unless newline?:boolean, 
 9999 mem: location 2544 is 1
 9999 run: jump-unless fell through
-schedule: print-character/slurp-string/slurp-regular-characters/read-instruction/run1002/read-instruction-backspace-back-into-string
- 104 run: at-bottom?:boolean <- greater-or-equal row:address:number/deref, max-row:number
+ 105 run: at-bottom?:boolean <- greater-or-equal row:address:number/deref, max-row:number
 9999 mem: location 2539 is 1033
 9999 mem: location 1033 is 0
 9999 mem: location 2543 is 4
 9999 mem: storing 0 in location 2545
- 104 run: break-if at-bottom?:boolean, 
+ 105 run: break-if at-bottom?:boolean, 
 9999 mem: location 2545 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- copy 0:literal
+schedule: print-character/slurp-string/slurp-regular-characters/read-instruction/run1001/read-instruction-backspace-back-into-string
+ 105 run: column:address:number/deref <- copy 0:literal
 9999 mem: location 2540 is 1034
 9999 mem: storing 0 in location 1034
- 104 run: row:address:number/deref <- add row:address:number/deref, 1:literal
+ 105 run: row:address:number/deref <- add row:address:number/deref, 1:literal
 9999 mem: location 2539 is 1033
 9999 mem: location 1033 is 0
 9999 mem: location 2539 is 1033
 9999 mem: storing 1 in location 1033
- 104 run: reply x:address:screen/same-as-ingredient:0
+ 105 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 2535 is 1031
- 103 run: result:address:buffer <- buffer-append result:address:buffer, c:character
+ 104 run: result:address:buffer <- buffer-append result:address:buffer, c:character
 9999 mem: location 1731 is 1500
 9999 mem: location 1737 is 10
- 104 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 2564
- 104 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1500 in location 2566
- 104 run: c:character <- next-ingredient 
-9999 mem: storing 10 in location 2567
- 104 run: full?:boolean <- buffer-full? in:address:buffer
-9999 mem: location 2566 is 1500
  105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 2595
+9999 mem: new alloc: 2564
  105 run: in:address:buffer <- next-ingredient 
+9999 mem: storing 1500 in location 2566
+ 105 run: c:character <- next-ingredient 
+9999 mem: storing 10 in location 2567
+ 105 run: full?:boolean <- buffer-full? in:address:buffer
+9999 mem: location 2566 is 1500
+ 106 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 2595
+ 106 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 1500 in location 2597
- 105 run: len:number <- get in:address:buffer/deref, length:offset
+ 106 run: len:number <- get in:address:buffer/deref, length:offset
 9999 mem: location 2597 is 1500
 9999 mem: location 1500 is 5
 9999 mem: location 1501 is 1502
@@ -55230,7 +55178,7 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 run: its type is 1
 9999 mem: location 1500 is 5
 9999 mem: storing 5 in location 2598
- 105 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 106 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 2597 is 1500
 9999 mem: location 1500 is 5
 9999 mem: location 1501 is 1502
@@ -55239,7 +55187,7 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 2599
- 105 run: capacity:number <- length s:address:array:character/deref
+ 106 run: capacity:number <- length s:address:array:character/deref
 9999 mem: location 2599 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 91
@@ -55254,25 +55202,25 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 mem: location 1512 is 0
 9999 mem: location 2599 is 1502
 9999 mem: storing 10 in location 2600
- 105 run: result:boolean <- greater-or-equal len:number, capacity:number
+ 106 run: result:boolean <- greater-or-equal len:number, capacity:number
 9999 mem: location 2598 is 5
 9999 mem: location 2600 is 10
 9999 mem: storing 0 in location 2601
- 105 run: reply result:boolean
+ 106 run: reply result:boolean
 9999 mem: location 2601 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 2568
- 104 run: break-unless full?:boolean, 
+ 105 run: break-unless full?:boolean, 
 9999 mem: location 2568 is 0
 9999 run: jumping to instruction 7
- 104 run: len:address:number <- get-address in:address:buffer/deref, length:offset
+ 105 run: len:address:number <- get-address in:address:buffer/deref, length:offset
 9999 mem: location 2566 is 1500
 9999 mem: location 1500 is 5
 9999 mem: location 1501 is 1502
 9999 mem: location 2566 is 1500
 9999 run: address to copy is 1500
 9999 mem: storing 1500 in location 2569
- 104 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 105 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 2566 is 1500
 9999 mem: location 1500 is 5
 9999 mem: location 1501 is 1502
@@ -55281,7 +55229,7 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 run: its type is 2
 9999 mem: location 1501 is 1502
 9999 mem: storing 1502 in location 2570
- 104 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
+ 105 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
 9999 mem: location 2570 is 1502
 9999 mem: location 1502 is 10
 9999 mem: location 1503 is 91
@@ -55300,64 +55248,64 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 mem: location 2569 is 1500
 9999 mem: location 1500 is 5
 9999 mem: storing 1508 in location 2571
- 104 run: dest:address:character/deref <- copy c:character
+ 105 run: dest:address:character/deref <- copy c:character
 9999 mem: location 2567 is 10
 9999 mem: location 2571 is 1508
 9999 mem: storing 10 in location 1508
- 104 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 105 run: len:address:number/deref <- add len:address:number/deref, 1:literal
 9999 mem: location 2569 is 1500
 9999 mem: location 1500 is 5
 9999 mem: location 2569 is 1500
 9999 mem: storing 6 in location 1500
- 104 run: reply in:address:buffer/same-as-ingredient:0
+ 105 run: reply in:address:buffer/same-as-ingredient:0
 9999 mem: location 2566 is 1500
 9999 run: result 0 is 1500
 9999 mem: storing 1500 in location 1731
- 103 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 104 run: backspace?:boolean <- equal c:character, 8:literal/backspace
 9999 mem: location 1737 is 10
 9999 mem: storing 0 in location 1742
- 103 run: break-unless backspace?:boolean, 
+ 104 run: break-unless backspace?:boolean, 
 9999 mem: location 1742 is 0
 9999 run: jumping to instruction 46
- 103 run: characters-slurped:number <- add characters-slurped:number, 1:literal
+ 104 run: characters-slurped:number <- add characters-slurped:number, 1:literal
 9999 mem: location 1736 is 4
 9999 mem: storing 5 in location 1736
- 103 run: done?:boolean <- equal c:character, 93:literal/close-bracket
+ 104 run: done?:boolean <- equal c:character, 93:literal/close-bracket
 9999 mem: location 1737 is 10
 9999 mem: storing 0 in location 1744
- 103 run: break-if done?:boolean, 
+ 104 run: break-if done?:boolean, 
 9999 mem: location 1744 is 0
 9999 run: jump-if fell through
- 103 run: loop 
+ 104 run: loop 
 9999 run: jumping to instruction 9
- 103 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+ 104 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
 9999 mem: location 1732 is 1406
- 104 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 2626
- 104 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 2628
- 104 run: break-unless x:address:keyboard, 
-9999 mem: location 2628 is 1406
-9999 run: jump-unless fell through
- 104 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
-9999 mem: location 2628 is 1406
  105 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 2657
+9999 mem: new alloc: 2626
  105 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 2659
+9999 mem: storing 1406 in location 2628
  105 run: break-unless x:address:keyboard, 
+9999 mem: location 2628 is 1406
+9999 run: jump-unless fell through
+ 105 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
+9999 mem: location 2628 is 1406
+ 106 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 2657
+ 106 run: x:address:keyboard <- next-ingredient 
+9999 mem: storing 1406 in location 2659
+ 106 run: break-unless x:address:keyboard, 
 9999 mem: location 2659 is 1406
 9999 run: jump-unless fell through
- 105 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
+ 106 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 9999 mem: location 2659 is 1406
 9999 mem: location 1406 is 6
 9999 mem: location 1407 is 1368
 9999 mem: location 2659 is 1406
 9999 run: address to copy is 1406
 9999 mem: storing 1406 in location 2660
- 105 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
+ 106 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 9999 mem: location 2659 is 1406
 9999 mem: location 1406 is 6
 9999 mem: location 1407 is 1368
@@ -55366,7 +55314,7 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 run: its type is 2
 9999 mem: location 1407 is 1368
 9999 mem: storing 1368 in location 2661
- 105 run: max:number <- length buf:address:array:character/deref
+ 106 run: max:number <- length buf:address:array:character/deref
 9999 mem: location 2661 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -55377,15 +55325,15 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 mem: location 1374 is 10
 9999 mem: location 2661 is 1368
 9999 mem: storing 6 in location 2662
- 105 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+ 106 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 9999 mem: location 2660 is 1406
 9999 mem: location 1406 is 6
 9999 mem: location 2662 is 6
 9999 mem: storing 1 in location 2663
- 105 run: break-unless done?:boolean, 
+ 106 run: break-unless done?:boolean, 
 9999 mem: location 2663 is 1
 9999 run: jump-unless fell through
- 105 run: reply 0:literal/eof, 1:literal/found, x:address:keyboard/same-as-ingredient:0
+ 106 run: reply 0:literal/eof, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 2659 is 1406
 9999 run: result 0 is 0
 9999 run: result 1 is 1
@@ -55393,28 +55341,28 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 mem: storing 0 in location 2629
 9999 mem: storing 1 in location 2630
 9999 mem: storing 1406 in location 2628
- 104 run: reply c:character, x:address:keyboard/same-as-ingredient:0
+ 105 run: reply c:character, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 2629 is 0
 9999 mem: location 2628 is 1406
 9999 run: result 0 is 0
 9999 run: result 1 is 1406
 9999 mem: storing 0 in location 1737
 9999 mem: storing 1406 in location 1732
- 103 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+ 104 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
 9999 mem: location 1737 is 0
 9999 mem: storing 0 in location 1738
- 103 run: break-unless ctrl-d?:boolean, 
+ 104 run: break-unless ctrl-d?:boolean, 
 9999 mem: location 1738 is 0
 9999 run: jumping to instruction 16
- 103 run: null?:boolean <- equal c:character, 0:literal/null
+ 104 run: null?:boolean <- equal c:character, 0:literal/null
 9999 mem: location 1737 is 0
 9999 mem: storing 1 in location 1739
- 103 run: break-unless null?:boolean, 
+ 104 run: break-unless null?:boolean, 
 9999 mem: location 1739 is 1
 9999 run: jump-unless fell through
- 103 run: trace [app], [slurp-string: null]
+ 104 run: trace [app], [slurp-string: null]
    1 app: slurp-string: null
- 103 run: reply 0:literal, 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+ 104 run: reply 0:literal, 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
 9999 mem: location 1732 is 1406
 9999 mem: location 1733 is 1031
 9999 run: result 0 is 0
@@ -55424,36 +55372,36 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 mem: storing 0 in location 1515
 9999 mem: storing 1406 in location 1516
 9999 mem: storing 1031 in location 1517
- 102 run: loop +next-character:label
+ 103 run: loop +next-character:label
 9999 run: jumping to instruction 9
- 102 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+ 103 run: c:character, k:address:keyboard <- wait-for-key k:address:keyboard
 9999 mem: location 1516 is 1406
- 103 run: default-space:address:array:location <- new location:type, 30:literal
-9999 mem: array size is 30
-9999 mem: new alloc: 2688
- 103 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 2690
- 103 run: break-unless x:address:keyboard, 
-9999 mem: location 2690 is 1406
-9999 run: jump-unless fell through
- 103 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
-9999 mem: location 2690 is 1406
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 2719
+9999 mem: new alloc: 2688
  104 run: x:address:keyboard <- next-ingredient 
-9999 mem: storing 1406 in location 2721
+9999 mem: storing 1406 in location 2690
  104 run: break-unless x:address:keyboard, 
+9999 mem: location 2690 is 1406
+9999 run: jump-unless fell through
+ 104 run: c:character, found?:boolean, x:address:keyboard <- read-key x:address:keyboard
+9999 mem: location 2690 is 1406
+ 105 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 2719
+ 105 run: x:address:keyboard <- next-ingredient 
+9999 mem: storing 1406 in location 2721
+ 105 run: break-unless x:address:keyboard, 
 9999 mem: location 2721 is 1406
 9999 run: jump-unless fell through
- 104 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
+ 105 run: idx:address:number <- get-address x:address:keyboard/deref, index:offset
 9999 mem: location 2721 is 1406
 9999 mem: location 1406 is 6
 9999 mem: location 1407 is 1368
 9999 mem: location 2721 is 1406
 9999 run: address to copy is 1406
 9999 mem: storing 1406 in location 2722
- 104 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
+ 105 run: buf:address:array:character <- get x:address:keyboard/deref, data:offset
 9999 mem: location 2721 is 1406
 9999 mem: location 1406 is 6
 9999 mem: location 1407 is 1368
@@ -55462,7 +55410,7 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 run: its type is 2
 9999 mem: location 1407 is 1368
 9999 mem: storing 1368 in location 2723
- 104 run: max:number <- length buf:address:array:character/deref
+ 105 run: max:number <- length buf:address:array:character/deref
 9999 mem: location 2723 is 1368
 9999 mem: location 1368 is 6
 9999 mem: location 1369 is 91
@@ -55473,15 +55421,15 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 mem: location 1374 is 10
 9999 mem: location 2723 is 1368
 9999 mem: storing 6 in location 2724
- 104 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+ 105 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
 9999 mem: location 2722 is 1406
 9999 mem: location 1406 is 6
 9999 mem: location 2724 is 6
 9999 mem: storing 1 in location 2725
- 104 run: break-unless done?:boolean, 
+ 105 run: break-unless done?:boolean, 
 9999 mem: location 2725 is 1
 9999 run: jump-unless fell through
- 104 run: reply 0:literal/eof, 1:literal/found, x:address:keyboard/same-as-ingredient:0
+ 105 run: reply 0:literal/eof, 1:literal/found, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 2721 is 1406
 9999 run: result 0 is 0
 9999 run: result 1 is 1
@@ -55489,28 +55437,28 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 mem: storing 0 in location 2691
 9999 mem: storing 1 in location 2692
 9999 mem: storing 1406 in location 2690
- 103 run: reply c:character, x:address:keyboard/same-as-ingredient:0
+ 104 run: reply c:character, x:address:keyboard/same-as-ingredient:0
 9999 mem: location 2691 is 0
 9999 mem: location 2690 is 1406
 9999 run: result 0 is 0
 9999 run: result 1 is 1406
 9999 mem: storing 0 in location 1520
 9999 mem: storing 1406 in location 1516
- 102 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+ 103 run: ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
 9999 mem: location 1520 is 0
 9999 mem: storing 0 in location 1521
- 102 run: break-unless ctrl-d?:boolean, 
+ 103 run: break-unless ctrl-d?:boolean, 
 9999 mem: location 1521 is 0
 9999 run: jumping to instruction 15
- 102 run: null?:boolean <- equal c:character, 0:literal/null
+ 103 run: null?:boolean <- equal c:character, 0:literal/null
 9999 mem: location 1520 is 0
 9999 mem: storing 1 in location 1522
- 102 run: break-unless null?:boolean, 
+ 103 run: break-unless null?:boolean, 
 9999 mem: location 1522 is 1
 9999 run: jump-unless fell through
- 102 run: trace [app], [slurp-regular-characters: null]
+ 103 run: trace [app], [slurp-regular-characters: null]
    1 app: slurp-regular-characters: null
- 102 run: reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+ 103 run: reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
 9999 mem: location 1516 is 1406
 9999 mem: location 1517 is 1031
 9999 run: result 0 is 0
@@ -55519,69 +55467,54 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 mem: storing 0 in location 1412
 9999 mem: storing 1406 in location 1410
 9999 mem: storing 1031 in location 1411
- 101 run: trace [error], [slurp-regular-characters should never return normally]
+ 102 run: trace [error], [slurp-regular-characters should never return normally]
    1 error: slurp-regular-characters should never return normally
- 101 run: result2:address:array:character <- buffer-to-array result:address:buffer
+ 102 run: result2:address:array:character <- buffer-to-array result:address:buffer
 9999 mem: location 1412 is 0
- 102 run: default-space:address:array:character <- new location:type, 30:literal
+ 103 run: default-space:address:array:character <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 2750
- 102 run: in:address:buffer <- next-ingredient 
+ 103 run: in:address:buffer <- next-ingredient 
 9999 mem: storing 0 in location 2752
- 102 run: len:number <- get in:address:buffer/deref, length:offset
+ 103 run: len:number <- get in:address:buffer/deref, length:offset
 9999 mem: location 2752 is 0
 9999 mem: location 0 is 0
-9999 mem: location 1 is 1368
+9999 mem: location 1 is 0
 9999 mem: location 2752 is 0
 9999 run: address to copy is 0
 9999 run: its type is 1
 9999 mem: location 0 is 0
 9999 mem: storing 0 in location 2753
- 102 run: s:address:array:character <- get in:address:buffer/deref, data:offset
+ 103 run: s:address:array:character <- get in:address:buffer/deref, data:offset
 9999 mem: location 2752 is 0
 9999 mem: location 0 is 0
-9999 mem: location 1 is 1368
+9999 mem: location 1 is 0
 9999 mem: location 2752 is 0
 9999 run: address to copy is 1
 9999 run: its type is 2
-9999 mem: location 1 is 1368
-9999 mem: storing 1368 in location 2754
- 102 run: break-if s:address:array:character, 
-9999 mem: location 2754 is 1368
-9999 run: jumping to instruction 7
- 102 run: result:address:array:character <- new character:type, len:number
-9999 mem: location 2753 is 0
-9999 mem: array size is 0
-9999 mem: new alloc: 2781
-9999 mem: storing 2781 in location 2755
- 102 run: i:number <- copy 0:literal
-9999 mem: storing 0 in location 2756
- 102 run: done?:boolean <- greater-or-equal i:number, len:number
-9999 mem: location 2756 is 0
-9999 mem: location 2753 is 0
-9999 mem: storing 1 in location 2757
- 102 run: break-if done?:boolean, 
-9999 mem: location 2757 is 1
-9999 run: jumping to instruction 18
- 102 run: reply result:address:array:character
-9999 mem: location 2755 is 2781
-9999 run: result 0 is 2781
-9999 mem: storing 2781 in location 1416
- 101 run: trace [app], [exiting read-instruction]
+9999 mem: location 1 is 0
+9999 mem: storing 0 in location 2754
+ 103 run: break-if s:address:array:character, 
+9999 mem: location 2754 is 0
+9999 run: jump-if fell through
+ 103 run: reply 0:literal
+9999 run: result 0 is 0
+9999 mem: storing 0 in location 1416
+ 102 run: trace [app], [exiting read-instruction]
    1 app: exiting read-instruction
- 101 run: reply result2:address:array:character, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
-9999 mem: location 1416 is 2781
+ 102 run: reply result2:address:array:character, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+9999 mem: location 1416 is 0
 9999 mem: location 1410 is 1406
 9999 mem: location 1411 is 1031
-  99 run: screen-should-contain [
+ 100 run: screen-should-contain [
     .[ab                           .
     .                              .
   ]
-  99 run: screen-should-contain-in-color 6:literal/cyan, [
+ 100 run: screen-should-contain-in-color 6:literal/cyan, [
     .[ab                           .
     .                              .
   ]
-  99 run: screen-should-contain-in-color 7:literal/white, [
+ 100 run: screen-should-contain-in-color 7:literal/white, [
     .                              .
     .                              .
   ]

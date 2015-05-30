@@ -159,7 +159,7 @@ recipe main [
 +new: routine allocated memory from 1000 to 1002
 +new: routine allocated memory from 1002 to 1004
 
-//:: Next, extend 'new' to handle a string literal argument.
+//:: Next, extend 'new' to handle a unicode string literal argument.
 
 :(scenario new_string)
 recipe main [
@@ -168,6 +168,16 @@ recipe main [
 ]
 # number code for 'e'
 +mem: storing 101 in location 2
+
+:(scenario new_string_handles_unicode)
+recipe main [
+  1:address:array:character <- new [a«c]
+  2:number <- length 1:address:array:character/deref
+  3:character <- index 1:address:array:character/deref, 1:literal
+]
++mem: storing 3 in location 2
+# unicode for '«'
++mem: storing 171 in location 3
 
 :(before "End NEW Transform Special-cases")
   if (inst.ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
@@ -180,7 +190,7 @@ recipe main [
 if (isa_literal(current_instruction().ingredients.at(0))
     && current_instruction().ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
   // allocate an array just large enough for it
-  long long int string_length = SIZE(current_instruction().ingredients.at(0).name);
+  long long int string_length = unicode_length(current_instruction().ingredients.at(0).name);
 //?   cout << "string_length is " << string_length << '\n'; //? 1
   ensure_space(string_length+1);  // don't forget the extra location for array size
   products.resize(1);
@@ -188,8 +198,16 @@ if (isa_literal(current_instruction().ingredients.at(0))
   // initialize string
 //?   cout << "new string literal: " << current_instruction().ingredients.at(0).name << '\n'; //? 1
   Memory[Current_routine->alloc++] = string_length;
+  long long int curr = 0;
+  const string& contents = current_instruction().ingredients.at(0).name;
+  const char* raw_contents = contents.c_str();
   for (long long int i = 0; i < string_length; ++i) {
-    Memory[Current_routine->alloc++] = current_instruction().ingredients.at(0).name.at(i);
+    uint32_t curr_character;
+    assert(curr < SIZE(contents));
+    tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
+    Memory[Current_routine->alloc] = curr_character;
+    curr += tb_utf8_char_length(raw_contents[curr]);
+    ++Current_routine->alloc;
   }
   // mu strings are not null-terminated in memory
   break;
@@ -204,3 +222,20 @@ recipe main [
 ]
 +new: routine allocated memory from 1000 to 1002
 +new: routine allocated memory from 1002 to 1004
+
+//: helpers
+:(code)
+long long int unicode_length(const string& s) {
+  const char* in = s.c_str();
+  long long int result = 0;
+  long long int curr = 0;
+  while (curr < SIZE(s)) {  // carefully bounds-check on the string
+    // before accessing its raw pointer
+    ++result;
+    curr += tb_utf8_char_length(in[curr]);
+  }
+  return result;
+}
+
+:(before "End Includes")
+#include"termbox/termbox.h"  // for unicode primitives
