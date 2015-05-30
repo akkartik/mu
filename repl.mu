@@ -522,14 +522,14 @@ scenario read-instruction-cancel-string-on-backspace [
 
 scenario read-instruction-cancel-string-inside-string-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [\[a\[b\]«««b\]
+  assume-keyboard [[a[b]«««b]
 ]
   replace-in-keyboard 171:literal/«, 8:literal/backspace
   run [
     read-instruction keyboard:address, screen:address
   ]
   screen-should-contain-in-color 6:literal/cyan, [
-    .\[ab\]                          .
+    .[ab]                          .
     .                              .
   ]
   screen-should-contain-in-color 7:literal/white, [
