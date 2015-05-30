@@ -21,12 +21,41 @@ parse:   ingredient: {name: "
   ", properties: ["
     read-instruction keyboard:address, screen:address
   ": "literal-string"]}
+parse: instruction: screen-should-contain
+parse:   ingredient: {name: "
+    .[ab                           .
+    .                              .
+  ", properties: ["
+    .[ab                           .
+    .                              .
+  ": "literal-string"]}
+parse: instruction: screen-should-contain-in-color
+parse:   ingredient: {name: "6", properties: ["6": "literal", "cyan": ]}
+parse:   ingredient: {name: "
+    .[ab                           .
+    .                              .
+  ", properties: ["
+    .[ab                           .
+    .                              .
+  ": "literal-string"]}
+parse: instruction: screen-should-contain-in-color
+parse:   ingredient: {name: "7", properties: ["7": "literal", "white": ]}
+parse:   ingredient: {name: "
+    .                              .
+    .                              .
+  ", properties: ["
+    .                              .
+    .                              .
+  ": "literal-string"]}
 after-brace: recipe read-instruction-backspace-back-into-string
 after-brace: assume-screen ...
 after-brace: assume-keyboard ...
 after-brace: init-fake-keyboard ...
 after-brace: run ...
 after-brace: run ...
+after-brace: screen-should-contain ...
+after-brace: screen-should-contain-in-color ...
+after-brace: screen-should-contain-in-color ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: read-instruction-backspace-back-into-string
  101 run: screen:address <- assume-screen 30:literal/width, 5:literal/height
@@ -55544,3 +55573,15 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 mem: location 1416 is 2781
 9999 mem: location 1410 is 1406
 9999 mem: location 1411 is 1031
+  99 run: screen-should-contain [
+    .[ab                           .
+    .                              .
+  ]
+  99 run: screen-should-contain-in-color 6:literal/cyan, [
+    .[ab                           .
+    .                              .
+  ]
+  99 run: screen-should-contain-in-color 7:literal/white, [
+    .                              .
+    .                              .
+  ]
