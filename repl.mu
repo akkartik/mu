@@ -550,7 +550,7 @@ scenario read-instruction-cancel-string-on-backspace [
 
 scenario read-instruction-cancel-string-inside-string-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [\[a\[b\]<<<b\]
+  assume-keyboard [[a[b]<<<b]
 ]
   # setup: replace '<'s with backspace key since we can't represent backspace in strings
   run [
@@ -578,7 +578,7 @@ scenario read-instruction-cancel-string-inside-string-on-backspace [
 scenario read-instruction-backspace-back-into-string [
   assume-screen 30:literal/width, 5:literal/height
   # need to escape the '[' once for 'scenario' and once for 'assume-keyboard'
-  assume-keyboard [\[a\]<b
+  assume-keyboard [[a]<b
 ]
   # setup: replace '<'s with backspace key since we can't represent backspace in strings
   run [
@@ -590,11 +590,11 @@ scenario read-instruction-backspace-back-into-string [
     read-instruction keyboard:address, screen:address
   ]
   screen-should-contain [
-    .\[ab                           .
+    .\\\[ab                           .
     .                              .
   ]
   screen-should-contain-in-color 6:literal/cyan, [
-    .\[ab                           .
+    .\\\[ab                           .
     .                              .
   ]
   screen-should-contain-in-color 7:literal/white, [
