@@ -48,6 +48,10 @@ string slurp_quoted(istream& in) {
     if (c == ']') --brace_depth;
     if (brace_depth == 0) break;
   }
+  if (in.eof() && brace_depth > 0) {
+    raise << "unbalanced '['\n";
+    return "";
+  }
   return out.str();
 }
 
