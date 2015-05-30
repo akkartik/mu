@@ -303,16 +303,9 @@ scenario read-instruction-color-comment [
 
 scenario read-instruction-cancel-comment-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [#a<<z
+  assume-keyboard [#a««z
 ]
-  # setup: replace '<'s with backspace key since we can't represent backspace in strings
-  run [
-    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
-    first:address:character <- index-address buf:address:array:character/deref, 2:literal
-    first:address:character/deref <- copy 8:literal/backspace
-    second:address:character <- index-address buf:address:array:character/deref, 3:literal
-    second:address:character/deref <- copy 8:literal/backspace
-  ]
+  replace-in-keyboard 171:literal/«, 8:literal/backspace
   run [
     read-instruction keyboard:address, screen:address
   ]
@@ -328,18 +321,9 @@ scenario read-instruction-cancel-comment-on-backspace [
 
 scenario read-instruction-cancel-comment-on-backspace2 [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [#ab<<<z
+  assume-keyboard [#ab«««z
 ]
-  # setup: replace '<'s with backspace key since we can't represent backspace in strings
-  run [
-    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
-    first:address:character <- index-address buf:address:array:character/deref, 3:literal
-    first:address:character/deref <- copy 8:literal/backspace
-    second:address:character <- index-address buf:address:array:character/deref, 4:literal
-    second:address:character/deref <- copy 8:literal/backspace
-    third:address:character <- index-address buf:address:array:character/deref, 5:literal
-    third:address:character/deref <- copy 8:literal/backspace
-  ]
+  replace-in-keyboard 171:literal/«, 8:literal/backspace
   run [
     read-instruction keyboard:address, screen:address
   ]
@@ -355,14 +339,9 @@ scenario read-instruction-cancel-comment-on-backspace2 [
 
 scenario read-instruction-cancel-comment-on-backspace3 [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [#a<z
+  assume-keyboard [#a«z
 ]
-  # setup: replace '<'s with backspace key since we can't represent backspace in strings
-  run [
-    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
-    first:address:character <- index-address buf:address:array:character/deref, 2:literal
-    first:address:character/deref <- copy 8:literal/backspace
-  ]
+  replace-in-keyboard 171:literal/«, 8:literal/backspace
   run [
     read-instruction keyboard:address, screen:address
   ]
@@ -525,16 +504,9 @@ scenario read-instruction-color-string-inside-string [
 scenario read-instruction-cancel-string-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
   # need to escape the '[' once for 'scenario' and once for 'assume-keyboard'
-  assume-keyboard [\\\[a<<z
+  assume-keyboard [\\\[a««z
 ]
-  # setup: replace '<'s with backspace key since we can't represent backspace in strings
-  run [
-    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
-    first-backspace:address:character <- index-address buf:address:array:character/deref, 2:literal
-    first-backspace:address:character/deref <- copy 8:literal/backspace
-    second-backspace:address:character <- index-address buf:address:array:character/deref, 3:literal
-    second-backspace:address:character/deref <- copy 8:literal/backspace
-  ]
+  replace-in-keyboard 171:literal/«, 8:literal/backspace
   run [
     read-instruction keyboard:address, screen:address
   ]
@@ -550,18 +522,9 @@ scenario read-instruction-cancel-string-on-backspace [
 
 scenario read-instruction-cancel-string-inside-string-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [[a[b]<<<b]
+  assume-keyboard [\[a\[b\]«««b\]
 ]
-  # setup: replace '<'s with backspace key since we can't represent backspace in strings
-  run [
-    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
-    first-backspace:address:character <- index-address buf:address:array:character/deref, 5:literal
-    first-backspace:address:character/deref <- copy 8:literal/backspace
-    second-backspace:address:character <- index-address buf:address:array:character/deref, 6:literal
-    second-backspace:address:character/deref <- copy 8:literal/backspace
-    third-backspace:address:character <- index-address buf:address:array:character/deref, 7:literal
-    third-backspace:address:character/deref <- copy 8:literal/backspace
-  ]
+  replace-in-keyboard 171:literal/«, 8:literal/backspace
   run [
     read-instruction keyboard:address, screen:address
   ]
@@ -578,14 +541,9 @@ scenario read-instruction-cancel-string-inside-string-on-backspace [
 scenario read-instruction-backspace-back-into-string [
   assume-screen 30:literal/width, 5:literal/height
   # need to escape the '[' once for 'scenario' and once for 'assume-keyboard'
-  assume-keyboard [[a]<b
+  assume-keyboard [[a]«b
 ]
-  # setup: replace '<'s with backspace key since we can't represent backspace in strings
-  run [
-    buf:address:array:character <- get keyboard:address:keyboard/deref, data:offset
-    first-backspace:address:character <- index-address buf:address:array:character/deref, 3:literal
-    first-backspace:address:character/deref <- copy 8:literal/backspace
-  ]
+  replace-in-keyboard 171:literal/«, 8:literal/backspace
   run [
     read-instruction keyboard:address, screen:address
   ]

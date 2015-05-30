@@ -1,7 +1,8 @@
 //: Clean syntax to manipulate and check the screen in scenarios.
 //: Instructions 'assume-screen' and 'screen-should-contain' implicitly create
 //: a variable called 'screen' that is accessible inside other 'run'
-//: instructions in the scenario.
+//: instructions in the scenario. 'screen-should-contain' can check unicode
+//: characters in the fake screen
 
 :(scenarios run_mu_scenario)
 :(scenario screen_in_scenario)
@@ -21,7 +22,6 @@ scenario screen-in-scenario [
 ]
 
 :(scenario screen_in_scenario_unicode)
-# screen-should-contain can check unicode characters in the fake screen
 scenario screen-in-scenario-unicode-color [
   assume-screen 5:literal/width, 3:literal/height
   run [

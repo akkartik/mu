@@ -1,7 +1,8 @@
 //: Clean syntax to manipulate and check the keyboard in scenarios.
 //: Instruction 'assume-keyboard' implicitly creates a variable called
 //: 'keyboard' that is accessible inside other 'run' instructions in the
-//: scenario.
+//: scenario. Like with the fake screen, 'assume-keyboard' transparently
+//: supports unicode.
 
 :(scenarios run_mu_scenario)
 :(scenario keyboard_in_scenario)
@@ -57,4 +58,26 @@ if (curr.name == "assume-keyboard") {
   assert(curr.products.empty());
   curr.products.push_back(reagent("keyboard:address"));
   curr.products.at(0).set_value(KEYBOARD);
+}
+
+//: Since we don't yet have a clean way to represent characters like backspace
+//: in literal strings we can't easily pretend they were typed into the fake
+//: keyboard. So we'll use special unicode characters in the literal and then
+//: manually replace them with backspace.
+:(before "End Primitive Recipe Declarations")
+REPLACE_IN_KEYBOARD,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["replace-in-keyboard"] = REPLACE_IN_KEYBOARD;
+:(before "End Primitive Recipe Implementations")
+case REPLACE_IN_KEYBOARD: {
+  long long int size = Memory[KEYBOARD];
+  assert(scalar(ingredients.at(0)));
+  assert(scalar(ingredients.at(1)));
+  for (long long int curr = KEYBOARD+1; curr <= KEYBOARD+size; ++curr) {
+    if (Memory[curr] == ingredients.at(0).at(0)) {
+//?       cerr << "replacing\n"; //? 1
+      Memory[curr] = ingredients.at(1).at(0);
+    }
+  }
+  break;
 }
