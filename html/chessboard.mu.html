@@ -10,18 +10,18 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
-.muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .CommentedCode { color: #6c6c6c; }
 .Delimiter { color: #c000c0; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
 .Special { color: #ff6060; }
 .Identifier { color: #008080; }
-.SalientComment { color: #00ffff; }
+.muRecipe { color: #ff8700; }
+.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -223,8 +223,8 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
       done?:boolean<span class="Special"> &lt;- </span>equal col:number, <span class="Constant">8:literal</span>
       <span class="Identifier">break-if</span> done?:boolean
       f:address:array:character<span class="Special"> &lt;- </span>index board:address:array:address:array:character/deref, col:number
-      s:character<span class="Special"> &lt;- </span>index f:address:array:character/deref, row:number
-      print-character screen:address, s:character
+      c:character<span class="Special"> &lt;- </span>index f:address:array:character/deref, row:number
+      print-character screen:address, c:character
       print-character screen:address, <span class="Constant">32:literal</span>  <span class="Comment"># ' '</span>
       col:number<span class="Special"> &lt;- </span>add col:number, <span class="Constant">1:literal</span>
       <span class="Identifier">loop</span>
@@ -318,7 +318,7 @@ container move [
   <span class="Identifier">reply-if</span> error?:boolean, <span class="Constant">0:literal/dummy</span>, quit?:boolean, error?:boolean
 <span class="CommentedCode">#?   return-to-console #? 1</span>
   <span class="Comment"># construct the move object</span>
-  result:address:move<span class="Special"> &lt;- </span>new <span class="Constant">move:literal</span>
+  result:address:move<span class="Special"> &lt;- </span>new move:type
   x:address:number<span class="Special"> &lt;- </span>get-address result:address:move/deref, from-file:offset
   x:address:number/deref<span class="Special"> &lt;- </span>copy from-file:number
   x:address:number<span class="Special"> &lt;- </span>get-address result:address:move/deref, from-rank:offset
@@ -700,7 +700,6 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
    <span class="Constant"> .1 | R N B Q K B N R           .</span>
    <span class="Constant"> .  +----------------           .</span>
    <span class="Constant"> .    a b c d e f g h           .</span>
-   <span class="Constant"> .                              .</span>
    <span class="Constant"> .                              .</span>
   ]
 ]

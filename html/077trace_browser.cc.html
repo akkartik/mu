@@ -10,15 +10,15 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
 .cSpecial { color: #008000; }
-.CommentedCode { color: #6c6c6c; }
 .Constant { color: #008080; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Identifier { color: #008080; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -103,10 +103,9 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
     <span class="Delimiter">}</span>
     if <span class="Delimiter">(</span>key == <span class="Constant">'K'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// page-up is more convoluted</span>
-      int max = tb_height<span class="Delimiter">();</span>
 <span class="CommentedCode">//?       tb_shutdown(); //? 1</span>
 <span class="CommentedCode">//?       cerr &lt;&lt; &quot;page-up: Top_of_screen is currently &quot; &lt;&lt; Top_of_screen &lt;&lt; '\n'; //? 1</span>
-      for <span class="Delimiter">(</span>int screen_row = max<span class="Delimiter">;</span> screen_row &gt; <span class="Constant">0</span> &amp;&amp; Top_of_screen &gt; <span class="Constant">0</span><span class="Delimiter">;</span> --screen_row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      for <span class="Delimiter">(</span>int screen_row = tb_height<span class="Delimiter">();</span> screen_row &gt; <span class="Constant">0</span> &amp;&amp; Top_of_screen &gt; <span class="Constant">0</span><span class="Delimiter">;</span> --screen_row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         --Top_of_screen<span class="Delimiter">;</span>
         if <span class="Delimiter">(</span>Top_of_screen &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
         while <span class="Delimiter">(</span>Top_of_screen &gt; <span class="Constant">0</span> &amp;&amp; Visible<span class="Delimiter">.</span>find<span class="Delimiter">(</span>Top_of_screen<span class="Delimiter">)</span> == Visible<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
@@ -116,6 +115,20 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
 <span class="CommentedCode">//?       exit(0); //? 1</span>
       if <span class="Delimiter">(</span>Top_of_screen &gt; <span class="Constant">0</span><span class="Delimiter">)</span>
         refresh_screen_rows<span class="Delimiter">();</span>
+    <span class="Delimiter">}</span>
+    if <span class="Delimiter">(</span>key == <span class="Constant">'G'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Comment">// go to bottom of screen; largely like page-up, interestingly</span>
+      Top_of_screen = SIZE<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">;</span>
+      for <span class="Delimiter">(</span>int screen_row = tb_height<span class="Delimiter">();</span> screen_row &gt; <span class="Constant">0</span> &amp;&amp; Top_of_screen &gt; <span class="Constant">0</span><span class="Delimiter">;</span> --screen_row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        --Top_of_screen<span class="Delimiter">;</span>
+        if <span class="Delimiter">(</span>Top_of_screen &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+        while <span class="Delimiter">(</span>Top_of_screen &gt; <span class="Constant">0</span> &amp;&amp; Visible<span class="Delimiter">.</span>find<span class="Delimiter">(</span>Top_of_screen<span class="Delimiter">)</span> == Visible<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+          --Top_of_screen<span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+      refresh_screen_rows<span class="Delimiter">();</span>
+      <span class="Comment">// move cursor to bottom</span>
+      Display_row = Last_printed_row<span class="Delimiter">;</span>
+      refresh_screen_rows<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     if <span class="Delimiter">(</span>key == TB_KEY_CARRIAGE_RETURN<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// expand lines under current by one level</span>

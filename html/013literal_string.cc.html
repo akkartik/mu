@@ -10,16 +10,17 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
-.CommentedCode { color: #6c6c6c; }
+.traceContains { color: #008000; }
+.cSpecial { color: #008000; }
 .Constant { color: #008080; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
 .Identifier { color: #008080; }
-.traceContains { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -67,15 +68,23 @@ string slurp_quoted<span class="Delimiter">(</span>istream&amp; in<span class="D
   assert<span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">());</span>
   assert<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>
   ostringstream out<span class="Delimiter">;</span>
-  int size = <span class="Constant">0</span><span class="Delimiter">;</span>
+  int brace_depth = <span class="Constant">0</span><span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     char c = in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-<span class="CommentedCode">//?     cout &lt;&lt; c &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?     cout &lt;&lt; (int)c &lt;&lt; &quot;: &quot; &lt;&lt; brace_depth &lt;&lt; '\n'; //? 2</span>
+    if <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      out &lt;&lt; <span class="Delimiter">(</span>char<span class="Delimiter">)</span>in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     out &lt;&lt; c<span class="Delimiter">;</span>
 <span class="CommentedCode">//?     cout &lt;&lt; out.str() &lt;&lt; &quot;$\n&quot;; //? 1</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">'['</span><span class="Delimiter">)</span> ++size<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">']'</span><span class="Delimiter">)</span> --size<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>size == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>c == <span class="Constant">'['</span><span class="Delimiter">)</span> ++brace_depth<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>c == <span class="Constant">']'</span><span class="Delimiter">)</span> --brace_depth<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>brace_depth == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">()</span> &amp;&amp; brace_depth &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;unbalanced '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
@@ -99,6 +108,12 @@ recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc [def]]
 ]
 <span class="traceContains">+parse:   ingredient: {name: &quot;abc [def]&quot;, properties: [&quot;abc [def]&quot;: &quot;literal-string&quot;]}</span>
+
+<span class="Delimiter">:(scenario string_literal_escaped)</span>
+recipe main [
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc \[def]
+]
+<span class="traceContains">+parse:   ingredient: {name: &quot;abc [def&quot;, properties: [&quot;abc [def&quot;: &quot;literal-string&quot;]}</span>
 
 <span class="Delimiter">:(scenario string_literal_and_comment)</span>
 recipe main [

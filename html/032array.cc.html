@@ -13,15 +13,15 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
 body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.CommentedCode { color: #6c6c6c; }
 .Constant { color: #008080; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
 .Identifier { color: #008080; }
-.SalientComment { color: #00ffff; }
-.traceContains { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -40,6 +40,9 @@ body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 <span class="Comment">//: elements of a fixed size, so you can't create containers containing arrays.</span>
 <span class="Comment">//: Create containers containing addresses to arrays instead.</span>
 
+<span class="Comment">//: Tests in this layer often explicitly setup memory before reading it as an</span>
+<span class="Comment">//: array. Don't do this in general. I'm tagging exceptions with /raw to</span>
+<span class="Comment">//: avoid warnings.</span>
 <span class="Delimiter">:(scenario copy_array)</span>
 <span class="Comment"># Arrays can be copied around with a single instruction just like numbers,</span>
 <span class="Comment"># no matter how large they are.</span>
@@ -48,7 +51,7 @@ recipe main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:array:number
+  <span class="Constant">5</span>:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:array:number/<span class="Special">raw</span>  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 3 in location 5</span>
 <span class="traceContains">+mem: storing 14 in location 6</span>
@@ -87,7 +90,7 @@ recipe main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:number<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">0</span>:literal  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 14 in location 5</span>
 
@@ -98,7 +101,7 @@ recipe main [
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:number<span class="Delimiter">,</span> <span class="Constant">5</span>:number
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">5</span>:number  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 14 in location 6</span>
 
@@ -140,7 +143,7 @@ recipe main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index-address <span class="Constant">1</span>:array:number<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index-address <span class="Constant">1</span>:array:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">0</span>:literal  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 5</span>
 
@@ -183,7 +186,7 @@ recipe main [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>length <span class="Constant">1</span>:array:number
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>length <span class="Constant">1</span>:array:number/<span class="Special">raw</span>  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 3 in location 5</span>
 

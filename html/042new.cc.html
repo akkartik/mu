@@ -10,18 +10,19 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Identifier { color: #008080; }
 .Constant { color: #008080; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
 .CommentedCode { color: #6c6c6c; }
-.SalientComment { color: #00ffff; }
-.traceContains { color: #008000; }
+.PreProc { color: #c000c0; }
+.Identifier { color: #008080; }
 -->
 </style>
 
@@ -194,7 +195,7 @@ recipe main [
 <span class="traceContains">+new: routine allocated memory from 1000 to 1002</span>
 <span class="traceContains">+new: routine allocated memory from 1002 to 1004</span>
 
-<span class="SalientComment">//:: Next, extend 'new' to handle a string literal argument.</span>
+<span class="SalientComment">//:: Next, extend 'new' to handle a unicode string literal argument.</span>
 
 <span class="Delimiter">:(scenario new_string)</span>
 recipe main [
@@ -203,6 +204,16 @@ recipe main [
 ]
 <span class="Comment"># number code for 'e'</span>
 <span class="traceContains">+mem: storing 101 in location 2</span>
+
+<span class="Delimiter">:(scenario new_string_handles_unicode)</span>
+recipe main [
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [a«c]
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>length <span class="Constant">1</span>:address:array:character/deref
+  <span class="Constant">3</span>:character<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:address:array:character/deref<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+]
+<span class="traceContains">+mem: storing 3 in location 2</span>
+<span class="Comment"># unicode for '«'</span>
+<span class="traceContains">+mem: storing 171 in location 3</span>
 
 <span class="Delimiter">:(before &quot;End NEW Transform Special-cases&quot;)</span>
   if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -215,7 +226,7 @@ recipe main [
 if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span>
     &amp;&amp; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// allocate an array just large enough for it</span>
-  long long int string_length = SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+  long long int string_length = unicode_length<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;string_length is &quot; &lt;&lt; string_length &lt;&lt; '\n'; //? 1</span>
   ensure_space<span class="Delimiter">(</span>string_length+<span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// don't forget the extra location for array size</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
@@ -223,8 +234,16 @@ if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>cu
   <span class="Comment">// initialize string</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;new string literal: &quot; &lt;&lt; current_instruction().ingredients.at(0).name &lt;&lt; '\n'; //? 1</span>
   Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc++] = string_length<span class="Delimiter">;</span>
+  long long int curr = <span class="Constant">0</span><span class="Delimiter">;</span>
+  const string&amp; contents = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+  const char* raw_contents = contents<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; string_length<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc++] = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    uint32_t curr_character<span class="Delimiter">;</span>
+    assert<span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
+    tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;curr_character<span class="Delimiter">,</span> &amp;raw_contents[curr]<span class="Delimiter">);</span>
+    Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc] = curr_character<span class="Delimiter">;</span>
+    curr += tb_utf8_char_length<span class="Delimiter">(</span>raw_contents[curr]<span class="Delimiter">);</span>
+    ++Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// mu strings are not null-terminated in memory</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -239,6 +258,23 @@ recipe main [
 ]
 <span class="traceContains">+new: routine allocated memory from 1000 to 1002</span>
 <span class="traceContains">+new: routine allocated memory from 1002 to 1004</span>
+
+<span class="Comment">//: helpers</span>
+<span class="Delimiter">:(code)</span>
+long long int unicode_length<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  const char* in = s<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
+  long long int result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  long long int curr = <span class="Constant">0</span><span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>s<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// carefully bounds-check on the string</span>
+    <span class="Comment">// before accessing its raw pointer</span>
+    ++result<span class="Delimiter">;</span>
+    curr += tb_utf8_char_length<span class="Delimiter">(</span>in[curr]<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span class="PreProc">#include</span><span class="Constant">&quot;termbox/termbox.h&quot;</span>  <span class="Comment">// for unicode primitives</span>
 </pre>
 </body>
 </html>

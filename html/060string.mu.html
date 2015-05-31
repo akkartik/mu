@@ -10,17 +10,17 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
 .CommentedCode { color: #6c6c6c; }
-.muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .Delimiter { color: #c000c0; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
 .Special { color: #ff6060; }
 .Identifier { color: #008080; }
+.muRecipe { color: #ff8700; }
+.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -308,6 +308,34 @@ container buffer [
     i:number<span class="Special"> &lt;- </span>subtract i:number, <span class="Constant">1:literal</span>
     <span class="Comment"># --j</span>
     j:number<span class="Special"> &lt;- </span>add j:number, <span class="Constant">1:literal</span>
+    <span class="Identifier">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">reply</span> result:address:array:character
+]
+
+<span class="muRecipe">recipe</span> buffer-to-array [
+  <span class="Identifier">default-space</span>:address:array:character<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  in:address:buffer<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  len:number<span class="Special"> &lt;- </span>get in:address:buffer/deref, length:offset
+<span class="CommentedCode">#?   $print [size ], len:number, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+  s:address:array:character<span class="Special"> &lt;- </span>get in:address:buffer/deref, data:offset
+  <span class="Delimiter">{</span>
+    <span class="Comment"># propagate null buffer</span>
+    <span class="Identifier">break-if</span> s:address:array:character
+    <span class="Identifier">reply</span> <span class="Constant">0:literal</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># we can't just return s because it is usually the wrong length</span>
+  result:address:array:character<span class="Special"> &lt;- </span>new character:type, len:number
+  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  <span class="Delimiter">{</span>
+<span class="CommentedCode">#?     $print i:number #? 1</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, len:number
+    <span class="Identifier">break-if</span> done?:boolean
+    src:character<span class="Special"> &lt;- </span>index s:address:array:character/deref, i:number
+    dest:address:character<span class="Special"> &lt;- </span>index-address result:address:array:character/deref, i:number
+    dest:address:character/deref<span class="Special"> &lt;- </span>copy src:character
+    i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
     <span class="Identifier">loop</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">reply</span> result:address:array:character
