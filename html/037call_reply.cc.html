@@ -10,16 +10,17 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
 .Constant { color: #008080; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
+.CommentedCode { color: #6c6c6c; }
 .Identifier { color: #008080; }
-.traceContains { color: #008000; }
 -->
 </style>
 
@@ -53,6 +54,10 @@ Recipe_number[<span class="Constant">&quot;reply&quot;</span>] = REPLY<span clas
 case REPLY: <span class="Delimiter">{</span>
   const instruction&amp; reply_inst = current_instruction<span class="Delimiter">();</span>  <span class="Comment">// save pointer into recipe before pop</span>
   --Callstack_depth<span class="Delimiter">;</span>
+<span class="CommentedCode">//?   if (tb_is_active()) { //? 1</span>
+<span class="CommentedCode">//?     tb_clear(); //? 1</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; Recipe[Current_routine-&gt;calls.front().running_recipe].name &lt;&lt; ' ' &lt;&lt; current_step_index() &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?   } //? 1</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
   <span class="Comment">// just in case 'main' returns a value, drop it for now</span>
   if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">goto</span> stop_running_current_routine<span class="Delimiter">;</span>
@@ -62,6 +67,7 @@ case REPLY: <span class="Delimiter">{</span>
   <span class="Comment">// check that any reply ingredients with /same-as-ingredient connect up</span>
   <span class="Comment">// the corresponding ingredient and product in the caller.</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; Recipe[Current_routine-&gt;calls.front().running_recipe].name &lt;&lt; '\n'; //? 1</span>
     trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;result &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
     if <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>reply_inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;same-as-ingredient&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
       vector&lt;string&gt; tmp = property<span class="Delimiter">(</span>reply_inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;same-as-ingredient&quot;</span><span class="Delimiter">);</span>
@@ -84,7 +90,7 @@ recipe main [
 recipe f [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
   <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
-  reply <span class="Constant">12</span>:point
+  reply <span class="Constant">12</span>:point/<span class="Special">raw</span>  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+run: result 0 is [2, 35]</span>
 <span class="traceContains">+mem: storing 2 in location 3</span>

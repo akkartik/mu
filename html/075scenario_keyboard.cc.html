@@ -10,14 +10,15 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
 .Constant { color: #008080; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
 .Identifier { color: #008080; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -32,7 +33,8 @@ body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
 <span class="Comment">//: Clean syntax to manipulate and check the keyboard in scenarios.</span>
 <span class="Comment">//: Instruction 'assume-keyboard' implicitly creates a variable called</span>
 <span class="Comment">//: 'keyboard' that is accessible inside other 'run' instructions in the</span>
-<span class="Comment">//: scenario.</span>
+<span class="Comment">//: scenario. Like with the fake screen, 'assume-keyboard' transparently</span>
+<span class="Comment">//: supports unicode.</span>
 
 <span class="Delimiter">:(scenarios run_mu_scenario)</span>
 <span class="Delimiter">:(scenario keyboard_in_scenario)</span>
@@ -88,6 +90,28 @@ if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;keyboard:address&quot;</span><span class="Delimiter">));</span>
   curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>KEYBOARD<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: Since we don't yet have a clean way to represent characters like backspace</span>
+<span class="Comment">//: in literal strings we can't easily pretend they were typed into the fake</span>
+<span class="Comment">//: keyboard. So we'll use special unicode characters in the literal and then</span>
+<span class="Comment">//: manually replace them with backspace.</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+REPLACE_IN_KEYBOARD<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;replace-in-keyboard&quot;</span>] = REPLACE_IN_KEYBOARD<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case REPLACE_IN_KEYBOARD: <span class="Delimiter">{</span>
+  long long int size = Memory[KEYBOARD]<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
+  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
+  for <span class="Delimiter">(</span>long long int curr = KEYBOARD+<span class="Constant">1</span><span class="Delimiter">;</span> curr &lt;= KEYBOARD+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>Memory[curr] == ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; &quot;replacing\n&quot;; //? 1</span>
+      Memory[curr] = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>

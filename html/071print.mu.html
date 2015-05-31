@@ -10,17 +10,17 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
-.CommentedCode { color: #6c6c6c; }
-.muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 .Delimiter { color: #c000c0; }
+.muScenario { color: #00af00; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
 .Special { color: #ff6060; }
 .Identifier { color: #008080; }
+.muRecipe { color: #ff8700; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -40,7 +40,12 @@ container screen [
   num-columns:number
   cursor-row:number
   cursor-column:number
-  data:address:array:character
+  data:address:array:screen-cell
+]
+
+container screen-cell [
+  contents:character
+  color:number
 ]
 
 <span class="muRecipe">recipe</span> init-fake-screen [
@@ -55,8 +60,8 @@ container screen [
   column:address:number<span class="Special"> &lt;- </span>get-address result:address:screen/deref, cursor-column:offset
   column:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   bufsize:number<span class="Special"> &lt;- </span>multiply width:address:number/deref, height:address:number/deref
-  buf:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:screen/deref, data:offset
-  buf:address:address:array:character/deref<span class="Special"> &lt;- </span>new character:type, bufsize:number
+  buf:address:address:array:screen-cell<span class="Special"> &lt;- </span>get-address result:address:screen/deref, data:offset
+  buf:address:address:array:screen-cell/deref<span class="Special"> &lt;- </span>new screen-cell:type, bufsize:number
   clear-screen result:address:screen
   <span class="Identifier">reply</span> result:address:screen
 ]
@@ -70,14 +75,17 @@ container screen [
   <span class="Delimiter">{</span>
     <span class="Identifier">break-unless</span> x:address:screen
     <span class="Comment"># clear fake screen</span>
-    buf:address:array:character<span class="Special"> &lt;- </span>get x:address:screen/deref, data:offset
-    max:number<span class="Special"> &lt;- </span>length buf:address:array:character/deref
+    buf:address:array:screen-cell<span class="Special"> &lt;- </span>get x:address:screen/deref, data:offset
+    max:number<span class="Special"> &lt;- </span>length buf:address:array:screen-cell/deref
     i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
     <span class="Delimiter">{</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, max:number
       <span class="Identifier">break-if</span> done?:boolean
-      c:address:character<span class="Special"> &lt;- </span>index-address buf:address:array:character/deref, i:number
-      c:address:character/deref<span class="Special"> &lt;- </span>copy <span class="Constant">[ ]</span>
+      curr:address:screen-cell<span class="Special"> &lt;- </span>index-address buf:address:array:screen-cell/deref, i:number
+      curr-content:address:character<span class="Special"> &lt;- </span>get-address curr:address:screen-cell/deref, contents:offset
+      curr-content:address:character/deref<span class="Special"> &lt;- </span>copy <span class="Constant">[ ]</span>
+      curr-color:address:character<span class="Special"> &lt;- </span>get-address curr:address:screen-cell/deref, color:offset
+      curr-color:address:character/deref<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
       i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
       <span class="Identifier">loop</span>
     <span class="Delimiter">}</span>
@@ -97,6 +105,12 @@ container screen [
   <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   c:character<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default color to white</span>
+    <span class="Identifier">break-if</span> color-found?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
+  <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if x exists</span>
     <span class="Comment"># (handle special cases exactly like in the real screen)</span>
@@ -108,7 +122,7 @@ container screen [
     max-row:number<span class="Special"> &lt;- </span>subtract height:number, <span class="Constant">1:literal</span>
     <span class="Comment"># special-case: newline</span>
     <span class="Delimiter">{</span>
-      newline?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newlin</span>
+      newline?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
 <span class="CommentedCode">#?       $print c:character, [ ], newline?:boolean, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
       <span class="Identifier">break-unless</span> newline?:boolean
@@ -125,8 +139,7 @@ container screen [
     <span class="Comment"># save character in fake screen</span>
     index:number<span class="Special"> &lt;- </span>multiply row:address:number/deref, width:number
     index:number<span class="Special"> &lt;- </span>add index:number, column:address:number/deref
-    buf:address:array:character<span class="Special"> &lt;- </span>get x:address:screen/deref, data:offset
-    cursor:address:character<span class="Special"> &lt;- </span>index-address buf:address:array:character/deref, index:number
+    buf:address:array:screen-cell<span class="Special"> &lt;- </span>get x:address:screen/deref, data:offset
     <span class="Comment"># special-case: backspace</span>
     <span class="Delimiter">{</span>
       backspace?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">8:literal</span>
@@ -137,14 +150,22 @@ container screen [
         <span class="Identifier">break-if</span> at-left?:boolean
         <span class="Comment"># clear previous location</span>
         column:address:number/deref<span class="Special"> &lt;- </span>subtract column:address:number/deref, <span class="Constant">1:literal</span>
-        cursor:address:character<span class="Special"> &lt;- </span>subtract cursor:address:character, <span class="Constant">1:literal</span>
-        cursor:address:character/deref<span class="Special"> &lt;- </span>copy <span class="Constant">32:literal/space</span>
+        index:number<span class="Special"> &lt;- </span>subtract index:number, <span class="Constant">1:literal</span>
+        cursor:address:screen-cell<span class="Special"> &lt;- </span>index-address buf:address:array:screen-cell/deref, index:number
+        cursor-contents:address:character<span class="Special"> &lt;- </span>get-address cursor:address:screen-cell/deref, contents:offset
+        cursor-color:address:number<span class="Special"> &lt;- </span>get-address cursor:address:screen-cell/deref, color:offset
+        cursor-contents:address:character/deref<span class="Special"> &lt;- </span>copy <span class="Constant">32:literal/space</span>
+        cursor-color:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
       <span class="Delimiter">}</span>
       <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
     <span class="Delimiter">}</span>
 <span class="CommentedCode">#?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
-    cursor:address:character/deref<span class="Special"> &lt;- </span>copy c:character
+    cursor:address:screen-cell<span class="Special"> &lt;- </span>index-address buf:address:array:screen-cell/deref, index:number
+    cursor-contents:address:character<span class="Special"> &lt;- </span>get-address cursor:address:screen-cell/deref, contents:offset
+    cursor-color:address:number<span class="Special"> &lt;- </span>get-address cursor:address:screen-cell/deref, color:offset
+    cursor-contents:address:character/deref<span class="Special"> &lt;- </span>copy c:character
+    cursor-color:address:number/deref<span class="Special"> &lt;- </span>copy color:number
     <span class="Comment"># increment column unless it's already all the way to the right</span>
     <span class="Delimiter">{</span>
       at-right?:boolean<span class="Special"> &lt;- </span>equal column:address:number/deref, width:number
@@ -154,7 +175,7 @@ container screen [
     <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
-  print-character-to-display c:character
+  print-character-to-display c:character, color:number
   <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
@@ -163,13 +184,29 @@ container screen [
 <span class="CommentedCode">#?     $start-tracing #? 3</span>
     1:address:screen<span class="Special"> &lt;- </span>init-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
-    2:address:array:character<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
-    3:array:character<span class="Special"> &lt;- </span>copy 2:address:array:character/deref
+    2:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    3:array:screen-cell<span class="Special"> &lt;- </span>copy 2:address:array:screen-cell/deref
   ]
   memory-should-contain [
     3<span class="Special"> &lt;- </span>6  <span class="Comment"># width*height</span>
     4<span class="Special"> &lt;- </span>97  <span class="Comment"># 'a'</span>
-    5<span class="Special"> &lt;- </span>0
+    5<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    6<span class="Special"> &lt;- </span>0
+  ]
+]
+
+<span class="muScenario">scenario</span> print-character-color [
+  run [
+    1:address:screen<span class="Special"> &lt;- </span>init-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal/a</span>, <span class="Constant">1:literal/red</span>
+    2:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    3:array:screen-cell<span class="Special"> &lt;- </span>copy 2:address:array:screen-cell/deref
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>6  <span class="Comment"># width*height</span>
+    4<span class="Special"> &lt;- </span>97  <span class="Comment"># 'a'</span>
+    5<span class="Special"> &lt;- </span>1  <span class="Comment"># red</span>
+    6<span class="Special"> &lt;- </span>0
   ]
 ]
 
@@ -180,14 +217,15 @@ container screen [
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">8:literal</span>  <span class="Comment"># backspace</span>
     2:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-column:offset
-    3:address:array:character<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
-    4:array:character<span class="Special"> &lt;- </span>copy 3:address:array:character/deref
+    3:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    4:array:screen-cell<span class="Special"> &lt;- </span>copy 3:address:array:screen-cell/deref
   ]
   memory-should-contain [
     2<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor column</span>
     4<span class="Special"> &lt;- </span>6  <span class="Comment"># width*height</span>
     5<span class="Special"> &lt;- </span>32  <span class="Comment"># space, not 'a'</span>
-    6<span class="Special"> &lt;- </span>0
+    6<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    7<span class="Special"> &lt;- </span>0
   ]
 ]
 
@@ -199,15 +237,16 @@ container screen [
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">10:literal/newline</span>
     2:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-row:offset
     3:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-column:offset
-    4:address:array:character<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
-    5:array:character<span class="Special"> &lt;- </span>copy 4:address:array:character/deref
+    4:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    5:array:screen-cell<span class="Special"> &lt;- </span>copy 4:address:array:screen-cell/deref
   ]
   memory-should-contain [
     2<span class="Special"> &lt;- </span>1  <span class="Comment"># cursor row</span>
     3<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor column</span>
     5<span class="Special"> &lt;- </span>6  <span class="Comment"># width*height</span>
     6<span class="Special"> &lt;- </span>97  <span class="Comment"># 'a'</span>
-    7<span class="Special"> &lt;- </span>0
+    7<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    8<span class="Special"> &lt;- </span>0
   ]
 ]
 
@@ -282,18 +321,24 @@ container screen [
     1:address:screen<span class="Special"> &lt;- </span>move-cursor 1:address:screen, <span class="Constant">0:literal/row</span>, <span class="Constant">0:literal/column</span>
     <span class="Comment"># clear line</span>
     1:address:screen<span class="Special"> &lt;- </span>clear-line 1:address:screen
-    2:address:array:character<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
-    3:array:character<span class="Special"> &lt;- </span>copy 2:address:array:character/deref
+    2:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    3:array:screen-cell<span class="Special"> &lt;- </span>copy 2:address:array:screen-cell/deref
   ]
   <span class="Comment"># screen should be blank</span>
   memory-should-contain [
     3<span class="Special"> &lt;- </span>6  <span class="Comment"># width*height</span>
     4<span class="Special"> &lt;- </span>0
-    5<span class="Special"> &lt;- </span>0
+    5<span class="Special"> &lt;- </span>7
     6<span class="Special"> &lt;- </span>0
-    7<span class="Special"> &lt;- </span>0
+    7<span class="Special"> &lt;- </span>7
     8<span class="Special"> &lt;- </span>0
-    9<span class="Special"> &lt;- </span>0
+    9<span class="Special"> &lt;- </span>7
+    10<span class="Special"> &lt;- </span>0
+    11<span class="Special"> &lt;- </span>7
+    12<span class="Special"> &lt;- </span>0
+    13<span class="Special"> &lt;- </span>7
+    14<span class="Special"> &lt;- </span>0
+    15<span class="Special"> &lt;- </span>7
   ]
 ]
 

@@ -10,17 +10,16 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
 .cSpecial { color: #008000; }
 .Constant { color: #008080; }
-.Identifier { color: #008080; }
+.PreProc { color: #c000c0; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
-.SalientComment { color: #00ffff; }
 .CommentedCode { color: #6c6c6c; }
-.PreProc { color: #c000c0; }
+.Identifier { color: #008080; }
 -->
 </style>
 
@@ -213,9 +212,12 @@ ostream&amp; operator&lt;&lt;<span class="Delimiter">(</span>ostream&amp; os<spa
 
 <span class="PreProc">#define DUMP(layer)  </span>if<span class="PreProc"> (Trace_stream) cerr &lt;&lt; Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">readable_contents(layer)</span><span class="Delimiter">;</span>
 
-<span class="Comment">// Trace_stream is a resource, lease_tracer uses RAII to manage it.</span>
-string Trace_file<span class="Delimiter">;</span>
+<span class="Comment">// All scenarios save their traces in the repo, just like code. This gives</span>
+<span class="Comment">// future readers more meat when they try to make sense of a new project.</span>
 static string Trace_dir = <span class="Constant">&quot;.traces/&quot;</span><span class="Delimiter">;</span>
+string Trace_file<span class="Delimiter">;</span>
+
+<span class="Comment">// Trace_stream is a resource, lease_tracer uses RAII to manage it.</span>
 struct lease_tracer <span class="Delimiter">{</span>
   lease_tracer<span class="Delimiter">()</span> <span class="Delimiter">{</span> Trace_stream = new trace_stream<span class="Delimiter">;</span> <span class="Delimiter">}</span>
   ~lease_tracer<span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -229,9 +231,6 @@ struct lease_tracer <span class="Delimiter">{</span>
     delete Trace_stream<span class="Delimiter">,</span> Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">,</span> Trace_file = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">};</span>
-
-<span class="Comment">// To transparently save traces, start tests with the TEST() macro.</span>
-<span class="PreProc">#define TEST(name) </span>void<span class="PreProc"> test_</span><span class="SalientComment">##name() { Trace_file = #name;</span>
 
 <span class="PreProc">#define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Test Setup&quot;)</span>

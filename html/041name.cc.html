@@ -10,19 +10,19 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.CommentedCode { color: #6c6c6c; }
-.traceAbsent { color: #c00000; }
 .Constant { color: #008080; }
+.SalientComment { color: #00ffff; }
+.traceAbsent { color: #c00000; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
 .Identifier { color: #008080; }
-.SalientComment { color: #00ffff; }
-.traceContains { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -67,6 +67,7 @@ void transform_names<span class="Delimiter">(</span>const recipe_number r<span c
   bool names_used = <span class="Constant">false</span><span class="Delimiter">;</span>
   bool numeric_locations_used = <span class="Constant">false</span><span class="Delimiter">;</span>
   map&lt;string<span class="Delimiter">,</span> long long int&gt;&amp; names = Name[r]<span class="Delimiter">;</span>
+  map&lt;string<span class="Delimiter">,</span> vector&lt;type_number&gt; &gt; metadata<span class="Delimiter">;</span>
   <span class="Comment">// store the indices 'used' so far in the map</span>
   long long int&amp; curr_idx = names[<span class="Constant">&quot;&quot;</span>]<span class="Delimiter">;</span>
   ++curr_idx<span class="Delimiter">;</span>  <span class="Comment">// avoid using index 0, benign skip in some other cases</span>
@@ -75,6 +76,7 @@ void transform_names<span class="Delimiter">(</span>const recipe_number r<span c
     <span class="Comment">// Per-recipe Transforms</span>
     <span class="Comment">// map names to addresses</span>
     for <span class="Delimiter">(</span>long long int in = <span class="Constant">0</span><span class="Delimiter">;</span> in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      check_metadata<span class="Delimiter">(</span>metadata<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> r<span class="Delimiter">);</span>
       if <span class="Delimiter">(</span>is_numeric_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">)))</span> numeric_locations_used = <span class="Constant">true</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>is_named_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">)))</span> names_used = <span class="Constant">true</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>disqualified<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -84,6 +86,7 @@ void transform_names<span class="Delimiter">(</span>const recipe_number r<span c
       inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>lookup_name<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> r<span class="Delimiter">));</span>
     <span class="Delimiter">}</span>
     for <span class="Delimiter">(</span>long long int out = <span class="Constant">0</span><span class="Delimiter">;</span> out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      check_metadata<span class="Delimiter">(</span>metadata<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">),</span> r<span class="Delimiter">);</span>
       if <span class="Delimiter">(</span>is_numeric_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">)))</span> numeric_locations_used = <span class="Constant">true</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>is_named_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">)))</span> names_used = <span class="Constant">true</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>disqualified<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -97,6 +100,15 @@ void transform_names<span class="Delimiter">(</span>const recipe_number r<span c
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>names_used &amp;&amp; numeric_locations_used<span class="Delimiter">)</span>
     raise &lt;&lt; <span class="Constant">&quot;mixing variable names and numeric addresses in &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+void check_metadata<span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> vector&lt;type_number&gt; &gt;&amp; metadata<span class="Delimiter">,</span> const reagent&amp; x<span class="Delimiter">,</span> const recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>metadata<span class="Delimiter">.</span>find<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == metadata<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+    metadata[x<span class="Delimiter">.</span>name] = x<span class="Delimiter">.</span>types<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>metadata[x<span class="Delimiter">.</span>name] != x<span class="Delimiter">.</span>types<span class="Delimiter">)</span>
+    raise &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; used with multiple types in &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 bool disqualified<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">mutable</span><span class="Comment">*/</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -216,6 +228,14 @@ recipe main [
 ]
 <span class="traceAbsent">-warn: mixing variable names and numeric addresses in main</span>
 
+<span class="Delimiter">:(scenario convert_names_warns_on_reusing_name_with_different_type)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
+  x:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
+]
+<span class="traceContains">+warn: x used with multiple types in main</span>
+
 <span class="SalientComment">//:: Support element names for containers in 'get' and 'get-address'.</span>
 
 <span class="Comment">//: update our running example container for the next test</span>
@@ -264,7 +284,7 @@ recipe main [
   <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
   <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
   <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>:literal
-  <span class="Constant">20</span>:address:point<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-or-point<span class="Delimiter">,</span> p:variant
+  <span class="Constant">20</span>:address:point<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-or-point/<span class="Special">raw</span><span class="Delimiter">,</span> p:variant  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+name: variant p of type number-or-point has tag 1</span>
 <span class="traceContains">+mem: storing 13 in location 20</span>

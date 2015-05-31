@@ -10,17 +10,17 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #000000; }
-body { font-family: monospace; color: #d0d0d0; background-color: #000000; }
+pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
+body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 * { font-size: 1em; }
 .cSpecial { color: #008000; }
 .Constant { color: #008080; }
-.Identifier { color: #008080; }
+.PreProc { color: #c000c0; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .SalientComment { color: #00ffff; }
 .CommentedCode { color: #6c6c6c; }
-.PreProc { color: #c000c0; }
+.Identifier { color: #008080; }
 -->
 </style>
 
@@ -105,6 +105,9 @@ case PRINT_CHARACTER_TO_DISPLAY: <span class="Delimiter">{</span>
   long long int width = <span class="Delimiter">(</span>w &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> ? w : <span class="Constant">0</span><span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   long long int c = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="CommentedCode">//?   tb_shutdown(); //? 1</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;AAA &quot; &lt;&lt; c &lt;&lt; ' ' &lt;&lt; (int)'\n' &lt;&lt; ' ' &lt;&lt; (int)'\r' &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?   exit(1); //? 1</span>
   if <span class="Delimiter">(</span>c == <span class="cSpecial">'\n'</span> || c == <span class="cSpecial">'\r'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>Display_row &lt; height-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
@@ -123,10 +126,13 @@ case PRINT_CHARACTER_TO_DISPLAY: <span class="Delimiter">{</span>
     <span class="Delimiter">}</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  int color = TB_WHITE<span class="Delimiter">;</span>
+  int color = TB_DEFAULT<span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
-    color = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    color = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>+<span class="Constant">1</span><span class="Comment">/*</span><span class="Comment">skip default</span><span class="Comment">*/</span><span class="Delimiter">;</span>
+<span class="CommentedCode">//?     tb_shutdown(); //? 1</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;AAA &quot; &lt;&lt; color &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?     exit(1); //? 1</span>
   <span class="Delimiter">}</span>
   tb_change_cell<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">,</span> c<span class="Delimiter">,</span> color<span class="Delimiter">,</span> TB_DEFAULT<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>Display_column &lt; width-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -236,8 +242,12 @@ case WAIT_FOR_KEY_FROM_KEYBOARD: <span class="Delimiter">{</span>
   do <span class="Delimiter">{</span>
     tb_poll_event<span class="Delimiter">(</span>&amp;event<span class="Delimiter">);</span>
   <span class="Delimiter">}</span> while <span class="Delimiter">(</span>event<span class="Delimiter">.</span>type != TB_EVENT_KEY<span class="Delimiter">);</span>
+  long long int result = event<span class="Delimiter">.</span>key ? event<span class="Delimiter">.</span>key : event<span class="Delimiter">.</span>ch<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>result == TB_KEY_CTRL_C<span class="Delimiter">)</span> tb_shutdown<span class="Delimiter">(),</span> exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>result == TB_KEY_BACKSPACE2<span class="Delimiter">)</span> result = TB_KEY_BACKSPACE<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>result == TB_KEY_CARRIAGE_RETURN<span class="Delimiter">)</span> result = TB_KEY_NEWLINE<span class="Delimiter">;</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>event<span class="Delimiter">.</span>ch<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
