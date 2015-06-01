@@ -17,8 +17,9 @@ case RUN_INTERACTIVE: {
 :(code)
 // manual tests:
 //  just an integer prints value of that location in memory
-//  instruction executes [not yet working]
+//  instruction executes
 //  backspace at start begins new attempt
+//  ctrl-d working [not after first instruction is run]
 void run_interactive(long long int address) {
 //?   tb_shutdown(); //? 1
   long long int size = Memory[address];
@@ -52,7 +53,11 @@ void run_interactive(long long int address) {
 //?   cerr << "AAA 1\n"; //? 1
   Recipe.erase(Recipe_number["interactive"]);
   // call run(string) but without the scheduling
-  load("recipe interactive [\n"+tmp.str()+"]\n");
+//?   cerr << ("recipe interactive [\n"+tmp.str()+"\n]\n"); //? 1
+  load("recipe interactive [\n"+tmp.str()+"\n]\n");
   transform_all();
+//?   cerr << "names: " << Name[Recipe_number["interactive"]].size() << "; "; //? 1
+//?   cerr << "steps: " << Recipe[Recipe_number["interactive"]].steps.size() << "; "; //? 1
+//?   cerr << "interactive transformed_until: " << Recipe[Recipe_number["interactive"]].transformed_until << '\n'; //? 1
   Current_routine->calls.push_front(call(Recipe_number["interactive"]));
 }

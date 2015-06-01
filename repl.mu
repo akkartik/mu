@@ -18,6 +18,10 @@ recipe main [
     # assume run-interactive printed on the current line
 #?     $print [a7] #? 1
     move-cursor-down-on-display
+#?     move-cursor-down-on-display #? 1
+#?     move-cursor-down-on-display #? 1
+#?     move-cursor-down-on-display #? 1
+#?     move-cursor-down-on-display #? 1
     clear-line-on-display  # just to refresh the screen
     loop
   }
