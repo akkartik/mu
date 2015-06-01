@@ -54,8 +54,10 @@ void run(recipe_number r) {
 
 void run_current_routine()
 {  // curly on a separate line, because later layers will modify header
+//?   cerr << "AAA 6\n"; //? 2
   while (!Current_routine->completed())  // later layers will modify condition
   {
+//?     cerr << "AAA 7: " << current_step_index() << '\n'; //? 1
     // Running One Instruction.
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string();
@@ -70,6 +72,7 @@ void run_current_routine()
     // Instructions below will write to 'products' or to 'instruction_counter'.
     vector<vector<double> > products;
     long long int instruction_counter = current_step_index();
+//?     cerr << "AAA 8: " << current_instruction().operation << " ^" << Recipe[current_instruction().operation].name << "$\n"; //? 1
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
       case COPY: {
@@ -88,6 +91,7 @@ void run_current_routine()
     }
     current_step_index() = instruction_counter+1;
   }
+//?   cerr << "AAA 9\n"; //? 1
   stop_running_current_routine:;
 }
 
@@ -159,10 +163,13 @@ load_permanently("core.mu");
 :(code)
 // helper for tests
 void run(string form) {
+//?   cerr << "AAA 2\n"; //? 1
   vector<recipe_number> tmp = load(form);
   if (tmp.empty()) return;
   transform_all();
+//?   cerr << "AAA 3\n"; //? 1
   run(tmp.front());
+//?   cerr << "YYY\n"; //? 1
 }
 
 //:: Reading from memory, writing to memory.

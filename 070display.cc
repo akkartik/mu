@@ -13,6 +13,7 @@ long long int Display_row = 0, Display_column = 0;
 SWITCH_TO_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 Recipe_number["switch-to-display"] = SWITCH_TO_DISPLAY;
+//? cerr << "switch-to-display: " << SWITCH_TO_DISPLAY << '\n'; //? 1
 :(before "End Primitive Recipe Implementations")
 case SWITCH_TO_DISPLAY: {
   tb_init();
