@@ -156,13 +156,22 @@ recipe buffer-append [
   default-space:address:array:location <- new location:type, 30:literal
   in:address:buffer <- next-ingredient
   c:character <- next-ingredient
+  len:address:number <- get-address in:address:buffer/deref, length:offset
+  {
+    # backspace? just drop last character if it exists and return
+    backspace?:boolean <- equal c:character, 8:literal/backspace
+    break-unless backspace?:boolean
+    empty?:boolean <- lesser-or-equal len:address:number/deref, 0:literal
+    reply-if empty?:boolean, in:address:buffer/same-as-ingredient:0
+    len:address:number <- subtract len:address:number, 1:literal
+    reply in:address:buffer/same-as-ingredient:0
+  }
   {
     # grow buffer if necessary
     full?:boolean <- buffer-full? in:address:buffer
     break-unless full?:boolean
     in:address:buffer <- grow-buffer in:address:buffer
   }
-  len:address:number <- get-address in:address:buffer/deref, length:offset
   s:address:array:character <- get in:address:buffer/deref, data:offset
   dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
   dest:address:character/deref <- copy c:character

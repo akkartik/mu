@@ -9,7 +9,16 @@ recipe main [
   {
     inst:address:array:character, 0:literal/real-keyboard, 0:literal/real-screen <- read-instruction 0:literal/real-keyboard, 0:literal/real-screen
     break-unless inst:address:array:character
-    0:literal/real-screen <- print-string 0:literal/real-screen, inst:address:array:character
+#?     0:literal/real-screen <- print-string 0:literal/real-screen, inst:address:array:character
+    run-interactive inst:address:array:character
+#?     print-character-to-display 97:literal/a
+#?     print-character-to-display 97:literal/a
+#?     print-character-to-display 97:literal/a
+#?     print-character-to-display 10:literal/newline
+    # assume run-interactive printed on the current line
+#?     $print [a7] #? 1
+    move-cursor-down-on-display
+    clear-line-on-display  # just to refresh the screen
     loop
   }
   return-to-console
@@ -77,6 +86,9 @@ recipe slurp-regular-characters [
   characters-slurped:number <- copy 0:literal
   {
     +next-character
+#?     $print [a0 #? 1
+#? ] #? 1
+#?     move-cursor-down-on-display #? 1
     # read character
     c:character, k:address:keyboard <- wait-for-key k:address:keyboard
     # quit?
@@ -115,19 +127,40 @@ recipe slurp-regular-characters [
     print-character x:address:screen, c:character  # default color
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
+#?     $print [a1 #? 1
+#? ] #? 1
+#?     move-cursor-down-on-display #? 1
     # backspace? decrement and maybe return
     {
+#?       $print [a2 #? 1
+#? ] #? 1
+#?       move-cursor-down-on-display #? 1
       backspace?:boolean <- equal c:character, 8:literal/backspace
       break-unless backspace?:boolean
+#?       $print [a3 #? 1
+#? ] #? 1
+#?       move-cursor-down-on-display #? 1
       characters-slurped:number <- subtract characters-slurped:number, 1:literal
       {
+#?         $print [a4 #? 1
+#? ] #? 1
+#?         move-cursor-down-on-display #? 1
         done?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
         break-unless done?:boolean
+#?         $print [a5 #? 1
+#? ] #? 1
+#?         move-cursor-down-on-display #? 1
         trace [app], [slurp-regular-characters: too many backspaces; returning]
+#?         $print [a6 #? 1
+#? ] #? 1
+#?         move-cursor-down-on-display #? 1
         reply result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
       }
       loop +next-character:label
     }
+#?     $print [a9 #? 1
+#? ] #? 1
+#?     move-cursor-down-on-display #? 1
     # otherwise increment
     characters-slurped:number <- add characters-slurped:number, 1:literal
     # done with this instruction?

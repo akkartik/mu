@@ -46,7 +46,9 @@ long long int Scheduling_interval = 500;
 Scheduling_interval = 500;
 :(replace{} "void run(recipe_number r)")
 void run(recipe_number r) {
+//?   cerr << "AAA 4\n"; //? 1
   Routines.push_back(new routine(r));
+//?   cerr << "AAA " << Routines.size() << " routines\n"; //? 1
   Current_routine_index = 0, Current_routine = Routines.at(0);
   while (!all_routines_done()) {
     skip_to_next_routine();
@@ -58,6 +60,7 @@ void run(recipe_number r) {
 //?     trace("schedule") << Current_routine->id << " " << current_recipe_name(); //? 1
     run_current_routine(Scheduling_interval);
     // Scheduler State Transitions
+//?     cerr << "AAA completed? " << Current_routine->completed() << '\n'; //? 1
     if (Current_routine->completed())
       Current_routine->state = COMPLETED;
     // End Scheduler State Transitions

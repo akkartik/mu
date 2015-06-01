@@ -108,6 +108,7 @@ inline const vector<instruction>& routine::steps() const {
 // it, and the one below that, and so on
 while (current_step_index() >= SIZE(Current_routine->steps())) {
   --Callstack_depth;
+//?   cerr << "reply " << Current_routine->calls.size() << '\n'; //? 1
   Current_routine->calls.pop_front();
   if (Current_routine->calls.empty()) return;
   // todo: no results returned warning
