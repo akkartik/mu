@@ -8,6 +8,8 @@ recipe main [
   0:literal/real-screen <- print-string 0:literal/real-screen, msg:address:array:character
   {
     inst:address:array:character, 0:literal/real-keyboard, 0:literal/real-screen <- read-instruction 0:literal/real-keyboard, 0:literal/real-screen
+#?     $print [ccc: ], inst:address:array:character #? 1
+#?     move-cursor-down-on-display #? 1
     break-unless inst:address:array:character
 #?     0:literal/real-screen <- print-string 0:literal/real-screen, inst:address:array:character
     run-interactive inst:address:array:character
@@ -25,7 +27,9 @@ recipe main [
     clear-line-on-display  # just to refresh the screen
     loop
   }
+#?   wait-for-key-from-keyboard #? 1
   return-to-console
+#?   $print [aaaa] #? 1
 ]
 
 # basic keyboard input; just text and enter
@@ -71,9 +75,13 @@ recipe read-instruction [
   jump-if completed?:boolean, +completed:label
   # Otherwise we're just getting started.
   result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+#?   $print [aaa: ], result:address:buffer #? 1
+#?   move-cursor-down-on-display #? 1
   trace [error], [slurp-regular-characters should never return normally]
   +completed
   result2:address:array:character <- buffer-to-array result:address:buffer
+#?   $print [bbb: ], result2:address:array:character #? 1
+#?   move-cursor-down-on-display #? 1
   trace [app], [exiting read-instruction]
   reply result2:address:array:character, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
 ]
@@ -88,6 +96,7 @@ recipe slurp-regular-characters [
   complete:continuation <- next-ingredient
   trace [app], [slurp-regular-characters]
   characters-slurped:number <- copy 0:literal
+#?   $run-depth #? 1
   {
     +next-character
 #?     $print [a0 #? 1
@@ -95,10 +104,16 @@ recipe slurp-regular-characters [
 #?     move-cursor-down-on-display #? 1
     # read character
     c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+#?     print-character x:address:screen, c:character #? 1
+#?     move-cursor-down-on-display #? 1
     # quit?
     {
+#?       $print [aaa] #? 1
+#?       move-cursor-down-on-display #? 1
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
       break-unless ctrl-d?:boolean
+#?       $print [ctrl-d] #? 1
+#?       move-cursor-down-on-display #? 1
       trace [app], [slurp-regular-characters: ctrl-d]
       reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }

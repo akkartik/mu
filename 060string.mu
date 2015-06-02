@@ -291,15 +291,15 @@ recipe integer-to-decimal-string [
 recipe buffer-to-array [
   default-space:address:array:character <- new location:type, 30:literal
   in:address:buffer <- next-ingredient
+  {
+    # propagate null buffer
+    break-if in:address:buffer
+    reply 0:literal
+  }
   len:number <- get in:address:buffer/deref, length:offset
 #?   $print [size ], len:number, [ 
 #? ] #? 1
   s:address:array:character <- get in:address:buffer/deref, data:offset
-  {
-    # propagate null buffer
-    break-if s:address:array:character
-    reply 0:literal
-  }
   # we can't just return s because it is usually the wrong length
   result:address:array:character <- new character:type, len:number
   i:number <- copy 0:literal

@@ -19,7 +19,7 @@ case RUN_INTERACTIVE: {
 //  just an integer prints value of that location in memory
 //  instruction executes
 //  backspace at start begins new attempt
-//  ctrl-d working [not after first instruction is run]
+//  ctrl-d working
 void run_interactive(long long int address) {
 //?   tb_shutdown(); //? 1
   long long int size = Memory[address];
@@ -60,4 +60,16 @@ void run_interactive(long long int address) {
 //?   cerr << "steps: " << Recipe[Recipe_number["interactive"]].steps.size() << "; "; //? 1
 //?   cerr << "interactive transformed_until: " << Recipe[Recipe_number["interactive"]].transformed_until << '\n'; //? 1
   Current_routine->calls.push_front(call(Recipe_number["interactive"]));
+}
+
+//:: debugging tool
+
+:(before "End Primitive Recipe Declarations")
+_RUN_DEPTH,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["$run-depth"] = _RUN_DEPTH;
+:(before "End Primitive Recipe Implementations")
+case _RUN_DEPTH: {
+  cerr << Current_routine->calls.size();
+  break;
 }
