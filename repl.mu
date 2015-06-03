@@ -6,17 +6,25 @@ recipe main [
   msg:address:array:character <- new [ready! type in an instruction, then hit enter. ctrl-d exits.
 ]
   0:literal/real-screen <- print-string 0:literal/real-screen, msg:address:array:character
+  0:literal/real-keyboard, 0:literal/real-screen <- color-session 0:literal/real-keyboard, 0:literal/real-screen
+#?   wait-for-key-from-keyboard #? 1
+  return-to-console
+]
+
+recipe color-session [
+  default-space:address:array:location <- new location:type, 30:literal
+  keyboard:address <- next-ingredient
+  screen:address <- next-ingredient
   {
-    inst:address:array:character, 0:literal/real-keyboard, 0:literal/real-screen <- read-instruction 0:literal/real-keyboard, 0:literal/real-screen
+    inst:address:array:character, keyboard:address, screen:address <- read-instruction keyboard:address, screen:address
     break-unless inst:address:array:character
     run-interactive inst:address:array:character
     # assume run-interactive printed on the current line
     move-cursor-down-on-display
-    clear-line-on-display  # just to refresh the screen
+#?     clear-line-on-display  # just to refresh the screen
     loop
   }
-#?   wait-for-key-from-keyboard #? 1
-  return-to-console
+  reply keyboard:address/same-as-ingredient:0, screen:address/same-as-ingredient:1
 ]
 
 # basic keyboard input; just text and enter
