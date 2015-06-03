@@ -8,28 +8,15 @@ recipe main [
   0:literal/real-screen <- print-string 0:literal/real-screen, msg:address:array:character
   {
     inst:address:array:character, 0:literal/real-keyboard, 0:literal/real-screen <- read-instruction 0:literal/real-keyboard, 0:literal/real-screen
-#?     $print [ccc: ], inst:address:array:character #? 1
-#?     move-cursor-down-on-display #? 1
     break-unless inst:address:array:character
-#?     0:literal/real-screen <- print-string 0:literal/real-screen, inst:address:array:character
     run-interactive inst:address:array:character
-#?     print-character-to-display 97:literal/a
-#?     print-character-to-display 97:literal/a
-#?     print-character-to-display 97:literal/a
-#?     print-character-to-display 10:literal/newline
     # assume run-interactive printed on the current line
-#?     $print [a7] #? 1
     move-cursor-down-on-display
-#?     move-cursor-down-on-display #? 1
-#?     move-cursor-down-on-display #? 1
-#?     move-cursor-down-on-display #? 1
-#?     move-cursor-down-on-display #? 1
     clear-line-on-display  # just to refresh the screen
     loop
   }
 #?   wait-for-key-from-keyboard #? 1
   return-to-console
-#?   $print [aaaa] #? 1
 ]
 
 # basic keyboard input; just text and enter
