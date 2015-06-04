@@ -587,7 +587,6 @@ scenario read-instruction-cancel-string-inside-string-on-backspace [
 
 scenario read-instruction-backspace-back-into-string [
   assume-screen 30:literal/width, 5:literal/height
-  # need to escape the '[' once for 'scenario' and once for 'assume-keyboard'
   assume-keyboard [[a]«b
 ]
   replace-in-keyboard 171:literal/«, 8:literal/backspace
