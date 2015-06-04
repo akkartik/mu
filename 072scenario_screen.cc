@@ -213,7 +213,7 @@ void check_screen(const string& expected_contents, const int color) {
         // contents match but color is off
         if (Current_scenario && !Hide_warnings) {
           // genuine test in a mu file
-          raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << Memory[addr] << ") to be in color " << color << " instead of " << Memory[addr+cell_color_offset] << "'\n";
+          raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << Memory[addr] << ") to be in color " << color << " instead of " << Memory[addr+cell_color_offset] << "\n";
         }
         else {
           // just testing check_screen
