@@ -84,7 +84,7 @@ recipe read-instruction [
 # read characters from the keyboard, print them to the screen in *white*.
 # Transition to other routines for comments and strings.
 recipe slurp-regular-characters [
-  default-space:address:array:location <- new location:type, 60:literal
+  default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
@@ -194,7 +194,7 @@ recipe slurp-regular-characters [
 # Simpler version of slurp-regular-characters; doesn't handle comments or
 # strings. Tracks an extra count in case we backspace out of it
 recipe slurp-comment [
-  default-space:address:array:location <- new location:type, 60:literal
+  default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
@@ -255,7 +255,7 @@ recipe slurp-comment [
 #   b) handles nested strings using recursive calls to itself. Tracks an extra
 #   count in case we backspace out of it.
 recipe slurp-string [
-  default-space:address:array:location <- new location:type, 60:literal
+  default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
