@@ -42,10 +42,8 @@ Recipe_number["continue-from"] = CONTINUE_FROM;
 case CONTINUE_FROM: {
   assert(scalar(ingredients.at(0)));
   long long int c = ingredients.at(0).at(0);
-  Current_routine->calls = Continuation[c];  // deep copy because calls have no pointers
-  // refresh instruction_counter to next instruction after current-continuation
-  instruction_counter = current_step_index()+1;
-  continue;  // not done with caller; don't increment current_step_index() further
+  Current_routine->calls = Continuation[c];  // deep copy; calls have no pointers
+  continue;  // skip rest of this instruction
 }
 
 :(scenario continuation)
@@ -69,6 +67,7 @@ recipe main [
 $current-continuation: 1
 
 :(scenario continuation_inside_caller)
+#? % Trace_stream->dump_layer = "all"; #? 1
 recipe main [
   1:number <- copy 0:literal
   2:continuation <- loop-body
@@ -208,9 +207,7 @@ case REPLY_DELIMITED_CONTINUATION: {
   products.resize(1);
   products.at(0).push_back(Next_delimited_continuation_id);
   ++Next_delimited_continuation_id;
-  // refresh instruction_counter to caller's step_index
-  instruction_counter = current_step_index();
-  break;
+  break;  // continue to process rest of 'reset' call
 }
 
 :(code)

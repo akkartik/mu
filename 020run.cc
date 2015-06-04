@@ -69,9 +69,8 @@ void run_current_routine()
     for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
       ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
     }
-    // Instructions below will write to 'products' or to 'instruction_counter'.
+    // Instructions below will write to 'products'.
     vector<vector<double> > products;
-    long long int instruction_counter = current_step_index();
 //?     cerr << "AAA 8: " << current_instruction().operation << " ^" << Recipe[current_instruction().operation].name << "$\n"; //? 1
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
@@ -89,7 +88,7 @@ void run_current_routine()
     for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
       write_memory(current_instruction().products.at(i), products.at(i));
     }
-    current_step_index() = instruction_counter+1;
+    ++current_step_index();
   }
 //?   cerr << "AAA 9\n"; //? 1
   stop_running_current_routine:;

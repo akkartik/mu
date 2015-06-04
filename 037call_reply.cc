@@ -43,9 +43,7 @@ case REPLY: {
         raise << "'same-as-ingredient' result " << caller_instruction.products.at(i).value << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n';
     }
   }
-  // refresh instruction_counter to caller's step_index
-  instruction_counter = current_step_index();
-  break;
+  break;  // continue to process rest of *caller* instruction
 }
 
 //: Products can include containers and exclusive containers, addresses and arrays.
