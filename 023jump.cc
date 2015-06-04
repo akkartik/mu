@@ -1,6 +1,7 @@
 //: Jump primitives
 
 :(scenario jump_can_skip_instructions)
+#? % Trace_stream->dump_layer = "all"; #? 1
 recipe main [
   jump 1:offset
   1:number <- copy 1:literal
@@ -18,9 +19,9 @@ case JUMP: {
   assert(current_instruction().ingredients.at(0).initialized);
   assert(SIZE(ingredients) == 1);
   assert(scalar(ingredients.at(0)));
-  instruction_counter += ingredients.at(0).at(0);
-  trace(Primitive_recipe_depth, "run") << "jumping to instruction " << instruction_counter+1;
-  break;
+  current_step_index() += ingredients.at(0).at(0)+1;
+  trace(Primitive_recipe_depth, "run") << "jumping to instruction " << current_step_index();
+  continue;  // skip rest of this instruction
 }
 
 //: special type to designate jump targets
@@ -52,9 +53,9 @@ case JUMP_IF: {
     break;
   }
   assert(scalar(ingredients.at(1)));
-  instruction_counter += ingredients.at(1).at(0);
-  trace(Primitive_recipe_depth, "run") << "jumping to instruction " << instruction_counter+1;
-  break;
+  current_step_index() += ingredients.at(1).at(0)+1;
+  trace(Primitive_recipe_depth, "run") << "jumping to instruction " << current_step_index();
+  continue;  // skip rest of this instruction
 }
 
 :(scenario jump_if)
@@ -91,9 +92,9 @@ case JUMP_UNLESS: {
     break;
   }
   assert(scalar(ingredients.at(1)));
-  instruction_counter += ingredients.at(1).at(0);
-  trace(Primitive_recipe_depth, "run") << "jumping to instruction " << instruction_counter+1;
-  break;
+  current_step_index() += ingredients.at(1).at(0)+1;
+  trace(Primitive_recipe_depth, "run") << "jumping to instruction " << current_step_index();
+  continue;  // skip rest of this instruction
 }
 
 :(scenario jump_unless)
