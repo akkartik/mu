@@ -98,6 +98,7 @@ recipe slurp-regular-characters [
 #?   $run-depth #? 1
   {
     +next-character
+    trace [app], [slurp-regular-characters: next]
 #?     $print [a0 #? 1
 #? ] #? 1
 #?     move-cursor-down-on-display #? 1
@@ -146,6 +147,7 @@ recipe slurp-regular-characters [
       assign?:boolean <- equal c:character, 60:literal/less-than
       break-unless assign?:boolean
       print-character x:address:screen, c:character, 1:literal/red
+      trace [app], [start of assignment: <]
       result:address:buffer <- buffer-append result:address:buffer, c:character
       result:address:buffer, k:address:keyboard, x:address:screen <- slurp-assignment result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
       loop +next-character:label
@@ -172,7 +174,7 @@ recipe slurp-regular-characters [
 #?         $print [a4 #? 1
 #? ] #? 1
 #?         move-cursor-down-on-display #? 1
-        done?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
+        done?:boolean <- lesser-or-equal characters-slurped:number, -1:literal
         break-unless done?:boolean
 #?         $print [a5 #? 1
 #? ] #? 1
@@ -358,17 +360,18 @@ recipe slurp-assignment [
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
       break-unless ctrl-d?:boolean
-      trace [app], [slurp-string: ctrl-d]
+      trace [app], [slurp-assignment: ctrl-d]
       reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
-      trace [app], [slurp-string: null]
+      trace [app], [slurp-assignment: null]
       reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     # print
     print-character x:address:screen, c:character, 1:literal/red
+    trace [app], [slurp-assignment: saved one character]
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
     # backspace? return
@@ -724,6 +727,51 @@ scenario read-instruction-backspace-over-assignment [
   ]
   screen-should-contain-in-color 1:literal/red, [
     .  <                           .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .a                             .
+    .                              .
+  ]
+]
+
+scenario read-instruction-assignment-continues-after-backspace [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [a <-«-
+]
+  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain [
+    .a <-                          .
+    .                              .
+  ]
+  screen-should-contain-in-color 1:literal/red, [
+    .  <-                          .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .a                             .
+    .                              .
+  ]
+]
+
+scenario read-instruction-assignment-continues-after-backspace2 [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [a <- ««-
+]
+  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  run [
+    read-instruction keyboard:address, screen:address
+#?     $browse-trace #? 1
+  ]
+  screen-should-contain [
+    .a <-                          .
+    .                              .
+  ]
+  screen-should-contain-in-color 1:literal/red, [
+    .  <-                          .
     .                              .
   ]
   screen-should-contain-in-color 7:literal/white, [
