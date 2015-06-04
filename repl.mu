@@ -44,8 +44,12 @@ scenario read-instruction1 [
     .                              .
   ]
   screen-should-contain-in-color 7:literal/white, [
-    .x <- copy y                   .
+    .x    copy y                   .
     .=> x <- copy y                .
+    .                              .
+  ]
+  screen-should-contain-in-color 1:literal/red, [
+    .  <-                          .
     .                              .
   ]
 ]
@@ -135,6 +139,15 @@ recipe slurp-regular-characters [
       print-character x:address:screen, c:character, 6:literal/cyan
       result:address:buffer <- buffer-append result:address:buffer, c:character
       result:address:buffer, _, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+      loop +next-character:label
+    }
+    # assignment
+    {
+      assign?:boolean <- equal c:character, 60:literal/less-than
+      break-unless assign?:boolean
+      print-character x:address:screen, c:character, 1:literal/red
+      result:address:buffer <- buffer-append result:address:buffer, c:character
+      result:address:buffer, k:address:keyboard, x:address:screen <- slurp-assignment result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
       loop +next-character:label
     }
     # print
@@ -328,6 +341,48 @@ recipe slurp-string [
   result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
   # backspaced back into this string
   trace [app], [slurp-string: backspaced back into string; restarting]
+  jump +next-character:label
+]
+
+recipe slurp-assignment [
+  default-space:address:array:location <- new location:type, 30:literal
+  result:address:buffer <- next-ingredient
+  k:address:keyboard <- next-ingredient
+  x:address:screen <- next-ingredient
+  complete:continuation <- next-ingredient
+  {
+    +next-character
+    # read character
+    c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+    # quit?
+    {
+      ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
+      break-unless ctrl-d?:boolean
+      trace [app], [slurp-string: ctrl-d]
+      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+    }
+    {
+      null?:boolean <- equal c:character, 0:literal/null
+      break-unless null?:boolean
+      trace [app], [slurp-string: null]
+      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+    }
+    # print
+    print-character x:address:screen, c:character, 1:literal/red
+    # append
+    result:address:buffer <- buffer-append result:address:buffer, c:character
+    # backspace? return
+    {
+      backspace?:boolean <- equal c:character, 8:literal/backspace
+      break-unless backspace?:boolean
+      trace [app], [slurp-assignment: backspace; returning]
+      reply result:address:buffer/same-as-ingredient:0, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+    }
+  }
+  trace [app], [slurp-assignment: done, recursing to regular characters]
+  result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+  # backspaced back into this string
+  trace [app], [slurp-assignment: backspaced back into assignment; restarting]
   jump +next-character:label
 ]
 
@@ -611,4 +666,68 @@ scenario read-instruction-backspace-back-into-string [
   #   slurp-regular-characters/slurp-string: ]
   #   slurp-regular-characters/slurp-string/slurp-regular-characters: backspace
   #   slurp-regular-characters/slurp-string: b
+]
+
+scenario read-instruction-highlight-start-of-assignment [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [a <
+]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain [
+    .a <                           .
+    .                              .
+  ]
+  screen-should-contain-in-color 1:literal/red, [
+    .  <                           .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .a                             .
+    .                              .
+  ]
+]
+
+scenario read-instruction-highlight-assignment [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [a <- b
+]
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain [
+    .a <- b                        .
+    .                              .
+  ]
+  screen-should-contain-in-color 1:literal/red, [
+    .  <-                          .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .a    b                        .
+    .                              .
+  ]
+]
+
+scenario read-instruction-backspace-over-assignment [
+  assume-screen 30:literal/width, 5:literal/height
+  assume-keyboard [a <-«
+]
+  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  screen-should-contain [
+    .a <                           .
+    .                              .
+  ]
+  screen-should-contain-in-color 1:literal/red, [
+    .  <                           .
+    .                              .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .a                             .
+    .                              .
+  ]
 ]
