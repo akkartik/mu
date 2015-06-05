@@ -47,12 +47,10 @@ static int lasty = LAST_COORD_INIT;
 static int cursor_x = -1;
 static int cursor_y = -1;
 
-static uint16_t background = TB_DEFAULT;
-static uint16_t foreground = TB_DEFAULT;
+static uint16_t background = TB_BLACK;
+static uint16_t foreground = TB_WHITE;
 
 static void write_cursor(int x, int y);
-static void write_sgr_fg(uint16_t fg);
-static void write_sgr_bg(uint16_t bg);
 static void write_sgr(uint16_t fg, uint16_t bg);
 
 static void cellbuf_init(struct cellbuf *buf, int width, int height);
@@ -310,26 +308,13 @@ static void write_cursor(int x, int y) {
   WRITE_LITERAL("H");
 }
 
-static void write_sgr_fg(uint16_t fg) {
-  char buf[32];
-  WRITE_LITERAL("\033[3");
-  WRITE_INT(fg-1);
-  WRITE_LITERAL("m");
-}
-
-static void write_sgr_bg(uint16_t bg) {
-  char buf[32];
-  WRITE_LITERAL("\033[4");
-  WRITE_INT(bg-1);
-  WRITE_LITERAL("m");
-}
-
 static void write_sgr(uint16_t fg, uint16_t bg) {
   char buf[32];
-  WRITE_LITERAL("\033[3");
-  WRITE_INT(fg-1);
-  WRITE_LITERAL(";4");
-  WRITE_INT(bg-1);
+  WRITE_LITERAL("\033[38;5;");
+  WRITE_INT(fg);
+  WRITE_LITERAL("m");
+  WRITE_LITERAL("\033[48;5;");
+  WRITE_INT(bg);
   WRITE_LITERAL("m");
 }
 
@@ -412,8 +397,8 @@ static void send_attr(uint16_t fg, uint16_t bg)
   if (fg != lastfg || bg != lastbg) {
     bytebuffer_puts(&output_buffer, funcs[T_SGR0]);
 
-    uint16_t fgcol = fg & 0x0F;
-    uint16_t bgcol = bg & 0x0F;
+    uint16_t fgcol = fg & 0xFF;
+    uint16_t bgcol = bg & 0xFF;
 
     if (fg & TB_BOLD)
       bytebuffer_puts(&output_buffer, funcs[T_BOLD]);
@@ -423,16 +408,7 @@ static void send_attr(uint16_t fg, uint16_t bg)
       bytebuffer_puts(&output_buffer, funcs[T_UNDERLINE]);
     if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
       bytebuffer_puts(&output_buffer, funcs[T_REVERSE]);
-
-    if (fgcol != TB_DEFAULT) {
-      if (bgcol != TB_DEFAULT)
-        write_sgr(fgcol, bgcol);
-      else
-        write_sgr_fg(fgcol);
-    } else if (bgcol != TB_DEFAULT) {
-      write_sgr_bg(bgcol);
-    }
-
+    write_sgr(fgcol, bgcol);
     lastfg = fg;
     lastbg = bg;
   }

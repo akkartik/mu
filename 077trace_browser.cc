@@ -192,9 +192,9 @@ void render_line(int screen_row, const string& s) {
   for (col = 0; col < tb_width() && col < SIZE(s); ++col) {
     char c = s.at(col);
     if (c == '\n') c = ';';  // replace newlines with semi-colons
-    tb_change_cell(col, screen_row, c, TB_WHITE, TB_DEFAULT);
+    tb_change_cell(col, screen_row, c, TB_WHITE, TB_BLACK);
   }
   for (; col < tb_width(); ++col) {
-    tb_change_cell(col, screen_row, ' ', TB_WHITE, TB_DEFAULT);
+    tb_change_cell(col, screen_row, ' ', TB_WHITE, TB_BLACK);
   }
 }
