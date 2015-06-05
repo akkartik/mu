@@ -115,6 +115,7 @@ int tb_init(void)
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_CA]);
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_KEYPAD]);
   bytebuffer_puts(&output_buffer, funcs[T_HIDE_CURSOR]);
+  bytebuffer_puts(&output_buffer, funcs[T_ENTER_MOUSE]);
   send_clear();
 
   update_term_size();
