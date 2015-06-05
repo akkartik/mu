@@ -54,7 +54,7 @@ Recipe_number["clear-line-on-display"] = CLEAR_LINE_ON_DISPLAY;
 case CLEAR_LINE_ON_DISPLAY: {
   long long int width = tb_width();
   for (long long int x = Display_column; x < width; ++x) {
-    tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_DEFAULT);
+    tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_BLACK);
   }
   tb_set_cursor(Display_column, Display_row);
   tb_present();
@@ -86,22 +86,22 @@ case PRINT_CHARACTER_TO_DISPLAY: {
   }
   if (c == '\b') {
     if (Display_column > 0) {
-      tb_change_cell(Display_column-1, Display_row, ' ', TB_WHITE, TB_DEFAULT);
+      tb_change_cell(Display_column-1, Display_row, ' ', TB_WHITE, TB_BLACK);
       --Display_column;
       tb_set_cursor(Display_column, Display_row);
       tb_present();
     }
     break;
   }
-  int color = TB_DEFAULT;
+  int color = TB_BLACK;
   if (SIZE(ingredients) > 1) {
     assert(scalar(ingredients.at(1)));
-    color = ingredients.at(1).at(0)+1/*skip default*/;
+    color = ingredients.at(1).at(0);
 //?     tb_shutdown(); //? 1
 //?     cerr << "AAA " << color << '\n'; //? 1
 //?     exit(1); //? 1
   }
-  tb_change_cell(Display_column, Display_row, c, color, TB_DEFAULT);
+  tb_change_cell(Display_column, Display_row, c, color, TB_BLACK);
   if (Display_column < width-1) {
     ++Display_column;
     tb_set_cursor(Display_column, Display_row);

@@ -11,20 +11,13 @@ extern "C" {
 /* The screen is a 2D array of cells. */
 struct tb_cell {
   uint32_t ch;  /* unicode character */
-  uint16_t fg;  /* foreground color and attributes */
-  uint16_t bg;  /* background color and attributes */
+  uint16_t fg;  /* foreground color (0-255) and attributes */
+  uint16_t bg;  /* background color (0-255) and attributes */
 };
 
-/* Possible colors in tb_cell.fg and tb_cell.bg. */
-#define TB_DEFAULT 0x00
-#define TB_BLACK   0x01
-#define TB_RED     0x02
-#define TB_GREEN   0x03
-#define TB_YELLOW  0x04
-#define TB_BLUE    0x05
-#define TB_MAGENTA 0x06
-#define TB_CYAN    0x07
-#define TB_WHITE   0x08
+/* Names for some colors in tb_cell.fg and tb_cell.bg. */
+#define TB_BLACK 232
+#define TB_WHITE 255
 
 /* Colors in tb_cell can be combined using bitwise-OR with multiple
  * of the following attributes. */
