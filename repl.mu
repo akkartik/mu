@@ -255,8 +255,8 @@ recipe slurp-comment [
     break-if done?:boolean
     loop
   }
-  trace [app], [slurp-regular-characters: newline encountered; returning]
-  reply result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+  trace [app], [slurp-regular-characters: newline encountered; unwinding stack]
+  continue-from completed:continuation
 ]
 
 # read characters from keyboard, print them to screen in the string color and
@@ -453,6 +453,23 @@ scenario read-instruction-cancel-comment-on-backspace3 [
   ]
   screen-should-contain-in-color 7:literal/white, [
     .                              .
+    .                              .
+  ]
+]
+
+scenario read-instruction-stop-after-comment [
+  assume-screen 30:literal/width, 5:literal/height
+  # keyboard contains comment and then a second line
+  assume-keyboard [#abc
+3
+]
+  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  run [
+    read-instruction keyboard:address, screen:address
+  ]
+  # check that read-instruction reads just the comment
+  screen-should-contain [
+    .#abc                          .
     .                              .
   ]
 ]
