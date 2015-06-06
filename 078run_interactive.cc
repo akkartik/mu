@@ -38,6 +38,10 @@ void run_interactive(long long int address) {
     Recipe_number["interactive"] = Next_recipe_number++;
   // manual test: number followed by whitespace or comments
   string command = trim(strip_comments(tmp.str()));
+  if (command.empty()) {
+    ++current_step_index();
+    return;
+  }
   if (is_integer(command)) {
     print_value_of_location_as_response(to_integer(command));
     ++current_step_index();
