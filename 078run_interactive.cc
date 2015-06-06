@@ -16,10 +16,11 @@ case RUN_INTERACTIVE: {
 
 :(code)
 // manual tests:
-//  just an integer prints value of that location in memory
+//  empty string (excluding whitespace and comments) does nothing
+//  ctrl-d
+//  just an integer (excluding whitespace and comments) prints value of that location in memory
 //  instruction executes
 //  backspace at start begins new attempt
-//  ctrl-d working
 void run_interactive(long long int address) {
 //?   tb_shutdown(); //? 1
   long long int size = Memory[address];
@@ -36,7 +37,6 @@ void run_interactive(long long int address) {
   assert(Memory[address+size] == 10);  // skip the newline
   if (Recipe_number.find("interactive") == Recipe_number.end())
     Recipe_number["interactive"] = Next_recipe_number++;
-  // manual test: number followed by whitespace or comments
   string command = trim(strip_comments(tmp.str()));
   if (command.empty()) {
     ++current_step_index();
