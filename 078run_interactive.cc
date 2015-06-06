@@ -36,30 +36,49 @@ void run_interactive(long long int address) {
   assert(Memory[address+size] == 10);  // skip the newline
   if (Recipe_number.find("interactive") == Recipe_number.end())
     Recipe_number["interactive"] = Next_recipe_number++;
-  if (is_integer(tmp.str())) {
-    print_value_of_location_as_response(to_integer(tmp.str()));
+  // manual test: number followed by whitespace or comments
+  string command = trim(strip_comments(tmp.str()));
+  if (is_integer(command)) {
+    print_value_of_location_as_response(to_integer(command));
     ++current_step_index();
     return;
   }
 //?   exit(0); //? 1
-  if (Name[Recipe_number["interactive"]].find(tmp.str()) != Name[Recipe_number["interactive"]].end()) {
-    print_value_of_location_as_response(Name[Recipe_number["interactive"]][tmp.str()]);
+  if (Name[Recipe_number["interactive"]].find(command) != Name[Recipe_number["interactive"]].end()) {
+    print_value_of_location_as_response(Name[Recipe_number["interactive"]][command]);
     ++current_step_index();
     return;
   }
 //?   tb_shutdown(); //? 1
-//?   cerr << tmp.str(); //? 1
+//?   cerr << command; //? 1
 //?   exit(0); //? 1
 //?   cerr << "AAA 1\n"; //? 1
   Recipe.erase(Recipe_number["interactive"]);
   // call run(string) but without the scheduling
-//?   cerr << ("recipe interactive [\n"+tmp.str()+"\n]\n"); //? 1
-  load("recipe interactive [\n"+tmp.str()+"\n]\n");
+//?   cerr << ("recipe interactive [\n"+command+"\n]\n"); //? 1
+  load("recipe interactive [\n"+command+"\n]\n");
   transform_all();
 //?   cerr << "names: " << Name[Recipe_number["interactive"]].size() << "; "; //? 1
 //?   cerr << "steps: " << Recipe[Recipe_number["interactive"]].steps.size() << "; "; //? 1
 //?   cerr << "interactive transformed_until: " << Recipe[Recipe_number["interactive"]].transformed_until << '\n'; //? 1
   Current_routine->calls.push_front(call(Recipe_number["interactive"]));
+}
+
+string strip_comments(string in) {
+  ostringstream result;
+//?   cerr << in; //? 1
+  for (long long int i = 0; i < SIZE(in); ++i) {
+    if (in.at(i) != '#') {
+      result << in.at(i);
+    }
+    else {
+      while (i < SIZE(in) && in.at(i) != '\n')
+        ++i;
+      if (i < SIZE(in) && in.at(i) == '\n') ++i;
+    }
+  }
+//?   cerr << "ZZZ"; //? 1
+  return result.str();
 }
 
 void print_value_of_location_as_response(long long int address) {
