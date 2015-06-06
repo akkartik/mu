@@ -163,7 +163,7 @@ recipe buffer-append [
     break-unless backspace?:boolean
     empty?:boolean <- lesser-or-equal len:address:number/deref, 0:literal
     reply-if empty?:boolean, in:address:buffer/same-as-ingredient:0
-    len:address:number <- subtract len:address:number, 1:literal
+    len:address:number/deref <- subtract len:address:number/deref, 1:literal
     reply in:address:buffer/same-as-ingredient:0
   }
   {
@@ -228,6 +228,23 @@ scenario buffer-append-works [
     16 <- 100
     17 <- 0
     18 <- 0
+  ]
+]
+
+scenario buffer-append-handles-backspace [
+  run [
+    default-space:address:array:location <- new location:type, 30:literal
+    x:address:buffer <- init-buffer 3:literal
+    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
+    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
+    x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace
+    s:address:array:character <- buffer-to-array x:address:buffer
+    1:array:character/raw <- copy s:address:array:character/deref
+  ]
+  memory-should-contain [
+    1 <- 1   # length
+    2 <- 97  # contents
+    3 <- 0
   ]
 ]
 
