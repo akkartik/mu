@@ -37,13 +37,13 @@ void run_interactive(long long int address) {
   if (Recipe_number.find("interactive") == Recipe_number.end())
     Recipe_number["interactive"] = Next_recipe_number++;
   if (is_integer(tmp.str())) {
-    cerr << "=> " << Memory[to_integer(tmp.str())] << '\n';
+    print_value_of_location_as_response(to_integer(tmp.str()));
     ++current_step_index();
     return;
   }
 //?   exit(0); //? 1
   if (Name[Recipe_number["interactive"]].find(tmp.str()) != Name[Recipe_number["interactive"]].end()) {
-    cerr << "=> " << Memory[Name[Recipe_number["interactive"]][tmp.str()]] << '\n';
+    print_value_of_location_as_response(Name[Recipe_number["interactive"]][tmp.str()]);
     ++current_step_index();
     return;
   }
@@ -60,6 +60,30 @@ void run_interactive(long long int address) {
 //?   cerr << "steps: " << Recipe[Recipe_number["interactive"]].steps.size() << "; "; //? 1
 //?   cerr << "interactive transformed_until: " << Recipe[Recipe_number["interactive"]].transformed_until << '\n'; //? 1
   Current_routine->calls.push_front(call(Recipe_number["interactive"]));
+}
+
+void print_value_of_location_as_response(long long int address) {
+  // convert to string
+  ostringstream out;
+  out << "=> " << Memory[address];
+  string result = out.str();
+  // handle regular I/O
+  if (!tb_is_active()) {
+    cerr << result << '\n';
+    return;
+  }
+  // raw I/O; use termbox to print
+  long long int bound = SIZE(result);
+  if (bound > tb_width()) bound = tb_width();
+  for (long long int i = 0; i < bound; ++i) {
+    tb_change_cell(i, Display_row, result.at(i), /*computer's color*/245, TB_BLACK);
+  }
+  // newline
+  if (Display_row < tb_height()-1)
+    ++Display_row;
+  Display_column = 0;
+  tb_set_cursor(Display_column, Display_row);
+  tb_present();
 }
 
 //:: debugging tool

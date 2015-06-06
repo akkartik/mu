@@ -19,9 +19,6 @@ recipe color-session [
     inst:address:array:character, keyboard:address, screen:address <- read-instruction keyboard:address, screen:address
     break-unless inst:address:array:character
     run-interactive inst:address:array:character
-    # assume run-interactive printed on the current line
-    move-cursor-down-on-display
-#?     clear-line-on-display  # just to refresh the screen
     loop
   }
   reply keyboard:address/same-as-ingredient:0, screen:address/same-as-ingredient:1
