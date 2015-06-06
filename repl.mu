@@ -256,7 +256,7 @@ recipe slurp-comment [
     loop
   }
   trace [app], [slurp-regular-characters: newline encountered; unwinding stack]
-  continue-from completed:continuation
+  continue-from complete:continuation
 ]
 
 # read characters from keyboard, print them to screen in the string color and
