@@ -420,13 +420,19 @@ recipe print-string [
   default-space:address:array:location <- new location:type, 30:literal
   x:address:screen <- next-ingredient
   s:address:array:character <- next-ingredient
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?:boolean
+    color:number <- copy 7:literal/white
+  }
   len:number <- length s:address:array:character/deref
   i:number <- copy 0:literal
   {
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
     c:character <- index s:address:array:character/deref, i:number
-    print-character x:address:screen c:character
+    print-character x:address:screen, c:character, color:number
     i:number <- add i:number, 1:literal
     loop
   }
@@ -437,8 +443,14 @@ recipe print-integer [
   default-space:address:array:location <- new location:type, 30:literal
   x:address:screen <- next-ingredient
   n:number <- next-ingredient
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?:boolean
+    color:number <- copy 7:literal/white
+  }
   # todo: other bases besides decimal
   s:address:array:character <- integer-to-decimal-string n:number
-  print-string x:address:screen, s:address:array:character
+  print-string x:address:screen, s:address:array:character, color:number
   reply x:address:screen/same-as-ingredient:0
 ]

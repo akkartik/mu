@@ -5,7 +5,7 @@ recipe main [
   switch-to-display
   msg:address:array:character <- new [ready! type in an instruction, then hit enter. ctrl-d exits.
 ]
-  0:literal/real-screen <- print-string 0:literal/real-screen, msg:address:array:character
+  0:literal/real-screen <- print-string 0:literal/real-screen, msg:address:array:character, 245:literal/grey
   0:literal/real-keyboard, 0:literal/real-screen <- color-session 0:literal/real-keyboard, 0:literal/real-screen
 #?   wait-for-key-from-keyboard #? 1
   return-to-console
