@@ -32,7 +32,7 @@ void start_trace_browser() {
   }
   tb_init();
   Display_row = Display_column = 0;
-  struct tb_event event;
+  tb_event event;
   Top_of_screen = 0;
   refresh_screen_rows();
   while (true) {

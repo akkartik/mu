@@ -205,7 +205,7 @@ WAIT_FOR_KEY_FROM_KEYBOARD,
 Recipe_number["wait-for-key-from-keyboard"] = WAIT_FOR_KEY_FROM_KEYBOARD;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_KEY_FROM_KEYBOARD: {
-  struct tb_event event;
+  tb_event event;
   do {
     tb_poll_event(&event);
   } while (event.type != TB_EVENT_KEY);
@@ -224,7 +224,7 @@ READ_KEY_FROM_KEYBOARD,
 Recipe_number["read-key-from-keyboard"] = READ_KEY_FROM_KEYBOARD;
 :(before "End Primitive Recipe Implementations")
 case READ_KEY_FROM_KEYBOARD: {
-  struct tb_event event;
+  tb_event event;
   int event_type = tb_peek_event(&event, 5/*ms*/);
   long long int result = 0;
   long long int found = false;
