@@ -416,6 +416,34 @@ recipe cursor-to-next-line [
   reply x:address:screen/same-as-ingredient:0
 ]
 
+recipe screen-width [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:address:screen <- next-ingredient
+  # if x exists, move cursor in fake screen
+  {
+    break-unless x:address:screen
+    width:number <- get x:address:screen/deref, num-columns:offset
+    reply width:number
+  }
+  # otherwise, real screen
+  width:number <- display-width
+  reply width:number
+]
+
+recipe screen-height [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:address:screen <- next-ingredient
+  # if x exists, move cursor in fake screen
+  {
+    break-unless x:address:screen
+    height:number <- get x:address:screen/deref, num-rows:offset
+    reply height:number
+  }
+  # otherwise, real screen
+  height:number <- display-height
+  reply height:number
+]
+
 recipe print-string [
   default-space:address:array:location <- new location:type, 30:literal
   x:address:screen <- next-ingredient

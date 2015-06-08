@@ -197,6 +197,28 @@ case MOVE_CURSOR_LEFT_ON_DISPLAY: {
   break;
 }
 
+:(before "End Primitive Recipe Declarations")
+DISPLAY_WIDTH,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["display-width"] = DISPLAY_WIDTH;
+:(before "End Primitive Recipe Implementations")
+case DISPLAY_WIDTH: {
+  products.resize(1);
+  products.at(0).push_back(tb_width());
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+DISPLAY_HEIGHT,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["display-height"] = DISPLAY_HEIGHT;
+:(before "End Primitive Recipe Implementations")
+case DISPLAY_HEIGHT: {
+  products.resize(1);
+  products.at(0).push_back(tb_height());
+  break;
+}
+
 //:: Keyboard management
 
 :(before "End Primitive Recipe Declarations")
