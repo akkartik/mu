@@ -42,11 +42,11 @@ void start_trace_browser() {
     } while (event.type != TB_EVENT_KEY);
     long long int key = event.key ? event.key : event.ch;
     if (key == 'q' || key == 'Q') break;
-    if (key == 'j') {
+    if (key == 'j' || key == TB_KEY_ARROW_DOWN) {
       // move cursor one line down
       if (Display_row < Last_printed_row) ++Display_row;
     }
-    if (key == 'k') {
+    if (key == 'k' || key == TB_KEY_ARROW_UP) {
       // move cursor one line up
       if (Display_row > 0) --Display_row;
     }
@@ -62,14 +62,14 @@ void start_trace_browser() {
       // move cursor to bottom of screen
       Display_row = tb_height()-1;
     }
-    if (key == 'J') {
+    if (key == 'J' || key == TB_KEY_PGDN) {
       // page-down
       if (Trace_index.find(tb_height()-1) != Trace_index.end()) {
         Top_of_screen = Trace_index[tb_height()-1]+1;
         refresh_screen_rows();
       }
     }
-    if (key == 'K') {
+    if (key == 'K' || key == TB_KEY_PGUP) {
       // page-up is more convoluted
 //?       tb_shutdown(); //? 1
 //?       cerr << "page-up: Top_of_screen is currently " << Top_of_screen << '\n'; //? 1
