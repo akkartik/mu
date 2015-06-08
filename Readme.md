@@ -68,27 +68,10 @@ before we invest in the *visual* tools for making them concise.
 
 As a sneak peek, here's how you compute factorial in Mu:
 
-```python
-  recipe factorial [
-    default-space:address:array:location <- new location:type, 30:literal
-    n:number <- next-ingredient
-    {
-      # if n=0 return 1
-      zero?:boolean <- equal n:number, 0:literal
-      break-unless zero?:boolean
-      reply 1:literal
-    }
-    # return n * factorial(n - 1)
-    x:number <- subtract n:number, 1:literal
-    subresult:number <- factorial x:number
-    result:number <- multiply subresult:number, n:number
-    reply result:number
-  ]
-```
+![code example](http://i.imgur.com/GYtLzbM.png)
 
-Mu functions or 'recipes' are lists of instructions, each on a line, sometimes
-grouped with brackets. Each instruction operates on some *ingredients* and
-returns some *results*.
+Mu functions or 'recipes' are lists of instructions, one to a line. Each
+instruction operates on some *ingredients* and returns some *results*.
 
 ```
   [results] <- instruction [ingredients]
@@ -98,7 +81,7 @@ Result and ingredient *reagents* have to be variables. But you can have any
 number of them. In particular you can have any number of results. For example,
 you can perform integer division as follows:
 
-```python
+```
   quotient:number, remainder:number <- divide-with-remainder 11:literal, 3:literal
 ```
 
@@ -106,9 +89,12 @@ Each reagent provides its name as well as its type separated by a colon. Types
 can be multiple words, like:
 
 ```python
-  x:array:number:3  # x is an array of 3 integers
-  y:list:number  # y is a list of integers
+  x:array:number:3  # x is an array of 3 numbers
+  y:list:number  # y is a list of numbers
 ```
+
+Recipes load their ingredients from their caller using the *next-ingredient*
+instruction, and return results using *reply*.
 
 Try out the factorial program now:
 
@@ -116,6 +102,33 @@ Try out the factorial program now:
   $ ./mu factorial.mu
   result: 120  # factorial of 5
 ```
+
+You can also run its unit tests:
+
+```shell
+  $ ./mu test factorial.mu
+```
+
+Here's what one of the tests inside `factorial.mu` looks like:
+
+![test example](http://i.imgur.com/SiQv9gn.png)
+
+Every test conceptually spins up a really lightweight virtual machine, so you
+can do things like check the value of specific locations in memory. You can
+also print to screen and check that the screen contains what you expect at the
+end of a test. For example, `chessboard.mu` checks the initial position of a
+game of chess (delimiting the edges of the screen with periods):
+
+![screen test](http://i.imgur.com/ufopuF8.png)
+
+Similarly you can fake the keyboard to pretend someone typed something:
+
+```
+  assume-keyboard [a2-a4]
+```
+
+As we add a file system, graphics, audio, network support and so on, we'll
+augment scenarios with corresponding abilities to use them inside tests.
 
 ---
 
