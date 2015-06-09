@@ -9,6 +9,7 @@ recipe main [
 recipe draw-bounding-box [
   default-space:address:array:location <- new location:type, 30:literal
   screen:address <- next-ingredient
+  # sanity-check the box bounds
   top:number <- next-ingredient
   {
     out?:boolean <- lesser-than top:number, 0:literal
