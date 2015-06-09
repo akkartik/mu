@@ -10,8 +10,8 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
-body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1em; }
 .Delimiter { color: #c000c0; }
 .muScenario { color: #00af00; }
@@ -450,17 +450,51 @@ container screen-cell [
   <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
+<span class="muRecipe">recipe</span> screen-width [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Comment"># if x exists, move cursor in fake screen</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+    width:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
+    <span class="Identifier">reply</span> width:number
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise, real screen</span>
+  width:number<span class="Special"> &lt;- </span>display-width
+  <span class="Identifier">reply</span> width:number
+]
+
+<span class="muRecipe">recipe</span> screen-height [
+  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Comment"># if x exists, move cursor in fake screen</span>
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break-unless</span> x:address:screen
+    height:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-rows:offset
+    <span class="Identifier">reply</span> height:number
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise, real screen</span>
+  height:number<span class="Special"> &lt;- </span>display-height
+  <span class="Identifier">reply</span> height:number
+]
+
 <span class="muRecipe">recipe</span> print-string [
   <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   s:address:array:character<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default color to white</span>
+    <span class="Identifier">break-if</span> color-found?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
+  <span class="Delimiter">}</span>
   len:number<span class="Special"> &lt;- </span>length s:address:array:character/deref
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, len:number
     <span class="Identifier">break-if</span> done?:boolean
     c:character<span class="Special"> &lt;- </span>index s:address:array:character/deref, i:number
-    print-character x:address:screen c:character
+    print-character x:address:screen, c:character, color:number
     i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
     <span class="Identifier">loop</span>
   <span class="Delimiter">}</span>
@@ -471,9 +505,15 @@ container screen-cell [
   <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
   n:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default color to white</span>
+    <span class="Identifier">break-if</span> color-found?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
+  <span class="Delimiter">}</span>
   <span class="Comment"># todo: other bases besides decimal</span>
   s:address:array:character<span class="Special"> &lt;- </span>integer-to-decimal-string n:number
-  print-string x:address:screen, s:address:array:character
+  print-string x:address:screen, s:address:array:character, color:number
   <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
 ]
 </pre>

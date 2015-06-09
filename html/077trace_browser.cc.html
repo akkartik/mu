@@ -10,8 +10,8 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
-body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1em; }
 .cSpecial { color: #008000; }
 .Constant { color: #008080; }
@@ -64,7 +64,7 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
   <span class="Delimiter">}</span>
   tb_init<span class="Delimiter">();</span>
   Display_row = Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
-  struct tb_event event<span class="Delimiter">;</span>
+  tb_event event<span class="Delimiter">;</span>
   Top_of_screen = <span class="Constant">0</span><span class="Delimiter">;</span>
   refresh_screen_rows<span class="Delimiter">();</span>
   while <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -74,11 +74,11 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
     <span class="Delimiter">}</span> while <span class="Delimiter">(</span>event<span class="Delimiter">.</span>type != TB_EVENT_KEY<span class="Delimiter">);</span>
     long long int key = event<span class="Delimiter">.</span>key ? event<span class="Delimiter">.</span>key : event<span class="Delimiter">.</span>ch<span class="Delimiter">;</span>
     if <span class="Delimiter">(</span>key == <span class="Constant">'q'</span> || key == <span class="Constant">'Q'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>key == <span class="Constant">'j'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>key == <span class="Constant">'j'</span> || key == TB_KEY_ARROW_DOWN<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// move cursor one line down</span>
       if <span class="Delimiter">(</span>Display_row &lt; Last_printed_row<span class="Delimiter">)</span> ++Display_row<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>key == <span class="Constant">'k'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>key == <span class="Constant">'k'</span> || key == TB_KEY_ARROW_UP<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// move cursor one line up</span>
       if <span class="Delimiter">(</span>Display_row &gt; <span class="Constant">0</span><span class="Delimiter">)</span> --Display_row<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -94,14 +94,14 @@ void start_trace_browser<span class="Delimiter">()</span> <span class="Delimiter
       <span class="Comment">// move cursor to bottom of screen</span>
       Display_row = tb_height<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>key == <span class="Constant">'J'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>key == <span class="Constant">'J'</span> || key == TB_KEY_PGDN<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// page-down</span>
       if <span class="Delimiter">(</span>Trace_index<span class="Delimiter">.</span>find<span class="Delimiter">(</span>tb_height<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">)</span> != Trace_index<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
         Top_of_screen = Trace_index[tb_height<span class="Delimiter">()</span>-<span class="Constant">1</span>]+<span class="Constant">1</span><span class="Delimiter">;</span>
         refresh_screen_rows<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>key == <span class="Constant">'K'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>key == <span class="Constant">'K'</span> || key == TB_KEY_PGUP<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// page-up is more convoluted</span>
 <span class="CommentedCode">//?       tb_shutdown(); //? 1</span>
 <span class="CommentedCode">//?       cerr &lt;&lt; &quot;page-up: Top_of_screen is currently &quot; &lt;&lt; Top_of_screen &lt;&lt; '\n'; //? 1</span>
@@ -224,10 +224,10 @@ void render_line<span class="Delimiter">(</span>int screen_row<span class="Delim
   for <span class="Delimiter">(</span>col = <span class="Constant">0</span><span class="Delimiter">;</span> col &lt; tb_width<span class="Delimiter">()</span> &amp;&amp; col &lt; SIZE<span class="Delimiter">(</span>s<span class="Delimiter">);</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     char c = s<span class="Delimiter">.</span>at<span class="Delimiter">(</span>col<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>c == <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> c = <span class="Constant">';'</span><span class="Delimiter">;</span>  <span class="Comment">// replace newlines with semi-colons</span>
-    tb_change_cell<span class="Delimiter">(</span>col<span class="Delimiter">,</span> screen_row<span class="Delimiter">,</span> c<span class="Delimiter">,</span> TB_WHITE<span class="Delimiter">,</span> TB_DEFAULT<span class="Delimiter">);</span>
+    tb_change_cell<span class="Delimiter">(</span>col<span class="Delimiter">,</span> screen_row<span class="Delimiter">,</span> c<span class="Delimiter">,</span> TB_WHITE<span class="Delimiter">,</span> TB_BLACK<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   for <span class="Delimiter">(;</span> col &lt; tb_width<span class="Delimiter">();</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    tb_change_cell<span class="Delimiter">(</span>col<span class="Delimiter">,</span> screen_row<span class="Delimiter">,</span> <span class="Constant">' '</span><span class="Delimiter">,</span> TB_WHITE<span class="Delimiter">,</span> TB_DEFAULT<span class="Delimiter">);</span>
+    tb_change_cell<span class="Delimiter">(</span>col<span class="Delimiter">,</span> screen_row<span class="Delimiter">,</span> <span class="Constant">' '</span><span class="Delimiter">,</span> TB_WHITE<span class="Delimiter">,</span> TB_BLACK<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 </pre>

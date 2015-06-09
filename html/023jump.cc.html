@@ -10,8 +10,8 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
-body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1em; }
 .traceContains { color: #008000; }
 .Constant { color: #008080; }
@@ -19,6 +19,7 @@ body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
+.CommentedCode { color: #6c6c6c; }
 .Identifier { color: #008080; }
 -->
 </style>
@@ -34,6 +35,7 @@ body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 <span class="Comment">//: Jump primitives</span>
 
 <span class="Delimiter">:(scenario jump_can_skip_instructions)</span>
+<span class="CommentedCode">#? % Trace_stream-&gt;dump_layer = &quot;all&quot;; #? 1</span>
 recipe main [
   jump <span class="Constant">1</span>:offset
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
@@ -51,9 +53,9 @@ case JUMP: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>initialized<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
-  instruction_counter += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
+  current_step_index<span class="Delimiter">()</span> += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>+<span class="Constant">1</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; current_step_index<span class="Delimiter">();</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// skip rest of this instruction</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: special type to designate jump targets</span>
@@ -85,9 +87,9 @@ case JUMP_IF: <span class="Delimiter">{</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
-  instruction_counter += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
+  current_step_index<span class="Delimiter">()</span> += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>+<span class="Constant">1</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; current_step_index<span class="Delimiter">();</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// skip rest of this instruction</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario jump_if)</span>
@@ -124,9 +126,9 @@ case JUMP_UNLESS: <span class="Delimiter">{</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
-  instruction_counter += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
+  current_step_index<span class="Delimiter">()</span> += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>+<span class="Constant">1</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to instruction &quot;</span> &lt;&lt; current_step_index<span class="Delimiter">();</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// skip rest of this instruction</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario jump_unless)</span>
