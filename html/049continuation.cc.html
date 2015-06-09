@@ -10,8 +10,8 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
-body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1em; }
 .traceContains { color: #008000; }
 .Constant { color: #008080; }
@@ -77,10 +77,8 @@ Recipe_number[<span class="Constant">&quot;continue-from&quot;</span>] = CONTINU
 case CONTINUE_FROM: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   long long int c = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  Current_routine<span class="Delimiter">-&gt;</span>calls = Continuation[c]<span class="Delimiter">;</span>  <span class="Comment">// deep copy because calls have no pointers</span>
-  <span class="Comment">// refresh instruction_counter to next instruction after current-continuation</span>
-  instruction_counter = current_step_index<span class="Delimiter">()</span>+<span class="Constant">1</span><span class="Delimiter">;</span>
-  <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not done with caller; don't increment current_step_index() further</span>
+  Current_routine<span class="Delimiter">-&gt;</span>calls = Continuation[c]<span class="Delimiter">;</span>  <span class="Comment">// deep copy; calls have no pointers</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// skip rest of this instruction</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario continuation)</span>
@@ -104,6 +102,7 @@ recipe main [
 $current-continuation: <span class="Constant">1</span>
 
 <span class="Delimiter">:(scenario continuation_inside_caller)</span>
+<span class="CommentedCode">#? % Trace_stream-&gt;dump_layer = &quot;all&quot;; #? 1</span>
 recipe main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
   <span class="Constant">2</span>:continuation<span class="Special"> &lt;- </span>loop-body
@@ -243,9 +242,7 @@ case REPLY_DELIMITED_CONTINUATION: <span class="Delimiter">{</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>Next_delimited_continuation_id<span class="Delimiter">);</span>
   ++Next_delimited_continuation_id<span class="Delimiter">;</span>
-  <span class="Comment">// refresh instruction_counter to caller's step_index</span>
-  instruction_counter = current_step_index<span class="Delimiter">();</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// continue to process rest of 'reset' call</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>

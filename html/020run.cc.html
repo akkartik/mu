@@ -10,8 +10,8 @@
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
-pre { white-space: pre-wrap; font-family: monospace; color: #d0d0d0; background-color: #080808; }
-body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1em; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
@@ -21,8 +21,8 @@ body { font-family: monospace; color: #d0d0d0; background-color: #080808; }
 .Comment { color: #8080ff; }
 .Delimiter { color: #c000c0; }
 .Special { color: #ff6060; }
-.Identifier { color: #008080; }
 .CommentedCode { color: #6c6c6c; }
+.Identifier { color: #008080; }
 -->
 </style>
 
@@ -90,8 +90,10 @@ void run<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)
 
 void run_current_routine<span class="Delimiter">()</span>
 <span class="Delimiter">{</span>  <span class="Comment">// curly on a separate line, because later layers will modify header</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;AAA 6\n&quot;; //? 2</span>
   while <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>  <span class="Comment">// later layers will modify condition</span>
   <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;AAA 7: &quot; &lt;&lt; current_step_index() &lt;&lt; '\n'; //? 1</span>
     <span class="Comment">// Running One Instruction.</span>
     if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>is_label<span class="Delimiter">)</span> <span class="Delimiter">{</span> ++current_step_index<span class="Delimiter">();</span> <span class="Identifier">continue</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
     trace<span class="Delimiter">(</span>Initial_callstack_depth+Callstack_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">();</span>
@@ -103,9 +105,9 @@ void run_current_routine<span class="Delimiter">()</span>
     for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     <span class="Delimiter">}</span>
-    <span class="Comment">// Instructions below will write to 'products' or to 'instruction_counter'.</span>
+    <span class="Comment">// Instructions below will write to 'products'.</span>
     vector&lt;vector&lt;double&gt; &gt; products<span class="Delimiter">;</span>
-    long long int instruction_counter = current_step_index<span class="Delimiter">();</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;AAA 8: &quot; &lt;&lt; current_instruction().operation &lt;&lt; &quot; ^&quot; &lt;&lt; Recipe[current_instruction().operation].name &lt;&lt; &quot;$\n&quot;; //? 1</span>
     switch <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// Primitive Recipe Implementations</span>
       case COPY: <span class="Delimiter">{</span>
@@ -122,8 +124,9 @@ void run_current_routine<span class="Delimiter">()</span>
     for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
     <span class="Delimiter">}</span>
-    current_step_index<span class="Delimiter">()</span> = instruction_counter+<span class="Constant">1</span><span class="Delimiter">;</span>
+    ++current_step_index<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;AAA 9\n&quot;; //? 1</span>
   stop_running_current_routine:<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -195,10 +198,13 @@ load_permanently<span class="Delimiter">(</span><span class="Constant">&quot;cor
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// helper for tests</span>
 void run<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;AAA 2\n&quot;; //? 1</span>
   vector&lt;recipe_number&gt; tmp = load<span class="Delimiter">(</span>form<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   transform_all<span class="Delimiter">();</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;AAA 3\n&quot;; //? 1</span>
   run<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>front<span class="Delimiter">());</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;YYY\n&quot;; //? 1</span>
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: Reading from memory, writing to memory.</span>
