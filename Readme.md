@@ -61,6 +61,13 @@ before we invest in the *visual* tools for making them concise.
 
 **Taking Mu for a spin**
 
+Mu is currently implemented in C++ and requires a unix-like environment. It's
+been tested on ubuntu 14.04 with recent versions of gcc and clang, but should
+work with earlier versions going quite far back. It has no other dependencies
+that aren't taken for granted in unix. In spite of needing C++ it uses no
+advanced features and is designed to eventually bootstrap using an assembler
+written directly in machine code. Currently you build it like so:
+
 ```shell
   $ cd mu
   $ make test
