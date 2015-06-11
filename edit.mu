@@ -1,9 +1,61 @@
 recipe main [
   default-space:address:array:location <- new location:type, 30:literal
   switch-to-display
-  draw-bounding-box 0:literal/screen, 5:literal, 5:literal, 30:literal, 45:literal
+  width:number <- display-width
+  {
+    wide-enough?:boolean <- greater-than width:number, 100:literal
+    break-if wide-enough?:boolean
+    return-to-console
+    assert wide-enough?:boolean, [screen too narrow; we don't support less than 100 characters yet]
+  }
+  divider:number, _ <- divide-with-remainder width:number, 2:literal
+  draw-column 0:literal/screen, divider:number
+  x:address:array:character <- new [1:integer <- add 2:literal, 2:literal]
+  y:address:array:character <- edit x:address:array:character, 0:literal/screen, 0:literal, 0:literal, 5:literal, divider:number
+#?   draw-bounding-box 0:literal/screen, 0:literal, 0:literal, 5:literal, divider:number
+  left:number <- add divider:number, 1:literal
+  y:address:array:character <- edit 0:literal, 0:literal/screen, 0:literal, left:number, 2:literal, width:number
+  move-cursor 0:literal/screen, 0:literal, 0:literal
   wait-for-key-from-keyboard
   return-to-console
+]
+
+recipe draw-column [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  col:number <- next-ingredient
+  curr:number <- copy 0:literal
+  max:number <- screen-height screen:address
+  {
+    continue?:boolean <- lesser-than curr:number, max:number
+    break-unless continue?:boolean
+    move-cursor screen:address, curr:number, col:number
+    print-character screen:address, 9474:literal/vertical, 245:literal/grey
+    curr:number <- add curr:number, 1:literal
+    loop
+  }
+  move-cursor screen:address, 0:literal, 0:literal
+]
+
+recipe edit [
+  default-space:address:array:location <- new location:type, 30:literal
+  in:address:array:character <- next-ingredient
+  screen:address <- next-ingredient
+  top:number <- next-ingredient
+  left:number <- next-ingredient
+  bottom:number <- next-ingredient
+  right:number <- next-ingredient
+  # draw bottom boundary
+  curr:number <- copy left:number
+  {
+    continue?:boolean <- lesser-than curr:number, right:number
+    break-unless continue?:boolean
+    move-cursor screen:address, bottom:number, curr:number
+    print-character screen:address, 9472:literal/vertical, 245:literal/grey
+    curr:number <- add curr:number, 1:literal
+    loop
+  }
+  move-cursor screen:address, top:number, left:number
 ]
 
 recipe draw-bounding-box [
