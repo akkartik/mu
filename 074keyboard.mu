@@ -1,7 +1,8 @@
 # Wrappers around keyboard primitives that take a 'keyboard' object and are thus
 # easier to test.
 
-container keyboard [  # can't think of another word like screen/display, so real and fake keyboards use the same name
+# display:screen as keyboard:__? Can't think of another word.
+container keyboard [
   index:number
   data:address:array:character
 ]
