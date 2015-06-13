@@ -17,9 +17,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
 .Special { color: #ff6060; }
-.Identifier { color: #008080; }
-.muRecipe { color: #ff8700; }
 .CommentedCode { color: #6c6c6c; }
+.muControl { color: #804000; }
+.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -34,72 +34,73 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># Wrappers around keyboard primitives that take a 'keyboard' object and are thus</span>
 <span class="Comment"># easier to test.</span>
 
-container keyboard <span class="Constant">[  # can't think of another word like screen/display, so real and fake keyboards use the same name</span>
-<span class="Constant">  index:number</span>
-<span class="Constant">  data:address:array:character</span>
-<span class="Constant">]</span>
+<span class="Comment"># display:screen as keyboard:__? Can't think of another word.</span>
+container keyboard [
+  index:number
+  data:address:array:character
+]
 
 <span class="muRecipe">recipe</span> init-fake-keyboard [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   result:address:keyboard<span class="Special"> &lt;- </span>new keyboard:type
   buf:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:keyboard/deref, data:offset
 <span class="CommentedCode">#?   $start-tracing #? 1</span>
-  buf:address:address:array:character/deref<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  buf:address:address:array:character/deref<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
 <span class="CommentedCode">#?   $stop-tracing #? 1</span>
   idx:address:number<span class="Special"> &lt;- </span>get-address result:address:keyboard/deref, index:offset
   idx:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-  <span class="Identifier">reply</span> result:address:keyboard
+  <span class="muControl">reply</span> result:address:keyboard
 ]
 
 <span class="muRecipe">recipe</span> read-key [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:keyboard<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:keyboard<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:keyboard
+    <span class="muControl">break-unless</span> x:address:keyboard
     idx:address:number<span class="Special"> &lt;- </span>get-address x:address:keyboard/deref, index:offset
     buf:address:array:character<span class="Special"> &lt;- </span>get x:address:keyboard/deref, data:offset
     max:number<span class="Special"> &lt;- </span>length buf:address:array:character/deref
     <span class="Delimiter">{</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal idx:address:number/deref, max:number
-      <span class="Identifier">break-unless</span> done?:boolean
-      <span class="Identifier">reply</span> <span class="Constant">0:literal/eof</span>, <span class="Constant">1:literal/found</span>, x:address:keyboard/same-as-ingredient:0
+      <span class="muControl">break-unless</span> done?:boolean
+      <span class="muControl">reply</span> <span class="Constant">0:literal/eof</span>, <span class="Constant">1:literal/found</span>, x:address:keyboard/same-as-ingredient:0
     <span class="Delimiter">}</span>
     c:character<span class="Special"> &lt;- </span>index buf:address:array:character/deref, idx:address:number/deref
     idx:address:number/deref<span class="Special"> &lt;- </span>add idx:address:number/deref, <span class="Constant">1:literal</span>
-    <span class="Identifier">reply</span> c:character, <span class="Constant">1:literal/found</span>, x:address:keyboard/same-as-ingredient:0
+    <span class="muControl">reply</span> c:character, <span class="Constant">1:literal/found</span>, x:address:keyboard/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># real keyboard input is infrequent; avoid polling it too much</span>
   switch
   c:character, found?:boolean<span class="Special"> &lt;- </span>read-key-from-keyboard
-  <span class="Identifier">reply</span> c:character, found?:boolean, x:address:keyboard/same-as-ingredient:0
+  <span class="muControl">reply</span> c:character, found?:boolean, x:address:keyboard/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> wait-for-key [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:keyboard<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:keyboard<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:keyboard
+    <span class="muControl">break-unless</span> x:address:keyboard
     <span class="Comment"># on fake keyboards 'wait-for-key' behaves just like 'read-key'</span>
     c:character, found?:boolean, x:address:keyboard<span class="Special"> &lt;- </span>read-key x:address:keyboard
-    <span class="Identifier">reply</span> c:character, x:address:keyboard/same-as-ingredient:0
+    <span class="muControl">reply</span> c:character, x:address:keyboard/same-as-ingredient:0
   <span class="Delimiter">}</span>
   c:character<span class="Special"> &lt;- </span>wait-for-key-from-keyboard
-  <span class="Identifier">reply</span> c:character, x:address:keyboard/same-as-ingredient:0
+  <span class="muControl">reply</span> c:character, x:address:keyboard/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> send-keys-to-channel [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  keyboard:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  keyboard:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     c:character, found?:boolean, keyboard:address<span class="Special"> &lt;- </span>read-key keyboard:address
-    <span class="Identifier">loop-unless</span> found?:boolean
+    <span class="muControl">loop-unless</span> found?:boolean
 <span class="CommentedCode">#?     print-integer screen:address, c:character #? 1</span>
     print-character screen:address, c:character
     chan:address:channel<span class="Special"> &lt;- </span>write chan:address:channel, c:character
     <span class="Comment"># todo: eof</span>
-    <span class="Identifier">loop</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
 </pre>

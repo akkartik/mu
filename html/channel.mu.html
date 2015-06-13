@@ -17,7 +17,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
 .Special { color: #ff6060; }
-.Identifier { color: #008080; }
+.muControl { color: #804000; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -34,38 +34,38 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> producer [
   <span class="Comment"># produce numbers 1 to 5 on a channel</span>
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># n = 0</span>
   n:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>lesser-than n:number, <span class="Constant">5:literal</span>
-    <span class="Identifier">break-unless</span> done?:boolean
+    <span class="muControl">break-unless</span> done?:boolean
     <span class="Comment"># other threads might get between these prints</span>
-   <span class="Identifier"> $print</span> <span class="Constant">[produce: ]</span>, n:number, <span class="Constant">[ </span>
+    $print <span class="Constant">[produce: ]</span>, n:number, <span class="Constant">[ </span>
 <span class="Constant">]</span>
     chan:address:channel<span class="Special"> &lt;- </span>write chan:address:channel, n:number
     n:number<span class="Special"> &lt;- </span>add n:number, <span class="Constant">1:literal</span>
-    <span class="Identifier">loop</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="muRecipe">recipe</span> consumer [
   <span class="Comment"># consume and print integers from a channel</span>
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># read an integer from the channel</span>
     n:number, chan:address:channel<span class="Special"> &lt;- </span>read chan:address:channel
     <span class="Comment"># other threads might get between these prints</span>
-   <span class="Identifier"> $print</span> <span class="Constant">[consume: ]</span>, n:number, <span class="Constant">[ </span>
+    $print <span class="Constant">[consume: ]</span>, n:number, <span class="Constant">[ </span>
 <span class="Constant">]</span>
-    <span class="Identifier">loop</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="muRecipe">recipe</span> main [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   chan:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">3:literal</span>
   <span class="Comment"># create two background 'routines' that communicate by a channel</span>
   routine1:number<span class="Special"> &lt;- </span>start-running producer:<span class="muRecipe">recipe</span>, chan:address:channel

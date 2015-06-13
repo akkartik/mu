@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 077mouse.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1em; }
+.Constant { color: #008080; }
+.Comment { color: #8080ff; }
+.Delimiter { color: #c000c0; }
+.Identifier { color: #804000; }
+.CommentedCode { color: #6c6c6c; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+READ_KEYBOARD_OR_MOUSE_EVENT<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_number[<span class="Constant">&quot;read-keyboard-or-mouse-event&quot;</span>] = READ_KEYBOARD_OR_MOUSE_EVENT<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case READ_KEYBOARD_OR_MOUSE_EVENT: <span class="Delimiter">{</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">// result and status</span>
+  tb_event event<span class="Delimiter">;</span>
+  int event_type = tb_peek_event<span class="Delimiter">(</span>&amp;event<span class="Delimiter">,</span> <span class="Constant">5</span><span class="Comment">/*</span><span class="Comment">ms</span><span class="Comment">*/</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>event_type == TB_EVENT_KEY<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">keyboard event</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    long long key = event<span class="Delimiter">.</span>key ? event<span class="Delimiter">.</span>key : event<span class="Delimiter">.</span>ch<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>key == TB_KEY_CTRL_C<span class="Delimiter">)</span> tb_shutdown<span class="Delimiter">(),</span> exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>key == TB_KEY_BACKSPACE2<span class="Delimiter">)</span> key = TB_KEY_BACKSPACE<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>key == TB_KEY_CARRIAGE_RETURN<span class="Delimiter">)</span> key = TB_KEY_NEWLINE<span class="Delimiter">;</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>key<span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">found</span><span class="Comment">*/</span><span class="Constant">true</span><span class="Delimiter">);</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>event_type == TB_EVENT_MOUSE<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">mouse event</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="CommentedCode">//?     tb_shutdown(); //? 1</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; event_type &lt;&lt; ' ' &lt;&lt; event.key &lt;&lt; ' ' &lt;&lt; event.y &lt;&lt; ' ' &lt;&lt; event.x &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?     exit(0); //? 1</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>event<span class="Delimiter">.</span>key<span class="Delimiter">);</span>  <span class="Comment">// which button, etc.</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>event<span class="Delimiter">.</span>y<span class="Delimiter">);</span>  <span class="Comment">// row</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>event<span class="Delimiter">.</span>x<span class="Delimiter">);</span>  <span class="Comment">// column</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">found</span><span class="Comment">*/</span><span class="Constant">true</span><span class="Delimiter">);</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">found</span><span class="Comment">*/</span><span class="Constant">false</span><span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

@@ -13,15 +13,15 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1em; }
-.CommentedCode { color: #6c6c6c; }
+.muScenario { color: #00af00; }
 .Delimiter { color: #c000c0; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
 .Special { color: #ff6060; }
-.Identifier { color: #008080; }
+.CommentedCode { color: #6c6c6c; }
+.muControl { color: #804000; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -68,7 +68,7 @@ container channel [
 
 <span class="Comment"># result:address:channel &lt;- init-channel capacity:number</span>
 <span class="muRecipe">recipe</span> init-channel [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   <span class="Comment"># result = new channel</span>
   result:address:channel<span class="Special"> &lt;- </span>new channel:type
   <span class="Comment"># result.first-full = 0</span>
@@ -78,22 +78,22 @@ container channel [
   free:address:number<span class="Special"> &lt;- </span>get-address result:address:channel/deref, first-free:offset
   free:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Comment"># result.data = new location[ingredient+1]</span>
-  capacity:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  capacity:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   capacity:number<span class="Special"> &lt;- </span>add capacity:number, <span class="Constant">1:literal</span>  <span class="Comment"># unused slot for 'full?' below</span>
   dest:address:address:array:location<span class="Special"> &lt;- </span>get-address result:address:channel/deref, data:offset
   dest:address:address:array:location/deref<span class="Special"> &lt;- </span>new location:type, capacity:number
-  <span class="Identifier">reply</span> result:address:channel
+  <span class="muControl">reply</span> result:address:channel
 ]
 
 <span class="Comment"># chan:address:channel &lt;- write chan:address:channel, val:location</span>
 <span class="muRecipe">recipe</span> write [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  val:location<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  val:location<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># block if chan is full</span>
     full:boolean<span class="Special"> &lt;- </span>channel-full? chan:address:channel
-    <span class="Identifier">break-unless</span> full:boolean
+    <span class="muControl">break-unless</span> full:boolean
     full-address:address:number<span class="Special"> &lt;- </span>get-address chan:address:channel/deref, first-full:offset
     wait-for-location full-address:address:number/deref
   <span class="Delimiter">}</span>
@@ -108,20 +108,20 @@ container channel [
     <span class="Comment"># wrap free around to 0 if necessary</span>
     len:number<span class="Special"> &lt;- </span>length circular-buffer:address:array:location/deref
     at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal free:address:number/deref, len:number
-    <span class="Identifier">break-unless</span> at-end?:boolean
+    <span class="muControl">break-unless</span> at-end?:boolean
     free:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">}</span>
-  <span class="Identifier">reply</span> chan:address:channel/same-as-ingredient:0
+  <span class="muControl">reply</span> chan:address:channel/same-as-ingredient:0
 ]
 
 <span class="Comment"># result:location, chan:address:channel &lt;- read chan:address:channel</span>
 <span class="muRecipe">recipe</span> read [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># block if chan is empty</span>
     empty:boolean<span class="Special"> &lt;- </span>channel-empty? chan:address:channel
-    <span class="Identifier">break-unless</span> empty:boolean
+    <span class="muControl">break-unless</span> empty:boolean
     free-address:address:number<span class="Special"> &lt;- </span>get-address chan:address:channel/deref, first-free:offset
     wait-for-location free-address:address:number/deref
   <span class="Delimiter">}</span>
@@ -135,21 +135,21 @@ container channel [
     <span class="Comment"># wrap full around to 0 if necessary</span>
     len:number<span class="Special"> &lt;- </span>length circular-buffer:address:array:location/deref
     at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal full:address:number/deref, len:number
-    <span class="Identifier">break-unless</span> at-end?:boolean
+    <span class="muControl">break-unless</span> at-end?:boolean
     full:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">}</span>
-  <span class="Identifier">reply</span> result:location, chan:address:channel/same-as-ingredient:0
+  <span class="muControl">reply</span> result:location, chan:address:channel/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> clear-channel [
-  <span class="Identifier">default-space</span>:address:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     empty?:boolean<span class="Special"> &lt;- </span>channel-empty? chan:address:channel
-    <span class="Identifier">break-if</span> empty?:boolean
+    <span class="muControl">break-if</span> empty?:boolean
     _, chan:address:channel<span class="Special"> &lt;- </span>read chan:address:channel
   <span class="Delimiter">}</span>
-  <span class="Identifier">reply</span> chan:address:channel/same-as-ingredient:0
+  <span class="muControl">reply</span> chan:address:channel/same-as-ingredient:0
 ]
 
 <span class="muScenario">scenario</span> channel-initialization [
@@ -220,20 +220,20 @@ container channel [
 
 <span class="Comment"># An empty channel has first-empty and first-full both at the same value.</span>
 <span class="muRecipe">recipe</span> channel-empty? [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># return chan.first-full == chan.first-free</span>
   full:number<span class="Special"> &lt;- </span>get chan:address:channel/deref, first-full:offset
   free:number<span class="Special"> &lt;- </span>get chan:address:channel/deref, first-free:offset
   result:boolean<span class="Special"> &lt;- </span>equal full:number, free:number
-  <span class="Identifier">reply</span> result:boolean
+  <span class="muControl">reply</span> result:boolean
 ]
 
 <span class="Comment"># A full channel has first-empty just before first-full, wasting one slot.</span>
 <span class="Comment"># (Other alternatives: <a href="https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)">https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)</a></span>
 <span class="muRecipe">recipe</span> channel-full? [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># tmp = chan.first-free + 1</span>
   tmp:number<span class="Special"> &lt;- </span>get chan:address:channel/deref, first-free:offset
   tmp:number<span class="Special"> &lt;- </span>add tmp:number, <span class="Constant">1:literal</span>
@@ -241,22 +241,22 @@ container channel [
     <span class="Comment"># if tmp == chan.capacity, tmp = 0</span>
     len:number<span class="Special"> &lt;- </span>channel-capacity chan:address:channel
     at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal tmp:number, len:number
-    <span class="Identifier">break-unless</span> at-end?:boolean
+    <span class="muControl">break-unless</span> at-end?:boolean
     tmp:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># return chan.first-full == tmp</span>
   full:number<span class="Special"> &lt;- </span>get chan:address:channel/deref, first-full:offset
   result:boolean<span class="Special"> &lt;- </span>equal full:number, tmp:number
-  <span class="Identifier">reply</span> result:boolean
+  <span class="muControl">reply</span> result:boolean
 ]
 
 <span class="Comment"># result:number &lt;- channel-capacity chan:address:channel</span>
 <span class="muRecipe">recipe</span> channel-capacity [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  chan:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   q:address:array:location<span class="Special"> &lt;- </span>get chan:address:channel/deref, data:offset
   result:number<span class="Special"> &lt;- </span>length q:address:array:location/deref
-  <span class="Identifier">reply</span> result:number
+  <span class="muControl">reply</span> result:number
 ]
 
 <span class="muScenario">scenario</span> channel-new-empty-not-full [
@@ -314,23 +314,23 @@ container channel [
 <span class="Comment"># helper for channels of characters in particular</span>
 <span class="Comment"># out:address:channel &lt;- buffer-lines in:address:channel, out:address:channel</span>
 <span class="muRecipe">recipe</span> buffer-lines [
-  <span class="Identifier">default-space</span>:address:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">default-space</span>:address:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
 <span class="CommentedCode">#?   $print [buffer-lines: aaa</span>
 <span class="CommentedCode">#? ]</span>
-  in:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  out:address:channel<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  in:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  out:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># repeat forever</span>
   <span class="Delimiter">{</span>
     line:address:buffer<span class="Special"> &lt;- </span>init-buffer, <span class="Constant">30:literal</span>
     <span class="Comment"># read characters from 'in' until newline, copy into line</span>
     <span class="Delimiter">{</span>
-     <span class="Identifier"> +next-character</span>
+<span class="Constant">      +next-character</span>
       c:character, in:address:channel<span class="Special"> &lt;- </span>read in:address:channel
       <span class="Comment"># drop a character on backspace</span>
       <span class="Delimiter">{</span>
         <span class="Comment"># special-case: if it's a backspace</span>
         backspace?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">8:literal</span>
-        <span class="Identifier">break-unless</span> backspace?:boolean
+        <span class="muControl">break-unless</span> backspace?:boolean
         <span class="Comment"># drop previous character</span>
 <span class="CommentedCode">#?         return-to-console #? 2</span>
 <span class="CommentedCode">#?         $print [backspace! #? 1</span>
@@ -338,7 +338,7 @@ container channel [
         <span class="Delimiter">{</span>
           buffer-length:address:number<span class="Special"> &lt;- </span>get-address line:address:buffer/deref, length:offset
           buffer-empty?:boolean<span class="Special"> &lt;- </span>equal buffer-length:address:number/deref, <span class="Constant">0:literal</span>
-          <span class="Identifier">break-if</span> buffer-empty?:boolean
+          <span class="muControl">break-if</span> buffer-empty?:boolean
 <span class="CommentedCode">#?           $print [before: ], buffer-length:address:number/deref, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
           buffer-length:address:number/deref<span class="Special"> &lt;- </span>subtract buffer-length:address:number/deref, <span class="Constant">1:literal</span>
@@ -347,18 +347,18 @@ container channel [
         <span class="Delimiter">}</span>
 <span class="CommentedCode">#?         $exit #? 2</span>
         <span class="Comment"># and don't append this one</span>
-        <span class="Identifier">loop</span><span class="Identifier"> +next-character</span>:label
+        <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
       <span class="Delimiter">}</span>
       <span class="Comment"># append anything else</span>
 <span class="CommentedCode">#?       $print [buffer-lines: appending ], c:character, [ </span>
 <span class="CommentedCode">#? ]</span>
       line:address:buffer<span class="Special"> &lt;- </span>buffer-append line:address:buffer, c:character
       line-done?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
-      <span class="Identifier">break-if</span> line-done?:boolean
+      <span class="muControl">break-if</span> line-done?:boolean
       <span class="Comment"># stop buffering on eof (currently only generated by fake keyboard)</span>
       empty-fake-keyboard?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">0:literal/eof</span>
-      <span class="Identifier">break-if</span> empty-fake-keyboard?:boolean
-      <span class="Identifier">loop</span>
+      <span class="muControl">break-if</span> empty-fake-keyboard?:boolean
+      <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
 <span class="CommentedCode">#?     return-to-console #? 1</span>
     <span class="Comment"># copy line into 'out'</span>
@@ -369,19 +369,19 @@ container channel [
     max:number<span class="Special"> &lt;- </span>get line:address:buffer/deref, length:offset
     <span class="Delimiter">{</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, max:number
-      <span class="Identifier">break-if</span> done?:boolean
+      <span class="muControl">break-if</span> done?:boolean
       c:character<span class="Special"> &lt;- </span>index line-contents:address:array:character/deref, i:number
       out:address:channel<span class="Special"> &lt;- </span>write out:address:channel, c:character
 <span class="CommentedCode">#?       $print [writing ], i:number, [: ], c:character, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
       i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
-      <span class="Identifier">loop</span>
+      <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
 <span class="CommentedCode">#?     $dump-trace #? 1</span>
 <span class="CommentedCode">#?     $exit #? 1</span>
-    <span class="Identifier">loop</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="Identifier">reply</span> out:address:channel/same-as-ingredient:1
+  <span class="muControl">reply</span> out:address:channel/same-as-ingredient:1
 ]
 
 <span class="muScenario">scenario</span> buffer-lines-blocks-until-newline [
@@ -403,14 +403,14 @@ F buffer-lines-blocks-until-newline: channel should be empty <span class="muReci
     wait-for-routine 4:number/buffer-routine
     6:boolean<span class="Special"> &lt;- </span>channel-empty? 2:address:channel/buffered-stdin
     assert 6:boolean, [
-F buffer-lines-blocks-until-newline: channel should be empty <span class="muRecipe">after</span> writing<span class="Identifier"> 'a</span>']
+F buffer-lines-blocks-until-newline: channel should be empty <span class="muRecipe">after</span> writing 'a']
     <span class="Comment"># write 'b'</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">98:literal/b</span>
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
     7:boolean<span class="Special"> &lt;- </span>channel-empty? 2:address:channel/buffered-stdin
     assert 7:boolean, [
-F buffer-lines-blocks-until-newline: channel should be empty <span class="muRecipe">after</span> writing<span class="Identifier"> 'b</span>']
+F buffer-lines-blocks-until-newline: channel should be empty <span class="muRecipe">after</span> writing 'b']
     <span class="Comment"># write newline</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">10:literal/newline</span>
     restart 4:number/buffer-routine

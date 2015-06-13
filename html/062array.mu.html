@@ -13,13 +13,13 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1em; }
+.muScenario { color: #00af00; }
 .Delimiter { color: #c000c0; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
 .Special { color: #ff6060; }
-.Identifier { color: #008080; }
+.muControl { color: #804000; }
 .muRecipe { color: #ff8700; }
-.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -46,14 +46,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># create an array out of a list of scalar args</span>
 <span class="muRecipe">recipe</span> init-array [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   capacity:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># while read curr-value</span>
-    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-    <span class="Identifier">break-unless</span> exists?:boolean
+    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    <span class="muControl">break-unless</span> exists?:boolean
     capacity:number<span class="Special"> &lt;- </span>add capacity:number, <span class="Constant">1:literal</span>
-    <span class="Identifier">loop</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   result:address:array:location<span class="Special"> &lt;- </span>new location:type, capacity:number
   rewind-ingredients
@@ -61,15 +61,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     <span class="Comment"># while read curr-value</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, capacity:number
-    <span class="Identifier">break-if</span> done?:boolean
-    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+    <span class="muControl">break-if</span> done?:boolean
+    curr-value:location, exists?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
     assert exists?:boolean, <span class="Constant">[error in rewinding ingredients to init-array]</span>
     tmp:address:location<span class="Special"> &lt;- </span>index-address result:address:array:location/deref, i:number
     tmp:address:location/deref<span class="Special"> &lt;- </span>copy curr-value:location
     i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
-    <span class="Identifier">loop</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="Identifier">reply</span> result:address:array:location
+  <span class="muControl">reply</span> result:address:array:location
 ]
 </pre>
 </body>

@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1em; }
-.Delimiter { color: #c000c0; }
 .muScenario { color: #00af00; }
+.Delimiter { color: #c000c0; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
 .Special { color: #ff6060; }
-.Identifier { color: #008080; }
-.muRecipe { color: #ff8700; }
 .CommentedCode { color: #6c6c6c; }
+.muControl { color: #804000; }
+.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -49,12 +49,12 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> init-fake-screen [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal/capacity</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal/capacity</span>
   result:address:screen<span class="Special"> &lt;- </span>new screen:type
   width:address:number<span class="Special"> &lt;- </span>get-address result:address:screen/deref, num-columns:offset
-  width:address:number/deref<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  width:address:number/deref<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   height:address:number<span class="Special"> &lt;- </span>get-address result:address:screen/deref, num-rows:offset
-  height:address:number/deref<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  height:address:number/deref<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   row:address:number<span class="Special"> &lt;- </span>get-address result:address:screen/deref, cursor-row:offset
   row:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   column:address:number<span class="Special"> &lt;- </span>get-address result:address:screen/deref, cursor-column:offset
@@ -63,58 +63,58 @@ container screen-cell [
   buf:address:address:array:screen-cell<span class="Special"> &lt;- </span>get-address result:address:screen/deref, data:offset
   buf:address:address:array:screen-cell/deref<span class="Special"> &lt;- </span>new screen-cell:type, bufsize:number
   clear-screen result:address:screen
-  <span class="Identifier">reply</span> result:address:screen
+  <span class="muControl">reply</span> result:address:screen
 ]
 
 <span class="muRecipe">recipe</span> clear-screen [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
 <span class="CommentedCode">#?   $print [clearing screen</span>
 <span class="CommentedCode">#? ] #? 1</span>
   <span class="Comment"># if x exists</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     <span class="Comment"># clear fake screen</span>
     buf:address:array:screen-cell<span class="Special"> &lt;- </span>get x:address:screen/deref, data:offset
     max:number<span class="Special"> &lt;- </span>length buf:address:array:screen-cell/deref
     i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
     <span class="Delimiter">{</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, max:number
-      <span class="Identifier">break-if</span> done?:boolean
+      <span class="muControl">break-if</span> done?:boolean
       curr:address:screen-cell<span class="Special"> &lt;- </span>index-address buf:address:array:screen-cell/deref, i:number
       curr-content:address:character<span class="Special"> &lt;- </span>get-address curr:address:screen-cell/deref, contents:offset
       curr-content:address:character/deref<span class="Special"> &lt;- </span>copy <span class="Constant">[ ]</span>
       curr-color:address:character<span class="Special"> &lt;- </span>get-address curr:address:screen-cell/deref, color:offset
       curr-color:address:character/deref<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
       i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
-      <span class="Identifier">loop</span>
+      <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># reset cursor</span>
     cur:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-row:offset
     cur:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
     cur:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
     cur:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+    <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   clear-display
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> print-character [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  c:character<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  c:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default color to white</span>
-    <span class="Identifier">break-if</span> color-found?:boolean
+    <span class="muControl">break-if</span> color-found?:boolean
     color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if x exists</span>
     <span class="Comment"># (handle special cases exactly like in the real screen)</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     row:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-row:offset
     column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
     width:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
@@ -125,16 +125,16 @@ container screen-cell [
       newline?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
 <span class="CommentedCode">#?       $print c:character, [ ], newline?:boolean, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
-      <span class="Identifier">break-unless</span> newline?:boolean
+      <span class="muControl">break-unless</span> newline?:boolean
       <span class="Delimiter">{</span>
         <span class="Comment"># unless cursor is already at bottom</span>
         at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:address:number/deref, max-row:number
-        <span class="Identifier">break-if</span> at-bottom?:boolean
+        <span class="muControl">break-if</span> at-bottom?:boolean
         <span class="Comment"># move it to the next row</span>
         column:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
         row:address:number/deref<span class="Special"> &lt;- </span>add row:address:number/deref, <span class="Constant">1:literal</span>
       <span class="Delimiter">}</span>
-      <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+      <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
     <span class="Delimiter">}</span>
     <span class="Comment"># save character in fake screen</span>
     index:number<span class="Special"> &lt;- </span>multiply row:address:number/deref, width:number
@@ -143,11 +143,11 @@ container screen-cell [
     <span class="Comment"># special-case: backspace</span>
     <span class="Delimiter">{</span>
       backspace?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">8:literal</span>
-      <span class="Identifier">break-unless</span> backspace?:boolean
+      <span class="muControl">break-unless</span> backspace?:boolean
       <span class="Delimiter">{</span>
         <span class="Comment"># unless cursor is already at left margin</span>
         at-left?:boolean<span class="Special"> &lt;- </span>lesser-or-equal column:address:number/deref, <span class="Constant">0:literal</span>
-        <span class="Identifier">break-if</span> at-left?:boolean
+        <span class="muControl">break-if</span> at-left?:boolean
         <span class="Comment"># clear previous location</span>
         column:address:number/deref<span class="Special"> &lt;- </span>subtract column:address:number/deref, <span class="Constant">1:literal</span>
         index:number<span class="Special"> &lt;- </span>subtract index:number, <span class="Constant">1:literal</span>
@@ -157,7 +157,7 @@ container screen-cell [
         cursor-contents:address:character/deref<span class="Special"> &lt;- </span>copy <span class="Constant">32:literal/space</span>
         cursor-color:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
       <span class="Delimiter">}</span>
-      <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+      <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
     <span class="Delimiter">}</span>
 <span class="CommentedCode">#?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
@@ -169,14 +169,14 @@ container screen-cell [
     <span class="Comment"># increment column unless it's already all the way to the right</span>
     <span class="Delimiter">{</span>
       at-right?:boolean<span class="Special"> &lt;- </span>equal column:address:number/deref, width:number
-      <span class="Identifier">break-if</span> at-right?:boolean
+      <span class="muControl">break-if</span> at-right?:boolean
       column:address:number/deref<span class="Special"> &lt;- </span>add column:address:number/deref, <span class="Constant">1:literal</span>
     <span class="Delimiter">}</span>
-    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+    <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   print-character-to-display c:character, color:number
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muScenario">scenario</span> print-character-at-top-left [
@@ -251,11 +251,11 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> clear-line [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, clear line in fake screen</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     n:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
     column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
     original-column:number<span class="Special"> &lt;- </span>copy column:address:number/deref
@@ -265,50 +265,50 @@ container screen-cell [
 <span class="CommentedCode">#?       $print column:address:number/deref, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:number/deref, n:number
-      <span class="Identifier">break-if</span> done?:boolean
+      <span class="muControl">break-if</span> done?:boolean
       print-character x:address:screen, <span class="Constant">[ ]</span>  <span class="Comment"># implicitly updates 'column'</span>
-      <span class="Identifier">loop</span>
+      <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># now back to where the cursor was</span>
     column:address:number/deref<span class="Special"> &lt;- </span>copy original-column:number
-    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+    <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   clear-line-on-display
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> cursor-position [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, lookup cursor in fake screen</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     row:number<span class="Special"> &lt;- </span>get x:address:screen/deref, cursor-row:offset
     column:number<span class="Special"> &lt;- </span>get x:address:screen/deref, cursor-column:offset
-    <span class="Identifier">reply</span> row:number, column:number, x:address:screen/same-as-ingredient:0
+    <span class="muControl">reply</span> row:number, column:number, x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   row:number, column:number<span class="Special"> &lt;- </span>cursor-position-on-display
-  <span class="Identifier">reply</span> row:number, column:number, x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> row:number, column:number, x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> move-cursor [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  new-row:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  new-column:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  new-row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  new-column:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     row:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-row:offset
     row:address:number/deref<span class="Special"> &lt;- </span>copy new-row:number
     column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
     column:address:number/deref<span class="Special"> &lt;- </span>copy new-column:number
-    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+    <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   move-cursor-on-display new-row:number, new-column:number
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muScenario">scenario</span> clear-line-erases-printed-characters [
@@ -343,17 +343,17 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> cursor-down [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     <span class="Delimiter">{</span>
       <span class="Comment"># if row &lt; height</span>
       height:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-rows:offset
       row:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-row:offset
       at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:address:number/deref, height:number
-      <span class="Identifier">break-if</span> at-bottom?:boolean
+      <span class="muControl">break-if</span> at-bottom?:boolean
       <span class="Comment"># row = row+1</span>
 <span class="CommentedCode">#?       $print [AAA: ], row:address:number, [ -&gt; ], row:address:number/deref, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
@@ -362,159 +362,159 @@ container screen-cell [
 <span class="CommentedCode">#? ] #? 1</span>
 <span class="CommentedCode">#?       $start-tracing #? 1</span>
     <span class="Delimiter">}</span>
-    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+    <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   move-cursor-down-on-display
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> cursor-up [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     <span class="Delimiter">{</span>
       <span class="Comment"># if row &gt;= 0</span>
       row:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-row:offset
       at-top?:boolean<span class="Special"> &lt;- </span>lesser-than row:address:number/deref, <span class="Constant">0:literal</span>
-      <span class="Identifier">break-if</span> at-top?:boolean
+      <span class="muControl">break-if</span> at-top?:boolean
       <span class="Comment"># row = row-1</span>
       row:address:number/deref<span class="Special"> &lt;- </span>subtract row:address:number/deref, <span class="Constant">1:literal</span>
     <span class="Delimiter">}</span>
-    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+    <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   move-cursor-up-on-display
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> cursor-right [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     <span class="Delimiter">{</span>
       <span class="Comment"># if column &lt; width</span>
       width:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
       column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
       at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:number/deref, width:number
-      <span class="Identifier">break-if</span> at-bottom?:boolean
+      <span class="muControl">break-if</span> at-bottom?:boolean
       <span class="Comment"># column = column+1</span>
       column:address:number/deref<span class="Special"> &lt;- </span>add column:address:number/deref, <span class="Constant">1:literal</span>
     <span class="Delimiter">}</span>
-    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+    <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   move-cursor-right-on-display
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> cursor-left [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     <span class="Delimiter">{</span>
       <span class="Comment"># if column &gt;= 0</span>
       column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
       at-top?:boolean<span class="Special"> &lt;- </span>lesser-than column:address:number/deref, <span class="Constant">0:literal</span>
-      <span class="Identifier">break-if</span> at-top?:boolean
+      <span class="muControl">break-if</span> at-top?:boolean
       <span class="Comment"># column = column-1</span>
       column:address:number/deref<span class="Special"> &lt;- </span>subtract column:address:number/deref, <span class="Constant">1:literal</span>
     <span class="Delimiter">}</span>
-    <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+    <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   move-cursor-left-on-display
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> cursor-to-start-of-line [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   row:number, _, x:address:screen<span class="Special"> &lt;- </span>cursor-position x:address:screen
   column:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   x:address:screen<span class="Special"> &lt;- </span>move-cursor x:address:screen, row:number, column:number
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> cursor-to-next-line [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   x:address:screen<span class="Special"> &lt;- </span>cursor-down x:address:screen
   x:address:screen<span class="Special"> &lt;- </span>cursor-to-start-of-line x:address:screen
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> screen-width [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     width:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
-    <span class="Identifier">reply</span> width:number
+    <span class="muControl">reply</span> width:number
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   width:number<span class="Special"> &lt;- </span>display-width
-  <span class="Identifier">reply</span> width:number
+  <span class="muControl">reply</span> width:number
 ]
 
 <span class="muRecipe">recipe</span> screen-height [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break-unless</span> x:address:screen
+    <span class="muControl">break-unless</span> x:address:screen
     height:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-rows:offset
-    <span class="Identifier">reply</span> height:number
+    <span class="muControl">reply</span> height:number
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
   height:number<span class="Special"> &lt;- </span>display-height
-  <span class="Identifier">reply</span> height:number
+  <span class="muControl">reply</span> height:number
 ]
 
 <span class="muRecipe">recipe</span> print-string [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  s:address:array:character<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  s:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default color to white</span>
-    <span class="Identifier">break-if</span> color-found?:boolean
+    <span class="muControl">break-if</span> color-found?:boolean
     color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
   <span class="Delimiter">}</span>
   len:number<span class="Special"> &lt;- </span>length s:address:array:character/deref
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, len:number
-    <span class="Identifier">break-if</span> done?:boolean
+    <span class="muControl">break-if</span> done?:boolean
     c:character<span class="Special"> &lt;- </span>index s:address:array:character/deref, i:number
     print-character x:address:screen, c:character, color:number
     i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
-    <span class="Identifier">loop</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> print-integer [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  n:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
-  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  n:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default color to white</span>
-    <span class="Identifier">break-if</span> color-found?:boolean
+    <span class="muControl">break-if</span> color-found?:boolean
     color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># todo: other bases besides decimal</span>
   s:address:array:character<span class="Special"> &lt;- </span>integer-to-decimal-string n:number
   print-string x:address:screen, s:address:array:character, color:number
-  <span class="Identifier">reply</span> x:address:screen/same-as-ingredient:0
+  <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 </pre>
 </body>
