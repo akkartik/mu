@@ -24,8 +24,7 @@ function! HighlightTangledFile()
   syntax match muCommentedCode /#? .*$/ | highlight link muCommentedCode CommentedCode
   set comments+=n:#
   " Some other bare-bones mu highlighting.
-  syntax match muAssign " <- " | highlight link muAssign SpecialChar
-  syntax match muAssign "\<raw\>"
+  syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
 endfunction
 call HighlightTangledFile()
 autocmd BufRead,BufNewFile *.mu set ft=mu

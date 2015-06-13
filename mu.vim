@@ -39,15 +39,17 @@ highlight link muString String
 syntax region muScreen start=+ \.+ end=+\.$\|$+
 highlight link muScreen muString
 
-" all mu literals are constants
+" mu literals
 syntax match muNumber %[^ ]\+:literal/\?[^ ,]*%
 highlight link muNumber Constant
+syntax match muLabel "^\s\+[^ 0-9a-zA-Z{}\[\]][^ ]*\s*$"
+syntax match muLabel %[^ ]\+:label/\?[^ ,]*%
+highlight link muLabel Constant
+syntax keyword muKeyword default-space next-ingredient ingredient | highlight link muKeyword Constant
 
 syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
-syntax match muLabel " [^a-zA-Z0-9 \[\.][a-zA-Z0-9-]\+" | highlight link muLabel Function
-syntax match muAssign " <- " | highlight link muAssign SpecialChar
-syntax match muAssign "\<raw\>"
-syntax keyword muControl reply reply-if reply-unless jump jump-if jump-unless loop loop-if loop-unless break-if break-unless default-space next-ingredient ingredient current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight link muControl Function
+syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
+syntax keyword muControl reply reply-if reply-unless jump jump-if jump-unless loop loop-if loop-unless break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
 " common keywords
 syntax keyword muRecipe recipe before after | highlight muRecipe ctermfg=208
 syntax keyword muScenario scenario | highlight muScenario ctermfg=34
