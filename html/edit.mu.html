@@ -17,9 +17,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Comment { color: #8080ff; }
 .Constant { color: #008080; }
 .Special { color: #ff6060; }
-.Identifier { color: #008080; }
-.muRecipe { color: #ff8700; }
 .CommentedCode { color: #6c6c6c; }
+.muControl { color: #804000; }
+.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -32,41 +32,93 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <body>
 <pre id='vimCodeElement'>
 <span class="muRecipe">recipe</span> main [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   switch-to-display
-  draw-bounding-box <span class="Constant">0:literal/screen</span>, <span class="Constant">5:literal</span>, <span class="Constant">5:literal</span>, <span class="Constant">30:literal</span>, <span class="Constant">45:literal</span>
+  width:number<span class="Special"> &lt;- </span>display-width
+  <span class="Delimiter">{</span>
+    wide-enough?:boolean<span class="Special"> &lt;- </span>greater-than width:number, <span class="Constant">100:literal</span>
+    <span class="muControl">break-if</span> wide-enough?:boolean
+    return-to-console
+    assert wide-enough?:boolean, <span class="Constant">[screen too narrow; we don't support less than 100 characters yet]</span>
+  <span class="Delimiter">}</span>
+  divider:number, _<span class="Special"> &lt;- </span>divide-with-remainder width:number, <span class="Constant">2:literal</span>
+  draw-column <span class="Constant">0:literal/screen</span>, divider:number
+  x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[1:integer &lt;- add 2:literal, 2:literal]</span>
+  y:address:array:character<span class="Special"> &lt;- </span>edit x:address:array:character, <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal</span>, <span class="Constant">0:literal</span>, <span class="Constant">5:literal</span>, divider:number
+<span class="CommentedCode">#?   draw-bounding-box 0:literal/screen, 0:literal, 0:literal, 5:literal, divider:number</span>
+  left:number<span class="Special"> &lt;- </span>add divider:number, <span class="Constant">1:literal</span>
+  y:address:array:character<span class="Special"> &lt;- </span>edit <span class="Constant">0:literal</span>, <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal</span>, left:number, <span class="Constant">2:literal</span>, width:number
+  move-cursor <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal</span>, <span class="Constant">0:literal</span>
   wait-for-key-from-keyboard
   return-to-console
 ]
 
+<span class="muRecipe">recipe</span> draw-column [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  col:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  curr:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  max:number<span class="Special"> &lt;- </span>screen-height screen:address
+  <span class="Delimiter">{</span>
+    continue?:boolean<span class="Special"> &lt;- </span>lesser-than curr:number, max:number
+    <span class="muControl">break-unless</span> continue?:boolean
+    move-cursor screen:address, curr:number, col:number
+    print-character screen:address, <span class="Constant">9474:literal/vertical</span>, <span class="Constant">245:literal/grey</span>
+    curr:number<span class="Special"> &lt;- </span>add curr:number, <span class="Constant">1:literal</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  move-cursor screen:address, <span class="Constant">0:literal</span>, <span class="Constant">0:literal</span>
+]
+
+<span class="muRecipe">recipe</span> edit [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  in:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  bottom:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Comment"># draw bottom boundary</span>
+  curr:number<span class="Special"> &lt;- </span>copy left:number
+  <span class="Delimiter">{</span>
+    continue?:boolean<span class="Special"> &lt;- </span>lesser-than curr:number, right:number
+    <span class="muControl">break-unless</span> continue?:boolean
+    move-cursor screen:address, bottom:number, curr:number
+    print-character screen:address, <span class="Constant">9472:literal/vertical</span>, <span class="Constant">245:literal/grey</span>
+    curr:number<span class="Special"> &lt;- </span>add curr:number, <span class="Constant">1:literal</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  move-cursor screen:address, top:number, left:number
+]
+
 <span class="muRecipe">recipe</span> draw-bounding-box [
-  <span class="Identifier">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># sanity-check the box bounds</span>
-  top:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     out?:boolean<span class="Special"> &lt;- </span>lesser-than top:number, <span class="Constant">0:literal</span>
-    <span class="Identifier">break-unless</span> out?:boolean
+    <span class="muControl">break-unless</span> out?:boolean
     top:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">}</span>
-  left:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     out?:boolean<span class="Special"> &lt;- </span>lesser-than left:number, <span class="Constant">0:literal</span>
-    <span class="Identifier">break-unless</span> out?:boolean
+    <span class="muControl">break-unless</span> out?:boolean
     left:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">}</span>
-  bottom:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  bottom:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     height:number<span class="Special"> &lt;- </span>screen-height screen:address
     out?:boolean<span class="Special"> &lt;- </span>greater-or-equal bottom:number, height:number
-    <span class="Identifier">break-unless</span> out?:boolean
+    <span class="muControl">break-unless</span> out?:boolean
     bottom:number<span class="Special"> &lt;- </span>subtract height:number, <span class="Constant">1:literal</span>
   <span class="Delimiter">}</span>
-  right:number<span class="Special"> &lt;- </span><span class="Identifier">next-ingredient</span>
+  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     width:number<span class="Special"> &lt;- </span>screen-width screen:address
     out?:boolean<span class="Special"> &lt;- </span>greater-or-equal right:number, width:number
-    <span class="Identifier">break-unless</span> out?:boolean
+    <span class="muControl">break-unless</span> out?:boolean
     right:number<span class="Special"> &lt;- </span>subtract width:number, <span class="Constant">1:literal</span>
   <span class="Delimiter">}</span>
 <span class="CommentedCode">#?   print-integer screen:address, bottom:number</span>
@@ -78,10 +130,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   x:number<span class="Special"> &lt;- </span>add left:number, <span class="Constant">1:literal</span>  <span class="Comment"># exclude corner</span>
   <span class="Delimiter">{</span>
     continue?:boolean<span class="Special"> &lt;- </span>lesser-than x:number, right:number
-    <span class="Identifier">break-unless</span> continue?:boolean
+    <span class="muControl">break-unless</span> continue?:boolean
     print-character screen:address, <span class="Constant">9472:literal/horizontal</span>, <span class="Constant">245:literal/grey</span>
     x:number<span class="Special"> &lt;- </span>add x:number, <span class="Constant">1:literal</span>
-    <span class="Identifier">loop</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   print-character screen:address, <span class="Constant">9488:literal/down-left</span>, <span class="Constant">245:literal/grey</span>
   <span class="Comment"># bottom border</span>
@@ -90,23 +142,23 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   x:number<span class="Special"> &lt;- </span>add left:number, <span class="Constant">1:literal</span>  <span class="Comment"># exclude corner</span>
   <span class="Delimiter">{</span>
     continue?:boolean<span class="Special"> &lt;- </span>lesser-than x:number, right:number
-    <span class="Identifier">break-unless</span> continue?:boolean
+    <span class="muControl">break-unless</span> continue?:boolean
     print-character screen:address, <span class="Constant">9472:literal/horizontal</span>, <span class="Constant">245:literal/grey</span>
     x:number<span class="Special"> &lt;- </span>add x:number, <span class="Constant">1:literal</span>
-    <span class="Identifier">loop</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   print-character screen:address, <span class="Constant">9496:literal/up-left</span>, <span class="Constant">245:literal/grey</span>
   <span class="Comment"># left and right borders</span>
   x:number<span class="Special"> &lt;- </span>add top:number, <span class="Constant">1:literal</span>  <span class="Comment"># exclude corner</span>
   <span class="Delimiter">{</span>
     continue?:boolean<span class="Special"> &lt;- </span>lesser-than x:number, bottom:number
-    <span class="Identifier">break-unless</span> continue?:boolean
+    <span class="muControl">break-unless</span> continue?:boolean
     move-cursor screen:address, x:number, left:number
     print-character screen:address, <span class="Constant">9474:literal/vertical</span>, <span class="Constant">245:literal/grey</span>
     move-cursor screen:address, x:number, right:number
     print-character screen:address, <span class="Constant">9474:literal/vertical</span>, <span class="Constant">245:literal/grey</span>
     x:number<span class="Special"> &lt;- </span>add x:number, <span class="Constant">1:literal</span>
-    <span class="Identifier">loop</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># position cursor inside box</span>
   move-cursor screen:address, top:number, left:number
