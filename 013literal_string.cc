@@ -110,3 +110,10 @@ recipe main [
 +parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
 # no other ingredients
 $parse: 3
+
+:(scenario string_literal_escapes_newlines_in_trace)
+recipe main [
+  copy [abc
+def]
+]
++parse:   ingredient: {name: "abc\ndef", properties: [_: "literal-string"]}
