@@ -69,6 +69,11 @@ string slurp_quoted(istream& in) {
     return;
   }
 
+//: Two tweaks to printing literal strings compared to other reagents:
+//:   a) Don't print the string twice in the representation, just put '_' in
+//:   the property list.
+//:   b) Escape newlines in the string to make it more friendly to trace().
+
 :(after "string reagent::to_string()")
   if (!properties.at(0).second.empty() && properties.at(0).second.at(0) == "literal-string") {
     return emit_literal_string(name);
