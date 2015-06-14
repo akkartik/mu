@@ -2,24 +2,9 @@ parse: instruction: assume-screen
 parse:   ingredient: {name: "20", properties: ["20": "literal", "width": ]}
 parse:   ingredient: {name: "2", properties: ["2": "literal", "height": ]}
 parse: instruction: run
-parse:   ingredient: {name: "
-    1:address:channel <- init-channel 2:literal
-    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
-    # 'read-move' is waiting for input
-    wait-for-routine 2:number
-    3:number <- routine-state 2:number/id
-    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
-    assert 4:boolean/waiting?, [
-F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
-    1:address:channel <- write 1:address:channel, 50:literal  # '2'
-    restart 2:number/routine
-    wait-for-routine 2:number
-  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:channel <- init-channel 2:literal\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-file: routine failed to pause after coming up (before any keys were pressed)]\n    1:address:channel <- write 1:address:channel, 50:literal  # '2'\n    restart 2:number/routine\n    wait-for-routine 2:number\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
-parse:   ingredient: {name: "
-    .file too low: 2     .
-    .                    .
-  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    .file too low: 2     .\n    .                    .\n  ", properties: [_: "literal-string"]}
 after-brace: recipe read-move-illegal-file
 after-brace: assume-screen ...
 after-brace: run ...
@@ -5047,8 +5032,7 @@ parse:   ingredient: {name: "2", properties: ["2": "literal", "waiting": ]}
 parse:   product: {name: "4", properties: ["4": "boolean", "waiting?": ]}
 parse: instruction: assert
 parse:   ingredient: {name: "4", properties: ["4": "boolean", "waiting?": ]}
-parse:   ingredient: {name: "
-F read-move-file: routine failed to pause after coming up (before any keys were pressed)", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\nF read-move-file: routine failed to pause after coming up (before any keys were pressed)", properties: [_: "literal-string"]}
 parse: instruction: write
 parse:   ingredient: {name: "1", properties: ["1": "address":"channel"]}
 parse:   ingredient: {name: "50", properties: ["50": "literal"]}

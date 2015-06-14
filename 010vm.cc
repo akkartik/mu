@@ -226,7 +226,17 @@ string reagent::to_string() const {
 }
 
 string emit_literal_string(string name) {
+  size_t pos = 0;
+  while (pos != string::npos)
+    pos = replace(name, "\n", "\\n", pos);
   return "{name: \""+name+"\", properties: [_: \"literal-string\"]}";
+}
+
+size_t replace(string& str, const string& from, const string& to, size_t n) {
+  size_t result = str.find(from, n);
+  if (result != string::npos)
+    str.replace(result, from.length(), to);
+  return result;
 }
 
 string instruction::to_string() const {
