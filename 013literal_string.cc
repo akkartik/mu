@@ -39,7 +39,7 @@ string slurp_quoted(istream& in) {
     char c = in.get();
 //?     cout << (int)c << ": " << brace_depth << '\n'; //? 2
     if (c == '\\') {
-      out << (char)in.get();
+      out << static_cast<char>(in.get());
       continue;
     }
     out << c;
