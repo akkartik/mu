@@ -26,15 +26,44 @@ Type_number["literal-string"] = 0;
     string result = slurp_quoted(in);
     skip_whitespace(in);
     skip_comment(in);
+//?     cerr << '^' << result << "$\n"; //? 1
     return result;
   }
 
 :(code)
 string slurp_quoted(istream& in) {
-  assert(!in.eof());
-  assert(in.peek() == '[');
   ostringstream out;
-  int brace_depth = 0;
+  assert(!in.eof());  assert(in.peek() == '[');  out << static_cast<char>(in.get());  // slurp the '['
+  if (code_string(in, out))
+    slurp_quoted_comment_aware(in, out);
+  else
+    slurp_quoted_comment_oblivious(in, out);
+  return out.str();
+}
+
+// A string is a code string if it contains a newline before any non-whitespace
+// todo: support comments before the newline. But that gets messy.
+bool code_string(istream& in, ostringstream& out) {
+  while (!in.eof()) {
+    char c = in.get();
+    if (!isspace(c)) {
+      in.putback(c);
+//?       cerr << "code_string: " << out.str() << '\n'; //? 1
+      return false;
+    }
+    out << c;
+    if (c == '\n') {
+//?       cerr << "code_string: " << out.str() << '\n'; //? 1
+      return true;
+    }
+  }
+  return false;
+}
+
+// Read a regular string. Regular strings can only contain other regular
+// strings.
+void slurp_quoted_comment_oblivious(istream& in, ostream& out) {
+  int brace_depth = 1;
   while (!in.eof()) {
     char c = in.get();
 //?     cout << (int)c << ": " << brace_depth << '\n'; //? 2
@@ -50,9 +79,28 @@ string slurp_quoted(istream& in) {
   }
   if (in.eof() && brace_depth > 0) {
     raise << "unbalanced '['\n";
-    return "";
+    out.clear();
   }
-  return out.str();
+}
+
+// Read a code string. Code strings can contain either code or regular strings.
+void slurp_quoted_comment_aware(istream& in, ostream& out) {
+  char c;
+  while (in >> c) {
+    if (c == '#') {
+      out << c;
+      while (!in.eof() && in.peek() != '\n') out << static_cast<char>(in.get());
+      continue;
+    }
+    if (c == '[') {
+      in.putback(c);
+      // recurse
+      out << slurp_quoted(in);
+      continue;
+    }
+    out << c;
+    if (c == ']') break;
+  }
 }
 
 :(after "reagent::reagent(string s)")
@@ -122,3 +170,18 @@ recipe main [
 def]
 ]
 +parse:   ingredient: {name: "abc\ndef", properties: [_: "literal-string"]}
+
+:(scenario string_literal_can_skip_past_comments)
+recipe main [
+  copy [
+    # ']' inside comment
+    bar
+  ]
+]
++parse:   ingredient: {name: "\n    # ']' inside comment\n    bar\n  ", properties: [_: "literal-string"]}
+
+:(scenario string_literal_empty)
+recipe main [
+  copy []
+]
++parse:   ingredient: {name: "", properties: [_: "literal-string"]}

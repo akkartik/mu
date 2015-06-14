@@ -134,6 +134,7 @@ Name[tmp_recipe.at(0)]["screen"] = SCREEN;
 //? cout << "before: " << curr.to_string() << '\n'; //? 1
 if (curr.name == "assume-screen") {
   curr.operation = Recipe_number["init-fake-screen"];
+  assert(curr.operation);
   assert(curr.products.empty());
   curr.products.push_back(reagent("screen:address"));
   curr.products.at(0).set_value(SCREEN);

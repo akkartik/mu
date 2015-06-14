@@ -74,6 +74,7 @@ scenario parse_scenario(istream& in) {
 //?   cerr << "parse scenario\n"; //? 1
   scenario result;
   result.name = next_word(in);
+//?   cerr << "scenario: " << result.name << '\n'; //? 1
   skip_whitespace_and_comments(in);
   assert(in.peek() == '[');
   // scenarios are take special 'code' strings so we need to ignore brackets
@@ -130,7 +131,7 @@ void run_mu_scenario(const scenario& s) {
     Trace_stream = new trace_stream;
     setup();
   }
-//?   cerr << '^' << s.to_run << "$\n"; //? 1
+//?   cerr << '^' << s.to_run << "$\n"; //? 2
   run("recipe "+s.name+" [ " + s.to_run + " ]");
   if (not_already_inside_test && Trace_stream) {
     teardown();
@@ -539,7 +540,7 @@ string slurp_quoted_ignoring_comments(istream& in) {
       // can't yet handle scenarios inside strings inside scenarios..
       in.putback(c);
       out << slurp_quoted(in);
-//?       cerr << "snapshot: ^" << out.str() << "$\n"; //? 1
+//?       cerr << "snapshot: ^" << out.str() << "$\n"; //? 2
       continue;
     }
     if (c == ']') {
