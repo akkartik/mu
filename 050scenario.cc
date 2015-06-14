@@ -79,7 +79,10 @@ scenario parse_scenario(istream& in) {
   assert(in.peek() == '[');
   // scenarios are take special 'code' strings so we need to ignore brackets
   // inside comments
-  result.to_run = slurp_quoted_ignoring_comments(in);
+  result.to_run = slurp_quoted(in);
+  // delete [] delimiters
+  result.to_run.erase(0, 1);
+  result.to_run.erase(SIZE(result.to_run)-1);
   return result;
 }
 
@@ -521,34 +524,4 @@ void run_mu_scenario(const string& form) {
   assert(_scenario == "scenario");
   scenario s = parse_scenario(in);
   run_mu_scenario(s);
-}
-
-string slurp_quoted_ignoring_comments(istream& in) {
-  assert(in.get() == '[');  // drop initial '['
-  char c;
-  ostringstream out;
-  while (in >> c) {
-//?     cerr << c << '\n'; //? 3
-    if (c == '#') {
-      // skip comment
-      in.putback(c);
-      skip_comment(in);
-      continue;
-    }
-    if (c == '[') {
-      // nested strings won't detect comments
-      // can't yet handle scenarios inside strings inside scenarios..
-      in.putback(c);
-      out << slurp_quoted(in);
-//?       cerr << "snapshot: ^" << out.str() << "$\n"; //? 2
-      continue;
-    }
-    if (c == ']') {
-      // must be at the outermost level; drop final ']'
-      break;
-    }
-    out << c;
-  }
-//?   cerr << "done\n"; //? 2
-  return out.str();
 }

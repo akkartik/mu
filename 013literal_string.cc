@@ -109,7 +109,7 @@ void slurp_quoted_comment_aware(istream& in, ostream& out) {
     assert(*s.rbegin() == ']');
     // delete [] delimiters
     s.erase(0, 1);
-    s.erase(SIZE(s)-1, SIZE(s));
+    s.erase(SIZE(s)-1);
     name = s;
     types.push_back(0);
     properties.push_back(pair<string, vector<string> >(name, vector<string>()));
