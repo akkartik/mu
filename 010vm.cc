@@ -203,6 +203,9 @@ reagent::reagent() :value(0), initialized(false) {
   properties.push_back(pair<string, vector<string> >("", vector<string>()));
 }
 string reagent::to_string() const {
+  if (!properties.at(0).second.empty() && properties.at(0).second.at(0) == "literal-string") {
+    return emit_literal_string(name);
+  }
   ostringstream out;
   out << "{name: \"" << name << "\"";
   if (!properties.empty()) {
@@ -218,7 +221,12 @@ string reagent::to_string() const {
     }
   }
   out << "}";
+//?   if (properties.at(0).second.empty()) cerr << out.str(); //? 1
   return out.str();
+}
+
+string emit_literal_string(string name) {
+  return "{name: \""+name+"\", properties: [_: \"literal-string\"]}";
 }
 
 string instruction::to_string() const {
