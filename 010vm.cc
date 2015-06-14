@@ -196,12 +196,14 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
     properties.at(0).second.push_back("dummy");
   }
 }
+
 reagent::reagent() :value(0), initialized(false) {
   // The first property is special, so ensure we always have it.
   // Other properties can be pushed back, but the first must always be
   // assigned to.
   properties.push_back(pair<string, vector<string> >("", vector<string>()));
 }
+
 string reagent::to_string() const {
   if (!properties.at(0).second.empty() && properties.at(0).second.at(0) == "literal-string") {
     return emit_literal_string(name);
