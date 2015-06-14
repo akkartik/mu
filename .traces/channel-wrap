@@ -14,34 +14,14 @@ parse:   ingredient: {name: "
     # read second value, verify that first-full wraps
     _, 1:address:channel <- read 1:address:channel
     5:number <- get 1:address:channel/deref, first-full:offset
-  ", properties: ["
-    # channel with just 1 slot
-    1:address:channel <- init-channel 1:literal/capacity
-    # write and read a value
-    1:address:channel <- write 1:address:channel, 34:literal
-    _, 1:address:channel <- read 1:address:channel
-    # first-free will now be 1
-    2:number <- get 1:address:channel/deref, first-free:offset
-    3:number <- get 1:address:channel/deref, first-free:offset
-    # write second value, verify that first-free wraps
-    1:address:channel <- write 1:address:channel, 34:literal
-    4:number <- get 1:address:channel/deref, first-free:offset
-    # read second value, verify that first-full wraps
-    _, 1:address:channel <- read 1:address:channel
-    5:number <- get 1:address:channel/deref, first-full:offset
-  ": "literal-string"]}
+  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "
     2 <- 1  # first-free after first write
     3 <- 1  # first-full after first read
     4 <- 0  # first-free after second write, wrapped
     5 <- 0  # first-full after second read, wrapped
-  ", properties: ["
-    2 <- 1  # first-free after first write
-    3 <- 1  # first-full after first read
-    4 <- 0  # first-free after second write, wrapped
-    5 <- 0  # first-full after second read, wrapped
-  ": "literal-string"]}
+  ", properties: [_: "literal-string"]}
 after-brace: recipe channel-wrap
 after-brace: run ...
 after-brace: memory-should-contain ...
