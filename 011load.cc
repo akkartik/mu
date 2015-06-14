@@ -19,12 +19,14 @@ vector<recipe_number> load(string form) {
 vector<recipe_number> load(istream& in) {
   vector<recipe_number> result;
   while (!in.eof()) {
+//?     cerr << "===\n"; //? 1
     skip_whitespace_and_comments(in);
     if (in.eof()) break;
     string command = next_word(in);
     // Command Handlers
     if (command == "recipe") {
       string recipe_name = next_word(in);
+//?       cerr << "recipe: " << recipe_name << '\n'; //? 1
       if (recipe_name.empty())
         raise << "empty recipe name\n";
       if (Recipe_number.find(recipe_name) == Recipe_number.end()) {
@@ -60,6 +62,7 @@ recipe slurp_recipe(istream& in) {
   instruction curr;
   while (next_instruction(in, &curr)) {
     // End Rewrite Instruction(curr)
+//?     cerr << "instruction: " << curr.to_string() << '\n'; //? 2
     result.steps.push_back(curr);
   }
   return result;
@@ -102,6 +105,7 @@ bool next_instruction(istream& in, instruction* curr) {
     for (; *p != "<-"; ++p) {
       if (*p == ",") continue;
       curr->products.push_back(reagent(*p));
+//?       cerr << "product: " << curr->products.back().to_string() << '\n'; //? 1
     }
     ++p;  // skip <-
   }
@@ -119,6 +123,7 @@ bool next_instruction(istream& in, instruction* curr) {
   for (; p != words.end(); ++p) {
     if (*p == ",") continue;
     curr->ingredients.push_back(reagent(*p));
+//?     cerr << "ingredient: " << curr->ingredients.back().to_string() << '\n'; //? 1
   }
 
   trace("parse") << "instruction: " << curr->name;
@@ -138,6 +143,7 @@ string next_word(istream& in) {
   slurp_word(in, out);
   skip_whitespace(in);
   skip_comment(in);
+//?   cerr << '^' << out.str() << "$\n"; //? 1
   return out.str();
 }
 
