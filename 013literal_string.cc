@@ -69,6 +69,26 @@ string slurp_quoted(istream& in) {
     return;
   }
 
+:(after "string reagent::to_string()")
+  if (!properties.at(0).second.empty() && properties.at(0).second.at(0) == "literal-string") {
+    return emit_literal_string(name);
+  }
+
+:(code)
+string emit_literal_string(string name) {
+  size_t pos = 0;
+  while (pos != string::npos)
+    pos = replace(name, "\n", "\\n", pos);
+  return "{name: \""+name+"\", properties: [_: \"literal-string\"]}";
+}
+
+size_t replace(string& str, const string& from, const string& to, size_t n) {
+  size_t result = str.find(from, n);
+  if (result != string::npos)
+    str.replace(result, from.length(), to);
+  return result;
+}
+
 :(scenario string_literal_nested)
 recipe main [
   1:address:array:character <- copy [abc [def]]

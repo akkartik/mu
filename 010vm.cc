@@ -205,9 +205,6 @@ reagent::reagent() :value(0), initialized(false) {
 }
 
 string reagent::to_string() const {
-  if (!properties.at(0).second.empty() && properties.at(0).second.at(0) == "literal-string") {
-    return emit_literal_string(name);
-  }
   ostringstream out;
   out << "{name: \"" << name << "\"";
   if (!properties.empty()) {
@@ -225,20 +222,6 @@ string reagent::to_string() const {
   out << "}";
 //?   if (properties.at(0).second.empty()) cerr << out.str(); //? 1
   return out.str();
-}
-
-string emit_literal_string(string name) {
-  size_t pos = 0;
-  while (pos != string::npos)
-    pos = replace(name, "\n", "\\n", pos);
-  return "{name: \""+name+"\", properties: [_: \"literal-string\"]}";
-}
-
-size_t replace(string& str, const string& from, const string& to, size_t n) {
-  size_t result = str.find(from, n);
-  if (result != string::npos)
-    str.replace(result, from.length(), to);
-  return result;
 }
 
 string instruction::to_string() const {
