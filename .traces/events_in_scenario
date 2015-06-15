@@ -1,0 +1,665 @@
+parse: instruction: assume-events
+parse:   ingredient: {name: "\n    type [abc]\n    left-click 0, 1\n    type [d]\n  ", properties: [_: "literal-string"]}
+parse: instruction: run
+parse:   ingredient: {name: "\n    # 3 keyboard events; each event occupies 4 locations\n#?     $start-tracing\n    1:event <- read-event events:address\n    5:event <- read-event events:address\n    9:event <- read-event events:address\n    # mouse click\n    13:event <- read-event events:address\n    # final keyboard event\n    17:event <- read-event events:address\n  ", properties: [_: "literal-string"]}
+parse: instruction: memory-should-contain
+parse:   ingredient: {name: "\n    1 <- 0  # type 'keyboard'\n    2 <- 97  # 'a'\n    3 <- 0  # unused\n    4 <- 0  # unused\n    5 <- 0  # type 'keyboard'\n    6 <- 98  # 'b'\n    7 <- 0  # unused\n    8 <- 0  # unused\n    9 <- 0  # type 'keyboard'\n    10 <- 99  # 'c'\n    11 <- 0  # unused\n    12 <- 0  # unused\n    13 <- 1  # type 'mouse'\n    14 <- 65513  # mouse click\n    15 <- 0  # row\n    16 <- 1  # column\n    17 <- 0  # type 'keyboard'\n    18 <- 100  # 'd'\n    19 <- 0  # unused\n    20 <- 0  # unused\n    21 <- 0\n  ", properties: [_: "literal-string"]}
+after-brace: recipe events-in-scenario
+after-brace: assume-events ...
+after-brace: run ...
+after-brace: memory-should-contain ...
+9999 new: routine allocated memory from 1000 to 101000
+schedule: events-in-scenario
+ 101 run: assume-events [
+    type [abc]
+    left-click 0, 1
+    type [d]
+  ]
+parse: instruction: type
+parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
+parse: instruction: left-click
+parse:   ingredient: {name: "0", properties: ["0": ]}
+parse:   ingredient: {name: "1", properties: ["1": ]}
+parse: instruction: type
+parse:   ingredient: {name: "d", properties: [_: "literal-string"]}
+ 101 run: run [
+    # 3 keyboard events; each event occupies 4 locations
+#?     $start-tracing
+    1:event <- read-event events:address
+    5:event <- read-event events:address
+    9:event <- read-event events:address
+    # mouse click
+    13:event <- read-event events:address
+    # final keyboard event
+    17:event <- read-event events:address
+  ]
+parse: instruction: read-event
+parse:   ingredient: {name: "events", properties: ["events": "address"]}
+parse:   product: {name: "1", properties: ["1": "event"]}
+parse: instruction: read-event
+parse:   ingredient: {name: "events", properties: ["events": "address"]}
+parse:   product: {name: "5", properties: ["5": "event"]}
+parse: instruction: read-event
+parse:   ingredient: {name: "events", properties: ["events": "address"]}
+parse:   product: {name: "9", properties: ["9": "event"]}
+parse: instruction: read-event
+parse:   ingredient: {name: "events", properties: ["events": "address"]}
+parse:   product: {name: "13", properties: ["13": "event"]}
+parse: instruction: read-event
+parse:   ingredient: {name: "events", properties: ["events": "address"]}
+parse:   product: {name: "17", properties: ["17": "event"]}
+after-brace: recipe run1003
+after-brace: read-event ...
+after-brace: read-event ...
+after-brace: read-event ...
+after-brace: read-event ...
+after-brace: read-event ...
+ 101 run: 1:event <- read-event events:address
+9999 mem: location 902 is 1021
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1023
+ 102 run: x:address:events <- next-ingredient 
+9999 mem: storing 1021 in location 1025
+ 102 run: break-unless x:address:events, 
+9999 mem: location 1025 is 1021
+9999 run: jump-unless fell through
+ 102 run: idx:address:number <- get-address x:address:events/deref, index:offset
+9999 mem: location 1025 is 1021
+9999 mem: location 1021 is 0
+9999 mem: location 1022 is 1000
+9999 mem: location 1025 is 1021
+9999 run: address to copy is 1021
+9999 mem: storing 1021 in location 1026
+ 102 run: buf:address:array:event <- get x:address:events/deref, data:offset
+9999 mem: location 1025 is 1021
+9999 mem: location 1021 is 0
+9999 mem: location 1022 is 1000
+9999 mem: location 1025 is 1021
+9999 run: address to copy is 1022
+9999 run: its type is 2
+9999 mem: location 1022 is 1000
+9999 mem: storing 1000 in location 1027
+ 102 run: max:number <- length buf:address:array:event/deref
+9999 mem: location 1027 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: location 1027 is 1000
+9999 mem: storing 5 in location 1028
+ 102 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+9999 mem: location 1026 is 1021
+9999 mem: location 1021 is 0
+9999 mem: location 1028 is 5
+9999 mem: storing 0 in location 1029
+ 102 run: break-unless done?:boolean, 
+9999 mem: location 1029 is 0
+9999 run: jumping to instruction 12
+ 102 run: result:event <- index buf:address:array:event/deref, idx:address:number/deref
+9999 mem: location 1027 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: location 1026 is 1021
+9999 mem: location 1021 is 0
+9999 mem: location 1027 is 1000
+9999 mem: location 1026 is 1021
+9999 mem: location 1021 is 0
+9999 run: address to copy is 1001
+9999 run: its type is 16
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: storing 0 in location 1031
+9999 mem: storing 97 in location 1032
+9999 mem: storing 0 in location 1033
+9999 mem: storing 0 in location 1034
+ 102 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+9999 mem: location 1026 is 1021
+9999 mem: location 1021 is 0
+9999 mem: location 1026 is 1021
+9999 mem: storing 1 in location 1021
+ 102 run: reply result:event, x:address:events/same-as-ingredient:0
+9999 mem: location 1031 is 0
+9999 mem: location 1032 is 97
+9999 mem: location 1033 is 0
+9999 mem: location 1034 is 0
+9999 mem: location 1025 is 1021
+9999 run: result 0 is [0, 97, 0, 0]
+9999 mem: storing 0 in location 1
+9999 mem: storing 97 in location 2
+9999 mem: storing 0 in location 3
+9999 mem: storing 0 in location 4
+ 101 run: 5:event <- read-event events:address
+9999 mem: location 902 is 1021
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1054
+ 102 run: x:address:events <- next-ingredient 
+9999 mem: storing 1021 in location 1056
+ 102 run: break-unless x:address:events, 
+9999 mem: location 1056 is 1021
+9999 run: jump-unless fell through
+ 102 run: idx:address:number <- get-address x:address:events/deref, index:offset
+9999 mem: location 1056 is 1021
+9999 mem: location 1021 is 1
+9999 mem: location 1022 is 1000
+9999 mem: location 1056 is 1021
+9999 run: address to copy is 1021
+9999 mem: storing 1021 in location 1057
+ 102 run: buf:address:array:event <- get x:address:events/deref, data:offset
+9999 mem: location 1056 is 1021
+9999 mem: location 1021 is 1
+9999 mem: location 1022 is 1000
+9999 mem: location 1056 is 1021
+9999 run: address to copy is 1022
+9999 run: its type is 2
+9999 mem: location 1022 is 1000
+9999 mem: storing 1000 in location 1058
+ 102 run: max:number <- length buf:address:array:event/deref
+9999 mem: location 1058 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: location 1058 is 1000
+9999 mem: storing 5 in location 1059
+ 102 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+9999 mem: location 1057 is 1021
+9999 mem: location 1021 is 1
+9999 mem: location 1059 is 5
+9999 mem: storing 0 in location 1060
+ 102 run: break-unless done?:boolean, 
+9999 mem: location 1060 is 0
+9999 run: jumping to instruction 12
+ 102 run: result:event <- index buf:address:array:event/deref, idx:address:number/deref
+9999 mem: location 1058 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: location 1057 is 1021
+9999 mem: location 1021 is 1
+9999 mem: location 1058 is 1000
+9999 mem: location 1057 is 1021
+9999 mem: location 1021 is 1
+9999 run: address to copy is 1005
+9999 run: its type is 16
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: storing 0 in location 1062
+9999 mem: storing 98 in location 1063
+9999 mem: storing 0 in location 1064
+9999 mem: storing 0 in location 1065
+ 102 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+9999 mem: location 1057 is 1021
+9999 mem: location 1021 is 1
+9999 mem: location 1057 is 1021
+9999 mem: storing 2 in location 1021
+ 102 run: reply result:event, x:address:events/same-as-ingredient:0
+9999 mem: location 1062 is 0
+9999 mem: location 1063 is 98
+9999 mem: location 1064 is 0
+9999 mem: location 1065 is 0
+9999 mem: location 1056 is 1021
+9999 run: result 0 is [0, 98, 0, 0]
+9999 mem: storing 0 in location 5
+9999 mem: storing 98 in location 6
+9999 mem: storing 0 in location 7
+9999 mem: storing 0 in location 8
+ 101 run: 9:event <- read-event events:address
+9999 mem: location 902 is 1021
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1085
+ 102 run: x:address:events <- next-ingredient 
+9999 mem: storing 1021 in location 1087
+ 102 run: break-unless x:address:events, 
+9999 mem: location 1087 is 1021
+9999 run: jump-unless fell through
+ 102 run: idx:address:number <- get-address x:address:events/deref, index:offset
+9999 mem: location 1087 is 1021
+9999 mem: location 1021 is 2
+9999 mem: location 1022 is 1000
+9999 mem: location 1087 is 1021
+9999 run: address to copy is 1021
+9999 mem: storing 1021 in location 1088
+ 102 run: buf:address:array:event <- get x:address:events/deref, data:offset
+9999 mem: location 1087 is 1021
+9999 mem: location 1021 is 2
+9999 mem: location 1022 is 1000
+9999 mem: location 1087 is 1021
+9999 run: address to copy is 1022
+9999 run: its type is 2
+9999 mem: location 1022 is 1000
+9999 mem: storing 1000 in location 1089
+ 102 run: max:number <- length buf:address:array:event/deref
+9999 mem: location 1089 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: location 1089 is 1000
+9999 mem: storing 5 in location 1090
+ 102 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+9999 mem: location 1088 is 1021
+9999 mem: location 1021 is 2
+9999 mem: location 1090 is 5
+9999 mem: storing 0 in location 1091
+ 102 run: break-unless done?:boolean, 
+9999 mem: location 1091 is 0
+9999 run: jumping to instruction 12
+ 102 run: result:event <- index buf:address:array:event/deref, idx:address:number/deref
+9999 mem: location 1089 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: location 1088 is 1021
+9999 mem: location 1021 is 2
+9999 mem: location 1089 is 1000
+9999 mem: location 1088 is 1021
+9999 mem: location 1021 is 2
+9999 run: address to copy is 1009
+9999 run: its type is 16
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: storing 0 in location 1093
+9999 mem: storing 99 in location 1094
+9999 mem: storing 0 in location 1095
+9999 mem: storing 0 in location 1096
+ 102 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+9999 mem: location 1088 is 1021
+9999 mem: location 1021 is 2
+9999 mem: location 1088 is 1021
+9999 mem: storing 3 in location 1021
+ 102 run: reply result:event, x:address:events/same-as-ingredient:0
+9999 mem: location 1093 is 0
+9999 mem: location 1094 is 99
+9999 mem: location 1095 is 0
+9999 mem: location 1096 is 0
+9999 mem: location 1087 is 1021
+9999 run: result 0 is [0, 99, 0, 0]
+9999 mem: storing 0 in location 9
+9999 mem: storing 99 in location 10
+9999 mem: storing 0 in location 11
+9999 mem: storing 0 in location 12
+ 101 run: 13:event <- read-event events:address
+9999 mem: location 902 is 1021
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1116
+ 102 run: x:address:events <- next-ingredient 
+9999 mem: storing 1021 in location 1118
+ 102 run: break-unless x:address:events, 
+9999 mem: location 1118 is 1021
+9999 run: jump-unless fell through
+ 102 run: idx:address:number <- get-address x:address:events/deref, index:offset
+9999 mem: location 1118 is 1021
+9999 mem: location 1021 is 3
+9999 mem: location 1022 is 1000
+9999 mem: location 1118 is 1021
+9999 run: address to copy is 1021
+9999 mem: storing 1021 in location 1119
+ 102 run: buf:address:array:event <- get x:address:events/deref, data:offset
+9999 mem: location 1118 is 1021
+9999 mem: location 1021 is 3
+9999 mem: location 1022 is 1000
+9999 mem: location 1118 is 1021
+9999 run: address to copy is 1022
+9999 run: its type is 2
+9999 mem: location 1022 is 1000
+9999 mem: storing 1000 in location 1120
+ 102 run: max:number <- length buf:address:array:event/deref
+9999 mem: location 1120 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: location 1120 is 1000
+9999 mem: storing 5 in location 1121
+ 102 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+9999 mem: location 1119 is 1021
+9999 mem: location 1021 is 3
+9999 mem: location 1121 is 5
+9999 mem: storing 0 in location 1122
+ 102 run: break-unless done?:boolean, 
+9999 mem: location 1122 is 0
+9999 run: jumping to instruction 12
+ 102 run: result:event <- index buf:address:array:event/deref, idx:address:number/deref
+9999 mem: location 1120 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: location 1119 is 1021
+9999 mem: location 1021 is 3
+9999 mem: location 1120 is 1000
+9999 mem: location 1119 is 1021
+9999 mem: location 1021 is 3
+9999 run: address to copy is 1013
+9999 run: its type is 16
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: storing 1 in location 1124
+9999 mem: storing 65513 in location 1125
+9999 mem: storing 0 in location 1126
+9999 mem: storing 1 in location 1127
+ 102 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+9999 mem: location 1119 is 1021
+9999 mem: location 1021 is 3
+9999 mem: location 1119 is 1021
+9999 mem: storing 4 in location 1021
+ 102 run: reply result:event, x:address:events/same-as-ingredient:0
+9999 mem: location 1124 is 1
+9999 mem: location 1125 is 65513
+9999 mem: location 1126 is 0
+9999 mem: location 1127 is 1
+9999 mem: location 1118 is 1021
+9999 run: result 0 is [1, 65513, 0, 1]
+9999 mem: storing 1 in location 13
+9999 mem: storing 65513 in location 14
+9999 mem: storing 0 in location 15
+9999 mem: storing 1 in location 16
+ 101 run: 17:event <- read-event events:address
+9999 mem: location 902 is 1021
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1147
+ 102 run: x:address:events <- next-ingredient 
+9999 mem: storing 1021 in location 1149
+ 102 run: break-unless x:address:events, 
+9999 mem: location 1149 is 1021
+9999 run: jump-unless fell through
+ 102 run: idx:address:number <- get-address x:address:events/deref, index:offset
+9999 mem: location 1149 is 1021
+9999 mem: location 1021 is 4
+9999 mem: location 1022 is 1000
+9999 mem: location 1149 is 1021
+9999 run: address to copy is 1021
+9999 mem: storing 1021 in location 1150
+ 102 run: buf:address:array:event <- get x:address:events/deref, data:offset
+9999 mem: location 1149 is 1021
+9999 mem: location 1021 is 4
+9999 mem: location 1022 is 1000
+9999 mem: location 1149 is 1021
+9999 run: address to copy is 1022
+9999 run: its type is 2
+9999 mem: location 1022 is 1000
+9999 mem: storing 1000 in location 1151
+ 102 run: max:number <- length buf:address:array:event/deref
+9999 mem: location 1151 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: location 1151 is 1000
+9999 mem: storing 5 in location 1152
+ 102 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+9999 mem: location 1150 is 1021
+9999 mem: location 1021 is 4
+9999 mem: location 1152 is 5
+9999 mem: storing 0 in location 1153
+ 102 run: break-unless done?:boolean, 
+9999 mem: location 1153 is 0
+9999 run: jumping to instruction 12
+ 102 run: result:event <- index buf:address:array:event/deref, idx:address:number/deref
+9999 mem: location 1151 is 1000
+9999 mem: location 1000 is 5
+9999 mem: location 1001 is 0
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 0
+9999 mem: location 1004 is 0
+9999 mem: location 1005 is 0
+9999 mem: location 1006 is 98
+9999 mem: location 1007 is 0
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 0
+9999 mem: location 1010 is 99
+9999 mem: location 1011 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1013 is 1
+9999 mem: location 1014 is 65513
+9999 mem: location 1015 is 0
+9999 mem: location 1016 is 1
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: location 1150 is 1021
+9999 mem: location 1021 is 4
+9999 mem: location 1151 is 1000
+9999 mem: location 1150 is 1021
+9999 mem: location 1021 is 4
+9999 run: address to copy is 1017
+9999 run: its type is 16
+9999 mem: location 1017 is 0
+9999 mem: location 1018 is 100
+9999 mem: location 1019 is 0
+9999 mem: location 1020 is 0
+9999 mem: storing 0 in location 1155
+9999 mem: storing 100 in location 1156
+9999 mem: storing 0 in location 1157
+9999 mem: storing 0 in location 1158
+ 102 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
+9999 mem: location 1150 is 1021
+9999 mem: location 1021 is 4
+9999 mem: location 1150 is 1021
+9999 mem: storing 5 in location 1021
+ 102 run: reply result:event, x:address:events/same-as-ingredient:0
+9999 mem: location 1155 is 0
+9999 mem: location 1156 is 100
+9999 mem: location 1157 is 0
+9999 mem: location 1158 is 0
+9999 mem: location 1149 is 1021
+9999 run: result 0 is [0, 100, 0, 0]
+9999 mem: storing 0 in location 17
+9999 mem: storing 100 in location 18
+9999 mem: storing 0 in location 19
+9999 mem: storing 0 in location 20
+ 100 run: memory-should-contain [
+    1 <- 0  # type 'keyboard'
+    2 <- 97  # 'a'
+    3 <- 0  # unused
+    4 <- 0  # unused
+    5 <- 0  # type 'keyboard'
+    6 <- 98  # 'b'
+    7 <- 0  # unused
+    8 <- 0  # unused
+    9 <- 0  # type 'keyboard'
+    10 <- 99  # 'c'
+    11 <- 0  # unused
+    12 <- 0  # unused
+    13 <- 1  # type 'mouse'
+    14 <- 65513  # mouse click
+    15 <- 0  # row
+    16 <- 1  # column
+    17 <- 0  # type 'keyboard'
+    18 <- 100  # 'd'
+    19 <- 0  # unused
+    20 <- 0  # unused
+    21 <- 0
+  ]
+9999 run: checking location 1
+9999 run: checking location 2
+9999 run: checking location 3
+9999 run: checking location 4
+9999 run: checking location 5
+9999 run: checking location 6
+9999 run: checking location 7
+9999 run: checking location 8
+9999 run: checking location 9
+9999 run: checking location 10
+9999 run: checking location 11
+9999 run: checking location 12
+9999 run: checking location 13
+9999 run: checking location 14
+9999 run: checking location 15
+9999 run: checking location 16
+9999 run: checking location 17
+9999 run: checking location 18
+9999 run: checking location 19
+9999 run: checking location 20
+9999 run: checking location 21

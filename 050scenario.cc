@@ -134,7 +134,7 @@ void run_mu_scenario(const scenario& s) {
     Trace_stream = new trace_stream;
     setup();
   }
-//?   cerr << '^' << s.to_run << "$\n"; //? 2
+//?   cerr << '^' << s.to_run << "$\n"; //? 3
   run("recipe "+s.name+" [ " + s.to_run + " ]");
   if (not_already_inside_test && Trace_stream) {
     teardown();
