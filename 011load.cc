@@ -17,6 +17,7 @@ vector<recipe_number> load(string form) {
 }
 
 vector<recipe_number> load(istream& in) {
+  in >> std::noskipws;
   vector<recipe_number> result;
   while (!in.eof()) {
 //?     cerr << "===\n"; //? 1
@@ -69,6 +70,7 @@ recipe slurp_recipe(istream& in) {
 }
 
 bool next_instruction(istream& in, instruction* curr) {
+  in >> std::noskipws;
   curr->clear();
   if (in.eof()) return false;
 //?   show_rest_of_stream(in); //? 1
@@ -82,6 +84,7 @@ bool next_instruction(istream& in, instruction* curr) {
     skip_whitespace(in);  if (in.eof()) return false;
 //?     show_rest_of_stream(in); //? 1
     string word = next_word(in);  if (in.eof()) return false;
+//?     cerr << "AAA: " << word << '\n'; //? 1
     words.push_back(word);
     skip_whitespace(in);  if (in.eof()) return false;
   }

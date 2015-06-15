@@ -76,6 +76,7 @@ void check_metadata(map<string, vector<type_number> >& metadata, const reagent& 
 }
 
 bool disqualified(/*mutable*/ reagent& x) {
+//?   cerr << x.to_string() << '\n'; //? 1
   if (x.types.empty())
     raise << "missing type in " << x.to_string() << '\n';
   assert(!x.types.empty());
