@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n#?     $start-tracing #? 3\n    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height\n    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'\n    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace\n    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace\n    2:number <- get 1:address:screen/deref, cursor-column:offset\n    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset\n    4:array:screen-cell <- copy 3:address:array:screen-cell/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height\n    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'\n    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace\n    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace\n    2:number <- get 1:address:screen/deref, cursor-column:offset\n    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset\n    4:array:screen-cell <- copy 3:address:array:screen-cell/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 0  # cursor column\n    4 <- 6  # width*height\n    5 <- 32  # space, not 'a'\n    6 <- 7  # white\n    7 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe print-extra-backspace-character
@@ -8,7 +8,6 @@ after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: print-extra-backspace-character
  101 run: run [
-#?     $start-tracing #? 3
     1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
     1:address:screen <- print-character 1:address:screen, 8:literal  # backspace

@@ -17,13 +17,41 @@ recipe edit [
   default-space:address:array:location <- new location:type, 30:literal
   s:address:array:character <- next-ingredient
   screen:address <- next-ingredient
+  # no clipping of bounds
   top:number <- next-ingredient
   left:number <- next-ingredient
   bottom:number <- next-ingredient
   right:number <- next-ingredient
   keyboard:address <- next-ingredient
-  move-cursor screen:address, top:number, left:number
-  print-string screen:address, s:address:array:character
+  # traversing inside s
+  len:number <- length s:address:array:character/deref
+  i:number <- copy 0:literal
+  # traversing inside screen
+  row:number <- copy top:number
+  column:number <- copy left:number
+  move-cursor screen:address, row:number, column:number
+  {
+    +next-character
+    done?:boolean <- greater-or-equal i:number, len:number
+    break-if done?:boolean
+    off-screen?:boolean <- greater-or-equal row:number, bottom:number
+    break-if off-screen?:boolean
+    c:character <- index s:address:array:character/deref, i:number
+    {
+      # newline? move to left rather than 0
+      newline?:boolean <- equal c:character, 10:literal/newline
+      break-unless newline?:boolean
+      row:number <- add row:number, 1:literal
+      column:number <- copy left:number
+      move-cursor screen:address, row:number, column:number
+      i:number <- add i:number, 1:literal
+      loop +next-character:label
+    }
+    print-character screen:address, c:character
+    i:number <- add i:number, 1:literal
+    column:number <- add column:number, 1:literal
+    loop
+  }
 ]
 
 scenario edit-prints-multiple-lines [
@@ -51,6 +79,21 @@ scenario edit-handles-offsets [
   screen-should-contain [
     . abc .
     .     .
+    .     .
+  ]
+]
+
+scenario edit-prints-multiple-lines-at-offset [
+  assume-screen 5:literal/width, 3:literal/height
+  assume-keyboard []
+  run [
+    s:address:array:character <- new [abc
+def]
+    s2:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+  ]
+  screen-should-contain [
+    . abc .
+    . def .
     .     .
   ]
 ]

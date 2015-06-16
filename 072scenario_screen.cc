@@ -327,9 +327,12 @@ void dump_screen() {
   assert(Memory[screen_data_start] == screen_width*screen_height);
   long long int curr = screen_data_start+1;  // skip length
   for (long long int row = 0; row < screen_height; ++row) {
-//?     cerr << curr << ":\n"; //? 1
+//?     cerr << curr << ":\n"; //? 2
     for (long long int col = 0; col < screen_width; ++col) {
-      cerr << static_cast<char>(Memory[curr]);
+      if (Memory[curr])
+        cerr << static_cast<char>(Memory[curr]);
+      else
+        cerr << ' ';
       curr += /*size of screen-cell*/2;
     }
     cerr << '\n';
