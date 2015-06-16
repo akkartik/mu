@@ -427,6 +427,14 @@ static void send_char(int x, int y, uint32_t c)
   bytebuffer_puts(&output_buffer, buf);
 }
 
+const char* to_unicode(uint32_t c)
+{
+  static char buf[7];
+  int bw = tb_utf8_unicode_to_char(buf, c);
+  buf[bw] = '\0';
+  return buf;
+}
+
 static void send_clear(void)
 {
   send_attr(foreground, background);
