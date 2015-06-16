@@ -1,5 +1,13 @@
 # Editor widget: takes a string and screen coordinates, and returns a new string.
 
+recipe main [
+  1:address:array:character <- new [abcdef]
+  switch-to-display
+  edit 1:address:array:character, 0:literal/screen, 5:literal/top, 5:literal/left, 10:literal/bottom, 10:literal/right, 0:literal/keyboard
+  wait-for-key-from-keyboard
+  return-to-console
+]
+
 scenario edit-prints-string-to-screen [
   assume-screen 10:literal/width, 5:literal/height
   assume-keyboard []
