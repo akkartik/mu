@@ -203,6 +203,7 @@ int tb_poll_event(struct tb_event *event);
 int tb_utf8_char_length(char c);
 int tb_utf8_char_to_unicode(uint32_t *out, const char *c);
 int tb_utf8_unicode_to_char(char *out, uint32_t c);
+const char* to_unicode(uint32_t c);
 
 #ifdef __cplusplus
 }

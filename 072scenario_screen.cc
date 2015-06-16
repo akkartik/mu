@@ -330,7 +330,7 @@ void dump_screen() {
 //?     cerr << curr << ":\n"; //? 2
     for (long long int col = 0; col < screen_width; ++col) {
       if (Memory[curr])
-        cerr << static_cast<char>(Memory[curr]);
+        cerr << to_unicode(Memory[curr]);
       else
         cerr << ' ';
       curr += /*size of screen-cell*/2;
