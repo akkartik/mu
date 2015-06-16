@@ -85,7 +85,6 @@ recipe print-character [
     column:address:number <- get-address x:address:screen/deref, cursor-column:offset
     width:number <- get x:address:screen/deref, num-columns:offset
     height:number <- get x:address:screen/deref, num-rows:offset
-    max-row:number <- subtract height:number, 1:literal
     # special-case: newline
     {
       newline?:boolean <- equal c:character, 10:literal/newline
@@ -94,7 +93,8 @@ recipe print-character [
       break-unless newline?:boolean
       {
         # unless cursor is already at bottom
-        at-bottom?:boolean <- greater-or-equal row:address:number/deref, max-row:number
+        bottom:number <- subtract height:number, 1:literal
+        at-bottom?:boolean <- greater-or-equal row:address:number/deref, bottom:number
         break-if at-bottom?:boolean
         # move it to the next row
         column:address:number/deref <- copy 0:literal
@@ -198,6 +198,46 @@ scenario print-backspace-character [
   ]
 ]
 
+scenario print-extra-backspace-character [
+  run [
+    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace
+    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace
+    2:number <- get 1:address:screen/deref, cursor-column:offset
+    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
+    4:array:screen-cell <- copy 3:address:array:screen-cell/deref
+  ]
+  memory-should-contain [
+    2 <- 0  # cursor column
+    4 <- 6  # width*height
+    5 <- 32  # space, not 'a'
+    6 <- 7  # white
+    7 <- 0
+  ]
+]
+
+scenario print-at-right-margin [
+  run [
+    1:address:screen <- init-fake-screen 2:literal/width, 2:literal/height
+    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    1:address:screen <- print-character 1:address:screen, 98:literal  # 'b'
+    1:address:screen <- print-character 1:address:screen, 99:literal  # 'c'
+    2:number <- get 1:address:screen/deref, cursor-column:offset
+    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
+    4:array:screen-cell <- copy 3:address:array:screen-cell/deref
+  ]
+  memory-should-contain [
+    2 <- 1  # cursor column
+    4 <- 4  # width*height
+    5 <- 97  # 'a'
+    6 <- 7  # white
+    7 <- 99  # 'c' over 'b'
+    8 <- 7  # white
+    9 <- 0
+  ]
+]
+
 scenario print-newline-character [
   run [
 #?     $start-tracing #? 3
@@ -216,6 +256,51 @@ scenario print-newline-character [
     6 <- 97  # 'a'
     7 <- 7  # white
     8 <- 0
+  ]
+]
+
+scenario print-newline-at-bottom-line [
+  run [
+    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- print-character 1:address:screen, 10:literal/newline
+    1:address:screen <- print-character 1:address:screen, 10:literal/newline
+    1:address:screen <- print-character 1:address:screen, 10:literal/newline
+    2:number <- get 1:address:screen/deref, cursor-row:offset
+    3:number <- get 1:address:screen/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    2 <- 1  # cursor row
+    3 <- 0  # cursor column
+  ]
+]
+
+scenario print-at-bottom-right [
+  run [
+    1:address:screen <- init-fake-screen 2:literal/width, 2:literal/height
+    1:address:screen <- print-character 1:address:screen, 10:literal/newline
+    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    1:address:screen <- print-character 1:address:screen, 98:literal  # 'b'
+    1:address:screen <- print-character 1:address:screen, 99:literal  # 'c'
+    1:address:screen <- print-character 1:address:screen, 10:literal/newline
+    1:address:screen <- print-character 1:address:screen, 100:literal  # 'd'
+    2:number <- get 1:address:screen/deref, cursor-row:offset
+    3:number <- get 1:address:screen/deref, cursor-column:offset
+    4:address:array:screen-cell <- get 1:address:screen/deref, data:offset
+    5:array:screen-cell <- copy 4:address:array:screen-cell/deref
+  ]
+  memory-should-contain [
+    2 <- 1  # cursor row
+    3 <- 1  # cursor column
+    5 <- 4  # width*height
+    6 <- 0  # unused
+    7 <- 7  # white
+    8 <- 0  # unused
+    9 <- 7  # white
+    10 <- 97 # 'a'
+    11 <- 7  # white
+    12 <- 100  # 'd' over 'b' and 'c' and newline
+    13 <- 7  # white
+    14 <- 0
   ]
 ]
 
