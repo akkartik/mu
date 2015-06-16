@@ -103,6 +103,8 @@ recipe print-character [
       reply x:address:screen/same-as-ingredient:0
     }
     # save character in fake screen
+#?     $print row:address:number/deref, [, ], column:address:number/deref, [ 
+#? ] #? 1
     index:number <- multiply row:address:number/deref, width:number
     index:number <- add index:number, column:address:number/deref
     buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
@@ -134,7 +136,8 @@ recipe print-character [
     cursor-color:address:number/deref <- copy color:number
     # increment column unless it's already all the way to the right
     {
-      at-right?:boolean <- equal column:address:number/deref, width:number
+      right:number <- subtract width:number, 1:literal
+      at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
       break-if at-right?:boolean
       column:address:number/deref <- add column:address:number/deref, 1:literal
     }
@@ -222,7 +225,7 @@ recipe clear-line [
   # if x exists, clear line in fake screen
   {
     break-unless x:address:screen
-    n:number <- get x:address:screen/deref, num-columns:offset
+    width:number <- get x:address:screen/deref, num-columns:offset
     column:address:number <- get-address x:address:screen/deref, cursor-column:offset
     original-column:number <- copy column:address:number/deref
     # space over the entire line
@@ -230,7 +233,8 @@ recipe clear-line [
     {
 #?       $print column:address:number/deref, [ 
 #? ] #? 1
-      done?:boolean <- greater-or-equal column:address:number/deref, n:number
+      right:number <- subtract width:number, 1:literal
+      done?:boolean <- greater-or-equal column:address:number/deref, right:number
       break-if done?:boolean
       print-character x:address:screen, [ ]  # implicitly updates 'column'
       loop
@@ -465,6 +469,26 @@ recipe print-string [
     loop
   }
   reply x:address:screen/same-as-ingredient:0
+]
+
+scenario print-string-stops-at-right-margin [
+  run [
+    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    2:address:array:character <- new [abcd]
+    1:address:screen <- print-string 1:address:screen, 2:address:array:character
+    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
+    4:array:screen-cell <- copy 3:address:array:screen-cell/deref
+  ]
+  memory-should-contain [
+    4 <- 6  # width*height
+    5 <- 97  # 'a'
+    6 <- 7  # white
+    7 <- 98  # 'b'
+    8 <- 7  # white
+    9 <- 100  # 'd' overwrites 'c'
+    10 <- 7  # white
+    11 <- 0  # unused
+  ]
 ]
 
 recipe print-integer [
