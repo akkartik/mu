@@ -1,4 +1,4 @@
-# Editor widget: takes a string and screen coordinates, and returns a new string.
+# Editor widget: takes a string and screen coordinates, modifying them in place.
 
 recipe main [
   default-space:address:array:location <- new location:type, 30:literal
@@ -22,7 +22,7 @@ scenario edit-prints-string-to-screen [
   assume-keyboard []
   run [
     s:address:array:character <- new [abc]
-    s2:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
   ]
   screen-should-contain [
     .abc       .
@@ -42,7 +42,8 @@ recipe edit [
   right:number <- next-ingredient
   right:number <- subtract right:number, 1:literal
   keyboard:address <- next-ingredient
-  render s:address:array:character, screen:address, top:number, left:number, bottom:number, right:number
+  screen:address <- render s:address:array:character, screen:address, top:number, left:number, bottom:number, right:number
+  reply s:address:array:character/same-as-ingredient:0, screen:address/same-as-ingredient:1, keyboard:address/same-as-ingredient:6
 ]
 
 recipe render [
@@ -100,6 +101,7 @@ recipe render [
     column:number <- add column:number, 1:literal
     loop
   }
+  reply screen:address/same-as-ingredient:1
 ]
 
 scenario edit-prints-multiple-lines [
@@ -108,7 +110,7 @@ scenario edit-prints-multiple-lines [
   run [
     s:address:array:character <- new [abc
 def]
-    s2:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
   ]
   screen-should-contain [
     .abc  .
@@ -122,7 +124,7 @@ scenario edit-handles-offsets [
   assume-keyboard []
   run [
     s:address:array:character <- new [abc]
-    s2:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
   ]
   screen-should-contain [
     . abc .
@@ -137,7 +139,7 @@ scenario edit-prints-multiple-lines-at-offset [
   run [
     s:address:array:character <- new [abc
 def]
-    s2:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
   ]
   screen-should-contain [
     . abc .
@@ -151,7 +153,7 @@ scenario edit-wraps-long-lines [
   assume-keyboard []
   run [
     s:address:array:character <- new [abc def]
-    s2:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
   ]
   screen-should-contain [
     .abc ↩.

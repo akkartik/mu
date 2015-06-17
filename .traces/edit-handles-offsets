@@ -4,7 +4,7 @@ parse:   ingredient: {name: "3", properties: ["3": "literal", "height": ]}
 parse: instruction: assume-keyboard
 parse:   ingredient: {name: "", properties: [_: "literal-string"]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    s:address:array:character <- new [abc]\n    s2:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    s:address:array:character <- new [abc]\n    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "\n    . abc .\n    .     .\n    .     .\n  ", properties: [_: "literal-string"]}
 after-brace: recipe edit-handles-offsets
@@ -1265,7 +1265,7 @@ schedule: edit-handles-offsets
 9999 mem: storing 1130 in location 901
  101 run: run [
     s:address:array:character <- new [abc]
-    s2:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
   ]
 parse: instruction: new
 parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
@@ -1278,17 +1278,16 @@ parse:   ingredient: {name: "1", properties: ["1": "literal", "left": ]}
 parse:   ingredient: {name: "10", properties: ["10": "literal", "bottom": ]}
 parse:   ingredient: {name: "5", properties: ["5": "literal", "right": ]}
 parse:   ingredient: {name: "keyboard", properties: ["keyboard": "address"]}
-parse:   product: {name: "s2", properties: ["s2": "address":"array":"character"]}
+parse:   product: {name: "s", properties: ["s": "address":"array":"character"]}
 parse:   product: {name: "screen", properties: ["screen": "address"]}
 parse:   product: {name: "keyboard", properties: ["keyboard": "address"]}
 name: assign s 1
-name: assign s2 2
 after-brace: recipe run1001
 after-brace: new ...
 after-brace: edit ...
  101 run: s:address:array:character <- new [abc]
 9999 mem: storing 1132 in location 1
- 101 run: s2:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+ 101 run: s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
 9999 mem: location 1 is 1132
 9999 mem: location 900 is 1031
 9999 mem: location 901 is 1130
@@ -1315,7 +1314,7 @@ after-brace: edit ...
 9999 mem: storing 4 in location 1143
  102 run: keyboard:address <- next-ingredient 
 9999 mem: storing 1130 in location 1144
- 102 run: render s:address:array:character, screen:address, top:number, left:number, bottom:number, right:number
+ 102 run: screen:address <- render s:address:array:character, screen:address, top:number, left:number, bottom:number, right:number
 9999 mem: location 1138 is 1132
 9999 mem: location 1139 is 1031
 9999 mem: location 1140 is 0
@@ -2078,6 +2077,20 @@ after-brace: edit ...
  103 run: break-if done?:boolean, 
 9999 mem: location 1179 is 1
 9999 run: jumping to instruction 47
+ 103 run: reply screen:address/same-as-ingredient:1
+9999 mem: location 1170 is 1031
+9999 run: result 0 is 1031
+9999 mem: storing 1031 in location 1139
+ 102 run: reply s:address:array:character/same-as-ingredient:0, screen:address/same-as-ingredient:1, keyboard:address/same-as-ingredient:6
+9999 mem: location 1138 is 1132
+9999 mem: location 1139 is 1031
+9999 mem: location 1144 is 1130
+9999 run: result 0 is 1132
+9999 run: result 1 is 1031
+9999 run: result 2 is 1130
+9999 mem: storing 1132 in location 1
+9999 mem: storing 1031 in location 900
+9999 mem: storing 1130 in location 901
  100 run: screen-should-contain [
     . abc .
     .     .
