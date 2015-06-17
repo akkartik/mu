@@ -1,0 +1,47 @@
+parse: instruction: assume-keyboard
+parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
+parse: instruction: assume-events
+parse:   ingredient: {name: "", properties: [_: "literal-string"]}
+after-brace: recipe recipes-should-not-use-events-alongside-keyboard
+after-brace: assume-keyboard ...
+after-brace: init-fake-keyboard ...
+after-brace: assume-events ...
+9999 new: routine allocated memory from 1000 to 101000
+schedule: recipes-should-not-use-events-alongside-keyboard
+ 101 run: keyboard:address <- assume-keyboard [abc]
+9999 mem: storing 1000 in location 901
+ 101 run: keyboard:address <- init-fake-keyboard keyboard:address
+9999 mem: location 901 is 1000
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1004
+ 102 run: result:address:keyboard <- new keyboard:type
+9999 mem: new alloc: 1035
+9999 mem: storing 1035 in location 1006
+ 102 run: buf:address:address:array:character <- get-address result:address:keyboard/deref, data:offset
+9999 mem: location 1006 is 1035
+9999 mem: location 1035 is 0
+9999 mem: location 1036 is 0
+9999 mem: location 1006 is 1035
+9999 run: address to copy is 1036
+9999 mem: storing 1036 in location 1007
+ 102 run: buf:address:address:array:character/deref <- next-ingredient 
+9999 mem: location 1007 is 1036
+9999 mem: storing 1000 in location 1036
+ 102 run: idx:address:number <- get-address result:address:keyboard/deref, index:offset
+9999 mem: location 1006 is 1035
+9999 mem: location 1035 is 0
+9999 mem: location 1036 is 1000
+9999 mem: location 1006 is 1035
+9999 run: address to copy is 1035
+9999 mem: storing 1035 in location 1008
+ 102 run: idx:address:number/deref <- copy 0:literal
+9999 mem: location 1008 is 1035
+9999 mem: storing 0 in location 1035
+ 102 run: reply result:address:keyboard
+9999 mem: location 1006 is 1035
+9999 run: result 0 is 1035
+9999 mem: storing 1035 in location 901
+ 101 run: assume-events []
+warn: can't use 'keyboard' and 'events' in the same program/scenario
+

@@ -147,3 +147,48 @@ long long int size_of_events() {
   result = size_of(type);
   return result;
 }
+
+//: Warn if a scenario uses both 'keyboard' and 'events'.
+
+:(scenario recipes_should_not_use_events_alongside_keyboard)
+% Hide_warnings = true;
+scenario recipes-should-not-use-events-alongside-keyboard [
+  assume-keyboard [abc]
+  assume-events []
+]
++warn: can't use 'keyboard' and 'events' in the same program/scenario
+
+:(before "End Globals")
+bool Keyboard_used = false;
+bool Events_used = false;
+:(before "End Setup")
+Keyboard_used = Events_used = false;
+:(after "case ASSUME_EVENTS:")
+//? cerr << "events!\n"; //? 1
+Events_used = true;
+:(before "Running One Instruction")
+//? cerr << current_instruction().to_string() << '\n'; //? 1
+for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
+  if (current_instruction().ingredients.at(i).value == KEYBOARD) Keyboard_used = true;
+  if (current_instruction().ingredients.at(i).value == EVENTS) Events_used = true;
+}
+for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
+  if (current_instruction().products.at(i).value == KEYBOARD) Keyboard_used = true;
+  if (current_instruction().products.at(i).value == EVENTS) Events_used = true;
+}
+:(before "End of Instruction")  // might miss some early returns like 'reply'
+//? cerr << Keyboard_used << Events_used << '\n'; //? 1
+if (Keyboard_used && Events_used)
+  raise << "can't use 'keyboard' and 'events' in the same program/scenario\n" << die();
+
+:(scenario recipes_should_not_use_events_alongside_keyboard_including_nested_run)
+% Hide_warnings = true;
+scenario recipes-should-not-use-events-alongside-keyboard-including-nested-run [
+  assume-events [
+    type [abc]
+  ]
+  run [
+    keyboard:location <- copy 0:literal  # unsafe
+  ]
+]
++warn: can't use 'keyboard' and 'events' in the same program/scenario
