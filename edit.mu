@@ -3,7 +3,7 @@
 recipe main [
   1:address:array:character <- new [abcdef]
   switch-to-display
-  draw-box 0:literal/screen, 4:literal/left, 4:literal/left, 10:literal/bottom, 10:literal/right
+  draw-box 0:literal/screen, 4:literal/top, 4:literal/left, 10:literal/bottom, 10:literal/right
   edit 1:address:array:character, 0:literal/screen, 5:literal/top, 5:literal/left, 10:literal/bottom, 10:literal/right, 0:literal/keyboard
   wait-for-key-from-keyboard
   return-to-console
@@ -154,43 +154,84 @@ recipe draw-box [
   bottom:number <- next-ingredient
   right:number <- next-ingredient
   # top border
-  move-cursor screen:address, top:number, left:number
-  print-character screen:address, 9484:literal/down-right, 245:literal/grey
-  x:number <- add left:number, 1:literal  # exclude corner
-  {
-    continue?:boolean <- lesser-than x:number, right:number
-    break-unless continue?:boolean
-    print-character screen:address, 9472:literal/horizontal, 245:literal/grey
-    x:number <- add x:number, 1:literal
-    loop
-  }
-  print-character screen:address, 9488:literal/down-left, 245:literal/grey
-  # bottom border
-  move-cursor screen:address, bottom:number, left:number
-  print-character screen:address, 9492:literal/up-right, 245:literal/grey
-  x:number <- add left:number, 1:literal  # exclude corner
-  {
-    continue?:boolean <- lesser-than x:number, right:number
-    break-unless continue?:boolean
-    print-character screen:address, 9472:literal/horizontal, 245:literal/grey
-    x:number <- add x:number, 1:literal
-    loop
-  }
-  print-character screen:address, 9496:literal/up-left, 245:literal/grey
-  # left and right borders
-  x:number <- add top:number, 1:literal  # exclude corner
-  {
-    continue?:boolean <- lesser-than x:number, bottom:number
-    break-unless continue?:boolean
-    move-cursor screen:address, x:number, left:number
-    print-character screen:address, 9474:literal/vertical, 245:literal/grey
-    move-cursor screen:address, x:number, right:number
-    print-character screen:address, 9474:literal/vertical, 245:literal/grey
-    x:number <- add x:number, 1:literal
-    loop
-  }
+  draw-horizontal screen:address, top:number, left:number, right:number
+  draw-horizontal screen:address, bottom:number, left:number, right:number
+  draw-vertical screen:address, left:number, top:number, bottom:number
+  draw-vertical screen:address, right:number, top:number, bottom:number
+  draw-top-left screen:address, top:number, left:number
+  draw-top-right screen:address, top:number, right:number
+  draw-bottom-left screen:address, bottom:number, left:number
+  draw-bottom-right screen:address, bottom:number, right:number
   # position cursor inside box
   move-cursor screen:address, top:number, left:number
   cursor-down screen:address
   cursor-right screen:address
+]
+
+recipe draw-horizontal [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  row:number <- next-ingredient
+  x:number <- next-ingredient
+  right:number <- next-ingredient
+  move-cursor screen:address, row:number, x:number
+  {
+    continue?:boolean <- lesser-than x:number, right:number
+    break-unless continue?:boolean
+    print-character screen:address, 9472:literal/horizontal, 245:literal/grey
+    x:number <- add x:number, 1:literal
+    loop
+  }
+]
+
+recipe draw-vertical [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  col:number <- next-ingredient
+  x:number <- next-ingredient
+  bottom:number <- next-ingredient
+  {
+    continue?:boolean <- lesser-than x:number, bottom:number
+    break-unless continue?:boolean
+    move-cursor screen:address, x:number, col:number
+    print-character screen:address, 9474:literal/vertical, 245:literal/grey
+    x:number <- add x:number, 1:literal
+    loop
+  }
+]
+
+recipe draw-top-left [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  top:number <- next-ingredient
+  left:number <- next-ingredient
+  move-cursor screen:address, top:number, left:number
+  print-character screen:address, 9484:literal/down-right, 245:literal/grey
+]
+
+recipe draw-top-right [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  top:number <- next-ingredient
+  right:number <- next-ingredient
+  move-cursor screen:address, top:number, right:number
+  print-character screen:address, 9488:literal/down-left, 245:literal/grey
+]
+
+recipe draw-bottom-left [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  bottom:number <- next-ingredient
+  left:number <- next-ingredient
+  move-cursor screen:address, bottom:number, left:number
+  print-character screen:address, 9492:literal/up-right, 245:literal/grey
+]
+
+recipe draw-bottom-right [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  bottom:number <- next-ingredient
+  right:number <- next-ingredient
+  move-cursor screen:address, bottom:number, right:number
+  print-character screen:address, 9496:literal/up-left, 245:literal/grey
 ]
