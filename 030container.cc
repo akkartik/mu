@@ -119,7 +119,7 @@ case GET: {
   assert(Type[base_type].kind == container);
   assert(SIZE(Type[base_type].elements) > offset);
   type_number src_type = Type[base_type].elements.at(offset).at(0);
-  trace(Primitive_recipe_depth, "run") << "its type is " << src_type;
+  trace(Primitive_recipe_depth, "run") << "its type is " << Type[src_type].name;
   reagent tmp;
   tmp.set_value(src);
   tmp.types.push_back(src_type);
