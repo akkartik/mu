@@ -2,7 +2,7 @@
 
 recipe main [
   switch-to-display
-  print-character-to-display 97:literal, 2:literal/red
+  print-character-to-display 97:literal, 1:literal/red
   1:number/raw, 2:number/raw <- cursor-position-on-display
   wait-for-key-from-keyboard
   clear-display
