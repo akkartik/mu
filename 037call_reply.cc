@@ -19,6 +19,7 @@ Recipe_number["reply"] = REPLY;
 :(before "End Primitive Recipe Implementations")
 case REPLY: {
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
+  const string& callee = current_recipe_name();
   --Callstack_depth;
 //?   if (tb_is_active()) { //? 1
 //?     tb_clear(); //? 1
@@ -40,7 +41,7 @@ case REPLY: {
       assert(SIZE(tmp) == 1);
       long long int ingredient_index = to_integer(tmp.at(0));
       if (caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
-        raise << "'same-as-ingredient' result " << caller_instruction.products.at(i).value << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n';
+        raise << current_recipe_name() << ": 'same-as-ingredient' result " << caller_instruction.products.at(i).value << " from call to " << callee << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n';
     }
   }
   break;  // continue to process rest of *caller* instruction
@@ -75,7 +76,7 @@ recipe test1 [
   10:address:number <- next-ingredient
   reply 10:address:number/same-as-ingredient:0
 ]
-+warn: 'same-as-ingredient' result 2 must be location 1
++warn: main: 'same-as-ingredient' result 2 from call to test1 must be location 1
 
 :(code)
 string to_string(const vector<double>& in) {
