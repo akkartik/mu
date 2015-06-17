@@ -88,6 +88,7 @@ void run_current_routine()
     for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
       write_memory(current_instruction().products.at(i), products.at(i));
     }
+    // End of Instruction
     ++current_step_index();
   }
 //?   cerr << "AAA 9\n"; //? 1
