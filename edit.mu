@@ -1,10 +1,18 @@
 # Editor widget: takes a string and screen coordinates, and returns a new string.
 
 recipe main [
-  1:address:array:character <- new [abcdef]
+  default-space:address:array:location <- new location:type, 30:literal
   switch-to-display
-  draw-box 0:literal/screen, 4:literal/top, 4:literal/left, 10:literal/bottom, 10:literal/right
-  edit 1:address:array:character, 0:literal/screen, 5:literal/top, 5:literal/left, 10:literal/bottom, 10:literal/right, 0:literal/keyboard
+  width:number <- display-width
+  height:number <- display-height
+  divider:number, _ <- divide-with-remainder width:number, 2:literal
+  draw-vertical 0:literal/screen, divider:number, 0:literal/top, height:number
+  # shorten bottom border and darken to make it seem thinner
+  border-left:number <- multiply divider:number, 0.2
+  border-right:number <- multiply divider:number, 0.8
+  draw-horizontal 0:literal/screen, 5:literal/row, border-left:number, border-right:number, 241:literal/grey
+  in:address:array:character <- new [abcdef]
+  edit in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, 5:literal/bottom, divider:number/right, 0:literal/keyboard
   wait-for-key-from-keyboard
   return-to-console
 ]
@@ -153,15 +161,21 @@ recipe draw-box [
   left:number <- next-ingredient
   bottom:number <- next-ingredient
   right:number <- next-ingredient
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?:boolean
+    color:number <- copy 245:literal/grey
+  }
   # top border
-  draw-horizontal screen:address, top:number, left:number, right:number
-  draw-horizontal screen:address, bottom:number, left:number, right:number
-  draw-vertical screen:address, left:number, top:number, bottom:number
-  draw-vertical screen:address, right:number, top:number, bottom:number
-  draw-top-left screen:address, top:number, left:number
-  draw-top-right screen:address, top:number, right:number
-  draw-bottom-left screen:address, bottom:number, left:number
-  draw-bottom-right screen:address, bottom:number, right:number
+  draw-horizontal screen:address, top:number, left:number, right:number, color:number
+  draw-horizontal screen:address, bottom:number, left:number, right:number, color:number
+  draw-vertical screen:address, left:number, top:number, bottom:number, color:number
+  draw-vertical screen:address, right:number, top:number, bottom:number, color:number
+  draw-top-left screen:address, top:number, left:number, color:number
+  draw-top-right screen:address, top:number, right:number, color:number
+  draw-bottom-left screen:address, bottom:number, left:number, color:number
+  draw-bottom-right screen:address, bottom:number, right:number, color:number
   # position cursor inside box
   move-cursor screen:address, top:number, left:number
   cursor-down screen:address
@@ -174,11 +188,17 @@ recipe draw-horizontal [
   row:number <- next-ingredient
   x:number <- next-ingredient
   right:number <- next-ingredient
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?:boolean
+    color:number <- copy 245:literal/grey
+  }
   move-cursor screen:address, row:number, x:number
   {
     continue?:boolean <- lesser-than x:number, right:number
     break-unless continue?:boolean
-    print-character screen:address, 9472:literal/horizontal, 245:literal/grey
+    print-character screen:address, 9472:literal/horizontal, color:number
     x:number <- add x:number, 1:literal
     loop
   }
@@ -190,11 +210,17 @@ recipe draw-vertical [
   col:number <- next-ingredient
   x:number <- next-ingredient
   bottom:number <- next-ingredient
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?:boolean
+    color:number <- copy 245:literal/grey
+  }
   {
     continue?:boolean <- lesser-than x:number, bottom:number
     break-unless continue?:boolean
     move-cursor screen:address, x:number, col:number
-    print-character screen:address, 9474:literal/vertical, 245:literal/grey
+    print-character screen:address, 9474:literal/vertical, color:number
     x:number <- add x:number, 1:literal
     loop
   }
@@ -205,8 +231,14 @@ recipe draw-top-left [
   screen:address <- next-ingredient
   top:number <- next-ingredient
   left:number <- next-ingredient
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?:boolean
+    color:number <- copy 245:literal/grey
+  }
   move-cursor screen:address, top:number, left:number
-  print-character screen:address, 9484:literal/down-right, 245:literal/grey
+  print-character screen:address, 9484:literal/down-right, color:number
 ]
 
 recipe draw-top-right [
@@ -214,8 +246,14 @@ recipe draw-top-right [
   screen:address <- next-ingredient
   top:number <- next-ingredient
   right:number <- next-ingredient
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?:boolean
+    color:number <- copy 245:literal/grey
+  }
   move-cursor screen:address, top:number, right:number
-  print-character screen:address, 9488:literal/down-left, 245:literal/grey
+  print-character screen:address, 9488:literal/down-left, color:number
 ]
 
 recipe draw-bottom-left [
@@ -223,8 +261,14 @@ recipe draw-bottom-left [
   screen:address <- next-ingredient
   bottom:number <- next-ingredient
   left:number <- next-ingredient
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?:boolean
+    color:number <- copy 245:literal/grey
+  }
   move-cursor screen:address, bottom:number, left:number
-  print-character screen:address, 9492:literal/up-right, 245:literal/grey
+  print-character screen:address, 9492:literal/up-right, color:number
 ]
 
 recipe draw-bottom-right [
@@ -232,6 +276,12 @@ recipe draw-bottom-right [
   screen:address <- next-ingredient
   bottom:number <- next-ingredient
   right:number <- next-ingredient
+  color:number, color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?:boolean
+    color:number <- copy 245:literal/grey
+  }
   move-cursor screen:address, bottom:number, right:number
-  print-character screen:address, 9496:literal/up-left, 245:literal/grey
+  print-character screen:address, 9496:literal/up-left, color:number
 ]
