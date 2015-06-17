@@ -65,7 +65,7 @@ void transform_braces(const recipe_number r) {
       ;  // do nothing
     else if (inst.operation == Recipe_number["loop"]) {
       inst.operation = Recipe_number["jump"];
-      if (!inst.ingredients.empty() && isa_literal(inst.ingredients.at(0))) {
+      if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
       }
@@ -81,7 +81,7 @@ void transform_braces(const recipe_number r) {
     }
     else if (inst.operation == Recipe_number["break"]) {
       inst.operation = Recipe_number["jump"];
-      if (!inst.ingredients.empty() && isa_literal(inst.ingredients.at(0))) {
+      if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
       }
@@ -95,7 +95,7 @@ void transform_braces(const recipe_number r) {
     }
     else if (inst.operation == Recipe_number["loop-if"]) {
       inst.operation = Recipe_number["jump-if"];
-      if (SIZE(inst.ingredients) > 1 && isa_literal(inst.ingredients.at(1))) {
+      if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }
@@ -109,7 +109,7 @@ void transform_braces(const recipe_number r) {
     }
     else if (inst.operation == Recipe_number["break-if"]) {
       inst.operation = Recipe_number["jump-if"];
-      if (SIZE(inst.ingredients) > 1 && isa_literal(inst.ingredients.at(1))) {
+      if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }
@@ -123,7 +123,7 @@ void transform_braces(const recipe_number r) {
     }
     else if (inst.operation == Recipe_number["loop-unless"]) {
       inst.operation = Recipe_number["jump-unless"];
-      if (SIZE(inst.ingredients) > 1 && isa_literal(inst.ingredients.at(1))) {
+      if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }
@@ -138,7 +138,7 @@ void transform_braces(const recipe_number r) {
     else if (inst.operation == Recipe_number["break-unless"]) {
 //?       cout << "AAA break-unless\n"; //? 1
       inst.operation = Recipe_number["jump-unless"];
-      if (SIZE(inst.ingredients) > 1 && isa_literal(inst.ingredients.at(1))) {
+      if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
       }

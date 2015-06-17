@@ -12,9 +12,9 @@ TRACE,
 Recipe_number["trace"] = TRACE;
 :(before "End Primitive Recipe Implementations")
 case TRACE: {
-  assert(isa_literal(current_instruction().ingredients.at(0)));
+  assert(is_literal(current_instruction().ingredients.at(0)));
   string label = current_instruction().ingredients.at(0).name;
-  assert(isa_literal(current_instruction().ingredients.at(1)));
+  assert(is_literal(current_instruction().ingredients.at(1)));
   string message = current_instruction().ingredients.at(1).name;
   trace(1, label) << message;
   break;

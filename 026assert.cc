@@ -14,7 +14,7 @@ case ASSERT: {
   assert(SIZE(ingredients) == 2);
   assert(scalar(ingredients.at(0)));
   if (!ingredients.at(0).at(0)) {
-    assert(isa_literal(current_instruction().ingredients.at(1)));
+    assert(is_literal(current_instruction().ingredients.at(1)));
     raise << current_instruction().ingredients.at(1).name << '\n' << die();
   }
   break;

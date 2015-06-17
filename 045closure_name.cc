@@ -46,7 +46,7 @@ void collect_surrounding_spaces(const recipe_number r) {
     const instruction& inst = Recipe[r].steps.at(i);
     if (inst.is_label) continue;
     for (long long int j = 0; j < SIZE(inst.products); ++j) {
-      if (isa_literal(inst.products.at(j))) continue;
+      if (is_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
       if (SIZE(inst.products.at(j).types) != 3
           || inst.products.at(j).types.at(0) != Type_number["address"]

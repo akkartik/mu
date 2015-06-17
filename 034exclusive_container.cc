@@ -95,7 +95,7 @@ case MAYBE_CONVERT: {
   long long int base_address = base.value;
   type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == exclusive_container);
-  assert(isa_literal(current_instruction().ingredients.at(1)));
+  assert(is_literal(current_instruction().ingredients.at(1)));
   long long int tag = current_instruction().ingredients.at(1).value;
   long long int result;
   if (tag == static_cast<long long int>(Memory[base_address])) {
