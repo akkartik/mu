@@ -58,7 +58,7 @@ void run_current_routine()
   while (!Current_routine->completed())  // later layers will modify condition
   {
 //?     cerr << "AAA 7: " << current_step_index() << '\n'; //? 1
-    // Running One Instruction.
+    // Running One Instruction
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string();
     assert(Memory[0] == 0);
