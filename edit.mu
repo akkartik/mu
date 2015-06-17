@@ -42,6 +42,17 @@ recipe edit [
   right:number <- next-ingredient
   right:number <- subtract right:number, 1:literal
   keyboard:address <- next-ingredient
+  render s:address:array:character, screen:address, top:number, left:number, bottom:number, right:number
+]
+
+recipe render [
+  default-space:address:array:location <- new location:type, 30:literal
+  s:address:array:character <- next-ingredient
+  screen:address <- next-ingredient
+  top:number <- next-ingredient
+  left:number <- next-ingredient
+  bottom:number <- next-ingredient
+  right:number <- next-ingredient
   # traversing inside s
   len:number <- length s:address:array:character/deref
   i:number <- copy 0:literal
