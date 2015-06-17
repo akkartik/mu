@@ -95,7 +95,7 @@ INGREDIENT,
 Recipe_number["ingredient"] = INGREDIENT;
 :(before "End Primitive Recipe Implementations")
 case INGREDIENT: {
-  assert(isa_literal(current_instruction().ingredients.at(0)));
+  assert(is_literal(current_instruction().ingredients.at(0)));
   assert(scalar(ingredients.at(0)));
   if (static_cast<long long int>(ingredients.at(0).at(0)) < SIZE(Current_routine->calls.front().ingredient_atoms)) {
     Current_routine->calls.front().next_ingredient_to_process = ingredients.at(0).at(0);

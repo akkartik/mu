@@ -143,7 +143,7 @@ START_RUNNING,
 Recipe_number["start-running"] = START_RUNNING;
 :(before "End Primitive Recipe Implementations")
 case START_RUNNING: {
-  assert(isa_literal(current_instruction().ingredients.at(0)));
+  assert(is_literal(current_instruction().ingredients.at(0)));
   assert(!current_instruction().ingredients.at(0).initialized);
   routine* new_routine = new routine(Recipe_number[current_instruction().ingredients.at(0).name]);
 //?   cerr << new_routine->id << " -> " << Current_routine->id << '\n'; //? 1

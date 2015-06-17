@@ -7,7 +7,7 @@ Recipe_number["$print"] = _PRINT;
 :(before "End Primitive Recipe Implementations")
 case _PRINT: {
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    if (isa_literal(current_instruction().ingredients.at(i))) {
+    if (is_literal(current_instruction().ingredients.at(i))) {
       trace(Primitive_recipe_depth, "run") << "$print: " << current_instruction().ingredients.at(i).name;
       cout << current_instruction().ingredients.at(i).name;
     }

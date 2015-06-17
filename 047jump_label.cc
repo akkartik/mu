@@ -47,7 +47,7 @@ void transform_labels(const recipe_number r) {
 :(code)
 void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, const long long int current_offset, const recipe_number r) {
 //?   cerr << "AAA " << x.to_string() << '\n'; //? 1
-  assert(isa_literal(x));
+  assert(is_literal(x));
 //?   cerr << "BBB " << x.to_string() << '\n'; //? 1
   assert(!x.initialized);
 //?   cerr << "CCC " << x.to_string() << '\n'; //? 1

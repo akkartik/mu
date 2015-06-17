@@ -108,7 +108,7 @@ case GET: {
   long long int base_address = base.value;
   type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == container);
-  assert(isa_literal(current_instruction().ingredients.at(1)));
+  assert(is_literal(current_instruction().ingredients.at(1)));
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
   long long int src = base_address;
@@ -156,7 +156,7 @@ case GET_ADDRESS: {
   long long int base_address = base.value;
   type_number base_type = base.types.at(0);
   assert(Type[base_type].kind == container);
-  assert(isa_literal(current_instruction().ingredients.at(1)));
+  assert(is_literal(current_instruction().ingredients.at(1)));
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
   long long int result = base_address;

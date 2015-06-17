@@ -35,7 +35,7 @@ if (inst.operation == Recipe_number["new"]) {
   // End NEW Transform Special-cases
   // first arg must be of type 'type'
   assert(SIZE(inst.ingredients) >= 1);
-  assert(isa_literal(inst.ingredients.at(0)));
+  assert(is_literal(inst.ingredients.at(0)));
   if (inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
     raise << "tried to allocate non-type " << inst.ingredients.at(0).to_string() << " in recipe " << Recipe[r].name << '\n' << die();
   if (Type_number.find(inst.ingredients.at(0).name) == Type_number.end())
@@ -60,7 +60,7 @@ case NEW: {
   long long int array_length = 0;
   {
     vector<type_number> type;
-    assert(isa_literal(current_instruction().ingredients.at(0)));
+    assert(is_literal(current_instruction().ingredients.at(0)));
     type.push_back(current_instruction().ingredients.at(0).value);
 //?     trace(Primitive_recipe_depth, "mem") << "type " << current_instruction().ingredients.at(0).to_string() << ' ' << type.size() << ' ' << type.back() << " has size " << size_of(type); //? 1
     if (SIZE(current_instruction().ingredients) > 1) {
@@ -187,7 +187,7 @@ recipe main [
   }
 
 :(after "case NEW" following "Primitive Recipe Implementations")
-if (isa_literal(current_instruction().ingredients.at(0))
+if (is_literal(current_instruction().ingredients.at(0))
     && current_instruction().ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
   // allocate an array just large enough for it
   long long int string_length = unicode_length(current_instruction().ingredients.at(0).name);

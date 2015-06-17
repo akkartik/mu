@@ -177,7 +177,7 @@ void run(string form) {
 vector<double> read_memory(reagent x) {
 //?   cout << "read_memory: " << x.to_string() << '\n'; //? 2
   vector<double> result;
-  if (isa_literal(x)) {
+  if (is_literal(x)) {
     result.push_back(x.value);
     return result;
   }
@@ -215,7 +215,7 @@ bool is_dummy(const reagent& x) {
   return x.name == "_";
 }
 
-bool isa_literal(const reagent& r) {
+bool is_literal(const reagent& r) {
   return SIZE(r.types) == 1 && r.types.at(0) == 0;
 }
 

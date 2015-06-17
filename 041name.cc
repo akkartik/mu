@@ -67,7 +67,7 @@ void transform_names(const recipe_number r) {
 }
 
 void check_metadata(map<string, vector<type_number> >& metadata, const reagent& x, const recipe_number r) {
-  if (isa_literal(x)) return;
+  if (is_literal(x)) return;
   if (is_raw(x)) return;
   if (metadata.find(x.name) == metadata.end())
     metadata[x.name] = x.types;
@@ -81,7 +81,7 @@ bool disqualified(/*mutable*/ reagent& x) {
     raise << "missing type in " << x.to_string() << '\n';
   assert(!x.types.empty());
   if (is_raw(x)) return true;
-  if (isa_literal(x)) return true;
+  if (is_literal(x)) return true;
   if (is_integer(x.name)) return true;
   // End Disqualified Reagents
   if (x.initialized) return true;
@@ -115,14 +115,14 @@ int find_element_name(const type_number t, const string& name) {
 }
 
 bool is_numeric_location(const reagent& x) {
-  if (isa_literal(x)) return false;
+  if (is_literal(x)) return false;
   if (is_raw(x)) return false;
   if (x.name == "0") return false;  // used for chaining lexical scopes
   return is_integer(x.name);
 }
 
 bool is_named_location(const reagent& x) {
-  if (isa_literal(x)) return false;
+  if (is_literal(x)) return false;
   if (is_raw(x)) return false;
   if (is_special_name(x.name)) return false;
   return !is_integer(x.name);
@@ -223,7 +223,7 @@ if (inst.operation == Recipe_number["get"]
   // at least 2 args, and second arg is offset
   assert(SIZE(inst.ingredients) >= 2);
 //?   cout << inst.ingredients.at(1).to_string() << '\n'; //? 1
-  assert(isa_literal(inst.ingredients.at(1)));
+  assert(is_literal(inst.ingredients.at(1)));
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
   // since first non-address in base type must be a container, we don't have to canonize
   type_number base_type = skip_addresses(inst.ingredients.at(0).types);
@@ -259,7 +259,7 @@ recipe main [
 if (inst.operation == Recipe_number["maybe-convert"]) {
   // at least 2 args, and second arg is offset
   assert(SIZE(inst.ingredients) >= 2);
-  assert(isa_literal(inst.ingredients.at(1)));
+  assert(is_literal(inst.ingredients.at(1)));
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
   // since first non-address in base type must be an exclusive container, we don't have to canonize
   type_number base_type = skip_addresses(inst.ingredients.at(0).types);
