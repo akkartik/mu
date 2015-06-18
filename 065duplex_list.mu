@@ -210,3 +210,78 @@ scenario inserting-after-start-of-duplex-list [
     10 <- 1  # list back at start
   ]
 ]
+
+# l:address:duplex-list <- remove-duplex in:address:duplex-list
+# Removes 'in' from its surrounding list. Returns some valid pointer into the
+# rest of the list. Returns null if and only if list is empty.
+recipe remove-duplex [
+  default-space:address:array:location <- new location:type, 30:literal
+  in:address:duplex-list <- next-ingredient
+  # if 'in' is null, return
+  reply-unless in:address:duplex-list, in:address:duplex-list
+  next-node:address:duplex-list <- get in:address:duplex-list/deref, next:offset
+  prev-node:address:duplex-list <- get in:address:duplex-list/deref, prev:offset
+  # null in's pointers
+  x:address:address:duplex-list <- get-address in:address:duplex-list/deref, next:offset
+  x:address:address:duplex-list/deref <- copy 0:literal
+  x:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
+  x:address:address:duplex-list/deref <- copy 0:literal
+  {
+    # if next-node is not null
+    break-unless next-node:address:duplex-list
+    # next-node.prev = prev-node
+    x:address:address:duplex-list <- get-address next-node:address:duplex-list/deref, prev:offset
+    x:address:address:duplex-list/deref <- copy prev-node:address:duplex-list
+  }
+  {
+    # if prev-node is not null
+    break-unless prev-node:address:duplex-list
+    # prev-node.next = next-node
+    x:address:address:duplex-list <- get-address prev-node:address:duplex-list/deref, next:offset
+    x:address:address:duplex-list/deref <- copy next-node:address:duplex-list
+    reply prev-node:address:duplex-list
+  }
+  reply next-node:address:duplex-list
+]
+
+scenario removing-from-duplex-list [
+  run [
+    1:address:duplex-list <- copy 0:literal  # 1 points to head of list
+    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
+    1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list
+    1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list
+    2:address:duplex-list <- next-duplex 1:address:duplex-list  # 2 points at second element
+    2:address:duplex-list <- remove-duplex 2:address:duplex-list
+    # check structure like before
+    2:address:duplex-list <- copy 1:address:duplex-list
+    3:number <- first 2:address:duplex-list
+    2:address:duplex-list <- next-duplex 2:address:duplex-list
+    4:number <- first 2:address:duplex-list
+    5:address:duplex-list <- next-duplex 2:address:duplex-list
+    2:address:duplex-list <- prev-duplex 2:address:duplex-list
+    6:number <- first 2:address:duplex-list
+    7:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
+  ]
+  memory-should-contain [
+    3 <- 5  # scanning next, skipping deleted element
+    4 <- 3
+    5 <- 0  # no more elements
+    6 <- 5  # prev of final element
+    7 <- 1  # list back at start
+  ]
+]
+
+scenario removing-from-singleton-list [
+  run [
+    1:address:duplex-list <- copy 0:literal  # 1 points to singleton list
+    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
+    2:address:duplex-list <- remove-duplex 1:address:duplex-list
+    3:address:duplex-list <- get 1:address:duplex-list/deref, next:offset
+    4:address:duplex-list <- get 1:address:duplex-list/deref, prev:offset
+  ]
+  memory-should-contain [
+    2 <- 0  # list is now empty
+    3 <- 0  # removed node is also detached
+    4 <- 0
+  ]
+]
