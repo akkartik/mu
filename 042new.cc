@@ -42,7 +42,7 @@ if (inst.operation == Recipe_number["new"]) {
     raise << "unknown type " << inst.ingredients.at(0).name << " in recipe " << Recipe[r].name << '\n' << die();
 //?   cerr << "type " << inst.ingredients.at(0).name << " => " << Type_number[inst.ingredients.at(0).name] << '\n'; //? 1
   inst.ingredients.at(0).set_value(Type_number[inst.ingredients.at(0).name]);
-  trace(Primitive_recipe_depth, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).value;
+  trace(Primitive_recipe_depth, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).name;
   end_new_transform:;
 }
 
