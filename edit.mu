@@ -1,5 +1,15 @@
 # Editor widget: takes a string and screen coordinates, modifying them in place.
 
+container editable-recipe [
+  title:editable
+  body:editable
+  top:number
+  left:number
+  bottom:number
+  right:number
+  lines:address:array:address:duplex-list
+]
+
 recipe main [
   default-space:address:array:location <- new location:type, 30:literal
   switch-to-display
@@ -8,6 +18,8 @@ recipe main [
   divider:number, _ <- divide-with-remainder width:number, 2:literal
   draw-vertical 0:literal/screen, divider:number, 0:literal/top, height:number
   # shorten bottom border and darken to make it seem thinner
+  move-cursor 0:literal/screen, 5:literal/row, 0:literal/column
+  print-character 0:literal/screen, 93:literal/close-bracket, 245:literal/grey
   border-left:number <- multiply divider:number, 0.2
   border-right:number <- multiply divider:number, 0.8
   draw-horizontal 0:literal/screen, 5:literal/row, border-left:number, border-right:number, 241:literal/grey
@@ -54,11 +66,20 @@ recipe render [
   left:number <- next-ingredient
   bottom:number <- next-ingredient
   right:number <- next-ingredient
+  # render title
+  move-cursor screen:address, top:number, left:number
+  title:address:array:character <- new [recipe ]
+  print-string screen:address, title:address:array:character, 245:literal/grey
+  title:address:array:character <- new [title]
+  print-string screen:address, title:address:array:character, 515:literal/yellow/underline
+  print-character screen:address, 32:literal/space
+  print-character screen:address, 91:literal/open-bracket, 245:literal/grey
   # traversing inside s
   len:number <- length s:address:array:character/deref
   i:number <- copy 0:literal
   # traversing inside screen
-  row:number <- copy top:number
+  row:number <- add top:number, 1:literal
+  left:number <- add left:number, 2:literal
   column:number <- copy left:number
   move-cursor screen:address, row:number, column:number
   {
