@@ -1,7 +1,7 @@
 parse: instruction: run
 parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0:literal  # 1 points to singleton list\n    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list\n    2:address:duplex-list <- remove-duplex 1:address:duplex-list\n    3:address:duplex-list <- get 1:address:duplex-list/deref, next:offset\n    4:address:duplex-list <- get 1:address:duplex-list/deref, prev:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
-parse:   ingredient: {name: "\n    2 <- 0  # list is now empty\n    3 <- 0  # removed node is also detached\n    4 <- 0\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    2 <- 0  # remove returned null\n    3 <- 0  # removed node is also detached\n    4 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe removing-from-singleton-list
 after-brace: run ...
 after-brace: memory-should-contain ...
@@ -177,7 +177,7 @@ after-brace: get ...
 9999 mem: location 1033 is 0
 9999 mem: storing 0 in location 4
  100 run: memory-should-contain [
-    2 <- 0  # list is now empty
+    2 <- 0  # remove returned null
     3 <- 0  # removed node is also detached
     4 <- 0
   ]
