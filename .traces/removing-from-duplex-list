@@ -1,0 +1,494 @@
+parse: instruction: run
+parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0:literal  # 1 points to head of list\n    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list\n    2:address:duplex-list <- next-duplex 1:address:duplex-list  # 2 points at second element\n    2:address:duplex-list <- remove-duplex 2:address:duplex-list\n    # check structure like before\n    2:address:duplex-list <- copy 1:address:duplex-list\n    3:number <- first 2:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    4:number <- first 2:address:duplex-list\n    5:address:duplex-list <- next-duplex 2:address:duplex-list\n    2:address:duplex-list <- prev-duplex 2:address:duplex-list\n    6:number <- first 2:address:duplex-list\n    7:boolean <- equal 1:address:duplex-list, 2:address:duplex-list\n  ", properties: [_: "literal-string"]}
+parse: instruction: memory-should-contain
+parse:   ingredient: {name: "\n    3 <- 5  # scanning next, skipping deleted element\n    4 <- 3\n    5 <- 0  # no more elements\n    6 <- 5  # prev of final element\n    7 <- 1  # list back at start\n  ", properties: [_: "literal-string"]}
+after-brace: recipe removing-from-duplex-list
+after-brace: run ...
+after-brace: memory-should-contain ...
+9999 new: routine allocated memory from 1000 to 101000
+schedule: removing-from-duplex-list
+ 101 run: run [
+    1:address:duplex-list <- copy 0:literal  # 1 points to head of list
+    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
+    1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list
+    1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list
+    2:address:duplex-list <- next-duplex 1:address:duplex-list  # 2 points at second element
+    2:address:duplex-list <- remove-duplex 2:address:duplex-list
+    # check structure like before
+    2:address:duplex-list <- copy 1:address:duplex-list
+    3:number <- first 2:address:duplex-list
+    2:address:duplex-list <- next-duplex 2:address:duplex-list
+    4:number <- first 2:address:duplex-list
+    5:address:duplex-list <- next-duplex 2:address:duplex-list
+    2:address:duplex-list <- prev-duplex 2:address:duplex-list
+    6:number <- first 2:address:duplex-list
+    7:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
+  ]
+parse: instruction: copy
+parse:   ingredient: {name: "0", properties: ["0": "literal"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: push-duplex
+parse:   ingredient: {name: "3", properties: ["3": "literal"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: push-duplex
+parse:   ingredient: {name: "4", properties: ["4": "literal"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: push-duplex
+parse:   ingredient: {name: "5", properties: ["5": "literal"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: next-duplex
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse: instruction: remove-duplex
+parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse: instruction: copy
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse: instruction: first
+parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse:   product: {name: "3", properties: ["3": "number"]}
+parse: instruction: next-duplex
+parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse: instruction: first
+parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse:   product: {name: "4", properties: ["4": "number"]}
+parse: instruction: next-duplex
+parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse:   product: {name: "5", properties: ["5": "address":"duplex-list"]}
+parse: instruction: prev-duplex
+parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse: instruction: first
+parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse:   product: {name: "6", properties: ["6": "number"]}
+parse: instruction: equal
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   ingredient: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse:   product: {name: "7", properties: ["7": "boolean"]}
+after-brace: recipe run1001
+after-brace: copy ...
+after-brace: push-duplex ...
+after-brace: push-duplex ...
+after-brace: push-duplex ...
+after-brace: next-duplex ...
+after-brace: remove-duplex ...
+after-brace: copy ...
+after-brace: first ...
+after-brace: next-duplex ...
+after-brace: first ...
+after-brace: next-duplex ...
+after-brace: prev-duplex ...
+after-brace: first ...
+after-brace: equal ...
+ 101 run: 1:address:duplex-list <- copy 0:literal
+9999 mem: storing 0 in location 1
+ 101 run: 1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
+9999 mem: location 1 is 0
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1000
+ 102 run: x:location <- next-ingredient 
+9999 mem: storing 3 in location 1002
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 0 in location 1003
+ 102 run: result:address:duplex-list <- new duplex-list:type
+9999 mem: new alloc: 1031
+9999 mem: storing 1031 in location 1004
+ 102 run: val:address:location <- get-address result:address:duplex-list/deref, value:offset
+9999 mem: location 1004 is 1031
+9999 mem: location 1031 is 0
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1004 is 1031
+9999 run: address to copy is 1031
+9999 mem: storing 1031 in location 1005
+ 102 run: val:address:location/deref <- copy x:location
+9999 mem: location 1002 is 3
+9999 mem: location 1005 is 1031
+9999 mem: storing 3 in location 1031
+ 102 run: next:address:address:duplex-list <- get-address result:address:duplex-list/deref, next:offset
+9999 mem: location 1004 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1004 is 1031
+9999 run: address to copy is 1032
+9999 mem: storing 1032 in location 1006
+ 102 run: next:address:address:duplex-list/deref <- copy in:address:duplex-list
+9999 mem: location 1003 is 0
+9999 mem: location 1006 is 1032
+9999 mem: storing 0 in location 1032
+ 102 run: prev:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
+9999 mem: location 1003 is 0
+9999 mem: location 0 is 0
+9999 mem: location 1 is 0
+9999 mem: location 2 is 0
+9999 mem: location 1003 is 0
+9999 run: address to copy is 2
+9999 mem: storing 2 in location 1007
+ 102 run: prev:address:address:duplex-list/deref <- copy result:address:duplex-list
+9999 mem: location 1004 is 1031
+9999 mem: location 1007 is 2
+9999 mem: storing 1031 in location 2
+ 102 run: reply result:address:duplex-list
+9999 mem: location 1004 is 1031
+9999 run: result 0 is 1031
+9999 mem: storing 1031 in location 1
+ 101 run: 1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list
+9999 mem: location 1 is 1031
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1034
+ 102 run: x:location <- next-ingredient 
+9999 mem: storing 4 in location 1036
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1031 in location 1037
+ 102 run: result:address:duplex-list <- new duplex-list:type
+9999 mem: new alloc: 1065
+9999 mem: storing 1065 in location 1038
+ 102 run: val:address:location <- get-address result:address:duplex-list/deref, value:offset
+9999 mem: location 1038 is 1065
+9999 mem: location 1065 is 0
+9999 mem: location 1066 is 0
+9999 mem: location 1067 is 0
+9999 mem: location 1038 is 1065
+9999 run: address to copy is 1065
+9999 mem: storing 1065 in location 1039
+ 102 run: val:address:location/deref <- copy x:location
+9999 mem: location 1036 is 4
+9999 mem: location 1039 is 1065
+9999 mem: storing 4 in location 1065
+ 102 run: next:address:address:duplex-list <- get-address result:address:duplex-list/deref, next:offset
+9999 mem: location 1038 is 1065
+9999 mem: location 1065 is 4
+9999 mem: location 1066 is 0
+9999 mem: location 1067 is 0
+9999 mem: location 1038 is 1065
+9999 run: address to copy is 1066
+9999 mem: storing 1066 in location 1040
+ 102 run: next:address:address:duplex-list/deref <- copy in:address:duplex-list
+9999 mem: location 1037 is 1031
+9999 mem: location 1040 is 1066
+9999 mem: storing 1031 in location 1066
+ 102 run: prev:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
+9999 mem: location 1037 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1037 is 1031
+9999 run: address to copy is 1033
+9999 mem: storing 1033 in location 1041
+ 102 run: prev:address:address:duplex-list/deref <- copy result:address:duplex-list
+9999 mem: location 1038 is 1065
+9999 mem: location 1041 is 1033
+9999 mem: storing 1065 in location 1033
+ 102 run: reply result:address:duplex-list
+9999 mem: location 1038 is 1065
+9999 run: result 0 is 1065
+9999 mem: storing 1065 in location 1
+ 101 run: 1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list
+9999 mem: location 1 is 1065
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1068
+ 102 run: x:location <- next-ingredient 
+9999 mem: storing 5 in location 1070
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1065 in location 1071
+ 102 run: result:address:duplex-list <- new duplex-list:type
+9999 mem: new alloc: 1099
+9999 mem: storing 1099 in location 1072
+ 102 run: val:address:location <- get-address result:address:duplex-list/deref, value:offset
+9999 mem: location 1072 is 1099
+9999 mem: location 1099 is 0
+9999 mem: location 1100 is 0
+9999 mem: location 1101 is 0
+9999 mem: location 1072 is 1099
+9999 run: address to copy is 1099
+9999 mem: storing 1099 in location 1073
+ 102 run: val:address:location/deref <- copy x:location
+9999 mem: location 1070 is 5
+9999 mem: location 1073 is 1099
+9999 mem: storing 5 in location 1099
+ 102 run: next:address:address:duplex-list <- get-address result:address:duplex-list/deref, next:offset
+9999 mem: location 1072 is 1099
+9999 mem: location 1099 is 5
+9999 mem: location 1100 is 0
+9999 mem: location 1101 is 0
+9999 mem: location 1072 is 1099
+9999 run: address to copy is 1100
+9999 mem: storing 1100 in location 1074
+ 102 run: next:address:address:duplex-list/deref <- copy in:address:duplex-list
+9999 mem: location 1071 is 1065
+9999 mem: location 1074 is 1100
+9999 mem: storing 1065 in location 1100
+ 102 run: prev:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
+9999 mem: location 1071 is 1065
+9999 mem: location 1065 is 4
+9999 mem: location 1066 is 1031
+9999 mem: location 1067 is 0
+9999 mem: location 1071 is 1065
+9999 run: address to copy is 1067
+9999 mem: storing 1067 in location 1075
+ 102 run: prev:address:address:duplex-list/deref <- copy result:address:duplex-list
+9999 mem: location 1072 is 1099
+9999 mem: location 1075 is 1067
+9999 mem: storing 1099 in location 1067
+ 102 run: reply result:address:duplex-list
+9999 mem: location 1072 is 1099
+9999 run: result 0 is 1099
+9999 mem: storing 1099 in location 1
+ 101 run: 2:address:duplex-list <- next-duplex 1:address:duplex-list
+9999 mem: location 1 is 1099
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1102
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1099 in location 1104
+ 102 run: result:address:duplex-list <- get in:address:duplex-list/deref, next:offset
+9999 mem: location 1104 is 1099
+9999 mem: location 1099 is 5
+9999 mem: location 1100 is 1065
+9999 mem: location 1101 is 0
+9999 mem: location 1104 is 1099
+9999 run: address to copy is 1100
+9999 run: its type is address
+9999 mem: location 1100 is 1065
+9999 mem: storing 1065 in location 1105
+ 102 run: reply result:address:duplex-list
+9999 mem: location 1105 is 1065
+9999 run: result 0 is 1065
+9999 mem: storing 1065 in location 2
+ 101 run: 2:address:duplex-list <- remove-duplex 2:address:duplex-list
+9999 mem: location 2 is 1065
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1133
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1065 in location 1135
+ 102 run: reply-unless in:address:duplex-list, 1:offset
+9999 mem: location 1135 is 1065
+9999 run: jumping to instruction 4
+ 102 run: next-node:address:duplex-list <- get in:address:duplex-list/deref, next:offset
+9999 mem: location 1135 is 1065
+9999 mem: location 1065 is 4
+9999 mem: location 1066 is 1031
+9999 mem: location 1067 is 1099
+9999 mem: location 1135 is 1065
+9999 run: address to copy is 1066
+9999 run: its type is address
+9999 mem: location 1066 is 1031
+9999 mem: storing 1031 in location 1136
+ 102 run: prev-node:address:duplex-list <- get in:address:duplex-list/deref, prev:offset
+9999 mem: location 1135 is 1065
+9999 mem: location 1065 is 4
+9999 mem: location 1066 is 1031
+9999 mem: location 1067 is 1099
+9999 mem: location 1135 is 1065
+9999 run: address to copy is 1067
+9999 run: its type is address
+9999 mem: location 1067 is 1099
+9999 mem: storing 1099 in location 1137
+ 102 run: x:address:address:duplex-list <- get-address in:address:duplex-list/deref, next:offset
+9999 mem: location 1135 is 1065
+9999 mem: location 1065 is 4
+9999 mem: location 1066 is 1031
+9999 mem: location 1067 is 1099
+9999 mem: location 1135 is 1065
+9999 run: address to copy is 1066
+9999 mem: storing 1066 in location 1138
+ 102 run: x:address:address:duplex-list/deref <- copy 0:literal
+9999 mem: location 1138 is 1066
+9999 mem: storing 0 in location 1066
+ 102 run: x:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
+9999 mem: location 1135 is 1065
+9999 mem: location 1065 is 4
+9999 mem: location 1066 is 0
+9999 mem: location 1067 is 1099
+9999 mem: location 1135 is 1065
+9999 run: address to copy is 1067
+9999 mem: storing 1067 in location 1138
+ 102 run: x:address:address:duplex-list/deref <- copy 0:literal
+9999 mem: location 1138 is 1067
+9999 mem: storing 0 in location 1067
+ 102 run: break-unless next-node:address:duplex-list, 
+9999 mem: location 1136 is 1031
+9999 run: jump-unless fell through
+ 102 run: x:address:address:duplex-list <- get-address next-node:address:duplex-list/deref, prev:offset
+9999 mem: location 1136 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 1065
+9999 mem: location 1136 is 1031
+9999 run: address to copy is 1033
+9999 mem: storing 1033 in location 1138
+ 102 run: x:address:address:duplex-list/deref <- copy prev-node:address:duplex-list
+9999 mem: location 1137 is 1099
+9999 mem: location 1138 is 1033
+9999 mem: storing 1099 in location 1033
+ 102 run: break-unless prev-node:address:duplex-list, 
+9999 mem: location 1137 is 1099
+9999 run: jump-unless fell through
+ 102 run: x:address:address:duplex-list <- get-address prev-node:address:duplex-list/deref, next:offset
+9999 mem: location 1137 is 1099
+9999 mem: location 1099 is 5
+9999 mem: location 1100 is 1065
+9999 mem: location 1101 is 0
+9999 mem: location 1137 is 1099
+9999 run: address to copy is 1100
+9999 mem: storing 1100 in location 1138
+ 102 run: x:address:address:duplex-list/deref <- copy next-node:address:duplex-list
+9999 mem: location 1136 is 1031
+9999 mem: location 1138 is 1100
+9999 mem: storing 1031 in location 1100
+ 102 run: reply prev-node:address:duplex-list
+9999 mem: location 1137 is 1099
+9999 run: result 0 is 1099
+9999 mem: storing 1099 in location 2
+ 101 run: 2:address:duplex-list <- copy 1:address:duplex-list
+9999 mem: location 1 is 1099
+9999 mem: storing 1099 in location 2
+ 101 run: 3:number <- first 2:address:duplex-list
+9999 mem: location 2 is 1099
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1164
+ 102 run: in:address:list <- next-ingredient 
+9999 mem: storing 1099 in location 1166
+ 102 run: result:location <- get in:address:list/deref, value:offset
+9999 mem: location 1166 is 1099
+9999 mem: location 1099 is 5
+9999 mem: location 1100 is 1031
+9999 mem: location 1166 is 1099
+9999 run: address to copy is 1099
+9999 run: its type is number
+9999 mem: location 1099 is 5
+9999 mem: storing 5 in location 1167
+ 102 run: reply result:location
+9999 mem: location 1167 is 5
+9999 run: result 0 is 5
+9999 mem: storing 5 in location 3
+ 101 run: 2:address:duplex-list <- next-duplex 2:address:duplex-list
+9999 mem: location 2 is 1099
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1195
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1099 in location 1197
+ 102 run: result:address:duplex-list <- get in:address:duplex-list/deref, next:offset
+9999 mem: location 1197 is 1099
+9999 mem: location 1099 is 5
+9999 mem: location 1100 is 1031
+9999 mem: location 1101 is 0
+9999 mem: location 1197 is 1099
+9999 run: address to copy is 1100
+9999 run: its type is address
+9999 mem: location 1100 is 1031
+9999 mem: storing 1031 in location 1198
+ 102 run: reply result:address:duplex-list
+9999 mem: location 1198 is 1031
+9999 run: result 0 is 1031
+9999 mem: storing 1031 in location 2
+ 101 run: 4:number <- first 2:address:duplex-list
+9999 mem: location 2 is 1031
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1226
+ 102 run: in:address:list <- next-ingredient 
+9999 mem: storing 1031 in location 1228
+ 102 run: result:location <- get in:address:list/deref, value:offset
+9999 mem: location 1228 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1228 is 1031
+9999 run: address to copy is 1031
+9999 run: its type is number
+9999 mem: location 1031 is 3
+9999 mem: storing 3 in location 1229
+ 102 run: reply result:location
+9999 mem: location 1229 is 3
+9999 run: result 0 is 3
+9999 mem: storing 3 in location 4
+ 101 run: 5:address:duplex-list <- next-duplex 2:address:duplex-list
+9999 mem: location 2 is 1031
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1257
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1031 in location 1259
+ 102 run: result:address:duplex-list <- get in:address:duplex-list/deref, next:offset
+9999 mem: location 1259 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 1099
+9999 mem: location 1259 is 1031
+9999 run: address to copy is 1032
+9999 run: its type is address
+9999 mem: location 1032 is 0
+9999 mem: storing 0 in location 1260
+ 102 run: reply result:address:duplex-list
+9999 mem: location 1260 is 0
+9999 run: result 0 is 0
+9999 mem: storing 0 in location 5
+ 101 run: 2:address:duplex-list <- prev-duplex 2:address:duplex-list
+9999 mem: location 2 is 1031
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1288
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1031 in location 1290
+ 102 run: result:address:duplex-list <- get in:address:duplex-list/deref, prev:offset
+9999 mem: location 1290 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 1099
+9999 mem: location 1290 is 1031
+9999 run: address to copy is 1033
+9999 run: its type is address
+9999 mem: location 1033 is 1099
+9999 mem: storing 1099 in location 1291
+ 102 run: reply result:address:duplex-list
+9999 mem: location 1291 is 1099
+9999 run: result 0 is 1099
+9999 mem: storing 1099 in location 2
+ 101 run: 6:number <- first 2:address:duplex-list
+9999 mem: location 2 is 1099
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1319
+ 102 run: in:address:list <- next-ingredient 
+9999 mem: storing 1099 in location 1321
+ 102 run: result:location <- get in:address:list/deref, value:offset
+9999 mem: location 1321 is 1099
+9999 mem: location 1099 is 5
+9999 mem: location 1100 is 1031
+9999 mem: location 1321 is 1099
+9999 run: address to copy is 1099
+9999 run: its type is number
+9999 mem: location 1099 is 5
+9999 mem: storing 5 in location 1322
+ 102 run: reply result:location
+9999 mem: location 1322 is 5
+9999 run: result 0 is 5
+9999 mem: storing 5 in location 6
+ 101 run: 7:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
+9999 mem: location 1 is 1099
+9999 mem: location 2 is 1099
+9999 mem: storing 1 in location 7
+ 100 run: memory-should-contain [
+    3 <- 5  # scanning next, skipping deleted element
+    4 <- 3
+    5 <- 0  # no more elements
+    6 <- 5  # prev of final element
+    7 <- 1  # list back at start
+  ]
+9999 run: checking location 3
+9999 run: checking location 4
+9999 run: checking location 5
+9999 run: checking location 6
+9999 run: checking location 7

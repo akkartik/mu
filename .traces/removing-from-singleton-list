@@ -1,0 +1,186 @@
+parse: instruction: run
+parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0:literal  # 1 points to singleton list\n    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list\n    2:address:duplex-list <- remove-duplex 1:address:duplex-list\n    3:address:duplex-list <- get 1:address:duplex-list/deref, next:offset\n    4:address:duplex-list <- get 1:address:duplex-list/deref, prev:offset\n  ", properties: [_: "literal-string"]}
+parse: instruction: memory-should-contain
+parse:   ingredient: {name: "\n    2 <- 0  # list is now empty\n    3 <- 0  # removed node is also detached\n    4 <- 0\n  ", properties: [_: "literal-string"]}
+after-brace: recipe removing-from-singleton-list
+after-brace: run ...
+after-brace: memory-should-contain ...
+9999 new: routine allocated memory from 1000 to 101000
+schedule: removing-from-singleton-list
+ 101 run: run [
+    1:address:duplex-list <- copy 0:literal  # 1 points to singleton list
+    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
+    2:address:duplex-list <- remove-duplex 1:address:duplex-list
+    3:address:duplex-list <- get 1:address:duplex-list/deref, next:offset
+    4:address:duplex-list <- get 1:address:duplex-list/deref, prev:offset
+  ]
+parse: instruction: copy
+parse:   ingredient: {name: "0", properties: ["0": "literal"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: push-duplex
+parse:   ingredient: {name: "3", properties: ["3": "literal"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse: instruction: remove-duplex
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
+parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
+parse: instruction: get
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list", "deref": ]}
+parse:   ingredient: {name: "next", properties: ["next": "offset"]}
+parse:   product: {name: "3", properties: ["3": "address":"duplex-list"]}
+parse: instruction: get
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list", "deref": ]}
+parse:   ingredient: {name: "prev", properties: ["prev": "offset"]}
+parse:   product: {name: "4", properties: ["4": "address":"duplex-list"]}
+name: element next of type duplex-list is at offset 1
+name: element prev of type duplex-list is at offset 2
+after-brace: recipe run1001
+after-brace: copy ...
+after-brace: push-duplex ...
+after-brace: remove-duplex ...
+after-brace: get ...
+after-brace: get ...
+ 101 run: 1:address:duplex-list <- copy 0:literal
+9999 mem: storing 0 in location 1
+ 101 run: 1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
+9999 mem: location 1 is 0
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1000
+ 102 run: x:location <- next-ingredient 
+9999 mem: storing 3 in location 1002
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 0 in location 1003
+ 102 run: result:address:duplex-list <- new duplex-list:type
+9999 mem: new alloc: 1031
+9999 mem: storing 1031 in location 1004
+ 102 run: val:address:location <- get-address result:address:duplex-list/deref, value:offset
+9999 mem: location 1004 is 1031
+9999 mem: location 1031 is 0
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1004 is 1031
+9999 run: address to copy is 1031
+9999 mem: storing 1031 in location 1005
+ 102 run: val:address:location/deref <- copy x:location
+9999 mem: location 1002 is 3
+9999 mem: location 1005 is 1031
+9999 mem: storing 3 in location 1031
+ 102 run: next:address:address:duplex-list <- get-address result:address:duplex-list/deref, next:offset
+9999 mem: location 1004 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1004 is 1031
+9999 run: address to copy is 1032
+9999 mem: storing 1032 in location 1006
+ 102 run: next:address:address:duplex-list/deref <- copy in:address:duplex-list
+9999 mem: location 1003 is 0
+9999 mem: location 1006 is 1032
+9999 mem: storing 0 in location 1032
+ 102 run: prev:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
+9999 mem: location 1003 is 0
+9999 mem: location 0 is 0
+9999 mem: location 1 is 0
+9999 mem: location 2 is 0
+9999 mem: location 1003 is 0
+9999 run: address to copy is 2
+9999 mem: storing 2 in location 1007
+ 102 run: prev:address:address:duplex-list/deref <- copy result:address:duplex-list
+9999 mem: location 1004 is 1031
+9999 mem: location 1007 is 2
+9999 mem: storing 1031 in location 2
+ 102 run: reply result:address:duplex-list
+9999 mem: location 1004 is 1031
+9999 run: result 0 is 1031
+9999 mem: storing 1031 in location 1
+ 101 run: 2:address:duplex-list <- remove-duplex 1:address:duplex-list
+9999 mem: location 1 is 1031
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1034
+ 102 run: in:address:duplex-list <- next-ingredient 
+9999 mem: storing 1031 in location 1036
+ 102 run: reply-unless in:address:duplex-list, 1:offset
+9999 mem: location 1036 is 1031
+9999 run: jumping to instruction 4
+ 102 run: next-node:address:duplex-list <- get in:address:duplex-list/deref, next:offset
+9999 mem: location 1036 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1036 is 1031
+9999 run: address to copy is 1032
+9999 run: its type is address
+9999 mem: location 1032 is 0
+9999 mem: storing 0 in location 1037
+ 102 run: prev-node:address:duplex-list <- get in:address:duplex-list/deref, prev:offset
+9999 mem: location 1036 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1036 is 1031
+9999 run: address to copy is 1033
+9999 run: its type is address
+9999 mem: location 1033 is 0
+9999 mem: storing 0 in location 1038
+ 102 run: x:address:address:duplex-list <- get-address in:address:duplex-list/deref, next:offset
+9999 mem: location 1036 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1036 is 1031
+9999 run: address to copy is 1032
+9999 mem: storing 1032 in location 1039
+ 102 run: x:address:address:duplex-list/deref <- copy 0:literal
+9999 mem: location 1039 is 1032
+9999 mem: storing 0 in location 1032
+ 102 run: x:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
+9999 mem: location 1036 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1036 is 1031
+9999 run: address to copy is 1033
+9999 mem: storing 1033 in location 1039
+ 102 run: x:address:address:duplex-list/deref <- copy 0:literal
+9999 mem: location 1039 is 1033
+9999 mem: storing 0 in location 1033
+ 102 run: break-unless next-node:address:duplex-list, 
+9999 mem: location 1037 is 0
+9999 run: jumping to instruction 14
+ 102 run: break-unless prev-node:address:duplex-list, 
+9999 mem: location 1038 is 0
+9999 run: jumping to instruction 20
+ 102 run: reply next-node:address:duplex-list
+9999 mem: location 1037 is 0
+9999 run: result 0 is 0
+9999 mem: storing 0 in location 2
+ 101 run: 3:address:duplex-list <- get 1:address:duplex-list/deref, next:offset
+9999 mem: location 1 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1 is 1031
+9999 run: address to copy is 1032
+9999 run: its type is address
+9999 mem: location 1032 is 0
+9999 mem: storing 0 in location 3
+ 101 run: 4:address:duplex-list <- get 1:address:duplex-list/deref, prev:offset
+9999 mem: location 1 is 1031
+9999 mem: location 1031 is 3
+9999 mem: location 1032 is 0
+9999 mem: location 1033 is 0
+9999 mem: location 1 is 1031
+9999 run: address to copy is 1033
+9999 run: its type is address
+9999 mem: location 1033 is 0
+9999 mem: storing 0 in location 4
+ 100 run: memory-should-contain [
+    2 <- 0  # list is now empty
+    3 <- 0  # removed node is also detached
+    4 <- 0
+  ]
+9999 run: checking location 2
+9999 run: checking location 3
+9999 run: checking location 4
