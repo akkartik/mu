@@ -174,3 +174,39 @@ scenario inserting-at-end-of-duplex-list [
     10 <- 1  # list back at start
   ]
 ]
+
+scenario inserting-after-start-of-duplex-list [
+  run [
+    1:address:duplex-list <- copy 0:literal  # 1 points to head of list
+    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
+    1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list
+    1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list
+    2:address:duplex-list <- insert-duplex 6:literal, 1:address:duplex-list
+    # check structure like before
+    2:address:duplex-list <- copy 1:address:duplex-list
+    3:number <- first 2:address:duplex-list
+    2:address:duplex-list <- next-duplex 2:address:duplex-list
+    4:number <- first 2:address:duplex-list
+    2:address:duplex-list <- next-duplex 2:address:duplex-list
+    5:number <- first 2:address:duplex-list
+    2:address:duplex-list <- next-duplex 2:address:duplex-list
+    6:number <- first 2:address:duplex-list
+    2:address:duplex-list <- prev-duplex 2:address:duplex-list
+    7:number <- first 2:address:duplex-list
+    2:address:duplex-list <- prev-duplex 2:address:duplex-list
+    8:number <- first 2:address:duplex-list
+    2:address:duplex-list <- prev-duplex 2:address:duplex-list
+    9:number <- first 2:address:duplex-list
+    10:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
+  ]
+  memory-should-contain [
+    3 <- 5  # scanning next
+    4 <- 6  # inserted element
+    5 <- 4
+    6 <- 3
+    7 <- 4  # then prev
+    8 <- 6
+    9 <- 5
+    10 <- 1  # list back at start
+  ]
+]
