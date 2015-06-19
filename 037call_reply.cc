@@ -126,6 +126,7 @@ recipe test1 [
 if (curr.name == "reply-if") {
   assert(curr.products.empty());
   curr.operation = Recipe_number["jump-unless"];
+  curr.name = "jump-unless";
   vector<reagent> results;
   copy(++curr.ingredients.begin(), curr.ingredients.end(), inserter(results, results.end()));
   curr.ingredients.resize(1);
@@ -133,6 +134,7 @@ if (curr.name == "reply-if") {
   result.steps.push_back(curr);
   curr.clear();
   curr.operation = Recipe_number["reply"];
+  curr.name = "reply";
   curr.ingredients.swap(results);
 }
 // rewrite `reply-unless a, b, c, ...` to
@@ -143,6 +145,7 @@ if (curr.name == "reply-if") {
 if (curr.name == "reply-unless") {
   assert(curr.products.empty());
   curr.operation = Recipe_number["jump-if"];
+  curr.name = "jump-if";
   vector<reagent> results;
   copy(++curr.ingredients.begin(), curr.ingredients.end(), inserter(results, results.end()));
   curr.ingredients.resize(1);
@@ -150,5 +153,6 @@ if (curr.name == "reply-unless") {
   result.steps.push_back(curr);
   curr.clear();
   curr.operation = Recipe_number["reply"];
+  curr.name = "reply";
   curr.ingredients.swap(results);
 }
