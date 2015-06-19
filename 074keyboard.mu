@@ -7,7 +7,7 @@ container keyboard [
   data:address:array:character
 ]
 
-recipe init-fake-keyboard [
+recipe new-fake-keyboard [
   default-space:address:array:location <- new location:type, 30:literal
   result:address:keyboard <- new keyboard:type
   buf:address:address:array:character <- get-address result:address:keyboard/deref, data:offset

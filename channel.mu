@@ -34,7 +34,7 @@ recipe consumer [
 
 recipe main [
   default-space:address:array:location <- new location:type, 30:literal
-  chan:address:channel <- init-channel 3:literal
+  chan:address:channel <- new-channel 3:literal
   # create two background 'routines' that communicate by a channel
   routine1:number <- start-running producer:recipe, chan:address:channel
   routine2:number <- start-running consumer:recipe, chan:address:channel

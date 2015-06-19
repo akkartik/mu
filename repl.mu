@@ -59,7 +59,7 @@ recipe read-instruction [
   default-space:address:array:location <- new location:type, 60:literal
   k:address:keyboard <- next-ingredient
   x:address:screen <- next-ingredient
-  result:address:buffer <- init-buffer 10:literal  # string to maybe add to
+  result:address:buffer <- new-buffer 10:literal  # string to maybe add to
   trace [app], [read-instruction]
   # start state machine by calling slurp-regular-characters, which will return
   # by calling the complete continuation

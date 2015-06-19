@@ -39,7 +39,7 @@ if (s == "keyboard") return true;
 // rewrite `assume-keyboard string` to
 //   ```
 //   keyboard:address <- new string  # hacky reuse of location
-//   keyboard:address <- init-fake-keyboard keyboard:address
+//   keyboard:address <- new-fake-keyboard keyboard:address
 //   ```
 if (curr.name == "assume-keyboard") {
   // insert first instruction
@@ -50,8 +50,7 @@ if (curr.name == "assume-keyboard") {
   result.steps.push_back(curr);  // hacky that "Rewrite Instruction" is converting to multiple instructions
   // leave second instruction in curr
   curr.clear();
-  curr.operation = Recipe_number["init-fake-keyboard"];
-  curr.name = "init-fake-keyboard";
+  curr.operation = Recipe_number["new-fake-keyboard"];
   assert(curr.ingredients.empty());
   curr.ingredients.push_back(reagent("keyboard:address"));
   curr.ingredients.at(0).set_value(KEYBOARD);

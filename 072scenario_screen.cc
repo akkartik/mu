@@ -130,16 +130,16 @@ Name[tmp_recipe.at(0)]["screen"] = SCREEN;
 
 :(before "End Rewrite Instruction(curr)")
 // rewrite `assume-screen width, height` to
-// `screen:address <- init-fake-screen width, height`
+// `screen:address <- new-fake-screen width, height`
 //? cout << "before: " << curr.to_string() << '\n'; //? 1
 if (curr.name == "assume-screen") {
-  curr.operation = Recipe_number["init-fake-screen"];
+  curr.operation = Recipe_number["new-fake-screen"];
   assert(curr.operation);
   assert(curr.products.empty());
   curr.products.push_back(reagent("screen:address"));
   curr.products.at(0).set_value(SCREEN);
 //? cout << "after: " << curr.to_string() << '\n'; //? 1
-//? cout << "AAA " << Recipe_number["init-fake-screen"] << '\n'; //? 1
+//? cout << "AAA " << Recipe_number["new-fake-screen"] << '\n'; //? 1
 }
 
 //: screen-should-contain is a regular instruction

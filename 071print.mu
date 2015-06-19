@@ -14,7 +14,7 @@ container screen-cell [
   color:number
 ]
 
-recipe init-fake-screen [
+recipe new-fake-screen [
   default-space:address:array:location <- new location:type, 30:literal/capacity
   result:address:screen <- new screen:type
   width:address:number <- get-address result:address:screen/deref, num-columns:offset
@@ -151,7 +151,7 @@ recipe print-character [
 scenario print-character-at-top-left [
   run [
 #?     $start-tracing #? 3
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
     2:address:array:screen-cell <- get 1:address:screen/deref, data:offset
     3:array:screen-cell <- copy 2:address:array:screen-cell/deref
@@ -166,7 +166,7 @@ scenario print-character-at-top-left [
 
 scenario print-character-color [
   run [
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 97:literal/a, 1:literal/red
     2:address:array:screen-cell <- get 1:address:screen/deref, data:offset
     3:array:screen-cell <- copy 2:address:array:screen-cell/deref
@@ -182,7 +182,7 @@ scenario print-character-color [
 scenario print-backspace-character [
   run [
 #?     $start-tracing #? 3
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
     1:address:screen <- print-character 1:address:screen, 8:literal  # backspace
     2:number <- get 1:address:screen/deref, cursor-column:offset
@@ -200,7 +200,7 @@ scenario print-backspace-character [
 
 scenario print-extra-backspace-character [
   run [
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
     1:address:screen <- print-character 1:address:screen, 8:literal  # backspace
     1:address:screen <- print-character 1:address:screen, 8:literal  # backspace
@@ -219,7 +219,7 @@ scenario print-extra-backspace-character [
 
 scenario print-at-right-margin [
   run [
-    1:address:screen <- init-fake-screen 2:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 2:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
     1:address:screen <- print-character 1:address:screen, 98:literal  # 'b'
     1:address:screen <- print-character 1:address:screen, 99:literal  # 'c'
@@ -241,7 +241,7 @@ scenario print-at-right-margin [
 scenario print-newline-character [
   run [
 #?     $start-tracing #? 3
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
     1:address:screen <- print-character 1:address:screen, 10:literal/newline
     2:number <- get 1:address:screen/deref, cursor-row:offset
@@ -261,7 +261,7 @@ scenario print-newline-character [
 
 scenario print-newline-at-bottom-line [
   run [
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 10:literal/newline
     1:address:screen <- print-character 1:address:screen, 10:literal/newline
     1:address:screen <- print-character 1:address:screen, 10:literal/newline
@@ -276,7 +276,7 @@ scenario print-newline-at-bottom-line [
 
 scenario print-at-bottom-right [
   run [
-    1:address:screen <- init-fake-screen 2:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 2:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 10:literal/newline
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
     1:address:screen <- print-character 1:address:screen, 98:literal  # 'b'
@@ -369,7 +369,7 @@ recipe move-cursor [
 scenario clear-line-erases-printed-characters [
   run [
 #?     $start-tracing #? 4
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     # print a character
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
     # move cursor to start of line
@@ -558,7 +558,7 @@ recipe print-string [
 
 scenario print-string-stops-at-right-margin [
   run [
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     2:address:array:character <- new [abcd]
     1:address:screen <- print-string 1:address:screen, 2:address:array:character
     3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
