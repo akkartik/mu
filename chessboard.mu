@@ -76,10 +76,10 @@ recipe chessboard [
 #? ] #? 1
   board:address:array:address:array:character <- initial-position
   # hook up stdin
-  stdin:address:channel <- init-channel 10:literal/capacity
+  stdin:address:channel <- new-channel 10:literal/capacity
   start-running send-keys-to-channel:recipe, keyboard:address, stdin:address:channel, screen:address
   # buffer lines in stdin
-  buffered-stdin:address:channel <- init-channel 10:literal/capacity
+  buffered-stdin:address:channel <- new-channel 10:literal/capacity
   start-running buffer-lines:recipe, stdin:address:channel, buffered-stdin:address:channel
   {
     msg:address:array:character <- new [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
@@ -124,7 +124,7 @@ recipe chessboard [
 
 ## a board is an array of files, a file is an array of characters (squares)
 
-recipe init-board [
+recipe new-board [
   default-space:address:array:location <- new location:type, 30:literal
   initial-position:address:array:number <- next-ingredient
   # assert(length(initial-position) == 64)
@@ -138,14 +138,14 @@ recipe init-board [
     done?:boolean <- equal col:number, 8:literal
     break-if done?:boolean
     file:address:address:array:character <- index-address board:address:array:address:array:character/deref, col:number
-    file:address:address:array:character/deref <- init-file initial-position:address:array:number, col:number
+    file:address:address:array:character/deref <- new-file initial-position:address:array:number, col:number
     col:number <- add col:number, 1:literal
     loop
   }
   reply board:address:array:address:array:character
 ]
 
-recipe init-file [
+recipe new-file [
   default-space:address:array:location <- new location:type, 30:literal
   position:address:array:number <- next-ingredient
   index:number <- next-ingredient
@@ -224,7 +224,7 @@ recipe initial-position [
   #   B P _ _ _ _ p B
   #   N P _ _ _ _ p n
   #   R P _ _ _ _ p r
-  initial-position:address:array:number <- init-array 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 81:literal/Q, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 113:literal/q, 75:literal/K, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 107:literal/k, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r
+  initial-position:address:array:number <- new-array 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 81:literal/Q, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 113:literal/q, 75:literal/K, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 107:literal/k, 66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n, 82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r
 #?       82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r,
 #?       78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n,
 #?       66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, 
@@ -233,7 +233,7 @@ recipe initial-position [
 #?       66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b,
 #?       78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n,
 #?       82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r
-  board:address:array:address:array:character <- init-board initial-position:address:array:number
+  board:address:array:address:array:character <- new-board initial-position:address:array:number
   reply board:address:array:address:array:character
 ]
 
@@ -428,7 +428,7 @@ scenario read-move-blocking [
   assume-screen 20:literal/width, 2:literal/height
   run [
 #?     $start-tracing #? 1
-    1:address:channel <- init-channel 2:literal
+    1:address:channel <- new-channel 2:literal
 #?     $print [aaa channel address: ], 1:address:channel, [ 
 #? ] #? 1
     2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
@@ -521,7 +521,7 @@ F read-move-blocking: routine failed to terminate on newline]
 scenario read-move-quit [
   assume-screen 20:literal/width, 2:literal/height
   run [
-    1:address:channel <- init-channel 2:literal
+    1:address:channel <- new-channel 2:literal
     2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:number
@@ -548,7 +548,7 @@ F read-move-quit: routine failed to terminate on 'q']
 scenario read-move-illegal-file [
   assume-screen 20:literal/width, 2:literal/height
   run [
-    1:address:channel <- init-channel 2:literal
+    1:address:channel <- new-channel 2:literal
     2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:number
@@ -569,7 +569,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 scenario read-move-illegal-rank [
   assume-screen 20:literal/width, 2:literal/height
   run [
-    1:address:channel <- init-channel 2:literal
+    1:address:channel <- new-channel 2:literal
     2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:number
@@ -591,7 +591,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 scenario read-move-empty [
   assume-screen 20:literal/width, 2:literal/height
   run [
-    1:address:channel <- init-channel 2:literal
+    1:address:channel <- new-channel 2:literal
     2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:number

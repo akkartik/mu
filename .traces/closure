@@ -2,13 +2,13 @@ parse: instruction: new
 parse:   ingredient: {name: "location", properties: ["location": "type"]}
 parse:   ingredient: {name: "30", properties: ["30": "literal"]}
 parse:   product: {name: "default-space", properties: ["default-space": "address":"array":"location"]}
-parse: instruction: init-counter
-parse:   product: {name: "1", properties: ["1": "address":"array":"location", "names": "init-counter"]}
+parse: instruction: new-counter
+parse:   product: {name: "1", properties: ["1": "address":"array":"location", "names": "new-counter"]}
 parse: instruction: increment-counter
-parse:   ingredient: {name: "1", properties: ["1": "address":"array":"location", "names": "init-counter"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"location", "names": "new-counter"]}
 parse:   product: {name: "2", properties: ["2": "number", "raw": ]}
 parse: instruction: increment-counter
-parse:   ingredient: {name: "1", properties: ["1": "address":"array":"location", "names": "init-counter"]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"location", "names": "new-counter"]}
 parse:   product: {name: "3", properties: ["3": "number", "raw": ]}
 parse: instruction: new
 parse:   ingredient: {name: "location", properties: ["location": "type"]}
@@ -27,7 +27,7 @@ parse:   ingredient: {name: "location", properties: ["location": "type"]}
 parse:   ingredient: {name: "30", properties: ["30": "literal"]}
 parse:   product: {name: "default-space", properties: ["default-space": "address":"array":"location"]}
 parse: instruction: next-ingredient
-parse:   product: {name: "0", properties: ["0": "address":"array":"location", "names": "init-counter"]}
+parse:   product: {name: "0", properties: ["0": "address":"array":"location", "names": "new-counter"]}
 parse: instruction: add
 parse:   ingredient: {name: "y", properties: ["y": "number", "space": "1"]}
 parse:   ingredient: {name: "1", properties: ["1": "literal"]}
@@ -37,7 +37,7 @@ parse:   ingredient: {name: "234", properties: ["234": "literal"]}
 parse:   product: {name: "y", properties: ["y": "number"]}
 parse: instruction: reply
 parse:   ingredient: {name: "y", properties: ["y": "number", "space": "1"]}
-name: recipe increment-counter is surrounded by init-counter
+name: recipe increment-counter is surrounded by new-counter
 9999 new: location -> location
 9999 new: location -> location
 name: assign x 1
@@ -46,10 +46,10 @@ name: assign y 2
 name: assign y 1
 after-brace: recipe main
 after-brace: new ...
-after-brace: init-counter ...
+after-brace: new-counter ...
 after-brace: increment-counter ...
 after-brace: increment-counter ...
-after-brace: recipe init-counter
+after-brace: recipe new-counter
 after-brace: new ...
 after-brace: copy ...
 after-brace: copy ...
@@ -65,7 +65,7 @@ schedule: main
  101 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1000
- 101 run: 1:address:array:location/names:init-counter <- init-counter 
+ 101 run: 1:address:array:location/names:new-counter <- new-counter 
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1031
@@ -76,12 +76,12 @@ schedule: main
  102 run: reply default-space:address:array:location
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 1002
- 101 run: 2:number/raw <- increment-counter 1:address:array:location/names:init-counter
+ 101 run: 2:number/raw <- increment-counter 1:address:array:location/names:new-counter
 9999 mem: location 1002 is 1031
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1062
- 102 run: 0:address:array:location/names:init-counter <- next-ingredient 
+ 102 run: 0:address:array:location/names:new-counter <- next-ingredient 
 9999 mem: storing 1031 in location 1063
  102 run: y:number/space:1 <- add y:number/space:1, 1:literal
 9999 mem: location 1034 is 3
@@ -92,12 +92,12 @@ schedule: main
 9999 mem: location 1034 is 4
 9999 run: result 0 is 4
 9999 mem: storing 4 in location 2
- 101 run: 3:number/raw <- increment-counter 1:address:array:location/names:init-counter
+ 101 run: 3:number/raw <- increment-counter 1:address:array:location/names:new-counter
 9999 mem: location 1002 is 1031
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1093
- 102 run: 0:address:array:location/names:init-counter <- next-ingredient 
+ 102 run: 0:address:array:location/names:new-counter <- next-ingredient 
 9999 mem: storing 1031 in location 1094
  102 run: y:number/space:1 <- add y:number/space:1, 1:literal
 9999 mem: location 1034 is 4

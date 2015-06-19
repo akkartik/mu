@@ -103,7 +103,7 @@ container buffer [
   data:address:array:character
 ]
 
-recipe init-buffer [
+recipe new-buffer [
   default-space:address:array:location <- new location:type, 30:literal
 #?   $print default-space:address:array:location, [
 #? ]
@@ -182,7 +182,7 @@ recipe buffer-append [
 scenario buffer-append-works [
   run [
     default-space:address:array:location <- new location:type, 30:literal
-    x:address:buffer <- init-buffer 3:literal
+    x:address:buffer <- new-buffer 3:literal
     s1:address:array:character <- get x:address:buffer/deref, data:offset
     x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
     x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
@@ -234,7 +234,7 @@ scenario buffer-append-works [
 scenario buffer-append-handles-backspace [
   run [
     default-space:address:array:location <- new location:type, 30:literal
-    x:address:buffer <- init-buffer 3:literal
+    x:address:buffer <- new-buffer 3:literal
     x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
     x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
     x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace
@@ -267,7 +267,7 @@ recipe integer-to-decimal-string [
     n:number <- multiply n:number, -1:literal
   }
   # add digits from right to left into intermediate buffer
-  tmp:address:buffer <- init-buffer 30:literal
+  tmp:address:buffer <- new-buffer 30:literal
   digit-base:number <- copy 48:literal  # '0'
   {
     done?:boolean <- equal n:number, 0:literal

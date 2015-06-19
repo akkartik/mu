@@ -6,14 +6,14 @@
 :(scenario closure)
 recipe main [
   default-space:address:array:location <- new location:type, 30:literal
-  1:address:array:location/names:init-counter <- init-counter
+  1:address:array:location/names:new-counter <- new-counter
 #?   $print [AAAAAAAAAAAAAAAA]
 #?   $print 1:address:array:location
-  2:number/raw <- increment-counter 1:address:array:location/names:init-counter
-  3:number/raw <- increment-counter 1:address:array:location/names:init-counter
+  2:number/raw <- increment-counter 1:address:array:location/names:new-counter
+  3:number/raw <- increment-counter 1:address:array:location/names:new-counter
 ]
 
-recipe init-counter [
+recipe new-counter [
   default-space:address:array:location <- new location:type, 30:literal
   x:number <- copy 23:literal
   y:number <- copy 3:literal  # variable that will be incremented
@@ -22,13 +22,13 @@ recipe init-counter [
 
 recipe increment-counter [
   default-space:address:array:location <- new location:type, 30:literal
-  0:address:array:location/names:init-counter <- next-ingredient  # outer space must be created by 'init-counter' above
+  0:address:array:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
   y:number/space:1 <- add y:number/space:1, 1:literal  # increment
   y:number <- copy 234:literal  # dummy
   reply y:number/space:1
 ]
 
-+name: recipe increment-counter is surrounded by init-counter
++name: recipe increment-counter is surrounded by new-counter
 +mem: storing 5 in location 3
 
 //: To make this work, compute the recipe that provides names for the

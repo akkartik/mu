@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height\n    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'\n    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace\n    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace\n    2:number <- get 1:address:screen/deref, cursor-column:offset\n    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset\n    4:array:screen-cell <- copy 3:address:array:screen-cell/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height\n    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'\n    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace\n    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace\n    2:number <- get 1:address:screen/deref, cursor-column:offset\n    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset\n    4:array:screen-cell <- copy 3:address:array:screen-cell/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 0  # cursor column\n    4 <- 6  # width*height\n    5 <- 32  # space, not 'a'\n    6 <- 7  # white\n    7 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe print-extra-backspace-character
@@ -8,7 +8,7 @@ after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: print-extra-backspace-character
  101 run: run [
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
     1:address:screen <- print-character 1:address:screen, 8:literal  # backspace
     1:address:screen <- print-character 1:address:screen, 8:literal  # backspace
@@ -16,7 +16,7 @@ schedule: print-extra-backspace-character
     3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
     4:array:screen-cell <- copy 3:address:array:screen-cell/deref
   ]
-parse: instruction: init-fake-screen
+parse: instruction: new-fake-screen
 parse:   ingredient: {name: "3", properties: ["3": "literal", "width": ]}
 parse:   ingredient: {name: "2", properties: ["2": "literal", "height": ]}
 parse:   product: {name: "1", properties: ["1": "address":"screen"]}
@@ -46,14 +46,14 @@ parse:   product: {name: "4", properties: ["4": "array":"screen-cell"]}
 name: element cursor-column of type screen is at offset 3
 name: element data of type screen is at offset 4
 after-brace: recipe run1001
-after-brace: init-fake-screen ...
+after-brace: new-fake-screen ...
 after-brace: print-character ...
 after-brace: print-character ...
 after-brace: print-character ...
 after-brace: get ...
 after-brace: get ...
 after-brace: copy ...
- 101 run: 1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+ 101 run: 1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
  102 run: default-space:address:array:location <- new location:type, 30:literal/capacity
 9999 mem: array size is 30
 9999 mem: new alloc: 1000

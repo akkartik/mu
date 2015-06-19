@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n#?     $start-tracing #? 3\n    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height\n    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'\n    1:address:screen <- print-character 1:address:screen, 10:literal/newline\n    2:number <- get 1:address:screen/deref, cursor-row:offset\n    3:number <- get 1:address:screen/deref, cursor-column:offset\n    4:address:array:screen-cell <- get 1:address:screen/deref, data:offset\n    5:array:screen-cell <- copy 4:address:array:screen-cell/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n#?     $start-tracing #? 3\n    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height\n    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'\n    1:address:screen <- print-character 1:address:screen, 10:literal/newline\n    2:number <- get 1:address:screen/deref, cursor-row:offset\n    3:number <- get 1:address:screen/deref, cursor-column:offset\n    4:address:array:screen-cell <- get 1:address:screen/deref, data:offset\n    5:array:screen-cell <- copy 4:address:array:screen-cell/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 1  # cursor row\n    3 <- 0  # cursor column\n    5 <- 6  # width*height\n    6 <- 97  # 'a'\n    7 <- 7  # white\n    8 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe print-newline-character
@@ -9,7 +9,7 @@ after-brace: memory-should-contain ...
 schedule: print-newline-character
  101 run: run [
 #?     $start-tracing #? 3
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
     1:address:screen <- print-character 1:address:screen, 10:literal/newline
     2:number <- get 1:address:screen/deref, cursor-row:offset
@@ -17,7 +17,7 @@ schedule: print-newline-character
     4:address:array:screen-cell <- get 1:address:screen/deref, data:offset
     5:array:screen-cell <- copy 4:address:array:screen-cell/deref
   ]
-parse: instruction: init-fake-screen
+parse: instruction: new-fake-screen
 parse:   ingredient: {name: "3", properties: ["3": "literal", "width": ]}
 parse:   ingredient: {name: "2", properties: ["2": "literal", "height": ]}
 parse:   product: {name: "1", properties: ["1": "address":"screen"]}
@@ -48,14 +48,14 @@ name: element cursor-row of type screen is at offset 2
 name: element cursor-column of type screen is at offset 3
 name: element data of type screen is at offset 4
 after-brace: recipe run1001
-after-brace: init-fake-screen ...
+after-brace: new-fake-screen ...
 after-brace: print-character ...
 after-brace: print-character ...
 after-brace: get ...
 after-brace: get ...
 after-brace: get ...
 after-brace: copy ...
- 101 run: 1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+ 101 run: 1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
  102 run: default-space:address:array:location <- new location:type, 30:literal/capacity
 9999 mem: array size is 30
 9999 mem: new alloc: 1000

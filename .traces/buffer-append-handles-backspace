@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    default-space:address:array:location <- new location:type, 30:literal\n    x:address:buffer <- init-buffer 3:literal\n    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'\n    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'\n    x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace\n    s:address:array:character <- buffer-to-array x:address:buffer\n    1:array:character/raw <- copy s:address:array:character/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    default-space:address:array:location <- new location:type, 30:literal\n    x:address:buffer <- new-buffer 3:literal\n    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'\n    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'\n    x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace\n    s:address:array:character <- buffer-to-array x:address:buffer\n    1:array:character/raw <- copy s:address:array:character/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    1 <- 1   # length\n    2 <- 97  # contents\n    3 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe buffer-append-handles-backspace
@@ -9,7 +9,7 @@ after-brace: memory-should-contain ...
 schedule: buffer-append-handles-backspace
  101 run: run [
     default-space:address:array:location <- new location:type, 30:literal
-    x:address:buffer <- init-buffer 3:literal
+    x:address:buffer <- new-buffer 3:literal
     x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
     x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
     x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace
@@ -20,7 +20,7 @@ parse: instruction: new
 parse:   ingredient: {name: "location", properties: ["location": "type"]}
 parse:   ingredient: {name: "30", properties: ["30": "literal"]}
 parse:   product: {name: "default-space", properties: ["default-space": "address":"array":"location"]}
-parse: instruction: init-buffer
+parse: instruction: new-buffer
 parse:   ingredient: {name: "3", properties: ["3": "literal"]}
 parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
 parse: instruction: buffer-append
@@ -46,7 +46,7 @@ name: assign x 1
 name: assign s 2
 after-brace: recipe run1001
 after-brace: new ...
-after-brace: init-buffer ...
+after-brace: new-buffer ...
 after-brace: buffer-append ...
 after-brace: buffer-append ...
 after-brace: buffer-append ...
@@ -55,7 +55,7 @@ after-brace: copy ...
  101 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1000
- 101 run: x:address:buffer <- init-buffer 3:literal
+ 101 run: x:address:buffer <- new-buffer 3:literal
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1031

@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    # channel with just 1 slot\n    1:address:channel <- init-channel 1:literal/capacity\n    # write and read a value\n    1:address:channel <- write 1:address:channel, 34:literal\n    _, 1:address:channel <- read 1:address:channel\n    # first-free will now be 1\n    2:number <- get 1:address:channel/deref, first-free:offset\n    3:number <- get 1:address:channel/deref, first-free:offset\n    # write second value, verify that first-free wraps\n    1:address:channel <- write 1:address:channel, 34:literal\n    4:number <- get 1:address:channel/deref, first-free:offset\n    # read second value, verify that first-full wraps\n    _, 1:address:channel <- read 1:address:channel\n    5:number <- get 1:address:channel/deref, first-full:offset\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    # channel with just 1 slot\n    1:address:channel <- new-channel 1:literal/capacity\n    # write and read a value\n    1:address:channel <- write 1:address:channel, 34:literal\n    _, 1:address:channel <- read 1:address:channel\n    # first-free will now be 1\n    2:number <- get 1:address:channel/deref, first-free:offset\n    3:number <- get 1:address:channel/deref, first-free:offset\n    # write second value, verify that first-free wraps\n    1:address:channel <- write 1:address:channel, 34:literal\n    4:number <- get 1:address:channel/deref, first-free:offset\n    # read second value, verify that first-full wraps\n    _, 1:address:channel <- read 1:address:channel\n    5:number <- get 1:address:channel/deref, first-full:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 1  # first-free after first write\n    3 <- 1  # first-full after first read\n    4 <- 0  # first-free after second write, wrapped\n    5 <- 0  # first-full after second read, wrapped\n  ", properties: [_: "literal-string"]}
 after-brace: recipe channel-wrap
@@ -9,7 +9,7 @@ after-brace: memory-should-contain ...
 schedule: channel-wrap
  101 run: run [
     # channel with just 1 slot
-    1:address:channel <- init-channel 1:literal/capacity
+    1:address:channel <- new-channel 1:literal/capacity
     # write and read a value
     1:address:channel <- write 1:address:channel, 34:literal
     _, 1:address:channel <- read 1:address:channel
@@ -23,7 +23,7 @@ schedule: channel-wrap
     _, 1:address:channel <- read 1:address:channel
     5:number <- get 1:address:channel/deref, first-full:offset
   ]
-parse: instruction: init-channel
+parse: instruction: new-channel
 parse:   ingredient: {name: "1", properties: ["1": "literal", "capacity": ]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 parse: instruction: write
@@ -63,7 +63,7 @@ name: element first-free of type channel is at offset 1
 name: element first-free of type channel is at offset 1
 name: element first-full of type channel is at offset 0
 after-brace: recipe run1001
-after-brace: init-channel ...
+after-brace: new-channel ...
 after-brace: write ...
 after-brace: read ...
 after-brace: get ...
@@ -72,7 +72,7 @@ after-brace: write ...
 after-brace: get ...
 after-brace: read ...
 after-brace: get ...
- 101 run: 1:address:channel <- init-channel 1:literal/capacity
+ 101 run: 1:address:channel <- new-channel 1:literal/capacity
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1000

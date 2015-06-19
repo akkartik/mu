@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height\n    2:address:array:character <- new [abcd]\n    1:address:screen <- print-string 1:address:screen, 2:address:array:character\n    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset\n    4:array:screen-cell <- copy 3:address:array:screen-cell/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height\n    2:address:array:character <- new [abcd]\n    1:address:screen <- print-string 1:address:screen, 2:address:array:character\n    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset\n    4:array:screen-cell <- copy 3:address:array:screen-cell/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    4 <- 6  # width*height\n    5 <- 97  # 'a'\n    6 <- 7  # white\n    7 <- 98  # 'b'\n    8 <- 7  # white\n    9 <- 100  # 'd' overwrites 'c'\n    10 <- 7  # white\n    11 <- 0  # unused\n  ", properties: [_: "literal-string"]}
 after-brace: recipe print-string-stops-at-right-margin
@@ -8,13 +8,13 @@ after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: print-string-stops-at-right-margin
  101 run: run [
-    1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
     2:address:array:character <- new [abcd]
     1:address:screen <- print-string 1:address:screen, 2:address:array:character
     3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
     4:array:screen-cell <- copy 3:address:array:screen-cell/deref
   ]
-parse: instruction: init-fake-screen
+parse: instruction: new-fake-screen
 parse:   ingredient: {name: "3", properties: ["3": "literal", "width": ]}
 parse:   ingredient: {name: "2", properties: ["2": "literal", "height": ]}
 parse:   product: {name: "1", properties: ["1": "address":"screen"]}
@@ -34,12 +34,12 @@ parse:   ingredient: {name: "3", properties: ["3": "address":"array":"screen-cel
 parse:   product: {name: "4", properties: ["4": "array":"screen-cell"]}
 name: element data of type screen is at offset 4
 after-brace: recipe run1001
-after-brace: init-fake-screen ...
+after-brace: new-fake-screen ...
 after-brace: new ...
 after-brace: print-string ...
 after-brace: get ...
 after-brace: copy ...
- 101 run: 1:address:screen <- init-fake-screen 3:literal/width, 2:literal/height
+ 101 run: 1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
  102 run: default-space:address:array:location <- new location:type, 30:literal/capacity
 9999 mem: array size is 30
 9999 mem: new alloc: 1000

@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:channel <- init-channel 3:literal/capacity\n    1:address:channel <- write 1:address:channel, 34:literal\n    _, 1:address:channel <- read 1:address:channel\n    2:number <- get 1:address:channel/deref, first-full:offset\n    3:number <- get 1:address:channel/deref, first-free:offset\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:channel <- new-channel 3:literal/capacity\n    1:address:channel <- write 1:address:channel, 34:literal\n    _, 1:address:channel <- read 1:address:channel\n    2:number <- get 1:address:channel/deref, first-full:offset\n    3:number <- get 1:address:channel/deref, first-free:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 1  # first-full\n    3 <- 1  # first-free\n  ", properties: [_: "literal-string"]}
 after-brace: recipe channel-read-increments-full
@@ -8,13 +8,13 @@ after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: channel-read-increments-full
  101 run: run [
-    1:address:channel <- init-channel 3:literal/capacity
+    1:address:channel <- new-channel 3:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
     _, 1:address:channel <- read 1:address:channel
     2:number <- get 1:address:channel/deref, first-full:offset
     3:number <- get 1:address:channel/deref, first-free:offset
   ]
-parse: instruction: init-channel
+parse: instruction: new-channel
 parse:   ingredient: {name: "3", properties: ["3": "literal", "capacity": ]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 parse: instruction: write
@@ -36,12 +36,12 @@ parse:   product: {name: "3", properties: ["3": "number"]}
 name: element first-full of type channel is at offset 0
 name: element first-free of type channel is at offset 1
 after-brace: recipe run1001
-after-brace: init-channel ...
+after-brace: new-channel ...
 after-brace: write ...
 after-brace: read ...
 after-brace: get ...
 after-brace: get ...
- 101 run: 1:address:channel <- init-channel 3:literal/capacity
+ 101 run: 1:address:channel <- new-channel 3:literal/capacity
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1000

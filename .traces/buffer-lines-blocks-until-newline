@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:channel/stdin <- init-channel 10:literal/capacity\n    2:address:channel/buffered-stdin <- init-channel 10:literal/capacity\n    3:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 3:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after init]\n    # buffer stdin into buffered-stdin, try to read from buffered-stdin\n    4:number/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin\n    wait-for-routine 4:number/buffer-routine\n    5:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 5:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]\n    # write 'a'\n    1:address:channel <- write 1:address:channel, 97:literal/a\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    6:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 6:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a']\n    # write 'b'\n    1:address:channel <- write 1:address:channel, 98:literal/b\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    7:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 7:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b']\n    # write newline\n    1:address:channel <- write 1:address:channel, 10:literal/newline\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    8:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    9:boolean/completed? <- not 8:boolean\n    assert 9:boolean/completed?, [\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline]\n    trace [test], [reached end]\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:channel/stdin <- new-channel 10:literal/capacity\n    2:address:channel/buffered-stdin <- new-channel 10:literal/capacity\n    3:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 3:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after init]\n    # buffer stdin into buffered-stdin, try to read from buffered-stdin\n    4:number/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin\n    wait-for-routine 4:number/buffer-routine\n    5:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 5:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]\n    # write 'a'\n    1:address:channel <- write 1:address:channel, 97:literal/a\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    6:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 6:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a']\n    # write 'b'\n    1:address:channel <- write 1:address:channel, 98:literal/b\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    7:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 7:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b']\n    # write newline\n    1:address:channel <- write 1:address:channel, 10:literal/newline\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    8:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    9:boolean/completed? <- not 8:boolean\n    assert 9:boolean/completed?, [\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline]\n    trace [test], [reached end]\n  ", properties: [_: "literal-string"]}
 parse: instruction: trace-should-contain
 parse:   ingredient: {name: "\n    test: reached end\n  ", properties: [_: "literal-string"]}
 after-brace: recipe buffer-lines-blocks-until-newline
@@ -8,8 +8,8 @@ after-brace: trace-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: buffer-lines-blocks-until-newline
  101 run: run [
-    1:address:channel/stdin <- init-channel 10:literal/capacity
-    2:address:channel/buffered-stdin <- init-channel 10:literal/capacity
+    1:address:channel/stdin <- new-channel 10:literal/capacity
+    2:address:channel/buffered-stdin <- new-channel 10:literal/capacity
     3:boolean <- channel-empty? 2:address:channel/buffered-stdin
     assert 3:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after init]
@@ -43,10 +43,10 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 F buffer-lines-blocks-until-newline: channel should contain data after writing newline]
     trace [test], [reached end]
   ]
-parse: instruction: init-channel
+parse: instruction: new-channel
 parse:   ingredient: {name: "10", properties: ["10": "literal", "capacity": ]}
 parse:   product: {name: "1", properties: ["1": "address":"channel", "stdin": ]}
-parse: instruction: init-channel
+parse: instruction: new-channel
 parse:   ingredient: {name: "10", properties: ["10": "literal", "capacity": ]}
 parse:   product: {name: "2", properties: ["2": "address":"channel", "buffered-stdin": ]}
 parse: instruction: channel-empty?
@@ -117,8 +117,8 @@ parse: instruction: trace
 parse:   ingredient: {name: "test", properties: [_: "literal-string"]}
 parse:   ingredient: {name: "reached end", properties: [_: "literal-string"]}
 after-brace: recipe run1001
-after-brace: init-channel ...
-after-brace: init-channel ...
+after-brace: new-channel ...
+after-brace: new-channel ...
 after-brace: channel-empty? ...
 after-brace: assert ...
 after-brace: start-running ...
@@ -142,7 +142,7 @@ after-brace: channel-empty? ...
 after-brace: not ...
 after-brace: assert ...
 after-brace: trace ...
- 101 run: 1:address:channel/stdin <- init-channel 10:literal/capacity
+ 101 run: 1:address:channel/stdin <- new-channel 10:literal/capacity
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1000
@@ -194,7 +194,7 @@ after-brace: trace ...
 9999 mem: location 1002 is 1031
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 1
- 101 run: 2:address:channel/buffered-stdin <- init-channel 10:literal/capacity
+ 101 run: 2:address:channel/buffered-stdin <- new-channel 10:literal/capacity
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1046
@@ -300,7 +300,7 @@ schedule: buffer-lines
 9999 mem: storing 1031 in location 101002
  101 run: out:address:channel <- next-ingredient 
 9999 mem: storing 1077 in location 101003
- 101 run: line:address:buffer <- init-buffer 30:literal
+ 101 run: line:address:buffer <- new-buffer 30:literal
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 101031
@@ -2598,7 +2598,7 @@ schedule: read/buffer-lines
 9999 run: jumping to instruction 36
  101 run: loop 
 9999 run: jumping to instruction 4
- 101 run: line:address:buffer <- init-buffer 30:literal
+ 101 run: line:address:buffer <- new-buffer 30:literal
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 101746

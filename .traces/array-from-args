@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:location <- init-array 0:literal, 1:literal, 2:literal\n    2:array:location <- copy 1:address:array:location/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:location <- new-array 0:literal, 1:literal, 2:literal\n    2:array:location <- copy 1:address:array:location/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 3  # array length\n    3 <- 0\n    4 <- 1\n    5 <- 2\n  ", properties: [_: "literal-string"]}
 after-brace: recipe array-from-args
@@ -8,10 +8,10 @@ after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: array-from-args
  101 run: run [
-    1:address:array:location <- init-array 0:literal, 1:literal, 2:literal
+    1:address:array:location <- new-array 0:literal, 1:literal, 2:literal
     2:array:location <- copy 1:address:array:location/deref
   ]
-parse: instruction: init-array
+parse: instruction: new-array
 parse:   ingredient: {name: "0", properties: ["0": "literal"]}
 parse:   ingredient: {name: "1", properties: ["1": "literal"]}
 parse:   ingredient: {name: "2", properties: ["2": "literal"]}
@@ -20,9 +20,9 @@ parse: instruction: copy
 parse:   ingredient: {name: "1", properties: ["1": "address":"array":"location", "deref": ]}
 parse:   product: {name: "2", properties: ["2": "array":"location"]}
 after-brace: recipe run1001
-after-brace: init-array ...
+after-brace: new-array ...
 after-brace: copy ...
- 101 run: 1:address:array:location <- init-array 0:literal, 1:literal, 2:literal
+ 101 run: 1:address:array:location <- new-array 0:literal, 1:literal, 2:literal
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1000
@@ -85,7 +85,7 @@ after-brace: copy ...
  102 run: curr-value:location, exists?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1003
 9999 mem: storing 1 in location 1004
- 102 run: assert exists?:boolean, [error in rewinding ingredients to init-array]
+ 102 run: assert exists?:boolean, [error in rewinding ingredients to new-array]
 9999 mem: location 1004 is 1
  102 run: tmp:address:location <- index-address result:address:array:location/deref, i:number
 9999 mem: location 1005 is 1031
@@ -116,7 +116,7 @@ after-brace: copy ...
  102 run: curr-value:location, exists?:boolean <- next-ingredient 
 9999 mem: storing 1 in location 1003
 9999 mem: storing 1 in location 1004
- 102 run: assert exists?:boolean, [error in rewinding ingredients to init-array]
+ 102 run: assert exists?:boolean, [error in rewinding ingredients to new-array]
 9999 mem: location 1004 is 1
  102 run: tmp:address:location <- index-address result:address:array:location/deref, i:number
 9999 mem: location 1005 is 1031
@@ -147,7 +147,7 @@ after-brace: copy ...
  102 run: curr-value:location, exists?:boolean <- next-ingredient 
 9999 mem: storing 2 in location 1003
 9999 mem: storing 1 in location 1004
- 102 run: assert exists?:boolean, [error in rewinding ingredients to init-array]
+ 102 run: assert exists?:boolean, [error in rewinding ingredients to new-array]
 9999 mem: location 1004 is 1
  102 run: tmp:address:location <- index-address result:address:array:location/deref, i:number
 9999 mem: location 1005 is 1031

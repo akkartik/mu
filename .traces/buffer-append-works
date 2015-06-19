@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    default-space:address:array:location <- new location:type, 30:literal\n    x:address:buffer <- init-buffer 3:literal\n    s1:address:array:character <- get x:address:buffer/deref, data:offset\n    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'\n    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'\n    x:address:buffer <- buffer-append x:address:buffer, 99:literal  # 'c'\n    s2:address:array:character <- get x:address:buffer/deref, data:offset\n    1:boolean/raw <- equal s1:address:array:character, s2:address:array:character\n#?     $print s2:address:array:character, [\n#? ]\n#?     $print 1060:number/raw, [\n#? ]\n#?     $print 1061:number/raw, [\n#? ]\n#?     $print 1062:number/raw, [\n#? ]\n#?     $print 1063:number/raw, [\n#? ]\n#?     $print 1064:number/raw, [\n#? ]\n#?     $print 1065:number/raw, [\n#? ]\n    2:array:character/raw <- copy s2:address:array:character/deref\n    +buffer-filled\n    x:address:buffer <- buffer-append x:address:buffer, 100:literal  # 'd'\n    s3:address:array:character <- get x:address:buffer/deref, data:offset\n    10:boolean/raw <- equal s1:address:array:character, s3:address:array:character\n    11:number/raw <- get x:address:buffer/deref, length:offset\n    12:array:character/raw <- copy s3:address:array:character/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    default-space:address:array:location <- new location:type, 30:literal\n    x:address:buffer <- new-buffer 3:literal\n    s1:address:array:character <- get x:address:buffer/deref, data:offset\n    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'\n    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'\n    x:address:buffer <- buffer-append x:address:buffer, 99:literal  # 'c'\n    s2:address:array:character <- get x:address:buffer/deref, data:offset\n    1:boolean/raw <- equal s1:address:array:character, s2:address:array:character\n#?     $print s2:address:array:character, [\n#? ]\n#?     $print 1060:number/raw, [\n#? ]\n#?     $print 1061:number/raw, [\n#? ]\n#?     $print 1062:number/raw, [\n#? ]\n#?     $print 1063:number/raw, [\n#? ]\n#?     $print 1064:number/raw, [\n#? ]\n#?     $print 1065:number/raw, [\n#? ]\n    2:array:character/raw <- copy s2:address:array:character/deref\n    +buffer-filled\n    x:address:buffer <- buffer-append x:address:buffer, 100:literal  # 'd'\n    s3:address:array:character <- get x:address:buffer/deref, data:offset\n    10:boolean/raw <- equal s1:address:array:character, s3:address:array:character\n    11:number/raw <- get x:address:buffer/deref, length:offset\n    12:array:character/raw <- copy s3:address:array:character/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    # before +buffer-filled\n    1 <- 1   # no change in data pointer\n    2 <- 3   # size of data\n    3 <- 97  # data\n    4 <- 98\n    5 <- 99\n    # in the end\n    10 <- 0   # data pointer has grown\n    11 <- 4   # final length\n    12 <- 6   # but data's capacity has doubled\n    13 <- 97  # data\n    14 <- 98\n    15 <- 99\n    16 <- 100\n    17 <- 0\n    18 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe buffer-append-works
@@ -9,7 +9,7 @@ after-brace: memory-should-contain ...
 schedule: buffer-append-works
  101 run: run [
     default-space:address:array:location <- new location:type, 30:literal
-    x:address:buffer <- init-buffer 3:literal
+    x:address:buffer <- new-buffer 3:literal
     s1:address:array:character <- get x:address:buffer/deref, data:offset
     x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
     x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
@@ -42,7 +42,7 @@ parse: instruction: new
 parse:   ingredient: {name: "location", properties: ["location": "type"]}
 parse:   ingredient: {name: "30", properties: ["30": "literal"]}
 parse:   product: {name: "default-space", properties: ["default-space": "address":"array":"location"]}
-parse: instruction: init-buffer
+parse: instruction: new-buffer
 parse:   ingredient: {name: "3", properties: ["3": "literal"]}
 parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
 parse: instruction: get
@@ -103,7 +103,7 @@ name: assign s3 4
 name: element length of type buffer is at offset 0
 after-brace: recipe run1001
 after-brace: new ...
-after-brace: init-buffer ...
+after-brace: new-buffer ...
 after-brace: get ...
 after-brace: buffer-append ...
 after-brace: buffer-append ...
@@ -119,7 +119,7 @@ after-brace: copy ...
  101 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1000
- 101 run: x:address:buffer <- init-buffer 3:literal
+ 101 run: x:address:buffer <- new-buffer 3:literal
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1031

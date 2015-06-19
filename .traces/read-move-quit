@@ -2,7 +2,7 @@ parse: instruction: assume-screen
 parse:   ingredient: {name: "20", properties: ["20": "literal", "width": ]}
 parse:   ingredient: {name: "2", properties: ["2": "literal", "height": ]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:channel <- init-channel 2:literal\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-quit: routine failed to pause after coming up (before any keys were pressed)]\n    # press 'q'\n    1:address:channel <- write 1:address:channel, 113:literal  # 'q'\n    restart 2:number/routine\n    # 'read-move' completes\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/completed? <- equal 3:number/routine-state, 1:literal/completed\n    assert 4:boolean/completed?, [\nF read-move-quit: routine failed to terminate on 'q']\n    trace [test], [reached end]\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:channel <- new-channel 2:literal\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-quit: routine failed to pause after coming up (before any keys were pressed)]\n    # press 'q'\n    1:address:channel <- write 1:address:channel, 113:literal  # 'q'\n    restart 2:number/routine\n    # 'read-move' completes\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/completed? <- equal 3:number/routine-state, 1:literal/completed\n    assert 4:boolean/completed?, [\nF read-move-quit: routine failed to terminate on 'q']\n    trace [test], [reached end]\n  ", properties: [_: "literal-string"]}
 parse: instruction: trace-should-contain
 parse:   ingredient: {name: "\n    test: reached end\n  ", properties: [_: "literal-string"]}
 after-brace: recipe read-move-quit
@@ -5001,7 +5001,7 @@ schedule: read-move-quit
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 900
  101 run: run [
-    1:address:channel <- init-channel 2:literal
+    1:address:channel <- new-channel 2:literal
     2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:number
@@ -5020,7 +5020,7 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
 F read-move-quit: routine failed to terminate on 'q']
     trace [test], [reached end]
   ]
-parse: instruction: init-channel
+parse: instruction: new-channel
 parse:   ingredient: {name: "2", properties: ["2": "literal"]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 parse: instruction: start-running
@@ -5062,7 +5062,7 @@ parse: instruction: trace
 parse:   ingredient: {name: "test", properties: [_: "literal-string"]}
 parse:   ingredient: {name: "reached end", properties: [_: "literal-string"]}
 after-brace: recipe run1001
-after-brace: init-channel ...
+after-brace: new-channel ...
 after-brace: start-running ...
 after-brace: wait-for-routine ...
 after-brace: routine-state ...
@@ -5075,7 +5075,7 @@ after-brace: routine-state ...
 after-brace: equal ...
 after-brace: assert ...
 after-brace: trace ...
- 101 run: 1:address:channel <- init-channel 2:literal
+ 101 run: 1:address:channel <- new-channel 2:literal
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1148

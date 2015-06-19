@@ -10,7 +10,7 @@
 
 scenario channel [
   run [
-    1:address:channel <- init-channel 3:literal/capacity
+    1:address:channel <- new-channel 3:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
     2:number, 1:address:channel <- read 1:address:channel
   ]
@@ -31,8 +31,8 @@ container channel [
   data:address:array:location
 ]
 
-# result:address:channel <- init-channel capacity:number
-recipe init-channel [
+# result:address:channel <- new-channel capacity:number
+recipe new-channel [
   default-space:address:array:location <- new location:type, 30:literal
   # result = new channel
   result:address:channel <- new channel:type
@@ -119,7 +119,7 @@ recipe clear-channel [
 
 scenario channel-initialization [
   run [
-    1:address:channel <- init-channel 3:literal/capacity
+    1:address:channel <- new-channel 3:literal/capacity
     2:number <- get 1:address:channel/deref, first-full:offset
     3:number <- get 1:address:channel/deref, first-free:offset
   ]
@@ -131,7 +131,7 @@ scenario channel-initialization [
 
 scenario channel-write-increments-free [
   run [
-    1:address:channel <- init-channel 3:literal/capacity
+    1:address:channel <- new-channel 3:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
     2:number <- get 1:address:channel/deref, first-full:offset
     3:number <- get 1:address:channel/deref, first-free:offset
@@ -144,7 +144,7 @@ scenario channel-write-increments-free [
 
 scenario channel-read-increments-full [
   run [
-    1:address:channel <- init-channel 3:literal/capacity
+    1:address:channel <- new-channel 3:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
     _, 1:address:channel <- read 1:address:channel
     2:number <- get 1:address:channel/deref, first-full:offset
@@ -159,7 +159,7 @@ scenario channel-read-increments-full [
 scenario channel-wrap [
   run [
     # channel with just 1 slot
-    1:address:channel <- init-channel 1:literal/capacity
+    1:address:channel <- new-channel 1:literal/capacity
     # write and read a value
     1:address:channel <- write 1:address:channel, 34:literal
     _, 1:address:channel <- read 1:address:channel
@@ -226,7 +226,7 @@ recipe channel-capacity [
 
 scenario channel-new-empty-not-full [
   run [
-    1:address:channel <- init-channel 3:literal/capacity
+    1:address:channel <- new-channel 3:literal/capacity
     2:boolean <- channel-empty? 1:address:channel
     3:boolean <- channel-full? 1:address:channel
   ]
@@ -238,7 +238,7 @@ scenario channel-new-empty-not-full [
 
 scenario channel-write-not-empty [
   run [
-    1:address:channel <- init-channel 3:literal/capacity
+    1:address:channel <- new-channel 3:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
     2:boolean <- channel-empty? 1:address:channel
     3:boolean <- channel-full? 1:address:channel
@@ -251,7 +251,7 @@ scenario channel-write-not-empty [
 
 scenario channel-write-full [
   run [
-    1:address:channel <- init-channel 1:literal/capacity
+    1:address:channel <- new-channel 1:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
     2:boolean <- channel-empty? 1:address:channel
     3:boolean <- channel-full? 1:address:channel
@@ -264,7 +264,7 @@ scenario channel-write-full [
 
 scenario channel-read-not-full [
   run [
-    1:address:channel <- init-channel 1:literal/capacity
+    1:address:channel <- new-channel 1:literal/capacity
     1:address:channel <- write 1:address:channel, 34:literal
     _, 1:address:channel <- read 1:address:channel
     2:boolean <- channel-empty? 1:address:channel
@@ -286,7 +286,7 @@ recipe buffer-lines [
   out:address:channel <- next-ingredient
   # repeat forever
   {
-    line:address:buffer <- init-buffer, 30:literal
+    line:address:buffer <- new-buffer, 30:literal
     # read characters from 'in' until newline, copy into line
     {
       +next-character
@@ -351,8 +351,8 @@ recipe buffer-lines [
 
 scenario buffer-lines-blocks-until-newline [
   run [
-    1:address:channel/stdin <- init-channel 10:literal/capacity
-    2:address:channel/buffered-stdin <- init-channel 10:literal/capacity
+    1:address:channel/stdin <- new-channel 10:literal/capacity
+    2:address:channel/buffered-stdin <- new-channel 10:literal/capacity
     3:boolean <- channel-empty? 2:address:channel/buffered-stdin
     assert 3:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after init]
