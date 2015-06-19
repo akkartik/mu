@@ -62,10 +62,12 @@ bool code_string(istream& in, ostringstream& out) {
 
 // Read a regular string. Regular strings can only contain other regular
 // strings.
-void slurp_quoted_comment_oblivious(istream& in, ostream& out) {
+void slurp_quoted_comment_oblivious(istream& in, ostringstream& out) {
+//?   cerr << "comment oblivious\n"; //? 1
   int brace_depth = 1;
   while (!in.eof()) {
     char c = in.get();
+//?     cerr << '%' << (int)c << ' ' << brace_depth << ": " << out.str() << "%$\n"; //? 1
 //?     cout << (int)c << ": " << brace_depth << '\n'; //? 2
     if (c == '\\') {
       out << static_cast<char>(in.get());
@@ -84,9 +86,15 @@ void slurp_quoted_comment_oblivious(istream& in, ostream& out) {
 }
 
 // Read a code string. Code strings can contain either code or regular strings.
-void slurp_quoted_comment_aware(istream& in, ostream& out) {
+void slurp_quoted_comment_aware(istream& in, ostringstream& out) {
+//?   cerr << "comment aware\n"; //? 1
   char c;
   while (in >> c) {
+//?     cerr << '^' << (int)c << ": " << out.str() << "$\n"; //? 1
+    if (c == '\\') {
+      out << static_cast<char>(in.get());
+      continue;
+    }
     if (c == '#') {
       out << c;
       while (!in.eof() && in.peek() != '\n') out << static_cast<char>(in.get());
@@ -99,8 +107,10 @@ void slurp_quoted_comment_aware(istream& in, ostream& out) {
       continue;
     }
     out << c;
-    if (c == ']') break;
+    if (c == ']') return;
   }
+  raise << "unbalanced '['\n";
+  out.clear();
 }
 
 :(after "reagent::reagent(string s)")
@@ -153,6 +163,13 @@ recipe main [
   1:address:array:character <- copy [abc \[def]
 ]
 +parse:   ingredient: {name: "abc [def", properties: [_: "literal-string"]}
+
+:(scenario string_literal_escaped_comment_aware)
+recipe main [
+  1:address:array:character <- copy [
+abc \\\[def]
+]
++parse:   ingredient: {name: "\nabc \[def", properties: [_: "literal-string"]}
 
 :(scenario string_literal_and_comment)
 recipe main [

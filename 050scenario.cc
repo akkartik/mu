@@ -74,14 +74,17 @@ scenario parse_scenario(istream& in) {
 //?   cerr << "parse scenario\n"; //? 1
   scenario result;
   result.name = next_word(in);
-//?   cerr << "scenario: " << result.name << '\n'; //? 1
+//?   cerr << "scenario: " << result.name << '\n'; //? 2
   skip_whitespace_and_comments(in);
   assert(in.peek() == '[');
   // scenarios are take special 'code' strings so we need to ignore brackets
   // inside comments
   result.to_run = slurp_quoted(in);
   // delete [] delimiters
+  assert(result.to_run.at(0) == '[');
   result.to_run.erase(0, 1);
+//?   cerr << (int)result.to_run.at(SIZE(result.to_run)-1) << '\n'; //? 1
+  assert(result.to_run.at(SIZE(result.to_run)-1) == ']');
   result.to_run.erase(SIZE(result.to_run)-1);
   return result;
 }
@@ -135,7 +138,7 @@ void run_mu_scenario(const scenario& s) {
     Trace_stream = new trace_stream;
     setup();
   }
-//?   cerr << '^' << s.to_run << "$\n"; //? 3
+//?   cerr << '^' << s.to_run << "$\n"; //? 4
   run("recipe "+s.name+" [ " + s.to_run + " ]");
   if (not_already_inside_test && Trace_stream) {
     teardown();

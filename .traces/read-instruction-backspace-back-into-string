@@ -8,12 +8,26 @@ parse:   ingredient: {name: "171", properties: ["171": "literal", "«": ]}
 parse:   ingredient: {name: "8", properties: ["8": "literal", "backspace": ]}
 parse: instruction: run
 parse:   ingredient: {name: "\n    read-instruction keyboard:address, screen:address\n  ", properties: [_: "literal-string"]}
+parse: instruction: screen-should-contain
+parse:   ingredient: {name: "\n    .[ab                           .\n    .                              .\n  ", properties: [_: "literal-string"]}
+parse: instruction: $print
+parse:   ingredient: {name: "aaa", properties: [_: "literal-string"]}
+parse: instruction: screen-should-contain-in-color
+parse:   ingredient: {name: "6", properties: ["6": "literal", "cyan": ]}
+parse:   ingredient: {name: "\n    .[ab                           .\n    .                              .\n  ", properties: [_: "literal-string"]}
+parse: instruction: screen-should-contain-in-color
+parse:   ingredient: {name: "7", properties: ["7": "literal", "white": ]}
+parse:   ingredient: {name: "\n    .                              .\n    .                              .\n  ", properties: [_: "literal-string"]}
 after-brace: recipe read-instruction-backspace-back-into-string
 after-brace: assume-screen ...
 after-brace: assume-keyboard ...
 after-brace: init-fake-keyboard ...
 after-brace: replace-in-keyboard ...
 after-brace: run ...
+after-brace: screen-should-contain ...
+after-brace: $print ...
+after-brace: screen-should-contain-in-color ...
+after-brace: screen-should-contain-in-color ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: read-instruction-backspace-back-into-string
  101 run: screen:address <- assume-screen 30:literal/width, 5:literal/height
@@ -55422,3 +55436,17 @@ schedule: print-character/slurp-string/slurp-regular-characters/read-instruction
 9999 mem: location 1416 is 0
 9999 mem: location 1410 is 1406
 9999 mem: location 1411 is 1031
+ 100 run: screen-should-contain [
+    .[ab                           .
+    .                              .
+  ]
+ 100 run: $print [aaa]
+9999 run: $print: aaa
+ 100 run: screen-should-contain-in-color 6:literal/cyan, [
+    .[ab                           .
+    .                              .
+  ]
+ 100 run: screen-should-contain-in-color 7:literal/white, [
+    .                              .
+    .                              .
+  ]
