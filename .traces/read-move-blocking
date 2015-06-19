@@ -6,12 +6,12 @@ parse:   ingredient: {name: "\n#?     $start-tracing #? 1\n    1:address:channel
 parse: instruction: trace-should-contain
 parse:   ingredient: {name: "\n    test: reached end\n  ", properties: [_: "literal-string"]}
 after-brace: recipe read-move-blocking
-after-brace: assume-screen ...
+after-brace: new-fake-screen ...
 after-brace: run ...
 after-brace: trace-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: read-move-blocking
- 101 run: screen:address <- assume-screen 20:literal/width, 2:literal/height
+ 101 run: screen:address <- new-fake-screen 20:literal/width, 2:literal/height
  102 run: default-space:address:array:location <- new location:type, 30:literal/capacity
 9999 mem: array size is 30
 9999 mem: new alloc: 1000
@@ -5668,10 +5668,10 @@ schedule: read/read-file/read-move
 9999 mem: storing 0 in location 101004
 9999 mem: storing 0 in location 101005
 9999 mem: storing 0 in location 101006
- 101 run: reply-if quit?:boolean, 1:offset
+ 101 run: jump-unless quit?:boolean, 1:offset
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 6
- 101 run: reply-if error?:boolean, 1:offset
+ 101 run: jump-unless error?:boolean, 1:offset
 9999 mem: location 101006 is 0
 9999 run: jumping to instruction 8
  101 run: result:address:move <- new move:type
@@ -6032,10 +6032,10 @@ schedule: read/read-rank/read-move
 9999 mem: storing 1 in location 101125
 9999 mem: storing 0 in location 101005
 9999 mem: storing 0 in location 101006
- 101 run: reply-if quit?:boolean, 1:offset
+ 101 run: jump-unless quit?:boolean, 1:offset
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 15
- 101 run: reply-if error?:boolean, 1:offset
+ 101 run: jump-unless error?:boolean, 1:offset
 9999 mem: location 101006 is 0
 9999 run: jumping to instruction 17
  101 run: error?:boolean <- expect-from-channel stdin:address:channel, 45:literal/dash, screen:address
@@ -6353,7 +6353,7 @@ schedule: read/expect-from-channel/read-move
 9999 mem: location 101229 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 101006
- 101 run: reply-if error?:boolean, 1:offset
+ 101 run: jump-unless error?:boolean, 1:offset
 9999 mem: location 101006 is 0
 9999 run: jumping to instruction 20
  101 run: x:address:number <- get-address result:address:move/deref, to-file:offset
@@ -6704,10 +6704,10 @@ schedule: read/read-file/read-move
 9999 mem: storing 0 in location 101126
 9999 mem: storing 0 in location 101005
 9999 mem: storing 0 in location 101006
- 101 run: reply-if quit?:boolean, 1:offset
+ 101 run: jump-unless quit?:boolean, 1:offset
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 24
- 101 run: reply-if error?:boolean, 1:offset
+ 101 run: jump-unless error?:boolean, 1:offset
 9999 mem: location 101006 is 0
 9999 run: jumping to instruction 26
  101 run: x:address:number <- get-address result:address:move/deref, to-rank:offset
@@ -7052,10 +7052,10 @@ schedule: read/read-rank/read-move
 9999 mem: storing 3 in location 101127
 9999 mem: storing 0 in location 101005
 9999 mem: storing 0 in location 101006
- 101 run: reply-if quit?:boolean, 1:offset
+ 101 run: jump-unless quit?:boolean, 1:offset
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 30
- 101 run: reply-if error?:boolean, 1:offset
+ 101 run: jump-unless error?:boolean, 1:offset
 9999 mem: location 101006 is 0
 9999 run: jumping to instruction 32
  101 run: error?:boolean <- expect-from-channel stdin:address:channel, 10:literal/newline, screen:address
@@ -7373,7 +7373,7 @@ schedule: read/expect-from-channel/read-move
 9999 mem: location 101508 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 101006
- 101 run: reply-if error?:boolean, 1:offset
+ 101 run: jump-unless error?:boolean, 1:offset
 9999 mem: location 101006 is 0
 9999 run: jumping to instruction 35
  101 run: reply result:address:move, quit?:boolean, error?:boolean

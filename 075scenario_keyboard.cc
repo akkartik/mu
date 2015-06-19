@@ -44,6 +44,7 @@ if (s == "keyboard") return true;
 if (curr.name == "assume-keyboard") {
   // insert first instruction
   curr.operation = Recipe_number["new"];
+  curr.name = "new";
   assert(curr.products.empty());
   curr.products.push_back(reagent("keyboard:address"));
   curr.products.at(0).set_value(KEYBOARD);
@@ -51,6 +52,7 @@ if (curr.name == "assume-keyboard") {
   // leave second instruction in curr
   curr.clear();
   curr.operation = Recipe_number["new-fake-keyboard"];
+  curr.name = "new-fake-keyboard";
   assert(curr.ingredients.empty());
   curr.ingredients.push_back(reagent("keyboard:address"));
   curr.ingredients.at(0).set_value(KEYBOARD);

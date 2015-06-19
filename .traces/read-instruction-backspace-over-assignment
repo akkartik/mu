@@ -17,9 +17,9 @@ parse: instruction: screen-should-contain-in-color
 parse:   ingredient: {name: "7", properties: ["7": "literal", "white": ]}
 parse:   ingredient: {name: "\n    .a                             .\n    .                              .\n  ", properties: [_: "literal-string"]}
 after-brace: recipe read-instruction-backspace-over-assignment
-after-brace: assume-screen ...
-after-brace: assume-keyboard ...
-after-brace: assume-keyboard ...
+after-brace: new-fake-screen ...
+after-brace: new ...
+after-brace: new-fake-keyboard ...
 after-brace: replace-in-keyboard ...
 after-brace: run ...
 after-brace: screen-should-contain ...
@@ -27,7 +27,7 @@ after-brace: screen-should-contain-in-color ...
 after-brace: screen-should-contain-in-color ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: read-instruction-backspace-over-assignment
- 101 run: screen:address <- assume-screen 30:literal/width, 5:literal/height
+ 101 run: screen:address <- new-fake-screen 30:literal/width, 5:literal/height
  102 run: default-space:address:array:location <- new location:type, 30:literal/capacity
 9999 mem: array size is 30
 9999 mem: new alloc: 1000
@@ -51328,10 +51328,10 @@ schedule: clear-screen/new-fake-screen/read-instruction-backspace-over-assignmen
 9999 mem: location 1002 is 1031
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 900
- 101 run: keyboard:address <- assume-keyboard [a <-«
+ 101 run: keyboard:address <- new [a <-«
 ]
 9999 mem: storing 1368 in location 901
- 101 run: keyboard:address <- assume-keyboard keyboard:address
+ 101 run: keyboard:address <- new-fake-keyboard keyboard:address
 9999 mem: location 901 is 1368
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
@@ -54861,7 +54861,7 @@ schedule: print-character/slurp-regular-characters/read-instruction/run1001/read
 9999 mem: location 2323 is 1500
 9999 mem: location 1500 is 4
 9999 mem: storing 0 in location 2325
- 106 run: reply-if empty?:boolean, 1:offset
+ 106 run: jump-unless empty?:boolean, 1:offset
 9999 mem: location 2325 is 0
 9999 run: jumping to instruction 10
  106 run: len:address:number/deref <- subtract len:address:number/deref, 1:literal

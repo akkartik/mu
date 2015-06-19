@@ -6,12 +6,12 @@ parse:   ingredient: {name: "\n    1:address:channel <- new-channel 2:literal\n 
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "\n    .that's not enough   .\n    .                    .\n  ", properties: [_: "literal-string"]}
 after-brace: recipe read-move-empty
-after-brace: assume-screen ...
+after-brace: new-fake-screen ...
 after-brace: run ...
 after-brace: screen-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: read-move-empty
- 101 run: screen:address <- assume-screen 20:literal/width, 2:literal/height
+ 101 run: screen:address <- new-fake-screen 20:literal/width, 2:literal/height
  102 run: default-space:address:array:location <- new location:type, 30:literal/capacity
 9999 mem: array size is 30
 9999 mem: new alloc: 1000
@@ -10134,13 +10134,13 @@ schedule: print-string/read-file/read-move
 9999 mem: storing 0 in location 101004
 9999 mem: storing 0 in location 101005
 9999 mem: storing 1 in location 101006
- 101 run: reply-if quit?:boolean, 1:offset
+ 101 run: jump-unless quit?:boolean, 1:offset
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 6
- 101 run: reply-if error?:boolean, 1:offset
+ 101 run: jump-unless error?:boolean, 1:offset
 9999 mem: location 101006 is 1
 9999 run: jump-unless fell through
- 101 run: reply-if 0:literal/dummy, quit?:boolean, error?:boolean
+ 101 run: reply 0:literal/dummy, quit?:boolean, error?:boolean
 9999 mem: location 101005 is 0
 9999 mem: location 101006 is 1
 schedule: waking up routine 1
