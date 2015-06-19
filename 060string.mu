@@ -722,3 +722,563 @@ scenario trim-newline-tab [
     3:string <- [abc]
   ]
 ]
+
+# next-index:number <- find-next text:address:array:character, pattern:character
+recipe find-next [
+  default-space:address:array:location <- new location:type, 30:literal
+  text:address:array:character <- next-ingredient
+  pattern:character <- next-ingredient
+  idx:number <- next-ingredient
+  len:number <- length text:address:array:character/deref
+  {
+    eof?:boolean <- greater-or-equal idx:number, len:number
+    break-if eof?:boolean
+    curr:character <- index text:address:array:character/deref, idx:number
+    found?:boolean <- equal curr:character, pattern:character
+    break-if found?:boolean
+    idx:number <- add idx:number, 1:literal
+    loop
+  }
+  reply idx:number
+]
+
+scenario string-find-next [
+  run [
+    1:address:array:character <- new [a/b]
+    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+  ]
+  memory-should-contain [
+    2 <- 1
+  ]
+]
+
+scenario string-find-next-empty [
+  run [
+    1:address:array:character <- new []
+    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+  ]
+  memory-should-contain [
+    2 <- 0
+  ]
+]
+
+scenario string-find-next-initial [
+  run [
+    1:address:array:character <- new [/abc]
+    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+  ]
+  memory-should-contain [
+    2 <- 0  # prefix match
+  ]
+]
+
+scenario string-find-next-final [
+  run [
+    1:address:array:character <- new [abc/]
+    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+  ]
+  memory-should-contain [
+    2 <- 3  # suffix match
+  ]
+]
+
+scenario string-find-next-missing [
+  run [
+    1:address:array:character <- new [abc]
+    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+  ]
+  memory-should-contain [
+    2 <- 3  # no match
+  ]
+]
+
+scenario string-find-next-invalid-index [
+  run [
+    1:address:array:character <- new [abc]
+    2:number <- find-next 1:address:array:character, 47:literal/slash, 4:literal/start-index
+  ]
+  memory-should-contain [
+    2 <- 4  # no change
+  ]
+]
+
+scenario string-find-next-first [
+  run [
+    1:address:array:character <- new [ab/c/]
+    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+  ]
+  memory-should-contain [
+    2 <- 2  # first '/' of multiple
+  ]
+]
+
+scenario string-find-next-second [
+  run [
+    1:address:array:character <- new [ab/c/]
+    2:number <- find-next 1:address:array:character, 47:literal/slash, 3:literal/start-index
+  ]
+  memory-should-contain [
+    2 <- 4  # second '/' of multiple
+  ]
+]
+
+# like find-next, but searches for multiple characters
+# fairly dumb algorithm
+recipe find-substring [
+  default-space:address:array:location <- new location:type, 30:literal
+  text:address:array:character <- next-ingredient
+  pattern:address:array:character <- next-ingredient
+  idx:number <- next-ingredient
+  first:character <- index pattern:address:array:character/deref, 0:literal
+  # repeatedly check for match at current idx
+  len:number <- length text:address:array:character/deref
+  {
+    # does some unnecessary work checking for substrings even when there isn't enough of text left
+    done?:boolean <- greater-or-equal idx:number, len:number
+    break-if done?:boolean
+    found?:boolean <- match-at text:address:array:character pattern:address:array:character, idx:number
+    break-if found?:boolean
+    idx:number <- add idx:number, 1:literal
+    # optimization: skip past indices that definitely won't match
+    idx:number <- find-next text:address:array:character, first:character, idx:number
+    loop
+  }
+  reply idx:number
+]
+
+scenario find-substring-1 [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- new [bc]
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal
+  ]
+  memory-should-contain [
+    3 <- 1
+  ]
+]
+
+scenario find-substring-2 [
+  run [
+    1:address:array:character <- new [abcd]
+    2:address:array:character <- new [bc]
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 1:literal
+  ]
+  memory-should-contain [
+    3 <- 1
+  ]
+]
+
+scenario find-substring-no-match [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- new [bd]
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal
+  ]
+  memory-should-contain [
+    3 <- 3  # not found
+  ]
+]
+
+scenario find-substring-suffix-match [
+  run [
+    1:address:array:character <- new [abcd]
+    2:address:array:character <- new [cd]
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal
+  ]
+  memory-should-contain [
+    3 <- 2
+  ]
+]
+
+scenario find-substring-suffix-match-2 [
+  run [
+    1:address:array:character <- new [abcd]
+    2:address:array:character <- new [cde]
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal
+  ]
+  memory-should-contain [
+    3 <- 4  # not found
+  ]
+]
+
+# result:boolean <- match-at text:address:array:character, pattern:address:array:character, idx:number
+# checks if substring matches at index 'idx'
+recipe match-at [
+  default-space:address:array:location <- new location:type, 30:literal
+  text:address:array:character <- next-ingredient
+  pattern:address:array:character <- next-ingredient
+  idx:number <- next-ingredient
+  pattern-len:number <- length pattern:address:array:character/deref
+  # check that there's space left for the pattern
+  {
+    x:number <- length text:address:array:character/deref
+    x:number <- subtract x:number, pattern-len:number
+    enough-room?:boolean <- lesser-or-equal idx:number, x:number
+    break-if enough-room?:boolean
+    reply 0:literal/not-found
+  }
+  # check each character of pattern
+  pattern-idx:number <- copy 0:literal
+  {
+    done?:boolean <- greater-or-equal pattern-idx:number, pattern-len:number
+    break-if done?:boolean
+    c:character <- index text:address:array:character/deref, idx:number
+    exp:character <- index pattern:address:array:character/deref, pattern-idx:number
+    {
+      match?:boolean <- equal c:character, exp:character
+      break-if match?:boolean
+      reply 0:literal/not-found
+    }
+    idx:number <- add idx:number, 1:literal
+    pattern-idx:number <- add pattern-idx:number, 1:literal
+    loop
+  }
+  reply 1:literal/found
+]
+
+scenario match-at-checks-substring-at-index [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- new [ab]
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+  ]
+  memory-should-contain [
+    3 <- 1  # match found
+  ]
+]
+
+scenario match-at-reflexive [
+  run [
+    1:address:array:character <- new [abc]
+    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0:literal
+  ]
+  memory-should-contain [
+    3 <- 1  # match found
+  ]
+]
+
+scenario match-at-outside-bounds [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- new [a]
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 4:literal
+  ]
+  memory-should-contain [
+    3 <- 0  # never matches
+  ]
+]
+
+scenario match-at-empty-pattern [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- new []
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+  ]
+  memory-should-contain [
+    3 <- 1  # always matches empty pattern given a valid index
+  ]
+]
+
+scenario match-at-empty-pattern-outside-bound [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- new []
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 4:literal
+  ]
+  memory-should-contain [
+    3 <- 0  # no match
+  ]
+]
+
+scenario match-at-empty-text [
+  run [
+    1:address:array:character <- new []
+    2:address:array:character <- new [abc]
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+  ]
+  memory-should-contain [
+    3 <- 0  # no match
+  ]
+]
+
+scenario match-at-empty-against-empty [
+  run [
+    1:address:array:character <- new []
+    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0:literal
+  ]
+  memory-should-contain [
+    3 <- 1  # matches because pattern is also empty
+  ]
+]
+
+scenario match-at-inside-bounds [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- new [bc]
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 1:literal
+  ]
+  memory-should-contain [
+    3 <- 1  # matches inner substring
+  ]
+]
+
+scenario match-at-inside-bounds-2 [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- new [bc]
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+  ]
+  memory-should-contain [
+    3 <- 0  # no match
+  ]
+]
+
+# result:address:array:address:array:character <- split s:address:array:character, delim:character
+recipe split [
+  default-space:address:array:location <- new location:type, 30:literal
+  s:address:array:character <- next-ingredient
+  delim:character <- next-ingredient
+  # empty string? return empty array
+  len:number <- length s:address:array:character/deref
+  {
+    empty?:boolean <- equal len:number, 0:literal
+    break-unless empty?:boolean
+    result:address:array:address:array:character <- new location:type, 0:literal
+    reply result:address:array:address:array:character
+  }
+  # count #pieces we need room for
+  count:number <- copy 1:literal  # n delimiters = n+1 pieces
+  idx:number <- copy 0:literal
+  {
+    idx:number <- find-next s:address:array:character, delim:character, idx:number
+    done?:boolean <- greater-or-equal idx:number, len:number
+    break-if done?:boolean
+    idx:number <- add idx:number, 1:literal
+    count:number <- add count:number, 1:literal
+    loop
+  }
+  # allocate space
+  result:address:array:address:array:character <- new location:type, count:number
+  # repeatedly copy slices start..end until delimiter into result[curr-result]
+  curr-result:number <- copy 0:literal
+  start:number <- copy 0:literal
+  {
+    # while next delim exists
+    done?:boolean <- greater-or-equal start:number, len:number
+    break-if done?:boolean
+    end:number <- find-next s:address:array:character, delim:character, start:number
+    # copy start..end into result[curr-result]
+    dest:address:address:array:character <- index-address result:address:array:address:array:character/deref, curr-result:number
+    dest:address:address:array:character/deref <- string-copy s:address:array:character, start:number, end:number
+    # slide over to next slice
+    start:number <- add end:number, 1:literal
+    curr-result:number <- add curr-result:number, 1:literal
+    loop
+  }
+  reply result:address:array:address:array:character
+]
+
+scenario string-split-1 [
+  run [
+    1:address:array:character <- new [a/b]
+    2:address:array:address:array:character <- split 1:address:array:character, 47:literal/slash
+    3:number <- length 2:address:array:address:array:character/deref
+    4:address:array:character <- index 2:address:array:address:array:character/deref, 0:literal
+    5:address:array:character <- index 2:address:array:address:array:character/deref, 1:literal
+    10:array:character <- copy 4:address:array:character/deref
+    20:array:character <- copy 5:address:array:character/deref
+  ]
+  memory-should-contain [
+    3 <- 2  # length of result
+    10:string <- [a]
+    20:string <- [b]
+  ]
+]
+
+scenario string-split-2 [
+  run [
+    1:address:array:character <- new [a/b/c]
+    2:address:array:address:array:character <- split 1:address:array:character, 47:literal/slash
+    3:number <- length 2:address:array:address:array:character/deref
+    4:address:array:character <- index 2:address:array:address:array:character/deref, 0:literal
+    5:address:array:character <- index 2:address:array:address:array:character/deref, 1:literal
+    6:address:array:character <- index 2:address:array:address:array:character/deref, 2:literal
+    10:array:character <- copy 4:address:array:character/deref
+    20:array:character <- copy 5:address:array:character/deref
+    30:array:character <- copy 6:address:array:character/deref
+  ]
+  memory-should-contain [
+    3 <- 3  # length of result
+    10:string <- [a]
+    20:string <- [b]
+    30:string <- [c]
+  ]
+]
+
+scenario string-split-missing [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:address:array:character <- split 1:address:array:character, 47:literal/slash
+    3:number <- length 2:address:array:address:array:character/deref
+    4:address:array:character <- index 2:address:array:address:array:character/deref, 0:literal
+    10:array:character <- copy 4:address:array:character/deref
+  ]
+  memory-should-contain [
+    3 <- 1  # length of result
+    10:string <- [abc]
+  ]
+]
+
+scenario string-split-empty [
+  run [
+    1:address:array:character <- new []
+    2:address:array:address:array:character <- split 1:address:array:character, 47:literal/slash
+    3:number <- length 2:address:array:address:array:character/deref
+  ]
+  memory-should-contain [
+    3 <- 0  # empty result
+  ]
+]
+
+scenario string-split-empty-piece [
+  run [
+    1:address:array:character <- new [a/b//c]
+    2:address:array:address:array:character <- split 1:address:array:character, 47:literal/slash
+    3:number <- length 2:address:array:address:array:character/deref
+    4:address:array:character <- index 2:address:array:address:array:character/deref, 0:literal
+    5:address:array:character <- index 2:address:array:address:array:character/deref, 1:literal
+    6:address:array:character <- index 2:address:array:address:array:character/deref, 2:literal
+    7:address:array:character <- index 2:address:array:address:array:character/deref, 3:literal
+    10:array:character <- copy 4:address:array:character/deref
+    20:array:character <- copy 5:address:array:character/deref
+    30:array:character <- copy 6:address:array:character/deref
+    40:array:character <- copy 7:address:array:character/deref
+  ]
+  memory-should-contain [
+    3 <- 4  # length of result
+    10:string <- [a]
+    20:string <- [b]
+    30:string <- []
+    40:string <- [c]
+  ]
+]
+
+# x:address:array:character, y:address:array:character <- split-first text:address:array:character, delim:character
+recipe split-first [
+  default-space:address:array:location <- new location:type, 30:literal
+  text:address:array:character <- next-ingredient
+  delim:character <- next-ingredient
+  # empty string? return empty strings
+  len:number <- length text:address:array:character/deref
+  {
+    empty?:boolean <- equal len:number, 0:literal
+    break-unless empty?:boolean
+    x:address:array:character <- new []
+    y:address:array:character <- new []
+    reply x:address:array:character, y:address:array:character
+  }
+  idx:number <- find-next text:address:array:character, delim:character, 0:literal
+  x:address:array:character <- string-copy text:address:array:character, 0:literal, idx:number
+  idx:number <- add idx:number, 1:literal
+  y:address:array:character <- string-copy text:address:array:character, idx:number, len:number
+  reply x:address:array:character, y:address:array:character
+]
+
+scenario string-split-first [
+  run [
+    1:address:array:character <- new [a/b]
+    2:address:array:character, 3:address:array:character <- split-first 1:address:array:character, 47:literal/slash
+    10:array:character <- copy 2:address:array:character/deref
+    20:array:character <- copy 3:address:array:character/deref
+  ]
+  memory-should-contain [
+    10:string <- [a]
+    20:string <- [b]
+  ]
+]
+
+# result:address:array:character <- string-copy buf:address:array:character, start:number, end:number
+# todo: make this generic
+recipe string-copy [
+  default-space:address:array:location <- new location:type, 30:literal
+  buf:address:array:character <- next-ingredient
+  start:number <- next-ingredient
+  end:number <- next-ingredient
+  # if end is out of bounds, trim it
+  len:number <- length buf:address:array:character/deref
+  end:number <- min len:number, end:number
+  # allocate space for result
+  len:number <- subtract end:number, start:number
+  result:address:array:character <- new character:type, len:number
+  # copy start..end into result[curr-result]
+  src-idx:number <- copy start:number
+  dest-idx:number <- copy 0:literal
+  {
+    done?:boolean <- greater-or-equal src-idx:number, end:number
+    break-if done?:boolean
+    src:character <- index buf:address:array:character/deref, src-idx:number
+    dest:address:character <- index-address result:address:array:character/deref, dest-idx:number
+    dest:address:character/deref <- copy src:character
+    src-idx:number <- add src-idx:number, 1:literal
+    dest-idx:number <- add dest-idx:number, 1:literal
+    loop
+  }
+  reply result:address:array:character
+]
+
+scenario string-copy-copies-substring [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- string-copy 1:address:array:character, 1:literal, 3:literal
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+  memory-should-contain [
+    3:string <- [bc]
+  ]
+]
+
+scenario string-copy-out-of-bounds [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- string-copy 1:address:array:character, 2:literal, 4:literal
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+  memory-should-contain [
+    3:string <- [c]
+  ]
+]
+
+scenario string-copy-out-of-bounds-2 [
+  run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- string-copy 1:address:array:character, 3:literal, 3:literal
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+  memory-should-contain [
+    3:string <- []
+  ]
+]
+
+recipe min [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:number <- next-ingredient
+  y:number <- next-ingredient
+  {
+    return-x?:boolean <- lesser-than x:number, y:number
+    break-if return-x?:boolean
+    reply y:number
+  }
+  reply x:number
+]
+
+recipe max [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:number <- next-ingredient
+  y:number <- next-ingredient
+  {
+    return-x?:boolean <- greater-than x:number, y:number
+    break-if return-x?:boolean
+    reply y:number
+  }
+  reply x:number
+]
