@@ -1,0 +1,156 @@
+parse: instruction: run
+parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index\n  ", properties: [_: "literal-string"]}
+parse: instruction: memory-should-contain
+parse:   ingredient: {name: "\n    2 <- 3  # no match\n  ", properties: [_: "literal-string"]}
+after-brace: recipe string-find-next-missing
+after-brace: run ...
+after-brace: memory-should-contain ...
+9999 new: routine allocated memory from 1000 to 101000
+schedule: string-find-next-missing
+ 101 run: run [
+    1:address:array:character <- new [abc]
+    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+  ]
+parse: instruction: new
+parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
+parse: instruction: find-next
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"]}
+parse:   ingredient: {name: "47", properties: ["47": "literal", "slash": ]}
+parse:   ingredient: {name: "0", properties: ["0": "literal", "start-index": ]}
+parse:   product: {name: "2", properties: ["2": "number"]}
+after-brace: recipe run1001
+after-brace: new ...
+after-brace: find-next ...
+ 101 run: 1:address:array:character <- new [abc]
+9999 mem: storing 1000 in location 1
+ 101 run: 2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+9999 mem: location 1 is 1000
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1004
+ 102 run: text:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1006
+ 102 run: pattern:character <- next-ingredient 
+9999 mem: storing 47 in location 1007
+ 102 run: idx:number <- next-ingredient 
+9999 mem: storing 0 in location 1008
+ 102 run: len:number <- length text:address:array:character/deref
+9999 mem: location 1006 is 1000
+9999 mem: location 1000 is 3
+9999 mem: location 1001 is 97
+9999 mem: location 1002 is 98
+9999 mem: location 1003 is 99
+9999 mem: location 1006 is 1000
+9999 mem: storing 3 in location 1009
+ 102 run: eof?:boolean <- greater-or-equal idx:number, len:number
+9999 mem: location 1008 is 0
+9999 mem: location 1009 is 3
+9999 mem: storing 0 in location 1010
+ 102 run: break-if eof?:boolean, 
+9999 mem: location 1010 is 0
+9999 run: jump-if fell through
+ 102 run: curr:character <- index text:address:array:character/deref, idx:number
+9999 mem: location 1006 is 1000
+9999 mem: location 1000 is 3
+9999 mem: location 1001 is 97
+9999 mem: location 1002 is 98
+9999 mem: location 1003 is 99
+9999 mem: location 1008 is 0
+9999 mem: location 1006 is 1000
+9999 mem: location 1008 is 0
+9999 run: address to copy is 1001
+9999 run: its type is character
+9999 mem: location 1001 is 97
+9999 mem: storing 97 in location 1011
+ 102 run: found?:boolean <- equal curr:character, pattern:character
+9999 mem: location 1011 is 97
+9999 mem: location 1007 is 47
+9999 mem: storing 0 in location 1012
+ 102 run: break-if found?:boolean, 
+9999 mem: location 1012 is 0
+9999 run: jump-if fell through
+ 102 run: idx:number <- add idx:number, 1:literal
+9999 mem: location 1008 is 0
+9999 mem: storing 1 in location 1008
+ 102 run: loop 
+9999 run: jumping to instruction 6
+ 102 run: eof?:boolean <- greater-or-equal idx:number, len:number
+9999 mem: location 1008 is 1
+9999 mem: location 1009 is 3
+9999 mem: storing 0 in location 1010
+ 102 run: break-if eof?:boolean, 
+9999 mem: location 1010 is 0
+9999 run: jump-if fell through
+ 102 run: curr:character <- index text:address:array:character/deref, idx:number
+9999 mem: location 1006 is 1000
+9999 mem: location 1000 is 3
+9999 mem: location 1001 is 97
+9999 mem: location 1002 is 98
+9999 mem: location 1003 is 99
+9999 mem: location 1008 is 1
+9999 mem: location 1006 is 1000
+9999 mem: location 1008 is 1
+9999 run: address to copy is 1002
+9999 run: its type is character
+9999 mem: location 1002 is 98
+9999 mem: storing 98 in location 1011
+ 102 run: found?:boolean <- equal curr:character, pattern:character
+9999 mem: location 1011 is 98
+9999 mem: location 1007 is 47
+9999 mem: storing 0 in location 1012
+ 102 run: break-if found?:boolean, 
+9999 mem: location 1012 is 0
+9999 run: jump-if fell through
+ 102 run: idx:number <- add idx:number, 1:literal
+9999 mem: location 1008 is 1
+9999 mem: storing 2 in location 1008
+ 102 run: loop 
+9999 run: jumping to instruction 6
+ 102 run: eof?:boolean <- greater-or-equal idx:number, len:number
+9999 mem: location 1008 is 2
+9999 mem: location 1009 is 3
+9999 mem: storing 0 in location 1010
+ 102 run: break-if eof?:boolean, 
+9999 mem: location 1010 is 0
+9999 run: jump-if fell through
+ 102 run: curr:character <- index text:address:array:character/deref, idx:number
+9999 mem: location 1006 is 1000
+9999 mem: location 1000 is 3
+9999 mem: location 1001 is 97
+9999 mem: location 1002 is 98
+9999 mem: location 1003 is 99
+9999 mem: location 1008 is 2
+9999 mem: location 1006 is 1000
+9999 mem: location 1008 is 2
+9999 run: address to copy is 1003
+9999 run: its type is character
+9999 mem: location 1003 is 99
+9999 mem: storing 99 in location 1011
+ 102 run: found?:boolean <- equal curr:character, pattern:character
+9999 mem: location 1011 is 99
+9999 mem: location 1007 is 47
+9999 mem: storing 0 in location 1012
+ 102 run: break-if found?:boolean, 
+9999 mem: location 1012 is 0
+9999 run: jump-if fell through
+ 102 run: idx:number <- add idx:number, 1:literal
+9999 mem: location 1008 is 2
+9999 mem: storing 3 in location 1008
+ 102 run: loop 
+9999 run: jumping to instruction 6
+ 102 run: eof?:boolean <- greater-or-equal idx:number, len:number
+9999 mem: location 1008 is 3
+9999 mem: location 1009 is 3
+9999 mem: storing 1 in location 1010
+ 102 run: break-if eof?:boolean, 
+9999 mem: location 1010 is 1
+9999 run: jumping to instruction 13
+ 102 run: reply idx:number
+9999 mem: location 1008 is 3
+9999 run: result 0 is 3
+9999 mem: storing 3 in location 2
+ 100 run: memory-should-contain [
+    2 <- 3  # no match
+  ]
+9999 run: checking location 2

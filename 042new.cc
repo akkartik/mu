@@ -130,6 +130,16 @@ recipe main [
 # don't forget the extra location for array size
 +mem: storing 6 in location 3
 
+:(scenario new_empty_array)
+recipe main [
+  1:address:array:number/raw <- new number:type, 0:literal
+  2:address:number/raw <- new number:type
+  3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
+]
++run: 1:address:array:number/raw <- new number:type, 0:literal
++mem: array size is 0
++mem: storing 1 in location 3
+
 //: Make sure that each routine gets a different alloc to start.
 :(scenario new_concurrent)
 recipe f1 [

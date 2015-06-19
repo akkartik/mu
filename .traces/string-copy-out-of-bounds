@@ -1,0 +1,147 @@
+parse: instruction: run
+parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:array:character <- string-copy 1:address:array:character, 2:literal, 4:literal\n    3:array:character <- copy 2:address:array:character/deref\n  ", properties: [_: "literal-string"]}
+parse: instruction: memory-should-contain
+parse:   ingredient: {name: "\n    3:string <- [c]\n  ", properties: [_: "literal-string"]}
+after-brace: recipe string-copy-out-of-bounds
+after-brace: run ...
+after-brace: memory-should-contain ...
+9999 new: routine allocated memory from 1000 to 101000
+schedule: string-copy-out-of-bounds
+ 101 run: run [
+    1:address:array:character <- new [abc]
+    2:address:array:character <- string-copy 1:address:array:character, 2:literal, 4:literal
+    3:array:character <- copy 2:address:array:character/deref
+  ]
+parse: instruction: new
+parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
+parse: instruction: string-copy
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"]}
+parse:   ingredient: {name: "2", properties: ["2": "literal"]}
+parse:   ingredient: {name: "4", properties: ["4": "literal"]}
+parse:   product: {name: "2", properties: ["2": "address":"array":"character"]}
+parse: instruction: copy
+parse:   ingredient: {name: "2", properties: ["2": "address":"array":"character", "deref": ]}
+parse:   product: {name: "3", properties: ["3": "array":"character"]}
+after-brace: recipe run1001
+after-brace: new ...
+after-brace: string-copy ...
+after-brace: copy ...
+ 101 run: 1:address:array:character <- new [abc]
+9999 mem: storing 1000 in location 1
+ 101 run: 2:address:array:character <- string-copy 1:address:array:character, 2:literal, 4:literal
+9999 mem: location 1 is 1000
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1004
+ 102 run: buf:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1006
+ 102 run: start:number <- next-ingredient 
+9999 mem: storing 2 in location 1007
+ 102 run: end:number <- next-ingredient 
+9999 mem: storing 4 in location 1008
+ 102 run: len:number <- length buf:address:array:character/deref
+9999 mem: location 1006 is 1000
+9999 mem: location 1000 is 3
+9999 mem: location 1001 is 97
+9999 mem: location 1002 is 98
+9999 mem: location 1003 is 99
+9999 mem: location 1006 is 1000
+9999 mem: storing 3 in location 1009
+ 102 run: end:number <- min len:number, end:number
+9999 mem: location 1009 is 3
+9999 mem: location 1008 is 4
+ 103 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1035
+ 103 run: x:number <- next-ingredient 
+9999 mem: storing 3 in location 1037
+ 103 run: y:number <- next-ingredient 
+9999 mem: storing 4 in location 1038
+ 103 run: return-x?:boolean <- lesser-than x:number, y:number
+9999 mem: location 1037 is 3
+9999 mem: location 1038 is 4
+9999 mem: storing 1 in location 1039
+ 103 run: break-if return-x?:boolean, 
+9999 mem: location 1039 is 1
+9999 run: jumping to instruction 7
+ 103 run: reply x:number
+9999 mem: location 1037 is 3
+9999 run: result 0 is 3
+9999 mem: storing 3 in location 1008
+ 102 run: len:number <- subtract end:number, start:number
+9999 mem: location 1008 is 3
+9999 mem: location 1007 is 2
+9999 mem: storing 1 in location 1009
+ 102 run: result:address:array:character <- new character:type, len:number
+9999 mem: location 1009 is 1
+9999 mem: array size is 1
+9999 mem: new alloc: 1066
+9999 mem: storing 1066 in location 1010
+ 102 run: src-idx:number <- copy start:number
+9999 mem: location 1007 is 2
+9999 mem: storing 2 in location 1011
+ 102 run: dest-idx:number <- copy 0:literal
+9999 mem: storing 0 in location 1012
+ 102 run: done?:boolean <- greater-or-equal src-idx:number, end:number
+9999 mem: location 1011 is 2
+9999 mem: location 1008 is 3
+9999 mem: storing 0 in location 1013
+ 102 run: break-if done?:boolean, 
+9999 mem: location 1013 is 0
+9999 run: jump-if fell through
+ 102 run: src:character <- index buf:address:array:character/deref, src-idx:number
+9999 mem: location 1006 is 1000
+9999 mem: location 1000 is 3
+9999 mem: location 1001 is 97
+9999 mem: location 1002 is 98
+9999 mem: location 1003 is 99
+9999 mem: location 1011 is 2
+9999 mem: location 1006 is 1000
+9999 mem: location 1011 is 2
+9999 run: address to copy is 1003
+9999 run: its type is character
+9999 mem: location 1003 is 99
+9999 mem: storing 99 in location 1014
+ 102 run: dest:address:character <- index-address result:address:array:character/deref, dest-idx:number
+9999 mem: location 1010 is 1066
+9999 mem: location 1066 is 1
+9999 mem: location 1067 is 0
+9999 mem: location 1012 is 0
+9999 mem: location 1010 is 1066
+9999 mem: location 1012 is 0
+9999 mem: storing 1067 in location 1015
+ 102 run: dest:address:character/deref <- copy src:character
+9999 mem: location 1014 is 99
+9999 mem: location 1015 is 1067
+9999 mem: storing 99 in location 1067
+ 102 run: src-idx:number <- add src-idx:number, 1:literal
+9999 mem: location 1011 is 2
+9999 mem: storing 3 in location 1011
+ 102 run: dest-idx:number <- add dest-idx:number, 1:literal
+9999 mem: location 1012 is 0
+9999 mem: storing 1 in location 1012
+ 102 run: loop 
+9999 run: jumping to instruction 11
+ 102 run: done?:boolean <- greater-or-equal src-idx:number, end:number
+9999 mem: location 1011 is 3
+9999 mem: location 1008 is 3
+9999 mem: storing 1 in location 1013
+ 102 run: break-if done?:boolean, 
+9999 mem: location 1013 is 1
+9999 run: jumping to instruction 19
+ 102 run: reply result:address:array:character
+9999 mem: location 1010 is 1066
+9999 run: result 0 is 1066
+9999 mem: storing 1066 in location 2
+ 101 run: 3:array:character <- copy 2:address:array:character/deref
+9999 mem: location 2 is 1066
+9999 mem: location 1066 is 1
+9999 mem: location 1067 is 99
+9999 mem: storing 1 in location 3
+9999 mem: storing 99 in location 4
+ 100 run: memory-should-contain [
+    3:string <- [c]
+  ]
+9999 run: checking string length at 3
+9999 run: checking location 4

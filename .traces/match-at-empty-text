@@ -1,0 +1,76 @@
+parse: instruction: run
+parse:   ingredient: {name: "\n    1:address:array:character <- new []\n    2:address:array:character <- new [abc]\n    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal\n  ", properties: [_: "literal-string"]}
+parse: instruction: memory-should-contain
+parse:   ingredient: {name: "\n    3 <- 0  # no match\n  ", properties: [_: "literal-string"]}
+after-brace: recipe match-at-empty-text
+after-brace: run ...
+after-brace: memory-should-contain ...
+9999 new: routine allocated memory from 1000 to 101000
+schedule: match-at-empty-text
+ 101 run: run [
+    1:address:array:character <- new []
+    2:address:array:character <- new [abc]
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+  ]
+parse: instruction: new
+parse:   ingredient: {name: "", properties: [_: "literal-string"]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
+parse: instruction: new
+parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
+parse:   product: {name: "2", properties: ["2": "address":"array":"character"]}
+parse: instruction: match-at
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"]}
+parse:   ingredient: {name: "2", properties: ["2": "address":"array":"character"]}
+parse:   ingredient: {name: "0", properties: ["0": "literal"]}
+parse:   product: {name: "3", properties: ["3": "boolean"]}
+after-brace: recipe run1001
+after-brace: new ...
+after-brace: new ...
+after-brace: match-at ...
+ 101 run: 1:address:array:character <- new []
+9999 mem: storing 1000 in location 1
+ 101 run: 2:address:array:character <- new [abc]
+9999 mem: storing 1001 in location 2
+ 101 run: 3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+9999 mem: location 1 is 1000
+9999 mem: location 2 is 1001
+ 102 run: default-space:address:array:location <- new location:type, 30:literal
+9999 mem: array size is 30
+9999 mem: new alloc: 1005
+ 102 run: text:address:array:character <- next-ingredient 
+9999 mem: storing 1000 in location 1007
+ 102 run: pattern:address:array:character <- next-ingredient 
+9999 mem: storing 1001 in location 1008
+ 102 run: idx:number <- next-ingredient 
+9999 mem: storing 0 in location 1009
+ 102 run: pattern-len:number <- length pattern:address:array:character/deref
+9999 mem: location 1008 is 1001
+9999 mem: location 1001 is 3
+9999 mem: location 1002 is 97
+9999 mem: location 1003 is 98
+9999 mem: location 1004 is 99
+9999 mem: location 1008 is 1001
+9999 mem: storing 3 in location 1010
+ 102 run: x:number <- length text:address:array:character/deref
+9999 mem: location 1007 is 1000
+9999 mem: location 1000 is 0
+9999 mem: location 1007 is 1000
+9999 mem: storing 0 in location 1011
+ 102 run: x:number <- subtract x:number, pattern-len:number
+9999 mem: location 1011 is 0
+9999 mem: location 1010 is 3
+9999 mem: storing -3 in location 1011
+ 102 run: enough-room?:boolean <- lesser-or-equal idx:number, x:number
+9999 mem: location 1009 is 0
+9999 mem: location 1011 is -3
+9999 mem: storing 0 in location 1012
+ 102 run: break-if enough-room?:boolean, 
+9999 mem: location 1012 is 0
+9999 run: jump-if fell through
+ 102 run: reply 0:literal/not-found
+9999 run: result 0 is 0
+9999 mem: storing 0 in location 3
+ 100 run: memory-should-contain [
+    3 <- 0  # no match
+  ]
+9999 run: checking location 3
