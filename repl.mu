@@ -669,6 +669,7 @@ scenario read-instruction-backspace-back-into-string [
     .\\\[ab                           .
     .                              .
   ]
+#?   $print [aaa] #? 1
   screen-should-contain-in-color 6:literal/cyan, [
     .\\\[ab                           .
     .                              .
@@ -754,6 +755,7 @@ scenario read-instruction-assignment-continues-after-backspace [
   assume-keyboard [a <-«-
 ]
   replace-in-keyboard 171:literal/«, 8:literal/backspace
+#?   $print [aaa] #? 1
   run [
     read-instruction keyboard:address, screen:address
   ]
