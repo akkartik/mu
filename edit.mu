@@ -7,12 +7,16 @@ recipe main [
   height:number <- display-height
   divider:number, _ <- divide-with-remainder width:number, 2:literal
   draw-vertical 0:literal/screen, divider:number, 0:literal/top, height:number
+  in:address:array:character <- new [abc
+def
+ghi
+jkl
+]
+  bottom:number <- edit in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, 5:literal/bottom, divider:number/right, 0:literal/keyboard
   # shorten bottom border and darken to make it seem thinner
   border-left:number <- multiply divider:number, 0.2
   border-right:number <- multiply divider:number, 0.8
-  draw-horizontal 0:literal/screen, 5:literal/row, border-left:number, border-right:number, 241:literal/grey
-  in:address:array:character <- new [abcdef]
-  edit in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, 5:literal/bottom, divider:number/right, 0:literal/keyboard
+  draw-horizontal 0:literal/screen, bottom:number/row, border-left:number, border-right:number, 241:literal/grey
   wait-for-key-from-keyboard
   return-to-console
 ]
@@ -22,7 +26,7 @@ scenario edit-prints-string-to-screen [
   assume-keyboard []
   run [
     s:address:array:character <- new [abc]
-    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right, keyboard:address
   ]
   screen-should-contain [
     .abc       .
@@ -31,21 +35,38 @@ scenario edit-prints-string-to-screen [
 ]
 
 container editor-data [
-  initial-contents:address:stream  # lazily added to other fields as necessary
-  lines:address:duplex-list  # doubly linked list of lines, each line containing a buffer of characters
-  top-of-screen:address:duplex-list
-  screen:address:screen  # will be used later for colorizing
+  data:address:duplex-list  # doubly linked list of characters
+  top-of-screen:address:duplex-list  # pointer to character at top-left
 ]
 
 recipe new-editor-data [
   default-space:address:array:location <- new location:type, 30:literal
   s:address:array:character <- next-ingredient
   screen:address <- next-ingredient
+  # early exit if s is empty
   result:address:editor-data <- new editor-data:type
-  init:address:address:stream <- get-address result:address:editor-data/deref, initial-contents:offset
-  init:address:address:stream/deref <- new-stream s:address:array:character
-  screen-dest:address:address:screen <- get-address result:address:editor-data/deref, screen:offset
-  screen-dest:address:address:screen/deref <- copy screen:address
+  reply-unless s:address:array:character, result:address:editor-data
+  len:number <- length s:address:array:character/deref
+  reply-unless len:number, result:address:editor-data
+  idx:number <- copy 0:literal
+  # s is guaranteed to have at least one character, so initialize result's
+  # duplex-list
+  init:address:address:duplex-list <- get-address result:address:editor-data/deref, top-of-screen:offset
+  init:address:address:duplex-list/deref <- copy 0:literal
+  c:character <- index s:address:array:character/deref, idx:number
+  idx:number <- add idx:number, 1:literal
+  init:address:address:duplex-list/deref <- push c:character, init:address:address:duplex-list/deref
+  curr:address:duplex-list <- copy init:address:address:duplex-list/deref
+  # now we can start appending the rest, character by character
+  {
+    done?:boolean <- greater-or-equal idx:number, len:number
+    break-if done?:boolean
+    c:character <- index s:address:array:character/deref, idx:number
+    insert-duplex c:character, curr:address:duplex-list
+    # next iter
+    curr:address:duplex-list <- next-duplex curr:address:duplex-list
+    idx:number <- add idx:number, 1:literal
+  }
   reply result:address:editor-data
 ]
 
@@ -56,13 +77,12 @@ recipe edit [
   # no clipping of bounds
   top:number <- next-ingredient
   left:number <- next-ingredient
-  bottom:number <- next-ingredient
-  bottom:number <- subtract bottom:number, 1:literal
   right:number <- next-ingredient
   right:number <- subtract right:number, 1:literal
   keyboard:address <- next-ingredient
-  screen:address <- render s:address:array:character, screen:address, top:number, left:number, bottom:number, right:number
-  reply s:address:array:character/same-as-ingredient:0, screen:address/same-as-ingredient:1, keyboard:address/same-as-ingredient:6
+  edit:address:editor-data <- new-editor-data s:address:array:character, screen:address
+  bottom:number, screen:address <- render s:address:array:character, screen:address, top:number, left:number, right:number
+  reply bottom:number, edit:address:editor-data
 ]
 
 recipe render [
@@ -71,7 +91,7 @@ recipe render [
   screen:address <- next-ingredient
   top:number <- next-ingredient
   left:number <- next-ingredient
-  bottom:number <- next-ingredient
+  screen-height:number <- screen-height screen:address
   right:number <- next-ingredient
   # traversing inside s
   len:number <- length s:address:array:character/deref
@@ -84,7 +104,7 @@ recipe render [
     +next-character
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
-    off-screen?:boolean <- greater-than row:number, bottom:number
+    off-screen?:boolean <- greater-or-equal row:number, screen-height:number
     break-if off-screen?:boolean
     c:character <- index s:address:array:character/deref, i:number
     {
@@ -120,7 +140,7 @@ recipe render [
     column:number <- add column:number, 1:literal
     loop
   }
-  reply screen:address/same-as-ingredient:1
+  reply row:number, screen:address/same-as-ingredient:1
 ]
 
 scenario edit-prints-multiple-lines [
@@ -129,7 +149,7 @@ scenario edit-prints-multiple-lines [
   run [
     s:address:array:character <- new [abc
 def]
-    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right, keyboard:address
   ]
   screen-should-contain [
     .abc  .
@@ -143,7 +163,7 @@ scenario edit-handles-offsets [
   assume-keyboard []
   run [
     s:address:array:character <- new [abc]
-    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 5:literal/right, keyboard:address
   ]
   screen-should-contain [
     . abc .
@@ -158,7 +178,7 @@ scenario edit-prints-multiple-lines-at-offset [
   run [
     s:address:array:character <- new [abc
 def]
-    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 5:literal/right, keyboard:address
   ]
   screen-should-contain [
     . abc .
@@ -172,7 +192,7 @@ scenario edit-wraps-long-lines [
   assume-keyboard []
   run [
     s:address:array:character <- new [abc def]
-    s:address:array:character, screen:address, keyboard:address <- edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/bottom, 5:literal/right, keyboard:address
+    edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right, keyboard:address
   ]
   screen-should-contain [
     .abc ↩.
