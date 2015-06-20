@@ -35,7 +35,8 @@ if (inst.operation == Recipe_number["new"]) {
   // End NEW Transform Special-cases
   // first arg must be of type 'type'
   assert(SIZE(inst.ingredients) >= 1);
-  assert(is_literal(inst.ingredients.at(0)));
+  if (!is_literal(inst.ingredients.at(0)))
+    raise << "expected literal, got " << inst.ingredients.at(0).to_string() << '\n' << die();
   if (inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
     raise << "tried to allocate non-type " << inst.ingredients.at(0).to_string() << " in recipe " << Recipe[r].name << '\n' << die();
   if (Type_number.find(inst.ingredients.at(0).name) == Type_number.end())
@@ -190,7 +191,10 @@ recipe main [
 +mem: storing 171 in location 3
 
 :(before "End NEW Transform Special-cases")
-  if (inst.ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
+  if (!inst.ingredients.empty()
+      && !inst.ingredients.at(0).properties.empty()
+      && !inst.ingredients.at(0).properties.at(0).second.empty()
+      && inst.ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
     // skip transform
     inst.ingredients.at(0).initialized = true;
     goto end_new_transform;
