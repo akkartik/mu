@@ -16,6 +16,7 @@ recipe push-duplex [
   val:address:location/deref <- copy x:location
   next:address:address:duplex-list <- get-address result:address:duplex-list/deref, next:offset
   next:address:address:duplex-list/deref <- copy in:address:duplex-list
+  reply-unless in:address:duplex-list, result:address:duplex-list
   prev:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
   prev:address:address:duplex-list/deref <- copy result:address:duplex-list
   reply result:address:duplex-list
@@ -25,6 +26,7 @@ recipe push-duplex [
 recipe first-duplex [
   default-space:address:array:location <- new location:type, 30:literal
   in:address:duplex-list <- next-ingredient
+  reply-unless in:address:duplex-list, 0:literal
   result:location <- get in:address:duplex-list/deref, value:offset
   reply result:location
 ]
@@ -33,6 +35,7 @@ recipe first-duplex [
 recipe next-duplex [
   default-space:address:array:location <- new location:type, 30:literal
   in:address:duplex-list <- next-ingredient
+  reply-unless in:address:duplex-list, 0:literal
   result:address:duplex-list <- get in:address:duplex-list/deref, next:offset
   reply result:address:duplex-list
 ]
@@ -41,35 +44,42 @@ recipe next-duplex [
 recipe prev-duplex [
   default-space:address:array:location <- new location:type, 30:literal
   in:address:duplex-list <- next-ingredient
+  reply-unless in:address:duplex-list, 0:literal
   result:address:duplex-list <- get in:address:duplex-list/deref, prev:offset
   reply result:address:duplex-list
 ]
 
 scenario duplex-list-handling [
   run [
-    1:address:duplex-list <- copy 0:literal
-    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
-    1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list
-    1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list
-    2:address:duplex-list <- copy 1:address:duplex-list
-    3:number <- first 2:address:duplex-list
-    2:address:duplex-list <- next-duplex 2:address:duplex-list
-    4:number <- first 2:address:duplex-list
-    2:address:duplex-list <- next-duplex 2:address:duplex-list
-    5:number <- first 2:address:duplex-list
-    2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    6:number <- first 2:address:duplex-list
-    2:address:duplex-list <- prev-duplex 2:address:duplex-list
-    7:number <- first 2:address:duplex-list
-    8:boolean <- equal 1:address:duplex-list, 2:address:duplex-list
+    # reserve locations 0, 1 and 2 to check for missing null check
+    1:number <- copy 34:literal
+    2:number <- copy 35:literal
+    3:address:duplex-list <- copy 0:literal
+    3:address:duplex-list <- push-duplex 3:literal, 3:address:duplex-list
+    3:address:duplex-list <- push-duplex 4:literal, 3:address:duplex-list
+    3:address:duplex-list <- push-duplex 5:literal, 3:address:duplex-list
+    4:address:duplex-list <- copy 3:address:duplex-list
+    5:number <- first 4:address:duplex-list
+    4:address:duplex-list <- next-duplex 4:address:duplex-list
+    6:number <- first 4:address:duplex-list
+    4:address:duplex-list <- next-duplex 4:address:duplex-list
+    7:number <- first 4:address:duplex-list
+    4:address:duplex-list <- prev-duplex 4:address:duplex-list
+    8:number <- first 4:address:duplex-list
+    4:address:duplex-list <- prev-duplex 4:address:duplex-list
+    9:number <- first 4:address:duplex-list
+    10:boolean <- equal 3:address:duplex-list, 4:address:duplex-list
+#?     $dump-trace #? 1
   ]
   memory-should-contain [
-    3 <- 5  # scanning next
-    4 <- 4
-    5 <- 3
-    6 <- 4  # then prev
-    7 <- 5
-    8 <- 1  # list back at start
+    1 <- 34
+    2 <- 35
+    5 <- 5  # scanning next
+    6 <- 4
+    7 <- 3
+    8 <- 4  # then prev
+    9 <- 5
+    10 <- 1  # list back at start
   ]
 ]
 
