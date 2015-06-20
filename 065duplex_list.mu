@@ -64,22 +64,31 @@ scenario duplex-list-handling [
     6:number <- first 4:address:duplex-list
     4:address:duplex-list <- next-duplex 4:address:duplex-list
     7:number <- first 4:address:duplex-list
+    8:address:duplex-list <- next-duplex 4:address:duplex-list
+    9:number <- first 8:address:duplex-list
+    10:address:duplex-list <- next-duplex 8:address:duplex-list
+    11:address:duplex-list <- prev-duplex 8:address:duplex-list
     4:address:duplex-list <- prev-duplex 4:address:duplex-list
-    8:number <- first 4:address:duplex-list
+    12:number <- first 4:address:duplex-list
     4:address:duplex-list <- prev-duplex 4:address:duplex-list
-    9:number <- first 4:address:duplex-list
-    10:boolean <- equal 3:address:duplex-list, 4:address:duplex-list
+    13:number <- first 4:address:duplex-list
+    14:boolean <- equal 3:address:duplex-list, 4:address:duplex-list
 #?     $dump-trace #? 1
   ]
   memory-should-contain [
+    0 <- 0  # no modifications to null pointers
     1 <- 34
     2 <- 35
     5 <- 5  # scanning next
     6 <- 4
     7 <- 3
-    8 <- 4  # then prev
-    9 <- 5
-    10 <- 1  # list back at start
+    8 <- 0  # null
+    9 <- 0  # first of null
+    10 <- 0  # next of null
+    11 <- 0  # prev of null
+    12 <- 4  # then start scanning prev
+    13 <- 5
+    14 <- 1  # list back at start
   ]
 ]
 
