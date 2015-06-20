@@ -30,6 +30,25 @@ scenario edit-prints-string-to-screen [
   ]
 ]
 
+container editor-data [
+  initial-contents:address:stream  # lazily added to other fields as necessary
+  lines:address:duplex-list  # doubly linked list of lines, each line containing a buffer of characters
+  top-of-screen:address:duplex-list
+  screen:address:screen  # will be used later for colorizing
+]
+
+recipe new-editor-data [
+  default-space:address:array:location <- new location:type, 30:literal
+  s:address:array:character <- next-ingredient
+  screen:address <- next-ingredient
+  result:address:editor-data <- new editor-data:type
+  init:address:address:stream <- get-address result:address:editor-data/deref, initial-contents:offset
+  init:address:address:stream/deref <- new-stream s:address:array:character
+  screen-dest:address:address:screen <- get-address result:address:editor-data/deref, screen:offset
+  screen-dest:address:address:screen/deref <- copy screen:address
+  reply result:address:editor-data
+]
+
 recipe edit [
   default-space:address:array:location <- new location:type, 30:literal
   s:address:array:character <- next-ingredient
