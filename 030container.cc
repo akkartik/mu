@@ -156,7 +156,8 @@ case GET_ADDRESS: {
   reagent base = current_instruction().ingredients.at(0);
   long long int base_address = base.value;
   type_number base_type = base.types.at(0);
-  assert(Type[base_type].kind == container);
+  if (Type[base_type].kind != container)
+    raise << "'get' on a non-container in " << current_recipe_name () << ": " << current_instruction().to_string() << '\n' << die();
   assert(is_literal(current_instruction().ingredients.at(1)));
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
