@@ -7,12 +7,12 @@ recipe main [
   height:number <- display-height
   divider:number, _ <- divide-with-remainder width:number, 2:literal
   draw-vertical 0:literal/screen, divider:number, 0:literal/top, height:number
-  in:address:array:character <- new [abc
+  in:address:array:character <- new [abcdef
 def
 ghi
 jkl
 ]
-  bottom:number, editor:address:editor-data <- edit in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, 5:literal/bottom, divider:number/right
+  bottom:number, editor:address:editor-data <- edit in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, divider:number/right
   wait-for-key-from-keyboard
   return-to-console
 ]
