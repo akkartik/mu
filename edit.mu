@@ -279,7 +279,7 @@ recipe event-loop [
     +next-event
     e:event, events:address, found?:boolean, quit?:boolean <- read-event events:address
     loop-unless found?:boolean
-    break-if quit?:boolean
+    break-if quit?:boolean  # only in tests
     trace [app], [next-event]
     {
       m:address:mouse-event <- maybe-convert e:event, mouse:variant
