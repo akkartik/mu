@@ -193,6 +193,7 @@ vector<double> read_memory(reagent x) {
 
 void write_memory(reagent x, vector<double> data) {
   if (is_dummy(x)) return;
+  if (is_literal(x)) return;
   long long int base = x.value;
   if (size_mismatch(x, data)) {
     tb_shutdown();
@@ -244,3 +245,9 @@ recipe main [
   _ <- copy 0:literal
 ]
 +run: _ <- copy 0:literal
+
+:(scenario run_literal)
+recipe main [
+  0:literal/screen <- copy 0:literal
+]
+-mem: storing 0 in location 0
