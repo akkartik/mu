@@ -263,6 +263,3 @@ case READ_KEY_FROM_KEYBOARD: {
   products.at(1).push_back(found);
   break;
 }
-
-:(before "End Includes")
-#include"termbox/termbox.h"
