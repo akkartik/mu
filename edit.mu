@@ -212,6 +212,8 @@ scenario edit-wraps-long-lines [
   ]
 ]
 
+## some drawing primitives
+
 recipe draw-box [
   default-space:address:array:location <- new location:type, 30:literal
   screen:address <- next-ingredient
