@@ -38,8 +38,8 @@ recipe main [
 +mem: storing 16 in location 9
 
 //: disable the size mismatch check since the destination array need not be initialized
-:(replace "if (size_of(x) != SIZE(data))" following "void write_memory(reagent x, vector<double> data)")
-if (x.types.at(0) != Type_number["array"] && size_of(x) != SIZE(data))
+:(after "bool size_mismatch(const reagent& x, const vector<double>& data)")
+if (x.types.at(0) == Type_number["array"]) return false;
 :(after "long long int size_of(const reagent& r)")
   if (r.types.at(0) == Type_number["array"]) {
     assert(SIZE(r.types) > 1);

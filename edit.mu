@@ -13,7 +13,7 @@ ghi
 jkl
 ]
   editor:address:editor-data <- new-editor in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, divider:number/right
-  wait-for-key-from-keyboard
+  event-loop 0:literal/screen, 0:literal/events, editor:address:editor-data
   return-to-console
 ]
 
@@ -28,6 +28,9 @@ scenario editor-initially-prints-string-to-screen [
     .          .
   ]
 ]
+
+## In which we introduce the editor data structure, and show how it displays
+## text to the screen.
 
 container editor-data [
   # doubly linked list of characters
@@ -265,7 +268,20 @@ scenario editor-initially-wraps-long-lines [
   ]
 ]
 
-## some drawing primitives
+## handling events from the keyboard and mouse
+
+recipe event-loop [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  events:address <- next-ingredient
+  editor:address:editor-data <- next-ingredient
+  {
+    _, _, found?:boolean <- read-event 0:literal/events
+    loop-unless found?:boolean
+  }
+]
+
+## helpers for drawing editor borders
 
 recipe draw-box [
   default-space:address:array:location <- new location:type, 30:literal
