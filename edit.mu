@@ -71,11 +71,6 @@ recipe new-editor-data [
   # initialize cursor to top of screen
   x:address:address:duplex-list <- get-address result:address:editor-data/deref, cursor:offset
   x:address:address:duplex-list/deref <- copy init:address:address:duplex-list/deref
-  # playing with moving the cursor around
-#?   x:address:address:duplex-list/deref <- next-duplex x:address:address:duplex-list/deref
-#?   x:address:address:duplex-list/deref <- next-duplex x:address:address:duplex-list/deref
-#?   x:address:address:duplex-list/deref <- next-duplex x:address:address:duplex-list/deref
-#?   x:address:address:duplex-list/deref <- next-duplex x:address:address:duplex-list/deref
   reply result:address:editor-data
 ]
 
