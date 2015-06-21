@@ -276,9 +276,68 @@ recipe event-loop [
   events:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   {
-    _, _, found?:boolean <- read-event 0:literal/events
+    +next-event
+    e:event, events:address, found?:boolean, quit?:boolean <- read-event events:address
     loop-unless found?:boolean
+    break-if quit?:boolean
+    trace [app], [next-event]
+    {
+      m:address:mouse-event <- maybe-convert e:event, mouse:variant
+      break-unless m:address:mouse-event
+      editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, m:address:mouse-event
+      loop +next-event:label
+    }
+    k:address:keyboard-event <- maybe-convert e:event, keyboard:variant
+    assert k:address:keyboard-event, [event was of unknown type; neither keyboard nor mouse]
+    loop
   }
+]
+
+recipe move-cursor-in-editor [
+  default-space:address:array:location <- new location:type, 30:literal
+  editor:address:editor-data <- next-ingredient
+  m:address:mouse-event <- next-ingredient
+  row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
+  row:address:number/deref <- get m:address:mouse-event/deref, row:offset
+  column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+  column:address:number/deref <- get m:address:mouse-event/deref, column:offset
+  # todo: adjust 'cursor' pointer into editor data
+]
+
+scenario editor-handles-empty-event-queue [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-events []
+  run [
+    s:address:array:character <- new [abc]
+    editor:address:editor-data <- new-editor s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, events:address, editor:address:editor-data
+  ]
+  screen-should-contain [
+    .abc       .
+    .          .
+  ]
+]
+
+scenario editor-handles-mouse-clicks [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-events [
+    left-click 0, 1
+  ]
+  run [
+    1:address:array:character <- new [abc]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, events:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+    .abc       .
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 0  # cursor is at row 0..
+    4 <- 1  # ..and column 1
+  ]
 ]
 
 ## helpers for drawing editor borders

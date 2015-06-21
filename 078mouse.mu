@@ -31,13 +31,13 @@ recipe read-event [
       done?:boolean <- greater-or-equal idx:address:number/deref, max:number
       break-unless done?:boolean
       dummy:address:event <- new event:type
-      reply dummy:address:event/deref, x:address:events/same-as-ingredient:0, 1:literal/found
+      reply dummy:address:event/deref, x:address:events/same-as-ingredient:0, 1:literal/found, 1:literal/quit
     }
     result:event <- index buf:address:array:event/deref, idx:address:number/deref
     idx:address:number/deref <- add idx:address:number/deref, 1:literal
-    reply result:event, x:address:events/same-as-ingredient:0, 1:literal/found
+    reply result:event, x:address:events/same-as-ingredient:0, 1:literal/found, 0:literal/quit
   }
   # real event source
   result:event, found?:boolean <- read-keyboard-or-mouse-event
-  reply result:event, x:address:events/same-as-ingredient:0, found?:boolean
+  reply result:event, x:address:events/same-as-ingredient:0, found?:boolean, 0:literal/quit
 ]
