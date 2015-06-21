@@ -170,6 +170,7 @@ struct die {};
 :(before "End Tracing")
 ostream& operator<<(ostream& os, unused die) {
   if (Hide_warnings) return os;
+  tb_shutdown();
   os << "dying";
   if (Trace_stream) Trace_stream->newline();
   exit(1);
@@ -348,6 +349,8 @@ using std::ostringstream;
 #include<fstream>
 using std::ifstream;
 using std::ofstream;
+
+#include"termbox/termbox.h"
 
 #define unused  __attribute__((unused))
 
