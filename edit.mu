@@ -12,16 +12,16 @@ def
 ghi
 jkl
 ]
-  bottom:number, editor:address:editor-data <- edit in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, divider:number/right
+  editor:address:editor-data <- new-editor in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, divider:number/right
   wait-for-key-from-keyboard
   return-to-console
 ]
 
-scenario edit-prints-string-to-screen [
+scenario editor-initially-prints-string-to-screen [
   assume-screen 10:literal/width, 5:literal/height
   run [
     s:address:array:character <- new [abc]
-    edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
   ]
   screen-should-contain [
     .abc       .
@@ -30,17 +30,56 @@ scenario edit-prints-string-to-screen [
 ]
 
 container editor-data [
-  data:address:duplex-list  # doubly linked list of characters
-  top-of-screen:address:duplex-list  # pointer to character at top-left
+  # doubly linked list of characters
+  data:address:duplex-list
+  # location of top-left of screen inside data (scrolling)
+  top-of-screen:address:duplex-list
+  # location of cursor inside data
   cursor:address:duplex-list
+
+  screen:address:screen
+  # raw bounds of display area on screen
+  top:number
+  left:number
+  bottom:number
+  right:number
+  # raw screen coordinates of cursor
+  cursor-row:number
+  cursor-column:number
 ]
 
-recipe new-editor-data [
+# editor:address, screen:address <- new-editor s:address:array:character, screen:address, top:number, left:number, bottom:number
+# creates a new editor widget and renders its initial appearance to screen.
+#   top/left/right constrain the screen area available to the new editor.
+#   right is exclusive.
+recipe new-editor [
   default-space:address:array:location <- new location:type, 30:literal
   s:address:array:character <- next-ingredient
   screen:address <- next-ingredient
-  # early exit if s is empty
+  # no clipping of bounds
+  top:number <- next-ingredient
+  left:number <- next-ingredient
+  right:number <- next-ingredient
+  right:number <- subtract right:number, 1:literal
   result:address:editor-data <- new editor-data:type
+  # initialize screen-related fields
+  sc:address:address:screen <- get-address result:address:editor-data/deref, screen:offset
+  sc:address:address:screen/deref <- copy screen:address
+  x:address:number <- get-address result:address:editor-data/deref, top:offset
+  x:address:number/deref <- copy top:number
+  x:address:number <- get-address result:address:editor-data/deref, left:offset
+  x:address:number/deref <- copy left:number
+  x:address:number <- get-address result:address:editor-data/deref, right:offset
+  x:address:number/deref <- copy right:number
+  # initialize bottom to top for starters
+  x:address:number <- get-address result:address:editor-data/deref, bottom:offset
+  x:address:number/deref <- copy top:number
+  # initialize cursor
+  x:address:number <- get-address result:address:editor-data/deref, cursor-row:offset
+  x:address:number/deref <- copy top:number
+  x:address:number <- get-address result:address:editor-data/deref, cursor-column:offset
+  x:address:number/deref <- copy left:number
+  # early exit if s is empty
   reply-unless s:address:array:character, result:address:editor-data
   len:number <- length s:address:array:character/deref
   reply-unless len:number, result:address:editor-data
@@ -69,23 +108,37 @@ recipe new-editor-data [
     loop
   }
   # initialize cursor to top of screen
-  x:address:address:duplex-list <- get-address result:address:editor-data/deref, cursor:offset
-  x:address:address:duplex-list/deref <- copy init:address:address:duplex-list/deref
+  y:address:address:duplex-list <- get-address result:address:editor-data/deref, cursor:offset
+  y:address:address:duplex-list/deref <- copy init:address:address:duplex-list/deref
+  # perform initial rendering to screen
+  bottom:address:number <- get-address result:address:editor-data/deref, bottom:offset
+  bottom:address:number/deref, screen:address <- render result:address:editor-data, screen:address, top:number, left:number, right:number
   reply result:address:editor-data
 ]
 
-recipe edit [
-  default-space:address:array:location <- new location:type, 30:literal
-  s:address:array:character <- next-ingredient
-  screen:address <- next-ingredient
-  # no clipping of bounds
-  top:number <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
-  right:number <- subtract right:number, 1:literal
-  edit:address:editor-data <- new-editor-data s:address:array:character, screen:address
-  bottom:number, screen:address <- render edit:address:editor-data, screen:address, top:number, left:number, right:number
-  reply bottom:number, edit:address:editor-data
+scenario editor-initializes-without-data [
+  assume-screen 5:literal/width, 3:literal/height
+  run [
+    1:address:editor-data <- new-editor 0:literal/data, screen:address, 1:literal/top, 2:literal/left, 5:literal/right
+    2:editor-data <- copy 1:address:editor-data/deref
+  ]
+  memory-should-contain [
+    2 <- 0  # data
+    3 <- 0  # pointer into data to top of screen
+    4 <- 0  # pointer into data to cursor
+    # 5 <- screen
+    6 <- 1  # top
+    7 <- 2  # left
+    8 <- 1  # bottom
+    9 <- 4  # right  (inclusive)
+    10 <- 1  # cursor row
+    11 <- 2  # cursor column
+  ]
+  screen-should-contain [
+    .     .
+    .     .
+    .     .
+  ]
 ]
 
 recipe render [
@@ -153,12 +206,12 @@ recipe render [
   reply row:number, screen:address/same-as-ingredient:1
 ]
 
-scenario edit-prints-multiple-lines [
+scenario editor-initially-prints-multiple-lines [
   assume-screen 5:literal/width, 3:literal/height
   run [
     s:address:array:character <- new [abc
 def]
-    edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
   ]
   screen-should-contain [
     .abc  .
@@ -167,11 +220,11 @@ def]
   ]
 ]
 
-scenario edit-handles-offsets [
+scenario editor-initially-handles-offsets [
   assume-screen 5:literal/width, 3:literal/height
   run [
     s:address:array:character <- new [abc]
-    edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 5:literal/right
   ]
   screen-should-contain [
     . abc .
@@ -180,12 +233,12 @@ scenario edit-handles-offsets [
   ]
 ]
 
-scenario edit-prints-multiple-lines-at-offset [
+scenario editor-initially-prints-multiple-lines-at-offset [
   assume-screen 5:literal/width, 3:literal/height
   run [
     s:address:array:character <- new [abc
 def]
-    edit s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 0:literal/top, 1:literal/left, 5:literal/right
   ]
   screen-should-contain [
     . abc .
@@ -194,11 +247,11 @@ def]
   ]
 ]
 
-scenario edit-wraps-long-lines [
+scenario editor-initially-wraps-long-lines [
   assume-screen 5:literal/width, 3:literal/height
   run [
     s:address:array:character <- new [abc def]
-    edit s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
   ]
   screen-should-contain [
     .abc ↩.
