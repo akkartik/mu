@@ -194,8 +194,10 @@ vector<double> read_memory(reagent x) {
 void write_memory(reagent x, vector<double> data) {
   if (is_dummy(x)) return;
   long long int base = x.value;
-  if (size_of(x) != SIZE(data))
-    raise << "size mismatch in storing to " << x.to_string() << '\n';
+  if (size_mismatch(x, data)) {
+    tb_shutdown();
+    raise << current_recipe_name() << ": size mismatch in storing to " << x.to_string() << " at " << current_instruction().to_string() << '\n' << die();
+  }
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
     trace(Primitive_recipe_depth, "mem") << "storing " << data.at(offset) << " in location " << base+offset;
     Memory[base+offset] = data.at(offset);
@@ -209,6 +211,14 @@ long long int size_of(const reagent& r) {
 long long int size_of(const vector<type_number>& types) {
   // End size_of(types) Cases
   return 1;
+}
+
+bool size_mismatch(const reagent& x, const vector<double>& data) {
+  if (size_of(x) != SIZE(data)) {
+    tb_shutdown();
+    cerr << size_of(x) << " vs " << SIZE(data) << '\n';
+  }
+  return size_of(x) != SIZE(data);
 }
 
 bool is_dummy(const reagent& x) {

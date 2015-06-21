@@ -14,6 +14,8 @@ case READ_KEYBOARD_OR_MOUSE_EVENT: {
     if (key == TB_KEY_BACKSPACE2) key = TB_KEY_BACKSPACE;
     if (key == TB_KEY_CARRIAGE_RETURN) key = TB_KEY_NEWLINE;
     products.at(0).push_back(key);
+    products.at(0).push_back(0);
+    products.at(0).push_back(0);
     products.at(1).push_back(/*found*/true);
     break;
   }
@@ -28,6 +30,10 @@ case READ_KEYBOARD_OR_MOUSE_EVENT: {
     products.at(1).push_back(/*found*/true);
     break;
   }
+  products.at(0).push_back(0);
+  products.at(0).push_back(0);
+  products.at(0).push_back(0);
+  products.at(0).push_back(0);
   products.at(1).push_back(/*found*/false);
   break;
 }
