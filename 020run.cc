@@ -72,6 +72,7 @@ void run_current_routine()
     // Instructions below will write to 'products'.
     vector<vector<double> > products;
 //?     cerr << "AAA 8: " << current_instruction().operation << " ^" << Recipe[current_instruction().operation].name << "$\n"; //? 1
+//?     cerr << "% " << current_recipe_name() << "/" << current_step_index() << ": " << Memory[1013] << ' ' << Memory[1014] << '\n'; //? 1
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
       case COPY: {

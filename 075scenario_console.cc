@@ -1,68 +1,51 @@
-//: For testing both keyboard and mouse, use 'assume-events' rather than
-//: 'assume-keyboard'.
-//:
-//: This layer is tightly coupled with the definition of the 'event' type.
+//: Clean syntax to manipulate and check the console in scenarios.
+//: Instruction 'assume-console' implicitly creates a variable called
+//: 'console' that is accessible inside other 'run' instructions in the
+//: scenario. Like with the fake screen, 'assume-console' transparently
+//: supports unicode.
 
 :(scenarios run_mu_scenario)
-:(scenario events_in_scenario)
-scenario events-in-scenario [
-  assume-events [
+:(scenario keyboard_in_scenario)
+scenario keyboard-in-scenario [
+  assume-console [
     type [abc]
-    left-click 0, 1
-    type [d]
   ]
   run [
-    # 3 keyboard events; each event occupies 4 locations
-#?     $start-tracing
-    1:event <- read-event events:address
-    5:event <- read-event events:address
-    9:event <- read-event events:address
-    # mouse click
-    13:event <- read-event events:address
-    # final keyboard event
-    17:event <- read-event events:address
+    1:character, console:address, 2:boolean <- read-key console:address
+    3:character, console:address, 4:boolean <- read-key console:address
+    5:character, console:address, 6:boolean <- read-key console:address
+    7:character, console:address, 8:boolean, 9:boolean <- read-key console:address
   ]
   memory-should-contain [
-    1 <- 0  # type 'keyboard'
-    2 <- 97  # 'a'
-    3 <- 0  # unused
-    4 <- 0  # unused
-    5 <- 0  # type 'keyboard'
-    6 <- 98  # 'b'
-    7 <- 0  # unused
-    8 <- 0  # unused
-    9 <- 0  # type 'keyboard'
-    10 <- 99  # 'c'
-    11 <- 0  # unused
-    12 <- 0  # unused
-    13 <- 1  # type 'mouse'
-    14 <- 65513  # mouse click
-    15 <- 0  # row
-    16 <- 1  # column
-    17 <- 0  # type 'keyboard'
-    18 <- 100  # 'd'
-    19 <- 0  # unused
-    20 <- 0  # unused
-    21 <- 0
+    1 <- 97  # 'a'
+    2 <- 1
+    3 <- 98  # 'b'
+    4 <- 1
+    5 <- 99  # 'c'
+    6 <- 1
+    7 <- 0  # unset
+    8 <- 1
+    9 <- 1  # end of test events
   ]
 ]
 
-// 'events' is a special variable like 'keyboard' and 'screen'
 :(before "End Scenario Globals")
-const long long int EVENTS = Next_predefined_global_for_scenarios++;
+const long long int CONSOLE = Next_predefined_global_for_scenarios++;
 :(before "End Predefined Scenario Locals In Run")
-Name[tmp_recipe.at(0)]["events"] = EVENTS;
-:(before "End is_special_name Cases")
-if (s == "events") return true;
+Name[tmp_recipe.at(0)]["console"] = CONSOLE;
 
-//: Unlike assume-keyboard, assume-events is easiest to implement as just a
+//: allow naming just for 'console'
+:(before "End is_special_name Cases")
+if (s == "console") return true;
+
+//: Unlike assume-keyboard, assume-console is easiest to implement as just a
 //: primitive recipe.
 :(before "End Primitive Recipe Declarations")
-ASSUME_EVENTS,
+ASSUME_CONSOLE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["assume-events"] = ASSUME_EVENTS;
+Recipe_number["assume-console"] = ASSUME_CONSOLE;
 :(before "End Primitive Recipe Implementations")
-case ASSUME_EVENTS: {
+case ASSUME_CONSOLE: {
 //?   cerr << "aaa: " << current_instruction().ingredients.at(0).name << '\n'; //? 1
   // create a temporary recipe just for parsing; it won't contain valid instructions
   istringstream in("[" + current_instruction().ingredients.at(0).name + "]");
@@ -78,11 +61,16 @@ case ASSUME_EVENTS: {
   for (long long int i = 0; i < SIZE(r.steps); ++i) {
     const instruction& curr = r.steps.at(i);
     if (curr.name == "left-click") {
-      Memory[Current_routine->alloc] = /*tag for 'mouse-event' variant of 'event' exclusive-container*/1;
+      Memory[Current_routine->alloc] = /*tag for 'single-touch-event' variant of 'event' exclusive-container*/2;
       Memory[Current_routine->alloc+1+/*offset of 'type' in 'mouse-event'*/0] = TB_KEY_MOUSE_LEFT;
       Memory[Current_routine->alloc+1+/*offset of 'row' in 'mouse-event'*/1] = to_integer(curr.ingredients.at(0).name);
       Memory[Current_routine->alloc+1+/*offset of 'column' in 'mouse-event'*/2] = to_integer(curr.ingredients.at(1).name);
 //?       cerr << "AA left click: " << Memory[Current_routine->alloc+2] << ' ' << Memory[Current_routine->alloc+3] << '\n'; //? 1
+      Current_routine->alloc += size_of_event();
+    }
+    else if (curr.name == "press") {
+      Memory[Current_routine->alloc] = /*tag for 'keycode' variant of 'event' exclusive-container*/1;
+      Memory[Current_routine->alloc+1] = to_integer(curr.ingredients.at(0).name);
       Current_routine->alloc += size_of_event();
     }
     // End Event Handlers
@@ -93,12 +81,13 @@ case ASSUME_EVENTS: {
       const char* raw_contents = contents.c_str();
       long long int num_keyboard_events = unicode_length(contents);
       long long int curr = 0;
+//?       cerr << "AAA: " << num_keyboard_events << '\n'; //? 1
       for (long long int i = 0; i < num_keyboard_events; ++i) {
         Memory[Current_routine->alloc] = /*tag for 'keyboard-event' variant of 'event' exclusive-container*/0;
         uint32_t curr_character;
         assert(curr < SIZE(contents));
         tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
-//?         cerr << "AA keyboard: " << curr_character << '\n'; //? 1
+//?         cerr << "AA keyboard: " << curr_character << '\n'; //? 2
         Memory[Current_routine->alloc+/*skip exclusive container tag*/1] = curr_character;
         curr += tb_utf8_char_length(raw_contents[curr]);
         Current_routine->alloc += size_of_event();
@@ -108,9 +97,12 @@ case ASSUME_EVENTS: {
   assert(Current_routine->alloc == event_data_address+size);
   // wrap the array of events in an event object
   ensure_space(size_of_events());
-  Memory[EVENTS] = Current_routine->alloc;
+  Memory[CONSOLE] = Current_routine->alloc;
   Current_routine->alloc += size_of_events();
-  Memory[Memory[EVENTS]+/*offset of 'data' in container 'events'*/1] = event_data_address;
+//?   cerr << "writing " << event_data_address << " to location " << Memory[CONSOLE]+1 << '\n'; //? 1
+  Memory[Memory[CONSOLE]+/*offset of 'data' in container 'events'*/1] = event_data_address;
+//?   cerr << Memory[Memory[CONSOLE]+1] << '\n'; //? 1
+//?   cerr << "alloc now " << Current_routine->alloc << '\n'; //? 1
   break;
 }
 
@@ -143,52 +135,58 @@ long long int size_of_events() {
   static long long int result = 0;
   if (result) return result;
   vector<type_number> type;
-  type.push_back(Type_number["events"]);
+  assert(Type_number["console"]);
+  type.push_back(Type_number["console"]);
   result = size_of(type);
   return result;
 }
 
-//: Warn if a scenario uses both 'keyboard' and 'events'.
-
-:(scenario recipes_should_not_use_events_alongside_keyboard)
-% Hide_warnings = true;
-scenario recipes-should-not-use-events-alongside-keyboard [
-  assume-keyboard [abc]
-  assume-events []
-]
-+warn: can't use 'keyboard' and 'events' in the same program/scenario
-
-:(before "End Globals")
-bool Keyboard_used = false;
-bool Events_used = false;
-:(before "End Setup")
-Keyboard_used = Events_used = false;
-:(after "case ASSUME_EVENTS:")
-//? cerr << "events!\n"; //? 1
-Events_used = true;
-:(before "Running One Instruction")
-//? cerr << current_instruction().to_string() << '\n'; //? 1
-for (long long int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
-  if (current_instruction().ingredients.at(i).value == KEYBOARD) Keyboard_used = true;
-  if (current_instruction().ingredients.at(i).value == EVENTS) Events_used = true;
-}
-for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
-  if (current_instruction().products.at(i).value == KEYBOARD) Keyboard_used = true;
-  if (current_instruction().products.at(i).value == EVENTS) Events_used = true;
-}
-:(before "End of Instruction")  // might miss some early returns like 'reply'
-//? cerr << Keyboard_used << Events_used << '\n'; //? 1
-if (Keyboard_used && Events_used)
-  raise << "can't use 'keyboard' and 'events' in the same program/scenario\n" << die();
-
-:(scenario recipes_should_not_use_events_alongside_keyboard_including_nested_run)
-% Hide_warnings = true;
-scenario recipes-should-not-use-events-alongside-keyboard-including-nested-run [
-  assume-events [
+:(scenario events_in_scenario)
+scenario events-in-scenario [
+  assume-console [
     type [abc]
+    left-click 0, 1
+    press 65515  # up arrow
+    type [d]
   ]
   run [
-    keyboard:location <- copy 0:literal  # unsafe
+    # 3 keyboard events; each event occupies 4 locations
+#?     $start-tracing #? 2
+    1:event <- read-event console:address
+    5:event <- read-event console:address
+    9:event <- read-event console:address
+    # mouse click
+    13:event <- read-event console:address
+    # non-character keycode
+    17:event <- read-event console:address
+    # final keyboard event
+    21:event <- read-event console:address
+  ]
+  memory-should-contain [
+    1 <- 0  # 'text'
+    2 <- 97  # 'a'
+    3 <- 0  # unused
+    4 <- 0  # unused
+    5 <- 0  # 'text'
+    6 <- 98  # 'b'
+    7 <- 0  # unused
+    8 <- 0  # unused
+    9 <- 0  # 'text'
+    10 <- 99  # 'c'
+    11 <- 0  # unused
+    12 <- 0  # unused
+    13 <- 2  # 'mouse'
+    14 <- 65513  # mouse click
+    15 <- 0  # row
+    16 <- 1  # column
+    17 <- 1  # 'keycode'
+    18 <- 65515  # up arrow
+    19 <- 0  # unused
+    20 <- 0  # unused
+    21 <- 0  # 'text'
+    22 <- 100  # 'd'
+    23 <- 0  # unused
+    24 <- 0  # unused
+    25 <- 0
   ]
 ]
-+warn: can't use 'keyboard' and 'events' in the same program/scenario

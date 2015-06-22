@@ -1,7 +1,7 @@
 //: Take charge of the text-mode display and keyboard.
 
-// uncomment to debug console programs
 :(before "End Globals")
+// uncomment to debug console programs
 //? ofstream LOG("log.txt");
 
 //:: Display management
@@ -219,47 +219,70 @@ case DISPLAY_HEIGHT: {
   break;
 }
 
-//:: Keyboard management
+//:: Keyboard/mouse management
 
 :(before "End Primitive Recipe Declarations")
-WAIT_FOR_KEY_FROM_KEYBOARD,
+WAIT_FOR_SOME_INTERACTION,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["wait-for-key-from-keyboard"] = WAIT_FOR_KEY_FROM_KEYBOARD;
+Recipe_number["wait-for-some-interaction"] = WAIT_FOR_SOME_INTERACTION;
 :(before "End Primitive Recipe Implementations")
-case WAIT_FOR_KEY_FROM_KEYBOARD: {
+case WAIT_FOR_SOME_INTERACTION: {
   tb_event event;
-  do {
-    tb_poll_event(&event);
-  } while (event.type != TB_EVENT_KEY);
-  long long int result = event.key ? event.key : event.ch;
-  if (result == TB_KEY_CTRL_C) tb_shutdown(), exit(1);
-  if (result == TB_KEY_BACKSPACE2) result = TB_KEY_BACKSPACE;
-  if (result == TB_KEY_CARRIAGE_RETURN) result = TB_KEY_NEWLINE;
-  products.resize(1);
-  products.at(0).push_back(result);
+  tb_poll_event(&event);
   break;
 }
 
 :(before "End Primitive Recipe Declarations")
-READ_KEY_FROM_KEYBOARD,
+CHECK_FOR_INTERACTION,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["read-key-from-keyboard"] = READ_KEY_FROM_KEYBOARD;
+Recipe_number["check-for-interaction"] = CHECK_FOR_INTERACTION;
 :(before "End Primitive Recipe Implementations")
-case READ_KEY_FROM_KEYBOARD: {
+case CHECK_FOR_INTERACTION: {
+  products.resize(2);  // result and status
   tb_event event;
   int event_type = tb_peek_event(&event, 5/*ms*/);
-  long long int result = 0;
-  long long int found = false;
-//?   cerr << event_type << '\n'; //? 1
-  if (event_type == TB_EVENT_KEY) {
-    result = event.key ? event.key : event.ch;
-    if (result == TB_KEY_CTRL_C) tb_shutdown(), exit(1);
-    if (result == TB_KEY_BACKSPACE2) result = TB_KEY_BACKSPACE;
-    if (result == TB_KEY_CARRIAGE_RETURN) result = TB_KEY_NEWLINE;
-    found = true;
+  if (event_type == TB_EVENT_KEY && event.ch) {
+    products.at(0).push_back(/*text event*/0);
+    products.at(0).push_back(event.ch);
+    products.at(0).push_back(0);
+    products.at(0).push_back(0);
+    products.at(1).push_back(/*found*/true);
+    break;
   }
-  products.resize(2);
-  products.at(0).push_back(result);
-  products.at(1).push_back(found);
+  // treat keys within ascii as unicode characters
+  if (event_type == TB_EVENT_KEY && event.key < 0xff) {
+    products.at(0).push_back(/*text event*/0);
+    if (event.key == TB_KEY_CTRL_C) tb_shutdown(), exit(1);
+    if (event.key == TB_KEY_BACKSPACE2) event.key = TB_KEY_BACKSPACE;
+    if (event.key == TB_KEY_CARRIAGE_RETURN) event.key = TB_KEY_NEWLINE;
+    products.at(0).push_back(event.key);
+    products.at(0).push_back(0);
+    products.at(0).push_back(0);
+    products.at(1).push_back(/*found*/true);
+    break;
+  }
+  // keys outside ascii aren't unicode characters but arbitrary termbox inventions
+  if (event_type == TB_EVENT_KEY) {
+    products.at(0).push_back(/*keycode event*/1);
+    products.at(0).push_back(event.key);
+    products.at(0).push_back(0);
+    products.at(0).push_back(0);
+    products.at(1).push_back(/*found*/true);
+    break;
+  }
+  if (event_type == TB_EVENT_MOUSE) {
+    products.at(0).push_back(/*mouse event*/1);
+    products.at(0).push_back(event.key);  // which button, etc.
+    products.at(0).push_back(event.y);  // row
+    products.at(0).push_back(event.x);  // column
+    products.at(1).push_back(/*found*/true);
+    break;
+  }
+  // ignore TB_EVENT_RESIZE events for now
+  products.at(0).push_back(0);
+  products.at(0).push_back(0);
+  products.at(0).push_back(0);
+  products.at(0).push_back(0);
+  products.at(1).push_back(/*found*/false);
   break;
 }
