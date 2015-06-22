@@ -4,21 +4,21 @@ recipe main [
   switch-to-display
   print-character-to-display 97:literal, 1:literal/red
   1:number/raw, 2:number/raw <- cursor-position-on-display
-  wait-for-key-from-keyboard
+  wait-for-some-interaction
   clear-display
   move-cursor-on-display 0:literal, 4:literal
   print-character-to-display 98:literal
-  wait-for-key-from-keyboard
+  wait-for-some-interaction
   move-cursor-on-display 0:literal, 0:literal
   clear-line-on-display
-  wait-for-key-from-keyboard
+  wait-for-some-interaction
   move-cursor-down-on-display
-  wait-for-key-from-keyboard
+  wait-for-some-interaction
   move-cursor-right-on-display
-  wait-for-key-from-keyboard
+  wait-for-some-interaction
   move-cursor-left-on-display
-  wait-for-key-from-keyboard
+  wait-for-some-interaction
   move-cursor-up-on-display
-  wait-for-key-from-keyboard
+  wait-for-some-interaction
   return-to-console
 ]

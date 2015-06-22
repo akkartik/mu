@@ -88,3 +88,12 @@ recipe send-keys-to-channel [
     loop
   }
 ]
+
+recipe wait-for-event [
+  default-space:address:array:location <- new location:type, 30:literal
+  console:address <- next-ingredient
+  {
+    _, console:address, found?:boolean <- read-event console:address
+    loop-unless found?:boolean
+  }
+]
