@@ -3,7 +3,7 @@
 
 # recipes are mu's names for functions
 recipe main [
-  switch-to-display  # take control of screen and keyboard
+  open-console  # take control of screen, keyboard and mouse
 
   # The chessboard recipe takes keyboard and screen objects as 'ingredients'.
   #
@@ -15,11 +15,11 @@ recipe main [
   # results. Here we clearly modify both keyboard and screen, so we return
   # both.
   #
-  # Here the keyboard and screen are both 0, which usually indicates real
+  # Here the console and screen are both 0, which usually indicates real
   # hardware rather than a fake for testing as you'll see below.
-  0:literal/real-screen, 0:literal/real-keyboard <- chessboard 0:literal/real-screen, 0:literal/real-keyboard
+  0:literal/screen, 0:literal/console <- chessboard 0:literal/screen, 0:literal/console
 
-  return-to-console  # cleanup screen and keyboard
+  close-console  # cleanup screen, keyboard and mouse
 ]
 
 ## But enough about mu. Here's what it looks like to run the chessboard program.
@@ -281,7 +281,7 @@ recipe read-move [
   from-file:number, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
   reply-if quit?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
   reply-if error?:boolean, 0:literal/dummy, quit?:boolean, error?:boolean
-#?   return-to-console #? 1
+#?   close-console #? 1
   # construct the move object
   result:address:move <- new move:type
   x:address:number <- get-address result:address:move/deref, from-file:offset

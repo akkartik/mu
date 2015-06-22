@@ -4,7 +4,7 @@
 # screens.
 
 recipe main [
-  switch-to-display
+  open-console
   print-character 0:literal/screen, 97:literal, 2:literal/red
   1:number/raw, 2:number/raw <- cursor-position 0:literal/screen
   wait-for-event 0:literal/console
@@ -23,5 +23,5 @@ recipe main [
   wait-for-event 0:literal/console
   cursor-up 0:literal/screen
   wait-for-event 0:literal/console
-  return-to-console
+  close-console
 ]

@@ -297,7 +297,7 @@ recipe buffer-lines [
         backspace?:boolean <- equal c:character, 8:literal
         break-unless backspace?:boolean
         # drop previous character
-#?         return-to-console #? 2
+#?         close-console #? 2
 #?         $print [backspace! #? 1
 #? ] #? 1
         {
@@ -325,7 +325,7 @@ recipe buffer-lines [
       break-if eof?:boolean
       loop
     }
-#?     return-to-console #? 1
+#?     close-console #? 1
     # copy line into 'out'
 #?     $print [buffer-lines: emitting
 #? ]

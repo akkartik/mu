@@ -2,7 +2,7 @@
 
 recipe main [
   default-space:address:array:location <- new location:type, 30:literal
-  switch-to-display
+  open-console
   width:number <- display-width
   height:number <- display-height
   divider:number, _ <- divide-with-remainder width:number, 2:literal
@@ -14,7 +14,7 @@ jkl
 ]
   editor:address:editor-data <- new-editor in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, divider:number/right
   event-loop 0:literal/screen, 0:literal/events, editor:address:editor-data
-  return-to-console
+  close-console
 ]
 
 scenario editor-initially-prints-string-to-screen [
