@@ -1,7 +1,7 @@
 # example program: managing the display
 
 recipe main [
-  switch-to-display
+  open-console
   print-character-to-display 97:literal, 1:literal/red
   1:number/raw, 2:number/raw <- cursor-position-on-display
   wait-for-some-interaction
@@ -20,5 +20,6 @@ recipe main [
   wait-for-some-interaction
   move-cursor-up-on-display
   wait-for-some-interaction
-  return-to-console
+#?   $print [aaa] #? 1
+  close-console
 ]

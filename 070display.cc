@@ -1,4 +1,4 @@
-//: Take charge of the text-mode display and keyboard.
+//: Take charge of the text-mode display and console.
 
 :(before "End Globals")
 // uncomment to debug console programs
@@ -10,23 +10,23 @@
 long long int Display_row = 0, Display_column = 0;
 
 :(before "End Primitive Recipe Declarations")
-SWITCH_TO_DISPLAY,
+OPEN_CONSOLE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["switch-to-display"] = SWITCH_TO_DISPLAY;
-//? cerr << "switch-to-display: " << SWITCH_TO_DISPLAY << '\n'; //? 1
+Recipe_number["open-console"] = OPEN_CONSOLE;
+//? cerr << "open-console: " << OPEN_CONSOLE << '\n'; //? 1
 :(before "End Primitive Recipe Implementations")
-case SWITCH_TO_DISPLAY: {
+case OPEN_CONSOLE: {
   tb_init();
   Display_row = Display_column = 0;
   break;
 }
 
 :(before "End Primitive Recipe Declarations")
-RETURN_TO_CONSOLE,
+CLOSE_CONSOLE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["return-to-console"] = RETURN_TO_CONSOLE;
+Recipe_number["close-console"] = CLOSE_CONSOLE;
 :(before "End Primitive Recipe Implementations")
-case RETURN_TO_CONSOLE: {
+case CLOSE_CONSOLE: {
   tb_shutdown();
 //?   Trace_stream->dump_layer = "all"; //? 1
   break;
