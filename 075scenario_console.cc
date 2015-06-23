@@ -107,43 +107,6 @@ case ASSUME_CONSOLE: {
   break;
 }
 
-:(code)
-long long int count_events(const recipe& r) {
-  long long int result = 0;
-  for (long long int i = 0; i < SIZE(r.steps); ++i) {
-    const instruction& curr = r.steps.at(i);
-//?     cerr << "aa: " << curr.name << '\n'; //? 3
-//?     cerr << "bb: " << curr.ingredients.at(0).name << '\n'; //? 1
-    if (curr.name == "type")
-      result += unicode_length(curr.ingredients.at(0).name);
-    else
-      result++;
-//?     cerr << "cc: " << result << '\n'; //? 1
-  }
-  return result;
-}
-
-long long int size_of_event() {
-  // memoize result if already computed
-  static long long int result = 0;
-  if (result) return result;
-  vector<type_number> type;
-  type.push_back(Type_number["event"]);
-  result = size_of(type);
-  return result;
-}
-
-long long int size_of_events() {
-  // memoize result if already computed
-  static long long int result = 0;
-  if (result) return result;
-  vector<type_number> type;
-  assert(Type_number["console"]);
-  type.push_back(Type_number["console"]);
-  result = size_of(type);
-  return result;
-}
-
 :(scenario events_in_scenario)
 scenario events-in-scenario [
   assume-console [
@@ -193,3 +156,40 @@ scenario events-in-scenario [
     25 <- 0
   ]
 ]
+
+:(code)
+long long int count_events(const recipe& r) {
+  long long int result = 0;
+  for (long long int i = 0; i < SIZE(r.steps); ++i) {
+    const instruction& curr = r.steps.at(i);
+//?     cerr << "aa: " << curr.name << '\n'; //? 3
+//?     cerr << "bb: " << curr.ingredients.at(0).name << '\n'; //? 1
+    if (curr.name == "type")
+      result += unicode_length(curr.ingredients.at(0).name);
+    else
+      result++;
+//?     cerr << "cc: " << result << '\n'; //? 1
+  }
+  return result;
+}
+
+long long int size_of_event() {
+  // memoize result if already computed
+  static long long int result = 0;
+  if (result) return result;
+  vector<type_number> type;
+  type.push_back(Type_number["event"]);
+  result = size_of(type);
+  return result;
+}
+
+long long int size_of_events() {
+  // memoize result if already computed
+  static long long int result = 0;
+  if (result) return result;
+  vector<type_number> type;
+  assert(Type_number["console"]);
+  type.push_back(Type_number["console"]);
+  result = size_of(type);
+  return result;
+}
