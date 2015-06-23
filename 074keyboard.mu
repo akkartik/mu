@@ -4,11 +4,11 @@
 exclusive-container event [
   text:character
   keycode:number  # keys on keyboard without a unicode representation
-  pointer:single-touch-event  # mouse, track ball, etc.
+  touch:touch-event  # mouse, track ball, etc.
   # update the assume-console handler if you add more variants
 ]
 
-container single-touch-event [
+container touch-event [
   type:number
   row:number
   column:number

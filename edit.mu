@@ -282,9 +282,9 @@ recipe event-loop [
     break-if quit?:boolean  # only in tests
     trace [app], [next-event]
     {
-      p:address:single-touch-event <- maybe-convert e:event, pointer:variant
-      break-unless p:address:single-touch-event
-      editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, p:address:single-touch-event
+      t:address:touch-event <- maybe-convert e:event, touch:variant
+      break-unless t:address:touch-event
+      editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, t:address:touch-event
       loop +next-event:label
     }
     c:address:character <- maybe-convert e:event, text:variant
@@ -296,11 +296,11 @@ recipe event-loop [
 recipe move-cursor-in-editor [
   default-space:address:array:location <- new location:type, 30:literal
   editor:address:editor-data <- next-ingredient
-  p:address:single-touch-event <- next-ingredient
+  t:address:touch-event <- next-ingredient
   row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
-  row:address:number/deref <- get p:address:single-touch-event/deref, row:offset
+  row:address:number/deref <- get t:address:touch-event/deref, row:offset
   column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
-  column:address:number/deref <- get p:address:single-touch-event/deref, column:offset
+  column:address:number/deref <- get t:address:touch-event/deref, column:offset
   # todo: adjust 'cursor' pointer into editor data
 ]
 
