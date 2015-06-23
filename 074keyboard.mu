@@ -55,6 +55,9 @@ recipe read-event [
   reply result:event, x:address:console/same-as-ingredient:0, found?:boolean, 0:literal/quit
 ]
 
+# variant of read-event for just keyboard events. Discards everything that
+# isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get
+# newlines, tabs, ctrl-d..
 recipe read-key [
   default-space:address:array:location <- new location:type, 30:literal
 #?   $print default-space:address:array:location #? 1
