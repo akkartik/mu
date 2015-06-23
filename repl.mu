@@ -58,8 +58,8 @@ scenario read-instruction1 [
 # and comments specially. Especially in the presence of backspacing.
 recipe read-instruction [
   default-space:address:array:location <- new location:type, 60:literal
-  k:address:console <- next-ingredient
-  x:address:screen <- next-ingredient
+  console:address <- next-ingredient
+  screen:address <- next-ingredient
   result:address:buffer <- new-buffer 10:literal  # string to maybe add to
   trace [app], [read-instruction]
   # start state machine by calling slurp-regular-characters, which will return
@@ -71,7 +71,7 @@ recipe read-instruction [
   completed?:boolean <- greater-than len:number, 0:literal
   jump-if completed?:boolean, +completed:label
   # Otherwise we're just getting started.
-  result:address:buffer, k:address:console, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:console, x:address:screen, complete:continuation
+  result:address:buffer, console:address, screen:address <- slurp-regular-characters result:address:buffer, console:address, screen:address, complete:continuation
 #?   $print [aaa: ], result:address:buffer #? 1
 #?   move-cursor-down-on-display #? 1
   trace [error], [slurp-regular-characters should never return normally]
@@ -80,7 +80,7 @@ recipe read-instruction [
 #?   $print [bbb: ], result2:address:array:character #? 1
 #?   move-cursor-down-on-display #? 1
   trace [app], [exiting read-instruction]
-  reply result2:address:array:character, k:address:console/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+  reply result2:address:array:character, console:address/same-as-ingredient:0, screen:address/same-as-ingredient:1
 ]
 
 # read characters from the console, print them to the screen in *white*.
@@ -88,8 +88,8 @@ recipe read-instruction [
 recipe slurp-regular-characters [
   default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
-  k:address:console <- next-ingredient
-  x:address:screen <- next-ingredient
+  console:address <- next-ingredient
+  screen:address <- next-ingredient
   complete:continuation <- next-ingredient
   trace [app], [slurp-regular-characters]
   characters-slurped:number <- copy 0:literal
@@ -101,9 +101,9 @@ recipe slurp-regular-characters [
 #? ] #? 1
 #?     move-cursor-down-on-display #? 1
     # read character
-    c:character, k:address:console found?:boolean <- read-key k:address:console
+    c:character, console:address found?:boolean <- read-key console:address
     loop-unless found?:boolean +next-character:label
-#?     print-character x:address:screen, c:character #? 1
+#?     print-character screen:address, c:character #? 1
 #?     move-cursor-down-on-display #? 1
     # quit?
     {
@@ -114,21 +114,21 @@ recipe slurp-regular-characters [
 #?       $print [ctrl-d] #? 1
 #?       move-cursor-down-on-display #? 1
       trace [app], [slurp-regular-characters: ctrl-d]
-      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
       trace [app], [slurp-regular-characters: null]
-      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     }
     # comment?
     {
       comment?:boolean <- equal c:character, 35:literal/hash
       break-unless comment?:boolean
-      print-character x:address:screen, c:character, 4:literal/blue
+      print-character screen:address, c:character, 4:literal/blue
       result:address:buffer <- buffer-append result:address:buffer, c:character
-      result:address:buffer, k:address:console, x:address:screen <- slurp-comment result:address:buffer, k:address:console, x:address:screen, complete:continuation
+      result:address:buffer, console:address, screen:address <- slurp-comment result:address:buffer, console:address, screen:address, complete:continuation
       # continue appending to this instruction, whether comment ended or was backspaced out of
       loop +next-character:label
     }
@@ -136,23 +136,23 @@ recipe slurp-regular-characters [
     {
       string?:boolean <- equal c:character, 91:literal/open-bracket
       break-unless string?:boolean
-      print-character x:address:screen, c:character, 6:literal/cyan
+      print-character screen:address, c:character, 6:literal/cyan
       result:address:buffer <- buffer-append result:address:buffer, c:character
-      result:address:buffer, _, k:address:console, x:address:screen <- slurp-string result:address:buffer, k:address:console, x:address:screen, complete:continuation
+      result:address:buffer, _, console:address, screen:address <- slurp-string result:address:buffer, console:address, screen:address, complete:continuation
       loop +next-character:label
     }
     # assignment
     {
       assign?:boolean <- equal c:character, 60:literal/less-than
       break-unless assign?:boolean
-      print-character x:address:screen, c:character, 1:literal/red
+      print-character screen:address, c:character, 1:literal/red
       trace [app], [start of assignment: <]
       result:address:buffer <- buffer-append result:address:buffer, c:character
-      result:address:buffer, k:address:console, x:address:screen <- slurp-assignment result:address:buffer, k:address:console, x:address:screen, complete:continuation
+      result:address:buffer, console:address, screen:address <- slurp-assignment result:address:buffer, console:address, screen:address, complete:continuation
       loop +next-character:label
     }
     # print
-    print-character x:address:screen, c:character  # default color
+    print-character screen:address, c:character  # default color
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
 #?     $print [a1 #? 1
@@ -182,7 +182,7 @@ recipe slurp-regular-characters [
 #?         $print [a6 #? 1
 #? ] #? 1
 #?         move-cursor-down-on-display #? 1
-        reply result:address:buffer, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+        reply result:address:buffer, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
       }
       loop +next-character:label
     }
@@ -198,7 +198,7 @@ recipe slurp-regular-characters [
   }
   # newline encountered; terminate all recursive calls
 #?   xx:address:array:character <- new [completing!] #? 1
-#?   print-string x:address:screen, xx:address:array:character #? 1
+#?   print-string screen:address, xx:address:array:character #? 1
   trace [app], [slurp-regular-characters: newline encountered; unwinding stack]
   continue-from complete:continuation
 ]
@@ -210,8 +210,8 @@ recipe slurp-regular-characters [
 recipe slurp-comment [
   default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
-  k:address:console <- next-ingredient
-  x:address:screen <- next-ingredient
+  console:address <- next-ingredient
+  screen:address <- next-ingredient
   complete:continuation <- next-ingredient
   trace [app], [slurp-comment]
   # use this to track when backspace should reset color
@@ -219,23 +219,23 @@ recipe slurp-comment [
   {
     +next-character
     # read character
-    c:character, k:address:console, found?:boolean <- read-key k:address:console
+    c:character, console:address, found?:boolean <- read-key console:address
     loop-unless found?:boolean +next-character:label
     # quit?
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
       break-unless ctrl-d?:boolean
       trace [app], [slurp-comment: ctrl-d]
-      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
       trace [app], [slurp-comment: null]
-      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     }
     # print
-    print-character x:address:screen, c:character, 4:literal/blue
+    print-character screen:address, c:character, 4:literal/blue
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
     # backspace? decrement
@@ -247,7 +247,7 @@ recipe slurp-comment [
         reset-color?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
         break-unless reset-color?:boolean
         trace [app], [slurp-comment: too many backspaces; returning]
-        reply result:address:buffer, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+        reply result:address:buffer, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
       }
       loop +next-character:label
     }
@@ -272,8 +272,8 @@ recipe slurp-comment [
 recipe slurp-string [
   default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
-  k:address:console <- next-ingredient
-  x:address:screen <- next-ingredient
+  console:address <- next-ingredient
+  screen:address <- next-ingredient
   complete:continuation <- next-ingredient
   nested-string?:boolean <- next-ingredient
   trace [app], [slurp-string]
@@ -282,36 +282,36 @@ recipe slurp-string [
   {
     +next-character
     # read character
-    c:character, k:address:console, found?:boolean <- read-key k:address:console
+    c:character, console:address, found?:boolean <- read-key console:address
     loop-unless found?:boolean +next-character:label
     # quit?
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
       break-unless ctrl-d?:boolean
       trace [app], [slurp-string: ctrl-d]
-      reply 0:literal, 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, 0:literal, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
       trace [app], [slurp-string: null]
-      reply 0:literal, 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, 0:literal, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     }
     # string
     {
       string?:boolean <- equal c:character, 91:literal/open-bracket
       break-unless string?:boolean
       trace [app], [slurp-string: open-bracket encountered; recursing]
-      print-character x:address:screen, c:character, 6:literal/cyan
+      print-character screen:address, c:character, 6:literal/cyan
       result:address:buffer <- buffer-append result:address:buffer, c:character
       # make a recursive call to handle nested strings
-      result:address:buffer, tmp:number, k:address:console, x:address:screen <- slurp-string result:address:buffer, k:address:console, x:address:screen, complete:continuation, 1:literal/nested?
+      result:address:buffer, tmp:number, console:address, screen:address <- slurp-string result:address:buffer, console:address, screen:address, complete:continuation, 1:literal/nested?
       # but if we backspace over a completed nested string, handle it in the caller
       characters-slurped:number <- add characters-slurped:number, tmp:number, 1:literal  # for the leading '['
       loop +next-character:label
     }
     # print
-    print-character x:address:screen, c:character, 6:literal/cyan
+    print-character screen:address, c:character, 6:literal/cyan
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
     # backspace? decrement
@@ -323,7 +323,7 @@ recipe slurp-string [
         reset-color?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
         break-unless reset-color?:boolean
         trace [app], [slurp-string: too many backspaces; returning]
-        reply result:address:buffer/same-as-ingredient:0, 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+        reply result:address:buffer/same-as-ingredient:0, 0:literal, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
       }
       loop +next-character:label
     }
@@ -337,11 +337,11 @@ recipe slurp-string [
   {
     break-unless nested-string?:boolean
     # nested string? return like a normal recipe
-    reply result:address:buffer, characters-slurped:number, k:address:console, x:address:screen
+    reply result:address:buffer, characters-slurped:number, console:address, screen:address
   }
   # top-level string call? recurse
   trace [app], [slurp-string: close-bracket encountered; recursing to regular characters]
-  result:address:buffer, k:address:console, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:console, x:address:screen, complete:continuation
+  result:address:buffer, console:address, screen:address <- slurp-regular-characters result:address:buffer, console:address, screen:address, complete:continuation
   # backspaced back into this string
   trace [app], [slurp-string: backspaced back into string; restarting]
   jump +next-character:label
@@ -350,29 +350,29 @@ recipe slurp-string [
 recipe slurp-assignment [
   default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
-  k:address:console <- next-ingredient
-  x:address:screen <- next-ingredient
+  console:address <- next-ingredient
+  screen:address <- next-ingredient
   complete:continuation <- next-ingredient
   {
     +next-character
     # read character
-    c:character, k:address:console, found?:boolean <- read-key k:address:console
+    c:character, console:address, found?:boolean <- read-key console:address
     loop-unless found?:boolean +next-character:label
     # quit?
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
       break-unless ctrl-d?:boolean
       trace [app], [slurp-assignment: ctrl-d]
-      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
       trace [app], [slurp-assignment: null]
-      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     }
     # print
-    print-character x:address:screen, c:character, 1:literal/red
+    print-character screen:address, c:character, 1:literal/red
     trace [app], [slurp-assignment: saved one character]
     # append
     result:address:buffer <- buffer-append result:address:buffer, c:character
@@ -381,11 +381,11 @@ recipe slurp-assignment [
       backspace?:boolean <- equal c:character, 8:literal/backspace
       break-unless backspace?:boolean
       trace [app], [slurp-assignment: backspace; returning]
-      reply result:address:buffer/same-as-ingredient:0, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply result:address:buffer/same-as-ingredient:0, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     }
   }
   trace [app], [slurp-assignment: done, recursing to regular characters]
-  result:address:buffer, k:address:console, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:console, x:address:screen, complete:continuation
+  result:address:buffer, console:address, screen:address <- slurp-regular-characters result:address:buffer, console:address, screen:address, complete:continuation
   # backspaced back into this string
   trace [app], [slurp-assignment: backspaced back into assignment; restarting]
   jump +next-character:label
@@ -650,11 +650,11 @@ scenario read-instruction-cancel-string-on-backspace [
     type [z]
   ]
   run [
-#?     d:address:array:event <- get console:address:console/deref, data:offset #? 1
+#?     d:address:array:event <- get console:address/deref, data:offset #? 1
 #?     $print [a: ], d:address:array:event #? 1
 #?     x:number <- length d:address:array:event/deref #? 1
 #?     $print [b: ], x:number #? 1
-    read-instruction console:address:console, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color 6:literal/cyan, [
     .                              .
