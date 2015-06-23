@@ -69,8 +69,7 @@ case ASSUME_CONSOLE: {
       Current_routine->alloc += size_of_event();
     }
     else if (curr.name == "press") {
-      // todo: use 'keycode' tag to distinguish left-arrow from unicode U+ffeb, etc.
-      Memory[Current_routine->alloc] = /*tag for 'text' variant of 'event' exclusive-container*/0;
+      Memory[Current_routine->alloc] = /*tag for 'keycode' variant of 'event' exclusive-container*/1;
       Memory[Current_routine->alloc+1] = to_integer(curr.ingredients.at(0).name);
 //?       cerr << "AA press: " << Memory[Current_routine->alloc+1] << '\n'; //? 3
       Current_routine->alloc += size_of_event();
@@ -183,7 +182,7 @@ scenario events-in-scenario [
     14 <- 65513  # mouse click
     15 <- 0  # row
     16 <- 1  # column
-    17 <- 0  # 'text' (todo: make this 'keycode')
+    17 <- 1  # 'keycode'
     18 <- 65515  # up arrow
     19 <- 0  # unused
     20 <- 0  # unused
