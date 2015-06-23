@@ -61,7 +61,7 @@ case ASSUME_CONSOLE: {
   for (long long int i = 0; i < SIZE(r.steps); ++i) {
     const instruction& curr = r.steps.at(i);
     if (curr.name == "left-click") {
-      Memory[Current_routine->alloc] = /*tag for 'single-touch-event' variant of 'event' exclusive-container*/2;
+      Memory[Current_routine->alloc] = /*tag for 'touch-event' variant of 'event' exclusive-container*/2;
       Memory[Current_routine->alloc+1+/*offset of 'type' in 'mouse-event'*/0] = TB_KEY_MOUSE_LEFT;
       Memory[Current_routine->alloc+1+/*offset of 'row' in 'mouse-event'*/1] = to_integer(curr.ingredients.at(0).name);
       Memory[Current_routine->alloc+1+/*offset of 'column' in 'mouse-event'*/2] = to_integer(curr.ingredients.at(1).name);
