@@ -46,12 +46,12 @@ ASSUME_CONSOLE,
 Recipe_number["assume-console"] = ASSUME_CONSOLE;
 :(before "End Primitive Recipe Implementations")
 case ASSUME_CONSOLE: {
-//?   cerr << "aaa: " << current_instruction().ingredients.at(0).name << '\n'; //? 1
+//?   cerr << "aaa: " << current_instruction().ingredients.at(0).name << '\n'; //? 2
   // create a temporary recipe just for parsing; it won't contain valid instructions
   istringstream in("[" + current_instruction().ingredients.at(0).name + "]");
   recipe r = slurp_recipe(in);
   long long int num_events = count_events(r);
-//?   cerr << "fff: " << num_events << '\n'; //? 1
+//?   cerr << "fff: " << num_events << '\n'; //? 3
   // initialize the events
   long long int size = num_events*size_of_event() + /*space for length*/1;
   ensure_space(size);
@@ -69,8 +69,10 @@ case ASSUME_CONSOLE: {
       Current_routine->alloc += size_of_event();
     }
     else if (curr.name == "press") {
-      Memory[Current_routine->alloc] = /*tag for 'keycode' variant of 'event' exclusive-container*/1;
+      // todo: use 'keycode' tag to distinguish left-arrow from unicode U+ffeb, etc.
+      Memory[Current_routine->alloc] = /*tag for 'text' variant of 'event' exclusive-container*/0;
       Memory[Current_routine->alloc+1] = to_integer(curr.ingredients.at(0).name);
+//?       cerr << "AA press: " << Memory[Current_routine->alloc+1] << '\n'; //? 3
       Current_routine->alloc += size_of_event();
     }
     // End Event Handlers
@@ -83,11 +85,11 @@ case ASSUME_CONSOLE: {
       long long int curr = 0;
 //?       cerr << "AAA: " << num_keyboard_events << '\n'; //? 1
       for (long long int i = 0; i < num_keyboard_events; ++i) {
-        Memory[Current_routine->alloc] = /*tag for 'keyboard-event' variant of 'event' exclusive-container*/0;
+        Memory[Current_routine->alloc] = /*tag for 'text' variant of 'event' exclusive-container*/0;
         uint32_t curr_character;
         assert(curr < SIZE(contents));
         tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
-//?         cerr << "AA keyboard: " << curr_character << '\n'; //? 2
+//?         cerr << "AA keyboard: " << curr_character << '\n'; //? 3
         Memory[Current_routine->alloc+/*skip exclusive container tag*/1] = curr_character;
         curr += tb_utf8_char_length(raw_contents[curr]);
         Current_routine->alloc += size_of_event();
@@ -111,11 +113,13 @@ long long int count_events(const recipe& r) {
   long long int result = 0;
   for (long long int i = 0; i < SIZE(r.steps); ++i) {
     const instruction& curr = r.steps.at(i);
-//?     cerr << curr.name << '\n'; //? 1
+//?     cerr << "aa: " << curr.name << '\n'; //? 3
+//?     cerr << "bb: " << curr.ingredients.at(0).name << '\n'; //? 1
     if (curr.name == "type")
       result += unicode_length(curr.ingredients.at(0).name);
     else
       result++;
+//?     cerr << "cc: " << result << '\n'; //? 1
   }
   return result;
 }
@@ -179,7 +183,7 @@ scenario events-in-scenario [
     14 <- 65513  # mouse click
     15 <- 0  # row
     16 <- 1  # column
-    17 <- 1  # 'keycode'
+    17 <- 0  # 'text' (todo: make this 'keycode')
     18 <- 65515  # up arrow
     19 <- 0  # unused
     20 <- 0  # unused

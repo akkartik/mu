@@ -6,31 +6,32 @@ recipe main [
   msg:address:array:character <- new [ready! type in an instruction, then hit enter. ctrl-d exits.
 ]
   0:literal/real-screen <- print-string 0:literal/real-screen, msg:address:array:character, 245:literal/grey
-  0:literal/real-keyboard, 0:literal/real-screen <- color-session 0:literal/real-keyboard, 0:literal/real-screen
-#?   wait-for-key-from-keyboard #? 1
+  0:literal/real-console, 0:literal/real-screen <- color-session 0:literal/real-console, 0:literal/real-screen
   close-console
 ]
 
 recipe color-session [
   default-space:address:array:location <- new location:type, 30:literal
-  keyboard:address <- next-ingredient
+  console:address <- next-ingredient
   screen:address <- next-ingredient
   {
-    inst:address:array:character, keyboard:address, screen:address <- read-instruction keyboard:address, screen:address
+    inst:address:array:character, console:address, screen:address <- read-instruction console:address, screen:address
     break-unless inst:address:array:character
     run-interactive inst:address:array:character
     loop
   }
-  reply keyboard:address/same-as-ingredient:0, screen:address/same-as-ingredient:1
+  reply console:address/same-as-ingredient:0, screen:address/same-as-ingredient:1
 ]
 
-# basic keyboard input; just text and enter
+# basic console input; just text and enter
 scenario read-instruction1 [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [x <- copy y
+  assume-console [
+    type [x <- copy y
 ]
+  ]
   run [
-    1:address:array:character <- read-instruction keyboard:address, screen:address
+    1:address:array:character <- read-instruction console:address, screen:address
     2:address:array:character <- new [=> ]
     print-string screen:address, 2:address:array:character
     print-string screen:address, 1:address:array:character
@@ -51,13 +52,13 @@ scenario read-instruction1 [
   ]
 ]
 
-# Read characters as they're typed at the keyboard, print them to the screen,
+# Read characters as they're typed at the console, print them to the screen,
 # accumulate them in a string, return the string at the end.
 # Most of the complexity is for the printing to screen, to highlight strings
 # and comments specially. Especially in the presence of backspacing.
 recipe read-instruction [
   default-space:address:array:location <- new location:type, 60:literal
-  k:address:keyboard <- next-ingredient
+  k:address:console <- next-ingredient
   x:address:screen <- next-ingredient
   result:address:buffer <- new-buffer 10:literal  # string to maybe add to
   trace [app], [read-instruction]
@@ -70,7 +71,7 @@ recipe read-instruction [
   completed?:boolean <- greater-than len:number, 0:literal
   jump-if completed?:boolean, +completed:label
   # Otherwise we're just getting started.
-  result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+  result:address:buffer, k:address:console, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:console, x:address:screen, complete:continuation
 #?   $print [aaa: ], result:address:buffer #? 1
 #?   move-cursor-down-on-display #? 1
   trace [error], [slurp-regular-characters should never return normally]
@@ -79,15 +80,15 @@ recipe read-instruction [
 #?   $print [bbb: ], result2:address:array:character #? 1
 #?   move-cursor-down-on-display #? 1
   trace [app], [exiting read-instruction]
-  reply result2:address:array:character, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+  reply result2:address:array:character, k:address:console/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
 ]
 
-# read characters from the keyboard, print them to the screen in *white*.
+# read characters from the console, print them to the screen in *white*.
 # Transition to other routines for comments and strings.
 recipe slurp-regular-characters [
   default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
-  k:address:keyboard <- next-ingredient
+  k:address:console <- next-ingredient
   x:address:screen <- next-ingredient
   complete:continuation <- next-ingredient
   trace [app], [slurp-regular-characters]
@@ -100,7 +101,8 @@ recipe slurp-regular-characters [
 #? ] #? 1
 #?     move-cursor-down-on-display #? 1
     # read character
-    c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+    c:character, k:address:console found?:boolean <- read-key k:address:console
+    loop-unless found?:boolean +next-character:label
 #?     print-character x:address:screen, c:character #? 1
 #?     move-cursor-down-on-display #? 1
     # quit?
@@ -112,13 +114,13 @@ recipe slurp-regular-characters [
 #?       $print [ctrl-d] #? 1
 #?       move-cursor-down-on-display #? 1
       trace [app], [slurp-regular-characters: ctrl-d]
-      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
       trace [app], [slurp-regular-characters: null]
-      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     # comment?
     {
@@ -126,7 +128,7 @@ recipe slurp-regular-characters [
       break-unless comment?:boolean
       print-character x:address:screen, c:character, 4:literal/blue
       result:address:buffer <- buffer-append result:address:buffer, c:character
-      result:address:buffer, k:address:keyboard, x:address:screen <- slurp-comment result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+      result:address:buffer, k:address:console, x:address:screen <- slurp-comment result:address:buffer, k:address:console, x:address:screen, complete:continuation
       # continue appending to this instruction, whether comment ended or was backspaced out of
       loop +next-character:label
     }
@@ -136,7 +138,7 @@ recipe slurp-regular-characters [
       break-unless string?:boolean
       print-character x:address:screen, c:character, 6:literal/cyan
       result:address:buffer <- buffer-append result:address:buffer, c:character
-      result:address:buffer, _, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+      result:address:buffer, _, k:address:console, x:address:screen <- slurp-string result:address:buffer, k:address:console, x:address:screen, complete:continuation
       loop +next-character:label
     }
     # assignment
@@ -146,7 +148,7 @@ recipe slurp-regular-characters [
       print-character x:address:screen, c:character, 1:literal/red
       trace [app], [start of assignment: <]
       result:address:buffer <- buffer-append result:address:buffer, c:character
-      result:address:buffer, k:address:keyboard, x:address:screen <- slurp-assignment result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+      result:address:buffer, k:address:console, x:address:screen <- slurp-assignment result:address:buffer, k:address:console, x:address:screen, complete:continuation
       loop +next-character:label
     }
     # print
@@ -180,7 +182,7 @@ recipe slurp-regular-characters [
 #?         $print [a6 #? 1
 #? ] #? 1
 #?         move-cursor-down-on-display #? 1
-        reply result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+        reply result:address:buffer, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
       }
       loop +next-character:label
     }
@@ -201,14 +203,14 @@ recipe slurp-regular-characters [
   continue-from complete:continuation
 ]
 
-# read characters from keyboard, print them to screen in the comment color.
+# read characters from console, print them to screen in the comment color.
 #
 # Simpler version of slurp-regular-characters; doesn't handle comments or
 # strings. Tracks an extra count in case we backspace out of it
 recipe slurp-comment [
   default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
-  k:address:keyboard <- next-ingredient
+  k:address:console <- next-ingredient
   x:address:screen <- next-ingredient
   complete:continuation <- next-ingredient
   trace [app], [slurp-comment]
@@ -217,19 +219,20 @@ recipe slurp-comment [
   {
     +next-character
     # read character
-    c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+    c:character, k:address:console, found?:boolean <- read-key k:address:console
+    loop-unless found?:boolean +next-character:label
     # quit?
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
       break-unless ctrl-d?:boolean
       trace [app], [slurp-comment: ctrl-d]
-      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
       trace [app], [slurp-comment: null]
-      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     # print
     print-character x:address:screen, c:character, 4:literal/blue
@@ -244,7 +247,7 @@ recipe slurp-comment [
         reset-color?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
         break-unless reset-color?:boolean
         trace [app], [slurp-comment: too many backspaces; returning]
-        reply result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+        reply result:address:buffer, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
       }
       loop +next-character:label
     }
@@ -259,7 +262,7 @@ recipe slurp-comment [
   continue-from complete:continuation
 ]
 
-# read characters from keyboard, print them to screen in the string color and
+# read characters from console, print them to screen in the string color and
 # accumulate them into a buffer.
 #
 # Version of slurp-regular-characters that:
@@ -269,7 +272,7 @@ recipe slurp-comment [
 recipe slurp-string [
   default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
-  k:address:keyboard <- next-ingredient
+  k:address:console <- next-ingredient
   x:address:screen <- next-ingredient
   complete:continuation <- next-ingredient
   nested-string?:boolean <- next-ingredient
@@ -279,19 +282,20 @@ recipe slurp-string [
   {
     +next-character
     # read character
-    c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+    c:character, k:address:console, found?:boolean <- read-key k:address:console
+    loop-unless found?:boolean +next-character:label
     # quit?
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
       break-unless ctrl-d?:boolean
       trace [app], [slurp-string: ctrl-d]
-      reply 0:literal, 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
       trace [app], [slurp-string: null]
-      reply 0:literal, 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     # string
     {
@@ -301,7 +305,7 @@ recipe slurp-string [
       print-character x:address:screen, c:character, 6:literal/cyan
       result:address:buffer <- buffer-append result:address:buffer, c:character
       # make a recursive call to handle nested strings
-      result:address:buffer, tmp:number, k:address:keyboard, x:address:screen <- slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation, 1:literal/nested?
+      result:address:buffer, tmp:number, k:address:console, x:address:screen <- slurp-string result:address:buffer, k:address:console, x:address:screen, complete:continuation, 1:literal/nested?
       # but if we backspace over a completed nested string, handle it in the caller
       characters-slurped:number <- add characters-slurped:number, tmp:number, 1:literal  # for the leading '['
       loop +next-character:label
@@ -319,7 +323,7 @@ recipe slurp-string [
         reset-color?:boolean <- lesser-or-equal characters-slurped:number, 0:literal
         break-unless reset-color?:boolean
         trace [app], [slurp-string: too many backspaces; returning]
-        reply result:address:buffer/same-as-ingredient:0, 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+        reply result:address:buffer/same-as-ingredient:0, 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
       }
       loop +next-character:label
     }
@@ -333,11 +337,11 @@ recipe slurp-string [
   {
     break-unless nested-string?:boolean
     # nested string? return like a normal recipe
-    reply result:address:buffer, characters-slurped:number, k:address:keyboard, x:address:screen
+    reply result:address:buffer, characters-slurped:number, k:address:console, x:address:screen
   }
   # top-level string call? recurse
   trace [app], [slurp-string: close-bracket encountered; recursing to regular characters]
-  result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+  result:address:buffer, k:address:console, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:console, x:address:screen, complete:continuation
   # backspaced back into this string
   trace [app], [slurp-string: backspaced back into string; restarting]
   jump +next-character:label
@@ -346,25 +350,26 @@ recipe slurp-string [
 recipe slurp-assignment [
   default-space:address:array:location <- new location:type, 30:literal
   result:address:buffer <- next-ingredient
-  k:address:keyboard <- next-ingredient
+  k:address:console <- next-ingredient
   x:address:screen <- next-ingredient
   complete:continuation <- next-ingredient
   {
     +next-character
     # read character
-    c:character, k:address:keyboard <- wait-for-key k:address:keyboard
+    c:character, k:address:console, found?:boolean <- read-key k:address:console
+    loop-unless found?:boolean +next-character:label
     # quit?
     {
       ctrl-d?:boolean <- equal c:character, 4:literal/ctrl-d/eof
       break-unless ctrl-d?:boolean
       trace [app], [slurp-assignment: ctrl-d]
-      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     {
       null?:boolean <- equal c:character, 0:literal/null
       break-unless null?:boolean
       trace [app], [slurp-assignment: null]
-      reply 0:literal, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply 0:literal, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
     # print
     print-character x:address:screen, c:character, 1:literal/red
@@ -376,11 +381,11 @@ recipe slurp-assignment [
       backspace?:boolean <- equal c:character, 8:literal/backspace
       break-unless backspace?:boolean
       trace [app], [slurp-assignment: backspace; returning]
-      reply result:address:buffer/same-as-ingredient:0, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      reply result:address:buffer/same-as-ingredient:0, k:address:console/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
     }
   }
   trace [app], [slurp-assignment: done, recursing to regular characters]
-  result:address:buffer, k:address:keyboard, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+  result:address:buffer, k:address:console, x:address:screen <- slurp-regular-characters result:address:buffer, k:address:console, x:address:screen, complete:continuation
   # backspaced back into this string
   trace [app], [slurp-assignment: backspaced back into assignment; restarting]
   jump +next-character:label
@@ -388,10 +393,11 @@ recipe slurp-assignment [
 
 scenario read-instruction-color-comment [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [# comment
-]
+  assume-console [
+    type [# comment]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color 4:literal/blue, [
     .# comment                     .
@@ -405,11 +411,14 @@ scenario read-instruction-color-comment [
 
 scenario read-instruction-cancel-comment-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [#a««z
-]
-  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  assume-console [
+    type [#a]
+    press 8  # backspace
+    press 8  # backspace
+    type [z]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color 4:literal/blue, [
     .                              .
@@ -423,11 +432,15 @@ scenario read-instruction-cancel-comment-on-backspace [
 
 scenario read-instruction-cancel-comment-on-backspace2 [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [#ab«««z
-]
-  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  assume-console [
+    type [#ab]
+    press 8  # backspace
+    press 8  # backspace
+    press 8  # backspace
+    type [z]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color 4:literal/blue, [
     .                              .
@@ -441,11 +454,13 @@ scenario read-instruction-cancel-comment-on-backspace2 [
 
 scenario read-instruction-cancel-comment-on-backspace3 [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [#a«z
-]
-  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  assume-console [
+    type [#a]
+    press 8  # backspace
+    type [z]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color 4:literal/blue, [
     .#z                            .
@@ -459,13 +474,13 @@ scenario read-instruction-cancel-comment-on-backspace3 [
 
 scenario read-instruction-stop-after-comment [
   assume-screen 30:literal/width, 5:literal/height
-  # keyboard contains comment and then a second line
-  assume-keyboard [#abc
-3
-]
-  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  # console contains comment and then a second line
+  assume-console [
+    type [#abc
+3]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   # check that read-instruction reads just the comment
   screen-should-contain [
@@ -477,10 +492,11 @@ scenario read-instruction-stop-after-comment [
 scenario read-instruction-color-string [
 #?   $start-tracing #? 1
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [abc [string]
-]
+  assume-console [
+    type [abc [string]]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
     .abc [string]                  .
@@ -498,11 +514,12 @@ scenario read-instruction-color-string [
 
 scenario read-instruction-color-string-multiline [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [abc [line1
-line2]
-]
+  assume-console [
+    type [abc [line1
+line2]]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
     .abc [line1                    .
@@ -523,10 +540,11 @@ line2]
 
 scenario read-instruction-color-string-and-comment [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [abc [string]  # comment
-]
+  assume-console [
+    type [abc [string]  # comment]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
     .abc [string]  # comment       .
@@ -548,10 +566,11 @@ scenario read-instruction-color-string-and-comment [
 
 scenario read-instruction-ignore-comment-inside-string [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [abc [string # not a comment]
-]
+  assume-console [
+    type [abc [string # not a comment]]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
     .abc [string # not a comment]  .
@@ -573,10 +592,11 @@ scenario read-instruction-ignore-comment-inside-string [
 
 scenario read-instruction-ignore-string-inside-comment [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [abc # comment [not a string]
-]
+  assume-console [
+    type [abc # comment [not a string]]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
     .abc # comment [not a string]  .
@@ -598,11 +618,12 @@ scenario read-instruction-ignore-string-inside-comment [
 
 scenario read-instruction-color-string-inside-string [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [abc [string [inner string]]
-]
+  assume-console [
+    type [abc [string [inner string]]]
+  ]
   run [
 #?     $start-tracing #? 1
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
 #?     $stop-tracing #? 1
 #?     $browse-trace #? 1
   ]
@@ -622,12 +643,18 @@ scenario read-instruction-color-string-inside-string [
 
 scenario read-instruction-cancel-string-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
-  # need to escape the '[' once for 'scenario' and once for 'assume-keyboard'
-  assume-keyboard [\\\[a««z
-]
-  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  # need to escape the '[' once for 'scenario' and once for 'assume-console'
+  assume-console [
+    type [\\\\\[a]
+    press 8  # backspace
+    type [z]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+#?     d:address:array:event <- get console:address:console/deref, data:offset #? 1
+#?     $print [a: ], d:address:array:event #? 1
+#?     x:number <- length d:address:array:event/deref #? 1
+#?     $print [b: ], x:number #? 1
+    read-instruction console:address:console, screen:address
   ]
   screen-should-contain-in-color 6:literal/cyan, [
     .                              .
@@ -641,11 +668,15 @@ scenario read-instruction-cancel-string-on-backspace [
 
 scenario read-instruction-cancel-string-inside-string-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [[a[b]«««b]
-]
-  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  assume-console [
+    type [\\\\\[a[b]]
+    press 8  # backspace
+    press 8  # backspace
+    press 8  # backspace
+    type [b\\\\\]]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color 6:literal/cyan, [
     .[ab]                          .
@@ -659,11 +690,13 @@ scenario read-instruction-cancel-string-inside-string-on-backspace [
 
 scenario read-instruction-backspace-back-into-string [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [[a]«b
-]
-  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  assume-console [
+    type [[a]]
+    press 8  # backspace
+    type [b]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
     .\\\[ab                           .
@@ -688,10 +721,11 @@ scenario read-instruction-backspace-back-into-string [
 
 scenario read-instruction-highlight-start-of-assignment [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [a <
-]
+  assume-console [
+    type [a <]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
     .a <                           .
@@ -709,10 +743,11 @@ scenario read-instruction-highlight-start-of-assignment [
 
 scenario read-instruction-highlight-assignment [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [a <- b
-]
+  assume-console [
+    type [a <- b]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
     .a <- b                        .
@@ -730,11 +765,12 @@ scenario read-instruction-highlight-assignment [
 
 scenario read-instruction-backspace-over-assignment [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [a <-«
-]
-  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  assume-console [
+    type [a <-]
+    press 8  # backspace
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
     .a <                           .
@@ -752,12 +788,14 @@ scenario read-instruction-backspace-over-assignment [
 
 scenario read-instruction-assignment-continues-after-backspace [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [a <-«-
-]
-  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  assume-console [
+    type [a <-]
+    press 8  # backspace
+    type [-]
+  ]
 #?   $print [aaa] #? 1
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
     .a <-                          .
@@ -775,11 +813,14 @@ scenario read-instruction-assignment-continues-after-backspace [
 
 scenario read-instruction-assignment-continues-after-backspace2 [
   assume-screen 30:literal/width, 5:literal/height
-  assume-keyboard [a <- ««-
-]
-  replace-in-keyboard 171:literal/«, 8:literal/backspace
+  assume-console [
+    type [a <- ]
+    press 8  # backspace
+    press 8  # backspace
+    type [-]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
 #?     $browse-trace #? 1
   ]
   screen-should-contain [
