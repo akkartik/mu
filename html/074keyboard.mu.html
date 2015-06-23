@@ -12,13 +12,13 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
-.Delimiter { color: #c000c0; }
-.Comment { color: #8080ff; }
-.Constant { color: #008080; }
+* { font-size: 1.05em; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
-.muControl { color: #804000; }
+.Comment { color: #9090ff; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -31,76 +31,106 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment"># Wrappers around keyboard primitives that take a 'keyboard' object and are thus</span>
-<span class="Comment"># easier to test.</span>
+<span class="Comment"># Wrappers around interaction primitives that take a potentially fake object</span>
+<span class="Comment"># and are thus easier to test.</span>
 
-<span class="Comment"># display:screen as keyboard:__? Can't think of another word.</span>
-container keyboard [
-  index:number
-  data:address:array:character
+exclusive-container event [
+  text:character
+  keycode:number  <span class="Comment"># keys on keyboard without a unicode representation</span>
+  touch:touch-event  <span class="Comment"># mouse, track ball, etc.</span>
+  <span class="Comment"># update the assume-console handler if you add more variants</span>
 ]
 
-<span class="muRecipe">recipe</span> init-fake-keyboard [
+container touch-event [
+  type:number
+  row:number
+  column:number
+]
+
+container console [
+  index:number
+  data:address:array:event
+]
+
+<span class="muRecipe">recipe</span> new-fake-console [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  result:address:keyboard<span class="Special"> &lt;- </span>new keyboard:type
-  buf:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:keyboard/deref, data:offset
+  result:address:console<span class="Special"> &lt;- </span>new console:type
+  buf:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:console/deref, data:offset
 <span class="CommentedCode">#?   $start-tracing #? 1</span>
   buf:address:address:array:character/deref<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
 <span class="CommentedCode">#?   $stop-tracing #? 1</span>
-  idx:address:number<span class="Special"> &lt;- </span>get-address result:address:keyboard/deref, index:offset
+  idx:address:number<span class="Special"> &lt;- </span>get-address result:address:console/deref, index:offset
   idx:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-  <span class="muControl">reply</span> result:address:keyboard
+  <span class="muControl">reply</span> result:address:console
 ]
 
-<span class="muRecipe">recipe</span> read-key [
+<span class="muRecipe">recipe</span> read-event [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:keyboard<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  x:address:console<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
-    <span class="muControl">break-unless</span> x:address:keyboard
-    idx:address:number<span class="Special"> &lt;- </span>get-address x:address:keyboard/deref, index:offset
-    buf:address:array:character<span class="Special"> &lt;- </span>get x:address:keyboard/deref, data:offset
-    max:number<span class="Special"> &lt;- </span>length buf:address:array:character/deref
+    <span class="muControl">break-unless</span> x:address:console
+    idx:address:number<span class="Special"> &lt;- </span>get-address x:address:console/deref, index:offset
+    buf:address:array:event<span class="Special"> &lt;- </span>get x:address:console/deref, data:offset
     <span class="Delimiter">{</span>
+      max:number<span class="Special"> &lt;- </span>length buf:address:array:event/deref
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal idx:address:number/deref, max:number
       <span class="muControl">break-unless</span> done?:boolean
-      <span class="muControl">reply</span> <span class="Constant">0:literal/eof</span>, <span class="Constant">1:literal/found</span>, x:address:keyboard/same-as-ingredient:0
+      dummy:address:event<span class="Special"> &lt;- </span>new event:type
+      <span class="muControl">reply</span> dummy:address:event/deref, x:address:console/same-as-ingredient:0, <span class="Constant">1:literal/found</span>, <span class="Constant">1:literal/quit</span>
     <span class="Delimiter">}</span>
-    c:character<span class="Special"> &lt;- </span>index buf:address:array:character/deref, idx:address:number/deref
+    result:event<span class="Special"> &lt;- </span>index buf:address:array:event/deref, idx:address:number/deref
     idx:address:number/deref<span class="Special"> &lt;- </span>add idx:address:number/deref, <span class="Constant">1:literal</span>
-    <span class="muControl">reply</span> c:character, <span class="Constant">1:literal/found</span>, x:address:keyboard/same-as-ingredient:0
+    <span class="muControl">reply</span> result:event, x:address:console/same-as-ingredient:0, <span class="Constant">1:literal/found</span>, <span class="Constant">0:literal/quit</span>
   <span class="Delimiter">}</span>
-  <span class="Comment"># real keyboard input is infrequent; avoid polling it too much</span>
+  <span class="Comment"># real event source is infrequent; avoid polling it too much</span>
   switch
-  c:character, found?:boolean<span class="Special"> &lt;- </span>read-key-from-keyboard
-  <span class="muControl">reply</span> c:character, found?:boolean, x:address:keyboard/same-as-ingredient:0
+  result:event, found?:boolean<span class="Special"> &lt;- </span>check-for-interaction
+  <span class="muControl">reply</span> result:event, x:address:console/same-as-ingredient:0, found?:boolean, <span class="Constant">0:literal/quit</span>
 ]
 
-<span class="muRecipe">recipe</span> wait-for-key [
+<span class="Comment"># variant of read-event for just keyboard events. Discards everything that</span>
+<span class="Comment"># isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get</span>
+<span class="Comment"># newlines, tabs, ctrl-d..</span>
+<span class="muRecipe">recipe</span> read-key [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  x:address:keyboard<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="Delimiter">{</span>
-    <span class="muControl">break-unless</span> x:address:keyboard
-    <span class="Comment"># on fake keyboards 'wait-for-key' behaves just like 'read-key'</span>
-    c:character, found?:boolean, x:address:keyboard<span class="Special"> &lt;- </span>read-key x:address:keyboard
-    <span class="muControl">reply</span> c:character, x:address:keyboard/same-as-ingredient:0
-  <span class="Delimiter">}</span>
-  c:character<span class="Special"> &lt;- </span>wait-for-key-from-keyboard
-  <span class="muControl">reply</span> c:character, x:address:keyboard/same-as-ingredient:0
+<span class="CommentedCode">#?   $print default-space:address:array:location #? 1</span>
+<span class="CommentedCode">#?   $exit #? 1</span>
+<span class="CommentedCode">#?   $start-tracing #? 1</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  x:event, console:address, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-event console:address
+<span class="CommentedCode">#?   $print [aaa 1] #? 1</span>
+  <span class="muControl">reply-if</span> quit?:boolean, <span class="Constant">0:literal</span>, console:address/same-as-ingredient:0, found?:boolean, quit?:boolean
+<span class="CommentedCode">#?   $print [aaa 2] #? 1</span>
+  <span class="muControl">reply-unless</span> found?:boolean, <span class="Constant">0:literal</span>, console:address/same-as-ingredient:0, found?:boolean, quit?:boolean
+<span class="CommentedCode">#?   $print [aaa 3] #? 1</span>
+  c:address:character<span class="Special"> &lt;- </span>maybe-convert x:event, text:variant
+  <span class="muControl">reply-unless</span> c:address:character, <span class="Constant">0:literal</span>, console:address/same-as-ingredient:0, <span class="Constant">0:literal/found</span>, <span class="Constant">0:literal/quit</span>
+<span class="CommentedCode">#?   $print [aaa 4] #? 1</span>
+  <span class="muControl">reply</span> c:address:character/deref, console:address/same-as-ingredient:0, <span class="Constant">1:literal/found</span>, <span class="Constant">0:literal/quit</span>
 ]
 
 <span class="muRecipe">recipe</span> send-keys-to-channel [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  keyboard:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
-    c:character, found?:boolean, keyboard:address<span class="Special"> &lt;- </span>read-key keyboard:address
+    c:character, console:address, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-key console:address
     <span class="muControl">loop-unless</span> found?:boolean
-<span class="CommentedCode">#?     print-integer screen:address, c:character #? 1</span>
+    <span class="muControl">break-if</span> quit?:boolean
+    assert c:character, <span class="Constant">[invalid event, expected text]</span>
     print-character screen:address, c:character
     chan:address:channel<span class="Special"> &lt;- </span>write chan:address:channel, c:character
-    <span class="Comment"># todo: eof</span>
     <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> wait-for-event [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    _, console:address, found?:boolean<span class="Special"> &lt;- </span>read-event console:address
+    <span class="muControl">loop-unless</span> found?:boolean
   <span class="Delimiter">}</span>
 ]
 </pre>

@@ -12,14 +12,14 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .muScenario { color: #00af00; }
-.Delimiter { color: #c000c0; }
-.Comment { color: #8080ff; }
-.Constant { color: #008080; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
-.muControl { color: #804000; }
+.Comment { color: #9090ff; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -48,7 +48,7 @@ container screen-cell [
   color:number
 ]
 
-<span class="muRecipe">recipe</span> init-fake-screen [
+<span class="muRecipe">recipe</span> new-fake-screen [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal/capacity</span>
   result:address:screen<span class="Special"> &lt;- </span>new screen:type
   width:address:number<span class="Special"> &lt;- </span>get-address result:address:screen/deref, num-columns:offset
@@ -119,7 +119,6 @@ container screen-cell [
     column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
     width:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
     height:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-rows:offset
-    max-row:number<span class="Special"> &lt;- </span>subtract height:number, <span class="Constant">1:literal</span>
     <span class="Comment"># special-case: newline</span>
     <span class="Delimiter">{</span>
       newline?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
@@ -128,7 +127,8 @@ container screen-cell [
       <span class="muControl">break-unless</span> newline?:boolean
       <span class="Delimiter">{</span>
         <span class="Comment"># unless cursor is already at bottom</span>
-        at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:address:number/deref, max-row:number
+        bottom:number<span class="Special"> &lt;- </span>subtract height:number, <span class="Constant">1:literal</span>
+        at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:address:number/deref, bottom:number
         <span class="muControl">break-if</span> at-bottom?:boolean
         <span class="Comment"># move it to the next row</span>
         column:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
@@ -137,6 +137,8 @@ container screen-cell [
       <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
     <span class="Delimiter">}</span>
     <span class="Comment"># save character in fake screen</span>
+<span class="CommentedCode">#?     $print row:address:number/deref, [, ], column:address:number/deref, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
     index:number<span class="Special"> &lt;- </span>multiply row:address:number/deref, width:number
     index:number<span class="Special"> &lt;- </span>add index:number, column:address:number/deref
     buf:address:array:screen-cell<span class="Special"> &lt;- </span>get x:address:screen/deref, data:offset
@@ -168,7 +170,8 @@ container screen-cell [
     cursor-color:address:number/deref<span class="Special"> &lt;- </span>copy color:number
     <span class="Comment"># increment column unless it's already all the way to the right</span>
     <span class="Delimiter">{</span>
-      at-right?:boolean<span class="Special"> &lt;- </span>equal column:address:number/deref, width:number
+      right:number<span class="Special"> &lt;- </span>subtract width:number, <span class="Constant">1:literal</span>
+      at-right?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:number/deref, right:number
       <span class="muControl">break-if</span> at-right?:boolean
       column:address:number/deref<span class="Special"> &lt;- </span>add column:address:number/deref, <span class="Constant">1:literal</span>
     <span class="Delimiter">}</span>
@@ -182,7 +185,7 @@ container screen-cell [
 <span class="muScenario">scenario</span> print-character-at-top-left [
   run [
 <span class="CommentedCode">#?     $start-tracing #? 3</span>
-    1:address:screen<span class="Special"> &lt;- </span>init-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
+    1:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
     2:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
     3:array:screen-cell<span class="Special"> &lt;- </span>copy 2:address:array:screen-cell/deref
@@ -197,7 +200,7 @@ container screen-cell [
 
 <span class="muScenario">scenario</span> print-character-color [
   run [
-    1:address:screen<span class="Special"> &lt;- </span>init-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
+    1:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal/a</span>, <span class="Constant">1:literal/red</span>
     2:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
     3:array:screen-cell<span class="Special"> &lt;- </span>copy 2:address:array:screen-cell/deref
@@ -213,7 +216,7 @@ container screen-cell [
 <span class="muScenario">scenario</span> print-backspace-character [
   run [
 <span class="CommentedCode">#?     $start-tracing #? 3</span>
-    1:address:screen<span class="Special"> &lt;- </span>init-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
+    1:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">8:literal</span>  <span class="Comment"># backspace</span>
     2:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-column:offset
@@ -229,10 +232,50 @@ container screen-cell [
   ]
 ]
 
+<span class="muScenario">scenario</span> print-extra-backspace-character [
+  run [
+    1:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">8:literal</span>  <span class="Comment"># backspace</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">8:literal</span>  <span class="Comment"># backspace</span>
+    2:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-column:offset
+    3:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    4:array:screen-cell<span class="Special"> &lt;- </span>copy 3:address:array:screen-cell/deref
+  ]
+  memory-should-contain [
+    2<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor column</span>
+    4<span class="Special"> &lt;- </span>6  <span class="Comment"># width*height</span>
+    5<span class="Special"> &lt;- </span>32  <span class="Comment"># space, not 'a'</span>
+    6<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    7<span class="Special"> &lt;- </span>0
+  ]
+]
+
+<span class="muScenario">scenario</span> print-at-right-margin [
+  run [
+    1:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">2:literal/width</span>, <span class="Constant">2:literal/height</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">98:literal</span>  <span class="Comment"># 'b'</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">99:literal</span>  <span class="Comment"># 'c'</span>
+    2:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-column:offset
+    3:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    4:array:screen-cell<span class="Special"> &lt;- </span>copy 3:address:array:screen-cell/deref
+  ]
+  memory-should-contain [
+    2<span class="Special"> &lt;- </span>1  <span class="Comment"># cursor column</span>
+    4<span class="Special"> &lt;- </span>4  <span class="Comment"># width*height</span>
+    5<span class="Special"> &lt;- </span>97  <span class="Comment"># 'a'</span>
+    6<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    7<span class="Special"> &lt;- </span>99  <span class="Comment"># 'c' over 'b'</span>
+    8<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    9<span class="Special"> &lt;- </span>0
+  ]
+]
+
 <span class="muScenario">scenario</span> print-newline-character [
   run [
 <span class="CommentedCode">#?     $start-tracing #? 3</span>
-    1:address:screen<span class="Special"> &lt;- </span>init-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
+    1:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">10:literal/newline</span>
     2:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-row:offset
@@ -250,13 +293,58 @@ container screen-cell [
   ]
 ]
 
+<span class="muScenario">scenario</span> print-newline-at-bottom-line [
+  run [
+    1:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">10:literal/newline</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">10:literal/newline</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">10:literal/newline</span>
+    2:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-row:offset
+    3:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    2<span class="Special"> &lt;- </span>1  <span class="Comment"># cursor row</span>
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor column</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> print-at-bottom-right [
+  run [
+    1:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">2:literal/width</span>, <span class="Constant">2:literal/height</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">10:literal/newline</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">98:literal</span>  <span class="Comment"># 'b'</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">99:literal</span>  <span class="Comment"># 'c'</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">10:literal/newline</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">100:literal</span>  <span class="Comment"># 'd'</span>
+    2:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-row:offset
+    3:number<span class="Special"> &lt;- </span>get 1:address:screen/deref, cursor-column:offset
+    4:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    5:array:screen-cell<span class="Special"> &lt;- </span>copy 4:address:array:screen-cell/deref
+  ]
+  memory-should-contain [
+    2<span class="Special"> &lt;- </span>1  <span class="Comment"># cursor row</span>
+    3<span class="Special"> &lt;- </span>1  <span class="Comment"># cursor column</span>
+    5<span class="Special"> &lt;- </span>4  <span class="Comment"># width*height</span>
+    6<span class="Special"> &lt;- </span>0  <span class="Comment"># unused</span>
+    7<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    8<span class="Special"> &lt;- </span>0  <span class="Comment"># unused</span>
+    9<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    10<span class="Special"> &lt;- </span>97 <span class="Comment"># 'a'</span>
+    11<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    12<span class="Special"> &lt;- </span>100  <span class="Comment"># 'd' over 'b' and 'c' and newline</span>
+    13<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    14<span class="Special"> &lt;- </span>0
+  ]
+]
+
 <span class="muRecipe">recipe</span> clear-line [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, clear line in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> x:address:screen
-    n:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
+    width:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
     column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
     original-column:number<span class="Special"> &lt;- </span>copy column:address:number/deref
     <span class="Comment"># space over the entire line</span>
@@ -264,7 +352,8 @@ container screen-cell [
     <span class="Delimiter">{</span>
 <span class="CommentedCode">#?       $print column:address:number/deref, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
-      done?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:number/deref, n:number
+      right:number<span class="Special"> &lt;- </span>subtract width:number, <span class="Constant">1:literal</span>
+      done?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:number/deref, right:number
       <span class="muControl">break-if</span> done?:boolean
       print-character x:address:screen, <span class="Constant">[ ]</span>  <span class="Comment"># implicitly updates 'column'</span>
       <span class="muControl">loop</span>
@@ -314,7 +403,7 @@ container screen-cell [
 <span class="muScenario">scenario</span> clear-line-erases-printed-characters [
   run [
 <span class="CommentedCode">#?     $start-tracing #? 4</span>
-    1:address:screen<span class="Special"> &lt;- </span>init-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
+    1:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
     <span class="Comment"># print a character</span>
     1:address:screen<span class="Special"> &lt;- </span>print-character 1:address:screen, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
     <span class="Comment"># move cursor to start of line</span>
@@ -499,6 +588,26 @@ container screen-cell [
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
+]
+
+<span class="muScenario">scenario</span> print-string-stops-at-right-margin [
+  run [
+    1:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3:literal/width</span>, <span class="Constant">2:literal/height</span>
+    2:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
+    1:address:screen<span class="Special"> &lt;- </span>print-string 1:address:screen, 2:address:array:character
+    3:address:array:screen-cell<span class="Special"> &lt;- </span>get 1:address:screen/deref, data:offset
+    4:array:screen-cell<span class="Special"> &lt;- </span>copy 3:address:array:screen-cell/deref
+  ]
+  memory-should-contain [
+    4<span class="Special"> &lt;- </span>6  <span class="Comment"># width*height</span>
+    5<span class="Special"> &lt;- </span>97  <span class="Comment"># 'a'</span>
+    6<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    7<span class="Special"> &lt;- </span>98  <span class="Comment"># 'b'</span>
+    8<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    9<span class="Special"> &lt;- </span>100  <span class="Comment"># 'd' overwrites 'c'</span>
+    10<span class="Special"> &lt;- </span>7  <span class="Comment"># white</span>
+    11<span class="Special"> &lt;- </span>0  <span class="Comment"># unused</span>
+  ]
 ]
 
 <span class="muRecipe">recipe</span> print-integer [

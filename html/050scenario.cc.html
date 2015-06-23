@@ -12,16 +12,16 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Constant { color: #008080; }
+.Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
 .traceAbsent { color: #c00000; }
-.Comment { color: #8080ff; }
-.Delimiter { color: #c000c0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
+.Comment { color: #9090ff; }
 .Identifier { color: #804000; }
 -->
 </style>
@@ -110,11 +110,18 @@ scenario parse_scenario<span class="Delimiter">(</span>istream&amp; in<span clas
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;parse scenario\n&quot;; //? 1</span>
   scenario result<span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;scenario: &quot; &lt;&lt; result.name &lt;&lt; '\n'; //? 2</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>
   <span class="Comment">// scenarios are take special 'code' strings so we need to ignore brackets</span>
   <span class="Comment">// inside comments</span>
-  result<span class="Delimiter">.</span>to_run = slurp_quoted_ignoring_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  result<span class="Delimiter">.</span>to_run = slurp_quoted<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Comment">// delete [] delimiters</span>
+  assert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>
+  result<span class="Delimiter">.</span>to_run<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; (int)result.to_run.at(SIZE(result.to_run)-1) &lt;&lt; '\n'; //? 1</span>
+  assert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">.</span>at<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">)</span> == <span class="Constant">']'</span><span class="Delimiter">);</span>
+  result<span class="Delimiter">.</span>to_run<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -161,13 +168,16 @@ const scenario* Current_scenario = <span class="Constant">NULL</span><span class
 void run_mu_scenario<span class="Delimiter">(</span>const scenario&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Current_scenario = &amp;s<span class="Delimiter">;</span>
   bool not_already_inside_test = !Trace_stream<span class="Delimiter">;</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; s.name &lt;&lt; '\n'; //? 4</span>
   if <span class="Delimiter">(</span>not_already_inside_test<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Trace_file = s<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
     Trace_stream = new trace_stream<span class="Delimiter">;</span>
     setup<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; '^' &lt;&lt; s.to_run &lt;&lt; &quot;$\n&quot;; //? 1</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; '^' &lt;&lt; s.to_run &lt;&lt; &quot;$\n&quot;; //? 4</span>
+  assert<span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;recipe &quot;</span>+s<span class="Delimiter">.</span>name+<span class="Constant">&quot; [ &quot;</span> + s<span class="Delimiter">.</span>to_run + <span class="Constant">&quot; ]&quot;</span><span class="Delimiter">);</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; s.name &lt;&lt; &quot; done\n&quot;; //? 1</span>
   if <span class="Delimiter">(</span>not_already_inside_test &amp;&amp; Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     teardown<span class="Delimiter">();</span>
     ofstream fout<span class="Delimiter">((</span>Trace_dir+Trace_file<span class="Delimiter">).</span>c_str<span class="Delimiter">());</span>
@@ -556,36 +566,6 @@ void run_mu_scenario<span class="Delimiter">(</span>const string&amp; form<span 
   assert<span class="Delimiter">(</span>_scenario == <span class="Constant">&quot;scenario&quot;</span><span class="Delimiter">);</span>
   scenario s = parse_scenario<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   run_mu_scenario<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-string slurp_quoted_ignoring_comments<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>  <span class="Comment">// drop initial '['</span>
-  char c<span class="Delimiter">;</span>
-  ostringstream out<span class="Delimiter">;</span>
-  while <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; c &lt;&lt; '\n'; //? 3</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Comment">// skip comment</span>
-      in<span class="Delimiter">.</span>putback<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
-      skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Comment">// nested strings won't detect comments</span>
-      <span class="Comment">// can't yet handle scenarios inside strings inside scenarios..</span>
-      in<span class="Delimiter">.</span>putback<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
-      out &lt;&lt; slurp_quoted<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; &quot;snapshot: ^&quot; &lt;&lt; out.str() &lt;&lt; &quot;$\n&quot;; //? 1</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>c == <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Comment">// must be at the outermost level; drop final ']'</span>
-      <span class="Identifier">break</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    out &lt;&lt; c<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;done\n&quot;; //? 2</span>
-  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>

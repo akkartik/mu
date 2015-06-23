@@ -12,15 +12,15 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Constant { color: #008080; }
-.Comment { color: #8080ff; }
-.Delimiter { color: #c000c0; }
+.Constant { color: #00a0a0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
+.Comment { color: #9090ff; }
 .Identifier { color: #804000; }
-.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -44,13 +44,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc def]  <span class="Comment"># copy can't really take a string</span>
 ]
-<span class="traceContains">+parse:   ingredient: {name: &quot;abc def&quot;, properties: [&quot;abc def&quot;: &quot;literal-string&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;abc def&quot;, properties: [_: &quot;literal-string&quot;]}</span>
 
 <span class="Delimiter">:(scenario string_literal_with_colons)</span>
 recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc:def/ghi]
 ]
-<span class="traceContains">+parse:   ingredient: {name: &quot;abc:def/ghi&quot;, properties: [&quot;abc:def/ghi&quot;: &quot;literal-string&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;abc:def/ghi&quot;, properties: [_: &quot;literal-string&quot;]}</span>
 
 <span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
 Type_number[<span class="Constant">&quot;literal-string&quot;</span>] = <span class="Constant">0</span><span class="Delimiter">;</span>
@@ -60,20 +60,51 @@ Type_number[<span class="Constant">&quot;literal-string&quot;</span>] = <span cl
     string result = slurp_quoted<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; '^' &lt;&lt; result &lt;&lt; &quot;$\n&quot;; //? 1</span>
     <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
 string slurp_quoted<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">());</span>
-  assert<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>
   ostringstream out<span class="Delimiter">;</span>
-  int brace_depth = <span class="Constant">0</span><span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">());</span>  assert<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>  out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>  <span class="Comment">// slurp the '['</span>
+  if <span class="Delimiter">(</span>code_string<span class="Delimiter">(</span>in<span class="Delimiter">,</span> out<span class="Delimiter">))</span>
+    slurp_quoted_comment_aware<span class="Delimiter">(</span>in<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  else
+    slurp_quoted_comment_oblivious<span class="Delimiter">(</span>in<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// A string is a code string if it contains a newline before any non-whitespace</span>
+<span class="Comment">// todo: support comments before the newline. But that gets messy.</span>
+bool code_string<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostringstream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     char c = in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    if <span class="Delimiter">(</span>!isspace<span class="Delimiter">(</span>c<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      in<span class="Delimiter">.</span>putback<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; &quot;code_string: &quot; &lt;&lt; out.str() &lt;&lt; '\n'; //? 1</span>
+      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    out &lt;&lt; c<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>c == <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; &quot;code_string: &quot; &lt;&lt; out.str() &lt;&lt; '\n'; //? 1</span>
+      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// Read a regular string. Regular strings can only contain other regular</span>
+<span class="Comment">// strings.</span>
+void slurp_quoted_comment_oblivious<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostringstream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;comment oblivious\n&quot;; //? 1</span>
+  int brace_depth = <span class="Constant">1</span><span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    char c = in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; '%' &lt;&lt; (int)c &lt;&lt; ' ' &lt;&lt; brace_depth &lt;&lt; &quot;: &quot; &lt;&lt; out.str() &lt;&lt; &quot;%$\n&quot;; //? 1</span>
 <span class="CommentedCode">//?     cout &lt;&lt; (int)c &lt;&lt; &quot;: &quot; &lt;&lt; brace_depth &lt;&lt; '\n'; //? 2</span>
     if <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      out &lt;&lt; <span class="Delimiter">(</span>char<span class="Delimiter">)</span>in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+      out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     out &lt;&lt; c<span class="Delimiter">;</span>
@@ -84,9 +115,36 @@ string slurp_quoted<span class="Delimiter">(</span>istream&amp; in<span class="D
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">()</span> &amp;&amp; brace_depth &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;unbalanced '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-    <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+    out<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// Read a code string. Code strings can contain either code or regular strings.</span>
+void slurp_quoted_comment_aware<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostringstream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;comment aware\n&quot;; //? 1</span>
+  char c<span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; '^' &lt;&lt; (int)c &lt;&lt; &quot;: &quot; &lt;&lt; out.str() &lt;&lt; &quot;$\n&quot;; //? 1</span>
+    if <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    if <span class="Delimiter">(</span>c == <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      out &lt;&lt; c<span class="Delimiter">;</span>
+      while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">()</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> out &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    if <span class="Delimiter">(</span>c == <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      in<span class="Delimiter">.</span>putback<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
+      <span class="Comment">// recurse</span>
+      out &lt;&lt; slurp_quoted<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    out &lt;&lt; c<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>c == <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  raise &lt;&lt; <span class="Constant">&quot;unbalanced '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  out<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(after &quot;reagent::reagent(string s)&quot;)</span>
@@ -95,7 +153,7 @@ string slurp_quoted<span class="Delimiter">(</span>istream&amp; in<span class="D
     assert<span class="Delimiter">(</span>*s<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">']'</span><span class="Delimiter">);</span>
     <span class="Comment">// delete [] delimiters</span>
     s<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
-    s<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>s<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">,</span> SIZE<span class="Delimiter">(</span>s<span class="Delimiter">));</span>
+    s<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>s<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
     name = s<span class="Delimiter">;</span>
     types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> vector&lt;string&gt; &gt;<span class="Delimiter">(</span>name<span class="Delimiter">,</span> vector&lt;string&gt;<span class="Delimiter">()));</span>
@@ -103,27 +161,81 @@ string slurp_quoted<span class="Delimiter">(</span>istream&amp; in<span class="D
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
+<span class="Comment">//: Two tweaks to printing literal strings compared to other reagents:</span>
+<span class="Comment">//:   a) Don't print the string twice in the representation, just put '_' in</span>
+<span class="Comment">//:   the property list.</span>
+<span class="Comment">//:   b) Escape newlines in the string to make it more friendly to trace().</span>
+
+<span class="Delimiter">:(after &quot;string reagent::to_string()&quot;)</span>
+  if <span class="Delimiter">(</span>!properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Identifier">return</span> emit_literal_string<span class="Delimiter">(</span>name<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+string emit_literal_string<span class="Delimiter">(</span>string name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  size_t pos = <span class="Constant">0</span><span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>pos != string::npos<span class="Delimiter">)</span>
+    pos = replace<span class="Delimiter">(</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;</span><span class="cSpecial">\\</span><span class="Constant">n&quot;</span><span class="Delimiter">,</span> pos<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> <span class="Constant">&quot;{name: </span><span class="cSpecial">\&quot;</span><span class="Constant">&quot;</span>+name+<span class="Constant">&quot;</span><span class="cSpecial">\&quot;</span><span class="Constant">, properties: [_: </span><span class="cSpecial">\&quot;</span><span class="Constant">literal-string</span><span class="cSpecial">\&quot;</span><span class="Constant">]}&quot;</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+size_t replace<span class="Delimiter">(</span>string&amp; str<span class="Delimiter">,</span> const string&amp; from<span class="Delimiter">,</span> const string&amp; to<span class="Delimiter">,</span> size_t n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  size_t result = str<span class="Delimiter">.</span>find<span class="Delimiter">(</span>from<span class="Delimiter">,</span> n<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>result != string::npos<span class="Delimiter">)</span>
+    str<span class="Delimiter">.</span>replace<span class="Delimiter">(</span>result<span class="Delimiter">,</span> from<span class="Delimiter">.</span>length<span class="Delimiter">(),</span> to<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
 <span class="Delimiter">:(scenario string_literal_nested)</span>
 recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc [def]]
 ]
-<span class="traceContains">+parse:   ingredient: {name: &quot;abc [def]&quot;, properties: [&quot;abc [def]&quot;: &quot;literal-string&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;abc [def]&quot;, properties: [_: &quot;literal-string&quot;]}</span>
 
 <span class="Delimiter">:(scenario string_literal_escaped)</span>
 recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc \[def]
 ]
-<span class="traceContains">+parse:   ingredient: {name: &quot;abc [def&quot;, properties: [&quot;abc [def&quot;: &quot;literal-string&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;abc [def&quot;, properties: [_: &quot;literal-string&quot;]}</span>
+
+<span class="Delimiter">:(scenario string_literal_escaped_comment_aware)</span>
+recipe main [
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [
+abc \\\[def]
+]
+<span class="traceContains">+parse:   ingredient: {name: &quot;\nabc \[def&quot;, properties: [_: &quot;literal-string&quot;]}</span>
 
 <span class="Delimiter">:(scenario string_literal_and_comment)</span>
 recipe main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc]  <span class="Comment"># comment</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
-<span class="traceContains">+parse:   ingredient: {name: &quot;abc&quot;, properties: [&quot;abc&quot;: &quot;literal-string&quot;]}</span>
+<span class="traceContains">+parse:   ingredient: {name: &quot;abc&quot;, properties: [_: &quot;literal-string&quot;]}</span>
 <span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;address&quot;:&quot;array&quot;:&quot;character&quot;]}</span>
 <span class="Comment"># no other ingredients</span>
 $parse: <span class="Constant">3</span>
+
+<span class="Delimiter">:(scenario string_literal_escapes_newlines_in_trace)</span>
+recipe main [
+  copy [abc
+def]
+]
+<span class="traceContains">+parse:   ingredient: {name: &quot;abc\ndef&quot;, properties: [_: &quot;literal-string&quot;]}</span>
+
+<span class="Delimiter">:(scenario string_literal_can_skip_past_comments)</span>
+recipe main [
+  copy [
+    <span class="Comment"># ']' inside comment</span>
+    bar
+  ]
+]
+<span class="traceContains">+parse:   ingredient: {name: &quot;\n    # ']' inside comment\n    bar\n  &quot;, properties: [_: &quot;literal-string&quot;]}</span>
+
+<span class="Delimiter">:(scenario string_literal_empty)</span>
+recipe main [
+  copy []
+]
+<span class="traceContains">+parse:   ingredient: {name: &quot;&quot;, properties: [_: &quot;literal-string&quot;]}</span>
 </pre>
 </body>
 </html>

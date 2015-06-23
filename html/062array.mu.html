@@ -12,13 +12,13 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .muScenario { color: #00af00; }
-.Delimiter { color: #c000c0; }
-.Comment { color: #8080ff; }
-.Constant { color: #008080; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.muControl { color: #804000; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -33,7 +33,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <pre id='vimCodeElement'>
 <span class="muScenario">scenario</span> array-from-args [
   run [
-    1:address:array:location<span class="Special"> &lt;- </span>init-array <span class="Constant">0:literal</span>, <span class="Constant">1:literal</span>, <span class="Constant">2:literal</span>
+    1:address:array:location<span class="Special"> &lt;- </span>new-array <span class="Constant">0:literal</span>, <span class="Constant">1:literal</span>, <span class="Constant">2:literal</span>
     2:array:location<span class="Special"> &lt;- </span>copy 1:address:array:location/deref
   ]
   memory-should-contain [
@@ -45,7 +45,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="Comment"># create an array out of a list of scalar args</span>
-<span class="muRecipe">recipe</span> init-array [
+<span class="muRecipe">recipe</span> new-array [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   capacity:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">{</span>
@@ -63,7 +63,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, capacity:number
     <span class="muControl">break-if</span> done?:boolean
     curr-value:location, exists?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-    assert exists?:boolean, <span class="Constant">[error in rewinding ingredients to init-array]</span>
+    assert exists?:boolean, <span class="Constant">[error in rewinding ingredients to new-array]</span>
     tmp:address:location<span class="Special"> &lt;- </span>index-address result:address:array:location/deref, i:number
     tmp:address:location/deref<span class="Special"> &lt;- </span>copy curr-value:location
     i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>

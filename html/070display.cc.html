@@ -12,14 +12,13 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .cSpecial { color: #008000; }
-.Constant { color: #008080; }
-.PreProc { color: #c000c0; }
-.Comment { color: #8080ff; }
-.Delimiter { color: #c000c0; }
+.Constant { color: #00a0a0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
 .SalientComment { color: #00ffff; }
-.CommentedCode { color: #6c6c6c; }
+.Comment { color: #9090ff; }
 .Identifier { color: #804000; }
 -->
 </style>
@@ -32,10 +31,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment">//: Take charge of the text-mode display and keyboard.</span>
+<span class="Comment">//: Take charge of the text-mode display and console.</span>
 
-<span class="Comment">// uncomment to debug console programs</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Comment">// uncomment to debug console programs</span>
 <span class="CommentedCode">//? ofstream LOG(&quot;log.txt&quot;);</span>
 
 <span class="SalientComment">//:: Display management</span>
@@ -44,23 +43,23 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 long long int Display_row = <span class="Constant">0</span><span class="Delimiter">,</span> Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-SWITCH_TO_DISPLAY<span class="Delimiter">,</span>
+OPEN_CONSOLE<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;switch-to-display&quot;</span>] = SWITCH_TO_DISPLAY<span class="Delimiter">;</span>
-<span class="CommentedCode">//? cerr &lt;&lt; &quot;switch-to-display: &quot; &lt;&lt; SWITCH_TO_DISPLAY &lt;&lt; '\n'; //? 1</span>
+Recipe_number[<span class="Constant">&quot;open-console&quot;</span>] = OPEN_CONSOLE<span class="Delimiter">;</span>
+<span class="CommentedCode">//? cerr &lt;&lt; &quot;open-console: &quot; &lt;&lt; OPEN_CONSOLE &lt;&lt; '\n'; //? 1</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case SWITCH_TO_DISPLAY: <span class="Delimiter">{</span>
+case OPEN_CONSOLE: <span class="Delimiter">{</span>
   tb_init<span class="Delimiter">();</span>
   Display_row = Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-RETURN_TO_CONSOLE<span class="Delimiter">,</span>
+CLOSE_CONSOLE<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;return-to-console&quot;</span>] = RETURN_TO_CONSOLE<span class="Delimiter">;</span>
+Recipe_number[<span class="Constant">&quot;close-console&quot;</span>] = CLOSE_CONSOLE<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case RETURN_TO_CONSOLE: <span class="Delimiter">{</span>
+case CLOSE_CONSOLE: <span class="Delimiter">{</span>
   tb_shutdown<span class="Delimiter">();</span>
 <span class="CommentedCode">//?   Trace_stream-&gt;dump_layer = &quot;all&quot;; //? 1</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -253,53 +252,73 @@ case DISPLAY_HEIGHT: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="SalientComment">//:: Keyboard management</span>
+<span class="SalientComment">//:: Keyboard/mouse management</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-WAIT_FOR_KEY_FROM_KEYBOARD<span class="Delimiter">,</span>
+WAIT_FOR_SOME_INTERACTION<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;wait-for-key-from-keyboard&quot;</span>] = WAIT_FOR_KEY_FROM_KEYBOARD<span class="Delimiter">;</span>
+Recipe_number[<span class="Constant">&quot;wait-for-some-interaction&quot;</span>] = WAIT_FOR_SOME_INTERACTION<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case WAIT_FOR_KEY_FROM_KEYBOARD: <span class="Delimiter">{</span>
+case WAIT_FOR_SOME_INTERACTION: <span class="Delimiter">{</span>
   tb_event event<span class="Delimiter">;</span>
-  do <span class="Delimiter">{</span>
-    tb_poll_event<span class="Delimiter">(</span>&amp;event<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span> while <span class="Delimiter">(</span>event<span class="Delimiter">.</span>type != TB_EVENT_KEY<span class="Delimiter">);</span>
-  long long int result = event<span class="Delimiter">.</span>key ? event<span class="Delimiter">.</span>key : event<span class="Delimiter">.</span>ch<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>result == TB_KEY_CTRL_C<span class="Delimiter">)</span> tb_shutdown<span class="Delimiter">(),</span> exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  if <span class="Delimiter">(</span>result == TB_KEY_BACKSPACE2<span class="Delimiter">)</span> result = TB_KEY_BACKSPACE<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>result == TB_KEY_CARRIAGE_RETURN<span class="Delimiter">)</span> result = TB_KEY_NEWLINE<span class="Delimiter">;</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+  tb_poll_event<span class="Delimiter">(</span>&amp;event<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-READ_KEY_FROM_KEYBOARD<span class="Delimiter">,</span>
+CHECK_FOR_INTERACTION<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;read-key-from-keyboard&quot;</span>] = READ_KEY_FROM_KEYBOARD<span class="Delimiter">;</span>
+Recipe_number[<span class="Constant">&quot;check-for-interaction&quot;</span>] = CHECK_FOR_INTERACTION<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case READ_KEY_FROM_KEYBOARD: <span class="Delimiter">{</span>
+case CHECK_FOR_INTERACTION: <span class="Delimiter">{</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">// result and status</span>
   tb_event event<span class="Delimiter">;</span>
   int event_type = tb_peek_event<span class="Delimiter">(</span>&amp;event<span class="Delimiter">,</span> <span class="Constant">5</span><span class="Comment">/*</span><span class="Comment">ms</span><span class="Comment">*/</span><span class="Delimiter">);</span>
-  long long int result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  long long int found = <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; event_type &lt;&lt; '\n'; //? 1</span>
-  if <span class="Delimiter">(</span>event_type == TB_EVENT_KEY<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    result = event<span class="Delimiter">.</span>key ? event<span class="Delimiter">.</span>key : event<span class="Delimiter">.</span>ch<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>result == TB_KEY_CTRL_C<span class="Delimiter">)</span> tb_shutdown<span class="Delimiter">(),</span> exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>result == TB_KEY_BACKSPACE2<span class="Delimiter">)</span> result = TB_KEY_BACKSPACE<span class="Delimiter">;</span>
-    if <span class="Delimiter">(</span>result == TB_KEY_CARRIAGE_RETURN<span class="Delimiter">)</span> result = TB_KEY_NEWLINE<span class="Delimiter">;</span>
-    found = <span class="Constant">true</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>event_type == TB_EVENT_KEY &amp;&amp; event<span class="Delimiter">.</span>ch<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">text event</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>event<span class="Delimiter">.</span>ch<span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">found</span><span class="Comment">*/</span><span class="Constant">true</span><span class="Delimiter">);</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>found<span class="Delimiter">);</span>
+  <span class="Comment">// treat keys within ascii as unicode characters</span>
+  if <span class="Delimiter">(</span>event_type == TB_EVENT_KEY &amp;&amp; event<span class="Delimiter">.</span>key &lt; <span class="Constant">0xff</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">text event</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>event<span class="Delimiter">.</span>key == TB_KEY_CTRL_C<span class="Delimiter">)</span> tb_shutdown<span class="Delimiter">(),</span> exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>event<span class="Delimiter">.</span>key == TB_KEY_BACKSPACE2<span class="Delimiter">)</span> event<span class="Delimiter">.</span>key = TB_KEY_BACKSPACE<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>event<span class="Delimiter">.</span>key == TB_KEY_CARRIAGE_RETURN<span class="Delimiter">)</span> event<span class="Delimiter">.</span>key = TB_KEY_NEWLINE<span class="Delimiter">;</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>event<span class="Delimiter">.</span>key<span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">found</span><span class="Comment">*/</span><span class="Constant">true</span><span class="Delimiter">);</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// keys outside ascii aren't unicode characters but arbitrary termbox inventions</span>
+  if <span class="Delimiter">(</span>event_type == TB_EVENT_KEY<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">keycode event</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>event<span class="Delimiter">.</span>key<span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">found</span><span class="Comment">*/</span><span class="Constant">true</span><span class="Delimiter">);</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>event_type == TB_EVENT_MOUSE<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">mouse event</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>event<span class="Delimiter">.</span>key<span class="Delimiter">);</span>  <span class="Comment">// which button, etc.</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>event<span class="Delimiter">.</span>y<span class="Delimiter">);</span>  <span class="Comment">// row</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>event<span class="Delimiter">.</span>x<span class="Delimiter">);</span>  <span class="Comment">// column</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">found</span><span class="Comment">*/</span><span class="Constant">true</span><span class="Delimiter">);</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// ignore TB_EVENT_RESIZE events for now</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">found</span><span class="Comment">*/</span><span class="Constant">false</span><span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span class="PreProc">#include</span><span class="Constant">&quot;termbox/termbox.h&quot;</span>
 </pre>
 </body>
 </html>

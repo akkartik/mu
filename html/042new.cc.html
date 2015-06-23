@@ -12,16 +12,15 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Constant { color: #008080; }
+.Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
-.Comment { color: #8080ff; }
-.Delimiter { color: #c000c0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
-.PreProc { color: #c000c0; }
+.Comment { color: #9090ff; }
 .Identifier { color: #804000; }
 -->
 </style>
@@ -71,14 +70,15 @@ if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation
   <span class="Comment">// End NEW Transform Special-cases</span>
   <span class="Comment">// first arg must be of type 'type'</span>
   assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt;= <span class="Constant">1</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
+  if <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span>
+    raise &lt;&lt; <span class="Constant">&quot;expected literal, got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; die<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">&quot;type&quot;</span><span class="Delimiter">)</span>
     raise &lt;&lt; <span class="Constant">&quot;tried to allocate non-type &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot; in recipe &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; die<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>Type_number<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">)</span> == Type_number<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
     raise &lt;&lt; <span class="Constant">&quot;unknown type &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; in recipe &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; die<span class="Delimiter">();</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;type &quot; &lt;&lt; inst.ingredients.at(0).name &lt;&lt; &quot; =&gt; &quot; &lt;&lt; Type_number[inst.ingredients.at(0).name] &lt;&lt; '\n'; //? 1</span>
   inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>Type_number[inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name]<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; -&gt; &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; -&gt; &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
   end_new_transform:<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -96,7 +96,7 @@ case NEW: <span class="Delimiter">{</span>
   long long int array_length = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Delimiter">{</span>
     vector&lt;type_number&gt; type<span class="Delimiter">;</span>
-    assert<span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
+    assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
     type<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value<span class="Delimiter">);</span>
 <span class="CommentedCode">//?     trace(Primitive_recipe_depth, &quot;mem&quot;) &lt;&lt; &quot;type &quot; &lt;&lt; current_instruction().ingredients.at(0).to_string() &lt;&lt; ' ' &lt;&lt; type.size() &lt;&lt; ' ' &lt;&lt; type.back() &lt;&lt; &quot; has size &quot; &lt;&lt; size_of(type); //? 1</span>
     if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -166,6 +166,16 @@ recipe main [
 <span class="Comment"># don't forget the extra location for array size</span>
 <span class="traceContains">+mem: storing 6 in location 3</span>
 
+<span class="Delimiter">:(scenario new_empty_array)</span>
+recipe main [
+  <span class="Constant">1</span>:address:array:number/<span class="Special">raw &lt;- </span>new number:type<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
+  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span>new number:type
+  <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:number/<span class="Special">raw</span>
+]
+<span class="traceContains">+run: 1:address:array:number/raw &lt;- new number:type, 0:literal</span>
+<span class="traceContains">+mem: array size is 0</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
 <span class="Comment">//: Make sure that each routine gets a different alloc to start.</span>
 <span class="Delimiter">:(scenario new_concurrent)</span>
 recipe f1 [
@@ -216,14 +226,17 @@ recipe main [
 <span class="traceContains">+mem: storing 171 in location 3</span>
 
 <span class="Delimiter">:(before &quot;End NEW Transform Special-cases&quot;)</span>
-  if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
+      &amp;&amp; !inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
+      &amp;&amp; !inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
+      &amp;&amp; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// skip transform</span>
     inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>initialized = <span class="Constant">true</span><span class="Delimiter">;</span>
     <span class="Identifier">goto</span> end_new_transform<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(after &quot;case NEW&quot; following &quot;Primitive Recipe Implementations&quot;)</span>
-if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span>
+if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span>
     &amp;&amp; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// allocate an array just large enough for it</span>
   long long int string_length = unicode_length<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
@@ -272,9 +285,6 @@ long long int unicode_length<span class="Delimiter">(</span>const string&amp; s<
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span class="PreProc">#include</span><span class="Constant">&quot;termbox/termbox.h&quot;</span>  <span class="Comment">// for unicode primitives</span>
 </pre>
 </body>
 </html>

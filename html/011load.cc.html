@@ -12,15 +12,15 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Constant { color: #008080; }
-.Comment { color: #8080ff; }
-.Delimiter { color: #c000c0; }
+.Constant { color: #00a0a0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
-.CommentedCode { color: #6c6c6c; }
+.Comment { color: #9090ff; }
 -->
 </style>
 
@@ -51,14 +51,17 @@ vector&lt;recipe_number&gt; load<span class="Delimiter">(</span>string form<span
 <span class="Delimiter">}</span>
 
 vector&lt;recipe_number&gt; load<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   vector&lt;recipe_number&gt; result<span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;===\n&quot;; //? 1</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     string command = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Comment">// Command Handlers</span>
     if <span class="Delimiter">(</span>command == <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       string recipe_name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; &quot;recipe: &quot; &lt;&lt; recipe_name &lt;&lt; '\n'; //? 1</span>
       if <span class="Delimiter">(</span>recipe_name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
         raise &lt;&lt; <span class="Constant">&quot;empty recipe name</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
       if <span class="Delimiter">(</span>Recipe_number<span class="Delimiter">.</span>find<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> == Recipe_number<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
@@ -94,12 +97,14 @@ recipe slurp_recipe<span class="Delimiter">(</span>istream&amp; in<span class="D
   instruction curr<span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>next_instruction<span class="Delimiter">(</span>in<span class="Delimiter">,</span> &amp;curr<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     <span class="Comment">// End Rewrite Instruction(curr)</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;instruction: &quot; &lt;&lt; curr.to_string() &lt;&lt; '\n'; //? 2</span>
     result<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> instruction* curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   curr<span class="Delimiter">-&gt;</span>clear<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="CommentedCode">//?   show_rest_of_stream(in); //? 1</span>
@@ -113,6 +118,7 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
     skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="CommentedCode">//?     show_rest_of_stream(in); //? 1</span>
     string word = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;AAA: &quot; &lt;&lt; word &lt;&lt; '\n'; //? 1</span>
     words<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>word<span class="Delimiter">);</span>
     skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>  if <span class="Delimiter">(</span>in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -136,6 +142,7 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
     for <span class="Delimiter">(;</span> *p != <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">;</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       if <span class="Delimiter">(</span>*p == <span class="Constant">&quot;,&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       curr<span class="Delimiter">-&gt;</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>*p<span class="Delimiter">));</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; &quot;product: &quot; &lt;&lt; curr-&gt;products.back().to_string() &lt;&lt; '\n'; //? 1</span>
     <span class="Delimiter">}</span>
     ++p<span class="Delimiter">;</span>  <span class="Comment">// skip &lt;-</span>
   <span class="Delimiter">}</span>
@@ -153,6 +160,7 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
   for <span class="Delimiter">(;</span> p != words<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>*p == <span class="Constant">&quot;,&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     curr<span class="Delimiter">-&gt;</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>*p<span class="Delimiter">));</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;ingredient: &quot; &lt;&lt; curr-&gt;ingredients.back().to_string() &lt;&lt; '\n'; //? 1</span>
   <span class="Delimiter">}</span>
 
   trace<span class="Delimiter">(</span><span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction: &quot;</span> &lt;&lt; curr<span class="Delimiter">-&gt;</span>name<span class="Delimiter">;</span>
@@ -172,6 +180,7 @@ string next_word<span class="Delimiter">(</span>istream&amp; in<span class="Deli
   slurp_word<span class="Delimiter">(</span>in<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
   skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   skip_comment<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; '^' &lt;&lt; out.str() &lt;&lt; &quot;$\n&quot;; //? 1</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 

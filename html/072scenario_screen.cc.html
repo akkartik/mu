@@ -12,14 +12,14 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Constant { color: #008080; }
-.Comment { color: #8080ff; }
-.Delimiter { color: #c000c0; }
+.Constant { color: #00a0a0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
+.Comment { color: #9090ff; }
 .Identifier { color: #804000; }
 -->
 </style>
@@ -164,15 +164,17 @@ Name[tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span
 
 <span class="Delimiter">:(before &quot;End Rewrite Instruction(curr)&quot;)</span>
 <span class="Comment">// rewrite `assume-screen width, height` to</span>
-<span class="Comment">// `screen:address &lt;- init-fake-screen width, height`</span>
+<span class="Comment">// `screen:address &lt;- new-fake-screen width, height`</span>
 <span class="CommentedCode">//? cout &lt;&lt; &quot;before: &quot; &lt;&lt; curr.to_string() &lt;&lt; '\n'; //? 1</span>
 if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;assume-screen&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;init-fake-screen&quot;</span>]<span class="Delimiter">;</span>
+  curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;new-fake-screen&quot;</span>]<span class="Delimiter">;</span>
+  curr<span class="Delimiter">.</span>name = <span class="Constant">&quot;new-fake-screen&quot;</span><span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>operation<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;screen:address&quot;</span><span class="Delimiter">));</span>
   curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>SCREEN<span class="Delimiter">);</span>
 <span class="CommentedCode">//? cout &lt;&lt; &quot;after: &quot; &lt;&lt; curr.to_string() &lt;&lt; '\n'; //? 1</span>
-<span class="CommentedCode">//? cout &lt;&lt; &quot;AAA &quot; &lt;&lt; Recipe_number[&quot;init-fake-screen&quot;] &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//? cout &lt;&lt; &quot;AAA &quot; &lt;&lt; Recipe_number[&quot;new-fake-screen&quot;] &lt;&lt; '\n'; //? 1</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: screen-should-contain is a regular instruction</span>
@@ -360,9 +362,12 @@ void dump_screen<span class="Delimiter">()</span> <span class="Delimiter">{</spa
   assert<span class="Delimiter">(</span>Memory[screen_data_start] == screen_width*screen_height<span class="Delimiter">);</span>
   long long int curr = screen_data_start+<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
   for <span class="Delimiter">(</span>long long int row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; curr &lt;&lt; &quot;:\n&quot;; //? 1</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; curr &lt;&lt; &quot;:\n&quot;; //? 2</span>
     for <span class="Delimiter">(</span>long long int col = <span class="Constant">0</span><span class="Delimiter">;</span> col &lt; screen_width<span class="Delimiter">;</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      cerr &lt;&lt; static_cast&lt;char&gt;<span class="Delimiter">(</span>Memory[curr]<span class="Delimiter">);</span>
+      if <span class="Delimiter">(</span>Memory[curr]<span class="Delimiter">)</span>
+        cerr &lt;&lt; to_unicode<span class="Delimiter">(</span>Memory[curr]<span class="Delimiter">);</span>
+      else
+        cerr &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
       curr += <span class="Comment">/*</span><span class="Comment">size of screen-cell</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
