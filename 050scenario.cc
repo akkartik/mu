@@ -132,14 +132,16 @@ const scenario* Current_scenario = NULL;
 void run_mu_scenario(const scenario& s) {
   Current_scenario = &s;
   bool not_already_inside_test = !Trace_stream;
-//?   cerr << s.name << '\n'; //? 1
+//?   cerr << s.name << '\n'; //? 3
   if (not_already_inside_test) {
     Trace_file = s.name;
     Trace_stream = new trace_stream;
     setup();
   }
 //?   cerr << '^' << s.to_run << "$\n"; //? 4
+  assert(Routines.empty());
   run("recipe "+s.name+" [ " + s.to_run + " ]");
+//?   cerr << s.name << " done\n"; //? 1
   if (not_already_inside_test && Trace_stream) {
     teardown();
     ofstream fout((Trace_dir+Trace_file).c_str());

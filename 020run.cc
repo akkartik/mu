@@ -54,7 +54,7 @@ void run(recipe_number r) {
 
 void run_current_routine()
 {  // curly on a separate line, because later layers will modify header
-//?   cerr << "AAA 6\n"; //? 2
+//?   cerr << "AAA 6\n"; //? 3
   while (!Current_routine->completed())  // later layers will modify condition
   {
 //?     cerr << "AAA 7: " << current_step_index() << '\n'; //? 1
@@ -92,7 +92,7 @@ void run_current_routine()
     // End of Instruction
     ++current_step_index();
   }
-//?   cerr << "AAA 9\n"; //? 1
+//?   cerr << "AAA 9\n"; //? 2
   stop_running_current_routine:;
 }
 
@@ -164,13 +164,14 @@ load_permanently("core.mu");
 :(code)
 // helper for tests
 void run(string form) {
-//?   cerr << "AAA 2\n"; //? 1
+//?   cerr << "AAA 2\n"; //? 2
+//?   cerr << form << '\n'; //? 1
   vector<recipe_number> tmp = load(form);
   if (tmp.empty()) return;
   transform_all();
-//?   cerr << "AAA 3\n"; //? 1
+//?   cerr << "AAA 3\n"; //? 2
   run(tmp.front());
-//?   cerr << "YYY\n"; //? 1
+//?   cerr << "YYY\n"; //? 2
 }
 
 //:: Reading from memory, writing to memory.
