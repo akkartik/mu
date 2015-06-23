@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 066stream.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1.05em; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.Special { color: #ff6060; }
+.muControl { color: #c0a020; }
+.muRecipe { color: #ff8700; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># new type to help incrementally read strings</span>
+container stream [
+  index:number
+  data:address:array:character
+]
+
+<span class="muRecipe">recipe</span> new-stream [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  result:address:stream<span class="Special"> &lt;- </span>new stream:type
+  i:address:number<span class="Special"> &lt;- </span>get-address result:address:stream/deref, index:offset
+  i:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  d:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:stream/deref, data:offset
+  d:address:address:array:character/deref<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="muControl">reply</span> result:address:stream
+]
+
+<span class="muRecipe">recipe</span> rewind-stream [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  in:address:stream<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  x:address:number<span class="Special"> &lt;- </span>get-address in:address:stream/deref, index:offset
+  x:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  <span class="muControl">reply</span> in:address:stream/same-as-arg:0
+]
+
+<span class="muRecipe">recipe</span> read-line [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  in:address:stream<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  idx:address:number<span class="Special"> &lt;- </span>get-address in:address:stream/deref, index:offset
+  s:address:array:character<span class="Special"> &lt;- </span>get in:address:stream/deref, data:offset
+  next-idx:number<span class="Special"> &lt;- </span>find-next s:address:array:character, <span class="Constant">10:literal/newline</span>, idx:address:number/deref
+  result:address:array:character<span class="Special"> &lt;- </span>string-copy s:address:array:character, idx:address:number/deref, next-idx:number
+  idx:address:number/deref<span class="Special"> &lt;- </span>add next-idx:number, <span class="Constant">1:literal</span>  <span class="Comment"># skip newline</span>
+  <span class="muControl">reply</span> result:address:array:character
+]
+
+<span class="muRecipe">recipe</span> end-of-stream? [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  in:address:stream<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  idx:number<span class="Special"> &lt;- </span>get in:address:stream/deref, index:offset
+  s:address:array:character<span class="Special"> &lt;- </span>get in:address:stream/deref, data:offset
+  len:number<span class="Special"> &lt;- </span>length s:address:array:character/deref
+  result:boolean<span class="Special"> &lt;- </span>greater-or-equal idx:number, len:number
+  <span class="muControl">reply</span> result:boolean
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

@@ -12,13 +12,15 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
-.Delimiter { color: #c000c0; }
-.Comment { color: #8080ff; }
-.Constant { color: #008080; }
+* { font-size: 1.05em; }
+.muScenario { color: #00af00; }
+.Delimiter { color: #a04060; }
+.SalientComment { color: #00ffff; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
-.muControl { color: #804000; }
+.Comment { color: #9090ff; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -31,139 +33,480 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </head>
 <body>
 <pre id='vimCodeElement'>
+<span class="Comment"># Editor widget: takes a string and screen coordinates, modifying them in place.</span>
+
 <span class="muRecipe">recipe</span> main [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  switch-to-display
+  open-console
   width:number<span class="Special"> &lt;- </span>display-width
-  <span class="Delimiter">{</span>
-    wide-enough?:boolean<span class="Special"> &lt;- </span>greater-than width:number, <span class="Constant">100:literal</span>
-    <span class="muControl">break-if</span> wide-enough?:boolean
-    return-to-console
-    assert wide-enough?:boolean, <span class="Constant">[screen too narrow; we don't support less than 100 characters yet]</span>
-  <span class="Delimiter">}</span>
+  height:number<span class="Special"> &lt;- </span>display-height
   divider:number, _<span class="Special"> &lt;- </span>divide-with-remainder width:number, <span class="Constant">2:literal</span>
-  draw-column <span class="Constant">0:literal/screen</span>, divider:number
-  x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[1:integer &lt;- add 2:literal, 2:literal]</span>
-  y:address:array:character<span class="Special"> &lt;- </span>edit x:address:array:character, <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal</span>, <span class="Constant">0:literal</span>, <span class="Constant">5:literal</span>, divider:number
-<span class="CommentedCode">#?   draw-bounding-box 0:literal/screen, 0:literal, 0:literal, 5:literal, divider:number</span>
-  left:number<span class="Special"> &lt;- </span>add divider:number, <span class="Constant">1:literal</span>
-  y:address:array:character<span class="Special"> &lt;- </span>edit <span class="Constant">0:literal</span>, <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal</span>, left:number, <span class="Constant">2:literal</span>, width:number
-  move-cursor <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal</span>, <span class="Constant">0:literal</span>
-  wait-for-key-from-keyboard
-  return-to-console
+  draw-vertical <span class="Constant">0:literal/screen</span>, divider:number, <span class="Constant">0:literal/top</span>, height:number
+  in:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
+<span class="Constant">def</span>
+<span class="Constant">ghi</span>
+<span class="Constant">jkl</span>
+<span class="Constant">]</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span>new-editor in:address:array:character, <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, divider:number/right
+  event-loop <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/events</span>, editor:address:editor-data
+  close-console
 ]
 
-<span class="muRecipe">recipe</span> draw-column [
+<span class="muScenario">scenario</span> editor-initially-prints-string-to-screen [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  run [
+    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    new-editor s:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="SalientComment">## In which we introduce the editor data structure, and show how it displays</span>
+<span class="SalientComment">## text to the screen.</span>
+
+container editor-data [
+  <span class="Comment"># doubly linked list of characters</span>
+  data:address:duplex-list
+  <span class="Comment"># location of top-left of screen inside data (scrolling)</span>
+  top-of-screen:address:duplex-list
+  <span class="Comment"># location of cursor inside data</span>
+  cursor:address:duplex-list
+
+  screen:address:screen
+  <span class="Comment"># raw bounds of display area on screen</span>
+  top:number
+  left:number
+  bottom:number
+  right:number
+  <span class="Comment"># raw screen coordinates of cursor</span>
+  cursor-row:number
+  cursor-column:number
+]
+
+<span class="Comment"># editor:address, screen:address &lt;- new-editor s:address:array:character, screen:address, top:number, left:number, bottom:number</span>
+<span class="Comment"># creates a new editor widget and renders its initial appearance to screen.</span>
+<span class="Comment">#   top/left/right constrain the screen area available to the new editor.</span>
+<span class="Comment">#   right is exclusive.</span>
+<span class="muRecipe">recipe</span> new-editor [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  s:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  col:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  curr:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-  max:number<span class="Special"> &lt;- </span>screen-height screen:address
+  <span class="Comment"># no clipping of bounds</span>
+  top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  right:number<span class="Special"> &lt;- </span>subtract right:number, <span class="Constant">1:literal</span>
+  result:address:editor-data<span class="Special"> &lt;- </span>new editor-data:type
+  <span class="Comment"># initialize screen-related fields</span>
+  sc:address:address:screen<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, screen:offset
+  sc:address:address:screen/deref<span class="Special"> &lt;- </span>copy screen:address
+  x:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, top:offset
+  x:address:number/deref<span class="Special"> &lt;- </span>copy top:number
+  x:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, left:offset
+  x:address:number/deref<span class="Special"> &lt;- </span>copy left:number
+  x:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, right:offset
+  x:address:number/deref<span class="Special"> &lt;- </span>copy right:number
+  <span class="Comment"># initialize bottom to top for starters</span>
+  x:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, bottom:offset
+  x:address:number/deref<span class="Special"> &lt;- </span>copy top:number
+  <span class="Comment"># initialize cursor</span>
+  x:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, cursor-row:offset
+  x:address:number/deref<span class="Special"> &lt;- </span>copy top:number
+  x:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, cursor-column:offset
+  x:address:number/deref<span class="Special"> &lt;- </span>copy left:number
+  <span class="Comment"># early exit if s is empty</span>
+  <span class="muControl">reply-unless</span> s:address:array:character, result:address:editor-data
+  len:number<span class="Special"> &lt;- </span>length s:address:array:character/deref
+  <span class="muControl">reply-unless</span> len:number, result:address:editor-data
+  idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  <span class="Comment"># s is guaranteed to have at least one character, so initialize result's</span>
+  <span class="Comment"># duplex-list</span>
+  init:address:address:duplex-list<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, top-of-screen:offset
+  init:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  c:character<span class="Special"> &lt;- </span>index s:address:array:character/deref, idx:number
+  idx:number<span class="Special"> &lt;- </span>add idx:number, <span class="Constant">1:literal</span>
+  init:address:address:duplex-list/deref<span class="Special"> &lt;- </span>push c:character, init:address:address:duplex-list/deref
+  curr:address:duplex-list<span class="Special"> &lt;- </span>copy init:address:address:duplex-list/deref
+  <span class="Comment"># now we can start appending the rest, character by character</span>
   <span class="Delimiter">{</span>
-    continue?:boolean<span class="Special"> &lt;- </span>lesser-than curr:number, max:number
-    <span class="muControl">break-unless</span> continue?:boolean
-    move-cursor screen:address, curr:number, col:number
-    print-character screen:address, <span class="Constant">9474:literal/vertical</span>, <span class="Constant">245:literal/grey</span>
-    curr:number<span class="Special"> &lt;- </span>add curr:number, <span class="Constant">1:literal</span>
+<span class="CommentedCode">#?     $print idx:number, [ vs ], len:number, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal idx:number, len:number
+    <span class="muControl">break-if</span> done?:boolean
+    c:character<span class="Special"> &lt;- </span>index s:address:array:character/deref, idx:number
+<span class="CommentedCode">#?     $print [aa: ], c:character, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+    insert-duplex c:character, curr:address:duplex-list
+    <span class="Comment"># next iter</span>
+    curr:address:duplex-list<span class="Special"> &lt;- </span>next-duplex curr:address:duplex-list
+    idx:number<span class="Special"> &lt;- </span>add idx:number, <span class="Constant">1:literal</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  move-cursor screen:address, <span class="Constant">0:literal</span>, <span class="Constant">0:literal</span>
+  <span class="Comment"># initialize cursor to top of screen</span>
+  y:address:address:duplex-list<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, cursor:offset
+  y:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy init:address:address:duplex-list/deref
+  <span class="Comment"># perform initial rendering to screen</span>
+  bottom:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, bottom:offset
+  bottom:address:number/deref, screen:address<span class="Special"> &lt;- </span>render result:address:editor-data, screen:address, top:number, left:number, right:number
+  <span class="muControl">reply</span> result:address:editor-data
 ]
 
-<span class="muRecipe">recipe</span> edit [
+<span class="muScenario">scenario</span> editor-initializes-without-data [
+  assume-screen <span class="Constant">5:literal/width</span>, <span class="Constant">3:literal/height</span>
+  run [
+    1:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">0:literal/data</span>, screen:address, <span class="Constant">1:literal/top</span>, <span class="Constant">2:literal/left</span>, <span class="Constant">5:literal/right</span>
+    2:editor-data<span class="Special"> &lt;- </span>copy 1:address:editor-data/deref
+  ]
+  memory-should-contain [
+    2<span class="Special"> &lt;- </span>0  <span class="Comment"># data</span>
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># pointer into data to top of screen</span>
+    4<span class="Special"> &lt;- </span>0  <span class="Comment"># pointer into data to cursor</span>
+    <span class="Comment"># 5 &lt;- screen</span>
+    6<span class="Special"> &lt;- </span>1  <span class="Comment"># top</span>
+    7<span class="Special"> &lt;- </span>2  <span class="Comment"># left</span>
+    8<span class="Special"> &lt;- </span>1  <span class="Comment"># bottom</span>
+    9<span class="Special"> &lt;- </span>4  <span class="Comment"># right  (inclusive)</span>
+    10<span class="Special"> &lt;- </span>1  <span class="Comment"># cursor row</span>
+    11<span class="Special"> &lt;- </span>2  <span class="Comment"># cursor column</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .     .</span>
+  ]
+]
+
+<span class="muRecipe">recipe</span> render [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  in:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
+  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  cursor:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, cursor:offset
+  <span class="Comment"># traversing editor</span>
+  curr:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, top-of-screen:offset
+  <span class="Comment"># traversing screen</span>
+  row:number<span class="Special"> &lt;- </span>copy top:number
+  column:number<span class="Special"> &lt;- </span>copy left:number
+  move-cursor screen:address, row:number, column:number
+  <span class="Delimiter">{</span>
+<span class="Constant">    +next-character</span>
+<span class="CommentedCode">#?     $print curr:address:duplex-list, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+    <span class="muControl">break-unless</span> curr:address:duplex-list
+    off-screen?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number, screen-height:number
+    <span class="muControl">break-if</span> off-screen?:boolean
+    <span class="Delimiter">{</span>
+      at-cursor?:boolean<span class="Special"> &lt;- </span>equal curr:address:duplex-list, cursor:address:duplex-list
+      <span class="muControl">break-unless</span> at-cursor?:boolean
+      cursor-row:number<span class="Special"> &lt;- </span>copy row:number
+      cursor-column:number<span class="Special"> &lt;- </span>copy column:number
+    <span class="Delimiter">}</span>
+    c:character<span class="Special"> &lt;- </span>get curr:address:duplex-list/deref, value:offset
+    <span class="Delimiter">{</span>
+      <span class="Comment"># newline? move to left rather than 0</span>
+      newline?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
+      <span class="muControl">break-unless</span> newline?:boolean
+      row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+      column:number<span class="Special"> &lt;- </span>copy left:number
+      move-cursor screen:address, row:number, column:number
+      curr:address:duplex-list<span class="Special"> &lt;- </span>next-duplex curr:address:duplex-list
+      <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
+    <span class="Delimiter">}</span>
+    <span class="Delimiter">{</span>
+      <span class="Comment"># at right? more than one letter left in the line? wrap</span>
+      at-right?:boolean<span class="Special"> &lt;- </span>equal column:number, right:number
+      <span class="muControl">break-unless</span> at-right?:boolean
+      next-node:address:duplex-list<span class="Special"> &lt;- </span>next-duplex curr:address:duplex-list
+      <span class="muControl">break-unless</span> next-node:address:duplex-list
+      next:character<span class="Special"> &lt;- </span>get next-node:address:duplex-list/deref, value:offset
+      next-character-is-newline?:boolean<span class="Special"> &lt;- </span>equal next:character, <span class="Constant">10:literal/newline</span>
+      <span class="muControl">break-if</span> next-character-is-newline?:boolean
+      <span class="Comment"># wrap</span>
+      print-character screen:address, <span class="Constant">8617:literal/loop-back-to-left</span>, <span class="Constant">245:literal/grey</span>
+      column:number<span class="Special"> &lt;- </span>copy left:number
+      row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+      move-cursor screen:address, row:number, column:number
+      <span class="Comment"># don't increment curr</span>
+      <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
+    <span class="Delimiter">}</span>
+    print-character screen:address, c:character
+    curr:address:duplex-list<span class="Special"> &lt;- </span>next-duplex curr:address:duplex-list
+    column:number<span class="Special"> &lt;- </span>add column:number, <span class="Constant">1:literal</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  move-cursor screen:address, cursor-row:number, cursor-column:number
+  <span class="muControl">reply</span> row:number, screen:address/same-as-ingredient:1
+]
+
+<span class="muScenario">scenario</span> editor-initially-prints-multiple-lines [
+  assume-screen <span class="Constant">5:literal/width</span>, <span class="Constant">3:literal/height</span>
+  run [
+    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">def]</span>
+    new-editor s:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc  .</span>
+   <span class="Constant"> .def  .</span>
+   <span class="Constant"> .     .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-initially-handles-offsets [
+  assume-screen <span class="Constant">5:literal/width</span>, <span class="Constant">3:literal/height</span>
+  run [
+    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    new-editor s:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">1:literal/left</span>, <span class="Constant">5:literal/right</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> . abc .</span>
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .     .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-initially-prints-multiple-lines-at-offset [
+  assume-screen <span class="Constant">5:literal/width</span>, <span class="Constant">3:literal/height</span>
+  run [
+    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">def]</span>
+    new-editor s:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">1:literal/left</span>, <span class="Constant">5:literal/right</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> . abc .</span>
+   <span class="Constant"> . def .</span>
+   <span class="Constant"> .     .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-initially-wraps-long-lines [
+  assume-screen <span class="Constant">5:literal/width</span>, <span class="Constant">3:literal/height</span>
+  run [
+    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc def]</span>
+    new-editor s:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc ↩.</span>
+   <span class="Constant"> .def  .</span>
+   <span class="Constant"> .     .</span>
+  ]
+  screen-should-contain-in-color, <span class="Constant">245:literal/grey</span> [
+   <span class="Constant"> .    ↩.</span>
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .     .</span>
+  ]
+]
+
+<span class="SalientComment">## handling events from the keyboard and mouse</span>
+
+<span class="muRecipe">recipe</span> event-loop [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+<span class="Constant">    +next-event</span>
+    e:event, console:address, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-event console:address
+    <span class="muControl">loop-unless</span> found?:boolean
+    <span class="muControl">break-if</span> quit?:boolean  <span class="Comment"># only in tests</span>
+    trace <span class="Constant">[app]</span>, <span class="Constant">[next-event]</span>
+    <span class="Delimiter">{</span>
+      t:address:touch-event<span class="Special"> &lt;- </span>maybe-convert e:event, touch:variant
+      <span class="muControl">break-unless</span> t:address:touch-event
+      editor:address:editor-data<span class="Special"> &lt;- </span>move-cursor-in-editor editor:address:editor-data, t:address:touch-event
+      <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
+    <span class="Delimiter">}</span>
+    c:address:character<span class="Special"> &lt;- </span>maybe-convert e:event, text:variant
+    assert c:address:character, <span class="Constant">[event was of unknown type; neither keyboard nor mouse]</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> move-cursor-in-editor [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  t:address:touch-event<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  row:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-row:offset
+  row:address:number/deref<span class="Special"> &lt;- </span>get t:address:touch-event/deref, row:offset
+  column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
+  column:address:number/deref<span class="Special"> &lt;- </span>get t:address:touch-event/deref, column:offset
+  <span class="Comment"># todo: adjust 'cursor' pointer into editor data</span>
+]
+
+<span class="muScenario">scenario</span> editor-handles-empty-event-queue [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  assume-console <span class="Constant">[]</span>
+  run [
+    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    editor:address:editor-data<span class="Special"> &lt;- </span>new-editor s:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+    event-loop screen:address, console:address, editor:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-handles-mouse-clicks [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  assume-console [
+    left-click 0, 1
+  ]
+  run [
+    1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor is at row 0..</span>
+    4<span class="Special"> &lt;- </span>1  <span class="Comment"># ..and column 1</span>
+  ]
+]
+
+<span class="SalientComment">## helpers for drawing editor borders</span>
+
+<span class="muRecipe">recipe</span> draw-box [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   bottom:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="Comment"># draw bottom boundary</span>
-  curr:number<span class="Special"> &lt;- </span>copy left:number
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
-    continue?:boolean<span class="Special"> &lt;- </span>lesser-than curr:number, right:number
-    <span class="muControl">break-unless</span> continue?:boolean
-    move-cursor screen:address, bottom:number, curr:number
-    print-character screen:address, <span class="Constant">9472:literal/vertical</span>, <span class="Constant">245:literal/grey</span>
-    curr:number<span class="Special"> &lt;- </span>add curr:number, <span class="Constant">1:literal</span>
-    <span class="muControl">loop</span>
+    <span class="Comment"># default color to white</span>
+    <span class="muControl">break-if</span> color-found?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">245:literal/grey</span>
   <span class="Delimiter">}</span>
-  move-cursor screen:address, top:number, left:number
-]
-
-<span class="muRecipe">recipe</span> draw-bounding-box [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="Comment"># sanity-check the box bounds</span>
-  top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="Delimiter">{</span>
-    out?:boolean<span class="Special"> &lt;- </span>lesser-than top:number, <span class="Constant">0:literal</span>
-    <span class="muControl">break-unless</span> out?:boolean
-    top:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-  <span class="Delimiter">}</span>
-  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="Delimiter">{</span>
-    out?:boolean<span class="Special"> &lt;- </span>lesser-than left:number, <span class="Constant">0:literal</span>
-    <span class="muControl">break-unless</span> out?:boolean
-    left:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-  <span class="Delimiter">}</span>
-  bottom:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="Delimiter">{</span>
-    height:number<span class="Special"> &lt;- </span>screen-height screen:address
-    out?:boolean<span class="Special"> &lt;- </span>greater-or-equal bottom:number, height:number
-    <span class="muControl">break-unless</span> out?:boolean
-    bottom:number<span class="Special"> &lt;- </span>subtract height:number, <span class="Constant">1:literal</span>
-  <span class="Delimiter">}</span>
-  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="Delimiter">{</span>
-    width:number<span class="Special"> &lt;- </span>screen-width screen:address
-    out?:boolean<span class="Special"> &lt;- </span>greater-or-equal right:number, width:number
-    <span class="muControl">break-unless</span> out?:boolean
-    right:number<span class="Special"> &lt;- </span>subtract width:number, <span class="Constant">1:literal</span>
-  <span class="Delimiter">}</span>
-<span class="CommentedCode">#?   print-integer screen:address, bottom:number</span>
-<span class="CommentedCode">#?   print-character screen:address, 32:literal/space</span>
-<span class="CommentedCode">#?   print-integer screen:address, right:number</span>
   <span class="Comment"># top border</span>
-  move-cursor screen:address, top:number, left:number
-  print-character screen:address, <span class="Constant">9484:literal/down-right</span>, <span class="Constant">245:literal/grey</span>
-  x:number<span class="Special"> &lt;- </span>add left:number, <span class="Constant">1:literal</span>  <span class="Comment"># exclude corner</span>
-  <span class="Delimiter">{</span>
-    continue?:boolean<span class="Special"> &lt;- </span>lesser-than x:number, right:number
-    <span class="muControl">break-unless</span> continue?:boolean
-    print-character screen:address, <span class="Constant">9472:literal/horizontal</span>, <span class="Constant">245:literal/grey</span>
-    x:number<span class="Special"> &lt;- </span>add x:number, <span class="Constant">1:literal</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-  print-character screen:address, <span class="Constant">9488:literal/down-left</span>, <span class="Constant">245:literal/grey</span>
-  <span class="Comment"># bottom border</span>
-  move-cursor screen:address, bottom:number, left:number
-  print-character screen:address, <span class="Constant">9492:literal/up-right</span>, <span class="Constant">245:literal/grey</span>
-  x:number<span class="Special"> &lt;- </span>add left:number, <span class="Constant">1:literal</span>  <span class="Comment"># exclude corner</span>
-  <span class="Delimiter">{</span>
-    continue?:boolean<span class="Special"> &lt;- </span>lesser-than x:number, right:number
-    <span class="muControl">break-unless</span> continue?:boolean
-    print-character screen:address, <span class="Constant">9472:literal/horizontal</span>, <span class="Constant">245:literal/grey</span>
-    x:number<span class="Special"> &lt;- </span>add x:number, <span class="Constant">1:literal</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-  print-character screen:address, <span class="Constant">9496:literal/up-left</span>, <span class="Constant">245:literal/grey</span>
-  <span class="Comment"># left and right borders</span>
-  x:number<span class="Special"> &lt;- </span>add top:number, <span class="Constant">1:literal</span>  <span class="Comment"># exclude corner</span>
-  <span class="Delimiter">{</span>
-    continue?:boolean<span class="Special"> &lt;- </span>lesser-than x:number, bottom:number
-    <span class="muControl">break-unless</span> continue?:boolean
-    move-cursor screen:address, x:number, left:number
-    print-character screen:address, <span class="Constant">9474:literal/vertical</span>, <span class="Constant">245:literal/grey</span>
-    move-cursor screen:address, x:number, right:number
-    print-character screen:address, <span class="Constant">9474:literal/vertical</span>, <span class="Constant">245:literal/grey</span>
-    x:number<span class="Special"> &lt;- </span>add x:number, <span class="Constant">1:literal</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
+  draw-horizontal screen:address, top:number, left:number, right:number, color:number
+  draw-horizontal screen:address, bottom:number, left:number, right:number, color:number
+  draw-vertical screen:address, left:number, top:number, bottom:number, color:number
+  draw-vertical screen:address, right:number, top:number, bottom:number, color:number
+  draw-top-left screen:address, top:number, left:number, color:number
+  draw-top-right screen:address, top:number, right:number, color:number
+  draw-bottom-left screen:address, bottom:number, left:number, color:number
+  draw-bottom-right screen:address, bottom:number, right:number, color:number
   <span class="Comment"># position cursor inside box</span>
   move-cursor screen:address, top:number, left:number
   cursor-down screen:address
   cursor-right screen:address
+]
+
+<span class="muRecipe">recipe</span> draw-horizontal [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  x:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default color to white</span>
+    <span class="muControl">break-if</span> color-found?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">245:literal/grey</span>
+  <span class="Delimiter">}</span>
+  move-cursor screen:address, row:number, x:number
+  <span class="Delimiter">{</span>
+    continue?:boolean<span class="Special"> &lt;- </span>lesser-than x:number, right:number
+    <span class="muControl">break-unless</span> continue?:boolean
+    print-character screen:address, <span class="Constant">9472:literal/horizontal</span>, color:number
+    x:number<span class="Special"> &lt;- </span>add x:number, <span class="Constant">1:literal</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> draw-vertical [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  col:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  x:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  bottom:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default color to white</span>
+    <span class="muControl">break-if</span> color-found?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">245:literal/grey</span>
+  <span class="Delimiter">}</span>
+  <span class="Delimiter">{</span>
+    continue?:boolean<span class="Special"> &lt;- </span>lesser-than x:number, bottom:number
+    <span class="muControl">break-unless</span> continue?:boolean
+    move-cursor screen:address, x:number, col:number
+    print-character screen:address, <span class="Constant">9474:literal/vertical</span>, color:number
+    x:number<span class="Special"> &lt;- </span>add x:number, <span class="Constant">1:literal</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> draw-top-left [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default color to white</span>
+    <span class="muControl">break-if</span> color-found?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">245:literal/grey</span>
+  <span class="Delimiter">}</span>
+  move-cursor screen:address, top:number, left:number
+  print-character screen:address, <span class="Constant">9484:literal/down-right</span>, color:number
+]
+
+<span class="muRecipe">recipe</span> draw-top-right [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default color to white</span>
+    <span class="muControl">break-if</span> color-found?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">245:literal/grey</span>
+  <span class="Delimiter">}</span>
+  move-cursor screen:address, top:number, right:number
+  print-character screen:address, <span class="Constant">9488:literal/down-left</span>, color:number
+]
+
+<span class="muRecipe">recipe</span> draw-bottom-left [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  bottom:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default color to white</span>
+    <span class="muControl">break-if</span> color-found?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">245:literal/grey</span>
+  <span class="Delimiter">}</span>
+  move-cursor screen:address, bottom:number, left:number
+  print-character screen:address, <span class="Constant">9492:literal/up-right</span>, color:number
+]
+
+<span class="muRecipe">recipe</span> draw-bottom-right [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  bottom:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default color to white</span>
+    <span class="muControl">break-if</span> color-found?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">245:literal/grey</span>
+  <span class="Delimiter">}</span>
+  move-cursor screen:address, bottom:number, right:number
+  print-character screen:address, <span class="Constant">9496:literal/up-left</span>, color:number
 ]
 </pre>
 </body>

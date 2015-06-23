@@ -12,14 +12,14 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .muScenario { color: #00af00; }
-.Delimiter { color: #c000c0; }
-.Comment { color: #8080ff; }
-.Constant { color: #008080; }
+.Delimiter { color: #a04060; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
-.muControl { color: #804000; }
+.Comment { color: #9090ff; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -36,35 +36,36 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> main [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  switch-to-display
+  open-console
   msg:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ready! type in an instruction, then hit enter. ctrl-d exits.</span>
 <span class="Constant">]</span>
   <span class="Constant">0:literal/real-screen</span><span class="Special"> &lt;- </span>print-string <span class="Constant">0:literal/real-screen</span>, msg:address:array:character, <span class="Constant">245:literal/grey</span>
-  <span class="Constant">0:literal/real-keyboard</span>, <span class="Constant">0:literal/real-screen</span><span class="Special"> &lt;- </span>color-session <span class="Constant">0:literal/real-keyboard</span>, <span class="Constant">0:literal/real-screen</span>
-<span class="CommentedCode">#?   wait-for-key-from-keyboard #? 1</span>
-  return-to-console
+  <span class="Constant">0:literal/real-console</span>, <span class="Constant">0:literal/real-screen</span><span class="Special"> &lt;- </span>color-session <span class="Constant">0:literal/real-console</span>, <span class="Constant">0:literal/real-screen</span>
+  close-console
 ]
 
 <span class="muRecipe">recipe</span> color-session [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
-  keyboard:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
-    inst:address:array:character, keyboard:address, screen:address<span class="Special"> &lt;- </span>read-instruction keyboard:address, screen:address
+    inst:address:array:character, console:address, screen:address<span class="Special"> &lt;- </span>read-instruction console:address, screen:address
     <span class="muControl">break-unless</span> inst:address:array:character
     run-interactive inst:address:array:character
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> keyboard:address/same-as-ingredient:0, screen:address/same-as-ingredient:1
+  <span class="muControl">reply</span> console:address/same-as-ingredient:0, screen:address/same-as-ingredient:1
 ]
 
-<span class="Comment"># basic keyboard input; just text and enter</span>
+<span class="Comment"># basic console input; just text and enter</span>
 <span class="muScenario">scenario</span> read-instruction1 [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[x &lt;- copy y</span>
+  assume-console [
+    type <span class="Constant">[x &lt;- copy y</span>
 <span class="Constant">]</span>
+  ]
   run [
-    1:address:array:character<span class="Special"> &lt;- </span>read-instruction keyboard:address, screen:address
+    1:address:array:character<span class="Special"> &lt;- </span>read-instruction console:address, screen:address
     2:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[=&gt; ]</span>
     print-string screen:address, 2:address:array:character
     print-string screen:address, 1:address:array:character
@@ -85,15 +86,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="Comment"># Read characters as they're typed at the keyboard, print them to the screen,</span>
+<span class="Comment"># Read characters as they're typed at the console, print them to the screen,</span>
 <span class="Comment"># accumulate them in a string, return the string at the end.</span>
 <span class="Comment"># Most of the complexity is for the printing to screen, to highlight strings</span>
 <span class="Comment"># and comments specially. Especially in the presence of backspacing.</span>
 <span class="muRecipe">recipe</span> read-instruction [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">60:literal</span>
-  k:address:keyboard<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  result:address:buffer<span class="Special"> &lt;- </span>init-buffer <span class="Constant">10:literal</span>  <span class="Comment"># string to maybe add to</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  result:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">10:literal</span>  <span class="Comment"># string to maybe add to</span>
   trace <span class="Constant">[app]</span>, <span class="Constant">[read-instruction]</span>
   <span class="Comment"># start state machine by calling slurp-regular-characters, which will return</span>
   <span class="Comment"># by calling the complete continuation</span>
@@ -104,7 +105,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   completed?:boolean<span class="Special"> &lt;- </span>greater-than len:number, <span class="Constant">0:literal</span>
   <span class="muControl">jump-if</span> completed?:boolean, <span class="Constant">+completed:label</span>
   <span class="Comment"># Otherwise we're just getting started.</span>
-  result:address:buffer, k:address:keyboard, x:address:screen<span class="Special"> &lt;- </span>slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+  result:address:buffer, console:address, screen:address<span class="Special"> &lt;- </span>slurp-regular-characters result:address:buffer, console:address, screen:address, complete:continuation
 <span class="CommentedCode">#?   $print [aaa: ], result:address:buffer #? 1</span>
 <span class="CommentedCode">#?   move-cursor-down-on-display #? 1</span>
   trace <span class="Constant">[error]</span>, <span class="Constant">[slurp-regular-characters should never return normally]</span>
@@ -113,16 +114,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="CommentedCode">#?   $print [bbb: ], result2:address:array:character #? 1</span>
 <span class="CommentedCode">#?   move-cursor-down-on-display #? 1</span>
   trace <span class="Constant">[app]</span>, <span class="Constant">[exiting read-instruction]</span>
-  <span class="muControl">reply</span> result2:address:array:character, k:address:keyboard/same-as-ingredient:0, x:address:screen/same-as-ingredient:1
+  <span class="muControl">reply</span> result2:address:array:character, console:address/same-as-ingredient:0, screen:address/same-as-ingredient:1
 ]
 
-<span class="Comment"># read characters from the keyboard, print them to the screen in *white*.</span>
+<span class="Comment"># read characters from the console, print them to the screen in *white*.</span>
 <span class="Comment"># Transition to other routines for comments and strings.</span>
 <span class="muRecipe">recipe</span> slurp-regular-characters [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   result:address:buffer<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  k:address:keyboard<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   complete:continuation<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-regular-characters]</span>
   characters-slurped:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
@@ -134,8 +135,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="CommentedCode">#? ] #? 1</span>
 <span class="CommentedCode">#?     move-cursor-down-on-display #? 1</span>
     <span class="Comment"># read character</span>
-    c:character, k:address:keyboard<span class="Special"> &lt;- </span>wait-for-key k:address:keyboard
-<span class="CommentedCode">#?     print-character x:address:screen, c:character #? 1</span>
+    c:character, console:address found?:boolean<span class="Special"> &lt;- </span>read-key console:address
+    <span class="muControl">loop-unless</span> found?:boolean <span class="Constant">+next-character:label</span>
+<span class="CommentedCode">#?     print-character screen:address, c:character #? 1</span>
 <span class="CommentedCode">#?     move-cursor-down-on-display #? 1</span>
     <span class="Comment"># quit?</span>
     <span class="Delimiter">{</span>
@@ -146,21 +148,21 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="CommentedCode">#?       $print [ctrl-d] #? 1</span>
 <span class="CommentedCode">#?       move-cursor-down-on-display #? 1</span>
       trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-regular-characters: ctrl-d]</span>
-      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
       null?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">0:literal/null</span>
       <span class="muControl">break-unless</span> null?:boolean
       trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-regular-characters: null]</span>
-      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     <span class="Delimiter">}</span>
     <span class="Comment"># comment?</span>
     <span class="Delimiter">{</span>
       comment?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">35:literal/hash</span>
       <span class="muControl">break-unless</span> comment?:boolean
-      print-character x:address:screen, c:character, <span class="Constant">4:literal/blue</span>
+      print-character screen:address, c:character, <span class="Constant">4:literal/blue</span>
       result:address:buffer<span class="Special"> &lt;- </span>buffer-append result:address:buffer, c:character
-      result:address:buffer, k:address:keyboard, x:address:screen<span class="Special"> &lt;- </span>slurp-comment result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+      result:address:buffer, console:address, screen:address<span class="Special"> &lt;- </span>slurp-comment result:address:buffer, console:address, screen:address, complete:continuation
       <span class="Comment"># continue appending to this instruction, whether comment ended or was backspaced out of</span>
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
@@ -168,23 +170,23 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="Delimiter">{</span>
       string?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">91:literal/open-bracket</span>
       <span class="muControl">break-unless</span> string?:boolean
-      print-character x:address:screen, c:character, <span class="Constant">6:literal/cyan</span>
+      print-character screen:address, c:character, <span class="Constant">6:literal/cyan</span>
       result:address:buffer<span class="Special"> &lt;- </span>buffer-append result:address:buffer, c:character
-      result:address:buffer, _, k:address:keyboard, x:address:screen<span class="Special"> &lt;- </span>slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+      result:address:buffer, _, console:address, screen:address<span class="Special"> &lt;- </span>slurp-string result:address:buffer, console:address, screen:address, complete:continuation
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># assignment</span>
     <span class="Delimiter">{</span>
       assign?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">60:literal/less-than</span>
       <span class="muControl">break-unless</span> assign?:boolean
-      print-character x:address:screen, c:character, <span class="Constant">1:literal/red</span>
+      print-character screen:address, c:character, <span class="Constant">1:literal/red</span>
       trace <span class="Constant">[app]</span>, <span class="Constant">[start of assignment: &lt;]</span>
       result:address:buffer<span class="Special"> &lt;- </span>buffer-append result:address:buffer, c:character
-      result:address:buffer, k:address:keyboard, x:address:screen<span class="Special"> &lt;- </span>slurp-assignment result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+      result:address:buffer, console:address, screen:address<span class="Special"> &lt;- </span>slurp-assignment result:address:buffer, console:address, screen:address, complete:continuation
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># print</span>
-    print-character x:address:screen, c:character  <span class="Comment"># default color</span>
+    print-character screen:address, c:character  <span class="Comment"># default color</span>
     <span class="Comment"># append</span>
     result:address:buffer<span class="Special"> &lt;- </span>buffer-append result:address:buffer, c:character
 <span class="CommentedCode">#?     $print [a1 #? 1</span>
@@ -214,7 +216,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="CommentedCode">#?         $print [a6 #? 1</span>
 <span class="CommentedCode">#? ] #? 1</span>
 <span class="CommentedCode">#?         move-cursor-down-on-display #? 1</span>
-        <span class="muControl">reply</span> result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+        <span class="muControl">reply</span> result:address:buffer, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
       <span class="Delimiter">}</span>
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
@@ -230,20 +232,20 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">}</span>
   <span class="Comment"># newline encountered; terminate all recursive calls</span>
 <span class="CommentedCode">#?   xx:address:array:character &lt;- new [completing!] #? 1</span>
-<span class="CommentedCode">#?   print-string x:address:screen, xx:address:array:character #? 1</span>
+<span class="CommentedCode">#?   print-string screen:address, xx:address:array:character #? 1</span>
   trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-regular-characters: newline encountered; unwinding stack]</span>
   <span class="muControl">continue-from</span> complete:continuation
 ]
 
-<span class="Comment"># read characters from keyboard, print them to screen in the comment color.</span>
+<span class="Comment"># read characters from console, print them to screen in the comment color.</span>
 <span class="Comment">#</span>
 <span class="Comment"># Simpler version of slurp-regular-characters; doesn't handle comments or</span>
 <span class="Comment"># strings. Tracks an extra count in case we backspace out of it</span>
 <span class="muRecipe">recipe</span> slurp-comment [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   result:address:buffer<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  k:address:keyboard<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   complete:continuation<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-comment]</span>
   <span class="Comment"># use this to track when backspace should reset color</span>
@@ -251,22 +253,23 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
 <span class="Constant">    +next-character</span>
     <span class="Comment"># read character</span>
-    c:character, k:address:keyboard<span class="Special"> &lt;- </span>wait-for-key k:address:keyboard
+    c:character, console:address, found?:boolean<span class="Special"> &lt;- </span>read-key console:address
+    <span class="muControl">loop-unless</span> found?:boolean <span class="Constant">+next-character:label</span>
     <span class="Comment"># quit?</span>
     <span class="Delimiter">{</span>
       ctrl-d?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">4:literal/ctrl-d/eof</span>
       <span class="muControl">break-unless</span> ctrl-d?:boolean
       trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-comment: ctrl-d]</span>
-      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
       null?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">0:literal/null</span>
       <span class="muControl">break-unless</span> null?:boolean
       trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-comment: null]</span>
-      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     <span class="Delimiter">}</span>
     <span class="Comment"># print</span>
-    print-character x:address:screen, c:character, <span class="Constant">4:literal/blue</span>
+    print-character screen:address, c:character, <span class="Constant">4:literal/blue</span>
     <span class="Comment"># append</span>
     result:address:buffer<span class="Special"> &lt;- </span>buffer-append result:address:buffer, c:character
     <span class="Comment"># backspace? decrement</span>
@@ -278,7 +281,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
         reset-color?:boolean<span class="Special"> &lt;- </span>lesser-or-equal characters-slurped:number, <span class="Constant">0:literal</span>
         <span class="muControl">break-unless</span> reset-color?:boolean
         trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-comment: too many backspaces; returning]</span>
-        <span class="muControl">reply</span> result:address:buffer, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+        <span class="muControl">reply</span> result:address:buffer, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
       <span class="Delimiter">}</span>
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
@@ -293,7 +296,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="muControl">continue-from</span> complete:continuation
 ]
 
-<span class="Comment"># read characters from keyboard, print them to screen in the string color and</span>
+<span class="Comment"># read characters from console, print them to screen in the string color and</span>
 <span class="Comment"># accumulate them into a buffer.</span>
 <span class="Comment">#</span>
 <span class="Comment"># Version of slurp-regular-characters that:</span>
@@ -303,8 +306,8 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">recipe</span> slurp-string [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   result:address:buffer<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  k:address:keyboard<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   complete:continuation<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   nested-string?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-string]</span>
@@ -313,35 +316,36 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
 <span class="Constant">    +next-character</span>
     <span class="Comment"># read character</span>
-    c:character, k:address:keyboard<span class="Special"> &lt;- </span>wait-for-key k:address:keyboard
+    c:character, console:address, found?:boolean<span class="Special"> &lt;- </span>read-key console:address
+    <span class="muControl">loop-unless</span> found?:boolean <span class="Constant">+next-character:label</span>
     <span class="Comment"># quit?</span>
     <span class="Delimiter">{</span>
       ctrl-d?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">4:literal/ctrl-d/eof</span>
       <span class="muControl">break-unless</span> ctrl-d?:boolean
       trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-string: ctrl-d]</span>
-      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, <span class="Constant">0:literal</span>, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, <span class="Constant">0:literal</span>, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
       null?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">0:literal/null</span>
       <span class="muControl">break-unless</span> null?:boolean
       trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-string: null]</span>
-      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, <span class="Constant">0:literal</span>, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, <span class="Constant">0:literal</span>, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     <span class="Delimiter">}</span>
     <span class="Comment"># string</span>
     <span class="Delimiter">{</span>
       string?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">91:literal/open-bracket</span>
       <span class="muControl">break-unless</span> string?:boolean
       trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-string: open-bracket encountered; recursing]</span>
-      print-character x:address:screen, c:character, <span class="Constant">6:literal/cyan</span>
+      print-character screen:address, c:character, <span class="Constant">6:literal/cyan</span>
       result:address:buffer<span class="Special"> &lt;- </span>buffer-append result:address:buffer, c:character
       <span class="Comment"># make a recursive call to handle nested strings</span>
-      result:address:buffer, tmp:number, k:address:keyboard, x:address:screen<span class="Special"> &lt;- </span>slurp-string result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation, <span class="Constant">1:literal/nested?</span>
+      result:address:buffer, tmp:number, console:address, screen:address<span class="Special"> &lt;- </span>slurp-string result:address:buffer, console:address, screen:address, complete:continuation, <span class="Constant">1:literal/nested?</span>
       <span class="Comment"># but if we backspace over a completed nested string, handle it in the caller</span>
       characters-slurped:number<span class="Special"> &lt;- </span>add characters-slurped:number, tmp:number, <span class="Constant">1:literal</span>  <span class="Comment"># for the leading '['</span>
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># print</span>
-    print-character x:address:screen, c:character, <span class="Constant">6:literal/cyan</span>
+    print-character screen:address, c:character, <span class="Constant">6:literal/cyan</span>
     <span class="Comment"># append</span>
     result:address:buffer<span class="Special"> &lt;- </span>buffer-append result:address:buffer, c:character
     <span class="Comment"># backspace? decrement</span>
@@ -353,7 +357,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
         reset-color?:boolean<span class="Special"> &lt;- </span>lesser-or-equal characters-slurped:number, <span class="Constant">0:literal</span>
         <span class="muControl">break-unless</span> reset-color?:boolean
         trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-string: too many backspaces; returning]</span>
-        <span class="muControl">reply</span> result:address:buffer/same-as-ingredient:0, <span class="Constant">0:literal</span>, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+        <span class="muControl">reply</span> result:address:buffer/same-as-ingredient:0, <span class="Constant">0:literal</span>, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
       <span class="Delimiter">}</span>
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
@@ -367,11 +371,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> nested-string?:boolean
     <span class="Comment"># nested string? return like a normal recipe</span>
-    <span class="muControl">reply</span> result:address:buffer, characters-slurped:number, k:address:keyboard, x:address:screen
+    <span class="muControl">reply</span> result:address:buffer, characters-slurped:number, console:address, screen:address
   <span class="Delimiter">}</span>
   <span class="Comment"># top-level string call? recurse</span>
   trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-string: close-bracket encountered; recursing to regular characters]</span>
-  result:address:buffer, k:address:keyboard, x:address:screen<span class="Special"> &lt;- </span>slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+  result:address:buffer, console:address, screen:address<span class="Special"> &lt;- </span>slurp-regular-characters result:address:buffer, console:address, screen:address, complete:continuation
   <span class="Comment"># backspaced back into this string</span>
   trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-string: backspaced back into string; restarting]</span>
   <span class="muControl">jump</span> <span class="Constant">+next-character:label</span>
@@ -380,28 +384,29 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">recipe</span> slurp-assignment [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   result:address:buffer<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  k:address:keyboard<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   complete:continuation<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
 <span class="Constant">    +next-character</span>
     <span class="Comment"># read character</span>
-    c:character, k:address:keyboard<span class="Special"> &lt;- </span>wait-for-key k:address:keyboard
+    c:character, console:address, found?:boolean<span class="Special"> &lt;- </span>read-key console:address
+    <span class="muControl">loop-unless</span> found?:boolean <span class="Constant">+next-character:label</span>
     <span class="Comment"># quit?</span>
     <span class="Delimiter">{</span>
       ctrl-d?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">4:literal/ctrl-d/eof</span>
       <span class="muControl">break-unless</span> ctrl-d?:boolean
       trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-assignment: ctrl-d]</span>
-      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
       null?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">0:literal/null</span>
       <span class="muControl">break-unless</span> null?:boolean
       trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-assignment: null]</span>
-      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      <span class="muControl">reply</span> <span class="Constant">0:literal</span>, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     <span class="Delimiter">}</span>
     <span class="Comment"># print</span>
-    print-character x:address:screen, c:character, <span class="Constant">1:literal/red</span>
+    print-character screen:address, c:character, <span class="Constant">1:literal/red</span>
     trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-assignment: saved one character]</span>
     <span class="Comment"># append</span>
     result:address:buffer<span class="Special"> &lt;- </span>buffer-append result:address:buffer, c:character
@@ -410,11 +415,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
       backspace?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">8:literal/backspace</span>
       <span class="muControl">break-unless</span> backspace?:boolean
       trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-assignment: backspace; returning]</span>
-      <span class="muControl">reply</span> result:address:buffer/same-as-ingredient:0, k:address:keyboard/same-as-ingredient:1, x:address:screen/same-as-ingredient:2
+      <span class="muControl">reply</span> result:address:buffer/same-as-ingredient:0, console:address/same-as-ingredient:1, screen:address/same-as-ingredient:2
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-assignment: done, recursing to regular characters]</span>
-  result:address:buffer, k:address:keyboard, x:address:screen<span class="Special"> &lt;- </span>slurp-regular-characters result:address:buffer, k:address:keyboard, x:address:screen, complete:continuation
+  result:address:buffer, console:address, screen:address<span class="Special"> &lt;- </span>slurp-regular-characters result:address:buffer, console:address, screen:address, complete:continuation
   <span class="Comment"># backspaced back into this string</span>
   trace <span class="Constant">[app]</span>, <span class="Constant">[slurp-assignment: backspaced back into assignment; restarting]</span>
   <span class="muControl">jump</span> <span class="Constant">+next-character:label</span>
@@ -422,10 +427,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-color-comment [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[# comment</span>
-<span class="Constant">]</span>
+  assume-console [
+    type <span class="Constant">[# comment]</span>
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color <span class="Constant">4:literal/blue</span>, [
    <span class="Constant"> .# comment                     .</span>
@@ -439,11 +445,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-cancel-comment-on-backspace [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[#a««z</span>
-<span class="Constant">]</span>
-  replace-in-keyboard <span class="Constant">171:literal/«</span>, <span class="Constant">8:literal/backspace</span>
+  assume-console [
+    type <span class="Constant">[#a««z]</span>
+  ]
+  backspace:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, backspace:event
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color <span class="Constant">4:literal/blue</span>, [
    <span class="Constant"> .                              .</span>
@@ -457,11 +465,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-cancel-comment-on-backspace2 [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[#ab«««z</span>
-<span class="Constant">]</span>
-  replace-in-keyboard <span class="Constant">171:literal/«</span>, <span class="Constant">8:literal/backspace</span>
+  assume-console [
+    type <span class="Constant">[#ab«««z]</span>
+  ]
+  backspace:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, backspace:event
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color <span class="Constant">4:literal/blue</span>, [
    <span class="Constant"> .                              .</span>
@@ -475,11 +485,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-cancel-comment-on-backspace3 [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[#a«z</span>
-<span class="Constant">]</span>
-  replace-in-keyboard <span class="Constant">171:literal/«</span>, <span class="Constant">8:literal/backspace</span>
+  assume-console [
+    type <span class="Constant">[#a«z]</span>
+  ]
+  backspace:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, backspace:event
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color <span class="Constant">4:literal/blue</span>, [
    <span class="Constant"> .#z                            .</span>
@@ -493,13 +505,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-stop-after-comment [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  <span class="Comment"># keyboard contains comment and then a second line</span>
-  assume-keyboard <span class="Constant">[#abc</span>
-<span class="Constant">3</span>
-<span class="Constant">]</span>
-  replace-in-keyboard <span class="Constant">171:literal/«</span>, <span class="Constant">8:literal/backspace</span>
+  <span class="Comment"># console contains comment and then a second line</span>
+  assume-console [
+    type <span class="Constant">[#abc</span>
+<span class="Constant">3]</span>
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   <span class="Comment"># check that read-instruction reads just the comment</span>
   screen-should-contain [
@@ -511,10 +523,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muScenario">scenario</span> read-instruction-color-string [
 <span class="CommentedCode">#?   $start-tracing #? 1</span>
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[abc [string]</span>
-]
+  assume-console [
+    type <span class="Constant">[abc [string]</span>]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
    <span class="Constant"> .abc [string]                  .</span>
@@ -532,11 +545,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-color-string-multiline [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[abc [line1</span>
-<span class="Constant">line2]</span>
-]
+  assume-console [
+    type <span class="Constant">[abc [line1</span>
+<span class="Constant">line2]</span>]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
    <span class="Constant"> .abc [line1                    .</span>
@@ -557,10 +571,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-color-string-and-comment [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[abc [string]</span>  <span class="Comment"># comment</span>
-]
+  assume-console [
+    type <span class="Constant">[abc [string]</span>  <span class="Comment"># comment]</span>
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
    <span class="Constant"> .abc [string]  # comment       .</span>
@@ -582,10 +597,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-ignore-comment-inside-string [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[abc [string # not a comment]</span>
-]
+  assume-console [
+    type <span class="Constant">[abc [string # not a comment]</span>]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
    <span class="Constant"> .abc [string # not a comment]  .</span>
@@ -607,10 +623,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-ignore-string-inside-comment [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[abc # comment [not a string]</span>
-]
+  assume-console [
+    type <span class="Constant">[abc # comment [not a string]</span>]
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
    <span class="Constant"> .abc # comment [not a string]  .</span>
@@ -632,11 +649,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-color-string-inside-string [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[abc [string [inner string]</span>]
-]
+  assume-console [
+    type <span class="Constant">[abc [string [inner string]</span>]]
+  ]
   run [
 <span class="CommentedCode">#?     $start-tracing #? 1</span>
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
 <span class="CommentedCode">#?     $stop-tracing #? 1</span>
 <span class="CommentedCode">#?     $browse-trace #? 1</span>
   ]
@@ -656,12 +674,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-cancel-string-on-backspace [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  <span class="Comment"># need to escape the '[' once for 'scenario' and once for 'assume-keyboard'</span>
-  assume-keyboard <span class="Constant">[\\\[a««z</span>
-<span class="Constant">]</span>
-  replace-in-keyboard <span class="Constant">171:literal/«</span>, <span class="Constant">8:literal/backspace</span>
+  assume-console [
+    type <span class="Constant">[(a««z]</span>  <span class="Comment"># '(' is '[' and '«' is backspace</span>
+  ]
+  open-bracket:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">91:literal/open-bracket</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">40:literal/open-paren</span>, open-bracket:event
+  backspace:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, backspace:event
   run [
-    read-instruction keyboard:address, screen:address
+<span class="CommentedCode">#?     d:address:array:event &lt;- get console:address/deref, data:offset #? 1</span>
+<span class="CommentedCode">#?     $print [a: ], d:address:array:event #? 1</span>
+<span class="CommentedCode">#?     x:number &lt;- length d:address:array:event/deref #? 1</span>
+<span class="CommentedCode">#?     $print [b: ], x:number #? 1</span>
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color <span class="Constant">6:literal/cyan</span>, [
    <span class="Constant"> .                              .</span>
@@ -675,11 +700,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-cancel-string-inside-string-on-backspace [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[[a[b]</span>«««b]
-]
-  replace-in-keyboard <span class="Constant">171:literal/«</span>, <span class="Constant">8:literal/backspace</span>
+  assume-console [
+    type <span class="Constant">[(a[b]</span>«««b)]  <span class="Comment"># '(' is '[' and '«' is backspace</span>
+  ]
+  open-bracket:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">91:literal/open-bracket</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">40:literal/open-paren</span>, open-bracket:event
+  close-bracket:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">93:literal/close-bracket</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">41:literal/close-paren</span>, close-bracket:event
+  backspace:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, backspace:event
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain-in-color <span class="Constant">6:literal/cyan</span>, [
    <span class="Constant"> .[ab]                          .</span>
@@ -693,16 +724,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-backspace-back-into-string [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[[a]</span>«b
-]
-  replace-in-keyboard <span class="Constant">171:literal/«</span>, <span class="Constant">8:literal/backspace</span>
+  assume-console [
+    type <span class="Constant">[[a]</span>«b]  <span class="Comment"># '«' is backspace</span>
+  ]
+  backspace:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, backspace:event
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
    <span class="Constant"> .\\\[ab                           .</span>
    <span class="Constant"> .                              .</span>
   ]
+<span class="CommentedCode">#?   $print [aaa] #? 1</span>
   screen-should-contain-in-color <span class="Constant">6:literal/cyan</span>, [
    <span class="Constant"> .\\\[ab                           .</span>
    <span class="Constant"> .                              .</span>
@@ -721,10 +755,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-highlight-start-of-assignment [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[a &lt;</span>
-<span class="Constant">]</span>
+  assume-console [
+    type <span class="Constant">[a &lt;]</span>
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
    <span class="Constant"> .a &lt;                           .</span>
@@ -742,10 +777,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-highlight-assignment [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[a &lt;- b</span>
-<span class="Constant">]</span>
+  assume-console [
+    type <span class="Constant">[a &lt;- b]</span>
+  ]
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
    <span class="Constant"> .a &lt;- b                        .</span>
@@ -763,11 +799,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-backspace-over-assignment [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[a &lt;-«</span>
-<span class="Constant">]</span>
-  replace-in-keyboard <span class="Constant">171:literal/«</span>, <span class="Constant">8:literal/backspace</span>
+  assume-console [
+    type <span class="Constant">[a &lt;-«]</span>  <span class="Comment"># '«' is backspace</span>
+  ]
+  backspace:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, backspace:event
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
    <span class="Constant"> .a &lt;                           .</span>
@@ -785,11 +823,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-assignment-continues-after-backspace [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[a &lt;-«-</span>
-<span class="Constant">]</span>
-  replace-in-keyboard <span class="Constant">171:literal/«</span>, <span class="Constant">8:literal/backspace</span>
+  assume-console [
+    type <span class="Constant">[a &lt;-«-]</span>  <span class="Comment"># '«' is backspace</span>
+  ]
+  backspace:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, backspace:event
+<span class="CommentedCode">#?   $print [aaa] #? 1</span>
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
   ]
   screen-should-contain [
    <span class="Constant"> .a &lt;-                          .</span>
@@ -807,11 +848,13 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> read-instruction-assignment-continues-after-backspace2 [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
-  assume-keyboard <span class="Constant">[a &lt;- ««-</span>
-<span class="Constant">]</span>
-  replace-in-keyboard <span class="Constant">171:literal/«</span>, <span class="Constant">8:literal/backspace</span>
+  assume-console [
+    type <span class="Constant">[a &lt;- ««-]</span>  <span class="Comment"># '«' is backspace</span>
+  ]
+  backspace:event<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, backspace:event
   run [
-    read-instruction keyboard:address, screen:address
+    read-instruction console:address, screen:address
 <span class="CommentedCode">#?     $browse-trace #? 1</span>
   ]
   screen-should-contain [

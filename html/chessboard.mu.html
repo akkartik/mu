@@ -12,15 +12,15 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .muScenario { color: #00af00; }
-.Delimiter { color: #c000c0; }
+.Delimiter { color: #a04060; }
 .SalientComment { color: #00ffff; }
-.Comment { color: #8080ff; }
-.Constant { color: #008080; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
-.muControl { color: #804000; }
+.Comment { color: #9090ff; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -38,7 +38,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># recipes are mu's names for functions</span>
 <span class="muRecipe">recipe</span> main [
-  switch-to-display  <span class="Comment"># take control of screen and keyboard</span>
+  open-console  <span class="Comment"># take control of screen, keyboard and mouse</span>
 
   <span class="Comment"># The chessboard recipe takes keyboard and screen objects as 'ingredients'.</span>
 <span class="Constant">  #</span>
@@ -50,11 +50,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># results. Here we clearly modify both keyboard and screen, so we return</span>
   <span class="Comment"># both.</span>
 <span class="Constant">  #</span>
-  <span class="Comment"># Here the keyboard and screen are both 0, which usually indicates real</span>
+  <span class="Comment"># Here the console and screen are both 0, which usually indicates real</span>
   <span class="Comment"># hardware rather than a fake for testing as you'll see below.</span>
-  <span class="Constant">0:literal/real-screen</span>, <span class="Constant">0:literal/real-keyboard</span><span class="Special"> &lt;- </span>chessboard <span class="Constant">0:literal/real-screen</span>, <span class="Constant">0:literal/real-keyboard</span>
+  <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/console</span><span class="Special"> &lt;- </span>chessboard <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/console</span>
 
-  return-to-console  <span class="Comment"># cleanup screen and keyboard</span>
+  close-console  <span class="Comment"># cleanup screen, keyboard and mouse</span>
 ]
 
 <span class="SalientComment">## But enough about mu. Here's what it looks like to run the chessboard program.</span>
@@ -64,10 +64,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment"># we'll make the screen really wide because the program currently prints out a long line</span>
   assume-screen <span class="Constant">120:literal/width</span>, <span class="Constant">20:literal/height</span>
   <span class="Comment"># initialize keyboard to type in a move</span>
-  assume-keyboard <span class="Constant">[a2-a4</span>
+  assume-console [
+    type <span class="Constant">[a2-a4</span>
 <span class="Constant">]</span>
+  ]
   run [
-    screen:address, keyboard:address<span class="Special"> &lt;- </span>chessboard screen:address, keyboard:address
+    screen:address, console:address<span class="Special"> &lt;- </span>chessboard screen:address, console:address
 <span class="CommentedCode">#?     $browse-trace #? 1</span>
 <span class="CommentedCode">#?     $close-trace #? 1</span>
     <span class="Comment"># icon for the cursor</span>
@@ -99,6 +101,17 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
+<span class="CommentedCode">#? scenario foo [ #? 1</span>
+<span class="CommentedCode">#?   $print [aaa] #? 1</span>
+<span class="CommentedCode">#?   run [ #? 1</span>
+<span class="CommentedCode">#?     1:number &lt;- copy 34:literal #? 1</span>
+<span class="CommentedCode">#?   ] #? 1</span>
+<span class="CommentedCode">#?   memory-should-contain [ #? 1</span>
+<span class="CommentedCode">#?     1 &lt;- 34 #? 1</span>
+<span class="CommentedCode">#?   ] #? 1</span>
+<span class="CommentedCode">#?   $print [zzz] #? 1</span>
+<span class="CommentedCode">#? ] #? 1</span>
+
 <span class="SalientComment">## Here's how 'chessboard' is implemented.</span>
 
 <span class="muRecipe">recipe</span> chessboard [
@@ -106,15 +119,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="CommentedCode">#?   $start-tracing #? 1</span>
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  keyboard:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-<span class="CommentedCode">#?   $print [screen: ], screen:address, [, keyboard: ], keyboard:address, [ </span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+<span class="CommentedCode">#?   $print [screen: ], screen:address, [, console: ], console:address, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
   board:address:array:address:array:character<span class="Special"> &lt;- </span>initial-position
   <span class="Comment"># hook up stdin</span>
-  stdin:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">10:literal/capacity</span>
-  start-running send-keys-to-channel:<span class="muRecipe">recipe</span>, keyboard:address, stdin:address:channel, screen:address
+  stdin:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">10:literal/capacity</span>
+  start-running send-keys-to-channel:<span class="muRecipe">recipe</span>, console:address, stdin:address:channel, screen:address
   <span class="Comment"># buffer lines in stdin</span>
-  buffered-stdin:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">10:literal/capacity</span>
+  buffered-stdin:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">10:literal/capacity</span>
   start-running buffer-lines:<span class="muRecipe">recipe</span>, stdin:address:channel, buffered-stdin:address:channel
   <span class="Delimiter">{</span>
     msg:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.</span>
@@ -159,7 +172,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="SalientComment">## a board is an array of files, a file is an array of characters (squares)</span>
 
-<span class="muRecipe">recipe</span> init-board [
+<span class="muRecipe">recipe</span> new-board [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   initial-position:address:array:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># assert(length(initial-position) == 64)</span>
@@ -173,14 +186,14 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     done?:boolean<span class="Special"> &lt;- </span>equal col:number, <span class="Constant">8:literal</span>
     <span class="muControl">break-if</span> done?:boolean
     file:address:address:array:character<span class="Special"> &lt;- </span>index-address board:address:array:address:array:character/deref, col:number
-    file:address:address:array:character/deref<span class="Special"> &lt;- </span>init-file initial-position:address:array:number, col:number
+    file:address:address:array:character/deref<span class="Special"> &lt;- </span>new-file initial-position:address:array:number, col:number
     col:number<span class="Special"> &lt;- </span>add col:number, <span class="Constant">1:literal</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="muControl">reply</span> board:address:array:address:array:character
 ]
 
-<span class="muRecipe">recipe</span> init-file [
+<span class="muRecipe">recipe</span> new-file [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   position:address:array:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   index:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -259,7 +272,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   <span class="Comment">#   B P _ _ _ _ p B</span>
   <span class="Comment">#   N P _ _ _ _ p n</span>
   <span class="Comment">#   R P _ _ _ _ p r</span>
-  initial-position:address:array:number<span class="Special"> &lt;- </span>init-array <span class="Constant">82:literal/R</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">114:literal/r</span>, <span class="Constant">78:literal/N</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">110:literal/n</span>, <span class="Constant">66:literal/B</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">98:literal/b</span>, <span class="Constant">81:literal/Q</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">113:literal/q</span>, <span class="Constant">75:literal/K</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">107:literal/k</span>, <span class="Constant">66:literal/B</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">98:literal/b</span>, <span class="Constant">78:literal/N</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">110:literal/n</span>, <span class="Constant">82:literal/R</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">114:literal/r</span>
+  initial-position:address:array:number<span class="Special"> &lt;- </span>new-array <span class="Constant">82:literal/R</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">114:literal/r</span>, <span class="Constant">78:literal/N</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">110:literal/n</span>, <span class="Constant">66:literal/B</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">98:literal/b</span>, <span class="Constant">81:literal/Q</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">113:literal/q</span>, <span class="Constant">75:literal/K</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">107:literal/k</span>, <span class="Constant">66:literal/B</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">98:literal/b</span>, <span class="Constant">78:literal/N</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">110:literal/n</span>, <span class="Constant">82:literal/R</span>, <span class="Constant">80:literal/P</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">32:literal/blank</span>, <span class="Constant">112:literal/p</span>, <span class="Constant">114:literal/r</span>
 <span class="CommentedCode">#?       82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r,</span>
 <span class="CommentedCode">#?       78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n,</span>
 <span class="CommentedCode">#?       66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b, </span>
@@ -268,7 +281,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="CommentedCode">#?       66:literal/B, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 98:literal/b,</span>
 <span class="CommentedCode">#?       78:literal/N, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 110:literal/n,</span>
 <span class="CommentedCode">#?       82:literal/R, 80:literal/P, 32:literal/blank, 32:literal/blank, 32:literal/blank, 32:literal/blank, 112:literal/p, 114:literal/r</span>
-  board:address:array:address:array:character<span class="Special"> &lt;- </span>init-board initial-position:address:array:number
+  board:address:array:address:array:character<span class="Special"> &lt;- </span>new-board initial-position:address:array:number
   <span class="muControl">reply</span> board:address:array:address:array:character
 ]
 
@@ -316,7 +329,7 @@ container move [
   from-file:number, quit?:boolean, error?:boolean<span class="Special"> &lt;- </span>read-file stdin:address:channel, screen:address
   <span class="muControl">reply-if</span> quit?:boolean, <span class="Constant">0:literal/dummy</span>, quit?:boolean, error?:boolean
   <span class="muControl">reply-if</span> error?:boolean, <span class="Constant">0:literal/dummy</span>, quit?:boolean, error?:boolean
-<span class="CommentedCode">#?   return-to-console #? 1</span>
+<span class="CommentedCode">#?   close-console #? 1</span>
   <span class="Comment"># construct the move object</span>
   result:address:move<span class="Special"> &lt;- </span>new move:type
   x:address:number<span class="Special"> &lt;- </span>get-address result:address:move/deref, from-file:offset
@@ -463,7 +476,7 @@ container move [
   assume-screen <span class="Constant">20:literal/width</span>, <span class="Constant">2:literal/height</span>
   run [
 <span class="CommentedCode">#?     $start-tracing #? 1</span>
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">2:literal</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2:literal</span>
 <span class="CommentedCode">#?     $print [aaa channel address: ], 1:address:channel, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
     2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
@@ -556,7 +569,7 @@ F read-move-blocking: routine failed to terminate on newline]
 <span class="muScenario">scenario</span> read-move-quit [
   assume-screen <span class="Constant">20:literal/width</span>, <span class="Constant">2:literal/height</span>
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">2:literal</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2:literal</span>
     2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine 2:number
@@ -583,7 +596,7 @@ F read-move-quit: routine failed to terminate on 'q']
 <span class="muScenario">scenario</span> read-move-illegal-file [
   assume-screen <span class="Constant">20:literal/width</span>, <span class="Constant">2:literal/height</span>
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">2:literal</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2:literal</span>
     2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine 2:number
@@ -604,7 +617,7 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
 <span class="muScenario">scenario</span> read-move-illegal-rank [
   assume-screen <span class="Constant">20:literal/width</span>, <span class="Constant">2:literal/height</span>
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">2:literal</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2:literal</span>
     2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine 2:number
@@ -626,7 +639,7 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
 <span class="muScenario">scenario</span> read-move-empty [
   assume-screen <span class="Constant">20:literal/width</span>, <span class="Constant">2:literal/height</span>
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">2:literal</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2:literal</span>
     2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine 2:number

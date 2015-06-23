@@ -12,17 +12,17 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.Constant { color: #008080; }
+.Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
 .traceAbsent { color: #c00000; }
-.Comment { color: #8080ff; }
-.Delimiter { color: #c000c0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
-.CommentedCode { color: #6c6c6c; }
+.Comment { color: #9090ff; }
 -->
 </style>
 
@@ -103,7 +103,7 @@ void transform_names<span class="Delimiter">(</span>const recipe_number r<span c
 <span class="Delimiter">}</span>
 
 void check_metadata<span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> vector&lt;type_number&gt; &gt;&amp; metadata<span class="Delimiter">,</span> const reagent&amp; x<span class="Delimiter">,</span> const recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>metadata<span class="Delimiter">.</span>find<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == metadata<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
     metadata[x<span class="Delimiter">.</span>name] = x<span class="Delimiter">.</span>types<span class="Delimiter">;</span>
@@ -112,11 +112,12 @@ void check_metadata<span class="Delimiter">(</span>map&lt;string<span class="Del
 <span class="Delimiter">}</span>
 
 bool disqualified<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">mutable</span><span class="Comment">*/</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
   if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
     raise &lt;&lt; <span class="Constant">&quot;missing type in &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>!x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Comment">// End Disqualified Reagents</span>
   if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>initialized<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -145,19 +146,19 @@ int find_element_name<span class="Delimiter">(</span>const type_number t<span cl
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>container<span class="Delimiter">.</span>element_names<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>container<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == name<span class="Delimiter">)</span> <span class="Identifier">return</span> i<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  raise &lt;&lt; <span class="Constant">&quot;unknown element &quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot; in container &quot;</span> &lt;&lt; t &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; die<span class="Delimiter">();</span>
+  raise &lt;&lt; <span class="Constant">&quot;unknown element &quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot; in container &quot;</span> &lt;&lt; Type[t]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; die<span class="Delimiter">();</span>
   <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 bool is_numeric_location<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;0&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// used for chaining lexical scopes</span>
   <span class="Identifier">return</span> is_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 bool is_named_location<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>is_special_name<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> !is_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
@@ -258,7 +259,7 @@ if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation
   <span class="Comment">// at least 2 args, and second arg is offset</span>
   assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt;= <span class="Constant">2</span><span class="Delimiter">);</span>
 <span class="CommentedCode">//?   cout &lt;&lt; inst.ingredients.at(1).to_string() &lt;&lt; '\n'; //? 1</span>
-  assert<span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
+  assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">.</span>find_first_not_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789&quot;</span><span class="Delimiter">)</span> == string::npos<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
   <span class="Comment">// since first non-address in base type must be a container, we don't have to canonize</span>
   type_number base_type = skip_addresses<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>types<span class="Delimiter">);</span>
@@ -294,7 +295,7 @@ recipe main [
 if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_number[<span class="Constant">&quot;maybe-convert&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// at least 2 args, and second arg is offset</span>
   assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt;= <span class="Constant">2</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>isa_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
+  assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">.</span>find_first_not_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789&quot;</span><span class="Delimiter">)</span> == string::npos<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
   <span class="Comment">// since first non-address in base type must be an exclusive container, we don't have to canonize</span>
   type_number base_type = skip_addresses<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>types<span class="Delimiter">);</span>

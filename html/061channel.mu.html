@@ -12,15 +12,15 @@
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
-* { font-size: 1em; }
+* { font-size: 1.05em; }
 .muScenario { color: #00af00; }
-.Delimiter { color: #c000c0; }
+.Delimiter { color: #a04060; }
 .SalientComment { color: #00ffff; }
-.Comment { color: #8080ff; }
-.Constant { color: #008080; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
-.muControl { color: #804000; }
+.Comment { color: #9090ff; }
+.muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -45,7 +45,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muScenario">scenario</span> channel [
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">3:literal/capacity</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3:literal/capacity</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">34:literal</span>
     2:number, 1:address:channel<span class="Special"> &lt;- </span>read 1:address:channel
   ]
@@ -66,8 +66,8 @@ container channel [
   data:address:array:location
 ]
 
-<span class="Comment"># result:address:channel &lt;- init-channel capacity:number</span>
-<span class="muRecipe">recipe</span> init-channel [
+<span class="Comment"># result:address:channel &lt;- new-channel capacity:number</span>
+<span class="muRecipe">recipe</span> new-channel [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   <span class="Comment"># result = new channel</span>
   result:address:channel<span class="Special"> &lt;- </span>new channel:type
@@ -154,7 +154,7 @@ container channel [
 
 <span class="muScenario">scenario</span> channel-initialization [
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">3:literal/capacity</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3:literal/capacity</span>
     2:number<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-full:offset
     3:number<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-free:offset
   ]
@@ -166,7 +166,7 @@ container channel [
 
 <span class="muScenario">scenario</span> channel-write-increments-free [
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">3:literal/capacity</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3:literal/capacity</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">34:literal</span>
     2:number<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-full:offset
     3:number<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-free:offset
@@ -179,7 +179,7 @@ container channel [
 
 <span class="muScenario">scenario</span> channel-read-increments-full [
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">3:literal/capacity</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3:literal/capacity</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">34:literal</span>
     _, 1:address:channel<span class="Special"> &lt;- </span>read 1:address:channel
     2:number<span class="Special"> &lt;- </span>get 1:address:channel/deref, first-full:offset
@@ -194,7 +194,7 @@ container channel [
 <span class="muScenario">scenario</span> channel-wrap [
   run [
     <span class="Comment"># channel with just 1 slot</span>
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">1:literal/capacity</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">1:literal/capacity</span>
     <span class="Comment"># write and read a value</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">34:literal</span>
     _, 1:address:channel<span class="Special"> &lt;- </span>read 1:address:channel
@@ -261,7 +261,7 @@ container channel [
 
 <span class="muScenario">scenario</span> channel-new-empty-not-full [
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">3:literal/capacity</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3:literal/capacity</span>
     2:boolean<span class="Special"> &lt;- </span>channel-empty? 1:address:channel
     3:boolean<span class="Special"> &lt;- </span>channel-full? 1:address:channel
   ]
@@ -273,7 +273,7 @@ container channel [
 
 <span class="muScenario">scenario</span> channel-write-not-empty [
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">3:literal/capacity</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">3:literal/capacity</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">34:literal</span>
     2:boolean<span class="Special"> &lt;- </span>channel-empty? 1:address:channel
     3:boolean<span class="Special"> &lt;- </span>channel-full? 1:address:channel
@@ -286,7 +286,7 @@ container channel [
 
 <span class="muScenario">scenario</span> channel-write-full [
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">1:literal/capacity</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">1:literal/capacity</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">34:literal</span>
     2:boolean<span class="Special"> &lt;- </span>channel-empty? 1:address:channel
     3:boolean<span class="Special"> &lt;- </span>channel-full? 1:address:channel
@@ -299,7 +299,7 @@ container channel [
 
 <span class="muScenario">scenario</span> channel-read-not-full [
   run [
-    1:address:channel<span class="Special"> &lt;- </span>init-channel <span class="Constant">1:literal/capacity</span>
+    1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">1:literal/capacity</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">34:literal</span>
     _, 1:address:channel<span class="Special"> &lt;- </span>read 1:address:channel
     2:boolean<span class="Special"> &lt;- </span>channel-empty? 1:address:channel
@@ -321,7 +321,7 @@ container channel [
   out:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># repeat forever</span>
   <span class="Delimiter">{</span>
-    line:address:buffer<span class="Special"> &lt;- </span>init-buffer, <span class="Constant">30:literal</span>
+    line:address:buffer<span class="Special"> &lt;- </span>new-buffer, <span class="Constant">30:literal</span>
     <span class="Comment"># read characters from 'in' until newline, copy into line</span>
     <span class="Delimiter">{</span>
 <span class="Constant">      +next-character</span>
@@ -332,7 +332,7 @@ container channel [
         backspace?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">8:literal</span>
         <span class="muControl">break-unless</span> backspace?:boolean
         <span class="Comment"># drop previous character</span>
-<span class="CommentedCode">#?         return-to-console #? 2</span>
+<span class="CommentedCode">#?         close-console #? 2</span>
 <span class="CommentedCode">#?         $print [backspace! #? 1</span>
 <span class="CommentedCode">#? ] #? 1</span>
         <span class="Delimiter">{</span>
@@ -355,12 +355,12 @@ container channel [
       line:address:buffer<span class="Special"> &lt;- </span>buffer-append line:address:buffer, c:character
       line-done?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
       <span class="muControl">break-if</span> line-done?:boolean
-      <span class="Comment"># stop buffering on eof (currently only generated by fake keyboard)</span>
-      empty-fake-keyboard?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">0:literal/eof</span>
-      <span class="muControl">break-if</span> empty-fake-keyboard?:boolean
+      <span class="Comment"># stop buffering on eof (currently only generated by fake console)</span>
+      eof?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">0:literal/eof</span>
+      <span class="muControl">break-if</span> eof?:boolean
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
-<span class="CommentedCode">#?     return-to-console #? 1</span>
+<span class="CommentedCode">#?     close-console #? 1</span>
     <span class="Comment"># copy line into 'out'</span>
 <span class="CommentedCode">#?     $print [buffer-lines: emitting</span>
 <span class="CommentedCode">#? ]</span>
@@ -386,8 +386,8 @@ container channel [
 
 <span class="muScenario">scenario</span> buffer-lines-blocks-until-newline [
   run [
-    1:address:channel/stdin<span class="Special"> &lt;- </span>init-channel <span class="Constant">10:literal/capacity</span>
-    2:address:channel/buffered-stdin<span class="Special"> &lt;- </span>init-channel <span class="Constant">10:literal/capacity</span>
+    1:address:channel/stdin<span class="Special"> &lt;- </span>new-channel <span class="Constant">10:literal/capacity</span>
+    2:address:channel/buffered-stdin<span class="Special"> &lt;- </span>new-channel <span class="Constant">10:literal/capacity</span>
     3:boolean<span class="Special"> &lt;- </span>channel-empty? 2:address:channel/buffered-stdin
     assert 3:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty <span class="muRecipe">after</span> init]
