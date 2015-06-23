@@ -371,6 +371,33 @@ void check_container_field_types() {
   }
 }
 
+//:: Construct types out of their constituent fields. Doesn't currently do
+//:: type-checking but *does* match sizes.
+:(before "End Primitive Recipe Declarations")
+MERGE,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["merge"] = MERGE;
+:(before "End Primitive Recipe Implementations")
+case MERGE: {
+  products.resize(1);
+  for (long long int i = 0; i < SIZE(ingredients); ++i)
+    for (long long int j = 0; j < SIZE(ingredients.at(i)); ++j)
+      products.at(0).push_back(ingredients.at(i).at(j));
+  break;
+}
+
+:(scenario merge)
+container foo [
+  x:number
+  y:number
+]
+
+recipe main [
+  1:foo <- merge 3:literal, 4:literal
+]
++mem: storing 3 in location 1
++mem: storing 4 in location 2
+
 //:: helpers
 
 :(code)

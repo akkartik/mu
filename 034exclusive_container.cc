@@ -126,3 +126,20 @@ exclusive-container foo [
 else if (command == "exclusive-container") {
   insert_container(command, exclusive_container, in);
 }
+
+//:: To construct exclusive containers out of variant types, use 'merge'.
+:(scenario lift_to_exclusive_container)
+exclusive-container foo [
+  x:number
+  y:number
+]
+
+recipe main [
+  1:number <- copy 34:literal
+  2:foo <- merge 0:literal/x, 1:number
+  4:foo <- merge 1:literal/x, 1:number
+]
++mem: storing 0 in location 2
++mem: storing 34 in location 3
++mem: storing 1 in location 4
++mem: storing 34 in location 5
