@@ -29,10 +29,12 @@ scenario print-board-and-read-move [
   # we'll make the screen really wide because the program currently prints out a long line
   assume-screen 120:literal/width, 20:literal/height
   # initialize keyboard to type in a move
-  assume-keyboard [a2-a4
+  assume-console [
+    type [a2-a4
 ]
+  ]
   run [
-    screen:address, keyboard:address <- chessboard screen:address, keyboard:address
+    screen:address, console:address <- chessboard screen:address, console:address
 #?     $browse-trace #? 1
 #?     $close-trace #? 1
     # icon for the cursor
@@ -64,6 +66,17 @@ scenario print-board-and-read-move [
   ]
 ]
 
+#? scenario foo [ #? 1
+#?   $print [aaa] #? 1
+#?   run [ #? 1
+#?     1:number <- copy 34:literal #? 1
+#?   ] #? 1
+#?   memory-should-contain [ #? 1
+#?     1 <- 34 #? 1
+#?   ] #? 1
+#?   $print [zzz] #? 1
+#? ] #? 1
+
 ## Here's how 'chessboard' is implemented.
 
 recipe chessboard [
@@ -71,13 +84,13 @@ recipe chessboard [
 #?   $start-tracing #? 1
   default-space:address:array:location <- new location:type, 30:literal
   screen:address <- next-ingredient
-  keyboard:address <- next-ingredient
-#?   $print [screen: ], screen:address, [, keyboard: ], keyboard:address, [ 
+  console:address <- next-ingredient
+#?   $print [screen: ], screen:address, [, console: ], console:address, [ 
 #? ] #? 1
   board:address:array:address:array:character <- initial-position
   # hook up stdin
   stdin:address:channel <- new-channel 10:literal/capacity
-  start-running send-keys-to-channel:recipe, keyboard:address, stdin:address:channel, screen:address
+  start-running send-keys-to-channel:recipe, console:address, stdin:address:channel, screen:address
   # buffer lines in stdin
   buffered-stdin:address:channel <- new-channel 10:literal/capacity
   start-running buffer-lines:recipe, stdin:address:channel, buffered-stdin:address:channel

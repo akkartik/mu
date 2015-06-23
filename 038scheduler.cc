@@ -44,6 +44,7 @@ long long int Current_routine_index = 0;
 long long int Scheduling_interval = 500;
 :(before "End Setup")
 Scheduling_interval = 500;
+Routines.clear();
 :(replace{} "void run(recipe_number r)")
 void run(recipe_number r) {
 //?   cerr << "AAA 4\n"; //? 1
