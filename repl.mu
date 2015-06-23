@@ -412,11 +412,10 @@ scenario read-instruction-color-comment [
 scenario read-instruction-cancel-comment-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
   assume-console [
-    type [#a]
-    press 8  # backspace
-    press 8  # backspace
-    type [z]
+    type [#a««z]
   ]
+  backspace:event <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, backspace:event
   run [
     read-instruction console:address, screen:address
   ]
@@ -433,12 +432,10 @@ scenario read-instruction-cancel-comment-on-backspace [
 scenario read-instruction-cancel-comment-on-backspace2 [
   assume-screen 30:literal/width, 5:literal/height
   assume-console [
-    type [#ab]
-    press 8  # backspace
-    press 8  # backspace
-    press 8  # backspace
-    type [z]
+    type [#ab«««z]
   ]
+  backspace:event <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, backspace:event
   run [
     read-instruction console:address, screen:address
   ]
@@ -455,10 +452,10 @@ scenario read-instruction-cancel-comment-on-backspace2 [
 scenario read-instruction-cancel-comment-on-backspace3 [
   assume-screen 30:literal/width, 5:literal/height
   assume-console [
-    type [#a]
-    press 8  # backspace
-    type [z]
+    type [#a«z]
   ]
+  backspace:event <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, backspace:event
   run [
     read-instruction console:address, screen:address
   ]
@@ -643,12 +640,13 @@ scenario read-instruction-color-string-inside-string [
 
 scenario read-instruction-cancel-string-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
-  # need to escape the '[' once for 'scenario' and once for 'assume-console'
   assume-console [
-    type [\\\\\[a]
-    press 8  # backspace
-    type [z]
+    type [(a««z]  # '(' is '[' and '«' is backspace
   ]
+  open-bracket:event <- merge 0:literal/text, 91:literal/open-bracket, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 40:literal/open-paren, open-bracket:event
+  backspace:event <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, backspace:event
   run [
 #?     d:address:array:event <- get console:address/deref, data:offset #? 1
 #?     $print [a: ], d:address:array:event #? 1
@@ -669,12 +667,14 @@ scenario read-instruction-cancel-string-on-backspace [
 scenario read-instruction-cancel-string-inside-string-on-backspace [
   assume-screen 30:literal/width, 5:literal/height
   assume-console [
-    type [\\\\\[a[b]]
-    press 8  # backspace
-    press 8  # backspace
-    press 8  # backspace
-    type [b\\\\\]]
+    type [(a[b]«««b)]  # '(' is '[' and '«' is backspace
   ]
+  open-bracket:event <- merge 0:literal/text, 91:literal/open-bracket, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 40:literal/open-paren, open-bracket:event
+  close-bracket:event <- merge 0:literal/text, 93:literal/close-bracket, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 41:literal/close-paren, close-bracket:event
+  backspace:event <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, backspace:event
   run [
     read-instruction console:address, screen:address
   ]
@@ -691,10 +691,10 @@ scenario read-instruction-cancel-string-inside-string-on-backspace [
 scenario read-instruction-backspace-back-into-string [
   assume-screen 30:literal/width, 5:literal/height
   assume-console [
-    type [[a]]
-    press 8  # backspace
-    type [b]
+    type [[a]«b]  # '«' is backspace
   ]
+  backspace:event <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, backspace:event
   run [
     read-instruction console:address, screen:address
   ]
@@ -766,9 +766,10 @@ scenario read-instruction-highlight-assignment [
 scenario read-instruction-backspace-over-assignment [
   assume-screen 30:literal/width, 5:literal/height
   assume-console [
-    type [a <-]
-    press 8  # backspace
+    type [a <-«]  # '«' is backspace
   ]
+  backspace:event <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, backspace:event
   run [
     read-instruction console:address, screen:address
   ]
@@ -789,10 +790,10 @@ scenario read-instruction-backspace-over-assignment [
 scenario read-instruction-assignment-continues-after-backspace [
   assume-screen 30:literal/width, 5:literal/height
   assume-console [
-    type [a <-]
-    press 8  # backspace
-    type [-]
+    type [a <-«-]  # '«' is backspace
   ]
+  backspace:event <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, backspace:event
 #?   $print [aaa] #? 1
   run [
     read-instruction console:address, screen:address
@@ -814,11 +815,10 @@ scenario read-instruction-assignment-continues-after-backspace [
 scenario read-instruction-assignment-continues-after-backspace2 [
   assume-screen 30:literal/width, 5:literal/height
   assume-console [
-    type [a <- ]
-    press 8  # backspace
-    press 8  # backspace
-    type [-]
+    type [a <- ««-]  # '«' is backspace
   ]
+  backspace:event <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, backspace:event
   run [
     read-instruction console:address, screen:address
 #?     $browse-trace #? 1

@@ -157,6 +157,32 @@ scenario events-in-scenario [
   ]
 ]
 
+//: Deal with special keys and unmatched brackets by allowing each test to
+//: independently choose the unicode symbol to denote them.
+:(before "End Primitive Recipe Declarations")
+REPLACE_IN_CONSOLE,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["replace-in-console"] = REPLACE_IN_CONSOLE;
+:(before "End Primitive Recipe Implementations")
+case REPLACE_IN_CONSOLE: {
+  assert(scalar(ingredients.at(0)));
+//?   cerr << "console: " << Memory[CONSOLE] << '\n'; //? 1
+  if (!Memory[CONSOLE])
+    raise << "console not initialized\n" << die();
+  long long int console_data = Memory[Memory[CONSOLE]+1];
+//?   cerr << "console data starts at " << console_data << '\n'; //? 1
+  long long int size = Memory[console_data];  // array size
+//?   cerr << "size of console data is " << size << '\n'; //? 1
+  for (long long int i = 0, curr = console_data+1; i < size; ++i, curr+=size_of_event()) {
+//?     cerr << curr << '\n'; //? 1
+    if (Memory[curr] != /*text*/0) continue;
+    if (Memory[curr+1] != ingredients.at(0).at(0)) continue;
+    for (long long int n = 0; n < size_of_event(); ++n)
+      Memory[curr+n] = ingredients.at(1).at(n);
+  }
+  break;
+}
+
 :(code)
 long long int count_events(const recipe& r) {
   long long int result = 0;
