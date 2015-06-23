@@ -1,15 +1,15 @@
 parse: instruction: assume-screen
 parse:   ingredient: {name: "10", properties: ["10": "literal", "width": ]}
 parse:   ingredient: {name: "5", properties: ["5": "literal", "height": ]}
-parse: instruction: assume-events
+parse: instruction: assume-console
 parse:   ingredient: {name: "", properties: [_: "literal-string"]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    s:address:array:character <- new [abc]\n    editor:address:editor-data <- new-editor s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right\n    event-loop screen:address, events:address, editor:address:editor-data\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    s:address:array:character <- new [abc]\n    editor:address:editor-data <- new-editor s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right\n    event-loop screen:address, console:address, editor:address:editor-data\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "\n    .abc       .\n    .          .\n  ", properties: [_: "literal-string"]}
 after-brace: recipe editor-handles-empty-event-queue
 after-brace: new-fake-screen ...
-after-brace: assume-events ...
+after-brace: assume-console ...
 after-brace: run ...
 after-brace: screen-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
@@ -7213,11 +7213,11 @@ schedule: editor-handles-empty-event-queue
 9999 mem: location 1002 is 1031
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 900
- 101 run: assume-events []
+ 101 run: assume-console []
  101 run: run [
     s:address:array:character <- new [abc]
     editor:address:editor-data <- new-editor s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-    event-loop screen:address, events:address, editor:address:editor-data
+    event-loop screen:address, console:address, editor:address:editor-data
   ]
 parse: instruction: new
 parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
@@ -7231,7 +7231,7 @@ parse:   ingredient: {name: "5", properties: ["5": "literal", "right": ]}
 parse:   product: {name: "editor", properties: ["editor": "address":"editor-data"]}
 parse: instruction: event-loop
 parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
-parse:   ingredient: {name: "events", properties: ["events": "address"]}
+parse:   ingredient: {name: "console", properties: ["console": "address"]}
 parse:   ingredient: {name: "editor", properties: ["editor": "address":"editor-data"]}
 name: assign s 1
 name: assign editor 2
@@ -8927,37 +8927,37 @@ schedule: new-editor/run1001/editor-handles-empty-event-queue
 9999 mem: location 1182 is 1206
 9999 run: result 0 is 1206
 9999 mem: storing 1206 in location 2
- 101 run: event-loop screen:address, events:address, editor:address:editor-data
+ 101 run: event-loop screen:address, console:address, editor:address:editor-data
 9999 mem: location 900 is 1031
-9999 mem: location 902 is 1169
+9999 mem: location 901 is 1169
 9999 mem: location 2 is 1206
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1689
  102 run: screen:address <- next-ingredient 
 9999 mem: storing 1031 in location 1691
- 102 run: events:address <- next-ingredient 
+ 102 run: console:address <- next-ingredient 
 9999 mem: storing 1169 in location 1692
  102 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1206 in location 1693
- 102 run: e:event, events:address, found?:boolean, quit?:boolean <- read-event events:address
+ 102 run: e:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
 9999 mem: location 1692 is 1169
  103 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1720
- 103 run: x:address:events <- next-ingredient 
+ 103 run: x:address:console <- next-ingredient 
 9999 mem: storing 1169 in location 1722
- 103 run: break-unless x:address:events, 
+ 103 run: break-unless x:address:console, 
 9999 mem: location 1722 is 1169
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address x:address:events/deref, index:offset
+ 103 run: idx:address:number <- get-address x:address:console/deref, index:offset
 9999 mem: location 1722 is 1169
 9999 mem: location 1169 is 0
 9999 mem: location 1170 is 1168
 9999 mem: location 1722 is 1169
 9999 run: address to copy is 1169
 9999 mem: storing 1169 in location 1723
- 103 run: buf:address:array:event <- get x:address:events/deref, data:offset
+ 103 run: buf:address:array:event <- get x:address:console/deref, data:offset
 9999 mem: location 1722 is 1169
 9999 mem: location 1169 is 0
 9999 mem: location 1170 is 1168
@@ -8982,7 +8982,7 @@ schedule: new-editor/run1001/editor-handles-empty-event-queue
  103 run: dummy:address:event <- new event:type
 9999 mem: new alloc: 1751
 9999 mem: storing 1751 in location 1727
- 103 run: reply dummy:address:event/deref, x:address:events/same-as-ingredient:0, 1:literal/found, 1:literal/quit
+ 103 run: reply dummy:address:event/deref, x:address:console/same-as-ingredient:0, 1:literal/found, 1:literal/quit
 9999 mem: location 1727 is 1751
 9999 mem: location 1751 is 0
 9999 mem: location 1752 is 0

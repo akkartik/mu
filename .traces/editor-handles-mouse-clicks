@@ -1,17 +1,17 @@
 parse: instruction: assume-screen
 parse:   ingredient: {name: "10", properties: ["10": "literal", "width": ]}
 parse:   ingredient: {name: "5", properties: ["5": "literal", "height": ]}
-parse: instruction: assume-events
+parse: instruction: assume-console
 parse:   ingredient: {name: "\n    left-click 0, 1\n  ", properties: [_: "literal-string"]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right\n    event-loop screen:address, events:address, 2:address:editor-data\n    3:number <- get 2:address:editor-data/deref, cursor-row:offset\n    4:number <- get 2:address:editor-data/deref, cursor-column:offset\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right\n    event-loop screen:address, console:address, 2:address:editor-data\n    3:number <- get 2:address:editor-data/deref, cursor-row:offset\n    4:number <- get 2:address:editor-data/deref, cursor-column:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "\n    .abc       .\n    .          .\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3 <- 0  # cursor is at row 0..\n    4 <- 1  # ..and column 1\n  ", properties: [_: "literal-string"]}
 after-brace: recipe editor-handles-mouse-clicks
 after-brace: new-fake-screen ...
-after-brace: assume-events ...
+after-brace: assume-console ...
 after-brace: run ...
 after-brace: screen-should-contain ...
 after-brace: memory-should-contain ...
@@ -7216,7 +7216,7 @@ schedule: editor-handles-mouse-clicks
 9999 mem: location 1002 is 1031
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 900
- 101 run: assume-events [
+ 101 run: assume-console [
     left-click 0, 1
   ]
 parse: instruction: left-click
@@ -7225,7 +7225,7 @@ parse:   ingredient: {name: "1", properties: ["1": ]}
  101 run: run [
     1:address:array:character <- new [abc]
     2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-    event-loop screen:address, events:address, 2:address:editor-data
+    event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -7241,7 +7241,7 @@ parse:   ingredient: {name: "5", properties: ["5": "literal", "right": ]}
 parse:   product: {name: "2", properties: ["2": "address":"editor-data"]}
 parse: instruction: event-loop
 parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
-parse:   ingredient: {name: "events", properties: ["events": "address"]}
+parse:   ingredient: {name: "console", properties: ["console": "address"]}
 parse:   ingredient: {name: "2", properties: ["2": "address":"editor-data"]}
 parse: instruction: get
 parse:   ingredient: {name: "2", properties: ["2": "address":"editor-data", "deref": ]}
@@ -8947,37 +8947,37 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
 9999 mem: location 1186 is 1210
 9999 run: result 0 is 1210
 9999 mem: storing 1210 in location 2
- 101 run: event-loop screen:address, events:address, 2:address:editor-data
+ 101 run: event-loop screen:address, console:address, 2:address:editor-data
 9999 mem: location 900 is 1031
-9999 mem: location 902 is 1173
+9999 mem: location 901 is 1173
 9999 mem: location 2 is 1210
  102 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1693
  102 run: screen:address <- next-ingredient 
 9999 mem: storing 1031 in location 1695
- 102 run: events:address <- next-ingredient 
+ 102 run: console:address <- next-ingredient 
 9999 mem: storing 1173 in location 1696
  102 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1210 in location 1697
- 102 run: e:event, events:address, found?:boolean, quit?:boolean <- read-event events:address
+ 102 run: e:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
 9999 mem: location 1696 is 1173
  103 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1724
- 103 run: x:address:events <- next-ingredient 
+ 103 run: x:address:console <- next-ingredient 
 9999 mem: storing 1173 in location 1726
- 103 run: break-unless x:address:events, 
+ 103 run: break-unless x:address:console, 
 9999 mem: location 1726 is 1173
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address x:address:events/deref, index:offset
+ 103 run: idx:address:number <- get-address x:address:console/deref, index:offset
 9999 mem: location 1726 is 1173
 9999 mem: location 1173 is 0
 9999 mem: location 1174 is 1168
 9999 mem: location 1726 is 1173
 9999 run: address to copy is 1173
 9999 mem: storing 1173 in location 1727
- 103 run: buf:address:array:event <- get x:address:events/deref, data:offset
+ 103 run: buf:address:array:event <- get x:address:console/deref, data:offset
 9999 mem: location 1726 is 1173
 9999 mem: location 1173 is 0
 9999 mem: location 1174 is 1168
@@ -8989,7 +8989,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
  103 run: max:number <- length buf:address:array:event/deref
 9999 mem: location 1728 is 1168
 9999 mem: location 1168 is 1
-9999 mem: location 1169 is 1
+9999 mem: location 1169 is 2
 9999 mem: location 1170 is 65513
 9999 mem: location 1171 is 0
 9999 mem: location 1172 is 1
@@ -9006,7 +9006,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
  103 run: result:event <- index buf:address:array:event/deref, idx:address:number/deref
 9999 mem: location 1728 is 1168
 9999 mem: location 1168 is 1
-9999 mem: location 1169 is 1
+9999 mem: location 1169 is 2
 9999 mem: location 1170 is 65513
 9999 mem: location 1171 is 0
 9999 mem: location 1172 is 1
@@ -9017,11 +9017,11 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
 9999 mem: location 1173 is 0
 9999 run: address to copy is 1169
 9999 run: its type is event
-9999 mem: location 1169 is 1
+9999 mem: location 1169 is 2
 9999 mem: location 1170 is 65513
 9999 mem: location 1171 is 0
 9999 mem: location 1172 is 1
-9999 mem: storing 1 in location 1732
+9999 mem: storing 2 in location 1732
 9999 mem: storing 65513 in location 1733
 9999 mem: storing 0 in location 1734
 9999 mem: storing 1 in location 1735
@@ -9030,17 +9030,17 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
 9999 mem: location 1173 is 0
 9999 mem: location 1727 is 1173
 9999 mem: storing 1 in location 1173
- 103 run: reply result:event, x:address:events/same-as-ingredient:0, 1:literal/found, 0:literal/quit
-9999 mem: location 1732 is 1
+ 103 run: reply result:event, x:address:console/same-as-ingredient:0, 1:literal/found, 0:literal/quit
+9999 mem: location 1732 is 2
 9999 mem: location 1733 is 65513
 9999 mem: location 1734 is 0
 9999 mem: location 1735 is 1
 9999 mem: location 1726 is 1173
-9999 run: result 0 is [1, 65513, 0, 1]
+9999 run: result 0 is [2, 65513, 0, 1]
 9999 run: result 1 is 1173
 9999 run: result 2 is 1
 9999 run: result 3 is 0
-9999 mem: storing 1 in location 1698
+9999 mem: storing 2 in location 1698
 9999 mem: storing 65513 in location 1699
 9999 mem: storing 0 in location 1700
 9999 mem: storing 1 in location 1701
@@ -9055,16 +9055,16 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
 9999 run: jump-if fell through
  102 run: trace [app], [next-event]
    1 app: next-event
- 102 run: m:address:mouse-event <- maybe-convert e:event, mouse:variant
-9999 mem: location 1698 is 1
+ 102 run: m:address:single-touch-event <- maybe-convert e:event, pointer:variant
+9999 mem: location 1698 is 2
 9999 mem: location 1699 is 65513
 9999 mem: location 1700 is 0
 9999 mem: location 1701 is 1
 9999 mem: storing 1699 in location 1704
- 102 run: break-unless m:address:mouse-event, 
+ 102 run: break-unless m:address:single-touch-event, 
 9999 mem: location 1704 is 1699
 9999 run: jump-unless fell through
- 102 run: editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, m:address:mouse-event
+ 102 run: editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, m:address:single-touch-event
 9999 mem: location 1697 is 1210
 9999 mem: location 1704 is 1699
  103 run: default-space:address:array:location <- new location:type, 30:literal
@@ -9072,7 +9072,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
 9999 mem: new alloc: 1755
  103 run: editor:address:editor-data <- next-ingredient 
 9999 mem: storing 1210 in location 1757
- 103 run: m:address:mouse-event <- next-ingredient 
+ 103 run: m:address:single-touch-event <- next-ingredient 
 9999 mem: storing 1699 in location 1758
  103 run: row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
 9999 mem: location 1757 is 1210
@@ -9089,7 +9089,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
 9999 mem: location 1757 is 1210
 9999 run: address to copy is 1218
 9999 mem: storing 1218 in location 1759
- 103 run: row:address:number/deref <- get m:address:mouse-event/deref, row:offset
+ 103 run: row:address:number/deref <- get m:address:single-touch-event/deref, row:offset
 9999 mem: location 1758 is 1699
 9999 mem: location 1699 is 65513
 9999 mem: location 1700 is 0
@@ -9115,7 +9115,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
 9999 mem: location 1757 is 1210
 9999 run: address to copy is 1219
 9999 mem: storing 1219 in location 1760
- 103 run: column:address:number/deref <- get m:address:mouse-event/deref, column:offset
+ 103 run: column:address:number/deref <- get m:address:single-touch-event/deref, column:offset
 9999 mem: location 1758 is 1699
 9999 mem: location 1699 is 65513
 9999 mem: location 1700 is 0
@@ -9128,24 +9128,24 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
 9999 mem: storing 1 in location 1219
  102 run: loop +next-event:label
 9999 run: jumping to instruction 6
- 102 run: e:event, events:address, found?:boolean, quit?:boolean <- read-event events:address
+ 102 run: e:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
 9999 mem: location 1696 is 1173
  103 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1786
- 103 run: x:address:events <- next-ingredient 
+ 103 run: x:address:console <- next-ingredient 
 9999 mem: storing 1173 in location 1788
- 103 run: break-unless x:address:events, 
+ 103 run: break-unless x:address:console, 
 9999 mem: location 1788 is 1173
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address x:address:events/deref, index:offset
+ 103 run: idx:address:number <- get-address x:address:console/deref, index:offset
 9999 mem: location 1788 is 1173
 9999 mem: location 1173 is 1
 9999 mem: location 1174 is 1168
 9999 mem: location 1788 is 1173
 9999 run: address to copy is 1173
 9999 mem: storing 1173 in location 1789
- 103 run: buf:address:array:event <- get x:address:events/deref, data:offset
+ 103 run: buf:address:array:event <- get x:address:console/deref, data:offset
 9999 mem: location 1788 is 1173
 9999 mem: location 1173 is 1
 9999 mem: location 1174 is 1168
@@ -9157,7 +9157,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
  103 run: max:number <- length buf:address:array:event/deref
 9999 mem: location 1790 is 1168
 9999 mem: location 1168 is 1
-9999 mem: location 1169 is 1
+9999 mem: location 1169 is 2
 9999 mem: location 1170 is 65513
 9999 mem: location 1171 is 0
 9999 mem: location 1172 is 1
@@ -9174,7 +9174,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks
  103 run: dummy:address:event <- new event:type
 9999 mem: new alloc: 1817
 9999 mem: storing 1817 in location 1793
- 103 run: reply dummy:address:event/deref, x:address:events/same-as-ingredient:0, 1:literal/found, 1:literal/quit
+ 103 run: reply dummy:address:event/deref, x:address:console/same-as-ingredient:0, 1:literal/found, 1:literal/quit
 9999 mem: location 1793 is 1817
 9999 mem: location 1817 is 0
 9999 mem: location 1818 is 0
