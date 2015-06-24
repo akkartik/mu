@@ -156,7 +156,7 @@ trace_stream* Trace_stream = NULL;
 #define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
 // Warnings should go straight to cerr by default since calls to trace() have
 // some unfriendly constraints (they delay printing, they can't nest)
-#define raise  ((!Trace_stream || !Hide_warnings) ? cerr /*do print*/ : Trace_stream->stream("warn"))
+#define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream("warn"))
 
 // A separate helper for debugging. We should only trace domain-specific
 // facts. For everything else use log.

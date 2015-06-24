@@ -271,7 +271,7 @@ case CHECK_FOR_INTERACTION: {
     break;
   }
   if (event_type == TB_EVENT_MOUSE) {
-    products.at(0).push_back(/*mouse event*/1);
+    products.at(0).push_back(/*touch event*/2);
     products.at(0).push_back(event.key);  // which button, etc.
     products.at(0).push_back(event.y);  // row
     products.at(0).push_back(event.x);  // column
