@@ -296,7 +296,9 @@ recipe move-cursor-in-editor [
   row:address:number/deref <- get t:touch-event, row:offset
   column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   column:address:number/deref <- get t:touch-event, column:offset
-  # todo: adjust 'cursor' pointer into editor data
+  # clear cursor pointer; will be set correctly during render
+  cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, cursor:offset
+  cursor:address:address:duplex-list/deref <- copy 0:literal
 ]
 
 scenario editor-handles-empty-event-queue [
