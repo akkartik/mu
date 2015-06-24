@@ -152,7 +152,6 @@ recipe render [
   left:number <- next-ingredient
   screen-height:number <- screen-height screen:address
   right:number <- next-ingredient
-  cursor:address:duplex-list <- get editor:address:editor-data/deref, cursor:offset
   # traversing editor
   curr:address:duplex-list <- get editor:address:editor-data/deref, top-of-screen:offset
   # traversing screen
@@ -166,12 +165,6 @@ recipe render [
     break-unless curr:address:duplex-list
     off-screen?:boolean <- greater-or-equal row:number, screen-height:number
     break-if off-screen?:boolean
-    {
-      at-cursor?:boolean <- equal curr:address:duplex-list, cursor:address:duplex-list
-      break-unless at-cursor?:boolean
-      cursor-row:number <- copy row:number
-      cursor-column:number <- copy column:number
-    }
     c:character <- get curr:address:duplex-list/deref, value:offset
     {
       # newline? move to left rather than 0
@@ -205,6 +198,8 @@ recipe render [
     column:number <- add column:number, 1:literal
     loop
   }
+  cursor-row:number <- get result:address:editor-data/deref, cursor-row:offset
+  cursor-column:number <- get result:address:editor-data/deref, cursor-column:offset
   move-cursor screen:address, cursor-row:number, cursor-column:number
   reply row:number, screen:address/same-as-ingredient:1
 ]
