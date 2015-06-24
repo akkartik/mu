@@ -388,8 +388,8 @@ Mu builds on many ideas that have come before, especially:
   and others for highlighting the value of separating concerns and stepwise
   refinement;
 - [Lisp](http://www.paulgraham.com/rootsoflisp.html) for showing the power of
-  dynamic languages, late binding and providing the right primitives a la
-  carte, especially lisp macros;
+  dynamic languages, late binding and providing the right primitives *a la
+  carte*, especially lisp macros;
 - The folklore of debugging by print and the trace facility in many lisp
   systems;
 - Automated tests for showing the value of developing programs inside an
