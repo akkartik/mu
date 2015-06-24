@@ -198,8 +198,8 @@ recipe render [
     column:number <- add column:number, 1:literal
     loop
   }
-  cursor-row:number <- get result:address:editor-data/deref, cursor-row:offset
-  cursor-column:number <- get result:address:editor-data/deref, cursor-column:offset
+  cursor-row:number <- get editor:address:editor-data/deref, cursor-row:offset
+  cursor-column:number <- get editor:address:editor-data/deref, cursor-column:offset
   move-cursor screen:address, cursor-row:number, cursor-column:number
   reply row:number, screen:address/same-as-ingredient:1
 ]
