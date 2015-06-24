@@ -74,7 +74,7 @@ recipe new-editor [
   x:address:number/deref <- copy left:number
   x:address:number <- get-address result:address:editor-data/deref, right:offset
   x:address:number/deref <- copy right:number
-  # initialize bottom to top for starters
+  # bottom = top (in case of early exit)
   x:address:number <- get-address result:address:editor-data/deref, bottom:offset
   x:address:number/deref <- copy top:number
   # initialize cursor
