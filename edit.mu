@@ -320,14 +320,13 @@ recipe move-cursor-in-editor [
   default-space:address:array:location <- new location:type, 30:literal
   editor:address:editor-data <- next-ingredient
   t:touch-event <- next-ingredient
-  row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
-  row:address:number/deref <- get t:touch-event, row:offset
-  column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
-  column:address:number/deref <- get t:touch-event, column:offset
-  # clear cursor pointer; will be set correctly during render
-  cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
-  cursor:address:address:duplex-list/deref <- copy 0:literal
+  # update cursor
+  cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
+  cursor-row:address:number/deref <- get t:touch-event, row:offset
+  cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+  cursor-column:address:number/deref <- get t:touch-event, column:offset
   render editor:address:editor-data
+  reply editor:address:editor-data/same-as-ingredient:0
 ]
 
 recipe insert-at-cursor [
@@ -339,6 +338,9 @@ recipe insert-at-cursor [
 #?   $print before-cursor:address:address:duplex-list/deref, [ ], d:address:duplex-list, [ 
 #? ] #? 1
   insert-duplex c:character, before-cursor:address:address:duplex-list/deref
+  # update cursor
+  cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+  cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
   render editor:address:editor-data
   reply editor:address:editor-data/same-as-ingredient:0
 ]
@@ -379,7 +381,7 @@ scenario editor-handles-mouse-clicks [
   ]
 ]
 
-scenario editor-inserts-keys-at-cursor [
+scenario editor-inserts-characters-at-cursor [
   assume-screen 10:literal/width, 5:literal/height
   assume-console [
     type [0]
@@ -393,6 +395,22 @@ scenario editor-inserts-keys-at-cursor [
   ]
   screen-should-contain [
     .0adbc     .
+    .          .
+  ]
+]
+
+scenario editor-moves-cursor-after-inserting-characters [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    type [01]
+  ]
+  run [
+    1:address:array:character <- new [abc]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .01abc     .
     .          .
   ]
 ]
