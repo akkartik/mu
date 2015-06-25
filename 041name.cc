@@ -225,7 +225,8 @@ if (inst.operation == Recipe_number["get"]
   // at least 2 args, and second arg is offset
   assert(SIZE(inst.ingredients) >= 2);
 //?   cout << inst.ingredients.at(1).to_string() << '\n'; //? 1
-  assert(is_literal(inst.ingredients.at(1)));
+  if (!is_literal(inst.ingredients.at(1)))
+    raise << inst.to_string() << ": expected literal; got " << inst.ingredients.at(1).to_string() << '\n' << die();
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be a container, we don't have to canonize
     type_number base_type = skip_addresses(inst.ingredients.at(0).types);

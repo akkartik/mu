@@ -113,6 +113,8 @@ bool next_instruction(istream& in, instruction* curr) {
     ++p;  // skip <-
   }
 
+  if (p == words.end())
+    raise << "instruction prematurely ended with '<-'\n" << die();
   curr->name = *p;
   if (Recipe_number.find(*p) == Recipe_number.end()) {
     Recipe_number[*p] = Next_recipe_number++;
