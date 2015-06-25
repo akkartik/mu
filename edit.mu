@@ -67,6 +67,8 @@ recipe new-editor [
   result:address:editor-data <- new editor-data:type
   d:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
   d:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
+#?   $print d:address:address:duplex-list/deref, [ 
+#? ] #? 1
   # initialize screen-related fields
   sc:address:address:screen <- get-address result:address:editor-data/deref, screen:offset
   sc:address:address:screen/deref <- copy screen:address
@@ -98,6 +100,8 @@ recipe new-editor [
   {
 #?     $print idx:number, [ vs ], len:number, [ 
 #? ] #? 1
+#?     $print [append to ], curr:address:duplex-list, [ 
+#? ] #? 1
     done?:boolean <- greater-or-equal idx:number, len:number
     break-if done?:boolean
     c:character <- index s:address:array:character/deref, idx:number
@@ -114,7 +118,7 @@ recipe new-editor [
   y:address:address:duplex-list/deref <- copy init:address:address:duplex-list/deref
   # perform initial rendering to screen
   bottom:address:number <- get-address result:address:editor-data/deref, bottom:offset
-  bottom:address:number/deref, screen:address <- render result:address:editor-data, screen:address, top:number, left:number, right:number
+  result:address:editor-data <- render result:address:editor-data
   reply result:address:editor-data
 ]
 
@@ -146,11 +150,11 @@ scenario editor-initializes-without-data [
 recipe render [
   default-space:address:array:location <- new location:type, 30:literal
   editor:address:editor-data <- next-ingredient
-  screen:address <- next-ingredient
-  top:number <- next-ingredient
-  left:number <- next-ingredient
+  screen:address <- get editor:address:editor-data/deref, screen:offset
+  top:number <- get editor:address:editor-data/deref, top:offset
+  left:number <- get editor:address:editor-data/deref, left:offset
   screen-height:number <- screen-height screen:address
-  right:number <- next-ingredient
+  right:number <- get editor:address:editor-data/deref, right:offset
   # traversing editor
   curr:address:duplex-list <- get editor:address:editor-data/deref, top-of-screen:offset
   curr:address:duplex-list <- next-duplex curr:address:duplex-list
@@ -174,7 +178,7 @@ recipe render [
       at-cursor?:boolean <- equal column:number, cursor-column:number
       break-unless at-cursor?:boolean
       before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
-      before-cursor:address:address:duplex-list/deref <- copy curr:address:duplex-list
+      before-cursor:address:address:duplex-list/deref <- prev-duplex curr:address:duplex-list
     }
     c:character <- get curr:address:duplex-list/deref, value:offset
     {
@@ -209,10 +213,14 @@ recipe render [
     column:number <- add column:number, 1:literal
     loop
   }
+  # bottom = row
+  bottom:address:number <- get-address editor:address:editor-data/deref, bottom:offset
+  bottom:address:number/deref <- copy row:number
+  # update cursor
   cursor-row:number <- get editor:address:editor-data/deref, cursor-row:offset
   cursor-column:number <- get editor:address:editor-data/deref, cursor-column:offset
   move-cursor screen:address, cursor-row:number, cursor-column:number
-  reply row:number, screen:address/same-as-ingredient:1
+  reply editor:address:editor-data/same-as-ingredient:0
 ]
 
 scenario editor-initially-prints-multiple-lines [
@@ -293,9 +301,12 @@ recipe event-loop [
       editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, t:address:touch-event/deref
       loop +next-event:label
     }
-#?     $print e:event #? 1
-    c:address:character <- maybe-convert e:event, text:variant
-#?     close-console #? 1
+    {
+      c:address:character <- maybe-convert e:event, text:variant
+      break-unless c:address:character
+      editor:address:editor-data <- insert-at-cursor editor:address:editor-data, c:address:character/deref
+      loop +next-event:label
+    }
     assert c:address:character, [event was of unknown type; neither keyboard nor mouse]
     loop
   }
@@ -312,6 +323,20 @@ recipe move-cursor-in-editor [
   # clear cursor pointer; will be set correctly during render
   cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
   cursor:address:address:duplex-list/deref <- copy 0:literal
+  render editor:address:editor-data
+]
+
+recipe insert-at-cursor [
+  default-space:address:array:location <- new location:type, 30:literal
+  editor:address:editor-data <- next-ingredient
+  c:character <- next-ingredient
+  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
+  d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
+#?   $print before-cursor:address:address:duplex-list/deref, [ ], d:address:duplex-list, [ 
+#? ] #? 1
+  insert-duplex c:character, before-cursor:address:address:duplex-list/deref
+  render editor:address:editor-data
+  reply editor:address:editor-data/same-as-ingredient:0
 ]
 
 scenario editor-handles-empty-event-queue [
@@ -347,6 +372,24 @@ scenario editor-handles-mouse-clicks [
   memory-should-contain [
     3 <- 0  # cursor is at row 0..
     4 <- 1  # ..and column 1
+  ]
+]
+
+scenario editor-inserts-keys-at-cursor [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    type [0]
+    left-click 0, 2
+    type [d]
+  ]
+  run [
+    1:address:array:character <- new [abc]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .0adbc     .
+    .          .
   ]
 ]
 
