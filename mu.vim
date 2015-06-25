@@ -49,7 +49,7 @@ syntax keyword muKeyword default-space next-ingredient ingredient | highlight li
 
 syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
 syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
-syntax keyword muControl reply reply-if reply-unless jump jump-if jump-unless loop loop-if loop-unless break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
+syntax keyword muControl reply reply-if reply-unless jump jump-if jump-unless loop loop-if loop-unless break break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
 " common keywords
 syntax keyword muRecipe recipe before after | highlight muRecipe ctermfg=208
 syntax keyword muScenario scenario | highlight muScenario ctermfg=34
