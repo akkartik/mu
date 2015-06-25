@@ -33,7 +33,7 @@ scenario editor-initially-prints-string-to-screen [
 ## text to the screen.
 
 container editor-data [
-  # doubly linked list of characters (head contains a special marker)
+  # doubly linked list of characters (head contains a special sentinel marker)
   data:address:duplex-list
   # location of top-left of screen inside data (scrolling)
   top-of-screen:address:duplex-list
@@ -319,6 +319,7 @@ recipe event-loop [
     # otherwise it's a special key to control the editor
     k:address:number <- maybe-convert e:event, keycode:variant
     assert k:address:number, [event was of unknown type; neither keyboard nor mouse]
+    d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
     before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
     cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
     cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
@@ -327,11 +328,13 @@ recipe event-loop [
     {
       next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
       break-unless next-character?:boolean
+      # if not at end of text
       next:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
       break-unless next:address:duplex-list
+      # scan to next character
       before-cursor:address:address:duplex-list/deref <- copy next:address:duplex-list
       nextc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
-      # if it's a newline
+      # if it's a newline, move cursor to start of next row
       {
         at-newline?:boolean <- equal nextc:character, 10:literal/newline
         break-unless at-newline?:boolean
@@ -339,20 +342,43 @@ recipe event-loop [
         cursor-column:address:number/deref <- copy 0:literal
         break +render:label
       }
-      # otherwise
+      # otherwise move cursor one character right
       cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
     }
     # left arrow
     {
       prev-character?:boolean <- equal k:address:number/deref, 65515:literal/left-arrow
       break-unless prev-character?:boolean
+      # if not at start of text
       prev:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/deref
       break-unless prev:address:duplex-list
-      before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
-      cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
+      # if cursor not at left margin, move one character left
+      {
+        at-left-margin?:boolean <- equal cursor-column:address:number/deref, 0:literal
+        break-if at-left-margin?:boolean
+        cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
+        break +render:label
+      }
+      # if at left margin, figure out how long the previous line is (there's
+      # guaranteed to be a previous line, since we're not at start of text)
+      # and position cursor after it
+      # before-cursor must currently be at a newline
+      prevc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
+      previous-character-must-be-newline:boolean <- equal prevc:character, 10:literal/newline
+      assert previous-character-must-be-newline:boolean, [aaa]
+      # compute length of previous line
+      end-of-line:number <- previous-line-length before-cursor:address:address:duplex-list/deref, d:address:duplex-list
+#?       $print [before: ] cursor-row:address:number/deref, [/], cursor-row:address:number, [ ], cursor-column:address:number/deref, [/], cursor-column:address:number, [ ], end-of-line:number, [ 
+#? ]
+      cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
+      cursor-column:address:number/deref <- copy end-of-line:number
+#?       $print [after: ] cursor-row:address:number/deref, [/], cursor-row:address:number, [ ], cursor-column:address:number/deref, [/], cursor-column:address:number, [ ], end-of-line:number, [ 
+#? ]
     }
     +render
     render editor:address:editor-data
+#?     $print [after render: ] cursor-row:address:number/deref, [/], cursor-row:address:number, [ ], cursor-column:address:number/deref, [/], cursor-column:address:number, [ ], end-of-line:number, [ 
+#? ]
     loop
   }
 ]
@@ -398,6 +424,32 @@ recipe insert-at-cursor [
   +render
   render editor:address:editor-data
   reply editor:address:editor-data/same-as-ingredient:0
+]
+
+# takes a pointer 'curr' into the doubly-linked list and its sentinel marker,
+# counts the length of the previous line before the 'curr' pointer.
+recipe previous-line-length [
+  default-space:address:array:location <- new location:type, 30:literal
+  curr:address:duplex-list <- next-ingredient
+  start:address:duplex-list <- next-ingredient
+  result:number <- copy 0:literal
+  reply-unless curr:address:duplex-list, result:number
+  at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
+  reply-if at-start?:boolean, result:number
+  {
+    curr:address:duplex-list <- prev-duplex curr:address:duplex-list
+    break-unless curr:address:duplex-list
+    at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
+    break-if at-start?:boolean
+    c:character <- get curr:address:duplex-list/deref, value:offset
+    at-newline?:boolean <- equal c:character 10:literal/newline
+    break-if at-newline?:boolean
+    result:number <- add result:number, 1:literal
+    loop
+  }
+#?   $print result:number, [ 
+#? ] #? 1
+  reply result:number
 ]
 
 scenario editor-handles-empty-event-queue [
@@ -561,6 +613,96 @@ scenario editor-moves-cursor-left-with-key [
   ]
   screen-should-contain [
     .a0bc      .
+    .          .
+  ]
+]
+
+scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
+  assume-screen 10:literal/width, 5:literal/height
+  # position cursor at start of second line (so there's no previous newline)
+  assume-console [
+    left-click 1, 0
+    press 65515  # left arrow
+    type [0]
+  ]
+  run [
+    1:address:array:character <- new [abc
+d]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abc0      .
+    .d         .
+    .          .
+  ]
+]
+
+scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  # position cursor further down (so there's a previous newline)
+  assume-console [
+    left-click 2, 0
+    press 65515  # left arrow
+    type [0]
+  ]
+  run [
+    1:address:array:character <- new [abc
+def
+g]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abc       .
+    .def0      .
+    .g         .
+    .          .
+  ]
+]
+
+scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-3 [
+  assume-screen 10:literal/width, 5:literal/height
+  # position cursor at start of text
+  assume-console [
+    left-click 0, 0
+    press 65515  # left arrow should have no effect
+    type [0]
+  ]
+  run [
+    1:address:array:character <- new [abc
+def
+g]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .0abc      .
+    .def       .
+    .g         .
+    .          .
+  ]
+]
+
+scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4 [
+  assume-screen 10:literal/width, 5:literal/height
+  # position cursor right after empty line
+  assume-console [
+    left-click 2, 0
+    press 65515  # left arrow
+    type [0]
+  ]
+  run [
+    1:address:array:character <- new [abc
+
+d]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abc       .
+    .0         .
+    .d         .
     .          .
   ]
 ]

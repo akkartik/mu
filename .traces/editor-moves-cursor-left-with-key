@@ -10943,6 +10943,23 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: storing 1835 in location 1842
  102 run: assert k:address:number, [event was of unknown type; neither keyboard nor mouse]
 9999 mem: location 1842 is 1835
+ 102 run: d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
+9999 mem: location 1833 is 1218
+9999 mem: location 1218 is 1259
+9999 mem: location 1219 is 1259
+9999 mem: location 1220 is 1358
+9999 mem: location 1221 is 1031
+9999 mem: location 1222 is 0
+9999 mem: location 1223 is 0
+9999 mem: location 1224 is 0
+9999 mem: location 1225 is 4
+9999 mem: location 1226 is 0
+9999 mem: location 1227 is 2
+9999 mem: location 1833 is 1218
+9999 run: address to copy is 1218
+9999 run: its type is address
+9999 mem: location 1218 is 1259
+9999 mem: storing 1259 in location 1843
  102 run: before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
 9999 mem: location 1833 is 1218
 9999 mem: location 1218 is 1259
@@ -10957,7 +10974,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 1227 is 2
 9999 mem: location 1833 is 1218
 9999 run: address to copy is 1220
-9999 mem: storing 1220 in location 1843
+9999 mem: storing 1220 in location 1844
  102 run: cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
 9999 mem: location 1833 is 1218
 9999 mem: location 1218 is 1259
@@ -10972,7 +10989,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 1227 is 2
 9999 mem: location 1833 is 1218
 9999 run: address to copy is 1226
-9999 mem: storing 1226 in location 1844
+9999 mem: storing 1226 in location 1845
  102 run: cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
 9999 mem: location 1833 is 1218
 9999 mem: location 1218 is 1259
@@ -10987,23 +11004,23 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 1227 is 2
 9999 mem: location 1833 is 1218
 9999 run: address to copy is 1227
-9999 mem: storing 1227 in location 1845
+9999 mem: storing 1227 in location 1846
  102 run: next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
 9999 mem: location 1842 is 1835
 9999 mem: location 1835 is 65515
-9999 mem: storing 0 in location 1846
+9999 mem: storing 0 in location 1847
  102 run: break-unless next-character?:boolean, 
-9999 mem: location 1846 is 0
-9999 run: jumping to instruction 42
+9999 mem: location 1847 is 0
+9999 run: jumping to instruction 43
  102 run: prev-character?:boolean <- equal k:address:number/deref, 65515:literal/left-arrow
 9999 mem: location 1842 is 1835
 9999 mem: location 1835 is 65515
-9999 mem: storing 1 in location 1850
+9999 mem: storing 1 in location 1851
  102 run: break-unless prev-character?:boolean, 
-9999 mem: location 1850 is 1
+9999 mem: location 1851 is 1
 9999 run: jump-unless fell through
  102 run: prev:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/deref
-9999 mem: location 1843 is 1220
+9999 mem: location 1844 is 1220
 9999 mem: location 1220 is 1358
  103 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
@@ -11026,19 +11043,24 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
  103 run: reply result:address:duplex-list
 9999 mem: location 2328 is 1293
 9999 run: result 0 is 1293
-9999 mem: storing 1293 in location 1851
+9999 mem: storing 1293 in location 1852
  102 run: break-unless prev:address:duplex-list, 
-9999 mem: location 1851 is 1293
+9999 mem: location 1852 is 1293
 9999 run: jump-unless fell through
- 102 run: before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
-9999 mem: location 1851 is 1293
-9999 mem: location 1843 is 1220
-9999 mem: storing 1293 in location 1220
- 102 run: cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
-9999 mem: location 1845 is 1227
+ 102 run: at-left-margin?:boolean <- equal cursor-column:address:number/deref, 0:literal
+9999 mem: location 1846 is 1227
 9999 mem: location 1227 is 2
-9999 mem: location 1845 is 1227
+9999 mem: storing 0 in location 1853
+ 102 run: break-if at-left-margin?:boolean, 
+9999 mem: location 1853 is 0
+9999 run: jump-if fell through
+ 102 run: cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
+9999 mem: location 1846 is 1227
+9999 mem: location 1227 is 2
+9999 mem: location 1846 is 1227
 9999 mem: storing 1 in location 1227
+ 102 run: break +render:label
+9999 run: jumping to instruction 63
  102 run: render editor:address:editor-data
 9999 mem: location 1833 is 1218
  103 run: default-space:address:array:location <- new location:type, 30:literal
@@ -11050,7 +11072,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 2358 is 1218
 9999 mem: location 1218 is 1259
 9999 mem: location 1219 is 1259
-9999 mem: location 1220 is 1293
+9999 mem: location 1220 is 1358
 9999 mem: location 1221 is 1031
 9999 mem: location 1222 is 0
 9999 mem: location 1223 is 0
@@ -11067,7 +11089,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 2358 is 1218
 9999 mem: location 1218 is 1259
 9999 mem: location 1219 is 1259
-9999 mem: location 1220 is 1293
+9999 mem: location 1220 is 1358
 9999 mem: location 1221 is 1031
 9999 mem: location 1222 is 0
 9999 mem: location 1223 is 0
@@ -11084,7 +11106,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 2358 is 1218
 9999 mem: location 1218 is 1259
 9999 mem: location 1219 is 1259
-9999 mem: location 1220 is 1293
+9999 mem: location 1220 is 1358
 9999 mem: location 1221 is 1031
 9999 mem: location 1222 is 0
 9999 mem: location 1223 is 0
@@ -11127,7 +11149,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 2358 is 1218
 9999 mem: location 1218 is 1259
 9999 mem: location 1219 is 1259
-9999 mem: location 1220 is 1293
+9999 mem: location 1220 is 1358
 9999 mem: location 1221 is 1031
 9999 mem: location 1222 is 0
 9999 mem: location 1223 is 0
@@ -11144,7 +11166,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 2358 is 1218
 9999 mem: location 1218 is 1259
 9999 mem: location 1219 is 1259
-9999 mem: location 1220 is 1293
+9999 mem: location 1220 is 1358
 9999 mem: location 1221 is 1031
 9999 mem: location 1222 is 0
 9999 mem: location 1223 is 0
@@ -11191,7 +11213,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 2358 is 1218
 9999 mem: location 1218 is 1259
 9999 mem: location 1219 is 1259
-9999 mem: location 1220 is 1293
+9999 mem: location 1220 is 1358
 9999 mem: location 1221 is 1031
 9999 mem: location 1222 is 0
 9999 mem: location 1223 is 0
@@ -11208,7 +11230,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 2358 is 1218
 9999 mem: location 1218 is 1259
 9999 mem: location 1219 is 1259
-9999 mem: location 1220 is 1293
+9999 mem: location 1220 is 1358
 9999 mem: location 1221 is 1031
 9999 mem: location 1222 is 0
 9999 mem: location 1223 is 0
@@ -11617,7 +11639,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: location 2358 is 1218
 9999 mem: location 1218 is 1259
 9999 mem: location 1219 is 1259
-9999 mem: location 1220 is 1293
+9999 mem: location 1220 is 1358
 9999 mem: location 1221 is 1031
 9999 mem: location 1222 is 0
 9999 mem: location 1223 is 0
@@ -12460,6 +12482,7 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: storing 48 in location 2737
 9999 mem: storing 0 in location 2738
 9999 mem: storing 0 in location 2739
+schedule: read-event/event-loop/run1001/editor-moves-cursor-left-with-key
  103 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 9999 mem: location 2731 is 1181
 9999 mem: location 1181 is 2
@@ -12482,7 +12505,6 @@ schedule: print-character/render/move-cursor-in-editor/event-loop/run1001/editor
 9999 mem: storing 1181 in location 1832
 9999 mem: storing 1 in location 1838
 9999 mem: storing 0 in location 1839
-schedule: event-loop/run1001/editor-moves-cursor-left-with-key
  102 run: loop-unless found?:boolean, 
 9999 mem: location 1838 is 1
 9999 run: jump-unless fell through
@@ -14410,7 +14432,7 @@ schedule: event-loop/run1001/editor-moves-cursor-left-with-key
 9999 run: jump-unless fell through
  102 run: break-if quit?:boolean, 
 9999 mem: location 1839 is 1
-9999 run: jumping to instruction 54
+9999 run: jumping to instruction 65
  100 run: screen-should-contain [
     .a0bc      .
     .          .
