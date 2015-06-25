@@ -277,14 +277,14 @@ recipe event-loop [
     break-if quit?:boolean  # only in tests
     trace [app], [next-event]
     {
-      t:address:touch-event <- maybe-convert e:event, 2:variant
+      t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t:address:touch-event
       editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, t:address:touch-event/deref
       loop +next-event:label
     }
-    $print e:event
+#?     $print e:event #? 1
     c:address:character <- maybe-convert e:event, text:variant
-    close-console
+#?     close-console #? 1
     assert c:address:character, [event was of unknown type; neither keyboard nor mouse]
     loop
   }
