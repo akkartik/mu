@@ -495,6 +495,28 @@ scenario editor-moves-cursor-right-with-key [
   ]
 ]
 
+scenario editor-moves-cursor-to-next-line-with-right-arrow [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    press 65514  # right arrow
+    press 65514  # right arrow
+    press 65514  # right arrow
+    press 65514  # right arrow - next line
+    type [0]
+  ]
+  run [
+    1:address:array:character <- new [abc
+d]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abc       .
+    .0d        .
+    .          .
+  ]
+]
+
 ## helpers for drawing editor borders
 
 recipe draw-box [
