@@ -1,5 +1,5 @@
 mu: makefile enumerate/enumerate tangle/tangle mu.cc termbox/libtermbox.a
-	c++ -g -Wall -Wextra -fno-strict-aliasing mu.cc termbox/libtermbox.a -o mu
+	c++ -g -O3 -Wall -Wextra -fno-strict-aliasing mu.cc termbox/libtermbox.a -o mu
 
 # To see what the program looks like after all layers have been applied, read
 # mu.cc
