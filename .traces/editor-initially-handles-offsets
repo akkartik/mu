@@ -2006,6 +2006,40 @@ after-brace: new-editor ...
  103 run: column:number <- copy left:number
 9999 mem: location 1377 is 1
 9999 mem: storing 1 in location 1382
+ 103 run: cursor-row:number <- get editor:address:editor-data/deref, cursor-row:offset
+9999 mem: location 1374 is 1133
+9999 mem: location 1133 is 1174
+9999 mem: location 1134 is 1174
+9999 mem: location 1135 is 1174
+9999 mem: location 1136 is 1031
+9999 mem: location 1137 is 0
+9999 mem: location 1138 is 1
+9999 mem: location 1139 is 0
+9999 mem: location 1140 is 4
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 1
+9999 mem: location 1374 is 1133
+9999 run: address to copy is 1141
+9999 run: its type is number
+9999 mem: location 1141 is 0
+9999 mem: storing 0 in location 1383
+ 103 run: cursor-column:number <- get editor:address:editor-data/deref, cursor-column:offset
+9999 mem: location 1374 is 1133
+9999 mem: location 1133 is 1174
+9999 mem: location 1134 is 1174
+9999 mem: location 1135 is 1174
+9999 mem: location 1136 is 1031
+9999 mem: location 1137 is 0
+9999 mem: location 1138 is 1
+9999 mem: location 1139 is 0
+9999 mem: location 1140 is 4
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 1
+9999 mem: location 1374 is 1133
+9999 run: address to copy is 1142
+9999 run: its type is number
+9999 mem: location 1142 is 1
+9999 mem: storing 1 in location 1384
  103 run: move-cursor screen:address, row:number, column:number
 9999 mem: location 1375 is 1031
 9999 mem: location 1381 is 0
@@ -2058,10 +2092,43 @@ after-brace: new-editor ...
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1381 is 0
 9999 mem: location 1378 is 3
-9999 mem: storing 0 in location 1383
+9999 mem: storing 0 in location 1385
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1383 is 0
+9999 mem: location 1385 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1381 is 0
+9999 mem: location 1383 is 0
+9999 mem: storing 1 in location 1386
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1386 is 1
+9999 run: jump-unless fell through
+ 103 run: at-cursor?:boolean <- equal column:number, cursor-column:number
+9999 mem: location 1382 is 1
+9999 mem: location 1384 is 1
+9999 mem: storing 1 in location 1387
+ 103 run: break-unless at-cursor?:boolean, 
+9999 mem: location 1387 is 1
+9999 run: jump-unless fell through
+ 103 run: before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
+9999 mem: location 1374 is 1133
+9999 mem: location 1133 is 1174
+9999 mem: location 1134 is 1174
+9999 mem: location 1135 is 1174
+9999 mem: location 1136 is 1031
+9999 mem: location 1137 is 0
+9999 mem: location 1138 is 1
+9999 mem: location 1139 is 0
+9999 mem: location 1140 is 4
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 1
+9999 mem: location 1374 is 1133
+9999 run: address to copy is 1135
+9999 mem: storing 1135 in location 1388
+ 103 run: before-cursor:address:address:duplex-list/deref <- copy curr:address:duplex-list
+9999 mem: location 1380 is 1208
+9999 mem: location 1388 is 1135
+9999 mem: storing 1208 in location 1135
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1380 is 1208
 9999 mem: location 1208 is 97
@@ -2071,23 +2138,23 @@ after-brace: new-editor ...
 9999 run: address to copy is 1208
 9999 run: its type is number
 9999 mem: location 1208 is 97
-9999 mem: storing 97 in location 1384
+9999 mem: storing 97 in location 1389
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1384 is 97
-9999 mem: storing 0 in location 1385
+9999 mem: location 1389 is 97
+9999 mem: storing 0 in location 1390
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1385 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1390 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1382 is 1
 9999 mem: location 1379 is 4
-9999 mem: storing 0 in location 1386
+9999 mem: storing 0 in location 1391
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1386 is 0
-9999 run: jumping to instruction 40
+9999 mem: location 1391 is 0
+9999 run: jumping to instruction 50
  103 run: print-character screen:address, c:character
 9999 mem: location 1375 is 1031
-9999 mem: location 1384 is 97
+9999 mem: location 1389 is 97
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1496
@@ -2289,17 +2356,31 @@ after-brace: new-editor ...
 9999 mem: location 1382 is 1
 9999 mem: storing 2 in location 1382
  103 run: loop 
-9999 run: jumping to instruction 13
+9999 run: jumping to instruction 15
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1380 is 1273
 9999 run: jump-unless fell through
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1381 is 0
 9999 mem: location 1378 is 3
-9999 mem: storing 0 in location 1383
+9999 mem: storing 0 in location 1385
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1383 is 0
+9999 mem: location 1385 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1381 is 0
+9999 mem: location 1383 is 0
+9999 mem: storing 1 in location 1386
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1386 is 1
+9999 run: jump-unless fell through
+ 103 run: at-cursor?:boolean <- equal column:number, cursor-column:number
+9999 mem: location 1382 is 2
+9999 mem: location 1384 is 1
+9999 mem: storing 0 in location 1387
+ 103 run: break-unless at-cursor?:boolean, 
+9999 mem: location 1387 is 0
+9999 run: jumping to instruction 26
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1380 is 1273
 9999 mem: location 1273 is 98
@@ -2309,23 +2390,23 @@ after-brace: new-editor ...
 9999 run: address to copy is 1273
 9999 run: its type is number
 9999 mem: location 1273 is 98
-9999 mem: storing 98 in location 1384
+9999 mem: storing 98 in location 1389
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1384 is 98
-9999 mem: storing 0 in location 1385
+9999 mem: location 1389 is 98
+9999 mem: storing 0 in location 1390
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1385 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1390 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1382 is 2
 9999 mem: location 1379 is 4
-9999 mem: storing 0 in location 1386
+9999 mem: storing 0 in location 1391
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1386 is 0
-9999 run: jumping to instruction 40
+9999 mem: location 1391 is 0
+9999 run: jumping to instruction 50
  103 run: print-character screen:address, c:character
 9999 mem: location 1375 is 1031
-9999 mem: location 1384 is 98
+9999 mem: location 1389 is 98
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1558
@@ -2527,17 +2608,31 @@ after-brace: new-editor ...
 9999 mem: location 1382 is 2
 9999 mem: storing 3 in location 1382
  103 run: loop 
-9999 run: jumping to instruction 13
+9999 run: jumping to instruction 15
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1380 is 1338
 9999 run: jump-unless fell through
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1381 is 0
 9999 mem: location 1378 is 3
-9999 mem: storing 0 in location 1383
+9999 mem: storing 0 in location 1385
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1383 is 0
+9999 mem: location 1385 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1381 is 0
+9999 mem: location 1383 is 0
+9999 mem: storing 1 in location 1386
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1386 is 1
+9999 run: jump-unless fell through
+ 103 run: at-cursor?:boolean <- equal column:number, cursor-column:number
+9999 mem: location 1382 is 3
+9999 mem: location 1384 is 1
+9999 mem: storing 0 in location 1387
+ 103 run: break-unless at-cursor?:boolean, 
+9999 mem: location 1387 is 0
+9999 run: jumping to instruction 26
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1380 is 1338
 9999 mem: location 1338 is 99
@@ -2547,23 +2642,23 @@ after-brace: new-editor ...
 9999 run: address to copy is 1338
 9999 run: its type is number
 9999 mem: location 1338 is 99
-9999 mem: storing 99 in location 1384
+9999 mem: storing 99 in location 1389
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1384 is 99
-9999 mem: storing 0 in location 1385
+9999 mem: location 1389 is 99
+9999 mem: storing 0 in location 1390
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1385 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1390 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1382 is 3
 9999 mem: location 1379 is 4
-9999 mem: storing 0 in location 1386
+9999 mem: storing 0 in location 1391
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1386 is 0
-9999 run: jumping to instruction 40
+9999 mem: location 1391 is 0
+9999 run: jumping to instruction 50
  103 run: print-character screen:address, c:character
 9999 mem: location 1375 is 1031
-9999 mem: location 1384 is 99
+9999 mem: location 1389 is 99
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1620
@@ -2592,6 +2687,7 @@ after-brace: new-editor ...
 9999 mem: location 1622 is 1031
 9999 run: address to copy is 1033
 9999 mem: storing 1033 in location 1626
+schedule: print-character/render/new-editor/run1001/editor-initially-handles-offsets
  104 run: column:address:number <- get-address x:address:screen/deref, cursor-column:offset
 9999 mem: location 1622 is 1031
 9999 mem: location 1031 is 3
@@ -2727,7 +2823,6 @@ after-brace: new-editor ...
 9999 mem: location 1034 is 3
 9999 mem: location 1640 is 4
 9999 mem: storing 0 in location 1641
-schedule: print-character/render/new-editor/run1001/editor-initially-handles-offsets
  104 run: break-if at-right?:boolean, 
 9999 mem: location 1641 is 0
 9999 run: jump-if fell through
@@ -2766,15 +2861,15 @@ schedule: print-character/render/new-editor/run1001/editor-initially-handles-off
 9999 mem: location 1382 is 3
 9999 mem: storing 4 in location 1382
  103 run: loop 
-9999 run: jumping to instruction 13
+9999 run: jumping to instruction 15
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1380 is 0
-9999 run: jumping to instruction 45
+9999 run: jumping to instruction 55
  103 run: cursor-row:number <- get editor:address:editor-data/deref, cursor-row:offset
 9999 mem: location 1374 is 1133
 9999 mem: location 1133 is 1174
 9999 mem: location 1134 is 1174
-9999 mem: location 1135 is 1174
+9999 mem: location 1135 is 1208
 9999 mem: location 1136 is 1031
 9999 mem: location 1137 is 0
 9999 mem: location 1138 is 1
@@ -2786,12 +2881,12 @@ schedule: print-character/render/new-editor/run1001/editor-initially-handles-off
 9999 run: address to copy is 1141
 9999 run: its type is number
 9999 mem: location 1141 is 0
-9999 mem: storing 0 in location 1390
+9999 mem: storing 0 in location 1383
  103 run: cursor-column:number <- get editor:address:editor-data/deref, cursor-column:offset
 9999 mem: location 1374 is 1133
 9999 mem: location 1133 is 1174
 9999 mem: location 1134 is 1174
-9999 mem: location 1135 is 1174
+9999 mem: location 1135 is 1208
 9999 mem: location 1136 is 1031
 9999 mem: location 1137 is 0
 9999 mem: location 1138 is 1
@@ -2803,11 +2898,11 @@ schedule: print-character/render/new-editor/run1001/editor-initially-handles-off
 9999 run: address to copy is 1142
 9999 run: its type is number
 9999 mem: location 1142 is 1
-9999 mem: storing 1 in location 1391
+9999 mem: storing 1 in location 1384
  103 run: move-cursor screen:address, cursor-row:number, cursor-column:number
 9999 mem: location 1375 is 1031
-9999 mem: location 1390 is 0
-9999 mem: location 1391 is 1
+9999 mem: location 1383 is 0
+9999 mem: location 1384 is 1
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1682

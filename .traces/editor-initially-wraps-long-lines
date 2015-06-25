@@ -2542,6 +2542,40 @@ after-brace: new-editor ...
  103 run: column:number <- copy left:number
 9999 mem: location 1641 is 0
 9999 mem: storing 0 in location 1646
+ 103 run: cursor-row:number <- get editor:address:editor-data/deref, cursor-row:offset
+9999 mem: location 1638 is 1137
+9999 mem: location 1137 is 1178
+9999 mem: location 1138 is 1178
+9999 mem: location 1139 is 1178
+9999 mem: location 1140 is 1031
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
+9999 mem: location 1144 is 4
+9999 mem: location 1145 is 0
+9999 mem: location 1146 is 0
+9999 mem: location 1638 is 1137
+9999 run: address to copy is 1145
+9999 run: its type is number
+9999 mem: location 1145 is 0
+9999 mem: storing 0 in location 1647
+ 103 run: cursor-column:number <- get editor:address:editor-data/deref, cursor-column:offset
+9999 mem: location 1638 is 1137
+9999 mem: location 1137 is 1178
+9999 mem: location 1138 is 1178
+9999 mem: location 1139 is 1178
+9999 mem: location 1140 is 1031
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
+9999 mem: location 1144 is 4
+9999 mem: location 1145 is 0
+9999 mem: location 1146 is 0
+9999 mem: location 1638 is 1137
+9999 run: address to copy is 1146
+9999 run: its type is number
+9999 mem: location 1146 is 0
+9999 mem: storing 0 in location 1648
  103 run: move-cursor screen:address, row:number, column:number
 9999 mem: location 1639 is 1031
 9999 mem: location 1645 is 0
@@ -2594,10 +2628,43 @@ after-brace: new-editor ...
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1645 is 0
 9999 mem: location 1642 is 3
-9999 mem: storing 0 in location 1647
+9999 mem: storing 0 in location 1649
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1647 is 0
+9999 mem: location 1649 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1645 is 0
+9999 mem: location 1647 is 0
+9999 mem: storing 1 in location 1650
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1650 is 1
+9999 run: jump-unless fell through
+ 103 run: at-cursor?:boolean <- equal column:number, cursor-column:number
+9999 mem: location 1646 is 0
+9999 mem: location 1648 is 0
+9999 mem: storing 1 in location 1651
+ 103 run: break-unless at-cursor?:boolean, 
+9999 mem: location 1651 is 1
+9999 run: jump-unless fell through
+ 103 run: before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
+9999 mem: location 1638 is 1137
+9999 mem: location 1137 is 1178
+9999 mem: location 1138 is 1178
+9999 mem: location 1139 is 1178
+9999 mem: location 1140 is 1031
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
+9999 mem: location 1144 is 4
+9999 mem: location 1145 is 0
+9999 mem: location 1146 is 0
+9999 mem: location 1638 is 1137
+9999 run: address to copy is 1139
+9999 mem: storing 1139 in location 1652
+ 103 run: before-cursor:address:address:duplex-list/deref <- copy curr:address:duplex-list
+9999 mem: location 1644 is 1212
+9999 mem: location 1652 is 1139
+9999 mem: storing 1212 in location 1139
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1644 is 1212
 9999 mem: location 1212 is 97
@@ -2607,23 +2674,23 @@ after-brace: new-editor ...
 9999 run: address to copy is 1212
 9999 run: its type is number
 9999 mem: location 1212 is 97
-9999 mem: storing 97 in location 1648
+9999 mem: storing 97 in location 1653
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1648 is 97
-9999 mem: storing 0 in location 1649
+9999 mem: location 1653 is 97
+9999 mem: storing 0 in location 1654
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1649 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1654 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1646 is 0
 9999 mem: location 1643 is 4
-9999 mem: storing 0 in location 1650
+9999 mem: storing 0 in location 1655
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1650 is 0
-9999 run: jumping to instruction 40
+9999 mem: location 1655 is 0
+9999 run: jumping to instruction 50
  103 run: print-character screen:address, c:character
 9999 mem: location 1639 is 1031
-9999 mem: location 1648 is 97
+9999 mem: location 1653 is 97
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1760
@@ -2787,6 +2854,7 @@ after-brace: new-editor ...
 9999 mem: location 1034 is 0
 9999 mem: location 1780 is 4
 9999 mem: storing 0 in location 1781
+schedule: print-character/render/new-editor/run1001/editor-initially-wraps-long-lines
  104 run: break-if at-right?:boolean, 
 9999 mem: location 1781 is 0
 9999 run: jump-if fell through
@@ -2821,22 +2889,35 @@ after-brace: new-editor ...
 9999 mem: location 1794 is 1277
 9999 run: result 0 is 1277
 9999 mem: storing 1277 in location 1644
-schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
  103 run: column:number <- add column:number, 1:literal
 9999 mem: location 1646 is 0
 9999 mem: storing 1 in location 1646
  103 run: loop 
-9999 run: jumping to instruction 13
+9999 run: jumping to instruction 15
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1644 is 1277
 9999 run: jump-unless fell through
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1645 is 0
 9999 mem: location 1642 is 3
-9999 mem: storing 0 in location 1647
+9999 mem: storing 0 in location 1649
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1647 is 0
+9999 mem: location 1649 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1645 is 0
+9999 mem: location 1647 is 0
+9999 mem: storing 1 in location 1650
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1650 is 1
+9999 run: jump-unless fell through
+ 103 run: at-cursor?:boolean <- equal column:number, cursor-column:number
+9999 mem: location 1646 is 1
+9999 mem: location 1648 is 0
+9999 mem: storing 0 in location 1651
+ 103 run: break-unless at-cursor?:boolean, 
+9999 mem: location 1651 is 0
+9999 run: jumping to instruction 26
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1644 is 1277
 9999 mem: location 1277 is 98
@@ -2846,23 +2927,23 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 run: address to copy is 1277
 9999 run: its type is number
 9999 mem: location 1277 is 98
-9999 mem: storing 98 in location 1648
+9999 mem: storing 98 in location 1653
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1648 is 98
-9999 mem: storing 0 in location 1649
+9999 mem: location 1653 is 98
+9999 mem: storing 0 in location 1654
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1649 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1654 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1646 is 1
 9999 mem: location 1643 is 4
-9999 mem: storing 0 in location 1650
+9999 mem: storing 0 in location 1655
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1650 is 0
-9999 run: jumping to instruction 40
+9999 mem: location 1655 is 0
+9999 run: jumping to instruction 50
  103 run: print-character screen:address, c:character
 9999 mem: location 1639 is 1031
-9999 mem: location 1648 is 98
+9999 mem: location 1653 is 98
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1822
@@ -3064,17 +3145,31 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 mem: location 1646 is 1
 9999 mem: storing 2 in location 1646
  103 run: loop 
-9999 run: jumping to instruction 13
+9999 run: jumping to instruction 15
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1644 is 1342
 9999 run: jump-unless fell through
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1645 is 0
 9999 mem: location 1642 is 3
-9999 mem: storing 0 in location 1647
+9999 mem: storing 0 in location 1649
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1647 is 0
+9999 mem: location 1649 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1645 is 0
+9999 mem: location 1647 is 0
+9999 mem: storing 1 in location 1650
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1650 is 1
+9999 run: jump-unless fell through
+ 103 run: at-cursor?:boolean <- equal column:number, cursor-column:number
+9999 mem: location 1646 is 2
+9999 mem: location 1648 is 0
+9999 mem: storing 0 in location 1651
+ 103 run: break-unless at-cursor?:boolean, 
+9999 mem: location 1651 is 0
+9999 run: jumping to instruction 26
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1644 is 1342
 9999 mem: location 1342 is 99
@@ -3084,23 +3179,23 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 run: address to copy is 1342
 9999 run: its type is number
 9999 mem: location 1342 is 99
-9999 mem: storing 99 in location 1648
+9999 mem: storing 99 in location 1653
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1648 is 99
-9999 mem: storing 0 in location 1649
+9999 mem: location 1653 is 99
+9999 mem: storing 0 in location 1654
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1649 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1654 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1646 is 2
 9999 mem: location 1643 is 4
-9999 mem: storing 0 in location 1650
+9999 mem: storing 0 in location 1655
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1650 is 0
-9999 run: jumping to instruction 40
+9999 mem: location 1655 is 0
+9999 run: jumping to instruction 50
  103 run: print-character screen:address, c:character
 9999 mem: location 1639 is 1031
-9999 mem: location 1648 is 99
+9999 mem: location 1653 is 99
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1884
@@ -3302,17 +3397,31 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 mem: location 1646 is 2
 9999 mem: storing 3 in location 1646
  103 run: loop 
-9999 run: jumping to instruction 13
+9999 run: jumping to instruction 15
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1644 is 1407
 9999 run: jump-unless fell through
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1645 is 0
 9999 mem: location 1642 is 3
-9999 mem: storing 0 in location 1647
+9999 mem: storing 0 in location 1649
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1647 is 0
+9999 mem: location 1649 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1645 is 0
+9999 mem: location 1647 is 0
+9999 mem: storing 1 in location 1650
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1650 is 1
+9999 run: jump-unless fell through
+ 103 run: at-cursor?:boolean <- equal column:number, cursor-column:number
+9999 mem: location 1646 is 3
+9999 mem: location 1648 is 0
+9999 mem: storing 0 in location 1651
+ 103 run: break-unless at-cursor?:boolean, 
+9999 mem: location 1651 is 0
+9999 run: jumping to instruction 26
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1644 is 1407
 9999 mem: location 1407 is 32
@@ -3322,23 +3431,23 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 run: address to copy is 1407
 9999 run: its type is number
 9999 mem: location 1407 is 32
-9999 mem: storing 32 in location 1648
+9999 mem: storing 32 in location 1653
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1648 is 32
-9999 mem: storing 0 in location 1649
+9999 mem: location 1653 is 32
+9999 mem: storing 0 in location 1654
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1649 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1654 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1646 is 3
 9999 mem: location 1643 is 4
-9999 mem: storing 0 in location 1650
+9999 mem: storing 0 in location 1655
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1650 is 0
-9999 run: jumping to instruction 40
+9999 mem: location 1655 is 0
+9999 run: jumping to instruction 50
  103 run: print-character screen:address, c:character
 9999 mem: location 1639 is 1031
-9999 mem: location 1648 is 32
+9999 mem: location 1653 is 32
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 1946
@@ -3540,17 +3649,31 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 mem: location 1646 is 3
 9999 mem: storing 4 in location 1646
  103 run: loop 
-9999 run: jumping to instruction 13
+9999 run: jumping to instruction 15
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1644 is 1472
 9999 run: jump-unless fell through
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1645 is 0
 9999 mem: location 1642 is 3
-9999 mem: storing 0 in location 1647
+9999 mem: storing 0 in location 1649
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1647 is 0
+9999 mem: location 1649 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1645 is 0
+9999 mem: location 1647 is 0
+9999 mem: storing 1 in location 1650
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1650 is 1
+9999 run: jump-unless fell through
+ 103 run: at-cursor?:boolean <- equal column:number, cursor-column:number
+9999 mem: location 1646 is 4
+9999 mem: location 1648 is 0
+9999 mem: storing 0 in location 1651
+ 103 run: break-unless at-cursor?:boolean, 
+9999 mem: location 1651 is 0
+9999 run: jumping to instruction 26
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1644 is 1472
 9999 mem: location 1472 is 100
@@ -3560,19 +3683,19 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 run: address to copy is 1472
 9999 run: its type is number
 9999 mem: location 1472 is 100
-9999 mem: storing 100 in location 1648
+9999 mem: storing 100 in location 1653
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1648 is 100
-9999 mem: storing 0 in location 1649
+9999 mem: location 1653 is 100
+9999 mem: storing 0 in location 1654
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1649 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1654 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1646 is 4
 9999 mem: location 1643 is 4
-9999 mem: storing 1 in location 1650
+9999 mem: storing 1 in location 1655
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1650 is 1
+9999 mem: location 1655 is 1
 9999 run: jump-unless fell through
  103 run: next-node:address:duplex-list <- next-duplex curr:address:duplex-list
 9999 mem: location 1644 is 1472
@@ -3597,25 +3720,25 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
  104 run: reply result:address:duplex-list
 9999 mem: location 2011 is 1537
 9999 run: result 0 is 1537
-9999 mem: storing 1537 in location 1651
+9999 mem: storing 1537 in location 1656
  103 run: break-unless next-node:address:duplex-list, 
-9999 mem: location 1651 is 1537
+9999 mem: location 1656 is 1537
 9999 run: jump-unless fell through
  103 run: next:character <- get next-node:address:duplex-list/deref, value:offset
-9999 mem: location 1651 is 1537
+9999 mem: location 1656 is 1537
 9999 mem: location 1537 is 101
 9999 mem: location 1538 is 1602
 9999 mem: location 1539 is 1472
-9999 mem: location 1651 is 1537
+9999 mem: location 1656 is 1537
 9999 run: address to copy is 1537
 9999 run: its type is number
 9999 mem: location 1537 is 101
-9999 mem: storing 101 in location 1652
+9999 mem: storing 101 in location 1657
  103 run: next-character-is-newline?:boolean <- equal next:character, 10:literal/newline
-9999 mem: location 1652 is 101
-9999 mem: storing 0 in location 1653
+9999 mem: location 1657 is 101
+9999 mem: storing 0 in location 1658
  103 run: break-if next-character-is-newline?:boolean, 
-9999 mem: location 1653 is 0
+9999 mem: location 1658 is 0
 9999 run: jump-if fell through
  103 run: print-character screen:address, 8617:literal/loop-back-to-left, 245:literal/grey
 9999 mem: location 1639 is 1031
@@ -3838,17 +3961,24 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 2072 is 1031
  103 run: loop +next-character:label
-9999 run: jumping to instruction 14
+9999 run: jumping to instruction 16
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1644 is 1472
 9999 run: jump-unless fell through
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1645 is 1
 9999 mem: location 1642 is 3
-9999 mem: storing 0 in location 1647
+9999 mem: storing 0 in location 1649
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1647 is 0
+9999 mem: location 1649 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1645 is 1
+9999 mem: location 1647 is 0
+9999 mem: storing 0 in location 1650
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1650 is 0
+9999 run: jumping to instruction 26
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1644 is 1472
 9999 mem: location 1472 is 100
@@ -3858,23 +3988,23 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 run: address to copy is 1472
 9999 run: its type is number
 9999 mem: location 1472 is 100
-9999 mem: storing 100 in location 1648
+9999 mem: storing 100 in location 1653
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1648 is 100
-9999 mem: storing 0 in location 1649
+9999 mem: location 1653 is 100
+9999 mem: storing 0 in location 1654
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1649 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1654 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1646 is 0
 9999 mem: location 1643 is 4
-9999 mem: storing 0 in location 1650
+9999 mem: storing 0 in location 1655
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1650 is 0
-9999 run: jumping to instruction 40
+9999 mem: location 1655 is 0
+9999 run: jumping to instruction 50
  103 run: print-character screen:address, c:character
 9999 mem: location 1639 is 1031
-9999 mem: location 1648 is 100
+9999 mem: location 1653 is 100
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 2101
@@ -4076,17 +4206,24 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 mem: location 1646 is 0
 9999 mem: storing 1 in location 1646
  103 run: loop 
-9999 run: jumping to instruction 13
+9999 run: jumping to instruction 15
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1644 is 1537
 9999 run: jump-unless fell through
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1645 is 1
 9999 mem: location 1642 is 3
-9999 mem: storing 0 in location 1647
+9999 mem: storing 0 in location 1649
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1647 is 0
+9999 mem: location 1649 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1645 is 1
+9999 mem: location 1647 is 0
+9999 mem: storing 0 in location 1650
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1650 is 0
+9999 run: jumping to instruction 26
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1644 is 1537
 9999 mem: location 1537 is 101
@@ -4096,23 +4233,23 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 run: address to copy is 1537
 9999 run: its type is number
 9999 mem: location 1537 is 101
-9999 mem: storing 101 in location 1648
+9999 mem: storing 101 in location 1653
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1648 is 101
-9999 mem: storing 0 in location 1649
+9999 mem: location 1653 is 101
+9999 mem: storing 0 in location 1654
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1649 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1654 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1646 is 1
 9999 mem: location 1643 is 4
-9999 mem: storing 0 in location 1650
+9999 mem: storing 0 in location 1655
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1650 is 0
-9999 run: jumping to instruction 40
+9999 mem: location 1655 is 0
+9999 run: jumping to instruction 50
  103 run: print-character screen:address, c:character
 9999 mem: location 1639 is 1031
-9999 mem: location 1648 is 101
+9999 mem: location 1653 is 101
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 2163
@@ -4314,17 +4451,24 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 mem: location 1646 is 1
 9999 mem: storing 2 in location 1646
  103 run: loop 
-9999 run: jumping to instruction 13
+9999 run: jumping to instruction 15
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1644 is 1602
 9999 run: jump-unless fell through
  103 run: off-screen?:boolean <- greater-or-equal row:number, screen-height:number
 9999 mem: location 1645 is 1
 9999 mem: location 1642 is 3
-9999 mem: storing 0 in location 1647
+9999 mem: storing 0 in location 1649
  103 run: break-if off-screen?:boolean, 
-9999 mem: location 1647 is 0
+9999 mem: location 1649 is 0
 9999 run: jump-if fell through
+ 103 run: at-cursor-row?:boolean <- equal row:number, cursor-row:number
+9999 mem: location 1645 is 1
+9999 mem: location 1647 is 0
+9999 mem: storing 0 in location 1650
+ 103 run: break-unless at-cursor-row?:boolean, 
+9999 mem: location 1650 is 0
+9999 run: jumping to instruction 26
  103 run: c:character <- get curr:address:duplex-list/deref, value:offset
 9999 mem: location 1644 is 1602
 9999 mem: location 1602 is 102
@@ -4334,23 +4478,23 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 run: address to copy is 1602
 9999 run: its type is number
 9999 mem: location 1602 is 102
-9999 mem: storing 102 in location 1648
+9999 mem: storing 102 in location 1653
  103 run: newline?:boolean <- equal c:character, 10:literal/newline
-9999 mem: location 1648 is 102
-9999 mem: storing 0 in location 1649
+9999 mem: location 1653 is 102
+9999 mem: storing 0 in location 1654
  103 run: break-unless newline?:boolean, 
-9999 mem: location 1649 is 0
-9999 run: jumping to instruction 26
+9999 mem: location 1654 is 0
+9999 run: jumping to instruction 36
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1646 is 2
 9999 mem: location 1643 is 4
-9999 mem: storing 0 in location 1650
+9999 mem: storing 0 in location 1655
  103 run: break-unless at-right?:boolean, 
-9999 mem: location 1650 is 0
-9999 run: jumping to instruction 40
+9999 mem: location 1655 is 0
+9999 run: jumping to instruction 50
  103 run: print-character screen:address, c:character
 9999 mem: location 1639 is 1031
-9999 mem: location 1648 is 102
+9999 mem: location 1653 is 102
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 2225
@@ -4552,15 +4696,15 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 mem: location 1646 is 2
 9999 mem: storing 3 in location 1646
  103 run: loop 
-9999 run: jumping to instruction 13
+9999 run: jumping to instruction 15
  103 run: break-unless curr:address:duplex-list, 
 9999 mem: location 1644 is 0
-9999 run: jumping to instruction 45
+9999 run: jumping to instruction 55
  103 run: cursor-row:number <- get editor:address:editor-data/deref, cursor-row:offset
 9999 mem: location 1638 is 1137
 9999 mem: location 1137 is 1178
 9999 mem: location 1138 is 1178
-9999 mem: location 1139 is 1178
+9999 mem: location 1139 is 1212
 9999 mem: location 1140 is 1031
 9999 mem: location 1141 is 0
 9999 mem: location 1142 is 0
@@ -4572,12 +4716,12 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 run: address to copy is 1145
 9999 run: its type is number
 9999 mem: location 1145 is 0
-9999 mem: storing 0 in location 1654
+9999 mem: storing 0 in location 1647
  103 run: cursor-column:number <- get editor:address:editor-data/deref, cursor-column:offset
 9999 mem: location 1638 is 1137
 9999 mem: location 1137 is 1178
 9999 mem: location 1138 is 1178
-9999 mem: location 1139 is 1178
+9999 mem: location 1139 is 1212
 9999 mem: location 1140 is 1031
 9999 mem: location 1141 is 0
 9999 mem: location 1142 is 0
@@ -4589,11 +4733,11 @@ schedule: render/new-editor/run1001/editor-initially-wraps-long-lines
 9999 run: address to copy is 1146
 9999 run: its type is number
 9999 mem: location 1146 is 0
-9999 mem: storing 0 in location 1655
+9999 mem: storing 0 in location 1648
  103 run: move-cursor screen:address, cursor-row:number, cursor-column:number
 9999 mem: location 1639 is 1031
-9999 mem: location 1654 is 0
-9999 mem: location 1655 is 0
+9999 mem: location 1647 is 0
+9999 mem: location 1648 is 0
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 2287
