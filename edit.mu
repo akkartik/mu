@@ -219,6 +219,7 @@ recipe render [
       column:number <- copy left:number
       move-cursor screen:address, row:number, column:number
       curr:address:duplex-list <- next-duplex curr:address:duplex-list
+      prev:address:duplex-list <- next-duplex prev:address:duplex-list
       loop +next-character:label
     }
     {
@@ -255,8 +256,12 @@ recipe render [
     above-cursor-row?:boolean <- lesser-than row:number, cursor-row:address:number/deref
     before-cursor?:boolean <- or before-cursor-on-same-line?:boolean, above-cursor-row?:boolean
     break-unless before-cursor?:boolean
+#?     $print [pointed after all text
+#? ] #? 1
     cursor-row:address:number/deref <- copy row:number
     cursor-column:address:number/deref <- copy column:number
+#?     $print [now ], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [ 
+#? ] #? 1
     before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
   }
   # update cursor
@@ -593,6 +598,59 @@ scenario editor-inserts-characters-at-cursor [
   ]
   screen-should-contain [
     .0adbc     .
+    .          .
+  ]
+]
+
+scenario editor-inserts-characters-at-cursor-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    left-click 0, 5  # right of last line
+    type [d]  # should append
+  ]
+  run [
+    1:address:array:character <- new [abc]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abcd      .
+    .          .
+  ]
+]
+
+scenario editor-inserts-characters-at-cursor-3 [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    left-click 3, 5  # below all text
+    type [d]  # should append
+  ]
+  run [
+    1:address:array:character <- new [abc]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abcd      .
+    .          .
+  ]
+]
+
+scenario editor-inserts-characters-at-cursor-4 [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    left-click 3, 5  # below all text
+    type [e]  # should append
+  ]
+  run [
+    1:address:array:character <- new [abc
+d]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abc       .
+    .de        .
     .          .
   ]
 ]
