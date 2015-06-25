@@ -533,6 +533,32 @@ recipe screen-height [
   reply height:number
 ]
 
+recipe hide-cursor [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:address:screen <- next-ingredient
+  # if x exists (not real display), do nothing
+  {
+    break-unless x:address:screen
+    reply x:address:screen
+  }
+  # otherwise, real screen
+  hide-cursor-on-display
+  reply x:address:screen
+]
+
+recipe show-cursor [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:address:screen <- next-ingredient
+  # if x exists (not real display), do nothing
+  {
+    break-unless x:address:screen
+    reply x:address:screen
+  }
+  # otherwise, real screen
+  show-cursor-on-display
+  reply x:address:screen
+]
+
 recipe print-string [
   default-space:address:array:location <- new location:type, 30:literal
   x:address:screen <- next-ingredient

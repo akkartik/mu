@@ -219,6 +219,26 @@ case DISPLAY_HEIGHT: {
   break;
 }
 
+:(before "End Primitive Recipe Declarations")
+HIDE_CURSOR_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["hide-cursor-on-display"] = HIDE_CURSOR_ON_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case HIDE_CURSOR_ON_DISPLAY: {
+  tb_set_cursor(TB_HIDE_CURSOR, TB_HIDE_CURSOR);
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+SHOW_CURSOR_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["show-cursor-on-display"] = SHOW_CURSOR_ON_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case SHOW_CURSOR_ON_DISPLAY: {
+  tb_set_cursor(Display_row, Display_column);
+  break;
+}
+
 //:: Keyboard/mouse management
 
 :(before "End Primitive Recipe Declarations")

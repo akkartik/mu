@@ -157,6 +157,7 @@ recipe render [
   left:number <- get editor:address:editor-data/deref, left:offset
   screen-height:number <- screen-height screen:address
   right:number <- get editor:address:editor-data/deref, right:offset
+  hide-cursor screen:address
   # traversing editor
   curr:address:duplex-list <- get editor:address:editor-data/deref, top-of-screen:offset
   curr:address:duplex-list <- next-duplex curr:address:duplex-list
