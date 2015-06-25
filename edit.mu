@@ -192,9 +192,20 @@ recipe render [
       # newline? move to left rather than 0
       newline?:boolean <- equal c:character, 10:literal/newline
       break-unless newline?:boolean
+      # clear rest of line in this window
+#?       $print row:number, [ ], column:number, [ ], right:number, [ 
+#? ] #? 1
+      {
+        done?:boolean <- greater-or-equal column:number, right:number
+        break-if done?:boolean
+        print-character screen:address, 32:literal/space
+        column:number <- add column:number, 1:literal
+#?         $print column:number, [ 
+#? ] #? 1
+        loop
+      }
       row:number <- add row:number, 1:literal
       column:number <- copy left:number
-      clear-line screen:address
       move-cursor screen:address, row:number, column:number
       curr:address:duplex-list <- next-duplex curr:address:duplex-list
       loop +next-character:label
