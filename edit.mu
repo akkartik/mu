@@ -32,7 +32,7 @@ scenario editor-initially-prints-string-to-screen [
 ## text to the screen.
 
 container editor-data [
-  # doubly linked list of characters (head contains a special sentinel marker)
+  # doubly linked list of characters (head contains a special sentinel)
   data:address:duplex-list
   # location of top-left of screen inside data (scrolling)
   top-of-screen:address:duplex-list
@@ -64,10 +64,6 @@ recipe new-editor [
   right:number <- next-ingredient
   right:number <- subtract right:number, 1:literal
   result:address:editor-data <- new editor-data:type
-  d:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
-  d:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
-#?   $print d:address:address:duplex-list/deref, [ 
-#? ] #? 1
   # initialize screen-related fields
   sc:address:address:screen <- get-address result:address:editor-data/deref, screen:offset
   sc:address:address:screen/deref <- copy screen:address
@@ -85,17 +81,21 @@ recipe new-editor [
   x:address:number/deref <- copy top:number
   x:address:number <- get-address result:address:editor-data/deref, cursor-column:offset
   x:address:number/deref <- copy left:number
+  d:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
+  d:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
+  y:address:address:duplex-list <- get-address result:address:editor-data/deref, before-cursor:offset
+  y:address:address:duplex-list/deref <- copy d:address:address:duplex-list/deref
+  init:address:address:duplex-list <- get-address result:address:editor-data/deref, top-of-screen:offset
+  init:address:address:duplex-list/deref <- copy d:address:address:duplex-list/deref
+#?   $print d:address:address:duplex-list/deref, [ 
+#? ] #? 1
   # early exit if s is empty
   reply-unless s:address:array:character, result:address:editor-data
   len:number <- length s:address:array:character/deref
   reply-unless len:number, result:address:editor-data
   idx:number <- copy 0:literal
-  # s is guaranteed to have at least one character, so initialize result's
-  # duplex-list
-  init:address:address:duplex-list <- get-address result:address:editor-data/deref, top-of-screen:offset
-  init:address:address:duplex-list/deref <- copy d:address:address:duplex-list/deref
-  curr:address:duplex-list <- copy init:address:address:duplex-list/deref
   # now we can start appending the rest, character by character
+  curr:address:duplex-list <- copy init:address:address:duplex-list/deref
   {
 #?     $print idx:number, [ vs ], len:number, [ 
 #? ] #? 1
@@ -128,9 +128,9 @@ scenario editor-initializes-without-data [
     2:editor-data <- copy 1:address:editor-data/deref
   ]
   memory-should-contain [
-    # 2 <- just the § marker
-    3 <- 0  # pointer into data to top of screen
-    # 4 (before cursor) <- the § marker
+    # 2 <- just the § sentinel
+    # 3 (top of screen) <- the § sentinel
+    # 4 (before cursor) <- the § sentinel
     # 5 <- screen
     6 <- 1  # top
     7 <- 2  # left
@@ -337,6 +337,25 @@ scenario editor-initially-wraps-long-lines [
   ]
 ]
 
+scenario editor-initializes-empty-text [
+  assume-screen 5:literal/width, 3:literal/height
+  run [
+    1:address:array:character <- new []
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+    .     .
+    .     .
+    .     .
+  ]
+  memory-should-contain [
+    3 <- 0  # cursor row
+    4 <- 0  # cursor column
+  ]
+]
+
 ## handling events from the keyboard and mouse
 
 recipe event-loop [
@@ -451,7 +470,7 @@ recipe insert-at-cursor [
   before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
   d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
 #?   $print before-cursor:address:address:duplex-list/deref, [ ], d:address:duplex-list, [ 
-#? ] #? 1
+#? ] #? 2
 #?   prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
 #?   $print [inserting ], c:character, [ after ], prev:character, [ 
 #? ] #? 2
@@ -484,8 +503,8 @@ recipe insert-at-cursor [
   reply editor:address:editor-data/same-as-ingredient:0
 ]
 
-# takes a pointer 'curr' into the doubly-linked list and its sentinel marker,
-# counts the length of the previous line before the 'curr' pointer.
+# takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
+# the length of the previous line before the 'curr' pointer.
 recipe previous-line-length [
   default-space:address:array:location <- new location:type, 30:literal
   curr:address:duplex-list <- next-ingredient
@@ -599,6 +618,22 @@ def]
   memory-should-contain [
     3 <- 1  # cursor row
     4 <- 3  # cursor column
+  ]
+]
+
+scenario editor-inserts-characters-into-empty-editor [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    type [abc]
+  ]
+  run [
+    1:address:array:character <- new []
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abc       .
+    .          .
   ]
 ]
 
