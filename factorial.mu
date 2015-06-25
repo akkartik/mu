@@ -16,7 +16,7 @@ recipe factorial [
     break-unless zero?:boolean
     reply 1:literal
   }
-  # return n * factorial(n - 1)
+  # return n * factorial(n-1)
   x:number <- subtract n:number, 1:literal
   subresult:number <- factorial x:number
   result:number <- multiply subresult:number, n:number
