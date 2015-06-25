@@ -271,6 +271,8 @@ case CHECK_FOR_INTERACTION: {
     break;
   }
   if (event_type == TB_EVENT_MOUSE) {
+//?     tb_shutdown(); //? 1
+//?     cerr << "AAA\n"; //? 1
     products.at(0).push_back(/*touch event*/2);
     products.at(0).push_back(event.key);  // which button, etc.
     products.at(0).push_back(event.y);  // row

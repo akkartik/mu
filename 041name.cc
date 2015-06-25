@@ -69,6 +69,8 @@ void transform_names(const recipe_number r) {
 void check_metadata(map<string, vector<type_number> >& metadata, const reagent& x, const recipe_number r) {
   if (is_literal(x)) return;
   if (is_raw(x)) return;
+  // if you use raw locations you're probably doing something unsafe
+  if (is_integer(x.name)) return;
   if (metadata.find(x.name) == metadata.end())
     metadata[x.name] = x.types;
   if (metadata[x.name] != x.types)
@@ -224,11 +226,12 @@ if (inst.operation == Recipe_number["get"]
   assert(SIZE(inst.ingredients) >= 2);
 //?   cout << inst.ingredients.at(1).to_string() << '\n'; //? 1
   assert(is_literal(inst.ingredients.at(1)));
-  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
-  // since first non-address in base type must be a container, we don't have to canonize
-  type_number base_type = skip_addresses(inst.ingredients.at(0).types);
-  inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
-  trace("name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << inst.ingredients.at(1).value;
+  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
+    // since first non-address in base type must be a container, we don't have to canonize
+    type_number base_type = skip_addresses(inst.ingredients.at(0).types);
+    inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
+    trace("name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << inst.ingredients.at(1).value;
+  }
 }
 
 //: this test is actually illegal so can't call run
@@ -260,9 +263,10 @@ if (inst.operation == Recipe_number["maybe-convert"]) {
   // at least 2 args, and second arg is offset
   assert(SIZE(inst.ingredients) >= 2);
   assert(is_literal(inst.ingredients.at(1)));
-  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") == string::npos) continue;
-  // since first non-address in base type must be an exclusive container, we don't have to canonize
-  type_number base_type = skip_addresses(inst.ingredients.at(0).types);
-  inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
-  trace("name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << inst.ingredients.at(1).value;
+  if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
+    // since first non-address in base type must be an exclusive container, we don't have to canonize
+    type_number base_type = skip_addresses(inst.ingredients.at(0).types);
+    inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
+    trace("name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << inst.ingredients.at(1).value;
+  }
 }

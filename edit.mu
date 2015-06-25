@@ -33,12 +33,12 @@ scenario editor-initially-prints-string-to-screen [
 ## text to the screen.
 
 container editor-data [
-  # doubly linked list of characters
+  # doubly linked list of characters (head contains a special marker)
   data:address:duplex-list
   # location of top-left of screen inside data (scrolling)
   top-of-screen:address:duplex-list
-  # location of cursor inside data
-  cursor:address:duplex-list
+  # location before cursor inside data
+  before-cursor:address:duplex-list
 
   screen:address:screen
   # raw bounds of display area on screen
@@ -65,6 +65,8 @@ recipe new-editor [
   right:number <- next-ingredient
   right:number <- subtract right:number, 1:literal
   result:address:editor-data <- new editor-data:type
+  d:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
+  d:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
   # initialize screen-related fields
   sc:address:address:screen <- get-address result:address:editor-data/deref, screen:offset
   sc:address:address:screen/deref <- copy screen:address
@@ -90,10 +92,7 @@ recipe new-editor [
   # s is guaranteed to have at least one character, so initialize result's
   # duplex-list
   init:address:address:duplex-list <- get-address result:address:editor-data/deref, top-of-screen:offset
-  init:address:address:duplex-list/deref <- copy 0:literal
-  c:character <- index s:address:array:character/deref, idx:number
-  idx:number <- add idx:number, 1:literal
-  init:address:address:duplex-list/deref <- push c:character, init:address:address:duplex-list/deref
+  init:address:address:duplex-list/deref <- copy d:address:address:duplex-list/deref
   curr:address:duplex-list <- copy init:address:address:duplex-list/deref
   # now we can start appending the rest, character by character
   {
@@ -111,7 +110,7 @@ recipe new-editor [
     loop
   }
   # initialize cursor to top of screen
-  y:address:address:duplex-list <- get-address result:address:editor-data/deref, cursor:offset
+  y:address:address:duplex-list <- get-address result:address:editor-data/deref, before-cursor:offset
   y:address:address:duplex-list/deref <- copy init:address:address:duplex-list/deref
   # perform initial rendering to screen
   bottom:address:number <- get-address result:address:editor-data/deref, bottom:offset
@@ -126,9 +125,9 @@ scenario editor-initializes-without-data [
     2:editor-data <- copy 1:address:editor-data/deref
   ]
   memory-should-contain [
-    2 <- 0  # data
+    # 2 <- just the § marker
     3 <- 0  # pointer into data to top of screen
-    4 <- 0  # pointer into data to cursor
+    # 4 (before cursor) <- the § marker
     # 5 <- screen
     6 <- 1  # top
     7 <- 2  # left
@@ -154,6 +153,7 @@ recipe render [
   right:number <- next-ingredient
   # traversing editor
   curr:address:duplex-list <- get editor:address:editor-data/deref, top-of-screen:offset
+  curr:address:duplex-list <- next-duplex curr:address:duplex-list
   # traversing screen
   row:number <- copy top:number
   column:number <- copy left:number
@@ -277,12 +277,14 @@ recipe event-loop [
     break-if quit?:boolean  # only in tests
     trace [app], [next-event]
     {
-      t:address:touch-event <- maybe-convert e:event, touch:variant
+      t:address:touch-event <- maybe-convert e:event, 2:variant
       break-unless t:address:touch-event
       editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, t:address:touch-event/deref
       loop +next-event:label
     }
+    $print e:event
     c:address:character <- maybe-convert e:event, text:variant
+    close-console
     assert c:address:character, [event was of unknown type; neither keyboard nor mouse]
     loop
   }
@@ -297,7 +299,7 @@ recipe move-cursor-in-editor [
   column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   column:address:number/deref <- get t:touch-event, column:offset
   # clear cursor pointer; will be set correctly during render
-  cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, cursor:offset
+  cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
   cursor:address:address:duplex-list/deref <- copy 0:literal
 ]
 
