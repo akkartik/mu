@@ -173,7 +173,9 @@ recipe render [
     break-unless curr:address:duplex-list
     off-screen?:boolean <- greater-or-equal row:number, screen-height:number
     break-if off-screen?:boolean
-    # update before-cursor at the start of each iteration, and row/column at the end
+    # update editor-data.before-cursor
+    # Doing so at the start of each iteration ensures it stays one step behind
+    # the current character.
     {
       at-cursor-row?:boolean <- equal row:number, cursor-row:number
       break-unless at-cursor-row?:boolean
@@ -317,6 +319,30 @@ recipe event-loop [
     # otherwise it's a special key to control the editor
     k:address:number <- maybe-convert e:event, keycode:variant
     assert k:address:number, [event was of unknown type; neither keyboard nor mouse]
+    before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
+    cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
+    cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+    # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'
+    {
+      next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
+      break-unless next-character?:boolean
+      next:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
+      break-unless next:address:duplex-list
+      before-cursor:address:address:duplex-list/deref <- copy next:address:duplex-list
+      nextc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
+      # if it's a newline
+      {
+        at-newline?:boolean <- equal nextc:character, 10:literal/newline
+        break-unless at-newline?:boolean
+        cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+        cursor-column:address:number/deref <- copy 0:literal
+        break +render:label
+      }
+      # otherwise
+      cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+    }
+    +render
+    render editor:address:editor-data
     loop
   }
 ]
@@ -448,6 +474,23 @@ scenario editor-moves-cursor-down-after-inserting-newline [
   screen-should-contain [
     .0         .
     .1abc      .
+    .          .
+  ]
+]
+
+scenario editor-moves-cursor-right-with-key [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    press 65514  # right arrow
+    type [0]
+  ]
+  run [
+    1:address:array:character <- new [abc]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .a0bc      .
     .          .
   ]
 ]
