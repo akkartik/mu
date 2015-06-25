@@ -329,6 +329,7 @@ void dump_screen() {
   long long int curr = screen_data_start+1;  // skip length
   for (long long int row = 0; row < screen_height; ++row) {
 //?     cerr << curr << ":\n"; //? 2
+    cerr << '.';
     for (long long int col = 0; col < screen_width; ++col) {
       if (Memory[curr])
         cerr << to_unicode(Memory[curr]);
@@ -336,6 +337,6 @@ void dump_screen() {
         cerr << ' ';
       curr += /*size of screen-cell*/2;
     }
-    cerr << '\n';
+    cerr << ".\n";
   }
 }
