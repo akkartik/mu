@@ -10,8 +10,7 @@ recipe main [
   in:address:array:character <- new [abcdef
 def
 ghi
-jkl
-]
+jkl]
   editor:address:editor-data <- new-editor in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, divider:number/right
   event-loop 0:literal/screen, 0:literal/events, editor:address:editor-data
   close-console
@@ -185,6 +184,9 @@ recipe render [
       at-cursor?:boolean <- equal column:number, cursor-column:address:number/deref
       break-unless at-cursor?:boolean
       before-cursor:address:address:duplex-list/deref <- prev-duplex curr:address:duplex-list
+#?       new-prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
+#?       $print [render 0: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)
+#? ] #? 1
     }
     c:character <- get curr:address:duplex-list/deref, value:offset
 #?     $print [rendering ], c:character, [ 
@@ -201,6 +203,9 @@ recipe render [
         break-unless left-of-cursor?:boolean
         cursor-column:address:number/deref <- copy column:number
         before-cursor:address:address:duplex-list/deref <- prev-duplex curr:address:duplex-list
+#?         new-prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
+#?         $print [render 1: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)
+#? ] #? 1
       }
       # clear rest of line in this window
 #?       $print row:number, [ ], column:number, [ ], right:number, [ 
@@ -251,8 +256,8 @@ recipe render [
   # is cursor to the right of the last line? move to end
   {
     at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/deref
-    left-of-cursor?:boolean <- lesser-than column:number, cursor-column:address:number/deref
-    before-cursor-on-same-line?:boolean <- and at-cursor-row?:boolean, left-of-cursor?:boolean
+    cursor-outside-line?:boolean <- lesser-or-equal column:number, cursor-column:address:number/deref
+    before-cursor-on-same-line?:boolean <- and at-cursor-row?:boolean, cursor-outside-line?:boolean
     above-cursor-row?:boolean <- lesser-than row:number, cursor-row:address:number/deref
     before-cursor?:boolean <- or before-cursor-on-same-line?:boolean, above-cursor-row?:boolean
     break-unless before-cursor?:boolean
@@ -263,6 +268,9 @@ recipe render [
 #?     $print [now ], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [ 
 #? ] #? 1
     before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
+#?     new-prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
+#?     $print [render Ω: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)
+#? ] #? 1
   }
   # update cursor
   move-cursor screen:address, cursor-row:address:number/deref, cursor-column:address:number/deref
@@ -444,8 +452,9 @@ recipe insert-at-cursor [
   d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
 #?   $print before-cursor:address:address:duplex-list/deref, [ ], d:address:duplex-list, [ 
 #? ] #? 1
-#?   $print [inserting ], c:character, [ 
-#? ] #? 1
+#?   prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
+#?   $print [inserting ], c:character, [ after ], prev:character, [ 
+#? ] #? 2
   insert-duplex c:character, before-cursor:address:address:duplex-list/deref
   # update cursor: if newline, move cursor to start of next line
   # todo: bottom of screen
@@ -459,10 +468,19 @@ recipe insert-at-cursor [
     break +render:label
   }
   # otherwise move cursor right
+#?   $print [column 0: ], cursor-column:address:number/deref, [ 
+#? ] #? 1
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+#?   $print [column 1: ], cursor-column:address:number/deref, [ 
+#? ] #? 1
   +render
   render editor:address:editor-data
+#?   new-prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
+#?   $print [column 2: ], cursor-column:address:number/deref, [ 
+#? ] #? 1
+#?   $print [cursor now after ], new-prev:character, [ 
+#? ] #? 1
   reply editor:address:editor-data/same-as-ingredient:0
 ]
 
@@ -651,6 +669,25 @@ d]
   screen-should-contain [
     .abc       .
     .de        .
+    .          .
+  ]
+]
+
+scenario editor-inserts-characters-at-cursor-5 [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    left-click 3, 5  # below all text
+    type [ef]  # should append multiple characters in order
+  ]
+  run [
+    1:address:array:character <- new [abc
+d]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abc       .
+    .def       .
     .          .
   ]
 ]
