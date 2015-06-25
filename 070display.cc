@@ -8,6 +8,7 @@
 
 :(before "End Globals")
 long long int Display_row = 0, Display_column = 0;
+bool Autodisplay = true;
 
 :(before "End Primitive Recipe Declarations")
 OPEN_CONSOLE,
@@ -57,7 +58,7 @@ case CLEAR_LINE_ON_DISPLAY: {
     tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_BLACK);
   }
   tb_set_cursor(Display_column, Display_row);
-  tb_present();
+  if (Autodisplay) tb_present();
   break;
 }
 
@@ -80,7 +81,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
       Display_column = 0;
       ++Display_row;
       tb_set_cursor(Display_column, Display_row);
-      tb_present();
+      if (Autodisplay) tb_present();
     }
     break;
   }
@@ -89,7 +90,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
       tb_change_cell(Display_column-1, Display_row, ' ', TB_WHITE, TB_BLACK);
       --Display_column;
       tb_set_cursor(Display_column, Display_row);
-      tb_present();
+      if (Autodisplay) tb_present();
     }
     break;
   }
@@ -106,7 +107,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
     ++Display_column;
     tb_set_cursor(Display_column, Display_row);
   }
-  tb_present();
+  if (Autodisplay) tb_present();
   break;
 }
 
@@ -133,7 +134,7 @@ case MOVE_CURSOR_ON_DISPLAY: {
   assert(scalar(ingredients.at(1)));
   Display_column = ingredients.at(1).at(0);
   tb_set_cursor(Display_column, Display_row);
-  tb_present();
+  if (Autodisplay) tb_present();
   break;
 }
 
@@ -148,7 +149,7 @@ case MOVE_CURSOR_DOWN_ON_DISPLAY: {
   if (Display_row < height-1) {
     Display_row++;
     tb_set_cursor(Display_column, Display_row);
-    tb_present();
+    if (Autodisplay) tb_present();
   }
   break;
 }
@@ -162,7 +163,7 @@ case MOVE_CURSOR_UP_ON_DISPLAY: {
   if (Display_row > 0) {
     Display_row--;
     tb_set_cursor(Display_column, Display_row);
-    tb_present();
+    if (Autodisplay) tb_present();
   }
   break;
 }
@@ -178,7 +179,7 @@ case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
   if (Display_column < width-1) {
     Display_column++;
     tb_set_cursor(Display_column, Display_row);
-    tb_present();
+    if (Autodisplay) tb_present();
   }
   break;
 }
@@ -192,7 +193,7 @@ case MOVE_CURSOR_LEFT_ON_DISPLAY: {
   if (Display_column > 0) {
     Display_column--;
     tb_set_cursor(Display_column, Display_row);
-    tb_present();
+    if (Autodisplay) tb_present();
   }
   break;
 }
@@ -236,6 +237,27 @@ Recipe_number["show-cursor-on-display"] = SHOW_CURSOR_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case SHOW_CURSOR_ON_DISPLAY: {
   tb_set_cursor(Display_row, Display_column);
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+HIDE_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["hide-display"] = HIDE_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case HIDE_DISPLAY: {
+  Autodisplay = false;
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+SHOW_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+Recipe_number["show-display"] = SHOW_DISPLAY;
+:(before "End Primitive Recipe Implementations")
+case SHOW_DISPLAY: {
+  Autodisplay = true;
+  tb_present();
   break;
 }
 
