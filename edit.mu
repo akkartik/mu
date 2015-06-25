@@ -295,19 +295,23 @@ recipe event-loop [
     loop-unless found?:boolean
     break-if quit?:boolean  # only in tests
     trace [app], [next-event]
+    # mouse clicks
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t:address:touch-event
       editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, t:address:touch-event/deref
       loop +next-event:label
     }
+    # typing regular characters
     {
       c:address:character <- maybe-convert e:event, text:variant
       break-unless c:address:character
       editor:address:editor-data <- insert-at-cursor editor:address:editor-data, c:address:character/deref
       loop +next-event:label
     }
-    assert c:address:character, [event was of unknown type; neither keyboard nor mouse]
+    # otherwise it's a special key to control the editor
+    k:address:number <- maybe-convert e:event, keycode:variant
+    assert k:address:number, [event was of unknown type; neither keyboard nor mouse]
     loop
   }
 ]
