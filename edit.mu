@@ -323,6 +323,7 @@ recipe event-loop [
     cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
     cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
     # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'
+    # right arrow
     {
       next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
       break-unless next-character?:boolean
@@ -340,6 +341,15 @@ recipe event-loop [
       }
       # otherwise
       cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+    }
+    # left arrow
+    {
+      prev-character?:boolean <- equal k:address:number/deref, 65515:literal/left-arrow
+      break-unless prev-character?:boolean
+      prev:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/deref
+      break-unless prev:address:duplex-list
+      before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
+      cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
     }
     +render
     render editor:address:editor-data
@@ -533,6 +543,24 @@ d]
   screen-should-contain [
     .abc       .
     .0d        .
+    .          .
+  ]
+]
+
+scenario editor-moves-cursor-left-with-key [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    left-click 0, 2
+    press 65515  # left arrow
+    type [0]
+  ]
+  run [
+    1:address:array:character <- new [abc]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .a0bc      .
     .          .
   ]
 ]
