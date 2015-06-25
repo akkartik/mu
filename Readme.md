@@ -75,7 +75,7 @@ written directly in machine code. Currently you build it like so:
 
 As a sneak peek, here's how you compute factorial in Mu:
 
-![code example](http://i.imgur.com/GYtLzbM.png)
+![code example](http://i.imgur.com/QbZMprn.png)
 
 Mu functions or 'recipes' are lists of instructions, one to a line. Each
 instruction operates on some *ingredients* and returns some *results*.
