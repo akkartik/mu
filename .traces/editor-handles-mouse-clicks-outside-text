@@ -2,9 +2,9 @@ parse: instruction: assume-screen
 parse:   ingredient: {name: "10", properties: ["10": "literal", "width": ]}
 parse:   ingredient: {name: "5", properties: ["5": "literal", "height": ]}
 parse: instruction: assume-console
-parse:   ingredient: {name: "\n    left-click 0, 5\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    left-click 0, 7  # last line, to the right of text\n  ", properties: [_: "literal-string"]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right\n    event-loop screen:address, console:address, 2:address:editor-data\n    3:number <- get 2:address:editor-data/deref, cursor-row:offset\n    4:number <- get 2:address:editor-data/deref, cursor-column:offset\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right\n    event-loop screen:address, console:address, 2:address:editor-data\n    3:number <- get 2:address:editor-data/deref, cursor-row:offset\n    4:number <- get 2:address:editor-data/deref, cursor-column:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3 <- 0  # cursor row\n    4 <- 3  # cursor column\n  ", properties: [_: "literal-string"]}
 after-brace: recipe editor-handles-mouse-clicks-outside-text
@@ -7214,14 +7214,14 @@ schedule: editor-handles-mouse-clicks-outside-text
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 900
  101 run: assume-console [
-    left-click 0, 5
+    left-click 0, 7  # last line, to the right of text
   ]
 parse: instruction: left-click
 parse:   ingredient: {name: "0", properties: ["0": ]}
-parse:   ingredient: {name: "5", properties: ["5": ]}
+parse:   ingredient: {name: "7", properties: ["7": ]}
  101 run: run [
     1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
@@ -7234,7 +7234,7 @@ parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"
 parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
 parse:   ingredient: {name: "0", properties: ["0": "literal", "top": ]}
 parse:   ingredient: {name: "0", properties: ["0": "literal", "left": ]}
-parse:   ingredient: {name: "5", properties: ["5": "literal", "right": ]}
+parse:   ingredient: {name: "10", properties: ["10": "literal", "right": ]}
 parse:   product: {name: "2", properties: ["2": "address":"editor-data"]}
 parse: instruction: event-loop
 parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
@@ -7258,7 +7258,7 @@ after-brace: get ...
 after-brace: get ...
  101 run: 1:address:array:character <- new [abc]
 9999 mem: storing 1175 in location 1
- 101 run: 2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+ 101 run: 2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
 9999 mem: location 1 is 1175
 9999 mem: location 900 is 1031
  102 run: default-space:address:array:location <- new location:type, 30:literal
@@ -7273,10 +7273,10 @@ after-brace: get ...
  102 run: left:number <- next-ingredient 
 9999 mem: storing 0 in location 1184
  102 run: right:number <- next-ingredient 
-9999 mem: storing 5 in location 1185
+9999 mem: storing 10 in location 1185
  102 run: right:number <- subtract right:number, 1:literal
-9999 mem: location 1185 is 5
-9999 mem: storing 4 in location 1185
+9999 mem: location 1185 is 10
+9999 mem: storing 9 in location 1185
  102 run: result:address:editor-data <- new editor-data:type
 9999 mem: new alloc: 1210
 9999 mem: storing 1210 in location 1186
@@ -7354,9 +7354,9 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 run: address to copy is 1217
 9999 mem: storing 1217 in location 1188
  102 run: x:address:number/deref <- copy right:number
-9999 mem: location 1185 is 4
+9999 mem: location 1185 is 9
 9999 mem: location 1188 is 1217
-9999 mem: storing 4 in location 1217
+9999 mem: storing 9 in location 1217
  102 run: x:address:number <- get-address result:address:editor-data/deref, bottom:offset
 9999 mem: location 1186 is 1210
 9999 mem: location 1210 is 0
@@ -7366,7 +7366,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1186 is 1210
@@ -7385,7 +7385,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1186 is 1210
@@ -7404,7 +7404,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1186 is 1210
@@ -7423,7 +7423,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1186 is 1210
@@ -7481,7 +7481,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1186 is 1210
@@ -7501,7 +7501,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1186 is 1210
@@ -7923,7 +7923,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1186 is 1210
@@ -7943,7 +7943,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1186 is 1210
@@ -7965,7 +7965,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1451 is 1210
@@ -7982,7 +7982,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1451 is 1210
@@ -7999,7 +7999,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1451 is 1210
@@ -8042,14 +8042,14 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1451 is 1210
 9999 run: address to copy is 1217
 9999 run: its type is number
-9999 mem: location 1217 is 4
-9999 mem: storing 4 in location 1456
+9999 mem: location 1217 is 9
+9999 mem: storing 9 in location 1456
  103 run: hide-screen screen:address
 9999 mem: location 1452 is 1031
  104 run: default-space:address:array:location <- new location:type, 30:literal
@@ -8071,7 +8071,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1451 is 1210
@@ -8121,7 +8121,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1451 is 1210
@@ -8136,7 +8136,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1451 is 1210
@@ -8151,7 +8151,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1451 is 1210
@@ -8272,7 +8272,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 run: jumping to instruction 54
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1460 is 0
-9999 mem: location 1456 is 4
+9999 mem: location 1456 is 9
 9999 mem: storing 0 in location 1471
  103 run: break-unless at-right?:boolean, 
 9999 mem: location 1471 is 0
@@ -8620,7 +8620,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 run: jumping to instruction 54
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1460 is 1
-9999 mem: location 1456 is 4
+9999 mem: location 1456 is 9
 9999 mem: storing 0 in location 1471
  103 run: break-unless at-right?:boolean, 
 9999 mem: location 1471 is 0
@@ -8968,7 +8968,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 run: jumping to instruction 54
  103 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 1460 is 2
-9999 mem: location 1456 is 4
+9999 mem: location 1456 is 9
 9999 mem: storing 0 in location 1471
  103 run: break-unless at-right?:boolean, 
 9999 mem: location 1471 is 0
@@ -9284,7 +9284,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 1451 is 1210
@@ -9433,7 +9433,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1169 is 2
 9999 mem: location 1170 is 65513
 9999 mem: location 1171 is 0
-9999 mem: location 1172 is 5
+9999 mem: location 1172 is 7
 9999 mem: location 2011 is 1168
 9999 mem: storing 1 in location 2012
  103 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
@@ -9450,7 +9450,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1169 is 2
 9999 mem: location 1170 is 65513
 9999 mem: location 1171 is 0
-9999 mem: location 1172 is 5
+9999 mem: location 1172 is 7
 9999 mem: location 2010 is 1173
 9999 mem: location 1173 is 0
 9999 mem: location 2011 is 1168
@@ -9461,11 +9461,11 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1169 is 2
 9999 mem: location 1170 is 65513
 9999 mem: location 1171 is 0
-9999 mem: location 1172 is 5
+9999 mem: location 1172 is 7
 9999 mem: storing 2 in location 2015
 9999 mem: storing 65513 in location 2016
 9999 mem: storing 0 in location 2017
-9999 mem: storing 5 in location 2018
+9999 mem: storing 7 in location 2018
  103 run: idx:address:number/deref <- add idx:address:number/deref, 1:literal
 9999 mem: location 2010 is 1173
 9999 mem: location 1173 is 0
@@ -9475,16 +9475,16 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 2015 is 2
 9999 mem: location 2016 is 65513
 9999 mem: location 2017 is 0
-9999 mem: location 2018 is 5
+9999 mem: location 2018 is 7
 9999 mem: location 2009 is 1173
-9999 run: result 0 is [2, 65513, 0, 5]
+9999 run: result 0 is [2, 65513, 0, 7]
 9999 run: result 1 is 1173
 9999 run: result 2 is 1
 9999 run: result 3 is 0
 9999 mem: storing 2 in location 1981
 9999 mem: storing 65513 in location 1982
 9999 mem: storing 0 in location 1983
-9999 mem: storing 5 in location 1984
+9999 mem: storing 7 in location 1984
 9999 mem: storing 1173 in location 1979
 9999 mem: storing 1 in location 1985
 9999 mem: storing 0 in location 1986
@@ -9500,7 +9500,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1981 is 2
 9999 mem: location 1982 is 65513
 9999 mem: location 1983 is 0
-9999 mem: location 1984 is 5
+9999 mem: location 1984 is 7
 9999 mem: storing 1982 in location 1987
  102 run: break-unless t:address:touch-event, 
 9999 mem: location 1987 is 1982
@@ -9510,7 +9510,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1987 is 1982
 9999 mem: location 1982 is 65513
 9999 mem: location 1983 is 0
-9999 mem: location 1984 is 5
+9999 mem: location 1984 is 7
  103 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
 9999 mem: new alloc: 2038
@@ -9519,7 +9519,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
  103 run: t:touch-event <- next-ingredient 
 9999 mem: storing 65513 in location 2041
 9999 mem: storing 0 in location 2042
-9999 mem: storing 5 in location 2043
+9999 mem: storing 7 in location 2043
  103 run: cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
 9999 mem: location 2040 is 1210
 9999 mem: location 1210 is 1251
@@ -9529,7 +9529,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 2040 is 1210
@@ -9538,7 +9538,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
  103 run: cursor-row:address:number/deref <- get t:touch-event, row:offset
 9999 mem: location 2041 is 65513
 9999 mem: location 2042 is 0
-9999 mem: location 2043 is 5
+9999 mem: location 2043 is 7
 9999 run: address to copy is 2042
 9999 run: its type is number
 9999 mem: location 2042 is 0
@@ -9553,7 +9553,7 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 0
 9999 mem: location 2040 is 1210
@@ -9562,12 +9562,12 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
  103 run: cursor-column:address:number/deref <- get t:touch-event, column:offset
 9999 mem: location 2041 is 65513
 9999 mem: location 2042 is 0
-9999 mem: location 2043 is 5
+9999 mem: location 2043 is 7
 9999 run: address to copy is 2043
 9999 run: its type is number
-9999 mem: location 2043 is 5
+9999 mem: location 2043 is 7
 9999 mem: location 2045 is 1219
-9999 mem: storing 5 in location 1219
+9999 mem: storing 7 in location 1219
  103 run: render editor:address:editor-data
 9999 mem: location 2040 is 1210
  104 run: default-space:address:array:location <- new location:type, 30:literal
@@ -9584,9 +9584,9 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: location 2071 is 1210
 9999 run: address to copy is 1213
 9999 run: its type is address
@@ -9601,9 +9601,9 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: location 2071 is 1210
 9999 run: address to copy is 1214
 9999 run: its type is number
@@ -9618,9 +9618,9 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: location 2071 is 1210
 9999 run: address to copy is 1215
 9999 run: its type is number
@@ -9661,14 +9661,14 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: location 2071 is 1210
 9999 run: address to copy is 1217
 9999 run: its type is number
-9999 mem: location 1217 is 4
-9999 mem: storing 4 in location 2076
+9999 mem: location 1217 is 9
+9999 mem: storing 9 in location 2076
  104 run: hide-screen screen:address
 9999 mem: location 2072 is 1031
  105 run: default-space:address:array:location <- new location:type, 30:literal
@@ -9690,9 +9690,9 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: location 2071 is 1210
 9999 run: address to copy is 1211
 9999 run: its type is address
@@ -9740,9 +9740,9 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: location 2071 is 1210
 9999 run: address to copy is 1218
 9999 mem: storing 1218 in location 2081
@@ -9755,9 +9755,9 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: location 2071 is 1210
 9999 run: address to copy is 1219
 9999 mem: storing 1219 in location 2082
@@ -9770,9 +9770,9 @@ schedule: new-editor/run1001/editor-handles-mouse-clicks-outside-text
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: location 2071 is 1210
 9999 run: address to copy is 1212
 9999 mem: storing 1212 in location 2083
@@ -9844,7 +9844,7 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
  104 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/deref
 9999 mem: location 2080 is 0
 9999 mem: location 2082 is 1219
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: storing 0 in location 2086
  104 run: break-unless at-cursor?:boolean, 
 9999 mem: location 2086 is 0
@@ -9867,7 +9867,7 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
 9999 run: jumping to instruction 54
  104 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 2080 is 0
-9999 mem: location 2076 is 4
+9999 mem: location 2076 is 9
 9999 mem: storing 0 in location 2091
  104 run: break-unless at-right?:boolean, 
 9999 mem: location 2091 is 0
@@ -10192,7 +10192,7 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
  104 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/deref
 9999 mem: location 2080 is 1
 9999 mem: location 2082 is 1219
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: storing 0 in location 2086
  104 run: break-unless at-cursor?:boolean, 
 9999 mem: location 2086 is 0
@@ -10215,7 +10215,7 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
 9999 run: jumping to instruction 54
  104 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 2080 is 1
-9999 mem: location 2076 is 4
+9999 mem: location 2076 is 9
 9999 mem: storing 0 in location 2091
  104 run: break-unless at-right?:boolean, 
 9999 mem: location 2091 is 0
@@ -10540,7 +10540,7 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
  104 run: at-cursor?:boolean <- equal column:number, cursor-column:address:number/deref
 9999 mem: location 2080 is 2
 9999 mem: location 2082 is 1219
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: storing 0 in location 2086
  104 run: break-unless at-cursor?:boolean, 
 9999 mem: location 2086 is 0
@@ -10563,7 +10563,7 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
 9999 run: jumping to instruction 54
  104 run: at-right?:boolean <- equal column:number, right:number
 9999 mem: location 2080 is 2
-9999 mem: location 2076 is 4
+9999 mem: location 2076 is 9
 9999 mem: storing 0 in location 2091
  104 run: break-unless at-right?:boolean, 
 9999 mem: location 2091 is 0
@@ -10879,9 +10879,9 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: location 2071 is 1210
 9999 run: address to copy is 1216
 9999 mem: storing 1216 in location 2095
@@ -10897,7 +10897,7 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
  104 run: cursor-outside-line?:boolean <- lesser-or-equal column:number, cursor-column:address:number/deref
 9999 mem: location 2080 is 3
 9999 mem: location 2082 is 1219
-9999 mem: location 1219 is 5
+9999 mem: location 1219 is 7
 9999 mem: storing 1 in location 2096
  104 run: before-cursor-on-same-line?:boolean <- and at-cursor-row?:boolean, cursor-outside-line?:boolean
 9999 mem: location 2085 is 1
@@ -11027,7 +11027,7 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
 9999 mem: location 1169 is 2
 9999 mem: location 1170 is 65513
 9999 mem: location 1171 is 0
-9999 mem: location 1172 is 5
+9999 mem: location 1172 is 7
 9999 mem: location 2569 is 1168
 9999 mem: storing 1 in location 2570
  103 run: done?:boolean <- greater-or-equal idx:address:number/deref, max:number
@@ -11074,7 +11074,7 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 3
 9999 mem: location 2 is 1210
@@ -11091,7 +11091,7 @@ schedule: render/move-cursor-in-editor/event-loop/run1001/editor-handles-mouse-c
 9999 mem: location 1214 is 0
 9999 mem: location 1215 is 0
 9999 mem: location 1216 is 0
-9999 mem: location 1217 is 4
+9999 mem: location 1217 is 9
 9999 mem: location 1218 is 0
 9999 mem: location 1219 is 3
 9999 mem: location 2 is 1210
