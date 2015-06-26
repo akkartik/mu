@@ -727,6 +727,35 @@ d]
   ]
 ]
 
+scenario editor-wraps-line-on-insert [
+  assume-screen 5:literal/width, 3:literal/height
+  assume-console [
+    type [e]
+  ]
+  run [
+    1:address:array:character <- new [abcd]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    # no wrap yet
+    .eabcd.
+    .     .
+  ]
+  assume-console [
+    type [f]
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    # now wrap
+    .efab↩.
+    .cd   .
+    .     .
+  ]
+]
+
 scenario editor-moves-cursor-after-inserting-characters [
   assume-screen 10:literal/width, 5:literal/height
   assume-console [
