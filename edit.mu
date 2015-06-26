@@ -454,6 +454,13 @@ recipe move-cursor-in-editor [
   default-space:address:array:location <- new location:type, 30:literal
   editor:address:editor-data <- next-ingredient
   t:touch-event <- next-ingredient
+  click-column:number <- get t:touch-event, column:offset
+  left:number <- get editor:address:editor-data/deref, left:offset
+  too-far-left?:boolean <- lesser-than click-column:number, left:number
+  reply-if too-far-left?:boolean, editor:address:editor-data/same-as-ingredient:0
+  right:number <- get editor:address:editor-data/deref, right:offset
+  too-far-right?:boolean <- greater-than click-column:number, right:number
+  reply-if too-far-right?:boolean, editor:address:editor-data/same-as-ingredient:0
   # update cursor
   cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
   cursor-row:address:number/deref <- get t:touch-event, row:offset
@@ -618,6 +625,30 @@ def]
   memory-should-contain [
     3 <- 1  # cursor row
     4 <- 3  # cursor column
+  ]
+]
+
+scenario editor-handles-mouse-clicks-outside-column [
+  assume-screen 10:literal/width, 5:literal/height
+  assume-console [
+    # click on right half of screen
+    left-click 3, 8
+  ]
+  run [
+    1:address:array:character <- new [abc]
+    # editor occupies only left half of screen
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+    .abc       .
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 0  # no change to cursor row
+    4 <- 0  # ..or column
   ]
 ]
 
