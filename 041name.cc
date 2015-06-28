@@ -180,6 +180,7 @@ recipe main [
   x:number <- copy 1:number/raw
 ]
 -warn: mixing variable names and numeric addresses in main
+$warn: 0
 
 :(scenario convert_names_does_not_warn_when_mixing_names_and_literals)
 % Hide_warnings = true;
@@ -187,6 +188,7 @@ recipe main [
   x:number <- copy 1:literal
 ]
 -warn: mixing variable names and numeric addresses in main
+$warn: 0
 
 :(scenario convert_names_does_not_warn_when_mixing_special_names_and_numeric_locations)
 % Hide_warnings = true;
@@ -194,6 +196,7 @@ recipe main [
   screen:number <- copy 1:number
 ]
 -warn: mixing variable names and numeric addresses in main
+$warn: 0
 
 :(scenario convert_names_warns_on_reusing_name_with_different_type)
 % Hide_warnings = true;
