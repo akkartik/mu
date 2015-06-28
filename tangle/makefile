@@ -1,5 +1,5 @@
 tangle: makefile type_list function_list file_list test_file_list test_list
-	c++ -g -O3 -Wall -Wextra -fno-strict-aliasing boot.cc -o tangle
+	c++ -O3 -Wall -Wextra -fno-strict-aliasing boot.cc -o tangle
 
 .PHONY: test
 
