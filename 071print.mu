@@ -21,6 +21,8 @@ recipe new-fake-screen [
   width:address:number/deref <- next-ingredient
   height:address:number <- get-address result:address:screen/deref, num-rows:offset
   height:address:number/deref <- next-ingredient
+#?   $print height:address:number/deref, [ 
+#? ] #? 1
   row:address:number <- get-address result:address:screen/deref, cursor-row:offset
   row:address:number/deref <- copy 0:literal
   column:address:number <- get-address result:address:screen/deref, cursor-column:offset

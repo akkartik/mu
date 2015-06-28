@@ -135,8 +135,8 @@ assert(Name[tmp_recipe.at(0)][""] < Max_variables_in_scenarios);
 // Scenario Globals.
 const long long int SCREEN = Next_predefined_global_for_scenarios++;
 // End Scenario Globals.
-:(before "End Predefined Scenario Locals In Run")
-Name[tmp_recipe.at(0)]["screen"] = SCREEN;
+:(before "End Special Scenario Variable Names(r)")
+Name[r]["screen"] = SCREEN;
 
 :(before "End Rewrite Instruction(curr)")
 // rewrite `assume-screen width, height` to
@@ -207,7 +207,9 @@ void check_screen(const string& expected_contents, const int color) {
   raw_string_stream cursor(expected_contents);
   // todo: too-long expected_contents should fail
   long long int addr = screen_data_start+1;  // skip length
+//?   cerr << "screen height " << screen_height << '\n'; //? 1
   for (long long int row = 0; row < screen_height; ++row) {
+//?     cerr << "row: " << row << '\n'; //? 1
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
     assert(cursor.get() == '.');
@@ -275,6 +277,8 @@ void check_screen(const string& expected_contents, const int color) {
 raw_string_stream::raw_string_stream(const string& backing) :index(0), max(backing.size()), buf(backing.c_str()) {}
 
 bool raw_string_stream::at_end() const {
+//?   cerr << index << ' ' << max << '\n'; //? 1
+//?   cerr << buf << "$\n"; //? 1
   if (index >= max) return true;
   if (tb_utf8_char_length(buf[index]) > max-index) {
     raise << "unicode string seems corrupted at index "<< index << " character " << static_cast<int>(buf[index]) << '\n';
