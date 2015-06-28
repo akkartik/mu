@@ -161,7 +161,7 @@ recipe render [
   default-space:address:array:location <- new location:type, 30:literal
   editor:address:editor-data <- next-ingredient
 #?   $print [=== render
-#? ] #? 1
+#? ] #? 2
   screen:address <- get editor:address:editor-data/deref, screen:offset
   top:number <- get editor:address:editor-data/deref, top:offset
   left:number <- get editor:address:editor-data/deref, left:offset
@@ -201,7 +201,7 @@ recipe render [
     }
     c:character <- get curr:address:duplex-list/deref, value:offset
 #?     $print [rendering ], c:character, [ 
-#? ] #? 1
+#? ] #? 2
     {
       # newline? move to left rather than 0
       newline?:boolean <- equal c:character, 10:literal/newline
@@ -282,6 +282,16 @@ recipe render [
 #?     new-prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
 #?     $print [render Ω: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)
 #? ] #? 1
+  }
+  # clear rest of final line
+#?   $print [clearing ], row:number, [ ], column:number, [ ], right:number, [ 
+#? ] #? 2
+  {
+    done?:boolean <- greater-or-equal column:number, right:number
+    break-if done?:boolean
+    print-character screen:address, 32:literal/space
+    column:number <- add column:number, 1:literal
+    loop
   }
   # update cursor
   move-cursor screen:address, cursor-row:address:number/deref, cursor-column:address:number/deref
@@ -428,10 +438,17 @@ recipe handle-event [
   reply-unless in-focus?:address:boolean/deref
 #?   $print [in focus: ], editor:address:editor-data, [ 
 #? ] #? 1
-  # typing regular characters
+  # typing a character
   {
     c:address:character <- maybe-convert e:event, text:variant
     break-unless c:address:character
+    # unless it's a backspace
+    {
+      backspace?:boolean <- equal c:address:character/deref, 8:literal/backspace
+      break-unless backspace?:boolean
+      delete-before-cursor editor:address:editor-data
+      reply
+    }
     insert-at-cursor editor:address:editor-data, c:address:character/deref
     reply
   }
@@ -507,7 +524,7 @@ recipe move-cursor-in-editor [
   too-far-right?:boolean <- greater-than click-column:number, right:number
   reply-if too-far-right?:boolean
 #?   $print [focus now at ], editor:address:editor-data, [ 
-#? ] #? 1
+#? ] #? 2
   # click on this window; gain focus
   in-focus?:address:boolean/deref <- copy 1:literal/true
   # update cursor
@@ -515,6 +532,8 @@ recipe move-cursor-in-editor [
   cursor-row:address:number/deref <- get t:touch-event, row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- get t:touch-event, column:offset
+#?   $print [column is at: ], cursor-column:address:number, [ 
+#? ] #? 1
 ]
 
 recipe insert-at-cursor [
@@ -538,6 +557,23 @@ recipe insert-at-cursor [
   # otherwise move cursor right
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+]
+
+recipe delete-before-cursor [
+  default-space:address:array:location <- new location:type, 30:literal
+  editor:address:editor-data <- next-ingredient
+  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
+  d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
+  # unless already at start
+  at-start?:boolean <- equal before-cursor:address:address:duplex-list/deref, d:address:duplex-list
+  reply-if at-start?:boolean
+  # delete character
+  prev:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/deref
+  remove-duplex before-cursor:address:address:duplex-list/deref
+  # update cursor
+  before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
+  cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+  cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -860,6 +896,35 @@ scenario editor-moves-cursor-down-after-inserting-newline [
   ]
 ]
 
+scenario editor-handles-backspace-key [
+#?   $print [=== new test
+#? ] #? 1
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
+#?   $print [editor: ], 2:address:editor-data, [ 
+#? ] #? 1
+  assume-console [
+    left-click 0, 1
+    type [«]
+  ]
+  3:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, 3:event/backspace
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    4:number <- get 2:address:editor-data/deref, cursor-row:offset
+    5:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+    .bc        .
+    .          .
+  ]
+  memory-should-contain [
+    4 <- 0
+    5 <- 0
+  ]
+]
+
 scenario editor-moves-cursor-right-with-key [
   assume-screen 10:literal/width, 5:literal/height
   1:address:array:character <- new [abc]
@@ -1057,8 +1122,6 @@ scenario point-at-multiple-editors [
 ]
 
 scenario editors-chain-to-cover-multiple-columns [
-#?   $print [=== new test
-#? ] #? 1
   assume-screen 10:literal/width, 5:literal/height
   # initialize an editor covering left half of screen
   1:address:array:character <- new [abc]
