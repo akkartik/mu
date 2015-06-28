@@ -107,6 +107,16 @@ scenario screen-in-scenario-color [
 :(before "End is_special_name Cases")
 if (s == "screen") return true;
 
+:(scenarios run)
+:(scenario convert_names_does_not_warn_when_mixing_special_names_and_numeric_locations)
+% Hide_warnings = true;
+recipe main [
+  screen:number <- copy 1:number
+]
+-warn: mixing variable names and numeric addresses in main
+$warn: 0
+:(scenarios run_mu_scenario)
+
 :(before "End Globals")
 // Scenarios may not define default-space, so they should fit within the
 // initial area of memory reserved for tests. We'll put the predefined
