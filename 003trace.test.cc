@@ -51,6 +51,11 @@ void test_trace_supports_count2() {
   CHECK_EQ(trace_count("test layer 1"), 2);
 }
 
+void test_trace_count_ignores_trailing_whitespace() {
+  trace("test layer 1") << "foo\n";
+  CHECK(trace_count("test layer 1", "foo") == 1);
+}
+
 // pending: DUMP tests
 // pending: readable_contents() adds newline if necessary.
 // pending: raise also prints to stderr.
