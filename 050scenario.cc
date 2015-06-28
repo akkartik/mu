@@ -132,7 +132,7 @@ const scenario* Current_scenario = NULL;
 void run_mu_scenario(const scenario& s) {
   Current_scenario = &s;
   bool not_already_inside_test = !Trace_stream;
-//?   cerr << s.name << '\n'; //? 4
+//?   cerr << s.name << '\n'; //? 5
   if (not_already_inside_test) {
     Trace_file = s.name;
     Trace_stream = new trace_stream;
@@ -450,6 +450,7 @@ recipe main [
   ]
 ]
 -warn: missing [b] in trace layer a
+$warn: 0
 
 //: 'trace-should-not-contain' is like the '-' lines in our scenarios so far
 //: Each trace line is separately checked for absense. Order is *not*
@@ -502,6 +503,7 @@ recipe main [
   ]
 ]
 -warn: unexpected [b] in trace layer a
+$warn: 0
 
 :(scenario trace_negative_check_warns_on_any_unexpected_line)
 % Hide_warnings = true;

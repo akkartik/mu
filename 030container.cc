@@ -308,6 +308,7 @@ container bar [
   x:number
 ]
 -warn: unknown type: bar
+$warn: 0
 
 :(after "int main")
   Transform.push_back(check_invalid_types);
