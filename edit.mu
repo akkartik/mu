@@ -5,14 +5,26 @@ recipe main [
   open-console
   width:number <- display-width
   height:number <- display-height
+  # draw a line
   divider:number, _ <- divide-with-remainder width:number, 2:literal
   draw-vertical 0:literal/screen, divider:number, 0:literal/top, height:number
-  in:address:array:character <- new [abcdef
-def
-ghi
-jkl]
-  editor:address:editor-data <- new-editor in:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, divider:number/right
-  event-loop 0:literal/screen, 0:literal/events, editor:address:editor-data
+  # editor on the left
+  left:address:array:character <- new [abc]
+  left-editor:address:editor-data <- new-editor left:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, divider:number/right
+  # editor on the right
+  right:address:array:character <- new [def]
+  new-left:number <- add divider:number/right, 1:literal
+  right-editor:address:editor-data <- new-editor right:address:array:character, 0:literal/screen, 0:literal/top, new-left:number, width:number
+  # chain
+  x:address:address:editor-data <- get-address left-editor:address:editor-data/deref, next-editor:offset
+  x:address:address:editor-data/deref <- copy right-editor:address:editor-data
+  # initialize focus
+  reset-focus left-editor:address:editor-data
+  cursor-row:number <- get left-editor:address:editor-data/deref, cursor-row:offset
+  cursor-column:number <- get left-editor:address:editor-data/deref, cursor-column:offset
+  move-cursor 0:literal/screen, cursor-row:number, cursor-column:number
+  # and we're off!
+  event-loop 0:literal/screen, 0:literal/events, left-editor:address:editor-data
   close-console
 ]
 
@@ -158,7 +170,7 @@ scenario editor-initializes-without-data [
 ]
 
 recipe render [
-  default-space:address:array:location <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 40:literal
   editor:address:editor-data <- next-ingredient
 #?   $print [=== render
 #? ] #? 2
@@ -294,7 +306,11 @@ recipe render [
     loop
   }
   # update cursor
-  move-cursor screen:address, cursor-row:address:number/deref, cursor-column:address:number/deref
+  {
+    in-focus?:boolean <- get editor:address:editor-data/deref, in-focus?:offset
+    break-unless in-focus?:boolean
+    move-cursor screen:address, cursor-row:address:number/deref, cursor-column:address:number/deref
+  }
   show-screen screen:address
   reply editor:address:editor-data/same-as-ingredient:0
 ]
@@ -406,6 +422,20 @@ recipe event-loop [
     {
       break-unless curr:address:editor-data
       render curr:address:editor-data
+      curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
+      loop
+    }
+    # ..and position the cursor
+    curr:address:editor-data <- copy editor:address:editor-data
+    {
+      break-unless curr:address:editor-data
+      {
+        in-focus?:boolean <- get curr:address:editor-data/deref, in-focus?:offset
+        break-unless in-focus?:boolean
+        cursor-row:number <- get curr:address:editor-data/deref, cursor-row:offset
+        cursor-column:number <- get curr:address:editor-data/deref, cursor-column:offset
+        move-cursor screen:address, cursor-row:number, cursor-column:number
+      }
       curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
       loop
     }
@@ -1150,6 +1180,51 @@ scenario editors-chain-to-cover-multiple-columns [
   memory-should-contain [
     5 <- 2
     6 <- 7
+  ]
+  # show the cursor at the right window
+  run [
+    screen:address <- print-character screen:address, 9251:literal/␣
+  ]
+  screen-should-contain [
+    .a0bc d1␣f .
+    .          .
+  ]
+]
+
+scenario editor-in-focus-keeps-cursor [
+  assume-screen 10:literal/width, 5:literal/height
+  # initialize an editor covering left half of screen
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  3:address:array:character <- new [def]
+  # chain new editor to it, covering the right half of the screen
+  4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
+  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 10:literal/right
+  # initialize cursor
+  run [
+    reset-focus 2:address:editor-data
+    5:number <- get 2:address:editor-data/deref, cursor-row:offset
+    6:number <- get 2:address:editor-data/deref, cursor-column:offset
+    move-cursor screen:address, 5:number, 6:number
+    screen:address <- print-character screen:address, 9251:literal/␣
+  ]
+  # is it at the right place?
+  screen-should-contain [
+    .␣bc  def  .
+    .          .
+  ]
+  # now try typing a letter
+  assume-console [
+    type [z]
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    screen:address <- print-character screen:address, 9251:literal/␣
+  ]
+  # cursor should still be right
+  screen-should-contain [
+    .z␣bc def  .
+    .          .
   ]
 ]
 
