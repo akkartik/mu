@@ -19,8 +19,8 @@ jkl]
 scenario editor-initially-prints-string-to-screen [
   assume-screen 10:literal/width, 5:literal/height
   run [
-    s:address:array:character <- new [abc]
-    new-editor s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
+    1:address:array:character <- new [abc]
+    new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   ]
   screen-should-contain [
     .abc       .
@@ -538,12 +538,21 @@ recipe previous-line-length [
 
 scenario editor-handles-empty-event-queue [
   assume-screen 10:literal/width, 5:literal/height
+#?   3:number <- get screen:address/deref, num-rows:offset #? 1
+#?   $print [0: ], screen:address, [: ], 3:number, [ 
+#? ] #? 1
+  1:address:array:character <- new [abc]
+#?   $print [1: ], screen:address, [ 
+#? ] #? 1
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console []
+#?   $print [8: ], screen:address, [ 
+#? ] #? 1
   run [
-    s:address:array:character <- new [abc]
-    editor:address:editor-data <- new-editor s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
-    event-loop screen:address, console:address, editor:address:editor-data
+    event-loop screen:address, console:address, 2:address:editor-data
   ]
+#?   $print [9: ], screen:address, [ 
+#? ] #? 1
   screen-should-contain [
     .abc       .
     .          .
@@ -552,12 +561,12 @@ scenario editor-handles-empty-event-queue [
 
 scenario editor-handles-mouse-clicks [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
-    left-click 0, 1
+    left-click 0, 1  # on the 'b'
   ]
   run [
-    1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
@@ -574,12 +583,12 @@ scenario editor-handles-mouse-clicks [
 
 scenario editor-handles-mouse-clicks-outside-text [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     left-click 0, 7  # last line, to the right of text
   ]
   run [
-    1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
@@ -592,13 +601,13 @@ scenario editor-handles-mouse-clicks-outside-text [
 
 scenario editor-handles-mouse-clicks-outside-text-2 [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+def]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     left-click 0, 7  # interior line, to the right of text
   ]
   run [
-    1:address:array:character <- new [abc
-def]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
@@ -611,13 +620,13 @@ def]
 
 scenario editor-handles-mouse-clicks-outside-text-3 [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+def]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     left-click 2, 7  # below text
   ]
   run [
-    1:address:array:character <- new [abc
-def]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
@@ -630,14 +639,14 @@ def]
 
 scenario editor-handles-mouse-clicks-outside-column [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  # editor occupies only left half of screen
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
   assume-console [
     # click on right half of screen
     left-click 3, 8
   ]
   run [
-    1:address:array:character <- new [abc]
-    # editor occupies only left half of screen
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
@@ -654,12 +663,12 @@ scenario editor-handles-mouse-clicks-outside-column [
 
 scenario editor-inserts-characters-into-empty-editor [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
   assume-console [
     type [abc]
   ]
   run [
-    1:address:array:character <- new []
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -670,14 +679,14 @@ scenario editor-inserts-characters-into-empty-editor [
 
 scenario editor-inserts-characters-at-cursor [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     type [0]
     left-click 0, 2
     type [d]
   ]
   run [
-    1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -688,13 +697,13 @@ scenario editor-inserts-characters-at-cursor [
 
 scenario editor-inserts-characters-at-cursor-2 [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     left-click 0, 5  # right of last line
     type [d]  # should append
   ]
   run [
-    1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -705,13 +714,13 @@ scenario editor-inserts-characters-at-cursor-2 [
 
 scenario editor-inserts-characters-at-cursor-3 [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     left-click 3, 5  # below all text
     type [d]  # should append
   ]
   run [
-    1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -722,14 +731,14 @@ scenario editor-inserts-characters-at-cursor-3 [
 
 scenario editor-inserts-characters-at-cursor-4 [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     left-click 3, 5  # below all text
     type [e]  # should append
   ]
   run [
-    1:address:array:character <- new [abc
-d]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -741,14 +750,14 @@ d]
 
 scenario editor-inserts-characters-at-cursor-5 [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     left-click 3, 5  # below all text
     type [ef]  # should append multiple characters in order
   ]
   run [
-    1:address:array:character <- new [abc
-d]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -760,27 +769,29 @@ d]
 
 scenario editor-wraps-line-on-insert [
   assume-screen 5:literal/width, 3:literal/height
+  1:address:array:character <- new [abcd]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  # type a letter
   assume-console [
     type [e]
   ]
   run [
-    1:address:array:character <- new [abcd]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
+  # no wrap yet
   screen-should-contain [
-    # no wrap yet
     .eabcd.
     .     .
   ]
+  # type a second letter
   assume-console [
     type [f]
   ]
   run [
     event-loop screen:address, console:address, 2:address:editor-data
   ]
+  # now wrap
   screen-should-contain [
-    # now wrap
     .efab↩.
     .cd   .
     .     .
@@ -789,12 +800,12 @@ scenario editor-wraps-line-on-insert [
 
 scenario editor-moves-cursor-after-inserting-characters [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
   assume-console [
     type [01]
   ]
   run [
-    1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -805,13 +816,13 @@ scenario editor-moves-cursor-after-inserting-characters [
 
 scenario editor-moves-cursor-down-after-inserting-newline [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     type [0
 1]
   ]
   run [
-    1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -823,13 +834,13 @@ scenario editor-moves-cursor-down-after-inserting-newline [
 
 scenario editor-moves-cursor-right-with-key [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     press 65514  # right arrow
     type [0]
   ]
   run [
-    1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -840,6 +851,9 @@ scenario editor-moves-cursor-right-with-key [
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     press 65514  # right arrow
     press 65514  # right arrow
@@ -848,9 +862,6 @@ scenario editor-moves-cursor-to-next-line-with-right-arrow [
     type [0]
   ]
   run [
-    1:address:array:character <- new [abc
-d]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -862,15 +873,15 @@ d]
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow-at-end-of-line [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     left-click 0, 3
     press 65514  # right arrow - next line
     type [0]
   ]
   run [
-    1:address:array:character <- new [abc
-d]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -882,14 +893,14 @@ d]
 
 scenario editor-moves-cursor-left-with-key [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   assume-console [
     left-click 0, 2
     press 65515  # left arrow
     type [0]
   ]
   run [
-    1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -900,6 +911,10 @@ scenario editor-moves-cursor-left-with-key [
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
   assume-screen 10:literal/width, 5:literal/height
+  # initialize editor with two lines
+  1:address:array:character <- new [abc
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   # position cursor at start of second line (so there's no previous newline)
   assume-console [
     left-click 1, 0
@@ -907,9 +922,6 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
     type [0]
   ]
   run [
-    1:address:array:character <- new [abc
-d]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -921,17 +933,19 @@ d]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2 [
   assume-screen 10:literal/width, 5:literal/height
-  # position cursor further down (so there's a previous newline)
+  # initialize editor with three lines
+  1:address:array:character <- new [abc
+def
+g]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
+  # position cursor further down (so there's a newline before the character at
+  # the cursor)
   assume-console [
     left-click 2, 0
     press 65515  # left arrow
     type [0]
   ]
   run [
-    1:address:array:character <- new [abc
-def
-g]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -944,6 +958,10 @@ g]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-3 [
   assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+def
+g]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   # position cursor at start of text
   assume-console [
     left-click 0, 0
@@ -951,10 +969,6 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-3
     type [0]
   ]
   run [
-    1:address:array:character <- new [abc
-def
-g]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
@@ -967,6 +981,11 @@ g]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4 [
   assume-screen 10:literal/width, 5:literal/height
+  # initialize editor with text containing an empty line
+  1:address:array:character <- new [abc
+
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
   # position cursor right after empty line
   assume-console [
     left-click 2, 0
@@ -974,10 +993,6 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4
     type [0]
   ]
   run [
-    1:address:array:character <- new [abc
-
-d]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [

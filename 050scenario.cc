@@ -138,10 +138,11 @@ void run_mu_scenario(const scenario& s) {
     Trace_stream = new trace_stream;
     setup();
   }
-//?   cerr << '^' << s.to_run << "$\n"; //? 4
   assert(Routines.empty());
-  run("recipe "+s.name+" [ " + s.to_run + " ]");
-//?   cerr << s.name << " done\n"; //? 1
+  vector<recipe_number> tmp = load("recipe "+s.name+" [ "+s.to_run+" ]");
+  bind_special_scenario_names(tmp.at(0));
+  transform_all();
+  run(tmp.front());
   if (not_already_inside_test && Trace_stream) {
     teardown();
     ofstream fout((Trace_dir+Trace_file).c_str());
@@ -180,12 +181,19 @@ case RUN: {
   tmp << "recipe run" << Next_recipe_number << " [ " << current_instruction().ingredients.at(0).name << " ]";
 //?   Show_rest_of_stream = true; //? 1
   vector<recipe_number> tmp_recipe = load(tmp.str());
-  // Predefined Scenario Locals In Run.
-  // End Predefined Scenario Locals In Run.
+  bind_special_scenario_names(tmp_recipe.at(0));
   transform_all();
 //?   cout << tmp_recipe.at(0) << ' ' << Recipe_number["main"] << '\n'; //? 1
   Current_routine->calls.push_front(call(tmp_recipe.at(0)));
   continue;  // not done with caller; don't increment current_step_index()
+}
+
+// Some variables for fake resources always get special addresses in
+// scenarios.
+:(code)
+void bind_special_scenario_names(recipe_number r) {
+  // Special Scenario Variable Names(r)
+  // End Special Scenario Variable Names(r)
 }
 
 :(scenario run_multiple)

@@ -31,8 +31,8 @@ scenario keyboard-in-scenario [
 
 :(before "End Scenario Globals")
 const long long int CONSOLE = Next_predefined_global_for_scenarios++;
-:(before "End Predefined Scenario Locals In Run")
-Name[tmp_recipe.at(0)]["console"] = CONSOLE;
+:(before "End Special Scenario Variable Names(r)")
+Name[r]["console"] = CONSOLE;
 
 //: allow naming just for 'console'
 :(before "End is_special_name Cases")
