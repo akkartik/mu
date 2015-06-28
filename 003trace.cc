@@ -265,9 +265,12 @@ int trace_count(string layer, string line) {
   Trace_stream->newline();
   long result = 0;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (layer == p->label)
-      if (line == "" || line == p->contents)
+    if (layer == p->label) {
+//?       cerr << "a: " << line << "$\n"; //? 1
+//?       cerr << "b: " << trim(p->contents) << "$\n"; //? 1
+      if (line == "" || line == trim(p->contents))
         ++result;
+    }
   }
   return result;
 }
