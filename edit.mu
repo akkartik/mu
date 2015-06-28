@@ -49,8 +49,10 @@ container editor-data [
   cursor-row:number
   cursor-column:number
 
-  # pointer to another editor, responsible for a different area of screen
+  # pointer to another editor, responsible for a different area of screen.
+  # helps organize editors in a 'chain'.
   next-editor:address:editor-data
+  in-focus?:boolean  # set for the one editor in this chain currently being edited
 ]
 
 # editor:address, screen:address <- new-editor s:address:array:character, screen:address, top:number, left:number, bottom:number
@@ -92,6 +94,10 @@ recipe new-editor [
   y:address:address:duplex-list/deref <- copy d:address:address:duplex-list/deref
   init:address:address:duplex-list <- get-address result:address:editor-data/deref, top-of-screen:offset
   init:address:address:duplex-list/deref <- copy d:address:address:duplex-list/deref
+  # set focus
+  # if using multiple editors, must call reset-focus after chaining them all
+  b:address:boolean <- get-address result:address:editor-data/deref, in-focus?:offset
+  b:address:boolean/deref <- copy 1:literal/true
 #?   $print d:address:address:duplex-list/deref, [ 
 #? ] #? 1
   # early exit if s is empty
@@ -363,96 +369,126 @@ scenario editor-initializes-empty-text [
 
 ## handling events from the keyboard, mouse, touch screen, ...
 
+# Takes a chain of editors (chained using editor-data.next-editor), sends each
+# event from the console to each editor.
 recipe event-loop [
   default-space:address:array:location <- new location:type, 30:literal
   screen:address <- next-ingredient
   console:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   {
-    +next-event
+    # send each event to each editor
     e:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
     loop-unless found?:boolean
     break-if quit?:boolean  # only in tests
     trace [app], [next-event]
-    # 'touch' event
+#?     $print [--- new event
+#? ] #? 1
+    curr:address:editor-data <- copy editor:address:editor-data
     {
-      t:address:touch-event <- maybe-convert e:event, touch:variant
-      break-unless t:address:touch-event
-#?       $print [aaa: touch] #? 1
-      editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, t:address:touch-event/deref
-      loop +next-event:label
+      break-unless curr:address:editor-data
+      handle-event screen:address, console:address, curr:address:editor-data, e:event
+      curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
+      loop
     }
-    # typing regular characters
+    # after each non-trivial event, render all editors
+    curr:address:editor-data <- copy editor:address:editor-data
     {
-      c:address:character <- maybe-convert e:event, text:variant
-      break-unless c:address:character
-      editor:address:editor-data <- insert-at-cursor editor:address:editor-data, c:address:character/deref
-      loop +next-event:label
+      break-unless curr:address:editor-data
+      render curr:address:editor-data
+      curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
+      loop
     }
-    # otherwise it's a special key to control the editor
-    k:address:number <- maybe-convert e:event, keycode:variant
-    assert k:address:number, [event was of unknown type; neither keyboard nor mouse]
-    d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
-    before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
-    cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
-    cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
-    # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'
-    # right arrow
-    {
-      next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
-      break-unless next-character?:boolean
-      # if not at end of text
-      next:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
-      break-unless next:address:duplex-list
-      # scan to next character
-      before-cursor:address:address:duplex-list/deref <- copy next:address:duplex-list
-      nextc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
-      # if it's a newline, move cursor to start of next row
-      {
-        at-newline?:boolean <- equal nextc:character, 10:literal/newline
-        break-unless at-newline?:boolean
-        cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
-        cursor-column:address:number/deref <- copy 0:literal
-        break +render:label
-      }
-      # otherwise move cursor one character right
-      cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
-    }
-    # left arrow
-    {
-      prev-character?:boolean <- equal k:address:number/deref, 65515:literal/left-arrow
-      break-unless prev-character?:boolean
-      # if not at start of text
-      prev:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/deref
-      break-unless prev:address:duplex-list
-      # if cursor not at left margin, move one character left
-      {
-        at-left-margin?:boolean <- equal cursor-column:address:number/deref, 0:literal
-        break-if at-left-margin?:boolean
-        cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
-        break +render:label
-      }
-      # if at left margin, figure out how long the previous line is (there's
-      # guaranteed to be a previous line, since we're not at start of text)
-      # and position cursor after it
-      # before-cursor must currently be at a newline
-      prevc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
-      previous-character-must-be-newline:boolean <- equal prevc:character, 10:literal/newline
-      assert previous-character-must-be-newline:boolean, [aaa]
-      # compute length of previous line
-      end-of-line:number <- previous-line-length before-cursor:address:address:duplex-list/deref, d:address:duplex-list
-#?       $print [before: ] cursor-row:address:number/deref, [/], cursor-row:address:number, [ ], cursor-column:address:number/deref, [/], cursor-column:address:number, [ ], end-of-line:number, [ 
-#? ]
-      cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
-      cursor-column:address:number/deref <- copy end-of-line:number
-#?       $print [after: ] cursor-row:address:number/deref, [/], cursor-row:address:number, [ ], cursor-column:address:number/deref, [/], cursor-column:address:number, [ ], end-of-line:number, [ 
-#? ]
-    }
-    +render
-    render editor:address:editor-data
-#?     $print [after render: ] cursor-row:address:number/deref, [/], cursor-row:address:number, [ ], cursor-column:address:number/deref, [/], cursor-column:address:number, [ ], end-of-line:number, [ 
-#? ]
     loop
+  }
+]
+
+recipe handle-event [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  console:address <- next-ingredient
+  editor:address:editor-data <- next-ingredient
+  e:event <- next-ingredient
+  # 'touch' event
+  {
+    t:address:touch-event <- maybe-convert e:event, touch:variant
+    break-unless t:address:touch-event
+    move-cursor-in-editor editor:address:editor-data, t:address:touch-event/deref
+    reply
+  }
+  # other events trigger only if this editor is in focus
+#?   $print [checking ], editor:address:editor-data, [ 
+#? ] #? 1
+#?   x:address:boolean <- get-address editor:address:editor-data/deref, in-focus?:offset #? 1
+#?   $print [address of focus: ], x:address:boolean, [ 
+#? ] #? 1
+  in-focus?:address:boolean <- get-address editor:address:editor-data/deref, in-focus?:offset
+#?   $print [ at ], in-focus?:address:boolean, [ 
+#? ] #? 1
+  reply-unless in-focus?:address:boolean/deref
+#?   $print [in focus: ], editor:address:editor-data, [ 
+#? ] #? 1
+  # typing regular characters
+  {
+    c:address:character <- maybe-convert e:event, text:variant
+    break-unless c:address:character
+    insert-at-cursor editor:address:editor-data, c:address:character/deref
+    reply
+  }
+  # otherwise it's a special key to control the editor
+  k:address:number <- maybe-convert e:event, keycode:variant
+  assert k:address:number, [event was of unknown type; neither keyboard nor mouse]
+  d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
+  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
+  cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
+  cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+  # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'
+  # right arrow
+  {
+    next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
+    break-unless next-character?:boolean
+    # if not at end of text
+    next:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
+    break-unless next:address:duplex-list
+    # scan to next character
+    before-cursor:address:address:duplex-list/deref <- copy next:address:duplex-list
+    nextc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
+    # if it's a newline, move cursor to start of next row
+    {
+      at-newline?:boolean <- equal nextc:character, 10:literal/newline
+      break-unless at-newline?:boolean
+      cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+      cursor-column:address:number/deref <- copy 0:literal
+      reply
+    }
+    # otherwise move cursor one character right
+    cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+  }
+  # left arrow
+  {
+    prev-character?:boolean <- equal k:address:number/deref, 65515:literal/left-arrow
+    break-unless prev-character?:boolean
+    # if not at start of text
+    prev:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/deref
+    break-unless prev:address:duplex-list
+    # if cursor not at left margin, move one character left
+    {
+      at-left-margin?:boolean <- equal cursor-column:address:number/deref, 0:literal
+      break-if at-left-margin?:boolean
+      cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
+      reply
+    }
+    # if at left margin, figure out how long the previous line is (there's
+    # guaranteed to be a previous line, since we're not at start of text)
+    # and position cursor after it
+    # before-cursor must currently be at a newline
+    prevc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
+    previous-character-must-be-newline:boolean <- equal prevc:character, 10:literal/newline
+    assert previous-character-must-be-newline:boolean, [aaa]
+    # compute length of previous line
+    end-of-line:number <- previous-line-length before-cursor:address:address:duplex-list/deref, d:address:duplex-list
+    cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
+    cursor-column:address:number/deref <- copy end-of-line:number
   }
 ]
 
@@ -460,28 +496,25 @@ recipe move-cursor-in-editor [
   default-space:address:array:location <- new location:type, 30:literal
   editor:address:editor-data <- next-ingredient
   t:touch-event <- next-ingredient
+  # always reset focus to start
+  in-focus?:address:boolean <- get-address editor:address:editor-data/deref, in-focus?:offset
+  in-focus?:address:boolean/deref <- copy 0:literal/true
   click-column:number <- get t:touch-event, column:offset
   left:number <- get editor:address:editor-data/deref, left:offset
   too-far-left?:boolean <- lesser-than click-column:number, left:number
-  jump-if too-far-left?:boolean, +try-next:label
+  reply-if too-far-left?:boolean
   right:number <- get editor:address:editor-data/deref, right:offset
   too-far-right?:boolean <- greater-than click-column:number, right:number
-  jump-if too-far-right?:boolean, +try-next:label
+  reply-if too-far-right?:boolean
+#?   $print [focus now at ], editor:address:editor-data, [ 
+#? ] #? 1
+  # click on this window; gain focus
+  in-focus?:address:boolean/deref <- copy 1:literal/true
   # update cursor
   cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
   cursor-row:address:number/deref <- get t:touch-event, row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- get t:touch-event, column:offset
-  render editor:address:editor-data
-  +try-next
-  {
-    next-editor:address:editor-data <- get editor:address:editor-data/deref, next-editor:offset
-#?     $print next-editor:address:editor-data, [ 
-#? ] #? 1
-    break-unless next-editor:address:editor-data
-    move-cursor-in-editor next-editor:address:editor-data, t:touch-event
-  }
-  reply editor:address:editor-data/same-as-ingredient:0
 ]
 
 recipe insert-at-cursor [
@@ -490,11 +523,6 @@ recipe insert-at-cursor [
   c:character <- next-ingredient
   before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
   d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
-#?   $print before-cursor:address:address:duplex-list/deref, [ ], d:address:duplex-list, [ 
-#? ] #? 2
-#?   prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
-#?   $print [inserting ], c:character, [ after ], prev:character, [ 
-#? ] #? 2
   insert-duplex c:character, before-cursor:address:address:duplex-list/deref
   # update cursor: if newline, move cursor to start of next line
   # todo: bottom of screen
@@ -505,23 +533,11 @@ recipe insert-at-cursor [
     cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
     cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
     cursor-column:address:number/deref <- copy 0:literal
-    break +render:label
+    reply
   }
   # otherwise move cursor right
-#?   $print [column 0: ], cursor-column:address:number/deref, [ 
-#? ] #? 1
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
-#?   $print [column 1: ], cursor-column:address:number/deref, [ 
-#? ] #? 1
-  +render
-  render editor:address:editor-data
-#?   new-prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
-#?   $print [column 2: ], cursor-column:address:number/deref, [ 
-#? ] #? 1
-#?   $print [cursor now after ], new-prev:character, [ 
-#? ] #? 1
-  reply editor:address:editor-data/same-as-ingredient:0
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -545,8 +561,6 @@ recipe previous-line-length [
     result:number <- add result:number, 1:literal
     loop
   }
-#?   $print result:number, [ 
-#? ] #? 1
   reply result:number
 ]
 
@@ -1040,6 +1054,60 @@ scenario point-at-multiple-editors [
     5 <- 1
     6 <- 8
   ]
+]
+
+scenario editors-chain-to-cover-multiple-columns [
+#?   $print [=== new test
+#? ] #? 1
+  assume-screen 10:literal/width, 5:literal/height
+  # initialize an editor covering left half of screen
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  3:address:array:character <- new [def]
+  # chain new editor to it, covering the right half of the screen
+  4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
+  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 10:literal/right
+  reset-focus 2:address:editor-data
+  # type one letter in each of them
+  assume-console [
+    left-click 0, 1
+    type [0]
+    left-click 0, 6
+    type [1]
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    5:number <- get 2:address:editor-data/deref, cursor-column:offset
+    6:number <- get 4:address:address:editor-data/deref/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+    .a0bc d1ef .
+    .          .
+  ]
+  memory-should-contain [
+    5 <- 2
+    6 <- 7
+  ]
+]
+
+# set focus to first editor, reset it in later ones
+recipe reset-focus [
+  default-space:address:array:location <- new location:type, 30:literal
+  editor:address:editor-data <- next-ingredient
+  in-focus:address:boolean <- get-address editor:address:editor-data/deref, in-focus?:offset
+  in-focus:address:boolean/deref <- copy 1:literal/true
+  e:address:editor-data <- get editor:address:editor-data/deref, next-editor:offset
+  {
+    break-unless e:address:editor-data
+#?     $print [resetting focus in ], e:address:editor-data, [ 
+#? ] #? 1
+    x:address:boolean <- get-address e:address:editor-data/deref, in-focus?:offset
+#?     $print [ at ], x:address:boolean, [ 
+#? ] #? 1
+    x:address:boolean/deref <- copy 0:literal/false
+    e:address:editor-data <- get e:address:editor-data/deref, next-editor:offset
+    loop
+  }
 ]
 
 ## helpers for drawing editor borders
