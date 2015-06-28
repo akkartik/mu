@@ -48,6 +48,9 @@ container editor-data [
   # raw screen coordinates of cursor
   cursor-row:number
   cursor-column:number
+
+  # pointer to another editor, responsible for a different area of screen
+  next-editor:address:editor-data
 ]
 
 # editor:address, screen:address <- new-editor s:address:array:character, screen:address, top:number, left:number, bottom:number
@@ -80,6 +83,8 @@ recipe new-editor [
   x:address:number <- get-address result:address:editor-data/deref, cursor-row:offset
   x:address:number/deref <- copy top:number
   x:address:number <- get-address result:address:editor-data/deref, cursor-column:offset
+#?   $print left:number, [ 
+#? ] #? 1
   x:address:number/deref <- copy left:number
   d:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
   d:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
@@ -356,7 +361,7 @@ scenario editor-initializes-empty-text [
   ]
 ]
 
-## handling events from the keyboard and mouse
+## handling events from the keyboard, mouse, touch screen, ...
 
 recipe event-loop [
   default-space:address:array:location <- new location:type, 30:literal
@@ -369,10 +374,11 @@ recipe event-loop [
     loop-unless found?:boolean
     break-if quit?:boolean  # only in tests
     trace [app], [next-event]
-    # mouse clicks
+    # 'touch' event
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t:address:touch-event
+#?       $print [aaa: touch] #? 1
       editor:address:editor-data <- move-cursor-in-editor editor:address:editor-data, t:address:touch-event/deref
       loop +next-event:label
     }
@@ -457,16 +463,24 @@ recipe move-cursor-in-editor [
   click-column:number <- get t:touch-event, column:offset
   left:number <- get editor:address:editor-data/deref, left:offset
   too-far-left?:boolean <- lesser-than click-column:number, left:number
-  reply-if too-far-left?:boolean, editor:address:editor-data/same-as-ingredient:0
+  jump-if too-far-left?:boolean, +try-next:label
   right:number <- get editor:address:editor-data/deref, right:offset
   too-far-right?:boolean <- greater-than click-column:number, right:number
-  reply-if too-far-right?:boolean, editor:address:editor-data/same-as-ingredient:0
+  jump-if too-far-right?:boolean, +try-next:label
   # update cursor
   cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
   cursor-row:address:number/deref <- get t:touch-event, row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- get t:touch-event, column:offset
   render editor:address:editor-data
+  +try-next
+  {
+    next-editor:address:editor-data <- get editor:address:editor-data/deref, next-editor:offset
+#?     $print next-editor:address:editor-data, [ 
+#? ] #? 1
+    break-unless next-editor:address:editor-data
+    move-cursor-in-editor next-editor:address:editor-data, t:touch-event
+  }
   reply editor:address:editor-data/same-as-ingredient:0
 ]
 
@@ -1000,6 +1014,31 @@ d]
     .0         .
     .d         .
     .          .
+  ]
+]
+
+scenario point-at-multiple-editors [
+  assume-screen 10:literal/width, 5:literal/height
+  # initialize an editor covering left half of screen
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  3:address:array:character <- new [def]
+  # chain new editor to it, covering the right half of the screen
+  4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
+  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 10:literal/right
+  # type one letter in each of them
+  assume-console [
+    left-click 0, 1
+    left-click 0, 8
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    5:number <- get 2:address:editor-data/deref, cursor-column:offset
+    6:number <- get 4:address:address:editor-data/deref/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    5 <- 1
+    6 <- 8
   ]
 ]
 
