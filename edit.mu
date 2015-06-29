@@ -444,7 +444,7 @@ recipe event-loop [
 ]
 
 recipe handle-event [
-  default-space:address:array:location <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 40:literal
   screen:address <- next-ingredient
   console:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
@@ -506,6 +506,27 @@ recipe handle-event [
       break-unless at-newline?:boolean
       cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
       cursor-column:address:number/deref <- copy 0:literal
+      # todo: what happens when cursor is too far down?
+      screen-height:number <- screen-height screen:address
+      above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
+      assert above-screen-bottom?:boolean, [unimplemented: moving past bottom of screen]
+      reply
+    }
+    # if the line wraps, move cursor to start of next row
+    {
+      # if we're at the column just before the wrap indicator
+      right:number <- get editor:address:editor-data/deref, right:offset
+      wrap-column:number <- subtract right:number, 1:literal
+      at-wrap?:boolean <- equal cursor-column:address:number/deref, wrap-column:number
+      break-unless at-wrap?:boolean
+      # and if character after next isn't newline
+      # TODO
+      cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+      cursor-column:address:number/deref <- copy 0:literal
+      # todo: what happens when cursor is too far down?
+      screen-height:number <- screen-height screen:address
+      above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
+      assert above-screen-bottom?:boolean, [unimplemented: moving past bottom of screen]
       reply
     }
     # otherwise move cursor one character right
@@ -991,6 +1012,30 @@ d]
     .abc       .
     .0d        .
     .          .
+  ]
+]
+
+scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abcdef]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  assume-console [
+    left-click 0, 3
+    press 65514  # right arrow
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+    .abcd↩     .
+    .ef        .
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
   ]
 ]
 
