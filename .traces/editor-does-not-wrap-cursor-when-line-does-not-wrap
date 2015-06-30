@@ -13414,14 +13414,14 @@ schedule: print-character/render/event-loop/run1001/editor-does-not-wrap-cursor-
 9999 mem: location 3295 is 1205
 9999 run: address to copy is 1214
 9999 mem: storing 1214 in location 3308
- 103 run: next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
+ 103 run: move-to-next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
 9999 mem: location 3304 is 3297
 9999 mem: location 3297 is 65514
 9999 mem: storing 1 in location 3309
- 103 run: break-unless next-character?:boolean, 
+ 103 run: break-unless move-to-next-character?:boolean, 
 9999 mem: location 3309 is 1
 9999 run: jump-unless fell through
- 103 run: next:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
+ 103 run: old-cursor:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
 9999 mem: location 3306 is 1207
 9999 mem: location 1207 is 1412
  104 run: default-space:address:array:location <- new location:type, 30:literal
@@ -13446,14 +13446,14 @@ schedule: print-character/render/event-loop/run1001/editor-does-not-wrap-cursor-
 9999 mem: location 3335 is 1477
 9999 run: result 0 is 1477
 9999 mem: storing 1477 in location 3310
- 103 run: break-unless next:address:duplex-list, 
+ 103 run: break-unless old-cursor:address:duplex-list, 
 9999 mem: location 3310 is 1477
 9999 run: jump-unless fell through
- 103 run: before-cursor:address:address:duplex-list/deref <- copy next:address:duplex-list
+ 103 run: before-cursor:address:address:duplex-list/deref <- copy old-cursor:address:duplex-list
 9999 mem: location 3310 is 1477
 9999 mem: location 3306 is 1207
 9999 mem: storing 1477 in location 1207
- 103 run: nextc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
+ 103 run: old-cursor-character:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
 9999 mem: location 3306 is 1207
 9999 mem: location 1207 is 1477
 9999 mem: location 1477 is 100
@@ -13465,10 +13465,10 @@ schedule: print-character/render/event-loop/run1001/editor-does-not-wrap-cursor-
 9999 run: its type is number
 9999 mem: location 1477 is 100
 9999 mem: storing 100 in location 3311
- 103 run: at-newline?:boolean <- equal nextc:character, 10:literal/newline
+ 103 run: was-at-newline?:boolean <- equal old-cursor-character:character, 10:literal/newline
 9999 mem: location 3311 is 100
 9999 mem: storing 0 in location 3312
- 103 run: break-unless at-newline?:boolean, 
+ 103 run: break-unless was-at-newline?:boolean, 
 9999 mem: location 3312 is 0
 9999 run: jumping to instruction 48
  103 run: right:number <- get editor:address:editor-data/deref, right:offset
@@ -13501,7 +13501,7 @@ schedule: print-character/render/event-loop/run1001/editor-does-not-wrap-cursor-
  103 run: break-unless at-wrap?:boolean, 
 9999 mem: location 3317 is 1
 9999 run: jump-unless fell through
- 103 run: next-next:address:duplex-list <- next-duplex next:address:duplex-list
+ 103 run: new-cursor:address:duplex-list <- next-duplex old-cursor:address:duplex-list
 9999 mem: location 3310 is 1477
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
@@ -13525,10 +13525,10 @@ schedule: print-character/render/event-loop/run1001/editor-does-not-wrap-cursor-
 9999 mem: location 3366 is 1542
 9999 run: result 0 is 1542
 9999 mem: storing 1542 in location 3318
- 103 run: break-unless next-next:address:duplex-list, 
+ 103 run: break-unless new-cursor:address:duplex-list, 
 9999 mem: location 3318 is 1542
 9999 run: jump-unless fell through
- 103 run: next-next-next:address:duplex-list <- next-duplex next-next:address:duplex-list
+ 103 run: next:address:duplex-list <- next-duplex new-cursor:address:duplex-list
 9999 mem: location 3318 is 1542
  104 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
@@ -13552,7 +13552,7 @@ schedule: print-character/render/event-loop/run1001/editor-does-not-wrap-cursor-
 9999 mem: location 3397 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 3319
- 103 run: break-unless next-next-next:address:duplex-list, 
+ 103 run: break-unless next:address:duplex-list, 
 9999 mem: location 3319 is 0
 9999 run: jumping to instruction 67
  103 run: cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
@@ -13560,11 +13560,11 @@ schedule: print-character/render/event-loop/run1001/editor-does-not-wrap-cursor-
 9999 mem: location 1214 is 3
 9999 mem: location 3308 is 1214
 9999 mem: storing 4 in location 1214
- 103 run: prev-character?:boolean <- equal k:address:number/deref, 65515:literal/left-arrow
+ 103 run: move-to-previous-character?:boolean <- equal k:address:number/deref, 65515:literal/left-arrow
 9999 mem: location 3304 is 3297
 9999 mem: location 3297 is 65514
 9999 mem: storing 0 in location 3322
- 103 run: break-unless prev-character?:boolean, 
+ 103 run: break-unless move-to-previous-character?:boolean, 
 9999 mem: location 3322 is 0
 9999 run: jumping to instruction 94
  102 run: curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
