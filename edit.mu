@@ -546,17 +546,24 @@ recipe handle-event [
       cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
       reply
     }
-    # if at left margin, figure out how long the previous line is (there's
-    # guaranteed to be a previous line, since we're not at start of text)
-    # and position cursor after it
-    # before-cursor must currently be at a newline
-    prevc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
-    previous-character-must-be-newline:boolean <- equal prevc:character, 10:literal/newline
-    assert previous-character-must-be-newline:boolean, [aaa]
-    # compute length of previous line
-    end-of-line:number <- previous-line-length before-cursor:address:address:duplex-list/deref, d:address:duplex-list
+    # if at left margin, there's guaranteed to be a previous line, since we're
+    # not at start of text
+    {
+      # if before-cursor is at newline, figure out how long the previous line is
+      prevc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
+      previous-character-is-newline?:boolean <- equal prevc:character, 10:literal/newline
+      break-unless previous-character-is-newline?:boolean
+      # compute length of previous line
+      end-of-line:number <- previous-line-length before-cursor:address:address:duplex-list/deref, d:address:duplex-list
+      cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
+      cursor-column:address:number/deref <- copy end-of-line:number
+      reply
+    }
+    # if before-cursor is not at newline, we're just at a wrapped line
+    assert cursor-row:address:number/deref, [unimplemented: moving cursor above top of screen]
     cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
-    cursor-column:address:number/deref <- copy end-of-line:number
+    right:number <- get editor:address:editor-data/deref, right:offset
+    cursor-column:address:number/deref <- subtract right:number, 1:literal  # leave room for wrap icon
   }
 ]
 
@@ -1239,6 +1246,32 @@ d]
     .0         .
     .d         .
     .          .
+  ]
+]
+
+scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
+  assume-screen 10:literal/width, 5:literal/height
+  # initialize editor with text containing an empty line
+  1:address:array:character <- new [abcdef]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  screen-should-contain [
+    .abcd↩     .
+    .ef        .
+    .          .
+  ]
+  # position cursor right after empty line
+  assume-console [
+    left-click 1, 0
+    press 65515  # left arrow
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 0  # previous row
+    4 <- 3  # end of wrapped line
   ]
 ]
 
