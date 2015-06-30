@@ -490,21 +490,21 @@ recipe handle-event [
   before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
   cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
-  # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'
+  # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'.
   # right arrow
   {
-    next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
-    break-unless next-character?:boolean
+    move-to-next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
+    break-unless move-to-next-character?:boolean
     # if not at end of text
-    next:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
-    break-unless next:address:duplex-list
+    old-cursor:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
+    break-unless old-cursor:address:duplex-list
     # scan to next character
-    before-cursor:address:address:duplex-list/deref <- copy next:address:duplex-list
-    nextc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
-    # if it's a newline, move cursor to start of next row
+    before-cursor:address:address:duplex-list/deref <- copy old-cursor:address:duplex-list
+    # if crossed a newline, move cursor to start of next row
     {
-      at-newline?:boolean <- equal nextc:character, 10:literal/newline
-      break-unless at-newline?:boolean
+      old-cursor-character:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
+      was-at-newline?:boolean <- equal old-cursor-character:character, 10:literal/newline
+      break-unless was-at-newline?:boolean
       cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
       cursor-column:address:number/deref <- copy 0:literal
       # todo: what happens when cursor is too far down?
@@ -522,12 +522,12 @@ recipe handle-event [
       break-unless at-wrap?:boolean
       # and if character after next isn't newline
 #?       $print [aaa] #? 1
-      next-next:address:duplex-list <- next-duplex next:address:duplex-list
-      break-unless next-next:address:duplex-list
-      next-next-next:address:duplex-list <- next-duplex next-next:address:duplex-list
-      break-unless next-next-next:address:duplex-list
-      nextnextc:character <- get next-next-next:address:duplex-list/deref, value:offset
-      newline?:boolean <- equal nextnextc:character, 10:literal/newline
+      new-cursor:address:duplex-list <- next-duplex old-cursor:address:duplex-list
+      break-unless new-cursor:address:duplex-list
+      next:address:duplex-list <- next-duplex new-cursor:address:duplex-list
+      break-unless next:address:duplex-list
+      next-character:character <- get next:address:duplex-list/deref, value:offset
+      newline?:boolean <- equal next-character:character, 10:literal/newline
       break-if newline?:boolean
       cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
       cursor-column:address:number/deref <- copy 0:literal
@@ -542,9 +542,9 @@ recipe handle-event [
   }
   # left arrow
   {
-    prev-character?:boolean <- equal k:address:number/deref, 65515:literal/left-arrow
-    break-unless prev-character?:boolean
-    # if not at start of text
+    move-to-previous-character?:boolean <- equal k:address:number/deref, 65515:literal/left-arrow
+    break-unless move-to-previous-character?:boolean
+    # if not at start of text (before-cursor at § sentinel)
     prev:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/deref
     break-unless prev:address:duplex-list
     # if cursor not at left margin, move one character left
