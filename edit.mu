@@ -9,7 +9,8 @@ recipe main [
   divider:number, _ <- divide-with-remainder width:number, 2:literal
   draw-vertical 0:literal/screen, divider:number, 0:literal/top, height:number
   # editor on the left
-  left:address:array:character <- new [abc]
+  left:address:array:character <- new [abcde
+f]
   left-editor:address:editor-data <- new-editor left:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, 5:literal/right #divider:number/right
   # editor on the right
   right:address:array:character <- new [def]
@@ -525,7 +526,9 @@ recipe handle-event [
       break-unless next-next:address:duplex-list
       next-next-next:address:duplex-list <- next-duplex next-next:address:duplex-list
       break-unless next-next-next:address:duplex-list
-      # TODO
+      nextnextc:character <- get next-next-next:address:duplex-list/deref, value:offset
+      newline?:boolean <- equal nextnextc:character, 10:literal/newline
+      break-if newline?:boolean
       cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
       cursor-column:address:number/deref <- copy 0:literal
       # todo: what happens when cursor is too far down?
@@ -1127,7 +1130,27 @@ scenario editor-does-not-wrap-cursor-when-line-does-not-wrap [
   1:address:array:character <- new [abcde]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
   assume-console [
-    left-click 0, 3
+    left-click 0, 3  # one before right, in the last line
+    press 65514  # right arrow
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 0
+    4 <- 4
+  ]
+]
+
+scenario editor-does-not-wrap-cursor-when-line-does-not-wrap-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abcde
+f]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  assume-console [
+    left-click 0, 3  # one before right, not the last line
     press 65514  # right arrow
   ]
   run [
