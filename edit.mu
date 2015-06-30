@@ -296,12 +296,10 @@ recipe render [
 #?     $print [render Ω: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)
 #? ] #? 1
   }
-  # clear rest of screen
-  # don't initialize column; we'll clear the first row from wherever we
-  # left off rendering.
 #?   $print [clearing ], row:number, [ ], column:number, [ ], right:number, [ 
 #? ] #? 2
   {
+    # clear rest of current line
     done?:boolean <- greater-or-equal row:number, screen-height:number
     break-if done?:boolean
     {
@@ -311,10 +309,19 @@ recipe render [
       column:number <- add column:number, 1:literal
       loop
     }
+    # clear one more line just in case we just backspaced out of it
     row:number <- add row:number, 1:literal
-    column:number <- copy 0:literal
+    column:number <- copy left:number
+    done?:boolean <- greater-or-equal row:number, screen-height:number
+    break-if done?:boolean
     move-cursor screen:address, row:number, column:number
-    loop
+    {
+      line-done?:boolean <- greater-or-equal column:number, right:number
+      break-if line-done?:boolean
+      print-character screen:address, 32:literal/space
+      column:number <- add column:number, 1:literal
+      loop
+    }
   }
   # update cursor
   {
@@ -1415,6 +1422,27 @@ scenario editors-chain-to-cover-multiple-columns [
   screen-should-contain [
     .a0bc d1␣f .
     .          .
+  ]
+]
+
+scenario multiple-editors-cover-only-their-own-areas [
+  assume-screen 10:literal/width, 5:literal/height
+  draw-vertical screen:address, 5:literal/divider, 0:literal/top, 5:literal/height
+  run [
+    # initialize an editor covering left half of screen
+    1:address:array:character <- new [abc]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    3:address:array:character <- new [def]
+    # chain new editor to it, covering the right half of the screen
+    4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
+    4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 6:literal/left, 10:literal/right
+  ]
+  screen-should-contain [
+    .abc  │def .
+    .     │    .
+    .     │    .
+    .     │    .
+    .     │    .
   ]
 ]
 
