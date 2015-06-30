@@ -289,6 +289,15 @@ recipe render [
 #? ] #? 1
     cursor-row:address:number/deref <- copy row:number
     cursor-column:address:number/deref <- copy column:number
+    # line not wrapped but cursor outside bounds? wrap cursor
+    {
+      too-far-right?:boolean <- greater-than cursor-column:address:number/deref, right:number
+      break-unless too-far-right?:boolean
+      cursor-column:address:number/deref <- copy left:number
+      cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+      above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
+      assert above-screen-bottom?:boolean, [unimplemented: wrapping cursor past bottom of screen]
+    }
 #?     $print [now ], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [ 
 #? ] #? 1
     before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
@@ -327,6 +336,10 @@ recipe render [
   {
     in-focus?:boolean <- get editor:address:editor-data/deref, in-focus?:offset
     break-unless in-focus?:boolean
+    cursor-inside-right-margin?:boolean <- lesser-or-equal cursor-column:address:number/deref, right:number
+    assert cursor-inside-right-margin?:boolean, [cursor outside right margin]
+    cursor-inside-left-margin?:boolean <- greater-or-equal cursor-column:address:number/deref, left:number
+    assert cursor-inside-left-margin?:boolean, [cursor outside left margin]
     move-cursor screen:address, cursor-row:address:number/deref, cursor-column:address:number/deref
   }
   show-screen screen:address
@@ -934,6 +947,32 @@ d]
     .abc       .
     .def       .
     .          .
+  ]
+]
+
+scenario editor-inserts-characters-at-cursor-6 [
+  assume-screen 10:literal/width, 5:literal/height
+  # text fills line
+  1:address:array:character <- new [abcde]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  # position cursor at end
+  assume-console [
+    left-click 3, 0
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # text shouldn't wrap
+  screen-should-contain [
+    .abcde     .
+    .          .
+  ]
+  # cursor should wrap
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
   ]
 ]
 
