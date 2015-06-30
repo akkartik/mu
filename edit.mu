@@ -9,8 +9,7 @@ recipe main [
   divider:number, _ <- divide-with-remainder width:number, 2:literal
   draw-vertical 0:literal/screen, divider:number, 0:literal/top, height:number
   # editor on the left
-  left:address:array:character <- new [abcde
-f]
+  left:address:array:character <- new [abcde]
   left-editor:address:editor-data <- new-editor left:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, 5:literal/right #divider:number/right
   # editor on the right
   right:address:array:character <- new [def]
@@ -289,6 +288,8 @@ recipe render [
 #? ] #? 1
     cursor-row:address:number/deref <- copy row:number
     cursor-column:address:number/deref <- copy column:number
+#?     $print [render: cursor moved to ], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [ 
+#? ] #? 1
     # line not wrapped but cursor outside bounds? wrap cursor
     {
       too-far-right?:boolean <- greater-than cursor-column:address:number/deref, right:number
@@ -312,7 +313,7 @@ recipe render [
     done?:boolean <- greater-or-equal row:number, screen-height:number
     break-if done?:boolean
     {
-      line-done?:boolean <- greater-or-equal column:number, right:number
+      line-done?:boolean <- greater-than column:number, right:number
       break-if line-done?:boolean
       print-character screen:address, 32:literal/space
       column:number <- add column:number, 1:literal
@@ -693,6 +694,8 @@ recipe delete-before-cursor [
   before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
+#?   $print [delete-before-cursor: ], cursor-column:address:number/deref, [ 
+#? ] #? 1
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -1132,6 +1135,47 @@ d]
   replace-in-console 171:literal/«, 3:event/backspace
   run [
     event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abcd      .
+    .          .
+  ]
+]
+
+scenario editor-handles-backspace-key-at-right-margin [
+  assume-screen 10:literal/width, 5:literal/height
+  # fill a line with text
+  1:address:array:character <- new [abcde]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  # position cursor at end
+  assume-console [
+    left-click 1, 3  # at end of text
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # check that cursor wraps to next line
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+  # now hit a backspace key
+  assume-console [
+    type [«]
+  ]
+  5:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, 5:event/backspace
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # cursor unwraps
+  memory-should-contain [
+    3 <- 0
+    4 <- 4
   ]
   screen-should-contain [
     .abcd      .
