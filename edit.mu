@@ -296,14 +296,24 @@ recipe render [
 #?     $print [render Ω: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)
 #? ] #? 1
   }
-  # clear rest of final line
+  # clear rest of screen
+  # don't initialize column; we'll clear the first row from wherever we
+  # left off rendering.
 #?   $print [clearing ], row:number, [ ], column:number, [ ], right:number, [ 
 #? ] #? 2
   {
-    done?:boolean <- greater-or-equal column:number, right:number
+    done?:boolean <- greater-or-equal row:number, screen-height:number
     break-if done?:boolean
-    print-character screen:address, 32:literal/space
-    column:number <- add column:number, 1:literal
+    {
+      line-done?:boolean <- greater-or-equal column:number, right:number
+      break-if line-done?:boolean
+      print-character screen:address, 32:literal/space
+      column:number <- add column:number, 1:literal
+      loop
+    }
+    row:number <- add row:number, 1:literal
+    column:number <- copy 0:literal
+    move-cursor screen:address, row:number, column:number
     loop
   }
   # update cursor
@@ -1059,6 +1069,27 @@ scenario editor-handles-backspace-key [
   memory-should-contain [
     4 <- 0
     5 <- 0
+  ]
+]
+
+scenario editor-clears-last-line-on-backspace [
+  assume-screen 10:literal/width, 5:literal/height
+  # just one character in final line
+  1:address:array:character <- new [abc
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  assume-console [
+    left-click 1, 0  # cursor at only character in final line
+    type [«]
+  ]
+  3:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, 3:event/backspace
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .abcd      .
+    .          .
   ]
 ]
 
