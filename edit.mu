@@ -476,7 +476,7 @@ recipe event-loop [
 ]
 
 recipe handle-event [
-  default-space:address:array:location <- new location:type, 40:literal
+  default-space:address:array:location <- new location:type, 50:literal
   screen:address <- next-ingredient
   console:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
@@ -521,6 +521,8 @@ recipe handle-event [
   before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
   cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+  screen-height:number <- screen-height screen:address
+  top:number <- get editor:address:editor-data/deref, top:offset
   # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'.
   # right arrow
   {
@@ -563,7 +565,6 @@ recipe handle-event [
       cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
       cursor-column:address:number/deref <- copy 0:literal
       # todo: what happens when cursor is too far down?
-      screen-height:number <- screen-height screen:address
       above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
       assert above-screen-bottom?:boolean, [unimplemented: moving past bottom of screen]
       reply
@@ -603,6 +604,30 @@ recipe handle-event [
     cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
     right:number <- get editor:address:editor-data/deref, right:offset
     cursor-column:address:number/deref <- subtract right:number, 1:literal  # leave room for wrap icon
+  }
+  # down arrow
+  {
+    move-to-next-line?:boolean <- equal k:address:number/deref, 65516:literal/down-arrow
+    break-unless move-to-next-line?:boolean
+    # todo: support scrolling
+    already-at-bottom?:boolean <- greater-or-equal cursor-row:address:number/deref, screen-height:number
+    break-if already-at-bottom?:boolean
+#?     $print [moving down
+#? ] #? 1
+    cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+    # that's it; render will adjust cursor-column as necessary
+  }
+  # up arrow
+  {
+    move-to-previous-line?:boolean <- equal k:address:number/deref, 65517:literal/up-arrow
+    break-unless move-to-previous-line?:boolean
+    # todo: support scrolling
+    already-at-top?:boolean <- lesser-or-equal cursor-row:address:number/deref, top:number
+    break-if already-at-top?:boolean
+#?     $print [moving up
+#? ] #? 1
+    cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
+    # that's it; render will adjust cursor-column as necessary
   }
 ]
 
@@ -1440,6 +1465,87 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   memory-should-contain [
     3 <- 0  # previous row
     4 <- 3  # end of wrapped line
+  ]
+]
+
+scenario editor-moves-to-previous-line-with-up-arrow [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+def]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
+  assume-console [
+    left-click 1, 1
+    press 65517  # up arrow
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 0
+    4 <- 1
+  ]
+]
+
+scenario editor-moves-to-next-line-with-down-arrow [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+def]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
+  # cursor starts out at (0, 0)
+  assume-console [
+    press 65516  # down arrow
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # ..and ends at (1, 0)
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+]
+
+scenario editor-adjusts-column-at-previous-line [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [ab
+def]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
+  assume-console [
+    left-click 1, 3
+    press 65517  # up arrow
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 0
+    4 <- 2
+  ]
+]
+
+scenario editor-adjusts-column-at-next-line [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+de]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
+  assume-console [
+    left-click 0, 3
+    press 65516  # down arrow
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 2
   ]
 ]
 
