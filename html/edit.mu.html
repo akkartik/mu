@@ -40,23 +40,34 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   open-console
   width:number<span class="Special"> &lt;- </span>display-width
   height:number<span class="Special"> &lt;- </span>display-height
+  <span class="Comment"># draw a line</span>
   divider:number, _<span class="Special"> &lt;- </span>divide-with-remainder width:number, <span class="Constant">2:literal</span>
   draw-vertical <span class="Constant">0:literal/screen</span>, divider:number, <span class="Constant">0:literal/top</span>, height:number
-  in:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
-<span class="Constant">def</span>
-<span class="Constant">ghi</span>
-<span class="Constant">jkl</span>
-<span class="Constant">]</span>
-  editor:address:editor-data<span class="Special"> &lt;- </span>new-editor in:address:array:character, <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, divider:number/right
-  event-loop <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/events</span>, editor:address:editor-data
+  <span class="Comment"># editor on the left</span>
+  left:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  left-editor:address:editor-data<span class="Special"> &lt;- </span>new-editor left:address:array:character, <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span> <span class="Comment">#divider:number/right</span>
+  <span class="Comment"># editor on the right</span>
+  right:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
+  new-left:number<span class="Special"> &lt;- </span>add divider:number/right, <span class="Constant">1:literal</span>
+  right-editor:address:editor-data<span class="Special"> &lt;- </span>new-editor right:address:array:character, <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/top</span>, new-left:number, width:number
+  <span class="Comment"># chain</span>
+  x:address:address:editor-data<span class="Special"> &lt;- </span>get-address left-editor:address:editor-data/deref, next-editor:offset
+  x:address:address:editor-data/deref<span class="Special"> &lt;- </span>copy right-editor:address:editor-data
+  <span class="Comment"># initialize focus</span>
+  reset-focus left-editor:address:editor-data
+  cursor-row:number<span class="Special"> &lt;- </span>get left-editor:address:editor-data/deref, cursor-row:offset
+  cursor-column:number<span class="Special"> &lt;- </span>get left-editor:address:editor-data/deref, cursor-column:offset
+  move-cursor <span class="Constant">0:literal/screen</span>, cursor-row:number, cursor-column:number
+  <span class="Comment"># and we're off!</span>
+  event-loop <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/events</span>, left-editor:address:editor-data
   close-console
 ]
 
 <span class="muScenario">scenario</span> editor-initially-prints-string-to-screen [
   assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
   run [
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    new-editor s:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+    1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .abc       .</span>
@@ -68,12 +79,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="SalientComment">## text to the screen.</span>
 
 container editor-data [
-  <span class="Comment"># doubly linked list of characters</span>
+  <span class="Comment"># doubly linked list of characters (head contains a special sentinel)</span>
   data:address:duplex-list
   <span class="Comment"># location of top-left of screen inside data (scrolling)</span>
   top-of-screen:address:duplex-list
-  <span class="Comment"># location of cursor inside data</span>
-  cursor:address:duplex-list
+  <span class="Comment"># location before cursor inside data</span>
+  before-cursor:address:duplex-list
 
   screen:address:screen
   <span class="Comment"># raw bounds of display area on screen</span>
@@ -84,6 +95,11 @@ container editor-data [
   <span class="Comment"># raw screen coordinates of cursor</span>
   cursor-row:number
   cursor-column:number
+
+  <span class="Comment"># pointer to another editor, responsible for a different area of screen.</span>
+  <span class="Comment"># helps organize editors in a 'chain'.</span>
+  next-editor:address:editor-data
+  in-focus?:boolean  <span class="Comment"># set for the one editor in this chain currently being edited</span>
 ]
 
 <span class="Comment"># editor:address, screen:address &lt;- new-editor s:address:array:character, screen:address, top:number, left:number, bottom:number</span>
@@ -109,30 +125,39 @@ container editor-data [
   x:address:number/deref<span class="Special"> &lt;- </span>copy left:number
   x:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, right:offset
   x:address:number/deref<span class="Special"> &lt;- </span>copy right:number
-  <span class="Comment"># initialize bottom to top for starters</span>
+  <span class="Comment"># bottom = top (in case of early exit)</span>
   x:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, bottom:offset
   x:address:number/deref<span class="Special"> &lt;- </span>copy top:number
   <span class="Comment"># initialize cursor</span>
   x:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, cursor-row:offset
   x:address:number/deref<span class="Special"> &lt;- </span>copy top:number
   x:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, cursor-column:offset
+<span class="CommentedCode">#?   $print left:number, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
   x:address:number/deref<span class="Special"> &lt;- </span>copy left:number
+  d:address:address:duplex-list<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, data:offset
+  d:address:address:duplex-list/deref<span class="Special"> &lt;- </span>push-duplex <span class="Constant">167:literal/§</span>, <span class="Constant">0:literal/tail</span>
+  y:address:address:duplex-list<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, before-cursor:offset
+  y:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy d:address:address:duplex-list/deref
+  init:address:address:duplex-list<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, top-of-screen:offset
+  init:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy d:address:address:duplex-list/deref
+  <span class="Comment"># set focus</span>
+  <span class="Comment"># if using multiple editors, must call reset-focus after chaining them all</span>
+  b:address:boolean<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, in-focus?:offset
+  b:address:boolean/deref<span class="Special"> &lt;- </span>copy <span class="Constant">1:literal/true</span>
+<span class="CommentedCode">#?   $print d:address:address:duplex-list/deref, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
   <span class="Comment"># early exit if s is empty</span>
   <span class="muControl">reply-unless</span> s:address:array:character, result:address:editor-data
   len:number<span class="Special"> &lt;- </span>length s:address:array:character/deref
   <span class="muControl">reply-unless</span> len:number, result:address:editor-data
   idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-  <span class="Comment"># s is guaranteed to have at least one character, so initialize result's</span>
-  <span class="Comment"># duplex-list</span>
-  init:address:address:duplex-list<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, top-of-screen:offset
-  init:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-  c:character<span class="Special"> &lt;- </span>index s:address:array:character/deref, idx:number
-  idx:number<span class="Special"> &lt;- </span>add idx:number, <span class="Constant">1:literal</span>
-  init:address:address:duplex-list/deref<span class="Special"> &lt;- </span>push c:character, init:address:address:duplex-list/deref
-  curr:address:duplex-list<span class="Special"> &lt;- </span>copy init:address:address:duplex-list/deref
   <span class="Comment"># now we can start appending the rest, character by character</span>
+  curr:address:duplex-list<span class="Special"> &lt;- </span>copy init:address:address:duplex-list/deref
   <span class="Delimiter">{</span>
 <span class="CommentedCode">#?     $print idx:number, [ vs ], len:number, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [append to ], curr:address:duplex-list, [ </span>
 <span class="CommentedCode">#? ] #? 1</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal idx:number, len:number
     <span class="muControl">break-if</span> done?:boolean
@@ -146,11 +171,11 @@ container editor-data [
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># initialize cursor to top of screen</span>
-  y:address:address:duplex-list<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, cursor:offset
+  y:address:address:duplex-list<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, before-cursor:offset
   y:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy init:address:address:duplex-list/deref
   <span class="Comment"># perform initial rendering to screen</span>
   bottom:address:number<span class="Special"> &lt;- </span>get-address result:address:editor-data/deref, bottom:offset
-  bottom:address:number/deref, screen:address<span class="Special"> &lt;- </span>render result:address:editor-data, screen:address, top:number, left:number, right:number
+  result:address:editor-data<span class="Special"> &lt;- </span>render result:address:editor-data
   <span class="muControl">reply</span> result:address:editor-data
 ]
 
@@ -161,9 +186,9 @@ container editor-data [
     2:editor-data<span class="Special"> &lt;- </span>copy 1:address:editor-data/deref
   ]
   memory-should-contain [
-    2<span class="Special"> &lt;- </span>0  <span class="Comment"># data</span>
-    3<span class="Special"> &lt;- </span>0  <span class="Comment"># pointer into data to top of screen</span>
-    4<span class="Special"> &lt;- </span>0  <span class="Comment"># pointer into data to cursor</span>
+    <span class="Comment"># 2 &lt;- just the § sentinel</span>
+    <span class="Comment"># 3 (top of screen) &lt;- the § sentinel</span>
+    <span class="Comment"># 4 (before cursor) &lt;- the § sentinel</span>
     <span class="Comment"># 5 &lt;- screen</span>
     6<span class="Special"> &lt;- </span>1  <span class="Comment"># top</span>
     7<span class="Special"> &lt;- </span>2  <span class="Comment"># left</span>
@@ -180,19 +205,26 @@ container editor-data [
 ]
 
 <span class="muRecipe">recipe</span> render [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">40:literal</span>
   editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+<span class="CommentedCode">#?   $print [=== render</span>
+<span class="CommentedCode">#? ] #? 2</span>
+  screen:address<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, screen:offset
+  top:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, top:offset
+  left:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, left:offset
   screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
-  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  cursor:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, cursor:offset
+  right:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, right:offset
+  hide-screen screen:address
   <span class="Comment"># traversing editor</span>
   curr:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, top-of-screen:offset
+  prev:address:duplex-list<span class="Special"> &lt;- </span>copy curr:address:duplex-list
+  curr:address:duplex-list<span class="Special"> &lt;- </span>next-duplex curr:address:duplex-list
   <span class="Comment"># traversing screen</span>
   row:number<span class="Special"> &lt;- </span>copy top:number
   column:number<span class="Special"> &lt;- </span>copy left:number
+  cursor-row:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-row:offset
+  cursor-column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
+  before-cursor:address:address:duplex-list<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, before-cursor:offset
   move-cursor screen:address, row:number, column:number
   <span class="Delimiter">{</span>
 <span class="Constant">    +next-character</span>
@@ -201,21 +233,56 @@ container editor-data [
     <span class="muControl">break-unless</span> curr:address:duplex-list
     off-screen?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number, screen-height:number
     <span class="muControl">break-if</span> off-screen?:boolean
+    <span class="Comment"># update editor-data.before-cursor</span>
+    <span class="Comment"># Doing so at the start of each iteration ensures it stays one step behind</span>
+    <span class="Comment"># the current character.</span>
     <span class="Delimiter">{</span>
-      at-cursor?:boolean<span class="Special"> &lt;- </span>equal curr:address:duplex-list, cursor:address:duplex-list
+      at-cursor-row?:boolean<span class="Special"> &lt;- </span>equal row:number, cursor-row:address:number/deref
+      <span class="muControl">break-unless</span> at-cursor-row?:boolean
+      at-cursor?:boolean<span class="Special"> &lt;- </span>equal column:number, cursor-column:address:number/deref
       <span class="muControl">break-unless</span> at-cursor?:boolean
-      cursor-row:number<span class="Special"> &lt;- </span>copy row:number
-      cursor-column:number<span class="Special"> &lt;- </span>copy column:number
+      before-cursor:address:address:duplex-list/deref<span class="Special"> &lt;- </span>prev-duplex curr:address:duplex-list
+<span class="CommentedCode">#?       new-prev:character &lt;- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1</span>
+<span class="CommentedCode">#?       $print [render 0: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)</span>
+<span class="CommentedCode">#? ] #? 1</span>
     <span class="Delimiter">}</span>
     c:character<span class="Special"> &lt;- </span>get curr:address:duplex-list/deref, value:offset
+<span class="CommentedCode">#?     $print [rendering ], c:character, [ </span>
+<span class="CommentedCode">#? ] #? 2</span>
     <span class="Delimiter">{</span>
       <span class="Comment"># newline? move to left rather than 0</span>
       newline?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
       <span class="muControl">break-unless</span> newline?:boolean
+      <span class="Comment"># adjust cursor if necessary</span>
+      <span class="Delimiter">{</span>
+        at-cursor-row?:boolean<span class="Special"> &lt;- </span>equal row:number, cursor-row:address:number/deref
+        <span class="muControl">break-unless</span> at-cursor-row?:boolean
+        left-of-cursor?:boolean<span class="Special"> &lt;- </span>lesser-than column:number, cursor-column:address:number/deref
+        <span class="muControl">break-unless</span> left-of-cursor?:boolean
+        cursor-column:address:number/deref<span class="Special"> &lt;- </span>copy column:number
+        before-cursor:address:address:duplex-list/deref<span class="Special"> &lt;- </span>prev-duplex curr:address:duplex-list
+<span class="CommentedCode">#?         new-prev:character &lt;- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1</span>
+<span class="CommentedCode">#?         $print [render 1: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)</span>
+<span class="CommentedCode">#? ] #? 1</span>
+      <span class="Delimiter">}</span>
+      <span class="Comment"># clear rest of line in this window</span>
+<span class="CommentedCode">#?       $print row:number, [ ], column:number, [ ], right:number, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+      <span class="Delimiter">{</span>
+        done?:boolean<span class="Special"> &lt;- </span>greater-than column:number, right:number
+        <span class="muControl">break-if</span> done?:boolean
+        print-character screen:address, <span class="Constant">32:literal/space</span>
+        column:number<span class="Special"> &lt;- </span>add column:number, <span class="Constant">1:literal</span>
+<span class="CommentedCode">#?         $print column:number, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+        <span class="muControl">loop</span>
+      <span class="Delimiter">}</span>
+      <span class="Comment"># skip to next line</span>
       row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
       column:number<span class="Special"> &lt;- </span>copy left:number
       move-cursor screen:address, row:number, column:number
       curr:address:duplex-list<span class="Special"> &lt;- </span>next-duplex curr:address:duplex-list
+      prev:address:duplex-list<span class="Special"> &lt;- </span>next-duplex prev:address:duplex-list
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
@@ -237,11 +304,82 @@ container editor-data [
     <span class="Delimiter">}</span>
     print-character screen:address, c:character
     curr:address:duplex-list<span class="Special"> &lt;- </span>next-duplex curr:address:duplex-list
+    prev:address:duplex-list<span class="Special"> &lt;- </span>next-duplex prev:address:duplex-list
     column:number<span class="Special"> &lt;- </span>add column:number, <span class="Constant">1:literal</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  move-cursor screen:address, cursor-row:number, cursor-column:number
-  <span class="muControl">reply</span> row:number, screen:address/same-as-ingredient:1
+  <span class="Comment"># bottom = row</span>
+  bottom:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, bottom:offset
+  bottom:address:number/deref<span class="Special"> &lt;- </span>copy row:number
+  <span class="Comment"># is cursor to the right of the last line? move to end</span>
+  <span class="Delimiter">{</span>
+    at-cursor-row?:boolean<span class="Special"> &lt;- </span>equal row:number, cursor-row:address:number/deref
+    cursor-outside-line?:boolean<span class="Special"> &lt;- </span>lesser-or-equal column:number, cursor-column:address:number/deref
+    before-cursor-on-same-line?:boolean<span class="Special"> &lt;- </span>and at-cursor-row?:boolean, cursor-outside-line?:boolean
+    above-cursor-row?:boolean<span class="Special"> &lt;- </span>lesser-than row:number, cursor-row:address:number/deref
+    before-cursor?:boolean<span class="Special"> &lt;- </span>or before-cursor-on-same-line?:boolean, above-cursor-row?:boolean
+    <span class="muControl">break-unless</span> before-cursor?:boolean
+<span class="CommentedCode">#?     $print [pointed after all text</span>
+<span class="CommentedCode">#? ] #? 1</span>
+    cursor-row:address:number/deref<span class="Special"> &lt;- </span>copy row:number
+    cursor-column:address:number/deref<span class="Special"> &lt;- </span>copy column:number
+<span class="CommentedCode">#?     $print [render: cursor moved to ], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+    <span class="Comment"># line not wrapped but cursor outside bounds? wrap cursor</span>
+    <span class="Delimiter">{</span>
+      too-far-right?:boolean<span class="Special"> &lt;- </span>greater-than cursor-column:address:number/deref, right:number
+      <span class="muControl">break-unless</span> too-far-right?:boolean
+      cursor-column:address:number/deref<span class="Special"> &lt;- </span>copy left:number
+      cursor-row:address:number/deref<span class="Special"> &lt;- </span>add cursor-row:address:number/deref, <span class="Constant">1:literal</span>
+      above-screen-bottom?:boolean<span class="Special"> &lt;- </span>lesser-than cursor-row:address:number/deref, screen-height:number
+      assert above-screen-bottom?:boolean, <span class="Constant">[unimplemented: wrapping cursor past bottom of screen]</span>
+    <span class="Delimiter">}</span>
+<span class="CommentedCode">#?     $print [now ], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+    before-cursor:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy prev:address:duplex-list
+<span class="CommentedCode">#?     new-prev:character &lt;- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1</span>
+<span class="CommentedCode">#?     $print [render Ω: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)</span>
+<span class="CommentedCode">#? ] #? 1</span>
+  <span class="Delimiter">}</span>
+<span class="CommentedCode">#?   $print [clearing ], row:number, [ ], column:number, [ ], right:number, [ </span>
+<span class="CommentedCode">#? ] #? 2</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># clear rest of current line</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number, screen-height:number
+    <span class="muControl">break-if</span> done?:boolean
+    <span class="Delimiter">{</span>
+      line-done?:boolean<span class="Special"> &lt;- </span>greater-than column:number, right:number
+      <span class="muControl">break-if</span> line-done?:boolean
+      print-character screen:address, <span class="Constant">32:literal/space</span>
+      column:number<span class="Special"> &lt;- </span>add column:number, <span class="Constant">1:literal</span>
+      <span class="muControl">loop</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># clear one more line just in case we just backspaced out of it</span>
+    row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+    column:number<span class="Special"> &lt;- </span>copy left:number
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number, screen-height:number
+    <span class="muControl">break-if</span> done?:boolean
+    move-cursor screen:address, row:number, column:number
+    <span class="Delimiter">{</span>
+      line-done?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:number, right:number
+      <span class="muControl">break-if</span> line-done?:boolean
+      print-character screen:address, <span class="Constant">32:literal/space</span>
+      column:number<span class="Special"> &lt;- </span>add column:number, <span class="Constant">1:literal</span>
+      <span class="muControl">loop</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># update cursor</span>
+  <span class="Delimiter">{</span>
+    in-focus?:boolean<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, in-focus?:offset
+    <span class="muControl">break-unless</span> in-focus?:boolean
+    cursor-inside-right-margin?:boolean<span class="Special"> &lt;- </span>lesser-or-equal cursor-column:address:number/deref, right:number
+    assert cursor-inside-right-margin?:boolean, <span class="Constant">[cursor outside right margin]</span>
+    cursor-inside-left-margin?:boolean<span class="Special"> &lt;- </span>greater-or-equal cursor-column:address:number/deref, left:number
+    assert cursor-inside-left-margin?:boolean, <span class="Constant">[cursor outside left margin]</span>
+    move-cursor screen:address, cursor-row:address:number/deref, cursor-column:address:number/deref
+  <span class="Delimiter">}</span>
+  show-screen screen:address
+  <span class="muControl">reply</span> editor:address:editor-data/same-as-ingredient:0
 ]
 
 <span class="muScenario">scenario</span> editor-initially-prints-multiple-lines [
@@ -303,50 +441,364 @@ container editor-data [
   ]
 ]
 
-<span class="SalientComment">## handling events from the keyboard and mouse</span>
+<span class="muScenario">scenario</span> editor-initializes-empty-text [
+  assume-screen <span class="Constant">5:literal/width</span>, <span class="Constant">3:literal/height</span>
+  run [
+    1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .     .</span>
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor row</span>
+    4<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor column</span>
+  ]
+]
 
+<span class="SalientComment">## handling events from the keyboard, mouse, touch screen, ...</span>
+
+<span class="Comment"># Takes a chain of editors (chained using editor-data.next-editor), sends each</span>
+<span class="Comment"># event from the console to each editor.</span>
 <span class="muRecipe">recipe</span> event-loop [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
-<span class="Constant">    +next-event</span>
+    <span class="Comment"># send each event to each editor</span>
     e:event, console:address, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-event console:address
     <span class="muControl">loop-unless</span> found?:boolean
     <span class="muControl">break-if</span> quit?:boolean  <span class="Comment"># only in tests</span>
     trace <span class="Constant">[app]</span>, <span class="Constant">[next-event]</span>
+<span class="CommentedCode">#?     $print [--- new event</span>
+<span class="CommentedCode">#? ] #? 1</span>
+    curr:address:editor-data<span class="Special"> &lt;- </span>copy editor:address:editor-data
     <span class="Delimiter">{</span>
-      t:address:touch-event<span class="Special"> &lt;- </span>maybe-convert e:event, touch:variant
-      <span class="muControl">break-unless</span> t:address:touch-event
-      editor:address:editor-data<span class="Special"> &lt;- </span>move-cursor-in-editor editor:address:editor-data, t:address:touch-event
-      <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
+      <span class="muControl">break-unless</span> curr:address:editor-data
+      handle-event screen:address, console:address, curr:address:editor-data, e:event
+      curr:address:editor-data<span class="Special"> &lt;- </span>get curr:address:editor-data/deref, next-editor:offset
+      <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
-    c:address:character<span class="Special"> &lt;- </span>maybe-convert e:event, text:variant
-    assert c:address:character, <span class="Constant">[event was of unknown type; neither keyboard nor mouse]</span>
+    <span class="Comment"># after each non-trivial event, render all editors</span>
+    curr:address:editor-data<span class="Special"> &lt;- </span>copy editor:address:editor-data
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-unless</span> curr:address:editor-data
+      render curr:address:editor-data
+      curr:address:editor-data<span class="Special"> &lt;- </span>get curr:address:editor-data/deref, next-editor:offset
+      <span class="muControl">loop</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># ..and position the cursor</span>
+    curr:address:editor-data<span class="Special"> &lt;- </span>copy editor:address:editor-data
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-unless</span> curr:address:editor-data
+      <span class="Delimiter">{</span>
+        in-focus?:boolean<span class="Special"> &lt;- </span>get curr:address:editor-data/deref, in-focus?:offset
+        <span class="muControl">break-unless</span> in-focus?:boolean
+        cursor-row:number<span class="Special"> &lt;- </span>get curr:address:editor-data/deref, cursor-row:offset
+        cursor-column:number<span class="Special"> &lt;- </span>get curr:address:editor-data/deref, cursor-column:offset
+        move-cursor screen:address, cursor-row:number, cursor-column:number
+      <span class="Delimiter">}</span>
+      curr:address:editor-data<span class="Special"> &lt;- </span>get curr:address:editor-data/deref, next-editor:offset
+      <span class="muControl">loop</span>
+    <span class="Delimiter">}</span>
     <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> handle-event [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">50:literal</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  e:event<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Comment"># 'touch' event</span>
+  <span class="Delimiter">{</span>
+    t:address:touch-event<span class="Special"> &lt;- </span>maybe-convert e:event, touch:variant
+    <span class="muControl">break-unless</span> t:address:touch-event
+    move-cursor-in-editor editor:address:editor-data, t:address:touch-event/deref
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># other events trigger only if this editor is in focus</span>
+<span class="CommentedCode">#?   $print [checking ], editor:address:editor-data, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   x:address:boolean &lt;- get-address editor:address:editor-data/deref, in-focus?:offset #? 1</span>
+<span class="CommentedCode">#?   $print [address of focus: ], x:address:boolean, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+  in-focus?:address:boolean<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, in-focus?:offset
+<span class="CommentedCode">#?   $print [ at ], in-focus?:address:boolean, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+  <span class="muControl">reply-unless</span> in-focus?:address:boolean/deref
+<span class="CommentedCode">#?   $print [in focus: ], editor:address:editor-data, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+  <span class="Comment"># typing a character</span>
+  <span class="Delimiter">{</span>
+    c:address:character<span class="Special"> &lt;- </span>maybe-convert e:event, text:variant
+    <span class="muControl">break-unless</span> c:address:character
+    <span class="Comment"># unless it's a backspace</span>
+    <span class="Delimiter">{</span>
+      backspace?:boolean<span class="Special"> &lt;- </span>equal c:address:character/deref, <span class="Constant">8:literal/backspace</span>
+      <span class="muControl">break-unless</span> backspace?:boolean
+      delete-before-cursor editor:address:editor-data
+      <span class="muControl">reply</span>
+    <span class="Delimiter">}</span>
+    insert-at-cursor editor:address:editor-data, c:address:character/deref
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise it's a special key to control the editor</span>
+  k:address:number<span class="Special"> &lt;- </span>maybe-convert e:event, keycode:variant
+  assert k:address:number, <span class="Constant">[event was of unknown type; neither keyboard nor mouse]</span>
+  d:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, data:offset
+  before-cursor:address:address:duplex-list<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, before-cursor:offset
+  cursor-row:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-row:offset
+  cursor-column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
+  screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
+  top:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, top:offset
+  <span class="Comment"># arrows; update cursor-row and cursor-column, leave before-cursor to 'render'.</span>
+  <span class="Comment"># right arrow</span>
+  <span class="Delimiter">{</span>
+    move-to-next-character?:boolean<span class="Special"> &lt;- </span>equal k:address:number/deref, <span class="Constant">65514:literal/right-arrow</span>
+    <span class="muControl">break-unless</span> move-to-next-character?:boolean
+    <span class="Comment"># if not at end of text</span>
+    old-cursor:address:duplex-list<span class="Special"> &lt;- </span>next-duplex before-cursor:address:address:duplex-list/deref
+    <span class="muControl">break-unless</span> old-cursor:address:duplex-list
+    <span class="Comment"># scan to next character</span>
+    before-cursor:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy old-cursor:address:duplex-list
+    <span class="Comment"># if crossed a newline, move cursor to start of next row</span>
+    <span class="Delimiter">{</span>
+      old-cursor-character:character<span class="Special"> &lt;- </span>get before-cursor:address:address:duplex-list/deref/deref, value:offset
+      was-at-newline?:boolean<span class="Special"> &lt;- </span>equal old-cursor-character:character, <span class="Constant">10:literal/newline</span>
+      <span class="muControl">break-unless</span> was-at-newline?:boolean
+      cursor-row:address:number/deref<span class="Special"> &lt;- </span>add cursor-row:address:number/deref, <span class="Constant">1:literal</span>
+      cursor-column:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+      <span class="Comment"># todo: what happens when cursor is too far down?</span>
+      screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
+      above-screen-bottom?:boolean<span class="Special"> &lt;- </span>lesser-than cursor-row:address:number/deref, screen-height:number
+      assert above-screen-bottom?:boolean, <span class="Constant">[unimplemented: moving past bottom of screen]</span>
+      <span class="muControl">reply</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># if the line wraps, move cursor to start of next row</span>
+    <span class="Delimiter">{</span>
+      <span class="Comment"># if we're at the column just before the wrap indicator</span>
+      right:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, right:offset
+      wrap-column:number<span class="Special"> &lt;- </span>subtract right:number, <span class="Constant">1:literal</span>
+      at-wrap?:boolean<span class="Special"> &lt;- </span>equal cursor-column:address:number/deref, wrap-column:number
+      <span class="muControl">break-unless</span> at-wrap?:boolean
+      <span class="Comment"># and if character after next isn't newline</span>
+<span class="CommentedCode">#?       $print [aaa] #? 1</span>
+      new-cursor:address:duplex-list<span class="Special"> &lt;- </span>next-duplex old-cursor:address:duplex-list
+      <span class="muControl">break-unless</span> new-cursor:address:duplex-list
+      next:address:duplex-list<span class="Special"> &lt;- </span>next-duplex new-cursor:address:duplex-list
+      <span class="muControl">break-unless</span> next:address:duplex-list
+      next-character:character<span class="Special"> &lt;- </span>get next:address:duplex-list/deref, value:offset
+      newline?:boolean<span class="Special"> &lt;- </span>equal next-character:character, <span class="Constant">10:literal/newline</span>
+      <span class="muControl">break-if</span> newline?:boolean
+      cursor-row:address:number/deref<span class="Special"> &lt;- </span>add cursor-row:address:number/deref, <span class="Constant">1:literal</span>
+      cursor-column:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+      <span class="Comment"># todo: what happens when cursor is too far down?</span>
+      above-screen-bottom?:boolean<span class="Special"> &lt;- </span>lesser-than cursor-row:address:number/deref, screen-height:number
+      assert above-screen-bottom?:boolean, <span class="Constant">[unimplemented: moving past bottom of screen]</span>
+      <span class="muControl">reply</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># otherwise move cursor one character right</span>
+    cursor-column:address:number/deref<span class="Special"> &lt;- </span>add cursor-column:address:number/deref, <span class="Constant">1:literal</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># left arrow</span>
+  <span class="Delimiter">{</span>
+    move-to-previous-character?:boolean<span class="Special"> &lt;- </span>equal k:address:number/deref, <span class="Constant">65515:literal/left-arrow</span>
+    <span class="muControl">break-unless</span> move-to-previous-character?:boolean
+    <span class="Comment"># if not at start of text (before-cursor at § sentinel)</span>
+    prev:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex before-cursor:address:address:duplex-list/deref
+    <span class="muControl">break-unless</span> prev:address:duplex-list
+    <span class="Comment"># if cursor not at left margin, move one character left</span>
+    <span class="Delimiter">{</span>
+      at-left-margin?:boolean<span class="Special"> &lt;- </span>equal cursor-column:address:number/deref, <span class="Constant">0:literal</span>
+      <span class="muControl">break-if</span> at-left-margin?:boolean
+      cursor-column:address:number/deref<span class="Special"> &lt;- </span>subtract cursor-column:address:number/deref, <span class="Constant">1:literal</span>
+      <span class="muControl">reply</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># if at left margin, there's guaranteed to be a previous line, since we're</span>
+    <span class="Comment"># not at start of text</span>
+    <span class="Delimiter">{</span>
+      <span class="Comment"># if before-cursor is at newline, figure out how long the previous line is</span>
+      prevc:character<span class="Special"> &lt;- </span>get before-cursor:address:address:duplex-list/deref/deref, value:offset
+      previous-character-is-newline?:boolean<span class="Special"> &lt;- </span>equal prevc:character, <span class="Constant">10:literal/newline</span>
+      <span class="muControl">break-unless</span> previous-character-is-newline?:boolean
+      <span class="Comment"># compute length of previous line</span>
+      end-of-line:number<span class="Special"> &lt;- </span>previous-line-length before-cursor:address:address:duplex-list/deref, d:address:duplex-list
+      cursor-row:address:number/deref<span class="Special"> &lt;- </span>subtract cursor-row:address:number/deref, <span class="Constant">1:literal</span>
+      cursor-column:address:number/deref<span class="Special"> &lt;- </span>copy end-of-line:number
+      <span class="muControl">reply</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># if before-cursor is not at newline, we're just at a wrapped line</span>
+    assert cursor-row:address:number/deref, <span class="Constant">[unimplemented: moving cursor above top of screen]</span>
+    cursor-row:address:number/deref<span class="Special"> &lt;- </span>subtract cursor-row:address:number/deref, <span class="Constant">1:literal</span>
+    right:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, right:offset
+    cursor-column:address:number/deref<span class="Special"> &lt;- </span>subtract right:number, <span class="Constant">1:literal</span>  <span class="Comment"># leave room for wrap icon</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># down arrow</span>
+  <span class="Delimiter">{</span>
+    move-to-next-line?:boolean<span class="Special"> &lt;- </span>equal k:address:number/deref, <span class="Constant">65516:literal/down-arrow</span>
+    <span class="muControl">break-unless</span> move-to-next-line?:boolean
+    <span class="Comment"># todo: support scrolling</span>
+    already-at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal cursor-row:address:number/deref, screen-height:number
+    <span class="muControl">break-if</span> already-at-bottom?:boolean
+<span class="CommentedCode">#?     $print [moving down</span>
+<span class="CommentedCode">#? ] #? 1</span>
+    cursor-row:address:number/deref<span class="Special"> &lt;- </span>add cursor-row:address:number/deref, <span class="Constant">1:literal</span>
+    <span class="Comment"># that's it; render will adjust cursor-column as necessary</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># up arrow</span>
+  <span class="Delimiter">{</span>
+    move-to-previous-line?:boolean<span class="Special"> &lt;- </span>equal k:address:number/deref, <span class="Constant">65517:literal/up-arrow</span>
+    <span class="muControl">break-unless</span> move-to-previous-line?:boolean
+    <span class="Comment"># todo: support scrolling</span>
+    already-at-top?:boolean<span class="Special"> &lt;- </span>lesser-or-equal cursor-row:address:number/deref, top:number
+    <span class="muControl">break-if</span> already-at-top?:boolean
+<span class="CommentedCode">#?     $print [moving up</span>
+<span class="CommentedCode">#? ] #? 1</span>
+    cursor-row:address:number/deref<span class="Special"> &lt;- </span>subtract cursor-row:address:number/deref, <span class="Constant">1:literal</span>
+    <span class="Comment"># that's it; render will adjust cursor-column as necessary</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="muRecipe">recipe</span> move-cursor-in-editor [
   <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
   editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  t:address:touch-event<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  row:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-row:offset
-  row:address:number/deref<span class="Special"> &lt;- </span>get t:address:touch-event/deref, row:offset
-  column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
-  column:address:number/deref<span class="Special"> &lt;- </span>get t:address:touch-event/deref, column:offset
-  <span class="Comment"># todo: adjust 'cursor' pointer into editor data</span>
+  t:touch-event<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Comment"># always reset focus to start</span>
+  in-focus?:address:boolean<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, in-focus?:offset
+  in-focus?:address:boolean/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal/true</span>
+  click-column:number<span class="Special"> &lt;- </span>get t:touch-event, column:offset
+  left:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, left:offset
+  too-far-left?:boolean<span class="Special"> &lt;- </span>lesser-than click-column:number, left:number
+  <span class="muControl">reply-if</span> too-far-left?:boolean
+  right:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, right:offset
+  too-far-right?:boolean<span class="Special"> &lt;- </span>greater-than click-column:number, right:number
+  <span class="muControl">reply-if</span> too-far-right?:boolean
+<span class="CommentedCode">#?   $print [focus now at ], editor:address:editor-data, [ </span>
+<span class="CommentedCode">#? ] #? 2</span>
+  <span class="Comment"># click on this window; gain focus</span>
+  in-focus?:address:boolean/deref<span class="Special"> &lt;- </span>copy <span class="Constant">1:literal/true</span>
+  <span class="Comment"># update cursor</span>
+  cursor-row:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-row:offset
+  cursor-row:address:number/deref<span class="Special"> &lt;- </span>get t:touch-event, row:offset
+  cursor-column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
+  cursor-column:address:number/deref<span class="Special"> &lt;- </span>get t:touch-event, column:offset
+<span class="CommentedCode">#?   $print [column is at: ], cursor-column:address:number, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+]
+
+<span class="muRecipe">recipe</span> insert-at-cursor [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  c:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+<span class="CommentedCode">#?   $print [insert ], c:character, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+  before-cursor:address:address:duplex-list<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, before-cursor:offset
+  d:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, data:offset
+  insert-duplex c:character, before-cursor:address:address:duplex-list/deref
+  screen:address<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, screen:offset
+  cursor-row:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-row:offset
+  cursor-column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
+  <span class="Comment"># update cursor: if newline, move cursor to start of next line</span>
+  <span class="Comment"># todo: bottom of screen</span>
+  <span class="Delimiter">{</span>
+    newline?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
+    <span class="muControl">break-unless</span> newline?:boolean
+    cursor-row:address:number/deref<span class="Special"> &lt;- </span>add cursor-row:address:number/deref, <span class="Constant">1:literal</span>
+    cursor-column:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># if the line wraps at the cursor, move cursor to start of next row</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># if we're at the column just before the wrap indicator</span>
+    right:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, right:offset
+    wrap-column:number<span class="Special"> &lt;- </span>subtract right:number, <span class="Constant">1:literal</span>
+<span class="CommentedCode">#?     $print [wrap? ], cursor-column:address:number/deref, [ vs ], wrap-column:number, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+    at-wrap?:boolean<span class="Special"> &lt;- </span>greater-or-equal cursor-column:address:number/deref, wrap-column:number
+    <span class="muControl">break-unless</span> at-wrap?:boolean
+<span class="CommentedCode">#?     $print [wrap!</span>
+<span class="CommentedCode">#? ] #? 1</span>
+    cursor-column:address:number/deref<span class="Special"> &lt;- </span>subtract cursor-column:address:number/deref, wrap-column:number
+    cursor-row:address:number/deref<span class="Special"> &lt;- </span>add cursor-row:address:number/deref, <span class="Constant">1:literal</span>
+    <span class="Comment"># todo: what happens when cursor is too far down?</span>
+    screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
+    above-screen-bottom?:boolean<span class="Special"> &lt;- </span>lesser-than cursor-row:address:number/deref, screen-height:number
+    assert above-screen-bottom?:boolean, <span class="Constant">[unimplemented: typing past bottom of screen]</span>
+<span class="CommentedCode">#?     $print [return</span>
+<span class="CommentedCode">#? ] #? 1</span>
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise move cursor right</span>
+  cursor-column:address:number/deref<span class="Special"> &lt;- </span>add cursor-column:address:number/deref, <span class="Constant">1:literal</span>
+]
+
+<span class="muRecipe">recipe</span> delete-before-cursor [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  before-cursor:address:address:duplex-list<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, before-cursor:offset
+  d:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, data:offset
+  <span class="Comment"># unless already at start</span>
+  at-start?:boolean<span class="Special"> &lt;- </span>equal before-cursor:address:address:duplex-list/deref, d:address:duplex-list
+  <span class="muControl">reply-if</span> at-start?:boolean
+  <span class="Comment"># delete character</span>
+  prev:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex before-cursor:address:address:duplex-list/deref
+  remove-duplex before-cursor:address:address:duplex-list/deref
+  <span class="Comment"># update cursor</span>
+  before-cursor:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy prev:address:duplex-list
+  cursor-column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
+  cursor-column:address:number/deref<span class="Special"> &lt;- </span>subtract cursor-column:address:number/deref, <span class="Constant">1:literal</span>
+<span class="CommentedCode">#?   $print [delete-before-cursor: ], cursor-column:address:number/deref, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+]
+
+<span class="Comment"># takes a pointer 'curr' into the doubly-linked list and its sentinel, counts</span>
+<span class="Comment"># the length of the previous line before the 'curr' pointer.</span>
+<span class="muRecipe">recipe</span> previous-line-length [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  curr:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  start:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  result:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  <span class="muControl">reply-unless</span> curr:address:duplex-list, result:number
+  at-start?:boolean<span class="Special"> &lt;- </span>equal curr:address:duplex-list, start:address:duplex-list
+  <span class="muControl">reply-if</span> at-start?:boolean, result:number
+  <span class="Delimiter">{</span>
+    curr:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex curr:address:duplex-list
+    <span class="muControl">break-unless</span> curr:address:duplex-list
+    at-start?:boolean<span class="Special"> &lt;- </span>equal curr:address:duplex-list, start:address:duplex-list
+    <span class="muControl">break-if</span> at-start?:boolean
+    c:character<span class="Special"> &lt;- </span>get curr:address:duplex-list/deref, value:offset
+    at-newline?:boolean<span class="Special"> &lt;- </span>equal c:character <span class="Constant">10:literal/newline</span>
+    <span class="muControl">break-if</span> at-newline?:boolean
+    result:number<span class="Special"> &lt;- </span>add result:number, <span class="Constant">1:literal</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">reply</span> result:number
 ]
 
 <span class="muScenario">scenario</span> editor-handles-empty-event-queue [
   assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+<span class="CommentedCode">#?   3:number &lt;- get screen:address/deref, num-rows:offset #? 1</span>
+<span class="CommentedCode">#?   $print [0: ], screen:address, [: ], 3:number, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+<span class="CommentedCode">#?   $print [1: ], screen:address, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
   assume-console <span class="Constant">[]</span>
+<span class="CommentedCode">#?   $print [8: ], screen:address, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
   run [
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    editor:address:editor-data<span class="Special"> &lt;- </span>new-editor s:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
-    event-loop screen:address, console:address, editor:address:editor-data
+    event-loop screen:address, console:address, 2:address:editor-data
   ]
+<span class="CommentedCode">#?   $print [9: ], screen:address, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
   screen-should-contain [
    <span class="Constant"> .abc       .</span>
    <span class="Constant"> .          .</span>
@@ -355,12 +807,12 @@ container editor-data [
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks [
   assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
   assume-console [
-    left-click 0, 1
+    left-click 0, 1  <span class="Comment"># on the 'b'</span>
   ]
   run [
-    1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
     event-loop screen:address, console:address, 2:address:editor-data
     3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
     4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
@@ -373,6 +825,927 @@ container editor-data [
     3<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor is at row 0..</span>
     4<span class="Special"> &lt;- </span>1  <span class="Comment"># ..and column 1</span>
   ]
+]
+
+<span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-text [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 0, 7  <span class="Comment"># last line, to the right of text</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor row</span>
+    4<span class="Special"> &lt;- </span>3  <span class="Comment"># cursor column</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-text-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">def]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 0, 7  <span class="Comment"># interior line, to the right of text</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor row</span>
+    4<span class="Special"> &lt;- </span>3  <span class="Comment"># cursor column</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-text-3 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">def]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 2, 7  <span class="Comment"># below text</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>1  <span class="Comment"># cursor row</span>
+    4<span class="Special"> &lt;- </span>3  <span class="Comment"># cursor column</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-column [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Comment"># editor occupies only left half of screen</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  assume-console [
+    <span class="Comment"># click on right half of screen</span>
+    left-click 3, 8
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># no change to cursor row</span>
+    4<span class="Special"> &lt;- </span>0  <span class="Comment"># ..or column</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-inserts-characters-into-empty-editor [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  assume-console [
+    type <span class="Constant">[abc]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-inserts-characters-at-cursor [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    type <span class="Constant">[0]</span>
+    left-click 0, 2
+    type <span class="Constant">[d]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .0adbc     .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 0, 5  <span class="Comment"># right of last line</span>
+    type <span class="Constant">[d]</span>  <span class="Comment"># should append</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abcd      .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-3 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 3, 5  <span class="Comment"># below all text</span>
+    type <span class="Constant">[d]</span>  <span class="Comment"># should append</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abcd      .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-4 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">d]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 3, 5  <span class="Comment"># below all text</span>
+    type <span class="Constant">[e]</span>  <span class="Comment"># should append</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .de        .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-5 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">d]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 3, 5  <span class="Comment"># below all text</span>
+    type <span class="Constant">[ef]</span>  <span class="Comment"># should append multiple characters in order</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .def       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-6 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  <span class="Comment"># text fills line</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  <span class="Comment"># position cursor at end</span>
+  assume-console [
+    left-click 3, 0
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># text shouldn't wrap</span>
+  screen-should-contain [
+   <span class="Constant"> .abcde     .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  <span class="Comment"># cursor should wrap</span>
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>1
+    4<span class="Special"> &lt;- </span>0
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-wraps-line-on-insert [
+  assume-screen <span class="Constant">5:literal/width</span>, <span class="Constant">3:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  <span class="Comment"># type a letter</span>
+  assume-console [
+    type <span class="Constant">[e]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># no wrap yet</span>
+  screen-should-contain [
+<span class="Constant">    .eabcd.</span>
+   <span class="Constant"> .     .</span>
+  ]
+  <span class="Comment"># type a second letter</span>
+  assume-console [
+    type <span class="Constant">[f]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># now wrap</span>
+  screen-should-contain [
+<span class="Constant">    .efab↩.</span>
+   <span class="Constant"> .cd   .</span>
+   <span class="Constant"> .     .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-after-inserting-characters [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  assume-console [
+    type <span class="Constant">[01]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .01abc     .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-wraps-cursor-after-inserting-characters [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  assume-console [
+    left-click 0, 4  <span class="Comment"># line is full; no wrap icon yet</span>
+    type <span class="Constant">[f]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abcd↩     .</span>
+   <span class="Constant"> .fe        .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>1  <span class="Comment"># cursor row</span>
+    4<span class="Special"> &lt;- </span>1  <span class="Comment"># cursor column</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-wraps-cursor-after-inserting-characters-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  assume-console [
+    left-click 0, 3  <span class="Comment"># right before the wrap icon</span>
+    type <span class="Constant">[f]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abcf↩     .</span>
+   <span class="Constant"> .de        .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>1  <span class="Comment"># cursor row</span>
+    4<span class="Special"> &lt;- </span>0  <span class="Comment"># cursor column</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-down-after-inserting-newline [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    type <span class="Constant">[0</span>
+<span class="Constant">1]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .0         .</span>
+   <span class="Constant"> .1abc      .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-clears-previous-line-completely-after-inserting-newline [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  <span class="Comment"># press just a 'newline'</span>
+  assume-console [
+    type [
+]
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># line should be fully cleared</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .abcde     .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-handles-backspace-key [
+<span class="CommentedCode">#?   $print [=== new test</span>
+<span class="CommentedCode">#? ] #? 1</span>
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+<span class="CommentedCode">#?   $print [editor: ], 2:address:editor-data, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+  assume-console [
+    left-click 0, 1
+    type <span class="Constant">[«]</span>
+  ]
+  3:event/backspace<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, 3:event/backspace
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    5:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+   <span class="Constant"> .bc        .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  memory-should-contain [
+    4<span class="Special"> &lt;- </span>0
+    5<span class="Special"> &lt;- </span>0
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-clears-last-line-on-backspace [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  <span class="Comment"># just one character in final line</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">d]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  assume-console [
+    left-click 1, 0  <span class="Comment"># cursor at only character in final line</span>
+    type <span class="Constant">[«]</span>
+  ]
+  3:event/backspace<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, 3:event/backspace
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abcd      .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-handles-backspace-key-at-right-margin [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  <span class="Comment"># fill a line with text</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  <span class="Comment"># position cursor at end</span>
+  assume-console [
+    left-click 1, 3  <span class="Comment"># at end of text</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># check that cursor wraps to next line</span>
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>1
+    4<span class="Special"> &lt;- </span>0
+  ]
+  <span class="Comment"># now hit a backspace key</span>
+  assume-console [
+    type <span class="Constant">[«]</span>
+  ]
+  5:event/backspace<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">8:literal/backspace</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">171:literal/«</span>, 5:event/backspace
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># cursor unwraps</span>
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0
+    4<span class="Special"> &lt;- </span>4
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abcd      .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-right-with-key [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    press 65514  <span class="Comment"># right arrow</span>
+    type <span class="Constant">[0]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .a0bc      .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-to-next-line-with-right-arrow [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">d]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    press 65514  <span class="Comment"># right arrow</span>
+    press 65514  <span class="Comment"># right arrow</span>
+    press 65514  <span class="Comment"># right arrow</span>
+    press 65514  <span class="Comment"># right arrow - next line</span>
+    type <span class="Constant">[0]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .0d        .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  assume-console [
+    left-click 0, 3
+    press 65514  <span class="Comment"># right arrow</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abcd↩     .</span>
+   <span class="Constant"> .ef        .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>1
+    4<span class="Special"> &lt;- </span>0
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-does-not-wrap-cursor-when-line-does-not-wrap [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  assume-console [
+    left-click 0, 3  <span class="Comment"># one before right, in the last line</span>
+    press 65514  <span class="Comment"># right arrow</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0
+    4<span class="Special"> &lt;- </span>4
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-does-not-wrap-cursor-when-line-does-not-wrap-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde</span>
+<span class="Constant">f]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  assume-console [
+    left-click 0, 3  <span class="Comment"># one before right, not the last line</span>
+    press 65514  <span class="Comment"># right arrow</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0
+    4<span class="Special"> &lt;- </span>4
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-to-next-line-with-right-arrow-at-end-of-line [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">d]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 0, 3
+    press 65514  <span class="Comment"># right arrow - next line</span>
+    type <span class="Constant">[0]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .0d        .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-left-with-key [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 0, 2
+    press 65515  <span class="Comment"># left arrow</span>
+    type <span class="Constant">[0]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .a0bc      .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  <span class="Comment"># initialize editor with two lines</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">d]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># position cursor at start of second line (so there's no previous newline)</span>
+  assume-console [
+    left-click 1, 0
+    press 65515  <span class="Comment"># left arrow</span>
+    type <span class="Constant">[0]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc0      .</span>
+   <span class="Constant"> .d         .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  <span class="Comment"># initialize editor with three lines</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">def</span>
+<span class="Constant">g]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># position cursor further down (so there's a newline before the character at</span>
+  <span class="Comment"># the cursor)</span>
+  assume-console [
+    left-click 2, 0
+    press 65515  <span class="Comment"># left arrow</span>
+    type <span class="Constant">[0]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .def0      .</span>
+   <span class="Constant"> .g         .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-3 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">def</span>
+<span class="Constant">g]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># position cursor at start of text</span>
+  assume-console [
+    left-click 0, 0
+    press 65515  <span class="Comment"># left arrow should have no effect</span>
+    type <span class="Constant">[0]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .0abc      .</span>
+   <span class="Constant"> .def       .</span>
+   <span class="Constant"> .g         .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  <span class="Comment"># initialize editor with text containing an empty line</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+
+d]
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># position cursor right after empty line</span>
+  assume-console [
+    left-click 2, 0
+    press 65515  <span class="Comment"># left arrow</span>
+    type <span class="Constant">[0]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .0         .</span>
+   <span class="Constant"> .d         .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-across-screen-lines-across-wrap-with-left-arrow [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  <span class="Comment"># initialize editor with text containing an empty line</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  screen-should-contain [
+   <span class="Constant"> .abcd↩     .</span>
+   <span class="Constant"> .ef        .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  <span class="Comment"># position cursor right after empty line</span>
+  assume-console [
+    left-click 1, 0
+    press 65515  <span class="Comment"># left arrow</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0  <span class="Comment"># previous row</span>
+    4<span class="Special"> &lt;- </span>3  <span class="Comment"># end of wrapped line</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-to-previous-line-with-up-arrow [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">def]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 1, 1
+    press 65517  <span class="Comment"># up arrow</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0
+    4<span class="Special"> &lt;- </span>1
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-to-next-line-with-down-arrow [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">def]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># cursor starts out at (0, 0)</span>
+  assume-console [
+    press 65516  <span class="Comment"># down arrow</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># ..and ends at (1, 0)</span>
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>1
+    4<span class="Special"> &lt;- </span>0
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-adjusts-column-at-previous-line [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
+<span class="Constant">def]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 1, 3
+    press 65517  <span class="Comment"># up arrow</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>0
+    4<span class="Special"> &lt;- </span>2
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-adjusts-column-at-next-line [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">de]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  assume-console [
+    left-click 0, 3
+    press 65516  <span class="Comment"># down arrow</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>1
+    4<span class="Special"> &lt;- </span>2
+  ]
+]
+
+<span class="muScenario">scenario</span> point-at-multiple-editors [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  <span class="Comment"># initialize an editor covering left half of screen</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  3:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
+  <span class="Comment"># chain new editor to it, covering the right half of the screen</span>
+  4:address:address:editor-data<span class="Special"> &lt;- </span>get-address 2:address:editor-data/deref, next-editor:offset
+  4:address:address:editor-data/deref<span class="Special"> &lt;- </span>new-editor 3:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">5:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># type one letter in each of them</span>
+  assume-console [
+    left-click 0, 1
+    left-click 0, 8
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    5:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+    6:number<span class="Special"> &lt;- </span>get 4:address:address:editor-data/deref/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    5<span class="Special"> &lt;- </span>1
+    6<span class="Special"> &lt;- </span>8
+  ]
+]
+
+<span class="muScenario">scenario</span> editors-chain-to-cover-multiple-columns [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  <span class="Comment"># initialize an editor covering left half of screen</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  3:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
+  <span class="Comment"># chain new editor to it, covering the right half of the screen</span>
+  4:address:address:editor-data<span class="Special"> &lt;- </span>get-address 2:address:editor-data/deref, next-editor:offset
+  4:address:address:editor-data/deref<span class="Special"> &lt;- </span>new-editor 3:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">5:literal/left</span>, <span class="Constant">10:literal/right</span>
+  reset-focus 2:address:editor-data
+  <span class="Comment"># type one letter in each of them</span>
+  assume-console [
+    left-click 0, 1
+    type <span class="Constant">[0]</span>
+    left-click 0, 6
+    type <span class="Constant">[1]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    5:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+    6:number<span class="Special"> &lt;- </span>get 4:address:address:editor-data/deref/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+   <span class="Constant"> .a0bc d1ef .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  memory-should-contain [
+    5<span class="Special"> &lt;- </span>2
+    6<span class="Special"> &lt;- </span>7
+  ]
+  <span class="Comment"># show the cursor at the right window</span>
+  run [
+    screen:address<span class="Special"> &lt;- </span>print-character screen:address, <span class="Constant">9251:literal/␣</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> .a0bc d1␣f .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> multiple-editors-cover-only-their-own-areas [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  run [
+    <span class="Comment"># draw a divider</span>
+    draw-vertical screen:address, <span class="Constant">5:literal/divider</span>, <span class="Constant">0:literal/top</span>, <span class="Constant">5:literal/height</span>
+    <span class="Comment"># initialize editors on both sides of it and chain the two</span>
+    1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+    3:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
+    4:address:address:editor-data<span class="Special"> &lt;- </span>get-address 2:address:editor-data/deref, next-editor:offset
+    4:address:address:editor-data/deref<span class="Special"> &lt;- </span>new-editor 3:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">6:literal/left</span>, <span class="Constant">10:literal/right</span>
+  ]
+  <span class="Comment"># divider isn't messed up</span>
+  screen-should-contain [
+   <span class="Constant"> .abc  │def .</span>
+   <span class="Constant"> .     │    .</span>
+   <span class="Constant"> .     │    .</span>
+   <span class="Constant"> .     │    .</span>
+   <span class="Constant"> .     │    .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-in-focus-keeps-cursor [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  <span class="Comment"># initialize an editor covering left half of screen</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  3:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
+  <span class="Comment"># chain new editor to it, covering the right half of the screen</span>
+  4:address:address:editor-data<span class="Special"> &lt;- </span>get-address 2:address:editor-data/deref, next-editor:offset
+  4:address:address:editor-data/deref<span class="Special"> &lt;- </span>new-editor 3:address:array:character, screen:address, <span class="Constant">0:literal/top</span>, <span class="Constant">5:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># initialize cursor</span>
+  run [
+    reset-focus 2:address:editor-data
+    5:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    6:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+    move-cursor screen:address, 5:number, 6:number
+    screen:address<span class="Special"> &lt;- </span>print-character screen:address, <span class="Constant">9251:literal/␣</span>
+  ]
+  <span class="Comment"># is it at the right place?</span>
+  screen-should-contain [
+   <span class="Constant"> .␣bc  def  .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  <span class="Comment"># now try typing a letter</span>
+  assume-console [
+    type <span class="Constant">[z]</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    screen:address<span class="Special"> &lt;- </span>print-character screen:address, <span class="Constant">9251:literal/␣</span>
+  ]
+  <span class="Comment"># cursor should still be right</span>
+  screen-should-contain [
+   <span class="Constant"> .z␣bc def  .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="Comment"># set focus to first editor, reset it in later ones</span>
+<span class="muRecipe">recipe</span> reset-focus [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  in-focus:address:boolean<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, in-focus?:offset
+  in-focus:address:boolean/deref<span class="Special"> &lt;- </span>copy <span class="Constant">1:literal/true</span>
+  e:address:editor-data<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, next-editor:offset
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> e:address:editor-data
+<span class="CommentedCode">#?     $print [resetting focus in ], e:address:editor-data, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+    x:address:boolean<span class="Special"> &lt;- </span>get-address e:address:editor-data/deref, in-focus?:offset
+<span class="CommentedCode">#?     $print [ at ], x:address:boolean, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+    x:address:boolean/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal/false</span>
+    e:address:editor-data<span class="Special"> &lt;- </span>get e:address:editor-data/deref, next-editor:offset
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
 ]
 
 <span class="SalientComment">## helpers for drawing editor borders</span>

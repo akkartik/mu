@@ -168,16 +168,17 @@ const scenario* Current_scenario = <span class="Constant">NULL</span><span class
 void run_mu_scenario<span class="Delimiter">(</span>const scenario&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Current_scenario = &amp;s<span class="Delimiter">;</span>
   bool not_already_inside_test = !Trace_stream<span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; s.name &lt;&lt; '\n'; //? 4</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; s.name &lt;&lt; '\n'; //? 6</span>
   if <span class="Delimiter">(</span>not_already_inside_test<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Trace_file = s<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
     Trace_stream = new trace_stream<span class="Delimiter">;</span>
     setup<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; '^' &lt;&lt; s.to_run &lt;&lt; &quot;$\n&quot;; //? 4</span>
   assert<span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  run<span class="Delimiter">(</span><span class="Constant">&quot;recipe &quot;</span>+s<span class="Delimiter">.</span>name+<span class="Constant">&quot; [ &quot;</span> + s<span class="Delimiter">.</span>to_run + <span class="Constant">&quot; ]&quot;</span><span class="Delimiter">);</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; s.name &lt;&lt; &quot; done\n&quot;; //? 1</span>
+  vector&lt;recipe_number&gt; tmp = load<span class="Delimiter">(</span><span class="Constant">&quot;recipe &quot;</span>+s<span class="Delimiter">.</span>name+<span class="Constant">&quot; [ &quot;</span>+s<span class="Delimiter">.</span>to_run+<span class="Constant">&quot; ]&quot;</span><span class="Delimiter">);</span>
+  bind_special_scenario_names<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  transform_all<span class="Delimiter">();</span>
+  run<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>front<span class="Delimiter">());</span>
   if <span class="Delimiter">(</span>not_already_inside_test &amp;&amp; Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     teardown<span class="Delimiter">();</span>
     ofstream fout<span class="Delimiter">((</span>Trace_dir+Trace_file<span class="Delimiter">).</span>c_str<span class="Delimiter">());</span>
@@ -216,12 +217,19 @@ case RUN: <span class="Delimiter">{</span>
   tmp &lt;&lt; <span class="Constant">&quot;recipe run&quot;</span> &lt;&lt; Next_recipe_number &lt;&lt; <span class="Constant">&quot; [ &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; ]&quot;</span><span class="Delimiter">;</span>
 <span class="CommentedCode">//?   Show_rest_of_stream = true; //? 1</span>
   vector&lt;recipe_number&gt; tmp_recipe = load<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
-  <span class="Comment">// Predefined Scenario Locals In Run.</span>
-  <span class="Comment">// End Predefined Scenario Locals In Run.</span>
+  bind_special_scenario_names<span class="Delimiter">(</span>tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   transform_all<span class="Delimiter">();</span>
 <span class="CommentedCode">//?   cout &lt;&lt; tmp_recipe.at(0) &lt;&lt; ' ' &lt;&lt; Recipe_number[&quot;main&quot;] &lt;&lt; '\n'; //? 1</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not done with caller; don't increment current_step_index()</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// Some variables for fake resources always get special addresses in</span>
+<span class="Comment">// scenarios.</span>
+<span class="Delimiter">:(code)</span>
+void bind_special_scenario_names<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// Special Scenario Variable Names(r)</span>
+  <span class="Comment">// End Special Scenario Variable Names(r)</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario run_multiple)</span>
@@ -486,6 +494,7 @@ recipe main [
   ]
 ]
 <span class="traceAbsent">-warn: missing [b] in trace layer a</span>
+$warn: <span class="Constant">0</span>
 
 <span class="Comment">//: 'trace-should-not-contain' is like the '-' lines in our scenarios so far</span>
 <span class="Comment">//: Each trace line is separately checked for absense. Order is *not*</span>
@@ -538,6 +547,7 @@ recipe main [
   ]
 ]
 <span class="traceAbsent">-warn: unexpected [b] in trace layer a</span>
+$warn: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario trace_negative_check_warns_on_any_unexpected_line)</span>
 <span class="Special">% Hide_warnings = true;</span>
