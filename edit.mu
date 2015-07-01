@@ -22,11 +22,12 @@ recipe main [
   draw-horizontal 0:literal/screen, 35:literal, column2:number, width:number, 9473:literal/horizontal-double
   # editor on the left
   left:address:array:character <- new [abcde]
-  left-editor:address:editor-data <- new-editor left:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, 5:literal/right #divider:number/right
+  left-editor:address:editor-data <- new-editor left:address:array:character, 0:literal/screen, 0:literal/top, 0:literal/left, divider:number/right
   # editor on the right
   right:address:array:character <- new [def]
-  new-left:number <- add divider:number/right, 1:literal
-  right-editor:address:editor-data <- new-editor right:address:array:character, 0:literal/screen, 4:literal/top, new-left:number, width:number
+  new-left:number <- add divider:number, 1:literal
+  new-right:number <- add new-left:number, 5:literal
+  right-editor:address:editor-data <- new-editor right:address:array:character, 0:literal/screen, 4:literal/top, new-left:number, new-right:number #width:number
   # chain
   x:address:address:editor-data <- get-address left-editor:address:editor-data/deref, next-editor:offset
   x:address:address:editor-data/deref <- copy right-editor:address:editor-data
