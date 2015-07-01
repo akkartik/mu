@@ -234,7 +234,7 @@ recipe render [
 #?       $print row:number, [ ], column:number, [ ], right:number, [ 
 #? ] #? 1
       {
-        done?:boolean <- greater-or-equal column:number, right:number
+        done?:boolean <- greater-than column:number, right:number
         break-if done?:boolean
         print-character screen:address, 32:literal/space
         column:number <- add column:number, 1:literal
@@ -1113,6 +1113,26 @@ scenario editor-moves-cursor-down-after-inserting-newline [
   screen-should-contain [
     .0         .
     .1abc      .
+    .          .
+  ]
+]
+
+scenario editor-clears-previous-line-completely-after-inserting-newline [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abcde]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  # press just a 'newline'
+  assume-console [
+    type [
+]
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # line should be fully cleared
+  screen-should-contain [
+    .          .
+    .abcde     .
     .          .
   ]
 ]
