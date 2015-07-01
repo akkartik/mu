@@ -91,7 +91,8 @@ reagent absolutize<span class="Delimiter">(</span>reagent x<span class="Delimite
 <span class="CommentedCode">//?   cout &lt;&lt; is_raw(x) &lt;&lt; '\n'; //? 1</span>
   if <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">)</span> || is_dummy<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> x<span class="Delimiter">;</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;not raw: &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
-  assert<span class="Delimiter">(</span>x<span class="Delimiter">.</span>initialized<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>initialized<span class="Delimiter">)</span>
+    raise &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: reagent not initialized: &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; die<span class="Delimiter">();</span>
   reagent r = x<span class="Delimiter">;</span>
   r<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>address<span class="Delimiter">(</span>r<span class="Delimiter">.</span>value<span class="Delimiter">,</span> space_base<span class="Delimiter">(</span>r<span class="Delimiter">)));</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;after absolutize: &quot; &lt;&lt; r.value &lt;&lt; '\n'; //? 1</span>

@@ -189,7 +189,7 @@ trace_stream* Trace_stream = <span class="Constant">NULL</span><span class="Deli
 <span class="PreProc">#define trace(</span><span class="Delimiter">...</span><span class="PreProc">)  !Trace_stream ? cerr </span><span class="Comment">/*</span><span class="Comment">print nothing</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(__VA_ARGS__)</span>
 <span class="Comment">// Warnings should go straight to cerr by default since calls to trace() have</span>
 <span class="Comment">// some unfriendly constraints (they delay printing, they can't nest)</span>
-<span class="PreProc">#define raise  ((!Trace_stream || !Hide_warnings) ? cerr </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(</span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">))</span>
+<span class="PreProc">#define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown()</span><span class="Delimiter">,</span><span class="PreProc">cerr) </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(</span><span class="Constant">&quot;warn&quot;</span><span class="PreProc">))</span>
 
 <span class="Comment">// A separate helper for debugging. We should only trace domain-specific</span>
 <span class="Comment">// facts. For everything else use log.</span>
@@ -298,9 +298,12 @@ int trace_count<span class="Delimiter">(</span>string layer<span class="Delimite
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
   long result = <span class="Constant">0</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>layer == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span>
-      if <span class="Delimiter">(</span>line == <span class="Constant">&quot;&quot;</span> || line == p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">)</span>
+    if <span class="Delimiter">(</span>layer == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; &quot;a: &quot; &lt;&lt; line &lt;&lt; &quot;$\n&quot;; //? 1</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; &quot;b: &quot; &lt;&lt; trim(p-&gt;contents) &lt;&lt; &quot;$\n&quot;; //? 1</span>
+      if <span class="Delimiter">(</span>line == <span class="Constant">&quot;&quot;</span> || line == trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span>
         ++result<span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>

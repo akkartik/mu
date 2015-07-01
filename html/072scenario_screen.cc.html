@@ -16,6 +16,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .traceContains { color: #008000; }
 .cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
+.traceAbsent { color: #c00000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
@@ -141,6 +142,16 @@ scenario screen-in-scenario-color [
 <span class="Delimiter">:(before &quot;End is_special_name Cases&quot;)</span>
 if <span class="Delimiter">(</span>s == <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 
+<span class="Delimiter">:(scenarios run)</span>
+<span class="Delimiter">:(scenario convert_names_does_not_warn_when_mixing_special_names_and_numeric_locations)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  screen:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
+]
+<span class="traceAbsent">-warn: mixing variable names and numeric addresses in main</span>
+$warn: <span class="Constant">0</span>
+<span class="Delimiter">:(scenarios run_mu_scenario)</span>
+
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">// Scenarios may not define default-space, so they should fit within the</span>
 <span class="Comment">// initial area of memory reserved for tests. We'll put the predefined</span>
@@ -159,8 +170,8 @@ assert<span class="Delimiter">(</span>Name[tmp_recipe<span class="Delimiter">.</
 <span class="Comment">// Scenario Globals.</span>
 const long long int SCREEN = Next_predefined_global_for_scenarios++<span class="Delimiter">;</span>
 <span class="Comment">// End Scenario Globals.</span>
-<span class="Delimiter">:(before &quot;End Predefined Scenario Locals In Run&quot;)</span>
-Name[tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Special Scenario Variable Names(r)&quot;)</span>
+Name[r][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Rewrite Instruction(curr)&quot;)</span>
 <span class="Comment">// rewrite `assume-screen width, height` to</span>
@@ -231,7 +242,9 @@ void check_screen<span class="Delimiter">(</span>const string&amp; expected_cont
   raw_string_stream cursor<span class="Delimiter">(</span>expected_contents<span class="Delimiter">);</span>
   <span class="Comment">// todo: too-long expected_contents should fail</span>
   long long int addr = screen_data_start+<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;screen height &quot; &lt;&lt; screen_height &lt;&lt; '\n'; //? 1</span>
   for <span class="Delimiter">(</span>long long int row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;row: &quot; &lt;&lt; row &lt;&lt; '\n'; //? 1</span>
     cursor<span class="Delimiter">.</span>skip_whitespace_and_comments<span class="Delimiter">();</span>
     if <span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>at_end<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     assert<span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>get<span class="Delimiter">()</span> == <span class="Constant">'.'</span><span class="Delimiter">);</span>
@@ -299,6 +312,8 @@ void check_screen<span class="Delimiter">(</span>const string&amp; expected_cont
 raw_string_stream::raw_string_stream<span class="Delimiter">(</span>const string&amp; backing<span class="Delimiter">)</span> :index<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> max<span class="Delimiter">(</span>backing<span class="Delimiter">.</span>size<span class="Delimiter">()),</span> buf<span class="Delimiter">(</span>backing<span class="Delimiter">.</span>c_str<span class="Delimiter">())</span> <span class="Delimiter">{}</span>
 
 bool raw_string_stream::at_end<span class="Delimiter">()</span> const <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; index &lt;&lt; ' ' &lt;&lt; max &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; buf &lt;&lt; &quot;$\n&quot;; //? 1</span>
   if <span class="Delimiter">(</span>index &gt;= max<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   if <span class="Delimiter">(</span>tb_utf8_char_length<span class="Delimiter">(</span>buf[index]<span class="Delimiter">)</span> &gt; max-index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;unicode string seems corrupted at index &quot;</span>&lt;&lt; index &lt;&lt; <span class="Constant">&quot; character &quot;</span> &lt;&lt; static_cast&lt;int&gt;<span class="Delimiter">(</span>buf[index]<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
@@ -363,6 +378,7 @@ void dump_screen<span class="Delimiter">()</span> <span class="Delimiter">{</spa
   long long int curr = screen_data_start+<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
   for <span class="Delimiter">(</span>long long int row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; curr &lt;&lt; &quot;:\n&quot;; //? 2</span>
+    cerr &lt;&lt; <span class="Constant">'.'</span><span class="Delimiter">;</span>
     for <span class="Delimiter">(</span>long long int col = <span class="Constant">0</span><span class="Delimiter">;</span> col &lt; screen_width<span class="Delimiter">;</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       if <span class="Delimiter">(</span>Memory[curr]<span class="Delimiter">)</span>
         cerr &lt;&lt; to_unicode<span class="Delimiter">(</span>Memory[curr]<span class="Delimiter">);</span>
@@ -370,7 +386,7 @@ void dump_screen<span class="Delimiter">()</span> <span class="Delimiter">{</spa
         cerr &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
       curr += <span class="Comment">/*</span><span class="Comment">size of screen-cell</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    cerr &lt;&lt; <span class="Constant">&quot;.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 </pre>
