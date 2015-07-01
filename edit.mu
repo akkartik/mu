@@ -1510,16 +1510,17 @@ scenario editors-chain-to-cover-multiple-columns [
 
 scenario multiple-editors-cover-only-their-own-areas [
   assume-screen 10:literal/width, 5:literal/height
-  draw-vertical screen:address, 5:literal/divider, 0:literal/top, 5:literal/height
   run [
-    # initialize an editor covering left half of screen
+    # draw a divider
+    draw-vertical screen:address, 5:literal/divider, 0:literal/top, 5:literal/height
+    # initialize editors on both sides of it and chain the two
     1:address:array:character <- new [abc]
     2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
     3:address:array:character <- new [def]
-    # chain new editor to it, covering the right half of the screen
     4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
     4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 6:literal/left, 10:literal/right
   ]
+  # divider isn't messed up
   screen-should-contain [
     .abc  │def .
     .     │    .

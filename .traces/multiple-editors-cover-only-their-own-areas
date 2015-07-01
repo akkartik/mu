@@ -1,18 +1,12 @@
 parse: instruction: assume-screen
 parse:   ingredient: {name: "10", properties: ["10": "literal", "width": ]}
 parse:   ingredient: {name: "5", properties: ["5": "literal", "height": ]}
-parse: instruction: draw-vertical
-parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
-parse:   ingredient: {name: "5", properties: ["5": "literal", "divider": ]}
-parse:   ingredient: {name: "0", properties: ["0": "literal", "top": ]}
-parse:   ingredient: {name: "5", properties: ["5": "literal", "height": ]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    # initialize an editor covering left half of screen\n    1:address:array:character <- new [abc]\n    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right\n    3:address:array:character <- new [def]\n    # chain new editor to it, covering the right half of the screen\n    4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset\n    4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 6:literal/left, 10:literal/right\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    # draw a divider\n    draw-vertical screen:address, 5:literal/divider, 0:literal/top, 5:literal/height\n    # initialize editors on both sides of it and chain the two\n    1:address:array:character <- new [abc]\n    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right\n    3:address:array:character <- new [def]\n    4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset\n    4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 6:literal/left, 10:literal/right\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "\n    .abc  │def .\n    .     │    .\n    .     │    .\n    .     │    .\n    .     │    .\n  ", properties: [_: "literal-string"]}
 after-brace: recipe multiple-editors-cover-only-their-own-areas
 after-brace: new-fake-screen ...
-after-brace: draw-vertical ...
 after-brace: run ...
 after-brace: screen-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
@@ -7216,6 +7210,53 @@ schedule: multiple-editors-cover-only-their-own-areas
 9999 mem: location 1002 is 1031
 9999 run: result 0 is 1031
 9999 mem: storing 1031 in location 900
+ 101 run: run [
+    # draw a divider
+    draw-vertical screen:address, 5:literal/divider, 0:literal/top, 5:literal/height
+    # initialize editors on both sides of it and chain the two
+    1:address:array:character <- new [abc]
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+    3:address:array:character <- new [def]
+    4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
+    4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 6:literal/left, 10:literal/right
+  ]
+parse: instruction: draw-vertical
+parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
+parse:   ingredient: {name: "5", properties: ["5": "literal", "divider": ]}
+parse:   ingredient: {name: "0", properties: ["0": "literal", "top": ]}
+parse:   ingredient: {name: "5", properties: ["5": "literal", "height": ]}
+parse: instruction: new
+parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
+parse: instruction: new-editor
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"]}
+parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
+parse:   ingredient: {name: "0", properties: ["0": "literal", "top": ]}
+parse:   ingredient: {name: "0", properties: ["0": "literal", "left": ]}
+parse:   ingredient: {name: "5", properties: ["5": "literal", "right": ]}
+parse:   product: {name: "2", properties: ["2": "address":"editor-data"]}
+parse: instruction: new
+parse:   ingredient: {name: "def", properties: [_: "literal-string"]}
+parse:   product: {name: "3", properties: ["3": "address":"array":"character"]}
+parse: instruction: get-address
+parse:   ingredient: {name: "2", properties: ["2": "address":"editor-data", "deref": ]}
+parse:   ingredient: {name: "next-editor", properties: ["next-editor": "offset"]}
+parse:   product: {name: "4", properties: ["4": "address":"address":"editor-data"]}
+parse: instruction: new-editor
+parse:   ingredient: {name: "3", properties: ["3": "address":"array":"character"]}
+parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
+parse:   ingredient: {name: "0", properties: ["0": "literal", "top": ]}
+parse:   ingredient: {name: "6", properties: ["6": "literal", "left": ]}
+parse:   ingredient: {name: "10", properties: ["10": "literal", "right": ]}
+parse:   product: {name: "4", properties: ["4": "address":"address":"editor-data", "deref": ]}
+name: element next-editor of type editor-data is at offset 10
+after-brace: recipe run1001
+after-brace: draw-vertical ...
+after-brace: new ...
+after-brace: new-editor ...
+after-brace: new ...
+after-brace: get-address ...
+after-brace: new-editor ...
  101 run: draw-vertical screen:address, 5:literal/divider, 0:literal/top, 5:literal/height
 9999 mem: location 900 is 1031
  102 run: default-space:address:array:location <- new location:type, 30:literal
@@ -7253,9 +7294,9 @@ schedule: multiple-editors-cover-only-their-own-areas
 9999 mem: new alloc: 1199
  103 run: x:address:screen <- next-ingredient 
 9999 mem: storing 1031 in location 1201
+schedule: move-cursor/draw-vertical/run1001/multiple-editors-cover-only-their-own-areas
  103 run: new-row:number <- next-ingredient 
 9999 mem: storing 0 in location 1202
-schedule: move-cursor/draw-vertical/multiple-editors-cover-only-their-own-areas
  103 run: new-column:number <- next-ingredient 
 9999 mem: storing 5 in location 1203
  103 run: break-unless x:address:screen, 
@@ -8755,46 +8796,6 @@ schedule: move-cursor/draw-vertical/multiple-editors-cover-only-their-own-areas
  102 run: break-unless continue?:boolean, 
 9999 mem: location 1176 is 0
 9999 run: jumping to instruction 17
- 101 run: run [
-    # initialize an editor covering left half of screen
-    1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-    3:address:array:character <- new [def]
-    # chain new editor to it, covering the right half of the screen
-    4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
-    4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 6:literal/left, 10:literal/right
-  ]
-parse: instruction: new
-parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
-parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
-parse: instruction: new-editor
-parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"]}
-parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
-parse:   ingredient: {name: "0", properties: ["0": "literal", "top": ]}
-parse:   ingredient: {name: "0", properties: ["0": "literal", "left": ]}
-parse:   ingredient: {name: "5", properties: ["5": "literal", "right": ]}
-parse:   product: {name: "2", properties: ["2": "address":"editor-data"]}
-parse: instruction: new
-parse:   ingredient: {name: "def", properties: [_: "literal-string"]}
-parse:   product: {name: "3", properties: ["3": "address":"array":"character"]}
-parse: instruction: get-address
-parse:   ingredient: {name: "2", properties: ["2": "address":"editor-data", "deref": ]}
-parse:   ingredient: {name: "next-editor", properties: ["next-editor": "offset"]}
-parse:   product: {name: "4", properties: ["4": "address":"address":"editor-data"]}
-parse: instruction: new-editor
-parse:   ingredient: {name: "3", properties: ["3": "address":"array":"character"]}
-parse:   ingredient: {name: "screen", properties: ["screen": "address"]}
-parse:   ingredient: {name: "0", properties: ["0": "literal", "top": ]}
-parse:   ingredient: {name: "6", properties: ["6": "literal", "left": ]}
-parse:   ingredient: {name: "10", properties: ["10": "literal", "right": ]}
-parse:   product: {name: "4", properties: ["4": "address":"address":"editor-data", "deref": ]}
-name: element next-editor of type editor-data is at offset 10
-after-brace: recipe run1001
-after-brace: new ...
-after-brace: new-editor ...
-after-brace: new ...
-after-brace: get-address ...
-after-brace: new-editor ...
  101 run: 1:address:array:character <- new [abc]
 9999 mem: storing 1509 in location 1
  101 run: 2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
