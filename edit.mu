@@ -535,6 +535,8 @@ recipe handle-event [
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   screen-height:number <- screen-height screen:address
   top:number <- get editor:address:editor-data/deref, top:offset
+  left:number <- get editor:address:editor-data/deref, left:offset
+  right:number <- get editor:address:editor-data/deref, right:offset
   # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'.
   # right arrow
   {
@@ -551,7 +553,7 @@ recipe handle-event [
       was-at-newline?:boolean <- equal old-cursor-character:character, 10:literal/newline
       break-unless was-at-newline?:boolean
       cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
-      cursor-column:address:number/deref <- copy 0:literal
+      cursor-column:address:number/deref <- copy left:number
       # todo: what happens when cursor is too far down?
       screen-height:number <- screen-height screen:address
       above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
@@ -561,7 +563,6 @@ recipe handle-event [
     # if the line wraps, move cursor to start of next row
     {
       # if we're at the column just before the wrap indicator
-      right:number <- get editor:address:editor-data/deref, right:offset
       wrap-column:number <- subtract right:number, 1:literal
       at-wrap?:boolean <- equal cursor-column:address:number/deref, wrap-column:number
       break-unless at-wrap?:boolean
@@ -575,7 +576,7 @@ recipe handle-event [
       newline?:boolean <- equal next-character:character, 10:literal/newline
       break-if newline?:boolean
       cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
-      cursor-column:address:number/deref <- copy 0:literal
+      cursor-column:address:number/deref <- copy left:number
       # todo: what happens when cursor is too far down?
       above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
       assert above-screen-bottom?:boolean, [unimplemented: moving past bottom of screen]
@@ -614,7 +615,6 @@ recipe handle-event [
     # if before-cursor is not at newline, we're just at a wrapped line
     assert cursor-row:address:number/deref, [unimplemented: moving cursor above top of screen]
     cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
-    right:number <- get editor:address:editor-data/deref, right:offset
     cursor-column:address:number/deref <- subtract right:number, 1:literal  # leave room for wrap icon
   }
   # down arrow
@@ -682,19 +682,20 @@ recipe insert-at-cursor [
   screen:address <- get editor:address:editor-data/deref, screen:offset
   cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+  left:number <- get editor:address:editor-data/deref, left:offset
+  right:number <- get editor:address:editor-data/deref, right:offset
   # update cursor: if newline, move cursor to start of next line
   # todo: bottom of screen
   {
     newline?:boolean <- equal c:character, 10:literal/newline
     break-unless newline?:boolean
     cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
-    cursor-column:address:number/deref <- copy 0:literal
+    cursor-column:address:number/deref <- copy left:number
     reply
   }
   # if the line wraps at the cursor, move cursor to start of next row
   {
     # if we're at the column just before the wrap indicator
-    right:number <- get editor:address:editor-data/deref, right:offset
     wrap-column:number <- subtract right:number, 1:literal
 #?     $print [wrap? ], cursor-column:address:number/deref, [ vs ], wrap-column:number, [ 
 #? ] #? 1
@@ -1129,6 +1130,24 @@ scenario editor-moves-cursor-down-after-inserting-newline [
   ]
 ]
 
+scenario editor-moves-cursor-down-after-inserting-newline-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/right
+  assume-console [
+    type [0
+1]
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    . 0        .
+    . 1abc     .
+    .          .
+  ]
+]
+
 scenario editor-clears-previous-line-completely-after-inserting-newline [
   assume-screen 10:literal/width, 5:literal/height
   1:address:array:character <- new [abcde]
@@ -1279,6 +1298,28 @@ d]
   ]
 ]
 
+scenario editor-moves-cursor-to-next-line-with-right-arrow-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc
+d]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 1:literal/left, 10:literal/right
+  assume-console [
+    press 65514  # right arrow
+    press 65514  # right arrow
+    press 65514  # right arrow
+    press 65514  # right arrow - next line
+    type [0]
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    . abc      .
+    . 0d       .
+    .          .
+  ]
+]
+
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
   assume-screen 10:literal/width, 5:literal/height
   1:address:array:character <- new [abcdef]
@@ -1300,6 +1341,30 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
   memory-should-contain [
     3 <- 1
     4 <- 0
+  ]
+]
+
+scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abcdef]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 1:literal/left, 6:literal/right
+  assume-console [
+    left-click 0, 4
+    press 65514  # right arrow
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  screen-should-contain [
+    . abcd↩    .
+    . ef       .
+    .          .
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 1
   ]
 ]
 
