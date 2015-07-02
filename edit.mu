@@ -264,14 +264,10 @@ recipe render [
       loop +next-character:label
     }
     {
-      # at right? more than one letter left in the line? wrap
+      # at right? wrap. even if there's only one more letter left; we need
+      # room for clicking on the cursor after it.
       at-right?:boolean <- equal column:number, right:number
       break-unless at-right?:boolean
-      next-node:address:duplex-list <- next-duplex curr:address:duplex-list
-      break-unless next-node:address:duplex-list
-      next:character <- get next-node:address:duplex-list/deref, value:offset
-      next-character-is-newline?:boolean <- equal next:character, 10:literal/newline
-      break-if next-character-is-newline?:boolean
       # print wrap icon
       print-character screen:address, 8617:literal/loop-back-to-left, 245:literal/grey
       column:number <- copy left:number
@@ -410,6 +406,26 @@ scenario editor-initially-wraps-long-lines [
   screen-should-contain [
     .abc ↩.
     .def  .
+    .     .
+  ]
+  screen-should-contain-in-color, 245:literal/grey [
+    .    ↩.
+    .     .
+    .     .
+  ]
+]
+
+scenario editor-initially-wraps-barely-long-lines [
+  assume-screen 5:literal/width, 3:literal/height
+  run [
+    s:address:array:character <- new [abcde]
+    new-editor s:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  ]
+  # still wrap, even though the line would fit. We need room to click on the
+  # end of the line
+  screen-should-contain [
+    .abcd↩.
+    .e    .
     .     .
   ]
   screen-should-contain-in-color, 245:literal/grey [
@@ -715,43 +731,6 @@ recipe insert-at-cursor [
 #? ] #? 1
     reply
   }
-  # was cursor wrapped?
-  {
-    at-left-margin?:boolean <- equal cursor-column:address:number/deref, left:number
-    break-unless at-left-margin?:boolean
-    $print [wrapped cursor check: 1
-]
-    previous:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/deref
-    at-start-of-text?:boolean <- not previous:address:duplex-list
-    after-newline?:boolean <- copy 0:literal/false
-    {
-      break-if at-start-of-text?:boolean
-      previous-character:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
-      after-newline?:boolean <- equal previous-character:character, 10:literal/newline
-    }
-    at-start-of-line?:boolean <- or at-start-of-text?:boolean, after-newline?:boolean
-    break-if at-start-of-line?:boolean  # i.e. not at wrapped line
-    $print [wrapped cursor check: 2
-]
-    current:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
-    at-end-of-text?:boolean <- not current:address:duplex-list
-    $print [at end of text? ], at-end-of-text?:boolean, [ 
-]
-    at-newline?:boolean <- copy 0:literal/false
-    {
-      break-if at-end-of-text?:boolean
-      current-character:character <- get current:address:duplex-list/deref, value:offset
-      $print [current character: ], current-character:character, [ 
-]
-      at-newline?:boolean <- equal current-character:character, 10:literal/newline
-    }
-    at-end-of-line?:boolean <- or at-end-of-text?:boolean, at-newline?:boolean
-    break-unless at-end-of-line?:boolean
-    $print [wrapped cursor check: 3
-]
-    cursor-column:address:number/deref <- copy 2:literal  # add 2 rather than 1 to account for wrap icon
-    reply
-  }
   # otherwise move cursor right
   cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
 ]
@@ -1030,128 +1009,9 @@ d]
   ]
 ]
 
-scenario editor-inserts-characters-at-cursor-6 [
-  assume-screen 10:literal/width, 5:literal/height
-  # text fills line
-  1:address:array:character <- new [abcde]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-  # position cursor at end
-  assume-console [
-    left-click 3, 0
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/deref, cursor-row:offset
-    4:number <- get 2:address:editor-data/deref, cursor-column:offset
-  ]
-  # text shouldn't wrap
-  screen-should-contain [
-    .abcde     .
-    .          .
-  ]
-  # cursor should wrap
-  memory-should-contain [
-    3 <- 1
-    4 <- 0
-  ]
-]
-
-scenario editor-inserts-character-at-wrapped-cursor [
-  assume-screen 10:literal/width, 5:literal/height
-  # text fills line
-  1:address:array:character <- new [abcde]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-  # make cursor wrap at end of text
-  assume-console [
-    left-click 4, 3
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/deref, cursor-row:offset
-    4:number <- get 2:address:editor-data/deref, cursor-column:offset
-  ]
-  memory-should-contain [
-    3 <- 1
-    4 <- 0  # cursor wrapped
-  ]
-  # but line doesn't wrap
-  screen-should-contain [
-    .abcde     .
-    .          .
-  ]
-  # now insert a character
-  assume-console [
-    type [f]
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/deref, cursor-row:offset
-    4:number <- get 2:address:editor-data/deref, cursor-column:offset
-  ]
-  # line now wraps
-  screen-should-contain [
-    .abcd↩     .
-    .ef        .
-  ]
-  # and wrapped cursor remains at the same *logical* point
-  memory-should-contain [
-    3 <- 1
-    4 <- 2  # not 1
-  ]
-]
-
-scenario editor-inserts-character-at-wrapped-cursor-2 [
-  assume-screen 10:literal/width, 5:literal/height
-  # text fills line
-  1:address:array:character <- new [abcde
-z]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-  # make cursor wrap at end of an internal line
-  assume-console [
-    left-click 0, 4
-    press 65514  # right arrow
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/deref, cursor-row:offset
-    4:number <- get 2:address:editor-data/deref, cursor-column:offset
-  ]
-  memory-should-contain [
-    3 <- 1
-    4 <- 0  # cursor wrapped
-  ]
-  # but line doesn't wrap
-  screen-should-contain [
-    .abcde     .
-    .z         .
-    .          .
-  ]
-  # now insert a character
-  assume-console [
-    type [f]
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/deref, cursor-row:offset
-    4:number <- get 2:address:editor-data/deref, cursor-column:offset
-  ]
-  # line now wraps
-  screen-should-contain [
-    .abcd↩     .
-    .ef        .
-    .z         .
-    .          .
-  ]
-  # and wrapped cursor remains at the same *logical* point
-  memory-should-contain [
-    3 <- 1
-    4 <- 2  # not 1
-  ]
-]
-
 scenario editor-wraps-line-on-insert [
   assume-screen 5:literal/width, 3:literal/height
-  1:address:array:character <- new [abcd]
+  1:address:array:character <- new [abc]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
   # type a letter
   assume-console [
@@ -1162,7 +1022,7 @@ scenario editor-wraps-line-on-insert [
   ]
   # no wrap yet
   screen-should-contain [
-    .eabcd.
+    .eabc .
     .     .
   ]
   # type a second letter
@@ -1175,14 +1035,14 @@ scenario editor-wraps-line-on-insert [
   # now wrap
   screen-should-contain [
     .efab↩.
-    .cd   .
+    .c    .
     .     .
   ]
 ]
 
 scenario editor-moves-cursor-after-inserting-characters [
   assume-screen 10:literal/width, 5:literal/height
-  1:address:array:character <- new [abc]
+  1:address:array:character <- new [ab]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
   assume-console [
     type [01]
@@ -1191,7 +1051,7 @@ scenario editor-moves-cursor-after-inserting-characters [
     event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
-    .01abc     .
+    .01ab      .
     .          .
   ]
 ]
@@ -1295,7 +1155,8 @@ scenario editor-clears-previous-line-completely-after-inserting-newline [
   # line should be fully cleared
   screen-should-contain [
     .          .
-    .abcde     .
+    .abcd↩     .
+    .e         .
     .          .
   ]
 ]
@@ -1343,47 +1204,6 @@ d]
   replace-in-console 171:literal/«, 3:event/backspace
   run [
     event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  screen-should-contain [
-    .abcd      .
-    .          .
-  ]
-]
-
-scenario editor-handles-backspace-key-at-right-margin [
-  assume-screen 10:literal/width, 5:literal/height
-  # fill a line with text
-  1:address:array:character <- new [abcde]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-  # position cursor at end
-  assume-console [
-    left-click 1, 3  # at end of text
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/deref, cursor-row:offset
-    4:number <- get 2:address:editor-data/deref, cursor-column:offset
-  ]
-  # check that cursor wraps to next line
-  memory-should-contain [
-    3 <- 1
-    4 <- 0
-  ]
-  # now hit a backspace key
-  assume-console [
-    type [«]
-  ]
-  5:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 171:literal/«, 5:event/backspace
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/deref, cursor-row:offset
-    4:number <- get 2:address:editor-data/deref, cursor-column:offset
-  ]
-  # cursor unwraps
-  memory-should-contain [
-    3 <- 0
-    4 <- 4
   ]
   screen-should-contain [
     .abcd      .
@@ -1556,32 +1376,6 @@ d]
     .abc       .
     .0d        .
     .          .
-  ]
-]
-
-scenario editor-wraps-just-cursor-with-right-arrow [
-  assume-screen 10:literal/width, 5:literal/height
-  # first line occupies entire width
-  1:address:array:character <- new [abcde
-z]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-  assume-console [
-    left-click 0, 4
-    press 65514  # right arrow - next line
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/deref, cursor-row:offset
-    4:number <- get 2:address:editor-data/deref, cursor-column:offset
-  ]
-  screen-should-contain [
-    .abcde     .
-    .z         .
-    .          .
-  ]
-  memory-should-contain [
-    3 <- 1
-    4 <- 0
   ]
 ]
 
