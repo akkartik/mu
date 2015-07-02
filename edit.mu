@@ -583,13 +583,10 @@ recipe handle-event [
       wrap-column:number <- subtract right:number, 1:literal
       at-wrap?:boolean <- equal cursor-column:address:number/deref, wrap-column:number
       break-unless at-wrap?:boolean
-      # and if character after next isn't newline
-#?       $print [aaa] #? 1
+      # and if next character isn't newline
       new-cursor:address:duplex-list <- next-duplex old-cursor:address:duplex-list
       break-unless new-cursor:address:duplex-list
-      next:address:duplex-list <- next-duplex new-cursor:address:duplex-list
-      break-unless next:address:duplex-list
-      next-character:character <- get next:address:duplex-list/deref, value:offset
+      next-character:character <- get new-cursor:address:duplex-list/deref, value:offset
       newline?:boolean <- equal next-character:character, 10:literal/newline
       break-if newline?:boolean
       cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
@@ -1298,6 +1295,40 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
 
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
   assume-screen 10:literal/width, 5:literal/height
+  # line just barely wrapping
+  1:address:array:character <- new [abcde]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  # position cursor at last character before wrap and hit right-arrow
+  assume-console [
+    left-click 0, 3
+    press 65514  # right arrow
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+  # now hit right arrow again
+  assume-console [
+    press 65514
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 1
+  ]
+]
+
+scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
+  assume-screen 10:literal/width, 5:literal/height
   1:address:array:character <- new [abcdef]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 1:literal/left, 6:literal/right
   assume-console [
@@ -1317,45 +1348,6 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
   memory-should-contain [
     3 <- 1
     4 <- 1
-  ]
-]
-
-scenario editor-does-not-wrap-cursor-when-line-does-not-wrap [
-  assume-screen 10:literal/width, 5:literal/height
-  1:address:array:character <- new [abcde]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-  assume-console [
-    left-click 0, 3  # one before right, in the last line
-    press 65514  # right arrow
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/deref, cursor-row:offset
-    4:number <- get 2:address:editor-data/deref, cursor-column:offset
-  ]
-  memory-should-contain [
-    3 <- 0
-    4 <- 4
-  ]
-]
-
-scenario editor-does-not-wrap-cursor-when-line-does-not-wrap-2 [
-  assume-screen 10:literal/width, 5:literal/height
-  1:address:array:character <- new [abcde
-f]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-  assume-console [
-    left-click 0, 3  # one before right, not the last line
-    press 65514  # right arrow
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/deref, cursor-row:offset
-    4:number <- get 2:address:editor-data/deref, cursor-column:offset
-  ]
-  memory-should-contain [
-    3 <- 0
-    4 <- 4
   ]
 ]
 
