@@ -111,7 +111,8 @@ recipe new-buffer [
   len:address:number <- get-address result:address:buffer/deref, length:offset
   len:address:number/deref <- copy 0:literal
   s:address:address:array:character <- get-address result:address:buffer/deref, data:offset
-  capacity:number <- next-ingredient
+  capacity:number, found?:boolean <- next-ingredient
+  assert found?:boolean, [new-buffer must get a capacity argument]
   s:address:address:array:character/deref <- new character:type, capacity:number
 #?   $print s:address:address:array:character/deref, [
 #? ]
@@ -173,7 +174,13 @@ recipe buffer-append [
     in:address:buffer <- grow-buffer in:address:buffer
   }
   s:address:array:character <- get in:address:buffer/deref, data:offset
+#?   $print [array underlying buf: ], s:address:array:character, [ 
+#? ] #? 1
+#?   $print [index: ], len:address:number/deref, [ 
+#? ] #? 1
   dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
+#?   $print [storing ], c:character, [ in ], dest:address:character, [ 
+#? ] #? 1
   dest:address:character/deref <- copy c:character
   len:address:number/deref <- add len:address:number/deref, 1:literal
   reply in:address:buffer/same-as-ingredient:0

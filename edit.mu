@@ -1734,6 +1734,50 @@ recipe reset-focus [
   }
 ]
 
+## Running code from the editors
+
+recipe editor-contents [
+  default-space:address:array:location <- new location:type, 30:literal
+  editor:address:editor-data <- next-ingredient
+  buf:address:buffer <- new-buffer 80:literal
+#?   $print [buffer: ], buf:address:buffer, [ 
+#? ] #? 1
+  curr:address:duplex-list <- get editor:address:editor-data/deref, data:offset
+  # skip § sentinel
+  assert curr:address:duplex-list, [editor without data is illegal; must have at least a sentinel]
+  curr:address:duplex-list <- next-duplex curr:address:duplex-list
+  {
+    break-unless curr:address:duplex-list
+    c:character <- get curr:address:duplex-list/deref, value:offset
+#?     $print [appending ], c:character, [ 
+#? ] #? 1
+    buffer-append buf:address:buffer, c:character
+    curr:address:duplex-list <- next-duplex curr:address:duplex-list
+    loop
+  }
+  result:address:array:character <- buffer-to-array buf:address:buffer
+  reply result:address:array:character
+]
+
+scenario editor-provides-edited-contents [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 10:literal/right
+  assume-console [
+    left-click 0, 2
+    type [def]
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+    3:address:array:character <- editor-contents 2:address:editor-data
+    4:array:character <- copy 3:address:array:character/deref
+#?     $dump-memory #? 1
+  ]
+  memory-should-contain [
+    4:string <- [abdefc]
+  ]
+]
+
 ## helpers for drawing editor borders
 
 recipe draw-box [
