@@ -28,10 +28,10 @@ trace(Primitive_recipe_depth, "new") << "routine allocated memory from " << allo
 //:: First handle 'type' operands.
 
 :(before "End Mu Types Initialization")
-Type_number["type"] = 0;
+Type_ordinal["type"] = 0;
 :(after "Per-recipe Transforms")
-// replace type names with type_numbers
-if (inst.operation == Recipe_number["new"]) {
+// replace type names with type_ordinals
+if (inst.operation == Recipe_ordinal["new"]) {
   // End NEW Transform Special-cases
   // first arg must be of type 'type'
   assert(SIZE(inst.ingredients) >= 1);
@@ -39,10 +39,10 @@ if (inst.operation == Recipe_number["new"]) {
     raise << "expected literal, got " << inst.ingredients.at(0).to_string() << '\n' << die();
   if (inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
     raise << "tried to allocate non-type " << inst.ingredients.at(0).to_string() << " in recipe " << Recipe[r].name << '\n' << die();
-  if (Type_number.find(inst.ingredients.at(0).name) == Type_number.end())
+  if (Type_ordinal.find(inst.ingredients.at(0).name) == Type_ordinal.end())
     raise << "unknown type " << inst.ingredients.at(0).name << " in recipe " << Recipe[r].name << '\n' << die();
-//?   cerr << "type " << inst.ingredients.at(0).name << " => " << Type_number[inst.ingredients.at(0).name] << '\n'; //? 1
-  inst.ingredients.at(0).set_value(Type_number[inst.ingredients.at(0).name]);
+//?   cerr << "type " << inst.ingredients.at(0).name << " => " << Type_ordinal[inst.ingredients.at(0).name] << '\n'; //? 1
+  inst.ingredients.at(0).set_value(Type_ordinal[inst.ingredients.at(0).name]);
   trace(Primitive_recipe_depth, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).name;
   end_new_transform:;
 }
@@ -53,14 +53,14 @@ if (inst.operation == Recipe_number["new"]) {
 :(before "End Primitive Recipe Declarations")
 NEW,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["new"] = NEW;
+Recipe_ordinal["new"] = NEW;
 :(before "End Primitive Recipe Implementations")
 case NEW: {
   // compute the space we need
   long long int size = 0;
   long long int array_length = 0;
   {
-    vector<type_number> type;
+    vector<type_ordinal> type;
     assert(is_literal(current_instruction().ingredients.at(0)));
     type.push_back(current_instruction().ingredients.at(0).value);
 //?     trace(Primitive_recipe_depth, "mem") << "type " << current_instruction().ingredients.at(0).to_string() << ' ' << type.size() << ' ' << type.back() << " has size " << size_of(type); //? 1

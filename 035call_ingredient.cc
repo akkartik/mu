@@ -34,7 +34,7 @@ for (long long int i = 0; i < SIZE(ingredients); ++i) {
 :(before "End Primitive Recipe Declarations")
 NEXT_INGREDIENT,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["next-ingredient"] = NEXT_INGREDIENT;
+Recipe_ordinal["next-ingredient"] = NEXT_INGREDIENT;
 :(before "End Primitive Recipe Implementations")
 case NEXT_INGREDIENT: {
   assert(!Current_routine->calls.empty());
@@ -71,7 +71,7 @@ recipe f [
 :(before "End Primitive Recipe Declarations")
 REWIND_INGREDIENTS,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["rewind-ingredients"] = REWIND_INGREDIENTS;
+Recipe_ordinal["rewind-ingredients"] = REWIND_INGREDIENTS;
 :(before "End Primitive Recipe Implementations")
 case REWIND_INGREDIENTS: {
   Current_routine->calls.front().next_ingredient_to_process = 0;
@@ -92,7 +92,7 @@ recipe f [
 :(before "End Primitive Recipe Declarations")
 INGREDIENT,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["ingredient"] = INGREDIENT;
+Recipe_ordinal["ingredient"] = INGREDIENT;
 :(before "End Primitive Recipe Implementations")
 case INGREDIENT: {
   assert(is_literal(current_instruction().ingredients.at(0)));

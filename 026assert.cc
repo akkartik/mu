@@ -8,7 +8,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 ASSERT,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["assert"] = ASSERT;
+Recipe_ordinal["assert"] = ASSERT;
 :(before "End Primitive Recipe Implementations")
 case ASSERT: {
   assert(SIZE(ingredients) == 2);

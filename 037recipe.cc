@@ -25,20 +25,20 @@ recipe f [
 #? ?
 
 :(before "End Mu Types Initialization")
-Type_number["recipe"] = 0;
-type_number recipe_number = Type_number["recipe-number"] = Next_type_number++;
-Type[recipe_number].name = "recipe-number";
+Type_ordinal["recipe"] = 0;
+type_ordinal recipe_ordinal = Type_ordinal["recipe-number"] = Next_type_ordinal++;
+Type[recipe_ordinal].name = "recipe-number";
 
 :(before "End Reagent-parsing Exceptions")
 if (r.properties.at(0).second.at(0) == "recipe") {
-  r.set_value(Recipe_number[r.name]);
+  r.set_value(Recipe_ordinal[r.name]);
   return;
 }
 
 :(before "End Primitive Recipe Declarations")
 CALL,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["call"] = CALL;
+Recipe_ordinal["call"] = CALL;
 :(before "End Primitive Recipe Implementations")
 case CALL: {
   assert(scalar(ingredients.at(0)));

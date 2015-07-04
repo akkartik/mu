@@ -7,16 +7,16 @@
 :(before "End Mu Types Initialization")
 //: We'll use this container as a running example, with two number elements.
 {
-type_number tmp = Type_number["number-or-point"] = Next_type_number++;
+type_ordinal tmp = Type_ordinal["number-or-point"] = Next_type_ordinal++;
 Type[tmp].size = 2;
 Type[tmp].kind = exclusive_container;
 Type[tmp].name = "number-or-point";
 //? cout << tmp << ": " << SIZE(Type[tmp].elements) << '\n'; //? 1
-vector<type_number> t1;
+vector<type_ordinal> t1;
 t1.push_back(number);
 Type[tmp].elements.push_back(t1);
 //? cout << SIZE(Type[tmp].elements) << '\n'; //? 1
-vector<type_number> t2;
+vector<type_ordinal> t2;
 t2.push_back(point);
 Type[tmp].elements.push_back(t2);
 //? cout << SIZE(Type[tmp].elements) << '\n'; //? 1
@@ -45,7 +45,7 @@ if (t.kind == exclusive_container) {
   // size of an exclusive container is the size of its largest variant
   // (So like containers, it can't contain arrays.)
 //?   cout << "--- " << types.at(0) << ' ' << t.size << '\n'; //? 1
-//?   cout << "point: " << Type_number["point"] << " " << Type[Type_number["point"]].name << " " << Type[Type_number["point"]].size << '\n'; //? 1
+//?   cout << "point: " << Type_ordinal["point"] << " " << Type[Type_ordinal["point"]].name << " " << Type[Type_ordinal["point"]].size << '\n'; //? 1
 //?   cout << t.name << ' ' << t.size << ' ' << SIZE(t.elements) << '\n'; //? 1
   long long int result = 0;
   for (long long int i = 0; i < t.size; ++i) {
@@ -65,7 +65,7 @@ if (t.kind == exclusive_container) {
 //: 'maybe-convert' requires a literal in ingredient 1. We'll use a synonym
 //: called 'variant'.
 :(before "End Mu Types Initialization")
-Type_number["variant"] = 0;
+Type_ordinal["variant"] = 0;
 
 :(scenario maybe_convert)
 recipe main [
@@ -88,12 +88,12 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 MAYBE_CONVERT,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["maybe-convert"] = MAYBE_CONVERT;
+Recipe_ordinal["maybe-convert"] = MAYBE_CONVERT;
 :(before "End Primitive Recipe Implementations")
 case MAYBE_CONVERT: {
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
-  type_number base_type = base.types.at(0);
+  type_ordinal base_type = base.types.at(0);
   assert(Type[base_type].kind == exclusive_container);
   assert(is_literal(current_instruction().ingredients.at(1)));
   long long int tag = current_instruction().ingredients.at(1).value;

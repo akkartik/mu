@@ -36,9 +36,9 @@ recipe main [
 // Book-keeping while running a recipe.
 //: Later layers will change this.
 struct routine {
-  recipe_number running_recipe;
+  recipe_ordinal running_recipe;
   long long int running_step_index;
-  routine(recipe_number r) :running_recipe(r), running_step_index(0) {}
+  routine(recipe_ordinal r) :running_recipe(r), running_step_index(0) {}
   bool completed() const;
 };
 
@@ -46,7 +46,7 @@ struct routine {
 routine* Current_routine = NULL;
 
 :(code)
-void run(recipe_number r) {
+void run(recipe_ordinal r) {
   routine rr(r);
   Current_routine = &rr;
   run_current_routine();
@@ -132,7 +132,7 @@ if (!Run_tests) {
   START_TRACING_UNTIL_END_OF_SCOPE;
 //?   Trace_stream->dump_layer = "all"; //? 2
   transform_all();
-  recipe_number r = Recipe_number[string("main")];
+  recipe_ordinal r = Recipe_ordinal[string("main")];
 //?   Trace_stream->dump_layer = "all"; //? 1
   if (r) run(r);
 //?   dump_memory(); //? 1
@@ -167,7 +167,7 @@ load_permanently("core.mu");
 void run(string form) {
 //?   cerr << "AAA 2\n"; //? 2
 //?   cerr << form << '\n'; //? 1
-  vector<recipe_number> tmp = load(form);
+  vector<recipe_ordinal> tmp = load(form);
   if (tmp.empty()) return;
   transform_all();
 //?   cerr << "AAA 3\n"; //? 2
@@ -211,7 +211,7 @@ void write_memory(reagent x, vector<double> data) {
 long long int size_of(const reagent& r) {
   return size_of(r.types);
 }
-long long int size_of(const vector<type_number>& types) {
+long long int size_of(const vector<type_ordinal>& types) {
   // End size_of(types) Cases
   return 1;
 }

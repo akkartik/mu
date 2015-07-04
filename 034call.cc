@@ -34,10 +34,10 @@ recipe f [
 // recipe. When that finishes, we continue this one where we left off.
 // This requires maintaining a 'stack' of interrupted recipes or 'calls'.
 struct call {
-  recipe_number running_recipe;
+  recipe_ordinal running_recipe;
   long long int running_step_index;
   // End call Fields
-  call(recipe_number r) {
+  call(recipe_ordinal r) {
     running_recipe = r;
     running_step_index = 0;
     // End call Constructor
@@ -49,12 +49,12 @@ typedef list<call> call_stack;
 struct routine {
   call_stack calls;
   // End routine Fields
-  routine(recipe_number r);
+  routine(recipe_ordinal r);
   bool completed() const;
   const vector<instruction>& steps() const;
 };
 :(code)
-routine::routine(recipe_number r) {
+routine::routine(recipe_ordinal r) {
   calls.push_front(call(r));
   // End routine Constructor
 }

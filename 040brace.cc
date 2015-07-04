@@ -36,7 +36,7 @@ recipe main [
   Transform.push_back(transform_braces);
 
 :(code)
-void transform_braces(const recipe_number r) {
+void transform_braces(const recipe_ordinal r) {
 //?   cout << "AAA transform_braces\n"; //? 1
 //?   exit(0); //? 1
   const int OPEN = 0, CLOSE = 1;
@@ -63,8 +63,8 @@ void transform_braces(const recipe_number r) {
     else if (inst.label == "}") open_braces.pop();
     else if (inst.is_label)
       ;  // do nothing
-    else if (inst.operation == Recipe_number["loop"]) {
-      inst.operation = Recipe_number["jump"];
+    else if (inst.operation == Recipe_ordinal["loop"]) {
+      inst.operation = Recipe_ordinal["jump"];
       if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
@@ -72,15 +72,15 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing;
         ing.set_value(open_braces.top()-index);
-        ing.types.push_back(Type_number["offset"]);
+        ing.types.push_back(Type_ordinal["offset"]);
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump " << ing.value << ":offset";
         trace("after-brace") << index << ": " << ing.to_string();
         trace("after-brace") << index << ": " << Recipe[r].steps.at(index).ingredients.at(0).to_string();
       }
     }
-    else if (inst.operation == Recipe_number["break"]) {
-      inst.operation = Recipe_number["jump"];
+    else if (inst.operation == Recipe_ordinal["break"]) {
+      inst.operation = Recipe_ordinal["jump"];
       if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
@@ -88,13 +88,13 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing;
         ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
-        ing.types.push_back(Type_number["offset"]);
+        ing.types.push_back(Type_ordinal["offset"]);
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump " << ing.value << ":offset";
       }
     }
-    else if (inst.operation == Recipe_number["loop-if"]) {
-      inst.operation = Recipe_number["jump-if"];
+    else if (inst.operation == Recipe_ordinal["loop-if"]) {
+      inst.operation = Recipe_ordinal["jump-if"];
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
@@ -102,13 +102,13 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing;
         ing.set_value(open_braces.top()-index);
-        ing.types.push_back(Type_number["offset"]);
+        ing.types.push_back(Type_ordinal["offset"]);
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
-    else if (inst.operation == Recipe_number["break-if"]) {
-      inst.operation = Recipe_number["jump-if"];
+    else if (inst.operation == Recipe_ordinal["break-if"]) {
+      inst.operation = Recipe_ordinal["jump-if"];
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
@@ -116,13 +116,13 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing;
         ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
-        ing.types.push_back(Type_number["offset"]);
+        ing.types.push_back(Type_ordinal["offset"]);
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
-    else if (inst.operation == Recipe_number["loop-unless"]) {
-      inst.operation = Recipe_number["jump-unless"];
+    else if (inst.operation == Recipe_ordinal["loop-unless"]) {
+      inst.operation = Recipe_ordinal["jump-unless"];
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
@@ -130,14 +130,14 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing;
         ing.set_value(open_braces.top()-index);
-        ing.types.push_back(Type_number["offset"]);
+        ing.types.push_back(Type_ordinal["offset"]);
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
     }
-    else if (inst.operation == Recipe_number["break-unless"]) {
+    else if (inst.operation == Recipe_ordinal["break-unless"]) {
 //?       cout << "AAA break-unless\n"; //? 1
-      inst.operation = Recipe_number["jump-unless"];
+      inst.operation = Recipe_ordinal["jump-unless"];
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
         // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
@@ -145,7 +145,7 @@ void transform_braces(const recipe_number r) {
       else {
         reagent ing;
         ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
-        ing.types.push_back(Type_number["offset"]);
+        ing.types.push_back(Type_ordinal["offset"]);
         inst.ingredients.push_back(ing);
         trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
       }
@@ -186,12 +186,12 @@ LOOP,
 LOOP_IF,
 LOOP_UNLESS,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["break"] = BREAK;
-Recipe_number["break-if"] = BREAK_IF;
-Recipe_number["break-unless"] = BREAK_UNLESS;
-Recipe_number["loop"] = LOOP;
-Recipe_number["loop-if"] = LOOP_IF;
-Recipe_number["loop-unless"] = LOOP_UNLESS;
+Recipe_ordinal["break"] = BREAK;
+Recipe_ordinal["break-if"] = BREAK_IF;
+Recipe_ordinal["break-unless"] = BREAK_UNLESS;
+Recipe_ordinal["loop"] = LOOP;
+Recipe_ordinal["loop-if"] = LOOP_IF;
+Recipe_ordinal["loop-unless"] = LOOP_UNLESS;
 
 :(scenario loop)
 recipe main [

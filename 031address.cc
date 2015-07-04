@@ -38,7 +38,7 @@ reagent canonize(reagent x) {
 
 reagent deref(reagent x) {
 //?   cout << "deref: " << x.to_string() << "\n"; //? 2
-  static const type_number ADDRESS = Type_number["address"];
+  static const type_ordinal ADDRESS = Type_ordinal["address"];
   reagent result;
   assert(x.types.at(0) == ADDRESS);
 

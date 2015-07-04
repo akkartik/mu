@@ -3,7 +3,7 @@
 :(before "End Primitive Recipe Declarations")
 _PRINT,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$print"] = _PRINT;
+Recipe_ordinal["$print"] = _PRINT;
 :(before "End Primitive Recipe Implementations")
 case _PRINT: {
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
@@ -25,7 +25,7 @@ case _PRINT: {
 :(before "End Primitive Recipe Declarations")
 _START_TRACING,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$start-tracing"] = _START_TRACING;
+Recipe_ordinal["$start-tracing"] = _START_TRACING;
 :(before "End Primitive Recipe Implementations")
 case _START_TRACING: {
   if (current_instruction().ingredients.empty())
@@ -39,7 +39,7 @@ case _START_TRACING: {
 :(before "End Primitive Recipe Declarations")
 _STOP_TRACING,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$stop-tracing"] = _STOP_TRACING;
+Recipe_ordinal["$stop-tracing"] = _STOP_TRACING;
 :(before "End Primitive Recipe Implementations")
 case _STOP_TRACING: {
   Trace_stream->dump_layer = "";
@@ -49,7 +49,7 @@ case _STOP_TRACING: {
 :(before "End Primitive Recipe Declarations")
 _CLOSE_TRACE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$close-trace"] = _CLOSE_TRACE;
+Recipe_ordinal["$close-trace"] = _CLOSE_TRACE;
 :(before "End Primitive Recipe Implementations")
 case _CLOSE_TRACE: {
   if (Trace_stream) {
@@ -62,7 +62,7 @@ case _CLOSE_TRACE: {
 :(before "End Primitive Recipe Declarations")
 _EXIT,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$exit"] = _EXIT;
+Recipe_ordinal["$exit"] = _EXIT;
 :(before "End Primitive Recipe Implementations")
 case _EXIT: {
   exit(0);
@@ -72,7 +72,7 @@ case _EXIT: {
 :(before "End Primitive Recipe Declarations")
 _DUMP_TRACE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$dump-trace"] = _DUMP_TRACE;
+Recipe_ordinal["$dump-trace"] = _DUMP_TRACE;
 :(before "End Primitive Recipe Implementations")
 case _DUMP_TRACE: {
   DUMP("");
@@ -82,7 +82,7 @@ case _DUMP_TRACE: {
 :(before "End Primitive Recipe Declarations")
 _DUMP_MEMORY,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$dump-memory"] = _DUMP_MEMORY;
+Recipe_ordinal["$dump-memory"] = _DUMP_MEMORY;
 :(before "End Primitive Recipe Implementations")
 case _DUMP_MEMORY: {
   dump_memory();

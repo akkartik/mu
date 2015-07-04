@@ -1,7 +1,7 @@
 :(before "End Primitive Recipe Declarations")
 RANDOM,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["random"] = RANDOM;
+Recipe_ordinal["random"] = RANDOM;
 :(before "End Primitive Recipe Implementations")
 case RANDOM: {
   // todo: limited range of numbers, might be imperfectly random
@@ -14,7 +14,7 @@ case RANDOM: {
 :(before "End Primitive Recipe Declarations")
 MAKE_RANDOM_NONDETERMINISTIC,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["make-random-nondeterministic"] = MAKE_RANDOM_NONDETERMINISTIC;
+Recipe_ordinal["make-random-nondeterministic"] = MAKE_RANDOM_NONDETERMINISTIC;
 :(before "End Primitive Recipe Implementations")
 case MAKE_RANDOM_NONDETERMINISTIC: {
   srand(time(NULL));
@@ -24,7 +24,7 @@ case MAKE_RANDOM_NONDETERMINISTIC: {
 :(before "End Primitive Recipe Declarations")
 ROUND,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["round"] = ROUND;
+Recipe_ordinal["round"] = ROUND;
 :(before "End Primitive Recipe Implementations")
 case ROUND: {
   assert(scalar(ingredients.at(0)));

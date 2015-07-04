@@ -35,13 +35,13 @@ recipe increment-counter [
 //: surrounding space of each recipe. This must happen before transform_names.
 
 :(before "End Globals")
-map<recipe_number, recipe_number> Surrounding_space;
+map<recipe_ordinal, recipe_ordinal> Surrounding_space;
 
 :(after "int main")
   Transform.push_back(collect_surrounding_spaces);
 
 :(code)
-void collect_surrounding_spaces(const recipe_number r) {
+void collect_surrounding_spaces(const recipe_ordinal r) {
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     const instruction& inst = Recipe[r].steps.at(i);
     if (inst.is_label) continue;
@@ -49,9 +49,9 @@ void collect_surrounding_spaces(const recipe_number r) {
       if (is_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
       if (SIZE(inst.products.at(j).types) != 3
-          || inst.products.at(j).types.at(0) != Type_number["address"]
-          || inst.products.at(j).types.at(1) != Type_number["array"]
-          || inst.products.at(j).types.at(2) != Type_number["location"]) {
+          || inst.products.at(j).types.at(0) != Type_ordinal["address"]
+          || inst.products.at(j).types.at(1) != Type_ordinal["array"]
+          || inst.products.at(j).types.at(2) != Type_ordinal["location"]) {
         raise << "slot 0 should always have type address:array:location, but is " << inst.products.at(j).to_string() << '\n';
         continue;
       }
@@ -61,12 +61,12 @@ void collect_surrounding_spaces(const recipe_number r) {
       if (SIZE(s) > 1) raise << "slot 0 should have a single value in /names, got " << inst.products.at(j).to_string() << '\n';
       string surrounding_recipe_name = s.at(0);
       if (Surrounding_space.find(r) != Surrounding_space.end()
-          && Surrounding_space[r] != Recipe_number[surrounding_recipe_name]) {
+          && Surrounding_space[r] != Recipe_ordinal[surrounding_recipe_name]) {
         raise << "recipe " << Recipe[r].name << " can have only one 'surrounding' recipe but has " << Recipe[Surrounding_space[r]].name << " and " << surrounding_recipe_name << '\n';
         continue;
       }
       trace("name") << "recipe " << Recipe[r].name << " is surrounded by " << surrounding_recipe_name;
-      Surrounding_space[r] = Recipe_number[surrounding_recipe_name];
+      Surrounding_space[r] = Recipe_ordinal[surrounding_recipe_name];
     }
   }
 }
@@ -74,8 +74,8 @@ void collect_surrounding_spaces(const recipe_number r) {
 //: Once surrounding spaces are available, transform_names uses them to handle
 //: /space properties.
 
-:(replace{} "long long int lookup_name(const reagent& r, const recipe_number default_recipe)")
-long long int lookup_name(const reagent& x, const recipe_number default_recipe) {
+:(replace{} "long long int lookup_name(const reagent& r, const recipe_ordinal default_recipe)")
+long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe) {
 //?   cout << "AAA " << default_recipe << " " << Recipe[default_recipe].name << '\n'; //? 2
 //?   cout << "AAA " << x.to_string() << '\n'; //? 1
   if (!has_property(x, "space")) {
@@ -86,15 +86,15 @@ long long int lookup_name(const reagent& x, const recipe_number default_recipe) 
   if (SIZE(p) != 1) raise << "/space property should have exactly one (non-negative integer) value\n";
   long long int n = to_integer(p.at(0));
   assert(n >= 0);
-  recipe_number surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
-  set<recipe_number> done;
-  vector<recipe_number> path;
+  recipe_ordinal surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
+  set<recipe_ordinal> done;
+  vector<recipe_ordinal> path;
   return lookup_name(x, surrounding_recipe, done, path);
 }
 
 // If the recipe we need to lookup this name in doesn't have names done yet,
 // recursively call transform_names on it.
-long long int lookup_name(const reagent& x, const recipe_number r, set<recipe_number>& done, vector<recipe_number>& path) {
+long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_ordinal>& done, vector<recipe_ordinal>& path) {
   if (!Name[r].empty()) return Name[r][x.name];
   if (done.find(r) != done.end()) {
     raise << "can't compute address of " << x.to_string() << " because ";
@@ -111,7 +111,7 @@ long long int lookup_name(const reagent& x, const recipe_number r, set<recipe_nu
   return Name[r][x.name];
 }
 
-recipe_number lookup_surrounding_recipe(const recipe_number r, long long int n) {
+recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n) {
   if (n == 0) return r;
   if (Surrounding_space.find(r) == Surrounding_space.end()) {
     raise << "don't know surrounding recipe of " << Recipe[r].name << '\n';

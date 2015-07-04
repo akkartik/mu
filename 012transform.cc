@@ -8,7 +8,7 @@ long long int transformed_until;
   recipe() :transformed_until(-1) {}
 
 :(before "End Types")
-typedef void (*transform_fn)(recipe_number);
+typedef void (*transform_fn)(recipe_ordinal);
 
 :(before "End Globals")
 vector<transform_fn> Transform;
@@ -17,11 +17,11 @@ vector<transform_fn> Transform;
 void transform_all() {
 //?   cerr << "AAA transform_all\n"; //? 2
   for (long long int t = 0; t < SIZE(Transform); ++t) {
-    for (map<recipe_number, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
+    for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
       recipe& r = p->second;
       if (r.steps.empty()) continue;
       if (r.transformed_until != t-1) continue;
-      (*Transform.at(t))(/*recipe_number*/p->first);
+      (*Transform.at(t))(/*recipe_ordinal*/p->first);
       r.transformed_until = t;
     }
   }
@@ -30,7 +30,7 @@ void transform_all() {
 
 void parse_int_reagents() {
 //?   cout << "parse_int_reagents\n"; //? 1
-  for (map<recipe_number, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
+  for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
     recipe& r = p->second;
     if (r.steps.empty()) continue;
     for (long long int index = 0; index < SIZE(r.steps); ++index) {
