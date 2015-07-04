@@ -33,7 +33,7 @@ waiting_on_location = old_value_of_waiting_location = 0;
 :(before "End Primitive Recipe Declarations")
 WAIT_FOR_LOCATION,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["wait-for-location"] = WAIT_FOR_LOCATION;
+Recipe_ordinal["wait-for-location"] = WAIT_FOR_LOCATION;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_LOCATION: {
   reagent loc = canonize(current_instruction().ingredients.at(0));
@@ -93,7 +93,7 @@ waiting_on_routine = 0;
 :(before "End Primitive Recipe Declarations")
 WAIT_FOR_ROUTINE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["wait-for-routine"] = WAIT_FOR_ROUTINE;
+Recipe_ordinal["wait-for-routine"] = WAIT_FOR_ROUTINE;
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_ROUTINE: {
   Current_routine->state = WAITING;
@@ -124,7 +124,7 @@ for (long long int i = 0; i < SIZE(Routines); ++i) {
 :(before "End Primitive Recipe Declarations")
 SWITCH,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["switch"] = SWITCH;
+Recipe_ordinal["switch"] = SWITCH;
 :(before "End Primitive Recipe Implementations")
 case SWITCH: {
   long long int id = some_other_running_routine();

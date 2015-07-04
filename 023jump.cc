@@ -13,7 +13,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 JUMP,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["jump"] = JUMP;
+Recipe_ordinal["jump"] = JUMP;
 :(before "End Primitive Recipe Implementations")
 case JUMP: {
   assert(current_instruction().ingredients.at(0).initialized);
@@ -26,7 +26,7 @@ case JUMP: {
 
 //: special type to designate jump targets
 :(before "End Mu Types Initialization")
-Type_number["offset"] = 0;
+Type_ordinal["offset"] = 0;
 
 :(scenario jump_backward)
 recipe main [
@@ -42,7 +42,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 JUMP_IF,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["jump-if"] = JUMP_IF;
+Recipe_ordinal["jump-if"] = JUMP_IF;
 :(before "End Primitive Recipe Implementations")
 case JUMP_IF: {
   assert(current_instruction().ingredients.at(1).initialized);
@@ -81,7 +81,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 JUMP_UNLESS,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["jump-unless"] = JUMP_UNLESS;
+Recipe_ordinal["jump-unless"] = JUMP_UNLESS;
 :(before "End Primitive Recipe Implementations")
 case JUMP_UNLESS: {
   assert(current_instruction().ingredients.at(1).initialized);

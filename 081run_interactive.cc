@@ -3,7 +3,7 @@
 :(before "End Primitive Recipe Declarations")
 RUN_INTERACTIVE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["run-interactive"] = RUN_INTERACTIVE;
+Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
 //? cerr << "run-interactive: " << RUN_INTERACTIVE << '\n'; //? 1
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
@@ -35,8 +35,8 @@ void run_interactive(long long int address) {
   }
 //?   cerr << size << ' ' << Memory[address+size] << '\n'; //? 1
   assert(Memory[address+size] == 10);  // skip the newline
-  if (Recipe_number.find("interactive") == Recipe_number.end())
-    Recipe_number["interactive"] = Next_recipe_number++;
+  if (Recipe_ordinal.find("interactive") == Recipe_ordinal.end())
+    Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
   string command = trim(strip_comments(tmp.str()));
   if (command.empty()) {
     ++current_step_index();
@@ -48,8 +48,8 @@ void run_interactive(long long int address) {
     return;
   }
 //?   exit(0); //? 1
-  if (Name[Recipe_number["interactive"]].find(command) != Name[Recipe_number["interactive"]].end()) {
-    print_value_of_location_as_response(Name[Recipe_number["interactive"]][command]);
+  if (Name[Recipe_ordinal["interactive"]].find(command) != Name[Recipe_ordinal["interactive"]].end()) {
+    print_value_of_location_as_response(Name[Recipe_ordinal["interactive"]][command]);
     ++current_step_index();
     return;
   }
@@ -57,15 +57,15 @@ void run_interactive(long long int address) {
 //?   cerr << command; //? 1
 //?   exit(0); //? 1
 //?   cerr << "AAA 1\n"; //? 1
-  Recipe.erase(Recipe_number["interactive"]);
+  Recipe.erase(Recipe_ordinal["interactive"]);
   // call run(string) but without the scheduling
 //?   cerr << ("recipe interactive [\n"+command+"\n]\n"); //? 1
   load("recipe interactive [\n"+command+"\n]\n");
   transform_all();
-//?   cerr << "names: " << Name[Recipe_number["interactive"]].size() << "; "; //? 1
-//?   cerr << "steps: " << Recipe[Recipe_number["interactive"]].steps.size() << "; "; //? 1
-//?   cerr << "interactive transformed_until: " << Recipe[Recipe_number["interactive"]].transformed_until << '\n'; //? 1
-  Current_routine->calls.push_front(call(Recipe_number["interactive"]));
+//?   cerr << "names: " << Name[Recipe_ordinal["interactive"]].size() << "; "; //? 1
+//?   cerr << "steps: " << Recipe[Recipe_ordinal["interactive"]].steps.size() << "; "; //? 1
+//?   cerr << "interactive transformed_until: " << Recipe[Recipe_ordinal["interactive"]].transformed_until << '\n'; //? 1
+  Current_routine->calls.push_front(call(Recipe_ordinal["interactive"]));
 }
 
 string strip_comments(string in) {
@@ -114,7 +114,7 @@ void print_value_of_location_as_response(long long int address) {
 :(before "End Primitive Recipe Declarations")
 _RUN_DEPTH,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$run-depth"] = _RUN_DEPTH;
+Recipe_ordinal["$run-depth"] = _RUN_DEPTH;
 :(before "End Primitive Recipe Implementations")
 case _RUN_DEPTH: {
   cerr << Current_routine->calls.size();

@@ -11,13 +11,13 @@ recipe main [
 -mem: storing 0 in location 1
 
 :(before "End Mu Types Initialization")
-Type_number["label"] = 0;
+Type_ordinal["label"] = 0;
 
 :(after "int main")
   Transform.push_back(transform_labels);
 
 :(code)
-void transform_labels(const recipe_number r) {
+void transform_labels(const recipe_ordinal r) {
   map<string, long long int> offset;
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     const instruction& inst = Recipe[r].steps.at(i);
@@ -25,19 +25,19 @@ void transform_labels(const recipe_number r) {
   }
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
-    if (inst.operation == Recipe_number["jump"]) {
+    if (inst.operation == Recipe_ordinal["jump"]) {
 //?       cerr << inst.to_string() << '\n'; //? 1
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
-    if (inst.operation == Recipe_number["jump-if"] || inst.operation == Recipe_number["jump-unless"]) {
+    if (inst.operation == Recipe_ordinal["jump-if"] || inst.operation == Recipe_ordinal["jump-unless"]) {
       replace_offset(inst.ingredients.at(1), offset, i, r);
     }
-    if ((inst.operation == Recipe_number["loop"] || inst.operation == Recipe_number["break"])
+    if ((inst.operation == Recipe_ordinal["loop"] || inst.operation == Recipe_ordinal["break"])
         && SIZE(inst.ingredients) == 1) {
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
-    if ((inst.operation == Recipe_number["loop-if"] || inst.operation == Recipe_number["loop-unless"]
-            || inst.operation == Recipe_number["break-if"] || inst.operation == Recipe_number["break-unless"])
+    if ((inst.operation == Recipe_ordinal["loop-if"] || inst.operation == Recipe_ordinal["loop-unless"]
+            || inst.operation == Recipe_ordinal["break-if"] || inst.operation == Recipe_ordinal["break-unless"])
         && SIZE(inst.ingredients) == 2) {
       replace_offset(inst.ingredients.at(1), offset, i, r);
     }
@@ -45,7 +45,7 @@ void transform_labels(const recipe_number r) {
 }
 
 :(code)
-void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, const long long int current_offset, const recipe_number r) {
+void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, const long long int current_offset, const recipe_ordinal r) {
 //?   cerr << "AAA " << x.to_string() << '\n'; //? 1
   assert(is_literal(x));
 //?   cerr << "BBB " << x.to_string() << '\n'; //? 1

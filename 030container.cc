@@ -2,11 +2,11 @@
 
 :(before "End Mu Types Initialization")
 //: We'll use this container as a running example, with two number elements.
-type_number point = Type_number["point"] = Next_type_number++;
+type_ordinal point = Type_ordinal["point"] = Next_type_ordinal++;
 Type[point].size = 2;
 Type[point].kind = container;
 Type[point].name = "point";
-vector<type_number> i;
+vector<type_ordinal> i;
 i.push_back(number);
 Type[point].elements.push_back(i);
 Type[point].elements.push_back(i);
@@ -29,14 +29,14 @@ recipe main [
 :(before "End Mu Types Initialization")
 // A more complex container, containing another container as one of its
 // elements.
-type_number point_number = Type_number["point-number"] = Next_type_number++;
+type_ordinal point_number = Type_ordinal["point-number"] = Next_type_ordinal++;
 Type[point_number].size = 2;
 Type[point_number].kind = container;
 Type[point_number].name = "point-number";
-vector<type_number> p2;
+vector<type_ordinal> p2;
 p2.push_back(point);
 Type[point_number].elements.push_back(p2);
-vector<type_number> i2;
+vector<type_ordinal> i2;
 i2.push_back(number);
 Type[point_number].elements.push_back(i2);
 
@@ -101,12 +101,12 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 GET,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["get"] = GET;
+Recipe_ordinal["get"] = GET;
 :(before "End Primitive Recipe Implementations")
 case GET: {
   reagent base = current_instruction().ingredients.at(0);
   long long int base_address = base.value;
-  type_number base_type = base.types.at(0);
+  type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != container)
     raise << "'get' on a non-container in " << current_recipe_name () << ": " << current_instruction().to_string() << '\n' << die();
   assert(is_literal(current_instruction().ingredients.at(1)));
@@ -119,7 +119,7 @@ case GET: {
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src;
   assert(Type[base_type].kind == container);
   assert(SIZE(Type[base_type].elements) > offset);
-  type_number src_type = Type[base_type].elements.at(offset).at(0);
+  type_ordinal src_type = Type[base_type].elements.at(offset).at(0);
   trace(Primitive_recipe_depth, "run") << "its type is " << Type[src_type].name;
   reagent tmp;
   tmp.set_value(src);
@@ -150,12 +150,12 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 GET_ADDRESS,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["get-address"] = GET_ADDRESS;
+Recipe_ordinal["get-address"] = GET_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case GET_ADDRESS: {
   reagent base = current_instruction().ingredients.at(0);
   long long int base_address = base.value;
-  type_number base_type = base.types.at(0);
+  type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != container)
     raise << "'get' on a non-container in " << current_recipe_name () << ": " << current_instruction().to_string() << '\n' << die();
   assert(is_literal(current_instruction().ingredients.at(1)));
@@ -215,16 +215,16 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   string name = next_word(in);
   trace("parse") << "reading " << command << ' ' << name;
 //?   cout << name << '\n'; //? 2
-//?   if (Type_number.find(name) != Type_number.end()) //? 1
-//?     cerr << Type_number[name] << '\n'; //? 1
-  if (Type_number.find(name) == Type_number.end()
-      || Type_number[name] == 0) {
-    Type_number[name] = Next_type_number++;
+//?   if (Type_ordinal.find(name) != Type_ordinal.end()) //? 1
+//?     cerr << Type_ordinal[name] << '\n'; //? 1
+  if (Type_ordinal.find(name) == Type_ordinal.end()
+      || Type_ordinal[name] == 0) {
+    Type_ordinal[name] = Next_type_ordinal++;
   }
-  trace("parse") << "type number: " << Type_number[name];
+  trace("parse") << "type number: " << Type_ordinal[name];
   skip_bracket(in, "'container' must begin with '['");
-  type_info& t = Type[Type_number[name]];
-  recently_added_types.push_back(Type_number[name]);
+  type_info& t = Type[Type_ordinal[name]];
+  recently_added_types.push_back(Type_ordinal[name]);
   t.name = name;
   t.kind = kind;
   while (!in.eof()) {
@@ -234,14 +234,14 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     istringstream inner(element);
     t.element_names.push_back(slurp_until(inner, ':'));
     trace("parse") << "  element name: " << t.element_names.back();
-    vector<type_number> types;
+    vector<type_ordinal> types;
     while (!inner.eof()) {
       string type_name = slurp_until(inner, ':');
-      if (Type_number.find(type_name) == Type_number.end()) {
-//?         cerr << type_name << " is " << Next_type_number << '\n'; //? 1
-        Type_number[type_name] = Next_type_number++;
+      if (Type_ordinal.find(type_name) == Type_ordinal.end()) {
+//?         cerr << type_name << " is " << Next_type_ordinal << '\n'; //? 1
+        Type_ordinal[type_name] = Next_type_ordinal++;
       }
-      types.push_back(Type_number[type_name]);
+      types.push_back(Type_ordinal[type_name]);
       trace("parse") << "  type: " << types.back();
     }
     t.elements.push_back(types);
@@ -252,38 +252,38 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
 
 //: ensure types created in one scenario don't leak outside it.
 :(before "End Globals")
-vector<type_number> recently_added_types;
+vector<type_ordinal> recently_added_types;
 :(before "End load_permanently")  //: for non-tests
 recently_added_types.clear();
 :(before "End Setup")  //: for tests
 for (long long int i = 0; i < SIZE(recently_added_types); ++i) {
 //?   cout << "erasing " << Type[recently_added_types.at(i)].name << '\n'; //? 1
-  Type_number.erase(Type[recently_added_types.at(i)].name);
+  Type_ordinal.erase(Type[recently_added_types.at(i)].name);
   Type.erase(recently_added_types.at(i));
 }
 recently_added_types.clear();
 // delete recent type references
-// can't rely on recently_added_types to cleanup Type_number, because of deliberately misbehaving tests with references to undefined types
-map<string, type_number>::iterator p = Type_number.begin();
-while(p != Type_number.end()) {
+// can't rely on recently_added_types to cleanup Type_ordinal, because of deliberately misbehaving tests with references to undefined types
+map<string, type_ordinal>::iterator p = Type_ordinal.begin();
+while(p != Type_ordinal.end()) {
   // save current item
   string name = p->first;
-  type_number t = p->second;
+  type_ordinal t = p->second;
   // increment iterator
   ++p;
   // now delete current item if necessary
   if (t >= 1000) {
 //?     cerr << "AAA " << name << " " << t << '\n'; //? 1
-    Type_number.erase(name);
+    Type_ordinal.erase(name);
   }
 }
 //: lastly, ensure scenarios are consistent by always starting them at the
 //: same type number.
-Next_type_number = 1000;
+Next_type_ordinal = 1000;
 :(before "End Test Run Initialization")
-assert(Next_type_number < 1000);
+assert(Next_type_ordinal < 1000);
 :(before "End Setup")
-Next_type_number = 1000;
+Next_type_ordinal = 1000;
 
 //:: Allow container definitions anywhere in the codebase, but warn if you
 //:: can't find a definition.
@@ -314,7 +314,7 @@ $warn: 0
   Transform.push_back(check_invalid_types);
 
 :(code)
-void check_invalid_types(const recipe_number r) {
+void check_invalid_types(const recipe_ordinal r) {
   for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
     const instruction& inst = Recipe[r].steps.at(index);
     for (long long int i = 0; i < SIZE(inst.ingredients); ++i) {
@@ -359,7 +359,7 @@ check_container_field_types();
 
 :(code)
 void check_container_field_types() {
-  for (map<type_number, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
+  for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
     const type_info& info = p->second;
 //?     cerr << "checking " << p->first << '\n'; //? 1
     for (long long int i = 0; i < SIZE(info.elements); ++i) {
@@ -377,7 +377,7 @@ void check_container_field_types() {
 :(before "End Primitive Recipe Declarations")
 MERGE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["merge"] = MERGE;
+Recipe_ordinal["merge"] = MERGE;
 :(before "End Primitive Recipe Implementations")
 case MERGE: {
   products.resize(1);

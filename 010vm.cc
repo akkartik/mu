@@ -1,10 +1,10 @@
 :(after "Types")
 // A program is a book of 'recipes' (functions)
-typedef long long int recipe_number;
+typedef long long int recipe_ordinal;
 :(before "End Globals")
-map<string, recipe_number> Recipe_number;
-map<recipe_number, recipe> Recipe;
-recipe_number Next_recipe_number = 1;
+map<string, recipe_ordinal> Recipe_ordinal;
+map<recipe_ordinal, recipe> Recipe;
+recipe_ordinal Next_recipe_ordinal = 1;
 
 :(before "End Types")
 // Recipes are lists of instructions. To run a recipe, the computer runs its
@@ -25,7 +25,7 @@ struct instruction {
   bool is_label;
   string label;  // only if is_label
   string name;  // only if !is_label
-  recipe_number operation;  // Recipe_number[name]
+  recipe_ordinal operation;  // Recipe_ordinal[name]
   vector<reagent> ingredients;  // only if !is_label
   vector<reagent> products;  // only if !is_label
   instruction();
@@ -44,7 +44,7 @@ struct reagent {
   string name;
   double value;
   bool initialized;
-  vector<type_number> types;
+  vector<type_ordinal> types;
   reagent(string s);
   reagent();
   void set_value(double v) { value = v; initialized = true; }
@@ -71,29 +71,29 @@ Memory.clear();
 // Unlike most computers today, mu stores types in a single big table, shared
 // by all the mu programs on the computer. This is useful in providing a
 // seamless experience to help understand arbitrary mu programs.
-typedef long long int type_number;
+typedef long long int type_ordinal;
 :(before "End Globals")
-map<string, type_number> Type_number;
-map<type_number, type_info> Type;
-type_number Next_type_number = 1;
+map<string, type_ordinal> Type_ordinal;
+map<type_ordinal, type_info> Type;
+type_ordinal Next_type_ordinal = 1;
 :(code)
 void setup_types() {
-  Type.clear();  Type_number.clear();
-  Type_number["literal"] = 0;
-  Next_type_number = 1;
+  Type.clear();  Type_ordinal.clear();
+  Type_ordinal["literal"] = 0;
+  Next_type_ordinal = 1;
   // Mu Types Initialization
-  type_number number = Type_number["number"] = Next_type_number++;
-  Type_number["location"] = Type_number["number"];  // wildcard type: either a pointer or a scalar
+  type_ordinal number = Type_ordinal["number"] = Next_type_ordinal++;
+  Type_ordinal["location"] = Type_ordinal["number"];  // wildcard type: either a pointer or a scalar
   Type[number].name = "number";
-  type_number address = Type_number["address"] = Next_type_number++;
+  type_ordinal address = Type_ordinal["address"] = Next_type_ordinal++;
   Type[address].name = "address";
-  type_number boolean = Type_number["boolean"] = Next_type_number++;
+  type_ordinal boolean = Type_ordinal["boolean"] = Next_type_ordinal++;
   Type[boolean].name = "boolean";
-  type_number character = Type_number["character"] = Next_type_number++;
+  type_ordinal character = Type_ordinal["character"] = Next_type_ordinal++;
   Type[character].name = "character";
   // Array types are a special modifier to any other type. For example,
   // array:number or array:address:boolean.
-  type_number array = Type_number["array"] = Next_type_number++;
+  type_ordinal array = Type_ordinal["array"] = Next_type_ordinal++;
   Type[array].name = "array";
   // End Mu Types Initialization
 }
@@ -121,7 +121,7 @@ struct type_info {
   string name;
   kind_of_type kind;
   long long int size;  // only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)
-  vector<vector<type_number> > elements;
+  vector<vector<type_ordinal> > elements;
   vector<string> element_names;
   // End type_info Fields
   type_info() :kind(primitive), size(0) {}
@@ -139,10 +139,10 @@ enum primitive_recipes {
 //: recipes there are only codes, no entries in the book, because mu just knows
 //: what to do for them.
 void setup_recipes() {
-  Recipe.clear();  Recipe_number.clear();
-  Recipe_number["idle"] = IDLE;
+  Recipe.clear();  Recipe_ordinal.clear();
+  Recipe_ordinal["idle"] = IDLE;
   // Primitive Recipe Numbers
-  Recipe_number["copy"] = COPY;
+  Recipe_ordinal["copy"] = COPY;
   // End Primitive Recipe Numbers
 }
 //: We could just reset the recipe table after every test, but that gets slow
@@ -152,12 +152,12 @@ void setup_recipes() {
 :(before "End One-time Setup")
 setup_recipes();
 assert(MAX_PRIMITIVE_RECIPES < 100);  // level 0 is primitives; until 99
-Next_recipe_number = 100;
+Next_recipe_ordinal = 100;
 // End Load Recipes
 :(before "End Test Run Initialization")
-assert(Next_recipe_number < 1000);  // recipes being tested didn't overflow into test space
+assert(Next_recipe_ordinal < 1000);  // recipes being tested didn't overflow into test space
 :(before "End Setup")
-Next_recipe_number = 1000;  // consistent new numbers for each test
+Next_recipe_ordinal = 1000;  // consistent new numbers for each test
 
 
 
@@ -185,11 +185,11 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
   name = properties.at(0).first;
   for (long long int i = 0; i < SIZE(properties.at(0).second); ++i) {
     string type = properties.at(0).second.at(i);
-    if (Type_number.find(type) == Type_number.end()) {
-//?       cerr << type << " is " << Next_type_number << '\n'; //? 1
-      Type_number[type] = Next_type_number++;
+    if (Type_ordinal.find(type) == Type_ordinal.end()) {
+//?       cerr << type << " is " << Next_type_ordinal << '\n'; //? 1
+      Type_ordinal[type] = Next_type_ordinal++;
     }
-    types.push_back(Type_number[type]);
+    types.push_back(Type_ordinal[type]);
   }
   if (name == "_" && types.empty()) {
     types.push_back(0);

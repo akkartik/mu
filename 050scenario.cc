@@ -139,7 +139,7 @@ void run_mu_scenario(const scenario& s) {
     setup();
   }
   assert(Routines.empty());
-  vector<recipe_number> tmp = load("recipe "+s.name+" [ "+s.to_run+" ]");
+  vector<recipe_ordinal> tmp = load("recipe "+s.name+" [ "+s.to_run+" ]");
   bind_special_scenario_names(tmp.at(0));
   transform_all();
   run(tmp.front());
@@ -173,17 +173,17 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 RUN,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["run"] = RUN;
+Recipe_ordinal["run"] = RUN;
 :(before "End Primitive Recipe Implementations")
 case RUN: {
 //?   cout << "recipe " << current_instruction().ingredients.at(0).name << '\n'; //? 1
   ostringstream tmp;
-  tmp << "recipe run" << Next_recipe_number << " [ " << current_instruction().ingredients.at(0).name << " ]";
+  tmp << "recipe run" << Next_recipe_ordinal << " [ " << current_instruction().ingredients.at(0).name << " ]";
 //?   Show_rest_of_stream = true; //? 1
-  vector<recipe_number> tmp_recipe = load(tmp.str());
+  vector<recipe_ordinal> tmp_recipe = load(tmp.str());
   bind_special_scenario_names(tmp_recipe.at(0));
   transform_all();
-//?   cout << tmp_recipe.at(0) << ' ' << Recipe_number["main"] << '\n'; //? 1
+//?   cout << tmp_recipe.at(0) << ' ' << Recipe_ordinal["main"] << '\n'; //? 1
   Current_routine->calls.push_front(call(tmp_recipe.at(0)));
   continue;  // not done with caller; don't increment current_step_index()
 }
@@ -191,7 +191,7 @@ case RUN: {
 // Some variables for fake resources always get special addresses in
 // scenarios.
 :(code)
-void bind_special_scenario_names(recipe_number r) {
+void bind_special_scenario_names(recipe_ordinal r) {
   // Special Scenario Variable Names(r)
   // End Special Scenario Variable Names(r)
 }
@@ -224,7 +224,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 MEMORY_SHOULD_CONTAIN,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["memory-should-contain"] = MEMORY_SHOULD_CONTAIN;
+Recipe_ordinal["memory-should-contain"] = MEMORY_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case MEMORY_SHOULD_CONTAIN: {
   if (!Passed) break;
@@ -387,7 +387,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_CONTAIN,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["trace-should-contain"] = TRACE_SHOULD_CONTAIN;
+Recipe_ordinal["trace-should-contain"] = TRACE_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case TRACE_SHOULD_CONTAIN: {
   if (!Passed) break;
@@ -479,7 +479,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_NOT_CONTAIN,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["trace-should-not-contain"] = TRACE_SHOULD_NOT_CONTAIN;
+Recipe_ordinal["trace-should-not-contain"] = TRACE_SHOULD_NOT_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case TRACE_SHOULD_NOT_CONTAIN: {
   if (!Passed) break;

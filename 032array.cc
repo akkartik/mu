@@ -39,9 +39,9 @@ recipe main [
 
 //: disable the size mismatch check since the destination array need not be initialized
 :(after "bool size_mismatch(const reagent& x, const vector<double>& data)")
-if (x.types.at(0) == Type_number["array"]) return false;
+if (x.types.at(0) == Type_ordinal["array"]) return false;
 :(after "long long int size_of(const reagent& r)")
-  if (r.types.at(0) == Type_number["array"]) {
+  if (r.types.at(0) == Type_ordinal["array"]) {
     assert(SIZE(r.types) > 1);
     // skip the 'array' type to get at the element type
     return 1 + Memory[r.value]*size_of(array_element(r.types));
@@ -73,18 +73,18 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 INDEX,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["index"] = INDEX;
+Recipe_ordinal["index"] = INDEX;
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
 //?   if (Trace_stream) Trace_stream->dump_layer = "run"; //? 1
   reagent base = canonize(current_instruction().ingredients.at(0));
 //?   trace(Primitive_recipe_depth, "run") << "ingredient 0 after canonize: " << base.to_string(); //? 1
   long long int base_address = base.value;
-  assert(base.types.at(0) == Type_number["array"]);
+  assert(base.types.at(0) == Type_ordinal["array"]);
   reagent offset = canonize(current_instruction().ingredients.at(1));
 //?   trace(Primitive_recipe_depth, "run") << "ingredient 1 after canonize: " << offset.to_string(); //? 1
   vector<double> offset_val(read_memory(offset));
-  vector<type_number> element_type = array_element(base.types);
+  vector<type_ordinal> element_type = array_element(base.types);
 //?   trace(Primitive_recipe_depth, "run") << "offset: " << offset_val.at(0); //? 1
 //?   trace(Primitive_recipe_depth, "run") << "size of elements: " << size_of(element_type); //? 1
   long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
@@ -98,8 +98,8 @@ case INDEX: {
 }
 
 :(code)
-vector<type_number> array_element(const vector<type_number>& types) {
-  return vector<type_number>(++types.begin(), types.end());
+vector<type_ordinal> array_element(const vector<type_ordinal>& types) {
+  return vector<type_ordinal>(++types.begin(), types.end());
 }
 
 :(scenario index_address)
@@ -128,15 +128,15 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 INDEX_ADDRESS,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["index-address"] = INDEX_ADDRESS;
+Recipe_ordinal["index-address"] = INDEX_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
-  assert(base.types.at(0) == Type_number["array"]);
+  assert(base.types.at(0) == Type_ordinal["array"]);
   reagent offset = canonize(current_instruction().ingredients.at(1));
   vector<double> offset_val(read_memory(offset));
-  vector<type_number> element_type = array_element(base.types);
+  vector<type_ordinal> element_type = array_element(base.types);
   long long int result = base_address + 1 + offset_val.at(0)*size_of(element_type);
   products.resize(1);
   products.at(0).push_back(result);
@@ -158,11 +158,11 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 LENGTH,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["length"] = LENGTH;
+Recipe_ordinal["length"] = LENGTH;
 :(before "End Primitive Recipe Implementations")
 case LENGTH: {
   reagent x = canonize(current_instruction().ingredients.at(0));
-  if (x.types.at(0) != Type_number["array"]) {
+  if (x.types.at(0) != Type_ordinal["array"]) {
     raise << "tried to calculate length of non-array " << x.to_string() << '\n';
     break;
   }

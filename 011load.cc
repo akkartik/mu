@@ -10,15 +10,15 @@ recipe main [
 +parse:   product: {name: "1", properties: ["1": "number"]}
 
 :(code)
-vector<recipe_number> load(string form) {
+vector<recipe_ordinal> load(string form) {
   istringstream in(form);
   in >> std::noskipws;
   return load(in);
 }
 
-vector<recipe_number> load(istream& in) {
+vector<recipe_ordinal> load(istream& in) {
   in >> std::noskipws;
-  vector<recipe_number> result;
+  vector<recipe_ordinal> result;
   while (!in.eof()) {
 //?     cerr << "===\n"; //? 1
     skip_whitespace_and_comments(in);
@@ -30,20 +30,20 @@ vector<recipe_number> load(istream& in) {
 //?       cerr << "recipe: " << recipe_name << '\n'; //? 1
       if (recipe_name.empty())
         raise << "empty recipe name\n";
-      if (Recipe_number.find(recipe_name) == Recipe_number.end()) {
-        Recipe_number[recipe_name] = Next_recipe_number++;
+      if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
+        Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
       }
-      if (Recipe.find(Recipe_number[recipe_name]) != Recipe.end()) {
-        raise << "redefining recipe " << Recipe[Recipe_number[recipe_name]].name << "\n";
-        Recipe.erase(Recipe_number[recipe_name]);
+      if (Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
+        raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n";
+        Recipe.erase(Recipe_ordinal[recipe_name]);
       }
       // todo: save user-defined recipes to mu's memory
-      Recipe[Recipe_number[recipe_name]] = slurp_recipe(in);
-//?       cerr << Recipe_number[recipe_name] << ": " << recipe_name << '\n'; //? 1
-      Recipe[Recipe_number[recipe_name]].name = recipe_name;
+      Recipe[Recipe_ordinal[recipe_name]] = slurp_recipe(in);
+//?       cerr << Recipe_ordinal[recipe_name] << ": " << recipe_name << '\n'; //? 1
+      Recipe[Recipe_ordinal[recipe_name]].name = recipe_name;
       // track added recipes because we may need to undo them in tests; see below
-      recently_added_recipes.push_back(Recipe_number[recipe_name]);
-      result.push_back(Recipe_number[recipe_name]);
+      recently_added_recipes.push_back(Recipe_ordinal[recipe_name]);
+      result.push_back(Recipe_ordinal[recipe_name]);
     }
     // End Command Handlers
     else {
@@ -116,14 +116,14 @@ bool next_instruction(istream& in, instruction* curr) {
   if (p == words.end())
     raise << "instruction prematurely ended with '<-'\n" << die();
   curr->name = *p;
-  if (Recipe_number.find(*p) == Recipe_number.end()) {
-    Recipe_number[*p] = Next_recipe_number++;
-//?     cout << "AAA: " << *p << " is now " << Recipe_number[*p] << '\n'; //? 1
+  if (Recipe_ordinal.find(*p) == Recipe_ordinal.end()) {
+    Recipe_ordinal[*p] = Next_recipe_ordinal++;
+//?     cout << "AAA: " << *p << " is now " << Recipe_ordinal[*p] << '\n'; //? 1
   }
-  if (Recipe_number[*p] == 0) {
+  if (Recipe_ordinal[*p] == 0) {
     raise << "Recipe " << *p << " has number 0, which is reserved for IDLE.\n" << die();
   }
-  curr->operation = Recipe_number[*p];  ++p;
+  curr->operation = Recipe_ordinal[*p];  ++p;
 
   for (; p != words.end(); ++p) {
     if (*p == ",") continue;
@@ -214,11 +214,11 @@ void show_rest_of_stream(istream& in) {
 
 //: Have tests clean up any recipes they added.
 :(before "End Globals")
-vector<recipe_number> recently_added_recipes;
+vector<recipe_ordinal> recently_added_recipes;
 :(before "End Setup")
 for (long long int i = 0; i < SIZE(recently_added_recipes); ++i) {
 //?   cout << "AAA clearing " << Recipe[recently_added_recipes.at(i)].name << '\n'; //? 2
-  Recipe_number.erase(Recipe[recently_added_recipes.at(i)].name);
+  Recipe_ordinal.erase(Recipe[recently_added_recipes.at(i)].name);
   Recipe.erase(recently_added_recipes.at(i));
 }
 // Clear Other State For recently_added_recipes

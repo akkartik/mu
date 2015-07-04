@@ -14,13 +14,13 @@ Continuation.clear();
 Next_continuation_id = 0;
 
 :(before "End Mu Types Initialization")
-type_number continuation = Type_number["continuation"] = Next_type_number++;
+type_ordinal continuation = Type_ordinal["continuation"] = Next_type_ordinal++;
 Type[continuation].name = "continuation";
 
 :(before "End Primitive Recipe Declarations")
 CURRENT_CONTINUATION,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["current-continuation"] = CURRENT_CONTINUATION;
+Recipe_ordinal["current-continuation"] = CURRENT_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
 case CURRENT_CONTINUATION: {
   // copy the current call stack
@@ -37,7 +37,7 @@ case CURRENT_CONTINUATION: {
 :(before "End Primitive Recipe Declarations")
 CONTINUE_FROM,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["continue-from"] = CONTINUE_FROM;
+Recipe_ordinal["continue-from"] = CONTINUE_FROM;
 :(before "End Primitive Recipe Implementations")
 case CONTINUE_FROM: {
   assert(scalar(ingredients.at(0)));
@@ -165,11 +165,11 @@ is_reset = false;
 :(before "End Primitive Recipe Declarations")
 CREATE_DELIMITED_CONTINUATION,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["create-delimited-continuation"] = CREATE_DELIMITED_CONTINUATION;
+Recipe_ordinal["create-delimited-continuation"] = CREATE_DELIMITED_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
 case CREATE_DELIMITED_CONTINUATION: {
   Current_routine->calls.front().is_reset = true;
-  Current_routine->calls.push_front(call(Recipe_number[current_instruction().ingredients.at(0).name]));
+  Current_routine->calls.push_front(call(Recipe_ordinal[current_instruction().ingredients.at(0).name]));
   ingredients.erase(ingredients.begin());  // drop the callee
   goto complete_call;
 }
@@ -187,7 +187,7 @@ Next_delimited_continuation_id = 0;
 :(before "End Primitive Recipe Declarations")
 REPLY_DELIMITED_CONTINUATION,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["reply-delimited-continuation"] = REPLY_DELIMITED_CONTINUATION;
+Recipe_ordinal["reply-delimited-continuation"] = REPLY_DELIMITED_CONTINUATION;
 :(before "End Primitive Recipe Implementations")
 case REPLY_DELIMITED_CONTINUATION: {
   // first clear any existing ingredients, to isolate the creation of the

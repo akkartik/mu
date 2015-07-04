@@ -43,7 +43,7 @@ if (s == "console") return true;
 :(before "End Primitive Recipe Declarations")
 ASSUME_CONSOLE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["assume-console"] = ASSUME_CONSOLE;
+Recipe_ordinal["assume-console"] = ASSUME_CONSOLE;
 :(before "End Primitive Recipe Implementations")
 case ASSUME_CONSOLE: {
 //?   cerr << "aaa: " << current_instruction().ingredients.at(0).name << '\n'; //? 2
@@ -162,7 +162,7 @@ scenario events-in-scenario [
 :(before "End Primitive Recipe Declarations")
 REPLACE_IN_CONSOLE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["replace-in-console"] = REPLACE_IN_CONSOLE;
+Recipe_ordinal["replace-in-console"] = REPLACE_IN_CONSOLE;
 :(before "End Primitive Recipe Implementations")
 case REPLACE_IN_CONSOLE: {
   assert(scalar(ingredients.at(0)));
@@ -203,8 +203,8 @@ long long int size_of_event() {
   // memoize result if already computed
   static long long int result = 0;
   if (result) return result;
-  vector<type_number> type;
-  type.push_back(Type_number["event"]);
+  vector<type_ordinal> type;
+  type.push_back(Type_ordinal["event"]);
   result = size_of(type);
   return result;
 }
@@ -213,9 +213,9 @@ long long int size_of_events() {
   // memoize result if already computed
   static long long int result = 0;
   if (result) return result;
-  vector<type_number> type;
-  assert(Type_number["console"]);
-  type.push_back(Type_number["console"]);
+  vector<type_ordinal> type;
+  assert(Type_ordinal["console"]);
+  type.push_back(Type_ordinal["console"]);
   result = size_of(type);
   return result;
 }

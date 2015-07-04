@@ -3,7 +3,7 @@
 :(before "End Primitive Recipe Declarations")
 EQUAL,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["equal"] = EQUAL;
+Recipe_ordinal["equal"] = EQUAL;
 :(before "End Primitive Recipe Implementations")
 case EQUAL: {
   vector<double>& exemplar = ingredients.at(0);
@@ -54,7 +54,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 GREATER_THAN,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["greater-than"] = GREATER_THAN;
+Recipe_ordinal["greater-than"] = GREATER_THAN;
 :(before "End Primitive Recipe Implementations")
 case GREATER_THAN: {
   bool result = true;
@@ -102,7 +102,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 LESSER_THAN,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["lesser-than"] = LESSER_THAN;
+Recipe_ordinal["lesser-than"] = LESSER_THAN;
 :(before "End Primitive Recipe Implementations")
 case LESSER_THAN: {
   bool result = true;
@@ -150,7 +150,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 GREATER_OR_EQUAL,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["greater-or-equal"] = GREATER_OR_EQUAL;
+Recipe_ordinal["greater-or-equal"] = GREATER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case GREATER_OR_EQUAL: {
   bool result = true;
@@ -206,7 +206,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 LESSER_OR_EQUAL,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["lesser-or-equal"] = LESSER_OR_EQUAL;
+Recipe_ordinal["lesser-or-equal"] = LESSER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case LESSER_OR_EQUAL: {
   bool result = true;

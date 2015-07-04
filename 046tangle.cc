@@ -44,7 +44,7 @@ else if (command == "after") {
   Transform.push_back(insert_fragments);
 
 :(code)
-void insert_fragments(const recipe_number r) {
+void insert_fragments(const recipe_ordinal r) {
   // Copy into a new vector because insertions invalidate iterators.
   // But this way we can't insert into labels created inside before/after.
   vector<instruction> result;

@@ -143,21 +143,21 @@ Name[r]["screen"] = SCREEN;
 // `screen:address <- new-fake-screen width, height`
 //? cout << "before: " << curr.to_string() << '\n'; //? 1
 if (curr.name == "assume-screen") {
-  curr.operation = Recipe_number["new-fake-screen"];
+  curr.operation = Recipe_ordinal["new-fake-screen"];
   curr.name = "new-fake-screen";
   assert(curr.operation);
   assert(curr.products.empty());
   curr.products.push_back(reagent("screen:address"));
   curr.products.at(0).set_value(SCREEN);
 //? cout << "after: " << curr.to_string() << '\n'; //? 1
-//? cout << "AAA " << Recipe_number["new-fake-screen"] << '\n'; //? 1
+//? cout << "AAA " << Recipe_ordinal["new-fake-screen"] << '\n'; //? 1
 }
 
 //: screen-should-contain is a regular instruction
 :(before "End Primitive Recipe Declarations")
 SCREEN_SHOULD_CONTAIN,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["screen-should-contain"] = SCREEN_SHOULD_CONTAIN;
+Recipe_ordinal["screen-should-contain"] = SCREEN_SHOULD_CONTAIN;
 :(before "End Primitive Recipe Implementations")
 case SCREEN_SHOULD_CONTAIN: {
   if (!Passed) break;
@@ -168,7 +168,7 @@ case SCREEN_SHOULD_CONTAIN: {
 :(before "End Primitive Recipe Declarations")
 SCREEN_SHOULD_CONTAIN_IN_COLOR,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["screen-should-contain-in-color"] = SCREEN_SHOULD_CONTAIN_IN_COLOR;
+Recipe_ordinal["screen-should-contain-in-color"] = SCREEN_SHOULD_CONTAIN_IN_COLOR;
 :(before "End Primitive Recipe Implementations")
 case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
   if (!Passed) break;
@@ -196,13 +196,13 @@ void check_screen(const string& expected_contents, const int color) {
 //?   cerr << "Checking screen for color " << color << "\n"; //? 2
   assert(!Current_routine->calls.front().default_space);  // not supported
   long long int screen_location = Memory[SCREEN];
-  int data_offset = find_element_name(Type_number["screen"], "data");
+  int data_offset = find_element_name(Type_ordinal["screen"], "data");
   assert(data_offset >= 0);
   long long int screen_data_location = screen_location+data_offset;  // type: address:array:character
   long long int screen_data_start = Memory[screen_data_location];  // type: array:character
-  int width_offset = find_element_name(Type_number["screen"], "num-columns");
+  int width_offset = find_element_name(Type_ordinal["screen"], "num-columns");
   long long int screen_width = Memory[screen_location+width_offset];
-  int height_offset = find_element_name(Type_number["screen"], "num-rows");
+  int height_offset = find_element_name(Type_ordinal["screen"], "num-rows");
   long long int screen_height = Memory[screen_location+height_offset];
   raw_string_stream cursor(expected_contents);
   // todo: too-long expected_contents should fail
@@ -319,7 +319,7 @@ void raw_string_stream::skip_whitespace_and_comments() {
 :(before "End Primitive Recipe Declarations")
 _DUMP_SCREEN,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$dump-screen"] = _DUMP_SCREEN;
+Recipe_ordinal["$dump-screen"] = _DUMP_SCREEN;
 :(before "End Primitive Recipe Implementations")
 case _DUMP_SCREEN: {
   dump_screen();
@@ -330,11 +330,11 @@ case _DUMP_SCREEN: {
 void dump_screen() {
   assert(!Current_routine->calls.front().default_space);  // not supported
   long long int screen_location = Memory[SCREEN];
-  int width_offset = find_element_name(Type_number["screen"], "num-columns");
+  int width_offset = find_element_name(Type_ordinal["screen"], "num-columns");
   long long int screen_width = Memory[screen_location+width_offset];
-  int height_offset = find_element_name(Type_number["screen"], "num-rows");
+  int height_offset = find_element_name(Type_ordinal["screen"], "num-rows");
   long long int screen_height = Memory[screen_location+height_offset];
-  int data_offset = find_element_name(Type_number["screen"], "data");
+  int data_offset = find_element_name(Type_ordinal["screen"], "data");
   assert(data_offset >= 0);
   long long int screen_data_location = screen_location+data_offset;  // type: address:array:character
   long long int screen_data_start = Memory[screen_data_location];  // type: array:character

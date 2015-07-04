@@ -3,7 +3,7 @@
 :(before "End Primitive Recipe Declarations")
 ADD,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["add"] = ADD;
+Recipe_ordinal["add"] = ADD;
 :(before "End Primitive Recipe Implementations")
 case ADD: {
   double result = 0;
@@ -39,7 +39,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 SUBTRACT,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["subtract"] = SUBTRACT;
+Recipe_ordinal["subtract"] = SUBTRACT;
 :(before "End Primitive Recipe Implementations")
 case SUBTRACT: {
   assert(scalar(ingredients.at(0)));
@@ -76,7 +76,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 MULTIPLY,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["multiply"] = MULTIPLY;
+Recipe_ordinal["multiply"] = MULTIPLY;
 :(before "End Primitive Recipe Implementations")
 case MULTIPLY: {
   double result = 1;
@@ -112,7 +112,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 DIVIDE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["divide"] = DIVIDE;
+Recipe_ordinal["divide"] = DIVIDE;
 :(before "End Primitive Recipe Implementations")
 case DIVIDE: {
   assert(scalar(ingredients.at(0)));
@@ -151,7 +151,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 DIVIDE_WITH_REMAINDER,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["divide-with-remainder"] = DIVIDE_WITH_REMAINDER;
+Recipe_ordinal["divide-with-remainder"] = DIVIDE_WITH_REMAINDER;
 :(before "End Primitive Recipe Implementations")
 case DIVIDE_WITH_REMAINDER: {
   long long int quotient = ingredients.at(0).at(0) / ingredients.at(1).at(0);

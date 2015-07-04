@@ -3,7 +3,7 @@
 :(before "End Primitive Recipe Declarations")
 AND,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["and"] = AND;
+Recipe_ordinal["and"] = AND;
 :(before "End Primitive Recipe Implementations")
 case AND: {
   bool result = true;
@@ -45,7 +45,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 OR,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["or"] = OR;
+Recipe_ordinal["or"] = OR;
 :(before "End Primitive Recipe Implementations")
 case OR: {
   bool result = false;
@@ -87,7 +87,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 NOT,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["not"] = NOT;
+Recipe_ordinal["not"] = NOT;
 :(before "End Primitive Recipe Implementations")
 case NOT: {
   products.resize(ingredients.size());

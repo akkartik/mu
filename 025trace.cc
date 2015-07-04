@@ -9,7 +9,7 @@ recipe main [
 :(before "End Primitive Recipe Declarations")
 TRACE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["trace"] = TRACE;
+Recipe_ordinal["trace"] = TRACE;
 :(before "End Primitive Recipe Implementations")
 case TRACE: {
   assert(is_literal(current_instruction().ingredients.at(0)));
@@ -23,7 +23,7 @@ case TRACE: {
 :(before "End Primitive Recipe Declarations")
 HIDE_WARNINGS,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["hide-warnings"] = HIDE_WARNINGS;
+Recipe_ordinal["hide-warnings"] = HIDE_WARNINGS;
 :(before "End Primitive Recipe Implementations")
 case HIDE_WARNINGS: {
   Hide_warnings = true;

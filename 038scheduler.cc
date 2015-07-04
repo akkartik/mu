@@ -45,8 +45,8 @@ long long int Scheduling_interval = 500;
 :(before "End Setup")
 Scheduling_interval = 500;
 Routines.clear();
-:(replace{} "void run(recipe_number r)")
-void run(recipe_number r) {
+:(replace{} "void run(recipe_ordinal r)")
+void run(recipe_ordinal r) {
 //?   cerr << "AAA 4\n"; //? 1
   Routines.push_back(new routine(r));
 //?   cerr << "AAA " << Routines.size() << " routines\n"; //? 1
@@ -137,7 +137,7 @@ parent_index = -1;
 :(before "End Primitive Recipe Declarations")
 START_RUNNING,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["start-running"] = START_RUNNING;
+Recipe_ordinal["start-running"] = START_RUNNING;
 :(before "End Primitive Recipe Implementations")
 case START_RUNNING: {
   routine* new_routine = new routine(ingredients.at(0).at(0));
@@ -211,8 +211,8 @@ recipe f2 [
 //: this scenario will require some careful setup in escaped C++
 //: (straining our tangle capabilities to near-breaking point)
 :(scenario scheduler_skips_completed_routines)
-% recipe_number f1 = load("recipe f1 [\n1:number <- copy 0:literal\n]").front();
-% recipe_number f2 = load("recipe f2 [\n2:number <- copy 0:literal\n]").front();
+% recipe_ordinal f1 = load("recipe f1 [\n1:number <- copy 0:literal\n]").front();
+% recipe_ordinal f2 = load("recipe f2 [\n2:number <- copy 0:literal\n]").front();
 % Routines.push_back(new routine(f1));  // f1 meant to run
 % Routines.push_back(new routine(f2));
 % Routines.back()->state = COMPLETED;  // f2 not meant to run
@@ -301,7 +301,7 @@ recipe f2 [
 :(before "End Primitive Recipe Declarations")
 ROUTINE_STATE,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["routine-state"] = ROUTINE_STATE;
+Recipe_ordinal["routine-state"] = ROUTINE_STATE;
 :(before "End Primitive Recipe Implementations")
 case ROUTINE_STATE: {
   assert(scalar(ingredients.at(0)));
@@ -323,7 +323,7 @@ case ROUTINE_STATE: {
 :(before "End Primitive Recipe Declarations")
 RESTART,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["restart"] = RESTART;
+Recipe_ordinal["restart"] = RESTART;
 :(before "End Primitive Recipe Implementations")
 case RESTART: {
   assert(scalar(ingredients.at(0)));
@@ -340,7 +340,7 @@ case RESTART: {
 :(before "End Primitive Recipe Declarations")
 STOP,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["stop"] = STOP;
+Recipe_ordinal["stop"] = STOP;
 :(before "End Primitive Recipe Implementations")
 case STOP: {
   assert(scalar(ingredients.at(0)));
@@ -357,7 +357,7 @@ case STOP: {
 :(before "End Primitive Recipe Declarations")
 _DUMP_ROUTINES,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["$dump-routines"] = _DUMP_ROUTINES;
+Recipe_ordinal["$dump-routines"] = _DUMP_ROUTINES;
 :(before "End Primitive Recipe Implementations")
 case _DUMP_ROUTINES: {
   for (long long int i = 0; i < SIZE(Routines); ++i) {

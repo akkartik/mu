@@ -49,8 +49,8 @@ default_space = 0;
 reagent r = absolutize(x);
 :(code)
 reagent absolutize(reagent x) {
-//?   if (Recipe_number.find("increment-counter") != Recipe_number.end()) //? 1
-//?     cout << "AAA " << "increment-counter/2: " << Recipe[Recipe_number["increment-counter"]].steps.at(2).products.at(0).to_string() << '\n'; //? 1
+//?   if (Recipe_ordinal.find("increment-counter") != Recipe_ordinal.end()) //? 1
+//?     cout << "AAA " << "increment-counter/2: " << Recipe[Recipe_ordinal["increment-counter"]].steps.at(2).products.at(0).to_string() << '\n'; //? 1
 //?   cout << "absolutize " << x.to_string() << '\n'; //? 4
 //?   cout << is_raw(x) << '\n'; //? 1
   if (is_raw(x) || is_dummy(x)) return x;

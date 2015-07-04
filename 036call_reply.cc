@@ -15,7 +15,7 @@ recipe f [
 :(before "End Primitive Recipe Declarations")
 REPLY,
 :(before "End Primitive Recipe Numbers")
-Recipe_number["reply"] = REPLY;
+Recipe_ordinal["reply"] = REPLY;
 :(before "End Primitive Recipe Implementations")
 case REPLY: {
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
@@ -125,7 +125,7 @@ recipe test1 [
 //   ```
 if (curr.name == "reply-if") {
   assert(curr.products.empty());
-  curr.operation = Recipe_number["jump-unless"];
+  curr.operation = Recipe_ordinal["jump-unless"];
   curr.name = "jump-unless";
   vector<reagent> results;
   copy(++curr.ingredients.begin(), curr.ingredients.end(), inserter(results, results.end()));
@@ -133,7 +133,7 @@ if (curr.name == "reply-if") {
   curr.ingredients.push_back(reagent("1:offset"));
   result.steps.push_back(curr);
   curr.clear();
-  curr.operation = Recipe_number["reply"];
+  curr.operation = Recipe_ordinal["reply"];
   curr.name = "reply";
   curr.ingredients.swap(results);
 }
@@ -144,7 +144,7 @@ if (curr.name == "reply-if") {
 //   ```
 if (curr.name == "reply-unless") {
   assert(curr.products.empty());
-  curr.operation = Recipe_number["jump-if"];
+  curr.operation = Recipe_ordinal["jump-if"];
   curr.name = "jump-if";
   vector<reagent> results;
   copy(++curr.ingredients.begin(), curr.ingredients.end(), inserter(results, results.end()));
@@ -152,7 +152,7 @@ if (curr.name == "reply-unless") {
   curr.ingredients.push_back(reagent("1:offset"));
   result.steps.push_back(curr);
   curr.clear();
-  curr.operation = Recipe_number["reply"];
+  curr.operation = Recipe_ordinal["reply"];
   curr.name = "reply";
   curr.ingredients.swap(results);
 }
