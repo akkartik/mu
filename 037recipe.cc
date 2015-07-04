@@ -14,8 +14,8 @@ recipe f [
 
 :(scenario call_variable)
 recipe main [
-  1:recipe-code <- copy f:recipe
-  2:number <- call 1:recipe-code, 34:literal
+  1:recipe-number <- copy f:recipe
+  2:number <- call 1:recipe-number, 34:literal
 ]
 recipe f [
   3:number <- next-ingredient
@@ -26,8 +26,8 @@ recipe f [
 
 :(before "End Mu Types Initialization")
 Type_number["recipe"] = 0;
-type_number recipe_code = Type_number["recipe-code"] = Next_type_number++;
-Type[recipe_code].name = "recipe-code";
+type_number recipe_number = Type_number["recipe-number"] = Next_type_number++;
+Type[recipe_number].name = "recipe-number";
 
 :(before "End Reagent-parsing Exceptions")
 if (r.properties.at(0).second.at(0) == "recipe") {
