@@ -127,10 +127,6 @@ Next_routine_id = 1;
 id = Next_routine_id;
 Next_routine_id++;
 
-//: it needs a new type: 'recipe'
-:(before "End Mu Types Initialization")
-Type_number["recipe"] = 0;
-
 //: routines save the routine that spawned them
 :(before "End routine Fields")
 // todo: really should be routine_id, but that's less efficient.
@@ -144,9 +140,7 @@ START_RUNNING,
 Recipe_number["start-running"] = START_RUNNING;
 :(before "End Primitive Recipe Implementations")
 case START_RUNNING: {
-  assert(is_literal(current_instruction().ingredients.at(0)));
-  assert(!current_instruction().ingredients.at(0).initialized);
-  routine* new_routine = new routine(Recipe_number[current_instruction().ingredients.at(0).name]);
+  routine* new_routine = new routine(ingredients.at(0).at(0));
 //?   cerr << new_routine->id << " -> " << Current_routine->id << '\n'; //? 1
   new_routine->parent_index = Current_routine_index;
   // populate ingredients

@@ -76,6 +76,7 @@ void run_current_routine()
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
       case COPY: {
+//?         if (!ingredients.empty()) cerr << current_instruction().ingredients.at(0).to_string() << ' ' << ingredients.at(0).at(0) << '\n'; //? 1
         copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
         break;
       }
