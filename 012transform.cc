@@ -47,6 +47,7 @@ void parse_int_reagents() {
 
 void populate_value(reagent& r) {
   if (r.initialized) return;
+  // End Reagent-parsing Exceptions
   if (!is_integer(r.name)) return;
   r.set_value(to_integer(r.name));
 }
