@@ -1,14 +1,21 @@
-:(after "Types")
-// A program is a book of 'recipes' (functions)
-typedef long long int recipe_ordinal;
+//: A program is a book of 'recipes' (functions)
 :(before "End Globals")
-map<string, recipe_ordinal> Recipe_ordinal;
+//: Each recipe is stored at a specific page number, or ordinal.
 map<recipe_ordinal, recipe> Recipe;
+//: You can also refer to each recipe by its name.
+map<string, recipe_ordinal> Recipe_ordinal;
 recipe_ordinal Next_recipe_ordinal = 1;
 
+//: Ordinals are like numbers, except you can't do arithmetic on them. Ordinal
+//: 1 is not less than 2, it's just different. Phone numbers are ordinals;
+//: adding two phone numbers is meaningless. Here each recipe does something
+//: incommensurable with any other recipe.
+:(after "Types")
+typedef long long int recipe_ordinal;
+
 :(before "End Types")
-// Recipes are lists of instructions. To run a recipe, the computer runs its
-// instructions.
+// Recipes are lists of instructions. To perform or 'run' a recipe, the
+// computer runs its instructions.
 struct recipe {
   string name;
   vector<instruction> steps;
