@@ -25,10 +25,14 @@ recipe main [
   run-button:address:array:character <- new [  run (F9)  ]
   print-string 0:literal/screen, run-button:address:array:character, 255:literal/white, 161:literal/reddish
   # editor on the left
-  left:address:array:character <- new [abcde]
+  left:address:array:character <- new [recipe new-add [
+  x:number <- next-ingredient
+  y:number <- next-ingredient
+  z:number <- add x:number, y:number
+]]
   left-editor:address:editor-data <- new-editor left:address:array:character, 0:literal/screen, 1:literal/top, 0:literal/left, divider:number/right
   # editor on the right
-  right:address:array:character <- new [def]
+  right:address:array:character <- new [new-add 2:literal, 3:literal]
   new-left:number <- add divider:number, 1:literal
   new-right:number <- add new-left:number, 5:literal
   right-editor:address:editor-data <- new-editor right:address:array:character, 0:literal/screen, 1:literal/top, new-left:number, width:number
