@@ -14,8 +14,8 @@ recipe f [
 
 :(scenario call_variable)
 recipe main [
-  1:recipe-number <- copy f:recipe
-  2:number <- call 1:recipe-number, 34:literal
+  1:recipe-ordinal <- copy f:recipe
+  2:number <- call 1:recipe-ordinal, 34:literal
 ]
 recipe f [
   3:number <- next-ingredient
@@ -25,9 +25,11 @@ recipe f [
 #? ?
 
 :(before "End Mu Types Initialization")
+// 'recipe' is a literal
 Type_ordinal["recipe"] = 0;
-type_ordinal recipe_ordinal = Type_ordinal["recipe-number"] = Next_type_ordinal++;
-Type[recipe_ordinal].name = "recipe-number";
+// 'recipe-ordinal' is the literal that can store recipe literals
+type_ordinal recipe_ordinal = Type_ordinal["recipe-ordinal"] = Next_type_ordinal++;
+Type[recipe_ordinal].name = "recipe-ordinal";
 
 :(before "End Reagent-parsing Exceptions")
 if (r.properties.at(0).second.at(0) == "recipe") {
