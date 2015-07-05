@@ -5,6 +5,9 @@ recipe main [
   open-console
   width:number <- display-width
   height:number <- display-height
+  # draw menu
+#?   draw-horizontal 0:literal/screen, 0:literal, 0:literal/left, width:number, 95:literal/underscore
+  draw-horizontal 0:literal/screen, 0:literal, 0:literal/left, width:number, 32:literal/space, 0:literal/black, 238:literal/grey
   # draw a dotted line down the middle
   divider:number, _ <- divide-with-remainder width:number, 2:literal
   draw-vertical 0:literal/screen, divider:number, 1:literal/top, height:number, 9482:literal/vertical-dotted
@@ -19,8 +22,8 @@ recipe main [
   # nav bar
   button-start:number <- subtract width:number, 20:literal
   move-cursor 0:literal/screen, 0:literal/row, button-start:number/column
-  run-button:address:array:character <- new [run (F9)   ]
-  print-string-with-gradient-background 0:literal/screen, run-button:address:array:character, 7:literal/white, 196:literal/bright-red, 202:literal/bright-pink
+  run-button:address:array:character <- new [  run (F9)  ]
+  print-string 0:literal/screen, run-button:address:array:character, 255:literal/white, 161:literal/reddish
   # editor on the left
   left:address:array:character <- new [abcde]
   left-editor:address:editor-data <- new-editor left:address:array:character, 0:literal/screen, 1:literal/top, 0:literal/left, divider:number/right
@@ -1826,11 +1829,16 @@ recipe draw-horizontal [
     break-if color-found?:boolean
     color:number <- copy 245:literal/grey
   }
+  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  {
+    break-if bg-color-found?:boolean
+    bg-color:number <- copy 0:literal/black
+  }
   move-cursor screen:address, row:number, x:number
   {
     continue?:boolean <- lesser-than x:number, right:number
     break-unless continue?:boolean
-    print-character screen:address, style:character, color:number
+    print-character screen:address, style:character, color:number, bg-color:number
     x:number <- add x:number, 1:literal
     loop
   }
@@ -1932,11 +1940,11 @@ recipe print-string-with-gradient-background [
   bg-color2:number <- next-ingredient
   len:number <- length s:address:array:character/deref
   color-range:number <- subtract bg-color2:number, bg-color1:number
-  color-quantum:number <- divide-with-remainder len:number, color-range:number
-#?   close-console #? 1
+  color-quantum:number <- divide color-range:number, len:number
+#?   close-console #? 2
 #?   $print len:number, [, ], color-range:number, [, ], color-quantum:number, [ 
-#? ] #? 1
-#?   $exit #? 1
+#? ] #? 2
+#? #?   $exit #? 3
   bg-color:number <- copy bg-color1:number
   i:number <- copy 0:literal
   {
@@ -1945,14 +1953,11 @@ recipe print-string-with-gradient-background [
     c:character <- index s:address:array:character/deref, i:number
     print-character x:address:screen, c:character, color:number, bg-color:number
     i:number <- add i:number, 1:literal
-    # if i divides color-quantum, increment bg-color
-    {
-      _, continue-bg-color?:boolean <- divide-with-remainder i:number, color-quantum:number
-      break-if continue-bg-color?:number
-      # new bg color
-      bg-color:number <- add bg-color:number, 1:literal
-    }
+    bg-color:number <- add bg-color:number, color-quantum:number
+#?     $print [=> ], bg-color:number, [ 
+#? ] #? 1
     loop
   }
+#?   $exit #? 1
   reply x:address:screen/same-as-ingredient:0
 ]
