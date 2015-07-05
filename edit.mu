@@ -20,7 +20,7 @@ recipe main [
   button-start:number <- subtract width:number, 20:literal
   move-cursor 0:literal/screen, 0:literal/row, button-start:number/column
   run-button:address:array:character <- new [run (F9)   ]
-  print-string 0:literal/screen, run-button:address:array:character, 1:literal/red
+  print-string 0:literal/screen, run-button:address:array:character, 7:literal/white, 1:literal/red
   # editor on the left
   left:address:array:character <- new [abcde]
   left-editor:address:editor-data <- new-editor left:address:array:character, 0:literal/screen, 1:literal/top, 0:literal/left, divider:number/right
