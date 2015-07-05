@@ -20,7 +20,7 @@ recipe main [
   button-start:number <- subtract width:number, 20:literal
   move-cursor 0:literal/screen, 0:literal/row, button-start:number/column
   run-button:address:array:character <- new [run (F9)   ]
-  print-string 0:literal/screen, run-button:address:array:character, 7:literal/white, 1:literal/red
+  print-string-with-gradient-background 0:literal/screen, run-button:address:array:character, 7:literal/white, 196:literal/bright-red, 202:literal/bright-pink
   # editor on the left
   left:address:array:character <- new [abcde]
   left-editor:address:editor-data <- new-editor left:address:array:character, 0:literal/screen, 1:literal/top, 0:literal/left, divider:number/right
@@ -1921,4 +1921,38 @@ recipe draw-bottom-right [
   }
   move-cursor screen:address, bottom:number, right:number
   print-character screen:address, 9496:literal/up-left, color:number
+]
+
+recipe print-string-with-gradient-background [
+  default-space:address:array:location <- new location:type, 30:literal
+  x:address:screen <- next-ingredient
+  s:address:array:character <- next-ingredient
+  color:number <- next-ingredient
+  bg-color1:number <- next-ingredient
+  bg-color2:number <- next-ingredient
+  len:number <- length s:address:array:character/deref
+  color-range:number <- subtract bg-color2:number, bg-color1:number
+  color-quantum:number <- divide-with-remainder len:number, color-range:number
+#?   close-console #? 1
+#?   $print len:number, [, ], color-range:number, [, ], color-quantum:number, [ 
+#? ] #? 1
+#?   $exit #? 1
+  bg-color:number <- copy bg-color1:number
+  i:number <- copy 0:literal
+  {
+    done?:boolean <- greater-or-equal i:number, len:number
+    break-if done?:boolean
+    c:character <- index s:address:array:character/deref, i:number
+    print-character x:address:screen, c:character, color:number, bg-color:number
+    i:number <- add i:number, 1:literal
+    # if i divides color-quantum, increment bg-color
+    {
+      _, continue-bg-color?:boolean <- divide-with-remainder i:number, color-quantum:number
+      break-if continue-bg-color?:number
+      # new bg color
+      bg-color:number <- add bg-color:number, 1:literal
+    }
+    loop
+  }
+  reply x:address:screen/same-as-ingredient:0
 ]
