@@ -79,6 +79,12 @@ recipe print-character [
     break-if color-found?:boolean
     color:number <- copy 7:literal/white
   }
+  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if bg-color-found?:boolean
+    bg-color:number <- copy 0:literal/black
+  }
   {
     # if x exists
     # (handle special cases exactly like in the real screen)
@@ -146,7 +152,7 @@ recipe print-character [
     reply x:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
-  print-character-to-display c:character, color:number
+  print-character-to-display c:character, color:number, bg-color:number
   reply x:address:screen/same-as-ingredient:0
 ]
 
@@ -597,13 +603,19 @@ recipe print-string [
     break-if color-found?:boolean
     color:number <- copy 7:literal/white
   }
+  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if bg-color-found?:boolean
+    bg-color:number <- copy 0:literal/black
+  }
   len:number <- length s:address:array:character/deref
   i:number <- copy 0:literal
   {
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
     c:character <- index s:address:array:character/deref, i:number
-    print-character x:address:screen, c:character, color:number
+    print-character x:address:screen, c:character, color:number, bg-color:number
     i:number <- add i:number, 1:literal
     loop
   }
@@ -640,8 +652,14 @@ recipe print-integer [
     break-if color-found?:boolean
     color:number <- copy 7:literal/white
   }
+  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  {
+    # default color to white
+    break-if bg-color-found?:boolean
+    bg-color:number <- copy 0:literal/black
+  }
   # todo: other bases besides decimal
   s:address:array:character <- integer-to-decimal-string n:number
-  print-string x:address:screen, s:address:array:character, color:number
+  print-string x:address:screen, s:address:array:character, color:number, bg-color:number
   reply x:address:screen/same-as-ingredient:0
 ]

@@ -76,6 +76,21 @@ case PRINT_CHARACTER_TO_DISPLAY: {
 //?   tb_shutdown(); //? 1
 //?   cerr << "AAA " << c << ' ' << (int)'\n' << ' ' << (int)'\r' << '\n'; //? 1
 //?   exit(1); //? 1
+  int color = TB_BLACK;
+  if (SIZE(ingredients) > 1) {
+    assert(scalar(ingredients.at(1)));
+    color = ingredients.at(1).at(0);
+//?     tb_shutdown(); //? 1
+//?     cerr << "AAA " << color << '\n'; //? 1
+//?     exit(1); //? 1
+  }
+  int bg_color = TB_BLACK;
+  if (SIZE(ingredients) > 2) {
+    assert(scalar(ingredients.at(2)));
+    bg_color = ingredients.at(2).at(0);
+    if (bg_color == 0) bg_color = TB_BLACK;
+  }
+  tb_change_cell(Display_column, Display_row, c, color, bg_color);
   if (c == '\n' || c == '\r') {
     if (Display_row < height-1) {
       Display_column = 0;
@@ -87,22 +102,13 @@ case PRINT_CHARACTER_TO_DISPLAY: {
   }
   if (c == '\b') {
     if (Display_column > 0) {
-      tb_change_cell(Display_column-1, Display_row, ' ', TB_WHITE, TB_BLACK);
+      tb_change_cell(Display_column-1, Display_row, ' ', color, bg_color);
       --Display_column;
       tb_set_cursor(Display_column, Display_row);
       if (Autodisplay) tb_present();
     }
     break;
   }
-  int color = TB_BLACK;
-  if (SIZE(ingredients) > 1) {
-    assert(scalar(ingredients.at(1)));
-    color = ingredients.at(1).at(0);
-//?     tb_shutdown(); //? 1
-//?     cerr << "AAA " << color << '\n'; //? 1
-//?     exit(1); //? 1
-  }
-  tb_change_cell(Display_column, Display_row, c, color, TB_BLACK);
   if (Display_column < width-1) {
     ++Display_column;
     tb_set_cursor(Display_column, Display_row);
