@@ -99,7 +99,7 @@ you can perform integer division as follows:
 Each reagent provides its name as well as its type separated by a colon. Types
 can be multiple words, like:
 
-```python
+```nim
   x:array:number:3  # x is an array of 3 numbers
   y:list:number  # y is a list of numbers
 ```
@@ -147,13 +147,13 @@ The name of a reagent is for humans, but what the computer needs to access it is
 its address. Mu maps names to addresses for you like in other languages, but
 in a more transparent, lightweight, hackable manner. This instruction:
 
-```python
+```nim
   z:number <- add x:number, y:number
 ```
 
 might turn into this:
 
-```python
+```nim
   3:number <- add 1:number, 2:number
 ```
 
@@ -166,7 +166,7 @@ doesn't preserve uniqueness of addresses across functions, so you need to
 organize your names into spaces. At the start of each function (like
 `factorial` above), set its *default space*:
 
-  ```python
+  ```nim
     default-space:address:array:location <- new location:type, 30:literal
   ```
 
@@ -187,14 +187,14 @@ identical to it.)
 To string two spaces together, write one into slot 0 of the other. This
 instruction chains a space received from its caller:
 
-```python
+```nim
   0:address:array:location <- next-ingredient
 ```
 
 Once you've chained spaces together, you can access variables in them by
 adding a 'space' property:
 
-```python
+```nim
   3:number/space:1
 ```
 
@@ -212,7 +212,7 @@ in Mu provide the same functionality.
 You can append arbitrary properties to reagents besides types and spaces. Just
 separate them with slashes.
 
-```python
+```nim
   x:array:number:3/uninitialized
   y:string/tainted:yes
   z:list:number/assign-once:true/assigned:false
@@ -243,7 +243,7 @@ example above as:
 An alternative way to define factorial is by inserting *labels* and later
 inserting code at them.
 
-```python
+```nim
   recipe factorial [
     default-space:address:array:location <- new location:type, 30:literal
     n:number <- next-ingredient
