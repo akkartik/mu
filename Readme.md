@@ -70,8 +70,12 @@ written directly in machine code. Currently you build it like so:
 
 ```shell
   $ cd mu
-  $ make test
+  $ ./mu
 ```
+
+Running mu will always recompile it if necessary. In this case it has no other
+work to do, so it'll show you a hopefully helpful message after it's done
+compiling.
 
 As a sneak peek, here's how you compute factorial in Mu:
 
