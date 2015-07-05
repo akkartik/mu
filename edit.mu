@@ -669,7 +669,12 @@ recipe move-cursor-in-editor [
   default-space:address:array:location <- new location:type, 30:literal
   editor:address:editor-data <- next-ingredient
   t:touch-event <- next-ingredient
-  # always reset focus to start
+  # clicks on the menu bar shouldn't affect focus
+  click-row:number <- get t:touch-event, row:offset
+  top:number <- get editor:address:editor-data/deref, top:offset
+  too-far-up?:boolean <- lesser-than click-row:number, top:number
+  reply-if too-far-up?:boolean
+  # not on menu? reset focus then set it if necessary
   in-focus?:address:boolean <- get-address editor:address:editor-data/deref, in-focus?:offset
   in-focus?:address:boolean/deref <- copy 0:literal/true
   click-column:number <- get t:touch-event, column:offset
@@ -1718,6 +1723,36 @@ scenario editor-in-focus-keeps-cursor [
   # cursor should still be right
   screen-should-contain [
     .z␣bc def  .
+    .          .
+  ]
+]
+
+scenario editor-in-focus-keeps-cursor-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  # initialize an editor covering left half of screen - but not from the top
+  # row of screen
+  1:address:array:character <- new [abc]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 1:literal/top, 0:literal/left, 5:literal/right
+  3:address:array:character <- new [def]
+  # chain new editor to it, covering the right half of the screen
+  4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
+  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 1:literal/top, 5:literal/left, 10:literal/right
+  # initialize cursor on left editor
+  run [
+    reset-focus 2:address:editor-data
+  ]
+  # now click on top row of screen on the right side
+  assume-console [
+    left-click 0, 8
+    type [z]
+  ]
+  run [
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor should still be at the left side
+  screen-should-contain [
+    .          .
+    .zabc def  .
     .          .
   ]
 ]
