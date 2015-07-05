@@ -86,6 +86,10 @@ container editor-data [
   # helps organize editors in a 'chain'.
   next-editor:address:editor-data
   in-focus?:boolean  # set for the one editor in this chain currently being edited
+
+  # functions to run
+  render:recipe-ordinal  # how to render this container
+  respond:recipe-ordinal  # how it reacts to events from the console
 ]
 
 # editor:address, screen:address <- new-editor s:address:array:character, screen:address, top:number, left:number, bottom:number
