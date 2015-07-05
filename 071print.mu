@@ -81,7 +81,7 @@ recipe print-character [
   }
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
-    # default color to white
+    # default bg-color to black
     break-if bg-color-found?:boolean
     bg-color:number <- copy 0:literal/black
   }
@@ -605,7 +605,7 @@ recipe print-string [
   }
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
-    # default color to white
+    # default bg-color to black
     break-if bg-color-found?:boolean
     bg-color:number <- copy 0:literal/black
   }
@@ -654,7 +654,7 @@ recipe print-integer [
   }
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
-    # default color to white
+    # default bg-color to black
     break-if bg-color-found?:boolean
     bg-color:number <- copy 0:literal/black
   }
