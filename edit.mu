@@ -1,41 +1,49 @@
-# Editor widget: takes a string and screen coordinates, modifying them in place.
+# Environment for learning programming using mu.
 
 recipe main [
   default-space:address:array:location <- new location:type, 30:literal
   open-console
-  width:number <- display-width
-  height:number <- display-height
+  programming-environment 0:literal/screen, 0:literal/console
+  close-console
+]
+
+recipe programming-environment [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  console:address <- next-ingredient
+  width:number <- screen-width screen:address
+  height:number <- screen-height screen:address
   # draw menu
-#?   draw-horizontal 0:literal/screen, 0:literal, 0:literal/left, width:number, 95:literal/underscore
-  draw-horizontal 0:literal/screen, 0:literal, 0:literal/left, width:number, 32:literal/space, 0:literal/black, 238:literal/grey
+#?   draw-horizontal screen:address, 0:literal, 0:literal/left, width:number, 95:literal/underscore
+  draw-horizontal screen:address, 0:literal, 0:literal/left, width:number, 32:literal/space, 0:literal/black, 238:literal/grey
   # draw a dotted line down the middle
   divider:number, _ <- divide-with-remainder width:number, 2:literal
-  draw-vertical 0:literal/screen, divider:number, 1:literal/top, height:number, 9482:literal/vertical-dotted
+  draw-vertical screen:address, divider:number, 1:literal/top, height:number, 9482:literal/vertical-dotted
   # left column consists of multiple recipes
-  draw-horizontal 0:literal/screen, 10:literal, 0:literal/left, divider:number, 9480:literal/horizontal-dotted
-  draw-horizontal 0:literal/screen, 20:literal, 0:literal/left, divider:number, 9480:literal/horizontal-dotted
-  draw-horizontal 0:literal/screen, 30:literal, 0:literal/left, divider:number, 9480:literal/horizontal-dotted
+  draw-horizontal screen:address, 10:literal, 0:literal/left, divider:number, 9480:literal/horizontal-dotted
+  draw-horizontal screen:address, 20:literal, 0:literal/left, divider:number, 9480:literal/horizontal-dotted
+  draw-horizontal screen:address, 30:literal, 0:literal/left, divider:number, 9480:literal/horizontal-dotted
   # right column consists of multiple sandboxes isolated from each other, but
   # with access to the recipes on the left
   column2:number <- add divider:number, 1:literal
-  draw-horizontal 0:literal/screen, 3:literal, column2:number, width:number, 9473:literal/horizontal-double
+  draw-horizontal screen:address, 3:literal, column2:number, width:number, 9473:literal/horizontal-double
   # nav bar
   button-start:number <- subtract width:number, 20:literal
-  move-cursor 0:literal/screen, 0:literal/row, button-start:number/column
+  move-cursor screen:address, 0:literal/row, button-start:number/column
   run-button:address:array:character <- new [  run (F9)  ]
-  print-string 0:literal/screen, run-button:address:array:character, 255:literal/white, 161:literal/reddish
+  print-string screen:address, run-button:address:array:character, 255:literal/white, 161:literal/reddish
   # editor on the left
   left:address:array:character <- new [recipe new-add [
   x:number <- next-ingredient
   y:number <- next-ingredient
   z:number <- add x:number, y:number
 ]]
-  left-editor:address:editor-data <- new-editor left:address:array:character, 0:literal/screen, 1:literal/top, 0:literal/left, divider:number/right
+  left-editor:address:editor-data <- new-editor left:address:array:character, screen:address, 1:literal/top, 0:literal/left, divider:number/right
   # editor on the right
   right:address:array:character <- new [new-add 2:literal, 3:literal]
   new-left:number <- add divider:number, 1:literal
   new-right:number <- add new-left:number, 5:literal
-  right-editor:address:editor-data <- new-editor right:address:array:character, 0:literal/screen, 1:literal/top, new-left:number, width:number
+  right-editor:address:editor-data <- new-editor right:address:array:character, screen:address, 1:literal/top, new-left:number, width:number
   # chain
   x:address:address:editor-data <- get-address left-editor:address:editor-data/deref, next-editor:offset
   x:address:address:editor-data/deref <- copy right-editor:address:editor-data
@@ -43,10 +51,9 @@ recipe main [
   reset-focus left-editor:address:editor-data
   cursor-row:number <- get left-editor:address:editor-data/deref, cursor-row:offset
   cursor-column:number <- get left-editor:address:editor-data/deref, cursor-column:offset
-  move-cursor 0:literal/screen, cursor-row:number, cursor-column:number
+  move-cursor screen:address, cursor-row:number, cursor-column:number
   # and we're off!
-  event-loop 0:literal/screen, 0:literal/events, left-editor:address:editor-data
-  close-console
+  event-loop screen:address, console:address, left-editor:address:editor-data
 ]
 
 scenario editor-initially-prints-string-to-screen [
