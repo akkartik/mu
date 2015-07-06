@@ -497,14 +497,6 @@ recipe event-loop [
       curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
       loop
     }
-    # after each non-trivial event, render all editors
-    curr:address:editor-data <- copy editor:address:editor-data
-    {
-      break-unless curr:address:editor-data
-      render curr:address:editor-data
-      curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
-      loop
-    }
     # ..and position the cursor
     curr:address:editor-data <- copy editor:address:editor-data
     {
@@ -534,7 +526,7 @@ recipe handle-event [
     t:address:touch-event <- maybe-convert e:event, touch:variant
     break-unless t:address:touch-event
     move-cursor-in-editor editor:address:editor-data, t:address:touch-event/deref
-    reply
+    jump +render:label
   }
   # other events trigger only if this editor is in focus
 #?   $print [checking ], editor:address:editor-data, [ 
@@ -545,7 +537,7 @@ recipe handle-event [
   in-focus?:address:boolean <- get-address editor:address:editor-data/deref, in-focus?:offset
 #?   $print [ at ], in-focus?:address:boolean, [ 
 #? ] #? 1
-  reply-unless in-focus?:address:boolean/deref
+  reply-unless in-focus?:address:boolean/deref  # no need to render
 #?   $print [in focus: ], editor:address:editor-data, [ 
 #? ] #? 1
   # typing a character
@@ -557,10 +549,10 @@ recipe handle-event [
       backspace?:boolean <- equal c:address:character/deref, 8:literal/backspace
       break-unless backspace?:boolean
       delete-before-cursor editor:address:editor-data
-      reply
+      jump +render:label
     }
     insert-at-cursor editor:address:editor-data, c:address:character/deref
-    reply
+    jump +render:label
   }
   # otherwise it's a special key to control the editor
   k:address:number <- maybe-convert e:event, keycode:variant
@@ -594,7 +586,7 @@ recipe handle-event [
       screen-height:number <- screen-height screen:address
       above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
       assert above-screen-bottom?:boolean, [unimplemented: moving past bottom of screen]
-      reply
+      jump +render:label
     }
     # if the line wraps, move cursor to start of next row
     {
@@ -613,7 +605,7 @@ recipe handle-event [
       # todo: what happens when cursor is too far down?
       above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
       assert above-screen-bottom?:boolean, [unimplemented: moving past bottom of screen]
-      reply
+      jump +render:label
     }
     # otherwise move cursor one character right
     cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
@@ -630,7 +622,7 @@ recipe handle-event [
       at-left-margin?:boolean <- equal cursor-column:address:number/deref, 0:literal
       break-if at-left-margin?:boolean
       cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
-      reply
+      jump +render:label
     }
     # if at left margin, there's guaranteed to be a previous line, since we're
     # not at start of text
@@ -643,7 +635,7 @@ recipe handle-event [
       end-of-line:number <- previous-line-length before-cursor:address:address:duplex-list/deref, d:address:duplex-list
       cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
       cursor-column:address:number/deref <- copy end-of-line:number
-      reply
+      jump +render:label
     }
     # if before-cursor is not at newline, we're just at a wrapped line
     assert cursor-row:address:number/deref, [unimplemented: moving cursor above top of screen]
@@ -674,6 +666,8 @@ recipe handle-event [
     cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
     # that's it; render will adjust cursor-column as necessary
   }
+  +render
+  render editor:address:editor-data
 ]
 
 recipe move-cursor-in-editor [
