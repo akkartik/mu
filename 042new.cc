@@ -203,17 +203,22 @@ recipe main [
 :(after "case NEW" following "Primitive Recipe Implementations")
 if (is_literal(current_instruction().ingredients.at(0))
     && current_instruction().ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
+  products.resize(1);
+  products.at(0).push_back(new_string(current_instruction().ingredients.at(0).name));
+  break;
+}
+
+:(code)
+long long int new_string(const string& contents) {
   // allocate an array just large enough for it
-  long long int string_length = unicode_length(current_instruction().ingredients.at(0).name);
+  long long int string_length = unicode_length(contents);
 //?   cout << "string_length is " << string_length << '\n'; //? 1
   ensure_space(string_length+1);  // don't forget the extra location for array size
-  products.resize(1);
-  products.at(0).push_back(Current_routine->alloc);
   // initialize string
 //?   cout << "new string literal: " << current_instruction().ingredients.at(0).name << '\n'; //? 1
+  long long int result = Current_routine->alloc;
   Memory[Current_routine->alloc++] = string_length;
   long long int curr = 0;
-  const string& contents = current_instruction().ingredients.at(0).name;
   const char* raw_contents = contents.c_str();
   for (long long int i = 0; i < string_length; ++i) {
     uint32_t curr_character;
@@ -224,7 +229,7 @@ if (is_literal(current_instruction().ingredients.at(0))
     ++Current_routine->alloc;
   }
   // mu strings are not null-terminated in memory
-  break;
+  return result;
 }
 
 //: Allocate more to routine when initializing a literal string
