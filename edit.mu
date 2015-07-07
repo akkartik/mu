@@ -484,13 +484,27 @@ recipe event-loop [
   console:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   {
-    # send each event to each editor
+    # looping over each (keyboard or touch) event as it occurs
+    +next-event
     e:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
     loop-unless found?:boolean
     break-if quit?:boolean  # only in tests
     trace [app], [next-event]
 #?     $print [--- new event
 #? ] #? 1
+    # check for global events that will trigger regardless of which editor has focus
+    {
+      k:address:number <- maybe-convert e:event, keycode:variant
+      break-unless k:address:number
+      # F9? load all code and run all sandboxes.
+      {
+        do-run?:boolean <- equal k:address:number/deref, 65527:literal/F9
+        break-unless do-run?:boolean
+        run-sandboxes editor:address:editor-data, screen:address
+        loop +next-event:label  # done with this event; no need to send to editors
+      }
+    }
+    # if it's not global, locate the editor the event should go to
     curr:address:editor-data <- copy editor:address:editor-data
     {
       break-unless curr:address:editor-data
@@ -1825,6 +1839,93 @@ scenario editor-provides-edited-contents [
   ]
   memory-should-contain [
     4:string <- [abdefc]
+  ]
+]
+
+## running code in editors
+
+scenario run-query-for-location [
+  assume-screen 10:literal/width, 5:literal/height
+  # left editor is empty
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  # right editor contains a query for location 12
+  3:address:array:character <- new [12]
+  4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
+  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 10:literal/right
+  reset-focus 2:address:editor-data
+  # run the code in the editors
+  assume-console [
+    press 65527  # F9
+  ]
+  run [
+    # initialize location 12
+    12:number <- copy 34:literal
+    # now run query for it
+    event-loop screen:address, console:address, 2:address:editor-data
+#?     $dump-trace #? 1
+#?     $browse-trace #? 1
+  ]
+  # check that screen prints the value in location 12
+  screen-should-contain [
+    .     12   .
+    .     34   .
+    .          .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .     12   .
+    .          .
+    .          .
+  ]
+  screen-should-contain-in-color 245:literal/grey, [
+    .          .
+    .     34   .
+    .          .
+  ]
+]
+
+recipe run-sandboxes [
+  default-space:address:array:location <- new location:type, 30:literal
+  editor:address:editor-data <- next-ingredient
+  screen:address <- next-ingredient
+  # todo: load code in left editor
+  # compute result of running editor contents
+  curr:address:editor-data <- get editor:address:editor-data/deref, next-editor:offset
+  in:address:array:character <- editor-contents curr:address:editor-data
+  out:address:array:character <- run-interactive in:address:array:character
+  # move cursor
+  # temporarily leave just one line for typing into sandboxes
+  left:number <- get curr:address:editor-data/deref, left:offset
+  top:number <- get curr:address:editor-data/deref, top:offset
+  dest-row:number <- add top:number, 1:literal
+  move-cursor screen:address, dest-row:number, left:number
+  # print result
+  print-string screen:address, out:address:array:character, 245:literal/grey
+  reply screen:address/same-as-ingredient:1
+]
+
+scenario run-instruction-silently [
+  assume-screen 40:literal/width, 5:literal/height
+  # left editor is empty
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  # right editor contains an instruction
+  3:address:array:character <- new [12:number <- copy 34:literal]
+  4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
+  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 40:literal/right
+  reset-focus 2:address:editor-data
+  # run the code in the editors
+  assume-console [
+    press 65527  # F9
+  ]
+  run [
+    # now run query for it
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # check that screen prints the value in location 12
+  screen-should-contain [
+    .     12:number <- copy 34:literal       .
+    .                                        .
   ]
 ]
 
