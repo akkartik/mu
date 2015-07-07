@@ -44,6 +44,8 @@ case REPLY: {
         raise << current_recipe_name() << ": 'same-as-ingredient' result " << caller_instruction.products.at(i).value << " from call to " << callee << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n';
     }
   }
+  if (current_recipe_name() == "interactive") {
+  }
   break;  // continue to process rest of *caller* instruction
 }
 
