@@ -1,4 +1,51 @@
-//: Helper for the repl.
+//: Helper for various programming environments: run arbitrary mu code and
+//: return some result in string form.
+
+:(scenario run_interactive_location)
+recipe main [
+  1:number <- copy 34:literal
+  2:address:array:character <- new [1
+]
+  3:address:array:character <- run-interactive 2:address:array:character
+  4:array:character <- copy 3:address:array:character/deref
+]
+#? ?
+# size of string
++mem: storing 2 in location 4
+# unicode '3'
++mem: storing 51 in location 5
+# unicode '4'
++mem: storing 52 in location 6
+
+:(scenario run_interactive_code)
+recipe main [
+  2:address:array:character <- new [1:number <- copy 34:literal
+]
+  run-interactive 2:address:array:character  # code won't return a result
+]
++mem: storing 34 in location 1
+
+:(scenario run_interactive_name)
+recipe main [
+  2:address:array:character <- new [x:number <- copy 34:literal
+]
+  run-interactive 2:address:array:character
+  3:address:array:character <- new [x
+]
+  4:address:array:character <- run-interactive 3:address:array:character
+  5:array:character <- copy 4:address:array:character/deref
+]
+# result is string "34"
++mem: storing 2 in location 5
++mem: storing 51 in location 6
++mem: storing 52 in location 7
+
+:(scenario run_interactive_empty)
+recipe main [
+  1:address:array:character <- run-interactive 0:literal
+]
+# result is null
++mem: storing 0 in location 1
 
 :(before "End Primitive Recipe Declarations")
 RUN_INTERACTIVE,
@@ -8,69 +55,61 @@ Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
   assert(scalar(ingredients.at(0)));
-//?   cerr << "AAA 0\n"; //? 1
-  run_interactive(ingredients.at(0).at(0));
-//?   cerr << "ZZZ\n"; //? 1
-  continue;  // not done with caller; don't increment current_step_index()
+  products.resize(1);
+  long long int result = 0;
+  bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0), &result);
+  if (!new_code_pushed_to_stack) {
+    products.at(0).push_back(result);
+    break;
+  }
+  else {
+    continue;  // not done with caller; don't increment current_step_index()
+  }
 }
 
 :(code)
-// manual tests:
-//  empty string (excluding whitespace and comments) does nothing
-//  ctrl-d
-//  just an integer (excluding whitespace and comments) prints value of that location in memory
-//  instruction executes
-//  backspace at start begins new attempt
-void run_interactive(long long int address) {
-//?   tb_shutdown(); //? 1
+// reads a string. if it's a variable, stores its value as a string and returns false.
+// if it's lines of code, calls them and returns true (no result available yet to be stored)
+bool run_interactive(long long int address, long long int* result) {
   long long int size = Memory[address];
   if (size == 0) {
-    ++current_step_index();
-    return;
+//?     trace(1, "foo") << "AAA\n"; //? 1
+    *result = 0;
+    return false;
   }
   ostringstream tmp;
   for (long long int curr = address+1; curr < address+size; ++curr) {
     // todo: unicode
     tmp << (char)(int)Memory[curr];
   }
-//?   cerr << size << ' ' << Memory[address+size] << '\n'; //? 1
   assert(Memory[address+size] == 10);  // skip the newline
   if (Recipe_ordinal.find("interactive") == Recipe_ordinal.end())
     Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
   string command = trim(strip_comments(tmp.str()));
-  if (command.empty()) {
-    ++current_step_index();
-    return;
-  }
+  if (command.empty()) return false;
   if (is_integer(command)) {
-    print_value_of_location_as_response(to_integer(command));
-    ++current_step_index();
-    return;
+//?     trace(1, "foo") << "BBB\n"; //? 1
+    *result = stringified_value_of_location(to_integer(command));
+//?     trace(1, "foo") << *result << " " << result << " " << Memory[*result]; //? 1
+    return false;
   }
-//?   exit(0); //? 1
   if (Name[Recipe_ordinal["interactive"]].find(command) != Name[Recipe_ordinal["interactive"]].end()) {
-    print_value_of_location_as_response(Name[Recipe_ordinal["interactive"]][command]);
-    ++current_step_index();
-    return;
+//?     trace(1, "foo") << "CCC\n"; //? 1
+    *result = stringified_value_of_location(Name[Recipe_ordinal["interactive"]][command]);
+    return false;
   }
-//?   tb_shutdown(); //? 1
-//?   cerr << command; //? 1
-//?   exit(0); //? 1
-//?   cerr << "AAA 1\n"; //? 1
+//?   trace(1, "foo") << "DDD\n"; //? 1
   Recipe.erase(Recipe_ordinal["interactive"]);
   // call run(string) but without the scheduling
-//?   cerr << ("recipe interactive [\n"+command+"\n]\n"); //? 1
   load("recipe interactive [\n"+command+"\n]\n");
   transform_all();
-//?   cerr << "names: " << Name[Recipe_ordinal["interactive"]].size() << "; "; //? 1
-//?   cerr << "steps: " << Recipe[Recipe_ordinal["interactive"]].steps.size() << "; "; //? 1
-//?   cerr << "interactive transformed_until: " << Recipe[Recipe_ordinal["interactive"]].transformed_until << '\n'; //? 1
   Current_routine->calls.push_front(call(Recipe_ordinal["interactive"]));
+  *result = 0;
+  return true;
 }
 
 string strip_comments(string in) {
   ostringstream result;
-//?   cerr << in; //? 1
   for (long long int i = 0; i < SIZE(in); ++i) {
     if (in.at(i) != '#') {
       result << in.at(i);
@@ -81,32 +120,14 @@ string strip_comments(string in) {
       if (i < SIZE(in) && in.at(i) == '\n') ++i;
     }
   }
-//?   cerr << "ZZZ"; //? 1
   return result.str();
 }
 
-void print_value_of_location_as_response(long long int address) {
+long long int stringified_value_of_location(long long int address) {
   // convert to string
   ostringstream out;
-  out << "=> " << Memory[address];
-  string result = out.str();
-  // handle regular I/O
-  if (!tb_is_active()) {
-    cerr << result << '\n';
-    return;
-  }
-  // raw I/O; use termbox to print
-  long long int bound = SIZE(result);
-  if (bound > tb_width()) bound = tb_width();
-  for (long long int i = 0; i < bound; ++i) {
-    tb_change_cell(i, Display_row, result.at(i), /*computer's color*/245, TB_BLACK);
-  }
-  // newline
-  if (Display_row < tb_height()-1)
-    ++Display_row;
-  Display_column = 0;
-  tb_set_cursor(Display_column, Display_row);
-  tb_present();
+  out << Memory[address];
+  return new_string(out.str());
 }
 
 //:: debugging tool

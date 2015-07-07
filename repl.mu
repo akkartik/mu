@@ -17,7 +17,9 @@ recipe color-session [
   {
     inst:address:array:character, console:address, screen:address <- read-instruction console:address, screen:address
     break-unless inst:address:array:character
-    run-interactive inst:address:array:character
+    result:address:array:character <- run-interactive inst:address:array:character
+    print-string screen:address, result:address:array:character
+    print-character screen:address, 10:literal/newline
     loop
   }
   reply console:address/same-as-ingredient:0, screen:address/same-as-ingredient:1
