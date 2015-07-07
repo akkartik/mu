@@ -73,32 +73,31 @@ case RUN_INTERACTIVE: {
 bool run_interactive(long long int address, long long int* result) {
   long long int size = Memory[address];
   if (size == 0) {
-//?     trace(1, "foo") << "AAA\n"; //? 1
+//?     trace(1, "foo") << "AAA"; //? 2
     *result = 0;
     return false;
   }
   ostringstream tmp;
-  for (long long int curr = address+1; curr < address+size; ++curr) {
+  for (long long int curr = address+1; curr <= address+size; ++curr) {
     // todo: unicode
     tmp << (char)(int)Memory[curr];
   }
-  assert(Memory[address+size] == 10);  // skip the newline
   if (Recipe_ordinal.find("interactive") == Recipe_ordinal.end())
     Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
   string command = trim(strip_comments(tmp.str()));
   if (command.empty()) return false;
   if (is_integer(command)) {
-//?     trace(1, "foo") << "BBB\n"; //? 1
+//?     trace(1, "foo") << "BBB"; //? 2
     *result = stringified_value_of_location(to_integer(command));
-//?     trace(1, "foo") << *result << " " << result << " " << Memory[*result]; //? 1
+//?     trace(1, "foo") << *result << " " << result << " " << Memory[*result]; //? 2
     return false;
   }
   if (Name[Recipe_ordinal["interactive"]].find(command) != Name[Recipe_ordinal["interactive"]].end()) {
-//?     trace(1, "foo") << "CCC\n"; //? 1
+//?     trace(1, "foo") << "CCC"; //? 2
     *result = stringified_value_of_location(Name[Recipe_ordinal["interactive"]][command]);
     return false;
   }
-//?   trace(1, "foo") << "DDD\n"; //? 1
+//?   trace(1, "foo") << "DDD"; //? 2
   Recipe.erase(Recipe_ordinal["interactive"]);
   // call run(string) but without the scheduling
   load("recipe interactive [\n"+command+"\n]\n");
@@ -126,7 +125,9 @@ string strip_comments(string in) {
 long long int stringified_value_of_location(long long int address) {
   // convert to string
   ostringstream out;
+//?   trace(1, "foo") << "a: " << address; //? 1
   out << Memory[address];
+//?   trace(1, "foo") << "b: " << Memory[address]; //? 1
   return new_string(out.str());
 }
 
