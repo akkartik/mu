@@ -1844,43 +1844,41 @@ scenario editor-provides-edited-contents [
 
 ## running code in editors
 
-scenario run-query-for-location [
-  assume-screen 10:literal/width, 5:literal/height
+scenario run-and-show-results [
+  assume-screen 60:literal/width, 5:literal/height
   # left editor is empty
   1:address:array:character <- new []
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-  # right editor contains a query for location 12
-  3:address:array:character <- new [12]
+  # right editor contains an instruction without storing outputs
+  3:address:array:character <- new [divide-with-remainder 11:literal, 3:literal]
   4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
-  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 10:literal/right
+  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 60:literal/right
   reset-focus 2:address:editor-data
   # run the code in the editors
   assume-console [
     press 65527  # F9
   ]
   run [
-    # initialize location 12
-    12:number <- copy 34:literal
     # now run query for it
     event-loop screen:address, console:address, 2:address:editor-data
-#?     $dump-trace #? 1
-#?     $browse-trace #? 1
   ]
-  # check that screen prints the value in location 12
+  # check that screen prints the results
   screen-should-contain [
-    .     12   .
-    .     34   .
-    .          .
+    .     divide-with-remainder 11:literal, 3:literal            .
+    .     3                                                      .
+    .     2                                                      .
+    .                                                            .
   ]
+#?   $exit #? 1
   screen-should-contain-in-color 7:literal/white, [
-    .     12   .
-    .          .
-    .          .
+    .     divide-with-remainder 11:literal, 3:literal            .
+    .                                                            .
   ]
   screen-should-contain-in-color 245:literal/grey, [
-    .          .
-    .     34   .
-    .          .
+    .                                                            .
+    .     3                                                      .
+    .     2                                                      .
+    .                                                            .
   ]
 ]
 
