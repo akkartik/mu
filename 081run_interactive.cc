@@ -71,6 +71,7 @@ case RUN_INTERACTIVE: {
 // reads a string. if it's a variable, stores its value as a string and returns false.
 // if it's lines of code, calls them and returns true (no result available yet to be stored)
 bool run_interactive(long long int address, long long int* result) {
+//?   cerr << "run interactive\n"; //? 1
   long long int size = Memory[address];
   if (size == 0) {
 //?     trace(1, "foo") << "AAA"; //? 2
@@ -99,9 +100,17 @@ bool run_interactive(long long int address, long long int* result) {
   }
 //?   trace(1, "foo") << "DDD"; //? 2
   Recipe.erase(Recipe_ordinal["interactive"]);
+//?   trace("foo") << "hiding warnings\n"; //? 2
+  Hide_warnings = true;
   // call run(string) but without the scheduling
   load("recipe interactive [\n"+command+"\n]\n");
   transform_all();
+  if (trace_count("warn") > 0) {
+    Hide_warnings = false;
+    *result = 0;
+    return false;
+  }
+//?   cerr << "call interactive: " << Current_routine->calls.size() << '\n'; //? 1
   Current_routine->calls.push_front(call(Recipe_ordinal["interactive"]));
   *result = 0;
   return true;
