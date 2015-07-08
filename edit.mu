@@ -1888,6 +1888,8 @@ recipe run-sandboxes [
   default-space:address:array:location <- new location:type, 30:literal
   editor:address:editor-data <- next-ingredient
   screen:address <- next-ingredient
+#?   $print [run sandboxes
+#? ] #? 2
   # todo: load code in left editor
   # compute result of running editor contents
   curr:address:editor-data <- get editor:address:editor-data/deref, next-editor:offset
@@ -1927,6 +1929,58 @@ scenario run-instruction-silently [
     .     12:number <- copy 34:literal       .
     .                                        .
   ]
+]
+
+scenario run-instruction-and-print-warnings [
+#?   $print [=====
+#? ] #? 2
+  assume-screen 60:literal/width, 5:literal/height
+  # left editor is empty
+  1:address:array:character <- new []
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
+  # right editor contains an illegal instruction
+  3:address:array:character <- new [get 1234:number, foo:offset]
+  4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
+  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 40:literal/right
+  reset-focus 2:address:editor-data
+  # run the code in the editors
+  assume-console [
+    press 65527  # F9
+  ]
+  run [
+    # now run query for it
+#?     $print [about to start event loop
+#? ] #? 1
+    event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # check that screen prints the value in location 12
+#?   $print [a0
+#? ] #? 1
+#?   $dump-screen #? 1
+#?   get 1234:number, foo:offset #? 1
+  screen-should-contain [
+    .     get 1234:number, foo:offset                            .
+    .     unknown element foo in container number                .
+    .                                                            .
+  ]
+#?   $print [a1
+#? ] #? 1
+#?   $dump-trace #? 1
+#?   $exit #? 2
+  screen-should-contain-in-color 7:literal/white, [
+    .     get 1234:number, foo:offset                            .
+    .                                                            .
+    .                                                            .
+  ]
+#?   $print [a2
+#? ] #? 1
+  screen-should-contain-in-color, 1:literal/red, [
+    .                                                            .
+    .     unknown element foo in container number                .
+    .                                                            .
+  ]
+#?   $print [a3
+#? ] #? 1
 ]
 
 ## helpers for drawing editor borders

@@ -211,7 +211,13 @@ recipe main [
 //: 'memory-should-contain' raises warnings if specific locations aren't as expected
 //: Also includes some special support for checking strings.
 
+:(before "End Globals")
+bool Scenario_testing_scenario = false;
+:(before "End Setup")
+Scenario_testing_scenario = false;
+
 :(scenario memory_check)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   memory-should-contain [
@@ -255,7 +261,7 @@ void check_memory(const string& s) {
       raise << "duplicate expectation for location " << address << '\n';
     trace(Primitive_recipe_depth, "run") << "checking location " << address;
     if (Memory[address] != value) {
-      if (Current_scenario && !Hide_warnings) {
+      if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
         raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
       }
@@ -263,7 +269,7 @@ void check_memory(const string& s) {
         // just testing scenario support
         raise << "expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
       }
-      if (!Hide_warnings) {
+      if (!Scenario_testing_scenario) {
         Passed = false;
         ++Num_failures;
       }
@@ -295,11 +301,11 @@ void check_type(const string& lhs, istream& in) {
 void check_string(long long int address, const string& literal) {
   trace(Primitive_recipe_depth, "run") << "checking string length at " << address;
   if (Memory[address] != SIZE(literal)) {
-    if (Current_scenario && !Hide_warnings)
+    if (Current_scenario && !Scenario_testing_scenario)
       raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n';
     else
       raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n';
-    if (!Hide_warnings) {
+    if (!Scenario_testing_scenario) {
       Passed = false;
       ++Num_failures;
     }
@@ -309,7 +315,7 @@ void check_string(long long int address, const string& literal) {
   for (long long int i = 0; i < SIZE(literal); ++i) {
     trace(Primitive_recipe_depth, "run") << "checking location " << address+i;
     if (Memory[address+i] != literal.at(i)) {
-      if (Current_scenario && !Hide_warnings) {
+      if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
         raise << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
       }
@@ -317,7 +323,7 @@ void check_string(long long int address, const string& literal) {
         // just testing scenario support
         raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
       }
-      if (!Hide_warnings) {
+      if (!Scenario_testing_scenario) {
         Passed = false;
         ++Num_failures;
       }
@@ -327,6 +333,7 @@ void check_string(long long int address, const string& literal) {
 }
 
 :(scenario memory_check_multiple)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   memory-should-contain [
@@ -337,6 +344,7 @@ recipe main [
 +warn: duplicate expectation for location 1
 
 :(scenario memory_check_string_length)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   1:number <- copy 3:literal
@@ -369,12 +377,9 @@ recipe main [
 // Like runs of contiguous '+' lines, order is important. The trace checks
 // that the lines are present *and* in the specified sequence. (There can be
 // other lines in between.)
-//
-// Be careful not to mix setting Hide_warnings and checking the trace in .mu
-// files. It'll work in C++ scenarios, but the test failure gets silently
-// hidden in mu scenarios.
 
 :(scenario trace_check_warns_on_failure)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   trace-should-contain [
@@ -435,6 +440,7 @@ vector<trace_line> parse_trace(const string& expected) {
 }
 
 :(scenario trace_check_warns_on_failure_in_later_line)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   run [
@@ -448,6 +454,7 @@ recipe main [
 +warn: missing [d] in trace layer a
 
 :(scenario trace_check_passes_silently)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   run [
@@ -465,6 +472,7 @@ $warn: 0
 //: important, so you can't say things like "B should not exist after A."
 
 :(scenario trace_negative_check_warns_on_failure)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   run [
@@ -504,6 +512,7 @@ bool check_trace_missing(const string& in) {
 }
 
 :(scenario trace_negative_check_passes_silently)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   trace-should-not-contain [
@@ -514,6 +523,7 @@ recipe main [
 $warn: 0
 
 :(scenario trace_negative_check_warns_on_any_unexpected_line)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   run [

@@ -20,6 +20,10 @@ Recipe_ordinal["reply"] = REPLY;
 case REPLY: {
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
   const string& callee = current_recipe_name();
+  if (callee == "interactive") {
+    trace("foo") << "showing warnings again";
+    Hide_warnings = true;
+  }
   --Callstack_depth;
 //?   if (tb_is_active()) { //? 1
 //?     tb_clear(); //? 1
@@ -43,8 +47,6 @@ case REPLY: {
       if (caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
         raise << current_recipe_name() << ": 'same-as-ingredient' result " << caller_instruction.products.at(i).value << " from call to " << callee << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n';
     }
-  }
-  if (current_recipe_name() == "interactive") {
   }
   break;  // continue to process rest of *caller* instruction
 }

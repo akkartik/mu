@@ -71,6 +71,7 @@ scenario screen-in-scenario-color [
 ]
 
 :(scenario screen_in_scenario_error)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 scenario screen-in-scenario-error [
   assume-screen 5:literal/width, 3:literal/height
@@ -87,6 +88,7 @@ scenario screen-in-scenario-error [
 +warn: expected screen location (0, 0) to contain 98 ('b') instead of 97 ('a')
 
 :(scenario screen_in_scenario_color_error)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 # screen-should-contain can check unicode characters in the fake screen
 scenario screen-in-scenario-color [
@@ -109,6 +111,7 @@ if (s == "screen") return true;
 
 :(scenarios run)
 :(scenario convert_names_does_not_warn_when_mixing_special_names_and_numeric_locations)
+% Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
   screen:number <- copy 1:number
@@ -209,23 +212,29 @@ void check_screen(const string& expected_contents, const int color) {
   long long int addr = screen_data_start+1;  // skip length
 //?   cerr << "screen height " << screen_height << '\n'; //? 1
   for (long long int row = 0; row < screen_height; ++row) {
-//?     cerr << "row: " << row << '\n'; //? 1
+//?     cerr << "row: " << row << '\n'; //? 3
+//?     cerr << "contents: " << cursor.buf+cursor.index << "$\n"; //? 1
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
+//?     cerr << "row2\n"; //? 2
     assert(cursor.get() == '.');
     for (long long int column = 0;  column < screen_width;  ++column, addr+= /*size of screen-cell*/2) {
       const int cell_color_offset = 1;
       uint32_t curr = cursor.get();
+//?       cerr << "col: " << column << '\n'; //? 1
       if (Memory[addr] == 0 && isspace(curr)) continue;
 //?       cerr << color << " vs " << Memory[addr+1] << '\n'; //? 1
       if (curr == ' ' && color != -1 && color != Memory[addr+cell_color_offset]) {
         // filter out other colors
         continue;
       }
+//?       cerr << "col3 " << column << ": " << Memory[addr] << " " << curr << '\n'; //? 1
       if (Memory[addr] != 0 && Memory[addr] == curr) {
+//?         cerr << "col4\n"; //? 1
         if (color == -1 || color == Memory[addr+cell_color_offset]) continue;
+//?         cerr << "col5: " << column << '\n'; //? 1
         // contents match but color is off
-        if (Current_scenario && !Hide_warnings) {
+        if (Current_scenario && !Scenario_testing_scenario) {
           // genuine test in a mu file
           raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << Memory[addr] << ") to be in color " << color << " instead of " << Memory[addr+cell_color_offset] << "\n";
         }
@@ -233,13 +242,14 @@ void check_screen(const string& expected_contents, const int color) {
           // just testing check_screen
           raise << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << Memory[addr+cell_color_offset] << '\n';
         }
-        if (!Hide_warnings) {
+        if (!Scenario_testing_scenario) {
           Passed = false;
           ++Num_failures;
         }
         return;
       }
 
+//?       cerr << "col6 " << column << ": " << Memory[addr] << " " << curr << '\n'; //? 1
       // really a mismatch
       // can't print multi-byte unicode characters in warnings just yet. not very useful for debugging anyway.
       char expected_pretty[10] = {0};
@@ -253,7 +263,7 @@ void check_screen(const string& expected_contents, const int color) {
         actual_pretty[0] = ' ', actual_pretty[1] = '(', actual_pretty[2] = '\'', actual_pretty[3] = static_cast<unsigned char>(Memory[addr]), actual_pretty[4] = '\'', actual_pretty[5] = ')', actual_pretty[6] = '\0';
       }
 
-      if (Current_scenario && !Hide_warnings) {
+      if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
         raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << Memory[addr] << actual_pretty << '\n';
         dump_screen();
@@ -262,7 +272,7 @@ void check_screen(const string& expected_contents, const int color) {
         // just testing check_screen
         raise << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << " instead of " << Memory[addr] << actual_pretty << '\n';
       }
-      if (!Hide_warnings) {
+      if (!Scenario_testing_scenario) {
         Passed = false;
         ++Num_failures;
       }

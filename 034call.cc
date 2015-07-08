@@ -107,8 +107,12 @@ inline const vector<instruction>& routine::steps() const {
 // when we reach the end of one call, we may reach the end of the one below
 // it, and the one below that, and so on
 while (current_step_index() >= SIZE(Current_routine->steps())) {
+  if (current_recipe_name() == "interactive") {
+//?     trace("foo") << "showing warnings again"; //? 1
+    Hide_warnings = false;
+  }
   --Callstack_depth;
-//?   cerr << "reply " << Current_routine->calls.size() << '\n'; //? 1
+//?   cerr << "reply " << Current_routine->calls.size() << '\n'; //? 2
   Current_routine->calls.pop_front();
   if (Current_routine->calls.empty()) return;
   // todo: no results returned warning
