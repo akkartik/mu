@@ -89,8 +89,12 @@ recipe main [
 
 :(before "End Globals")
 string Most_recent_results;
+:(before "End Setup")
+Most_recent_results = "";
 :(before "End of Instruction")
-if (Running_interactive) record_products(current_instruction(), products);
+if (Running_interactive && current_instruction().products.empty()) {
+  record_products(current_instruction(), products);
+}
 :(code)
 void record_products(const instruction& instruction, const vector<vector<double> >& products) {
   ostringstream out;
