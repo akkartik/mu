@@ -1892,7 +1892,7 @@ recipe run-sandboxes [
   # compute result of running editor contents
   curr:address:editor-data <- get editor:address:editor-data/deref, next-editor:offset
   in:address:array:character <- editor-contents curr:address:editor-data
-  out:address:array:character <- run-interactive in:address:array:character
+  out:address:array:character, warnings:address:array:character <- run-interactive in:address:array:character
   # move cursor
   # temporarily leave just one line for typing into sandboxes
   left:number <- get curr:address:editor-data/deref, left:offset
@@ -1900,7 +1900,13 @@ recipe run-sandboxes [
   dest-row:number <- add top:number, 1:literal
   move-cursor screen:address, dest-row:number, left:number
   # print result
+  {
+    break-unless warnings:address:array:character
+    print-string screen:address, warnings:address:array:character, 1:literal/red
+    jump +done:label
+  }
   print-string screen:address, out:address:array:character, 245:literal/grey
+  +done
   reply screen:address/same-as-ingredient:1
 ]
 
