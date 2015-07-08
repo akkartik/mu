@@ -1910,31 +1910,6 @@ recipe run-sandboxes [
   reply screen:address/same-as-ingredient:1
 ]
 
-scenario run-instruction-silently [
-  assume-screen 40:literal/width, 5:literal/height
-  # left editor is empty
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/top, 0:literal/left, 5:literal/right
-  # right editor contains an instruction
-  3:address:array:character <- new [12:number <- copy 34:literal]
-  4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
-  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 40:literal/right
-  reset-focus 2:address:editor-data
-  # run the code in the editors
-  assume-console [
-    press 65527  # F9
-  ]
-  run [
-    # now run query for it
-    event-loop screen:address, console:address, 2:address:editor-data
-  ]
-  # check that screen prints the value in location 12
-  screen-should-contain [
-    .     12:number <- copy 34:literal       .
-    .                                        .
-  ]
-]
-
 scenario run-instruction-and-print-warnings [
 #?   $print [=====
 #? ] #? 2
