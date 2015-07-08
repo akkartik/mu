@@ -112,6 +112,7 @@ while (current_step_index() >= SIZE(Current_routine->steps())) {
 //?   cerr << "reply " << Current_routine->calls.size() << '\n'; //? 2
   Current_routine->calls.pop_front();
   if (Current_routine->calls.empty()) return;
+  // Complete Call Fallthrough
   // todo: no results returned warning
   ++current_step_index();
 }

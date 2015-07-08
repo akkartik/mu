@@ -3,9 +3,8 @@
 
 :(scenario run_interactive_code)
 recipe main [
-  2:address:array:character <- new [1:number <- copy 34:literal
-]
-  run-interactive 2:address:array:character  # code won't return a result
+  2:address:array:character <- new [1:number <- copy 34:literal]
+  run-interactive 2:address:array:character
 ]
 +mem: storing 34 in location 1
 
@@ -35,6 +34,10 @@ case RUN_INTERACTIVE: {
   }
 }
 
+:(before "End Globals")
+bool Running_interactive = false;
+:(before "End Setup")
+Running_interactive = false;
 :(code)
 // reads a string, tries to call it as code, saving all warnings.
 // returns true if successfully called (no errors found during load and transform)
@@ -59,6 +62,7 @@ bool run_interactive(long long int address) {
     Hide_warnings = false;
     return false;
   }
+  Running_interactive = true;
   Current_routine->calls.push_front(call(Recipe_ordinal["interactive"]));
   return true;
 }
@@ -70,8 +74,47 @@ if (current_recipe_name() == "interactive") clean_up_interactive();
 :(code)
 void clean_up_interactive() {
   Hide_warnings = false;
+  Running_interactive = false;
 }
 
+:(scenario "run_interactive_returns_stringified_result")
+recipe main [
+  # try to interactively add 2 and 2
+  1:address:array:character <- new [add 2:literal, 2:literal]
+  2:address:array:character <- run-interactive 1:address:array:character
+  10:array:character <- copy 2:address:array:character/deref
+]
+# first letter in the output should be '4' in unicode
++mem: storing 52 in location 11
+
+:(before "End Globals")
+string Most_recent_results;
+:(before "End of Instruction")
+if (Running_interactive) record_products(current_instruction(), products);
+:(code)
+void record_products(const instruction& instruction, const vector<vector<double> >& products) {
+  ostringstream out;
+  for (long long int i = 0; i < SIZE(products); ++i) {
+    for (long long int j = 0; j < SIZE(products.at(i)); ++j) {
+//?       cerr << "aa: " << i << ", " << j << ": " << products.at(i).at(j) << '\n'; //? 1
+      out << products.at(i).at(j) << ' ';
+    }
+    out << '\n';
+  }
+//?   cerr << "aa: {\n" << out.str() << "}\n"; //? 1
+  Most_recent_results = out.str();
+}
+:(before "Complete Call Fallthrough")
+if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction().products.empty()) {
+  assert(SIZE(current_instruction().products) == 1);
+  // Send the results of the most recently executed instruction, regardless of
+  // call depth, to be converted to string and potentially printed to string.
+  vector<double> result;
+  result.push_back(new_string(Most_recent_results));
+  write_memory(current_instruction().products.at(0), result);
+}
+
+:(code)
 string strip_comments(string in) {
   ostringstream result;
   for (long long int i = 0; i < SIZE(in); ++i) {

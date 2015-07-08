@@ -1,0 +1,36 @@
+parse: instruction: new
+parse:   ingredient: {name: "add 2:literal, 2:literal", properties: [_: "literal-string"]}
+parse:   product: {name: "1", properties: ["1": "address":"array":"character"]}
+parse: instruction: run-interactive
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"]}
+parse:   product: {name: "2", properties: ["2": "address":"array":"character"]}
+parse: instruction: copy
+parse:   ingredient: {name: "2", properties: ["2": "address":"array":"character", "deref": ]}
+parse:   product: {name: "10", properties: ["10": "array":"character"]}
+after-brace: recipe main
+after-brace: new ...
+after-brace: run-interactive ...
+after-brace: copy ...
+9999 new: routine allocated memory from 1000 to 101000
+schedule: main
+ 101 run: 1:address:array:character <- new [add 2:literal, 2:literal]
+9999 mem: storing 1000 in location 1
+ 101 run: 2:address:array:character <- run-interactive 1:address:array:character
+9999 mem: location 1 is 1000
+parse: instruction: add
+parse:   ingredient: {name: "2", properties: ["2": "literal"]}
+parse:   ingredient: {name: "2", properties: ["2": "literal"]}
+after-brace: recipe interactive
+after-brace: add ...
+ 101 run: add 2:literal, 2:literal
+9999 mem: storing 1025 in location 2
+ 100 run: 10:array:character <- copy 2:address:array:character/deref
+9999 mem: location 2 is 1025
+9999 mem: location 1025 is 3
+9999 mem: location 1026 is 52
+9999 mem: location 1027 is 32
+9999 mem: location 1028 is 10
+9999 mem: storing 3 in location 10
+9999 mem: storing 52 in location 11
+9999 mem: storing 32 in location 12
+9999 mem: storing 10 in location 13
