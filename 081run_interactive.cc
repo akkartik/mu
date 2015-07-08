@@ -36,13 +36,11 @@ case RUN_INTERACTIVE: {
 }
 
 :(code)
-// reads a string, tries to call it as code.
+// reads a string, tries to call it as code, saving all warnings.
 // returns true if successfully called (no errors found during load and transform)
 bool run_interactive(long long int address) {
   long long int size = Memory[address];
-  if (size == 0) {
-    return false;
-  }
+  if (size == 0) return false;
   ostringstream tmp;
   for (long long int curr = address+1; curr <= address+size; ++curr) {
     // todo: unicode
@@ -63,6 +61,15 @@ bool run_interactive(long long int address) {
   }
   Current_routine->calls.push_front(call(Recipe_ordinal["interactive"]));
   return true;
+}
+
+:(after "Starting Reply")
+if (current_recipe_name() == "interactive") clean_up_interactive();
+:(after "Falling Through End Of Recipe")
+if (current_recipe_name() == "interactive") clean_up_interactive();
+:(code)
+void clean_up_interactive() {
+  Hide_warnings = false;
 }
 
 string strip_comments(string in) {
