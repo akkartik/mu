@@ -23,10 +23,11 @@ Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
   assert(scalar(ingredients.at(0)));
-  products.resize(1);
+  products.resize(2);
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
   if (!new_code_pushed_to_stack) {
     products.at(0).push_back(0);
+    products.at(1).push_back(warnings_from_trace());
     break;  // done with this instruction
   }
   else {
@@ -95,6 +96,19 @@ recipe main [
 +mem: storing 97 in location 11
 +mem: storing 98 in location 12
 
+:(scenario "run_interactive_returns_warnings")
+recipe main [
+  # run a command that generates a warning
+  1:address:array:character <- new [get 1234:number, foo:offset]
+  2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
+  10:array:character <- copy 3:address:array:character/deref
+]
+# warning should be "unknown element foo in container number"
++mem: storing 117 in location 11
++mem: storing 110 in location 12
++mem: storing 107 in location 13
++mem: storing 110 in location 14
+
 :(before "End Globals")
 string Most_recent_results;
 :(before "End Setup")
@@ -131,12 +145,17 @@ void record_products(const instruction& instruction, const vector<vector<double>
 }
 :(before "Complete Call Fallthrough")
 if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction().products.empty()) {
-  assert(SIZE(current_instruction().products) == 1);
+  assert(SIZE(current_instruction().products) <= 2);
   // Send the results of the most recently executed instruction, regardless of
   // call depth, to be converted to string and potentially printed to string.
   vector<double> result;
   result.push_back(new_string(Most_recent_results));
   write_memory(current_instruction().products.at(0), result);
+  if (SIZE(current_instruction().products) == 2) {
+    vector<double> warnings;
+    warnings.push_back(warnings_from_trace());
+    write_memory(current_instruction().products.at(1), warnings);
+  }
 }
 
 :(code)
@@ -180,6 +199,19 @@ bool is_string(const reagent& x) {
       && x.types.at(0) == Type_ordinal["address"]
       && x.types.at(1) == Type_ordinal["array"]
       && x.types.at(2) == Type_ordinal["character"];
+}
+
+long long int warnings_from_trace() {
+  if (!Trace_stream) return 0;
+  if (trace_count("warn") <= 0) return 0;
+  ostringstream out;
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+    if (p->label != "warn") continue;
+    out << p->contents;
+    if (*--p->contents.end() != '\n') out << '\n';
+  }
+  assert(!out.str().empty());
+  return new_string(out.str());
 }
 
 //:: debugging tool
