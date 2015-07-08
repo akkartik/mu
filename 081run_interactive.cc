@@ -42,16 +42,9 @@ Running_interactive = false;
 // reads a string, tries to call it as code, saving all warnings.
 // returns true if successfully called (no errors found during load and transform)
 bool run_interactive(long long int address) {
-  long long int size = Memory[address];
-  if (size == 0) return false;
-  ostringstream tmp;
-  for (long long int curr = address+1; curr <= address+size; ++curr) {
-    // todo: unicode
-    tmp << (char)(int)Memory[curr];
-  }
   if (Recipe_ordinal.find("interactive") == Recipe_ordinal.end())
     Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
-  string command = trim(strip_comments(tmp.str()));
+  string command = trim(strip_comments(to_string(address)));
   if (command.empty()) return false;
   Recipe.erase(Recipe_ordinal["interactive"]);
   Hide_warnings = true;
@@ -87,25 +80,53 @@ recipe main [
 # first letter in the output should be '4' in unicode
 +mem: storing 52 in location 11
 
+:(scenario "run_interactive_returns_string")
+recipe main [
+  # try to interactively add 2 and 2
+  1:address:array:character <- new [
+    100:address:array:character <- new [a]
+    101:address:array:character <- new [b]
+    102:address:array:character <- string-append 100:address:array:character, 101:address:array:character
+  ]
+  2:address:array:character <- run-interactive 1:address:array:character
+  10:array:character <- copy 2:address:array:character/deref
+]
+# output contains "ab"
++mem: storing 97 in location 11
++mem: storing 98 in location 12
+
 :(before "End Globals")
 string Most_recent_results;
 :(before "End Setup")
 Most_recent_results = "";
 :(before "End of Instruction")
-if (Running_interactive && current_instruction().products.empty()) {
+if (Running_interactive) {
   record_products(current_instruction(), products);
 }
 :(code)
 void record_products(const instruction& instruction, const vector<vector<double> >& products) {
   ostringstream out;
+//?   cerr << current_instruction().to_string() << '\n'; //? 1
   for (long long int i = 0; i < SIZE(products); ++i) {
+    // string
+    if (i < SIZE(instruction.products)) {
+//?       cerr << "AA\n"; //? 1
+//?       cerr << instruction.products.size() << " vs " << i << '\n'; //? 1
+      if (is_string(instruction.products.at(i))) {
+//?         cerr << "BB\n"; //? 1
+        assert(scalar(products.at(i)));
+        out << to_string(products.at(i).at(0)) << '\n';
+        continue;
+      }
+      // End Record Product Special-cases
+    }
     for (long long int j = 0; j < SIZE(products.at(i)); ++j) {
 //?       cerr << "aa: " << i << ", " << j << ": " << products.at(i).at(j) << '\n'; //? 1
-      out << products.at(i).at(j) << ' ';
+        out << products.at(i).at(j) << ' ';
     }
     out << '\n';
   }
-//?   cerr << "aa: {\n" << out.str() << "}\n"; //? 1
+//?   cerr << "aa: {\n" << out.str() << "}\n"; //? 2
   Most_recent_results = out.str();
 }
 :(before "Complete Call Fallthrough")
@@ -134,6 +155,17 @@ string strip_comments(string in) {
   return result.str();
 }
 
+string to_string(long long int address) {
+  long long int size = Memory[address];
+  if (size == 0) return "";
+  ostringstream tmp;
+  for (long long int curr = address+1; curr <= address+size; ++curr) {
+    // todo: unicode
+    tmp << (char)(int)Memory[curr];
+  }
+  return tmp.str();
+}
+
 long long int stringified_value_of_location(long long int address) {
   // convert to string
   ostringstream out;
@@ -141,6 +173,13 @@ long long int stringified_value_of_location(long long int address) {
   out << Memory[address];
 //?   trace(1, "foo") << "b: " << Memory[address]; //? 1
   return new_string(out.str());
+}
+
+bool is_string(const reagent& x) {
+  return x.types.size() == 3
+      && x.types.at(0) == Type_ordinal["address"]
+      && x.types.at(1) == Type_ordinal["array"]
+      && x.types.at(2) == Type_ordinal["character"];
 }
 
 //:: debugging tool

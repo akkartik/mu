@@ -187,9 +187,9 @@ recipe main [
 +mem: storing 2.5 in location 1
 
 :(code)
-inline bool scalar(vector<long long int>& x) {
+inline bool scalar(const vector<long long int>& x) {
   return SIZE(x) == 1;
 }
-inline bool scalar(vector<double>& x) {
+inline bool scalar(const vector<double>& x) {
   return SIZE(x) == 1;
 }
