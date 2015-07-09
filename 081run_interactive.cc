@@ -218,6 +218,10 @@ long long int warnings_from_trace() {
 
 //: simpler version of run-interactive: doesn't do any running, just loads
 //: recipes and reports warnings.
+:(before "End Globals")
+bool Loading_interactive = false;
+:(before "End Setup")
+Loading_interactive = false;
 :(before "End Primitive Recipe Declarations")
 RELOAD,
 :(before "End Primitive Recipe Numbers")
@@ -225,10 +229,12 @@ Recipe_ordinal["reload"] = RELOAD;
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
   assert(scalar(ingredients.at(0)));
+  Loading_interactive = true;
   Hide_warnings = true;
   load(to_string(ingredients.at(0).at(0)));
   transform_all();
   Hide_warnings = false;
+  Loading_interactive = false;
   products.resize(1);
   products.at(0).push_back(warnings_from_trace());
   break;
