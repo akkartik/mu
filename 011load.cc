@@ -34,7 +34,7 @@ vector<recipe_ordinal> load(istream& in) {
         Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
       }
       if (Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
-        raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n";
+        if (!Loading_interactive) raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n";
         Recipe.erase(Recipe_ordinal[recipe_name]);
       }
       // todo: save user-defined recipes to mu's memory
