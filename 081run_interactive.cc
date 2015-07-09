@@ -213,15 +213,3 @@ long long int warnings_from_trace() {
   assert(!out.str().empty());
   return new_string(out.str());
 }
-
-//:: debugging tool
-
-:(before "End Primitive Recipe Declarations")
-_RUN_DEPTH,
-:(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$run-depth"] = _RUN_DEPTH;
-:(before "End Primitive Recipe Implementations")
-case _RUN_DEPTH: {
-  cerr << Current_routine->calls.size();
-  break;
-}
