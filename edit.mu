@@ -89,10 +89,6 @@ container editor-data [
   # helps organize editors in a 'chain'.
   next-editor:address:editor-data
   in-focus?:boolean  # set for the one editor in this chain currently being edited
-
-  # recipes that each editor may hook to run at various points
-  respond:recipe-ordinal  # how it reacts to events from the console
-      # ingredients: screen, console, this editor-data, event
 ]
 
 # editor:address, screen:address <- new-editor s:address:array:character, screen:address, top:number, left:number, bottom:number
@@ -141,9 +137,6 @@ recipe new-editor [
   # if using multiple editors, must call reset-focus after chaining them all
   b:address:boolean <- get-address result:address:editor-data/deref, in-focus?:offset
   b:address:boolean/deref <- copy 1:literal/true
-  # initialize 'hook' recipes
-  r:address:recipe-ordinal <- get-address result:address:editor-data/deref, respond:offset
-  r:address:recipe-ordinal/deref <- copy handle-event:recipe
   # early exit if s is empty
   reply-unless s:address:array:character, result:address:editor-data
   len:number <- length s:address:array:character/deref
@@ -591,8 +584,7 @@ recipe event-loop [
     curr:address:editor-data <- copy editor:address:editor-data
     {
       break-unless curr:address:editor-data
-      responder:recipe-ordinal <- get curr:address:editor-data/deref, respond:offset
-      call responder:recipe-ordinal, screen:address, console:address, curr:address:editor-data, e:event
+      handle-event screen:address, console:address, curr:address:editor-data, e:event
       curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
       loop
     }
