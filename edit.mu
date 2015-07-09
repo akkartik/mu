@@ -65,8 +65,6 @@ scenario editor-initially-prints-string-to-screen [
 container editor-data [
   # editable text: doubly linked list of characters (head contains a special sentinel)
   data:address:duplex-list
-  # location of top-left of screen inside data (scrolling)
-  top-of-screen:address:duplex-list
   # location before cursor inside data
   before-cursor:address:duplex-list
 
@@ -127,12 +125,10 @@ recipe new-editor [
   warnings:address:address:array:character <- get-address result:address:editor-data/deref, warnings:offset
   warnings:address:address:array:character/deref <- copy 0:literal
   x:address:number/deref <- copy left:number
-  d:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
-  d:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
+  init:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
+  init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
   y:address:address:duplex-list <- get-address result:address:editor-data/deref, before-cursor:offset
-  y:address:address:duplex-list/deref <- copy d:address:address:duplex-list/deref
-  init:address:address:duplex-list <- get-address result:address:editor-data/deref, top-of-screen:offset
-  init:address:address:duplex-list/deref <- copy d:address:address:duplex-list/deref
+  y:address:address:duplex-list/deref <- copy init:address:address:duplex-list/deref
   # set focus
   # if using multiple editors, must call reset-focus after chaining them all
   b:address:boolean <- get-address result:address:editor-data/deref, in-focus?:offset
@@ -177,17 +173,16 @@ scenario editor-initializes-without-data [
   ]
   memory-should-contain [
     # 2 (data) <- just the § sentinel
-    # 3 (top of screen) <- the § sentinel
-    # 4 (before cursor) <- the § sentinel
-    5 <- 0  # response
-    6 <- 0  # warnings
-    # 7 <- screen
-    8 <- 1  # top
-    9 <- 2  # left
-    10 <- 1  # bottom
-    11 <- 4  # right  (inclusive)
-    12 <- 1  # cursor row
-    13 <- 2  # cursor column
+    # 3 (before cursor) <- the § sentinel
+    4 <- 0  # response
+    5 <- 0  # warnings
+    # 6 <- screen
+    7 <- 1  # top
+    8 <- 2  # left
+    9 <- 1  # bottom
+    10 <- 4  # right  (inclusive)
+    11 <- 1  # cursor row
+    12 <- 2  # cursor column
   ]
   screen-should-contain [
     .     .
@@ -208,7 +203,7 @@ recipe render [
   right:number <- get editor:address:editor-data/deref, right:offset
   hide-screen screen:address
   # traversing editor
-  curr:address:duplex-list <- get editor:address:editor-data/deref, top-of-screen:offset
+  curr:address:duplex-list <- get editor:address:editor-data/deref, data:offset
   prev:address:duplex-list <- copy curr:address:duplex-list
   curr:address:duplex-list <- next-duplex curr:address:duplex-list
   # traversing screen
