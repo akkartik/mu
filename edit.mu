@@ -236,8 +236,6 @@ recipe render [
   move-cursor screen:address, row:number, column:number
   {
     +next-character
-#?     $print curr:address:duplex-list, [ 
-#? ] #? 1
     break-unless curr:address:duplex-list
     off-screen?:boolean <- greater-or-equal row:number, screen-height:number
     break-if off-screen?:boolean
@@ -250,13 +248,8 @@ recipe render [
       at-cursor?:boolean <- equal column:number, cursor-column:address:number/deref
       break-unless at-cursor?:boolean
       before-cursor:address:address:duplex-list/deref <- prev-duplex curr:address:duplex-list
-#?       new-prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
-#?       $print [render 0: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)
-#? ] #? 1
     }
     c:character <- get curr:address:duplex-list/deref, value:offset
-#?     $print [rendering ], c:character, [ 
-#? ] #? 2
     {
       # newline? move to left rather than 0
       newline?:boolean <- equal c:character, 10:literal/newline
@@ -269,22 +262,9 @@ recipe render [
         break-unless left-of-cursor?:boolean
         cursor-column:address:number/deref <- copy column:number
         before-cursor:address:address:duplex-list/deref <- prev-duplex curr:address:duplex-list
-#?         new-prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
-#?         $print [render 1: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)
-#? ] #? 1
       }
       # clear rest of line in this window
-#?       $print row:number, [ ], column:number, [ ], right:number, [ 
-#? ] #? 1
-      {
-        done?:boolean <- greater-than column:number, right:number
-        break-if done?:boolean
-        print-character screen:address, 32:literal/space
-        column:number <- add column:number, 1:literal
-#?         $print column:number, [ 
-#? ] #? 1
-        loop
-      }
+      clear-line-delimited screen:address, column:number, right:number
       # skip to next line
       row:number <- add row:number, 1:literal
       column:number <- copy left:number
@@ -347,18 +327,7 @@ recipe render [
   }
 #?   $print [clearing ], row:number, [ ], column:number, [ ], right:number, [ 
 #? ] #? 2
-  {
-    # clear rest of current line
-    done?:boolean <- greater-or-equal row:number, screen-height:number
-    break-if done?:boolean
-    {
-      line-done?:boolean <- greater-than column:number, right:number
-      break-if line-done?:boolean
-      print-character screen:address, 32:literal/space
-      column:number <- add column:number, 1:literal
-      loop
-    }
-  }
+  clear-line-delimited screen:address, column:number, right:number
   row:number <- add row:number, 1:literal
   {
     # print warnings, or response if no warnings
@@ -376,17 +345,10 @@ recipe render [
   }
   {
     # clear one more line just in case we just backspaced out of it
-    column:number <- copy left:number
     done?:boolean <- greater-or-equal row:number, screen-height:number
     break-if done?:boolean
-    move-cursor screen:address, row:number, column:number
-    {
-      line-done?:boolean <- greater-or-equal column:number, right:number
-      break-if line-done?:boolean
-      print-character screen:address, 32:literal/space
-      column:number <- add column:number, 1:literal
-      loop
-    }
+    move-cursor screen:address, row:number, left:number
+    clear-line-delimited screen:address, left:number, right:number
   }
   # update cursor
   {
@@ -404,6 +366,7 @@ recipe render [
 
 # row:number <- render-string s:address:array:character, editor:address:editor-data, color:number, row:number
 # print a string 's' to 'editor' in 'color' starting at 'row'
+# leave cursor at start of next line
 recipe render-string [
   default-space:address:array:location <- new location:type, 40:literal
   s:address:array:character <- next-ingredient
@@ -469,6 +432,21 @@ recipe render-string [
   }
   row:number <- add row:number, 1:literal
   reply row:number/same-as-ingredient:3
+]
+
+recipe clear-line-delimited [
+  default-space:address:array:location <- new location:type, 40:literal
+  screen:address <- next-ingredient
+  left:number <- next-ingredient
+  right:number <- next-ingredient
+  column:number <- copy left:number
+  {
+    done?:boolean <- greater-than column:number, right:number
+    break-if done?:boolean
+    print-character screen:address, 32:literal/space
+    column:number <- add column:number, 1:literal
+    loop
+  }
 ]
 
 scenario editor-initially-prints-multiple-lines [
