@@ -73,7 +73,6 @@ container editor-data [
   # ..or red
   warnings:address:array:character
 
-  screen:address:screen
   # raw bounds of display area on screen
   top:number
   left:number
@@ -104,8 +103,6 @@ recipe new-editor [
   right:number <- subtract right:number, 1:literal
   result:address:editor-data <- new editor-data:type
   # initialize screen-related fields
-  sc:address:address:screen <- get-address result:address:editor-data/deref, screen:offset
-  sc:address:address:screen/deref <- copy screen:address
   x:address:number <- get-address result:address:editor-data/deref, top:offset
   x:address:number/deref <- copy top:number
   x:address:number <- get-address result:address:editor-data/deref, left:offset
@@ -161,7 +158,7 @@ recipe new-editor [
   y:address:address:duplex-list/deref <- copy init:address:address:duplex-list/deref
   # perform initial rendering to screen
   bottom:address:number <- get-address result:address:editor-data/deref, bottom:offset
-  result:address:editor-data <- render result:address:editor-data
+  result:address:editor-data <- render screen:address, result:address:editor-data
   reply result:address:editor-data
 ]
 
@@ -176,13 +173,12 @@ scenario editor-initializes-without-data [
     # 3 (before cursor) <- the § sentinel
     4 <- 0  # response
     5 <- 0  # warnings
-    # 6 <- screen
-    7 <- 1  # top
-    8 <- 2  # left
-    9 <- 1  # bottom
-    10 <- 4  # right  (inclusive)
-    11 <- 1  # cursor row
-    12 <- 2  # cursor column
+    6 <- 1  # top
+    7 <- 2  # left
+    8 <- 1  # bottom
+    9 <- 4  # right  (inclusive)
+    10 <- 1  # cursor row
+    11 <- 2  # cursor column
   ]
   screen-should-contain [
     .     .
@@ -193,10 +189,10 @@ scenario editor-initializes-without-data [
 
 recipe render [
   default-space:address:array:location <- new location:type, 40:literal
+  screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
 #?   $print [=== render
 #? ] #? 2
-  screen:address <- get editor:address:editor-data/deref, screen:offset
   top:number <- get editor:address:editor-data/deref, top:offset
   left:number <- get editor:address:editor-data/deref, left:offset
   screen-height:number <- screen-height screen:address
@@ -313,13 +309,13 @@ recipe render [
     warnings:address:array:character <- get editor:address:editor-data/deref, warnings:offset
     {
       break-unless warnings:address:array:character
-      row:number <- render-string warnings:address:array:character, editor:address:editor-data, 1:literal/red, row:number
+      row:number <- render-string screen:address, warnings:address:array:character, editor:address:editor-data, 1:literal/red, row:number
     }
     {
       break-if warnings:address:array:character
       response:address:array:character <- get editor:address:editor-data/deref, response:offset
       break-unless response:address:array:character
-      row:number <- render-string response:address:array:character, editor:address:editor-data, 245:literal/grey, row:number
+      row:number <- render-string screen:address, response:address:array:character, editor:address:editor-data, 245:literal/grey, row:number
     }
   }
   {
@@ -355,7 +351,7 @@ recipe render [
     move-cursor screen:address, cursor-row:address:number/deref, cursor-column:address:number/deref
   }
   show-screen screen:address
-  reply editor:address:editor-data/same-as-ingredient:0
+  reply editor:address:editor-data/same-as-ingredient:1
 ]
 
 # row:number <- render-string s:address:array:character, editor:address:editor-data, color:number, row:number
@@ -363,6 +359,7 @@ recipe render [
 # leave cursor at start of next line
 recipe render-string [
   default-space:address:array:location <- new location:type, 40:literal
+  screen:address <- next-ingredient
   s:address:array:character <- next-ingredient
   editor:address:editor-data <- next-ingredient
   color:number <- next-ingredient
@@ -371,7 +368,6 @@ recipe render-string [
   left:number <- get editor:address:editor-data/deref, left:offset
   right:number <- get editor:address:editor-data/deref, right:offset
   column:number <- copy left:number
-  screen:address <- get editor:address:editor-data/deref, screen:offset
   move-cursor screen:address, row:number, column:number
   screen-height:number <- screen-height screen:address
   i:number <- copy 0:literal
@@ -424,7 +420,7 @@ recipe render-string [
     column:number <- add column:number, 1:literal
     loop
   }
-  reply row:number/same-as-ingredient:3
+  reply row:number/same-as-ingredient:4
 ]
 
 recipe clear-line-delimited [
@@ -567,7 +563,7 @@ recipe event-loop [
         do-run?:boolean <- equal k:address:number/deref, 65526:literal/F10
         break-unless do-run?:boolean
         run-sandboxes editor:address:editor-data
-        render-all editor:address:editor-data
+        render-all screen:address, editor:address:editor-data
         loop +next-event:label  # done with this event; no need to send to editors
       }
     }
@@ -633,7 +629,7 @@ recipe handle-event [
       delete-before-cursor editor:address:editor-data
       jump +render:label
     }
-    insert-at-cursor editor:address:editor-data, c:address:character/deref
+    insert-at-cursor editor:address:editor-data, c:address:character/deref, screen:address
     jump +render:label
   }
   # otherwise it's a special key to control the editor
@@ -752,7 +748,7 @@ recipe handle-event [
   {
     more-events?:boolean <- has-more-events? console:address
     break-if more-events?:boolean
-    render editor:address:editor-data
+    render screen:address, editor:address:editor-data
   }
 ]
 
@@ -792,13 +788,13 @@ recipe insert-at-cursor [
   default-space:address:array:location <- new location:type, 30:literal
   editor:address:editor-data <- next-ingredient
   c:character <- next-ingredient
+  screen:address <- next-ingredient
 #?   $print [insert ], c:character, [ 
 #? ] #? 1
   before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
   d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
   insert-duplex c:character, before-cursor:address:address:duplex-list/deref
   before-cursor:address:address:duplex-list/deref <- next-duplex before-cursor:address:address:duplex-list/deref
-  screen:address <- get editor:address:editor-data/deref, screen:offset
   cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   left:number <- get editor:address:editor-data/deref, left:offset
@@ -881,11 +877,12 @@ recipe previous-line-length [
 
 recipe render-all [
   default-space:address:array:location <- new location:type, 40:literal
+  screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   curr:address:editor-data <- copy editor:address:editor-data
   {
     break-unless curr:address:editor-data
-    render curr:address:editor-data
+    render screen:address, curr:address:editor-data
     curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
     loop
   }
@@ -901,7 +898,6 @@ recipe render-all [
     }
     cursor-row:number <- get curr:address:editor-data/deref, cursor-row:offset
     cursor-column:number <- get curr:address:editor-data/deref, cursor-column:offset
-    screen:address <- get curr:address:editor-data/deref, screen:offset
     move-cursor screen:address, cursor-row:number, cursor-column:number
   }
 ]
