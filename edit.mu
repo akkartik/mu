@@ -13,25 +13,15 @@ recipe programming-environment [
   console:address <- next-ingredient
   width:number <- screen-width screen:address
   height:number <- screen-height screen:address
-  # draw menu
-#?   draw-horizontal screen:address, 0:literal, 0:literal/left, width:number, 95:literal/underscore
+  # top menu
   draw-horizontal screen:address, 0:literal, 0:literal/left, width:number, 32:literal/space, 0:literal/black, 238:literal/grey
-  # draw a dotted line down the middle
-  divider:number, _ <- divide-with-remainder width:number, 2:literal
-  draw-vertical screen:address, divider:number, 1:literal/top, height:number, 9482:literal/vertical-dotted
-  # left column consists of multiple recipes
-  draw-horizontal screen:address, 10:literal, 0:literal/left, divider:number, 9480:literal/horizontal-dotted
-  draw-horizontal screen:address, 20:literal, 0:literal/left, divider:number, 9480:literal/horizontal-dotted
-  draw-horizontal screen:address, 30:literal, 0:literal/left, divider:number, 9480:literal/horizontal-dotted
-  # right column consists of multiple sandboxes isolated from each other, but
-  # with access to the recipes on the left
-  column2:number <- add divider:number, 1:literal
-  draw-horizontal screen:address, 3:literal, column2:number, width:number, 9473:literal/horizontal-double
-  # nav bar
   button-start:number <- subtract width:number, 20:literal
   move-cursor screen:address, 0:literal/row, button-start:number/column
   run-button:address:array:character <- new [ run (F10)  ]
   print-string screen:address, run-button:address:array:character, 255:literal/white, 161:literal/reddish
+  # dotted line down the middle
+  divider:number, _ <- divide-with-remainder width:number, 2:literal
+  draw-vertical screen:address, divider:number, 1:literal/top, height:number, 9482:literal/vertical-dotted
   # editor on the left
   left:address:array:character <- new [recipe new-add [
   x:number <- next-ingredient
@@ -348,8 +338,26 @@ recipe render [
     # clear one more line just in case we just backspaced out of it
     done?:boolean <- greater-or-equal row:number, screen-height:number
     break-if done?:boolean
-    move-cursor screen:address, row:number, left:number
-    clear-line-delimited screen:address, left:number, right:number
+    # hack: blank for tests
+    {
+      {
+        break-if screen:address
+        {
+          break-if left:number  # hacky
+          # left side, recipe editor
+          draw-horizontal screen:address, row:number, left:number, right:number, 9480:literal/horizontal-dotted
+        }
+        {
+          break-unless left:number
+          # right side, sandbox editor
+          draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
+        }
+      }
+      {
+        break-unless screen:address
+        draw-horizontal screen:address, row:number, left:number, right:number, 32:literal/space
+      }
+    }
   }
   # update cursor
   {
