@@ -502,6 +502,11 @@ static int read_up_to(int n) {
   return 0;
 }
 
+int tb_event_ready(void)
+{
+  return input_buffer.len > 0;
+}
+
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 {
   // ;-)

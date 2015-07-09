@@ -196,6 +196,8 @@ int tb_peek_event(struct tb_event *event, int timeout);
  */
 int tb_poll_event(struct tb_event *event);
 
+int tb_event_ready(void);
+
 
 
 /*** 3. Utility utf8 functions. */

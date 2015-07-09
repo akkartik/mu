@@ -336,3 +336,14 @@ case CHECK_FOR_INTERACTION: {
   products.at(1).push_back(/*found*/false);
   break;
 }
+
+:(before "End Primitive Recipe Declarations")
+INTERACTIONS_LEFT,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["interactions-left?"] = INTERACTIONS_LEFT;
+:(before "End Primitive Recipe Implementations")
+case INTERACTIONS_LEFT: {
+  products.resize(1);
+  products.at(0).push_back(tb_event_ready());
+  break;
+}
