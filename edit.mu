@@ -328,29 +328,26 @@ recipe render [
     }
   }
   {
+    # draw a line after
+    # hack: not for tests
+    break-if screen:address
+    {
+      break-if left:number  # hacky
+      # left side, recipe editor
+      draw-horizontal screen:address, row:number, left:number, right:number, 9480:literal/horizontal-dotted
+    }
+    {
+      break-unless left:number
+      # right side, sandbox editor
+      draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
+    }
+    row:number <- add row:number, 1:literal
+  }
+  {
     # clear one more line just in case we just backspaced out of it
     done?:boolean <- greater-or-equal row:number, screen-height:number
     break-if done?:boolean
-    # hack: blank for tests
-    {
-      {
-        break-if screen:address
-        {
-          break-if left:number  # hacky
-          # left side, recipe editor
-          draw-horizontal screen:address, row:number, left:number, right:number, 9480:literal/horizontal-dotted
-        }
-        {
-          break-unless left:number
-          # right side, sandbox editor
-          draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
-        }
-      }
-      {
-        break-unless screen:address
-        draw-horizontal screen:address, row:number, left:number, right:number, 32:literal/space
-      }
-    }
+    draw-horizontal screen:address, row:number, left:number, right:number, 32:literal/space
   }
   # update cursor
   {
