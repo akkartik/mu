@@ -100,3 +100,16 @@ recipe wait-for-event [
     loop-unless found?:boolean
   }
 ]
+
+# use this helper to skip rendering if there's lots of other events queued up
+recipe has-more-events? [
+  default-space:address:array:location <- new location:type, 30:literal
+  console:address <- next-ingredient
+  {
+    break-unless console:address
+    # fake consoles should be plenty fast; never skip
+    reply 0:literal/false
+  }
+  result:boolean <- interactions-left?
+  reply result:boolean
+]

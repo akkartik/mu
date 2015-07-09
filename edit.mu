@@ -683,7 +683,11 @@ recipe handle-event [
     # that's it; render will adjust cursor-column as necessary
   }
   +render
-  render editor:address:editor-data
+  {
+    more-events?:boolean <- has-more-events? console:address
+    break-if more-events?:boolean
+    render editor:address:editor-data
+  }
 ]
 
 recipe move-cursor-in-editor [
