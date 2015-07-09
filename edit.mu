@@ -37,6 +37,7 @@ recipe programming-environment [
   x:number <- next-ingredient
   y:number <- next-ingredient
   z:number <- add x:number, y:number
+  reply z:number
 ]]
   left-editor:address:editor-data <- new-editor left:address:array:character, screen:address, 1:literal/top, 0:literal/left, divider:number/right
   # editor on the right
