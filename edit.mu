@@ -432,7 +432,6 @@ recipe render-string [
     column:number <- add column:number, 1:literal
     loop
   }
-  row:number <- add row:number, 1:literal
   reply row:number/same-as-ingredient:3
 ]
 
