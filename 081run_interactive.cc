@@ -15,6 +15,8 @@ recipe main [
 # result is null
 +mem: storing 0 in location 1
 
+//: run code in 'interactive mode', i.e. with warnings off, and recording
+//: output in case we want to print it to screen
 :(before "End Primitive Recipe Declarations")
 RUN_INTERACTIVE,
 :(before "End Primitive Recipe Numbers")
@@ -212,4 +214,22 @@ long long int warnings_from_trace() {
   }
   assert(!out.str().empty());
   return new_string(out.str());
+}
+
+//: simpler version of run-interactive: doesn't do any running, just loads
+//: recipes and reports warnings.
+:(before "End Primitive Recipe Declarations")
+RELOAD,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["reload"] = RELOAD;
+:(before "End Primitive Recipe Implementations")
+case RELOAD: {
+  assert(scalar(ingredients.at(0)));
+  Hide_warnings = true;
+  load(to_string(ingredients.at(0).at(0)));
+  transform_all();
+  Hide_warnings = false;
+  products.resize(1);
+  products.at(0).push_back(warnings_from_trace());
+  break;
 }
