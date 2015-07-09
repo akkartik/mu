@@ -72,12 +72,17 @@ scenario editor-initially-prints-string-to-screen [
 ## text to the screen.
 
 container editor-data [
-  # doubly linked list of characters (head contains a special sentinel)
+  # editable text: doubly linked list of characters (head contains a special sentinel)
   data:address:duplex-list
   # location of top-left of screen inside data (scrolling)
   top-of-screen:address:duplex-list
   # location before cursor inside data
   before-cursor:address:duplex-list
+
+  # string of non-editable text, in either regular grey..
+  response:address:array:character
+  # ..or red
+  warnings:address:array:character
 
   screen:address:screen
   # raw bounds of display area on screen
@@ -129,8 +134,11 @@ recipe new-editor [
   x:address:number <- get-address result:address:editor-data/deref, cursor-row:offset
   x:address:number/deref <- copy top:number
   x:address:number <- get-address result:address:editor-data/deref, cursor-column:offset
-#?   $print left:number, [ 
-#? ] #? 1
+  response:address:address:array:character <- get-address result:address:editor-data/deref, response:offset
+  response:address:address:array:character/deref <- copy 0:literal
+#?   response:address:address:array:character/deref <- new [aaa] #? 1
+  warnings:address:address:array:character <- get-address result:address:editor-data/deref, warnings:offset
+  warnings:address:address:array:character/deref <- copy 0:literal
   x:address:number/deref <- copy left:number
   d:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
   d:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
@@ -184,16 +192,18 @@ scenario editor-initializes-without-data [
     2:editor-data <- copy 1:address:editor-data/deref
   ]
   memory-should-contain [
-    # 2 <- just the § sentinel
+    # 2 (data) <- just the § sentinel
     # 3 (top of screen) <- the § sentinel
     # 4 (before cursor) <- the § sentinel
-    # 5 <- screen
-    6 <- 1  # top
-    7 <- 2  # left
-    8 <- 1  # bottom
-    9 <- 4  # right  (inclusive)
-    10 <- 1  # cursor row
-    11 <- 2  # cursor column
+    5 <- 0  # response
+    6 <- 0  # warnings
+    # 7 <- screen
+    8 <- 1  # top
+    9 <- 2  # left
+    10 <- 1  # bottom
+    11 <- 4  # right  (inclusive)
+    12 <- 1  # cursor row
+    13 <- 2  # cursor column
   ]
   screen-should-contain [
     .     .
@@ -348,8 +358,24 @@ recipe render [
       column:number <- add column:number, 1:literal
       loop
     }
+  }
+  row:number <- add row:number, 1:literal
+  {
+    # print warnings, or response if no warnings
+    warnings:address:array:character <- get editor:address:editor-data/deref, warnings:offset
+    {
+      break-unless warnings:address:array:character
+      row:number <- render-string warnings:address:array:character, editor:address:editor-data, 1:literal/red, row:number
+    }
+    {
+      break-if warnings:address:array:character
+      response:address:array:character <- get editor:address:editor-data/deref, response:offset
+      break-unless response:address:array:character
+      row:number <- render-string response:address:array:character, editor:address:editor-data, 245:literal/grey, row:number
+    }
+  }
+  {
     # clear one more line just in case we just backspaced out of it
-    row:number <- add row:number, 1:literal
     column:number <- copy left:number
     done?:boolean <- greater-or-equal row:number, screen-height:number
     break-if done?:boolean
@@ -374,6 +400,75 @@ recipe render [
   }
   show-screen screen:address
   reply editor:address:editor-data/same-as-ingredient:0
+]
+
+# row:number <- render-string s:address:array:character, editor:address:editor-data, color:number, row:number
+# print a string 's' to 'editor' in 'color' starting at 'row'
+recipe render-string [
+  default-space:address:array:location <- new location:type, 40:literal
+  s:address:array:character <- next-ingredient
+  editor:address:editor-data <- next-ingredient
+  color:number <- next-ingredient
+  row:number <- next-ingredient
+  reply-unless s:address:array:character, row:number
+  left:number <- get editor:address:editor-data/deref, left:offset
+  right:number <- get editor:address:editor-data/deref, right:offset
+  column:number <- copy left:number
+  screen:address <- get editor:address:editor-data/deref, screen:offset
+  move-cursor screen:address, row:number, column:number
+  screen-height:number <- screen-height screen:address
+  i:number <- copy 0:literal
+  len:number <- length s:address:array:character/deref
+  {
+    +next-character
+    done?:boolean <- greater-or-equal i:number, len:number
+    break-if done?:boolean
+    done?:boolean <- greater-or-equal row:number, screen-height:number
+    break-if done?:boolean
+    c:character <- index s:address:array:character/deref, i:number
+    {
+      # at right? wrap.
+      at-right?:boolean <- equal column:number, right:number
+      break-unless at-right?:boolean
+      # print wrap icon
+      print-character screen:address, 8617:literal/loop-back-to-left, 245:literal/grey
+      column:number <- copy left:number
+      row:number <- add row:number, 1:literal
+      move-cursor screen:address, row:number, column:number
+      loop +next-character:label  # retry i
+    }
+    i:number <- add i:number, 1:literal
+    {
+      # newline? move to left rather than 0
+      newline?:boolean <- equal c:character, 10:literal/newline
+      break-unless newline?:boolean
+      # clear rest of line in this window
+      {
+        done?:boolean <- greater-than column:number, right:number
+        break-if done?:boolean
+        print-character screen:address, 32:literal/space
+        column:number <- add column:number, 1:literal
+        loop
+      }
+      row:number <- add row:number, 1:literal
+      column:number <- copy left:number
+      move-cursor screen:address, row:number, column:number
+      loop +next-character:label
+    }
+    print-character screen:address, c:character, color:number
+    column:number <- add column:number, 1:literal
+    loop
+  }
+  {
+    # clear rest of current line
+    line-done?:boolean <- greater-than column:number, right:number
+    break-if line-done?:boolean
+    print-character screen:address, 32:literal/space
+    column:number <- add column:number, 1:literal
+    loop
+  }
+  row:number <- add row:number, 1:literal
+  reply row:number/same-as-ingredient:3
 ]
 
 scenario editor-initially-prints-multiple-lines [
@@ -500,7 +595,8 @@ recipe event-loop [
       {
         do-run?:boolean <- equal k:address:number/deref, 65526:literal/F10
         break-unless do-run?:boolean
-        run-sandboxes editor:address:editor-data, screen:address
+        run-sandboxes editor:address:editor-data
+        render-all editor:address:editor-data
         loop +next-event:label  # done with this event; no need to send to editors
       }
     }
@@ -811,6 +907,33 @@ recipe previous-line-length [
     loop
   }
   reply result:number
+]
+
+recipe render-all [
+  default-space:address:array:location <- new location:type, 40:literal
+  editor:address:editor-data <- next-ingredient
+  curr:address:editor-data <- copy editor:address:editor-data
+  {
+    break-unless curr:address:editor-data
+    render curr:address:editor-data
+    curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
+    loop
+  }
+  # update cursor
+  curr:address:editor-data <- copy editor:address:editor-data
+  {
+    +next-editor
+    in-focus?:boolean <- get curr:address:editor-data/deref, in-focus?:offset
+    {
+      break-if in-focus?:boolean
+      curr:address:editor-data <- get curr:address:editor-data/deref, next-editor:offset
+      loop +next-editor:label
+    }
+    cursor-row:number <- get curr:address:editor-data/deref, cursor-row:offset
+    cursor-column:number <- get curr:address:editor-data/deref, cursor-column:offset
+    screen:address <- get curr:address:editor-data/deref, screen:offset
+    move-cursor screen:address, cursor-row:number, cursor-column:number
+  }
 ]
 
 scenario editor-handles-empty-event-queue [
@@ -1889,29 +2012,21 @@ scenario run-and-show-results [
 recipe run-sandboxes [
   default-space:address:array:location <- new location:type, 30:literal
   editor:address:editor-data <- next-ingredient
-  screen:address <- next-ingredient
-#?   $print [run sandboxes
-#? ] #? 2
-  # todo: load code in left editor
-  # compute result of running editor contents
-  curr:address:editor-data <- get editor:address:editor-data/deref, next-editor:offset
-  in:address:array:character <- editor-contents curr:address:editor-data
-  out:address:array:character, warnings:address:array:character <- run-interactive in:address:array:character
-  # move cursor
-  # temporarily leave just one line for typing into sandboxes
-  left:number <- get curr:address:editor-data/deref, left:offset
-  top:number <- get curr:address:editor-data/deref, top:offset
-  dest-row:number <- add top:number, 1:literal
-  move-cursor screen:address, dest-row:number, left:number
-  # print result
-  {
-    break-unless warnings:address:array:character
-    print-string screen:address, warnings:address:array:character, 1:literal/red
-    jump +done:label
-  }
-  print-string screen:address, out:address:array:character, 245:literal/grey
-  +done
-  reply screen:address/same-as-ingredient:1
+  # load code from left editor (recipes), save any warnings. recipes never generate output.
+  in:address:array:character <- editor-contents editor:address:editor-data
+  warnings:address:address:array:character <- get-address editor:address:editor-data/deref, warnings:offset
+  warnings:address:address:array:character/deref <- reload in:address:array:character
+  # run contents of right editor (sandbox), save any warnings or output
+  sandbox:address:editor-data <- get editor:address:editor-data/deref, next-editor:offset
+  in:address:array:character <- editor-contents sandbox:address:editor-data
+  response:address:address:array:character <- get-address sandbox:address:editor-data/deref, response:offset
+  warnings:address:address:array:character <- get-address sandbox:address:editor-data/deref, warnings:offset
+  response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive in:address:array:character
+#?   print-string 0:literal/screen, response:address:address:array:character/deref #? 1
+#?   wait-for-some-interaction #? 1
+#?   close-console #? 1
+#?   $print response:address:address:array:character/deref, [, ], warnings:address:address:array:character/deref #? 1
+#?   $exit #? 1
 ]
 
 scenario run-instruction-and-print-warnings [
@@ -1924,7 +2039,7 @@ scenario run-instruction-and-print-warnings [
   # right editor contains an illegal instruction
   3:address:array:character <- new [get 1234:number, foo:offset]
   4:address:address:editor-data <- get-address 2:address:editor-data/deref, next-editor:offset
-  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 40:literal/right
+  4:address:address:editor-data/deref <- new-editor 3:address:array:character, screen:address, 0:literal/top, 5:literal/left, 60:literal/right
   reset-focus 2:address:editor-data
   # run the code in the editors
   assume-console [

@@ -4,7 +4,7 @@ parse:   ingredient: {name: "3", properties: ["3": "literal", "height": ]}
 parse: instruction: run
 parse:   ingredient: {name: "\n    1:address:editor-data <- new-editor 0:literal/data, screen:address, 1:literal/top, 2:literal/left, 5:literal/right\n    2:editor-data <- copy 1:address:editor-data/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
-parse:   ingredient: {name: "\n    # 2 <- just the § sentinel\n    # 3 (top of screen) <- the § sentinel\n    # 4 (before cursor) <- the § sentinel\n    # 5 <- screen\n    6 <- 1  # top\n    7 <- 2  # left\n    8 <- 1  # bottom\n    9 <- 4  # right  (inclusive)\n    10 <- 1  # cursor row\n    11 <- 2  # cursor column\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    # 2 (data) <- just the § sentinel\n    # 3 (top of screen) <- the § sentinel\n    # 4 (before cursor) <- the § sentinel\n    5 <- 0  # response\n    6 <- 0  # warnings\n    # 7 <- screen\n    8 <- 1  # top\n    9 <- 2  # left\n    10 <- 1  # bottom\n    11 <- 4  # right  (inclusive)\n    12 <- 1  # cursor row\n    13 <- 2  # cursor column\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "\n    .     .\n    .     .\n    .     .\n  ", properties: [_: "literal-string"]}
 after-brace: recipe editor-initializes-without-data
@@ -1281,21 +1281,23 @@ after-brace: copy ...
 9999 mem: location 1139 is 0
 9999 mem: location 1140 is 0
 9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
 9999 mem: location 1105 is 1129
-9999 run: address to copy is 1132
-9999 mem: storing 1132 in location 1106
+9999 run: address to copy is 1134
+9999 mem: storing 1134 in location 1106
  102 run: sc:address:address:screen/deref <- copy screen:address
 9999 mem: location 1101 is 1031
-9999 mem: location 1106 is 1132
-9999 mem: storing 1031 in location 1132
+9999 mem: location 1106 is 1134
+9999 mem: storing 1031 in location 1134
  102 run: x:address:number <- get-address result:address:editor-data/deref, top:offset
 9999 mem: location 1105 is 1129
 9999 mem: location 1129 is 0
 9999 mem: location 1130 is 0
 9999 mem: location 1131 is 0
-9999 mem: location 1132 is 1031
+9999 mem: location 1132 is 0
 9999 mem: location 1133 is 0
-9999 mem: location 1134 is 0
+9999 mem: location 1134 is 1031
 9999 mem: location 1135 is 0
 9999 mem: location 1136 is 0
 9999 mem: location 1137 is 0
@@ -1303,72 +1305,8 @@ after-brace: copy ...
 9999 mem: location 1139 is 0
 9999 mem: location 1140 is 0
 9999 mem: location 1141 is 0
-9999 mem: location 1105 is 1129
-9999 run: address to copy is 1133
-9999 mem: storing 1133 in location 1107
- 102 run: x:address:number/deref <- copy top:number
-9999 mem: location 1102 is 1
-9999 mem: location 1107 is 1133
-9999 mem: storing 1 in location 1133
- 102 run: x:address:number <- get-address result:address:editor-data/deref, left:offset
-9999 mem: location 1105 is 1129
-9999 mem: location 1129 is 0
-9999 mem: location 1130 is 0
-9999 mem: location 1131 is 0
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 0
-9999 mem: location 1135 is 0
-9999 mem: location 1136 is 0
-9999 mem: location 1137 is 0
-9999 mem: location 1138 is 0
-9999 mem: location 1139 is 0
-9999 mem: location 1140 is 0
-9999 mem: location 1141 is 0
-9999 mem: location 1105 is 1129
-9999 run: address to copy is 1134
-9999 mem: storing 1134 in location 1107
- 102 run: x:address:number/deref <- copy left:number
-9999 mem: location 1103 is 2
-9999 mem: location 1107 is 1134
-9999 mem: storing 2 in location 1134
- 102 run: x:address:number <- get-address result:address:editor-data/deref, right:offset
-9999 mem: location 1105 is 1129
-9999 mem: location 1129 is 0
-9999 mem: location 1130 is 0
-9999 mem: location 1131 is 0
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 2
-9999 mem: location 1135 is 0
-9999 mem: location 1136 is 0
-9999 mem: location 1137 is 0
-9999 mem: location 1138 is 0
-9999 mem: location 1139 is 0
-9999 mem: location 1140 is 0
-9999 mem: location 1141 is 0
-9999 mem: location 1105 is 1129
-9999 run: address to copy is 1136
-9999 mem: storing 1136 in location 1107
- 102 run: x:address:number/deref <- copy right:number
-9999 mem: location 1104 is 4
-9999 mem: location 1107 is 1136
-9999 mem: storing 4 in location 1136
- 102 run: x:address:number <- get-address result:address:editor-data/deref, bottom:offset
-9999 mem: location 1105 is 1129
-9999 mem: location 1129 is 0
-9999 mem: location 1130 is 0
-9999 mem: location 1131 is 0
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 2
-9999 mem: location 1135 is 0
-9999 mem: location 1136 is 4
-9999 mem: location 1137 is 0
-9999 mem: location 1138 is 0
-9999 mem: location 1139 is 0
-9999 mem: location 1140 is 0
-9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
 9999 mem: location 1105 is 1129
 9999 run: address to copy is 1135
 9999 mem: storing 1135 in location 1107
@@ -1376,21 +1314,71 @@ after-brace: copy ...
 9999 mem: location 1102 is 1
 9999 mem: location 1107 is 1135
 9999 mem: storing 1 in location 1135
- 102 run: x:address:number <- get-address result:address:editor-data/deref, cursor-row:offset
+ 102 run: x:address:number <- get-address result:address:editor-data/deref, left:offset
 9999 mem: location 1105 is 1129
 9999 mem: location 1129 is 0
 9999 mem: location 1130 is 0
 9999 mem: location 1131 is 0
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 2
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
 9999 mem: location 1135 is 1
-9999 mem: location 1136 is 4
+9999 mem: location 1136 is 0
 9999 mem: location 1137 is 0
 9999 mem: location 1138 is 0
 9999 mem: location 1139 is 0
 9999 mem: location 1140 is 0
 9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
+9999 mem: location 1105 is 1129
+9999 run: address to copy is 1136
+9999 mem: storing 1136 in location 1107
+ 102 run: x:address:number/deref <- copy left:number
+9999 mem: location 1103 is 2
+9999 mem: location 1107 is 1136
+9999 mem: storing 2 in location 1136
+ 102 run: x:address:number <- get-address result:address:editor-data/deref, right:offset
+9999 mem: location 1105 is 1129
+9999 mem: location 1129 is 0
+9999 mem: location 1130 is 0
+9999 mem: location 1131 is 0
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
+9999 mem: location 1135 is 1
+9999 mem: location 1136 is 2
+9999 mem: location 1137 is 0
+9999 mem: location 1138 is 0
+9999 mem: location 1139 is 0
+9999 mem: location 1140 is 0
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
+9999 mem: location 1105 is 1129
+9999 run: address to copy is 1138
+9999 mem: storing 1138 in location 1107
+ 102 run: x:address:number/deref <- copy right:number
+9999 mem: location 1104 is 4
+9999 mem: location 1107 is 1138
+9999 mem: storing 4 in location 1138
+ 102 run: x:address:number <- get-address result:address:editor-data/deref, bottom:offset
+9999 mem: location 1105 is 1129
+9999 mem: location 1129 is 0
+9999 mem: location 1130 is 0
+9999 mem: location 1131 is 0
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
+9999 mem: location 1135 is 1
+9999 mem: location 1136 is 2
+9999 mem: location 1137 is 0
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 0
+9999 mem: location 1140 is 0
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
 9999 mem: location 1105 is 1129
 9999 run: address to copy is 1137
 9999 mem: storing 1137 in location 1107
@@ -1398,177 +1386,259 @@ after-brace: copy ...
 9999 mem: location 1102 is 1
 9999 mem: location 1107 is 1137
 9999 mem: storing 1 in location 1137
+ 102 run: x:address:number <- get-address result:address:editor-data/deref, cursor-row:offset
+9999 mem: location 1105 is 1129
+9999 mem: location 1129 is 0
+9999 mem: location 1130 is 0
+9999 mem: location 1131 is 0
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
+9999 mem: location 1135 is 1
+9999 mem: location 1136 is 2
+9999 mem: location 1137 is 1
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 0
+9999 mem: location 1140 is 0
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
+9999 mem: location 1105 is 1129
+9999 run: address to copy is 1139
+9999 mem: storing 1139 in location 1107
+ 102 run: x:address:number/deref <- copy top:number
+9999 mem: location 1102 is 1
+9999 mem: location 1107 is 1139
+9999 mem: storing 1 in location 1139
  102 run: x:address:number <- get-address result:address:editor-data/deref, cursor-column:offset
 9999 mem: location 1105 is 1129
 9999 mem: location 1129 is 0
 9999 mem: location 1130 is 0
 9999 mem: location 1131 is 0
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 2
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
 9999 mem: location 1135 is 1
-9999 mem: location 1136 is 4
+9999 mem: location 1136 is 2
 9999 mem: location 1137 is 1
-9999 mem: location 1138 is 0
-9999 mem: location 1139 is 0
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 1
 9999 mem: location 1140 is 0
 9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
 9999 mem: location 1105 is 1129
-9999 run: address to copy is 1138
-9999 mem: storing 1138 in location 1107
+9999 run: address to copy is 1140
+9999 mem: storing 1140 in location 1107
+ 102 run: response:address:address:array:character <- get-address result:address:editor-data/deref, response:offset
+9999 mem: location 1105 is 1129
+9999 mem: location 1129 is 0
+9999 mem: location 1130 is 0
+9999 mem: location 1131 is 0
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
+9999 mem: location 1135 is 1
+9999 mem: location 1136 is 2
+9999 mem: location 1137 is 1
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 1
+9999 mem: location 1140 is 0
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
+9999 mem: location 1105 is 1129
+9999 run: address to copy is 1132
+9999 mem: storing 1132 in location 1108
+ 102 run: response:address:address:array:character/deref <- copy 0:literal
+9999 mem: location 1108 is 1132
+9999 mem: storing 0 in location 1132
+ 102 run: warnings:address:address:array:character <- get-address result:address:editor-data/deref, warnings:offset
+9999 mem: location 1105 is 1129
+9999 mem: location 1129 is 0
+9999 mem: location 1130 is 0
+9999 mem: location 1131 is 0
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
+9999 mem: location 1135 is 1
+9999 mem: location 1136 is 2
+9999 mem: location 1137 is 1
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 1
+9999 mem: location 1140 is 0
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
+9999 mem: location 1105 is 1129
+9999 run: address to copy is 1133
+9999 mem: storing 1133 in location 1109
+ 102 run: warnings:address:address:array:character/deref <- copy 0:literal
+9999 mem: location 1109 is 1133
+9999 mem: storing 0 in location 1133
  102 run: x:address:number/deref <- copy left:number
 9999 mem: location 1103 is 2
-9999 mem: location 1107 is 1138
-9999 mem: storing 2 in location 1138
+9999 mem: location 1107 is 1140
+9999 mem: storing 2 in location 1140
  102 run: d:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
 9999 mem: location 1105 is 1129
 9999 mem: location 1129 is 0
 9999 mem: location 1130 is 0
 9999 mem: location 1131 is 0
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 2
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
 9999 mem: location 1135 is 1
-9999 mem: location 1136 is 4
+9999 mem: location 1136 is 2
 9999 mem: location 1137 is 1
-9999 mem: location 1138 is 2
-9999 mem: location 1139 is 0
-9999 mem: location 1140 is 0
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 1
+9999 mem: location 1140 is 2
 9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
 9999 mem: location 1105 is 1129
 9999 run: address to copy is 1129
-9999 mem: storing 1129 in location 1108
+9999 mem: storing 1129 in location 1110
  102 run: d:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
  103 run: default-space:address:array:location <- new location:type, 30:literal
 9999 mem: array size is 30
-9999 mem: new alloc: 1142
+9999 mem: new alloc: 1144
  103 run: x:location <- next-ingredient 
-9999 mem: storing 167 in location 1144
+9999 mem: storing 167 in location 1146
  103 run: in:address:duplex-list <- next-ingredient 
-9999 mem: storing 0 in location 1145
+9999 mem: storing 0 in location 1147
  103 run: result:address:duplex-list <- new duplex-list:type
-9999 mem: new alloc: 1173
-9999 mem: storing 1173 in location 1146
+9999 mem: new alloc: 1175
+9999 mem: storing 1175 in location 1148
  103 run: val:address:location <- get-address result:address:duplex-list/deref, value:offset
-9999 mem: location 1146 is 1173
-9999 mem: location 1173 is 0
-9999 mem: location 1174 is 0
+9999 mem: location 1148 is 1175
 9999 mem: location 1175 is 0
-9999 mem: location 1146 is 1173
-9999 run: address to copy is 1173
-9999 mem: storing 1173 in location 1147
+9999 mem: location 1176 is 0
+9999 mem: location 1177 is 0
+9999 mem: location 1148 is 1175
+9999 run: address to copy is 1175
+9999 mem: storing 1175 in location 1149
  103 run: val:address:location/deref <- copy x:location
-9999 mem: location 1144 is 167
-9999 mem: location 1147 is 1173
-9999 mem: storing 167 in location 1173
+9999 mem: location 1146 is 167
+9999 mem: location 1149 is 1175
+9999 mem: storing 167 in location 1175
  103 run: next:address:address:duplex-list <- get-address result:address:duplex-list/deref, next:offset
-9999 mem: location 1146 is 1173
-9999 mem: location 1173 is 167
-9999 mem: location 1174 is 0
-9999 mem: location 1175 is 0
-9999 mem: location 1146 is 1173
-9999 run: address to copy is 1174
-9999 mem: storing 1174 in location 1148
+9999 mem: location 1148 is 1175
+9999 mem: location 1175 is 167
+9999 mem: location 1176 is 0
+9999 mem: location 1177 is 0
+9999 mem: location 1148 is 1175
+9999 run: address to copy is 1176
+9999 mem: storing 1176 in location 1150
  103 run: next:address:address:duplex-list/deref <- copy in:address:duplex-list
-9999 mem: location 1145 is 0
-9999 mem: location 1148 is 1174
-9999 mem: storing 0 in location 1174
+9999 mem: location 1147 is 0
+9999 mem: location 1150 is 1176
+9999 mem: storing 0 in location 1176
  103 run: jump-if in:address:duplex-list, 1:offset
-9999 mem: location 1145 is 0
+9999 mem: location 1147 is 0
 9999 run: jump-if fell through
  103 run: reply result:address:duplex-list
-9999 mem: location 1146 is 1173
-9999 run: result 0 is 1173
-9999 mem: location 1108 is 1129
-9999 mem: storing 1173 in location 1129
+9999 mem: location 1148 is 1175
+9999 run: result 0 is 1175
+9999 mem: location 1110 is 1129
+9999 mem: storing 1175 in location 1129
  102 run: y:address:address:duplex-list <- get-address result:address:editor-data/deref, before-cursor:offset
 9999 mem: location 1105 is 1129
-9999 mem: location 1129 is 1173
+9999 mem: location 1129 is 1175
 9999 mem: location 1130 is 0
 9999 mem: location 1131 is 0
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 2
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
 9999 mem: location 1135 is 1
-9999 mem: location 1136 is 4
+9999 mem: location 1136 is 2
 9999 mem: location 1137 is 1
-9999 mem: location 1138 is 2
-9999 mem: location 1139 is 0
-9999 mem: location 1140 is 0
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 1
+9999 mem: location 1140 is 2
 9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
 9999 mem: location 1105 is 1129
 9999 run: address to copy is 1131
-9999 mem: storing 1131 in location 1109
+9999 mem: storing 1131 in location 1111
  102 run: y:address:address:duplex-list/deref <- copy d:address:address:duplex-list/deref
-9999 mem: location 1108 is 1129
-9999 mem: location 1129 is 1173
-9999 mem: location 1109 is 1131
-9999 mem: storing 1173 in location 1131
+9999 mem: location 1110 is 1129
+9999 mem: location 1129 is 1175
+9999 mem: location 1111 is 1131
+9999 mem: storing 1175 in location 1131
  102 run: init:address:address:duplex-list <- get-address result:address:editor-data/deref, top-of-screen:offset
 9999 mem: location 1105 is 1129
-9999 mem: location 1129 is 1173
+9999 mem: location 1129 is 1175
 9999 mem: location 1130 is 0
-9999 mem: location 1131 is 1173
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 2
+9999 mem: location 1131 is 1175
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
 9999 mem: location 1135 is 1
-9999 mem: location 1136 is 4
+9999 mem: location 1136 is 2
 9999 mem: location 1137 is 1
-9999 mem: location 1138 is 2
-9999 mem: location 1139 is 0
-9999 mem: location 1140 is 0
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 1
+9999 mem: location 1140 is 2
 9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
 9999 mem: location 1105 is 1129
 9999 run: address to copy is 1130
-9999 mem: storing 1130 in location 1110
+9999 mem: storing 1130 in location 1112
  102 run: init:address:address:duplex-list/deref <- copy d:address:address:duplex-list/deref
-9999 mem: location 1108 is 1129
-9999 mem: location 1129 is 1173
-9999 mem: location 1110 is 1130
-9999 mem: storing 1173 in location 1130
+9999 mem: location 1110 is 1129
+9999 mem: location 1129 is 1175
+9999 mem: location 1112 is 1130
+9999 mem: storing 1175 in location 1130
  102 run: b:address:boolean <- get-address result:address:editor-data/deref, in-focus?:offset
 9999 mem: location 1105 is 1129
-9999 mem: location 1129 is 1173
-9999 mem: location 1130 is 1173
-9999 mem: location 1131 is 1173
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 2
+9999 mem: location 1129 is 1175
+9999 mem: location 1130 is 1175
+9999 mem: location 1131 is 1175
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
 9999 mem: location 1135 is 1
-9999 mem: location 1136 is 4
+9999 mem: location 1136 is 2
 9999 mem: location 1137 is 1
-9999 mem: location 1138 is 2
-9999 mem: location 1139 is 0
-9999 mem: location 1140 is 0
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 1
+9999 mem: location 1140 is 2
 9999 mem: location 1141 is 0
+9999 mem: location 1142 is 0
+9999 mem: location 1143 is 0
 9999 mem: location 1105 is 1129
-9999 run: address to copy is 1140
-9999 mem: storing 1140 in location 1111
+9999 run: address to copy is 1142
+9999 mem: storing 1142 in location 1113
  102 run: b:address:boolean/deref <- copy 1:literal/true
-9999 mem: location 1111 is 1140
-9999 mem: storing 1 in location 1140
+9999 mem: location 1113 is 1142
+9999 mem: storing 1 in location 1142
  102 run: r:address:recipe-ordinal <- get-address result:address:editor-data/deref, respond:offset
 9999 mem: location 1105 is 1129
-9999 mem: location 1129 is 1173
-9999 mem: location 1130 is 1173
-9999 mem: location 1131 is 1173
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 2
+9999 mem: location 1129 is 1175
+9999 mem: location 1130 is 1175
+9999 mem: location 1131 is 1175
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
 9999 mem: location 1135 is 1
-9999 mem: location 1136 is 4
+9999 mem: location 1136 is 2
 9999 mem: location 1137 is 1
-9999 mem: location 1138 is 2
-9999 mem: location 1139 is 0
-9999 mem: location 1140 is 1
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 1
+9999 mem: location 1140 is 2
 9999 mem: location 1141 is 0
+9999 mem: location 1142 is 1
+9999 mem: location 1143 is 0
 9999 mem: location 1105 is 1129
-9999 run: address to copy is 1141
-9999 mem: storing 1141 in location 1112
+9999 run: address to copy is 1143
+9999 mem: storing 1143 in location 1114
  102 run: r:address:recipe-ordinal/deref <- copy handle-event:recipe
-9999 mem: location 1112 is 1141
-9999 mem: storing 178 in location 1141
+9999 mem: location 1114 is 1143
+9999 mem: storing 180 in location 1143
  102 run: jump-if s:address:array:character, 1:offset
 9999 mem: location 1100 is 0
 9999 run: jump-if fell through
@@ -1578,50 +1648,58 @@ after-brace: copy ...
 9999 mem: storing 1129 in location 1
  101 run: 2:editor-data <- copy 1:address:editor-data/deref
 9999 mem: location 1 is 1129
-9999 mem: location 1129 is 1173
-9999 mem: location 1130 is 1173
-9999 mem: location 1131 is 1173
-9999 mem: location 1132 is 1031
-9999 mem: location 1133 is 1
-9999 mem: location 1134 is 2
+9999 mem: location 1129 is 1175
+9999 mem: location 1130 is 1175
+9999 mem: location 1131 is 1175
+9999 mem: location 1132 is 0
+9999 mem: location 1133 is 0
+9999 mem: location 1134 is 1031
 9999 mem: location 1135 is 1
-9999 mem: location 1136 is 4
+9999 mem: location 1136 is 2
 9999 mem: location 1137 is 1
-9999 mem: location 1138 is 2
-9999 mem: location 1139 is 0
-9999 mem: location 1140 is 1
-9999 mem: location 1141 is 178
-9999 mem: storing 1173 in location 2
-9999 mem: storing 1173 in location 3
-9999 mem: storing 1173 in location 4
-9999 mem: storing 1031 in location 5
-9999 mem: storing 1 in location 6
-9999 mem: storing 2 in location 7
+9999 mem: location 1138 is 4
+9999 mem: location 1139 is 1
+9999 mem: location 1140 is 2
+9999 mem: location 1141 is 0
+9999 mem: location 1142 is 1
+9999 mem: location 1143 is 180
+9999 mem: storing 1175 in location 2
+9999 mem: storing 1175 in location 3
+9999 mem: storing 1175 in location 4
+9999 mem: storing 0 in location 5
+9999 mem: storing 0 in location 6
+9999 mem: storing 1031 in location 7
 9999 mem: storing 1 in location 8
-9999 mem: storing 4 in location 9
+9999 mem: storing 2 in location 9
 9999 mem: storing 1 in location 10
-9999 mem: storing 2 in location 11
-9999 mem: storing 0 in location 12
-9999 mem: storing 1 in location 13
-9999 mem: storing 178 in location 14
+9999 mem: storing 4 in location 11
+9999 mem: storing 1 in location 12
+9999 mem: storing 2 in location 13
+9999 mem: storing 0 in location 14
+9999 mem: storing 1 in location 15
+9999 mem: storing 180 in location 16
  100 run: memory-should-contain [
-    # 2 <- just the § sentinel
+    # 2 (data) <- just the § sentinel
     # 3 (top of screen) <- the § sentinel
     # 4 (before cursor) <- the § sentinel
-    # 5 <- screen
-    6 <- 1  # top
-    7 <- 2  # left
-    8 <- 1  # bottom
-    9 <- 4  # right  (inclusive)
-    10 <- 1  # cursor row
-    11 <- 2  # cursor column
+    5 <- 0  # response
+    6 <- 0  # warnings
+    # 7 <- screen
+    8 <- 1  # top
+    9 <- 2  # left
+    10 <- 1  # bottom
+    11 <- 4  # right  (inclusive)
+    12 <- 1  # cursor row
+    13 <- 2  # cursor column
   ]
+9999 run: checking location 5
 9999 run: checking location 6
-9999 run: checking location 7
 9999 run: checking location 8
 9999 run: checking location 9
 9999 run: checking location 10
 9999 run: checking location 11
+9999 run: checking location 12
+9999 run: checking location 13
  100 run: screen-should-contain [
     .     .
     .     .
