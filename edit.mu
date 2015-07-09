@@ -30,7 +30,7 @@ recipe programming-environment [
   # nav bar
   button-start:number <- subtract width:number, 20:literal
   move-cursor screen:address, 0:literal/row, button-start:number/column
-  run-button:address:array:character <- new [  run (F9)  ]
+  run-button:address:array:character <- new [ run (F10)  ]
   print-string screen:address, run-button:address:array:character, 255:literal/white, 161:literal/reddish
   # editor on the left
   left:address:array:character <- new [recipe new-add [
@@ -496,9 +496,9 @@ recipe event-loop [
     {
       k:address:number <- maybe-convert e:event, keycode:variant
       break-unless k:address:number
-      # F9? load all code and run all sandboxes.
+      # F10? load all code and run all sandboxes.
       {
-        do-run?:boolean <- equal k:address:number/deref, 65527:literal/F9
+        do-run?:boolean <- equal k:address:number/deref, 65526:literal/F10
         break-unless do-run?:boolean
         run-sandboxes editor:address:editor-data, screen:address
         loop +next-event:label  # done with this event; no need to send to editors
@@ -1856,7 +1856,7 @@ scenario run-and-show-results [
   reset-focus 2:address:editor-data
   # run the code in the editors
   assume-console [
-    press 65527  # F9
+    press 65526  # F10
   ]
   run [
     # now run query for it
@@ -1924,7 +1924,7 @@ scenario run-instruction-and-print-warnings [
   reset-focus 2:address:editor-data
   # run the code in the editors
   assume-console [
-    press 65527  # F9
+    press 65526  # F10
   ]
   run [
     # now run query for it
