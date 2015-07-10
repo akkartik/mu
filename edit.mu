@@ -460,7 +460,7 @@ recipe event-loop [
   env:address:programming-environment-data <- next-ingredient
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
-  sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
+  sandbox-in-focus?:address:boolean <- get-address env:address:programming-environment-data/deref, sandbox-in-focus?:offset
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -485,17 +485,17 @@ recipe event-loop [
       t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t:address:touch-event
       _ <- move-cursor-in-editor screen:address, recipes:address:editor-data, t:address:touch-event/deref
-      sandbox-in-focus?:boolean <- move-cursor-in-editor screen:address, current-sandbox:address:editor-data, t:address:touch-event/deref
+      sandbox-in-focus?:address:boolean/deref <- move-cursor-in-editor screen:address, current-sandbox:address:editor-data, t:address:touch-event/deref
       jump +continue:label
     }
     # if it's not global, send to appropriate editor
     {
       {
-        break-if sandbox-in-focus?:boolean
+        break-if sandbox-in-focus?:address:boolean/deref
         handle-event screen:address, console:address, recipes:address:editor-data, e:event
       }
       {
-        break-unless sandbox-in-focus?:boolean
+        break-unless sandbox-in-focus?:address:boolean/deref
         handle-event screen:address, console:address, current-sandbox:address:editor-data, e:event
       }
     }
@@ -862,13 +862,15 @@ recipe update-cursor [
   sandbox-in-focus?:boolean <- next-ingredient
   {
     break-if sandbox-in-focus?:boolean
-#?     trace [app], [recipes in focus] #? 1
+#?     $print [recipes in focus
+#? ] #? 1
     cursor-row:number <- get recipes:address:editor-data/deref, cursor-row:offset
     cursor-column:number <- get recipes:address:editor-data/deref, cursor-column:offset
   }
   {
     break-unless sandbox-in-focus?:boolean
-#?     trace [app], [sandbox in focus] #? 1
+#?     $print [sandboxes in focus
+#? ] #? 1
     cursor-row:number <- get current-sandbox:address:editor-data/deref, cursor-row:offset
     cursor-column:number <- get current-sandbox:address:editor-data/deref, cursor-column:offset
   }
