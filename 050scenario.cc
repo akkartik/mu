@@ -116,13 +116,12 @@ for (long long int i = 0; i < SIZE(Scenarios); ++i) {
 }
 
 //: Convenience: run a single named scenario.
-:(before "Loading Commandline Files")
-if (argc == 2 && Run_tests) {
-  for (long long int i = 0; i < SIZE(Scenarios); ++i) {
-    if (Scenarios.at(i).name == argv[1]) {
-      run_mu_scenario(Scenarios.at(i));
-      return 0;
-    }
+:(after "Test Runs")
+for (long long int i = 0; i < SIZE(Scenarios); ++i) {
+  if (Scenarios.at(i).name == argv[argc-1]) {
+    run_mu_scenario(Scenarios.at(i));
+    if (Passed) cerr << ".\n";
+    return 0;
   }
 }
 

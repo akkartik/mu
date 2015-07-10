@@ -197,7 +197,7 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
     return;
   }
 
-  raise << "unknown directive " << cmd << '\n';
+  raise << "unknown directive " << cmd << '\n' << die();
 }
 
 list<Line>::iterator locate_target(list<Line>& out, istream& directive_stream) {
