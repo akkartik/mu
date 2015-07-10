@@ -258,6 +258,7 @@ recipe render [
     }
     before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
   }
+  # clear rest of current line
   clear-line-delimited screen:address, column:number, right:number
   reply editor:address:editor-data/same-as-ingredient:1, row:number, screen:address/same-as-ingredient:0
 ]
@@ -534,7 +535,13 @@ recipe editor-event-loop [
     # other events - send to appropriate editor
     handle-event screen:address, console:address, editor:address:editor-data, e:event
     +continue
-    render screen:address, editor:address:editor-data
+    _, row:number <- render screen:address, editor:address:editor-data
+    # clear next line, in case we just processed a backspace
+    left:number <- get editor:address:editor-data/deref, left:offset
+    right:number <- get editor:address:editor-data/deref, right:offset
+    row:number <- add row:number, 1:literal
+    move-cursor screen:address, row:number, left:number
+    clear-line-delimited screen:address, left:number, right:number
     loop
   }
 ]
@@ -799,14 +806,27 @@ recipe render-all [
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
+  # render recipes, along with any warnings
   recipes:address:editor-data, row:number <- render screen:address, recipes:address:editor-data
-  # print warnings, or response if no warnings
   recipe-warnings:address:array:character <- get env:address:programming-environment-data/deref, recipe-warnings:offset
   {
     break-unless recipe-warnings:address:array:character
     row:number <- render-string screen:address, recipe-warnings:address:array:character, recipes:address:editor-data, 1:literal/red, row:number
   }
-  left:number <- get current-sandbox:address:editor-data/deref, left:offset
+  {
+    # no warnings? move to next lin
+    break-if recipe-warnings:address:array:character
+    row:number <- add row:number, 1:literal
+  }
+  # draw dotted line after recipes
+  left:number <- get recipes:address:editor-data/deref, left:offset
+  right:number <- get recipes:address:editor-data/deref, right:offset
+  draw-horizontal screen:address, row:number, left:number, right:number, 9480:literal/horizontal-dotted
+  # clear next line, in case we just processed a backspace
+  row:number <- add row:number, 1:literal
+  move-cursor screen:address, row:number, left:number
+  clear-line-delimited screen:address, left:number, right:number
+  # render sandboxes along with warnings for each
   _, row:number <- render screen:address, current-sandbox:address:editor-data
   sandbox:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
   sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
@@ -819,37 +839,14 @@ recipe render-all [
     break-if sandbox-warnings:address:array:character
     row:number <- render-string screen:address, sandbox-response:address:array:character, current-sandbox:address:editor-data, 245:literal/grey, row:number
   }
-#?   {
-#?     # draw a line after
-#?     # hack: not for tests
-#?     break-if screen:address
-#?     {
-#?       break-if left:number  # hacky
-#?       # left side, recipe editor
-#?       draw-horizontal screen:address, row:number, left:number, right:number, 9480:literal/horizontal-dotted
-#?     }
-#?     {
-#?       break-unless left:number
-#?       # right side, sandbox editor
-#?       draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
-#?     }
-#?     row:number <- add row:number, 1:literal
-#?   }
-#?   row:number <- add row:number, 1:literal
-#?   {
-#?     # clear one more line just in case we just backspaced out of it
-#?     done?:boolean <- greater-or-equal row:number, screen-height:number
-#?     break-if done?:boolean
-#?     draw-horizontal screen:address, row:number, left:number, right:number, 32:literal/space
-#?   }
-#?   # update cursor
-#?   {
-#?     cursor-inside-right-margin?:boolean <- lesser-or-equal cursor-column:address:number/deref, right:number
-#?     assert cursor-inside-right-margin?:boolean, [cursor outside right margin]
-#?     cursor-inside-left-margin?:boolean <- greater-or-equal cursor-column:address:number/deref, left:number
-#?     assert cursor-inside-left-margin?:boolean, [cursor outside left margin]
-#?     move-cursor screen:address, cursor-row:address:number/deref, cursor-column:address:number/deref
-#?   }
+  # draw solid line after sandbox
+  left:number <- get current-sandbox:address:editor-data/deref, left:offset
+  right:number <- get current-sandbox:address:editor-data/deref, right:offset
+  draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
+  # clear next line, in case we just processed a backspace
+  row:number <- add row:number, 1:literal
+  move-cursor screen:address, row:number, left:number
+  clear-line-delimited screen:address, left:number, right:number
   update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
   show-screen screen:address
 ]
@@ -1305,8 +1302,8 @@ scenario editor-handles-backspace-key [
 scenario editor-clears-last-line-on-backspace [
   assume-screen 10:literal/width, 5:literal/height
   # just one character in final line
-  1:address:array:character <- new [abc
-d]
+  1:address:array:character <- new [ab
+cd]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
   assume-console [
     left-click 2, 0  # cursor at only character in final line
@@ -1765,6 +1762,7 @@ scenario edit-multiple-editors [
   screen-should-contain [
     .           run (F10)          .
     .a0bc           ┊d1ef          .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
   ]
   memory-should-contain [
@@ -1778,6 +1776,7 @@ scenario edit-multiple-editors [
   screen-should-contain [
     .           run (F10)          .
     .a0bc           ┊d1␣f          .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
   ]
 ]
@@ -1814,6 +1813,8 @@ scenario editor-in-focus-keeps-cursor [
   screen-should-contain [
     .           run (F10)          .
     .␣bc            ┊def           .
+# artifact of fake console: no events = no render
+#   .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
   ]
   # now try typing a letter
@@ -1829,6 +1830,7 @@ scenario editor-in-focus-keeps-cursor [
   screen-should-contain [
     .           run (F10)          .
     .z␣bc           ┊def           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
   ]
 ]
@@ -1859,8 +1861,9 @@ scenario run-and-show-results [
   screen-should-contain [
     .                                                                                                     run (F10)          .
     .                                                            ┊divide-with-remainder 11:literal, 3:literal                .
-    .                                                            ┊3                                                          .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊3                                                          .
     .                                                            ┊2                                                          .
+    .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊                                                           .
   ]
   screen-should-contain-in-color 7:literal/white, [
@@ -1873,8 +1876,9 @@ scenario run-and-show-results [
   screen-should-contain-in-color, 245:literal/grey, [
     .                                                                                                                        .
     .                                                            ┊                                                           .
-    .                                                            ┊3                                                          .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊3                                                          .
     .                                                            ┊2                                                          .
+    .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊                                                           .
   ]
   $close-trace  # todo: try removing after we fix sluggishness
@@ -1915,7 +1919,8 @@ scenario run-instruction-and-print-warnings [
   screen-should-contain [
     .                                                                                                     run (F10)          .
     .                                                            ┊get 1234:number, foo:offset                                .
-    .                                                            ┊unknown element foo in container number                    .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊unknown element foo in container number                    .
+    .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊                                                           .
   ]
   screen-should-contain-in-color 7:literal/white, [
@@ -1933,7 +1938,8 @@ scenario run-instruction-and-print-warnings [
   screen-should-contain-in-color, 245:literal/grey, [
     .                                                                                                                        .
     .                                                            ┊                                                           .
-    .                                                            ┊                                                           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                           .
+    .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊                                                           .
   ]
   $close-trace  # todo: try removing after we fix sluggishness
@@ -2030,7 +2036,7 @@ recipe draw-horizontal [
   }
   move-cursor screen:address, row:number, x:number
   {
-    continue?:boolean <- lesser-than x:number, right:number
+    continue?:boolean <- lesser-or-equal x:number, right:number  # right is inclusive, to match editor-data semantics
     break-unless continue?:boolean
     print-character screen:address, style:character, color:number, bg-color:number
     x:number <- add x:number, 1:literal
