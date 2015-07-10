@@ -87,6 +87,8 @@ case INDEX: {
   vector<type_ordinal> element_type = array_element(base.types);
 //?   trace(Primitive_recipe_depth, "run") << "offset: " << offset_val.at(0); //? 1
 //?   trace(Primitive_recipe_depth, "run") << "size of elements: " << size_of(element_type); //? 1
+  assert(offset_val.at(0) >= 0);
+  assert(offset_val.at(0) < Memory[base_address]*size_of(element_type) + 1);
   long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src;
   trace(Primitive_recipe_depth, "run") << "its type is " << Type[element_type.at(0)].name;
@@ -137,6 +139,8 @@ case INDEX_ADDRESS: {
   reagent offset = canonize(current_instruction().ingredients.at(1));
   vector<double> offset_val(read_memory(offset));
   vector<type_ordinal> element_type = array_element(base.types);
+  assert(offset_val.at(0) >= 0);
+  assert(offset_val.at(0) < Memory[base_address]*size_of(element_type) + 1);
   long long int result = base_address + 1 + offset_val.at(0)*size_of(element_type);
   products.resize(1);
   products.at(0).push_back(result);

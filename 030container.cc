@@ -112,6 +112,8 @@ case GET: {
   assert(is_literal(current_instruction().ingredients.at(1)));
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
+  assert(offset >= 0);
+  assert(offset < size_of(base));
   long long int src = base_address;
   for (long long int i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements.at(i));
@@ -161,6 +163,8 @@ case GET_ADDRESS: {
   assert(is_literal(current_instruction().ingredients.at(1)));
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
+  assert(offset >= 0);
+  assert(offset < size_of(base));
   long long int result = base_address;
   for (long long int i = 0; i < offset; ++i) {
     result += size_of(Type[base_type].elements.at(i));
