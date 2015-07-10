@@ -20,7 +20,7 @@ container programming-environment-data [
   recipe-warnings:address:array:character
   current-sandbox:address:editor-data
   sandbox:sandbox-data
-  focus-in-sandbox?:boolean  # false => focus in recipes; true => focus in current-sandbox
+  sandbox-in-focus?:boolean  # false => focus in recipes; true => focus in current-sandbox
 ]
 
 recipe new-programming-environment [
@@ -460,7 +460,7 @@ recipe event-loop [
   env:address:programming-environment-data <- next-ingredient
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
-  sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, focus-in-sandbox?:offset
+  sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -811,7 +811,7 @@ recipe render-all [
   env:address:programming-environment-data <- next-ingredient
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
-  sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, focus-in-sandbox?:offset
+  sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
   recipes:address:editor-data, row:number <- render screen:address, recipes:address:editor-data
   # print warnings, or response if no warnings
   recipe-warnings:address:array:character <- get env:address:programming-environment-data/deref, recipe-warnings:offset
