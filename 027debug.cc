@@ -75,7 +75,22 @@ _DUMP_TRACE,
 Recipe_ordinal["$dump-trace"] = _DUMP_TRACE;
 :(before "End Primitive Recipe Implementations")
 case _DUMP_TRACE: {
-  DUMP("");
+  if (ingredients.empty()) {
+    DUMP("");
+  }
+  else {
+    DUMP(current_instruction().ingredients.at(0).name);
+  }
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+_CLEAR_TRACE,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$clear-trace"] = _CLEAR_TRACE;
+:(before "End Primitive Recipe Implementations")
+case _CLEAR_TRACE: {
+  CLEAR_TRACE;
   break;
 }
 
