@@ -175,6 +175,13 @@ void render() {
     trace_line& curr_line = Trace_stream->past_lines.at(Trace_index[screen_row]);
     ostringstream out;
     out << std::setw(4) << curr_line.depth << ' ' << curr_line.label << ": " << curr_line.contents;
+    if (screen_row < tb_height()-1) {
+      long long int delta = lines_hidden(screen_row);
+      // home-brew escape sequence for red
+      if (delta > 999) out << "{";
+      out << " (" << lines_hidden(screen_row) << ")";
+      if (delta > 999) out << "}";
+    }
     render_line(screen_row, out.str());
   }
   // clear rest of screen
@@ -187,12 +194,24 @@ void render() {
   tb_present();
 }
 
+long long int lines_hidden(long long int screen_row) {
+  assert(Trace_index.find(screen_row) != Trace_index.end());
+  if (Trace_index.find(screen_row+1) == Trace_index.end())
+    return SIZE(Trace_stream->past_lines)-Trace_index[screen_row];
+  else
+    return Trace_index[screen_row+1] - Trace_index[screen_row];
+}
+
 void render_line(int screen_row, const string& s) {
   long long int col = 0;
+  int color = TB_WHITE;
   for (col = 0; col < tb_width() && col < SIZE(s); ++col) {
-    char c = s.at(col);
+    char c = s.at(col);  // todo: unicode
     if (c == '\n') c = ';';  // replace newlines with semi-colons
-    tb_change_cell(col, screen_row, c, TB_WHITE, TB_BLACK);
+    // escapes. hack: can't start a line with them.
+    if (c == '{') { color = /*red*/1; c = ' '; }
+    if (c == '}') { color = TB_WHITE; c = ' '; }
+    tb_change_cell(col, screen_row, c, color, TB_BLACK);
   }
   for (; col < tb_width(); ++col) {
     tb_change_cell(col, screen_row, ' ', TB_WHITE, TB_BLACK);
