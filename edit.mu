@@ -477,8 +477,7 @@ recipe event-loop [
         do-run?:boolean <- equal k:address:number/deref, 65526:literal/F10
         break-unless do-run?:boolean
         run-sandboxes env:address:programming-environment-data
-        render-all screen:address, env:address:programming-environment-data
-        loop +next-event:label  # done with this event; no need to send to editors
+        jump +continue:label
       }
     }
     # 'touch' event - send to both editors
@@ -487,8 +486,7 @@ recipe event-loop [
       break-unless t:address:touch-event
       _ <- move-cursor-in-editor screen:address, recipes:address:editor-data, t:address:touch-event/deref
       sandbox-in-focus?:boolean <- move-cursor-in-editor screen:address, current-sandbox:address:editor-data, t:address:touch-event/deref
-      render-all screen:address, env:address:programming-environment-data
-      loop +next-event:label
+      jump +continue:label
     }
     # if it's not global, send to appropriate editor
     {
@@ -501,6 +499,7 @@ recipe event-loop [
         handle-event screen:address, console:address, current-sandbox:address:editor-data, e:event
       }
     }
+    +continue
     render-all screen:address, env:address:programming-environment-data
     loop
   }
