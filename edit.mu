@@ -10,18 +10,28 @@ recipe main [
   reply z:number
 ]]
   initial-sandbox:address:array:character <- new [new-add 2:literal, 3:literal]
-  programming-environment 0:literal/screen, 0:literal/console, initial-recipe:address:array:character, initial-sandbox:address:array:character
+  env:address:programming-environment-data <- new-programming-environment 0:literal/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
+  render-all 0:literal/address, env:address:programming-environment-data
+  event-loop 0:literal/screen, 0:literal/console, env:address:programming-environment-data
 ]
 
-recipe programming-environment [
+container programming-environment-data [
+  recipes:address:editor-data
+  recipe-warnings:address:array:character
+  current-sandbox:address:editor-data
+  sandbox:sandbox-data
+  focus-in-sandbox?:boolean  # false => focus in recipes; true => focus in current-sandbox
+]
+
+recipe new-programming-environment [
   default-space:address:array:location <- new location:type, 30:literal
   screen:address <- next-ingredient
-  console:address <- next-ingredient
   initial-recipe-contents:address:array:character <- next-ingredient
   initial-sandbox-contents:address:array:character <- next-ingredient
   width:number <- screen-width screen:address
   height:number <- screen-height screen:address
   # top menu
+  result:address:programming-environment-data <- new programming-environment-data:type
   draw-horizontal screen:address, 0:literal, 0:literal/left, width:number, 32:literal/space, 0:literal/black, 238:literal/grey
   button-start:number <- subtract width:number, 20:literal
   button-on-screen?:boolean <- greater-or-equal button-start:number, 0:literal
@@ -33,15 +43,16 @@ recipe programming-environment [
   divider:number, _ <- divide-with-remainder width:number, 2:literal
   draw-vertical screen:address, divider:number, 1:literal/top, height:number, 9482:literal/vertical-dotted
   # recipe editor on the left
-  left-editor:address:editor-data <- new-editor initial-recipe-contents:address:array:character, screen:address, 0:literal/left, divider:number/right
+  recipes:address:address:editor-data <- get-address result:address:programming-environment-data/deref, recipes:offset
+  recipes:address:address:editor-data/deref <- new-editor initial-recipe-contents:address:array:character, screen:address, 0:literal/left, divider:number/right
   # sandbox editor on the right
   new-left:number <- add divider:number, 1:literal
   new-right:number <- add new-left:number, 5:literal
-  right-editor:address:editor-data <- new-editor initial-sandbox-contents:address:array:character, screen:address, new-left:number, width:number
+  current-sandbox:address:address:editor-data <- get-address result:address:programming-environment-data/deref, current-sandbox:offset
+  current-sandbox:address:address:editor-data/deref <- new-editor initial-sandbox-contents:address:array:character, screen:address, new-left:number, width:number
   # initialize cursor
-  update-cursor screen:address, left-editor:address:editor-data, right-editor:address:editor-data, 0:literal/focus-in-recipe
-  # and we're off!
-  event-loop screen:address, console:address, left-editor:address:editor-data, right-editor:address:editor-data
+  update-cursor screen:address, recipes:address:address:editor-data/deref, current-sandbox:address:address:editor-data/deref, 0:literal/focus-in-recipes
+  reply result:address:programming-environment-data
 ]
 
 scenario editor-initially-prints-string-to-screen [
@@ -60,22 +71,11 @@ scenario editor-initially-prints-string-to-screen [
 ## In which we introduce the editor data structure, and show how it displays
 ## text to the screen.
 
-container programming-environment-data [
-  recipes:address:editor-data
-  current-sandbox:address:editor-data
-  focus:boolean  # false => focus in recipes; true => focus in current-sandbox
-]
-
 container editor-data [
   # editable text: doubly linked list of characters (head contains a special sentinel)
   data:address:duplex-list
   # location before cursor inside data
   before-cursor:address:duplex-list
-
-  # string of non-editable text, in either regular grey..
-  response:address:array:character
-  # ..or red
-  warnings:address:array:character
 
   # raw bounds of display area on screen
   # always displays from row 1 and at most until bottom of screen
@@ -108,11 +108,6 @@ recipe new-editor [
   x:address:number <- get-address result:address:editor-data/deref, cursor-row:offset
   x:address:number/deref <- copy 1:literal/top
   x:address:number <- get-address result:address:editor-data/deref, cursor-column:offset
-  response:address:address:array:character <- get-address result:address:editor-data/deref, response:offset
-  response:address:address:array:character/deref <- copy 0:literal
-#?   response:address:address:array:character/deref <- new [aaa] #? 1
-  warnings:address:address:array:character <- get-address result:address:editor-data/deref, warnings:offset
-  warnings:address:address:array:character/deref <- copy 0:literal
   x:address:number/deref <- copy left:number
   init:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
   init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
@@ -139,7 +134,7 @@ recipe new-editor [
   y:address:address:duplex-list <- get-address result:address:editor-data/deref, before-cursor:offset
   y:address:address:duplex-list/deref <- copy init:address:address:duplex-list/deref
   # perform initial rendering to screen
-  result:address:editor-data, screen:address <- render screen:address, result:address:editor-data
+  result:address:editor-data, _, screen:address <- render screen:address, result:address:editor-data
   reply result:address:editor-data, screen:address/same-as-ingredient:0
 ]
 
@@ -152,12 +147,10 @@ scenario editor-initializes-without-data [
   memory-should-contain [
     # 2 (data) <- just the § sentinel
     # 3 (before cursor) <- the § sentinel
-    4 <- 0  # response
-    5 <- 0  # warnings
-    6 <- 2  # left
-    7 <- 4  # right  (inclusive)
-    8 <- 1  # cursor row
-    9 <- 2  # cursor column
+    4 <- 2  # left
+    5 <- 4  # right  (inclusive)
+    6 <- 1  # cursor row
+    7 <- 2  # cursor column
   ]
   screen-should-contain [
     .     .
@@ -170,7 +163,7 @@ recipe render [
   default-space:address:array:location <- new location:type, 40:literal
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
-  reply-unless editor:address:editor-data, editor:address:editor-data/same-as-ingredient:1, screen:address/same-as-ingredient:0
+  reply-unless editor:address:editor-data, editor:address:editor-data/same-as-ingredient:1, 1:literal/top, screen:address/same-as-ingredient:0
   left:number <- get editor:address:editor-data/deref, left:offset
   screen-height:number <- screen-height screen:address
   right:number <- get editor:address:editor-data/deref, right:offset
@@ -252,12 +245,8 @@ recipe render [
     above-cursor-row?:boolean <- lesser-than row:number, cursor-row:address:number/deref
     before-cursor?:boolean <- or before-cursor-on-same-line?:boolean, above-cursor-row?:boolean
     break-unless before-cursor?:boolean
-#?     $print [pointed after all text
-#? ] #? 1
     cursor-row:address:number/deref <- copy row:number
     cursor-column:address:number/deref <- copy column:number
-#?     $print [render: cursor moved to ], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [ 
-#? ] #? 1
     # line not wrapped but cursor outside bounds? wrap cursor
     {
       too-far-right?:boolean <- greater-than cursor-column:address:number/deref, right:number
@@ -267,63 +256,10 @@ recipe render [
       above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
       assert above-screen-bottom?:boolean, [unimplemented: wrapping cursor past bottom of screen]
     }
-#?     $print [now ], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [ 
-#? ] #? 1
     before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
-#?     new-prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset #? 1
-#?     $print [render Ω: cursor adjusted to after ], new-prev:character, [(], cursor-row:address:number/deref, [, ], cursor-column:address:number/deref, [)
-#? ] #? 1
   }
-#?   $print [clearing ], row:number, [ ], column:number, [ ], right:number, [ 
-#? ] #? 2
   clear-line-delimited screen:address, column:number, right:number
-  row:number <- add row:number, 1:literal
-  {
-    # print warnings, or response if no warnings
-    warnings:address:array:character <- get editor:address:editor-data/deref, warnings:offset
-    {
-      break-unless warnings:address:array:character
-      row:number <- render-string screen:address, warnings:address:array:character, editor:address:editor-data, 1:literal/red, row:number
-    }
-    {
-      break-if warnings:address:array:character
-      response:address:array:character <- get editor:address:editor-data/deref, response:offset
-      break-unless response:address:array:character
-      row:number <- render-string screen:address, response:address:array:character, editor:address:editor-data, 245:literal/grey, row:number
-    }
-  }
-  {
-    # draw a line after
-    # hack: not for tests
-    break-if screen:address
-    {
-      break-if left:number  # hacky
-      # left side, recipe editor
-      draw-horizontal screen:address, row:number, left:number, right:number, 9480:literal/horizontal-dotted
-    }
-    {
-      break-unless left:number
-      # right side, sandbox editor
-      draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
-    }
-    row:number <- add row:number, 1:literal
-  }
-  {
-    # clear one more line just in case we just backspaced out of it
-    done?:boolean <- greater-or-equal row:number, screen-height:number
-    break-if done?:boolean
-    draw-horizontal screen:address, row:number, left:number, right:number, 32:literal/space
-  }
-  # update cursor
-  {
-    cursor-inside-right-margin?:boolean <- lesser-or-equal cursor-column:address:number/deref, right:number
-    assert cursor-inside-right-margin?:boolean, [cursor outside right margin]
-    cursor-inside-left-margin?:boolean <- greater-or-equal cursor-column:address:number/deref, left:number
-    assert cursor-inside-left-margin?:boolean, [cursor outside left margin]
-    move-cursor screen:address, cursor-row:address:number/deref, cursor-column:address:number/deref
-  }
-  show-screen screen:address
-  reply editor:address:editor-data/same-as-ingredient:1, screen:address/same-as-ingredient:0
+  reply editor:address:editor-data/same-as-ingredient:1, row:number, screen:address/same-as-ingredient:0
 ]
 
 # row:number <- render-string s:address:array:character, editor:address:editor-data, color:number, row:number
@@ -336,6 +272,7 @@ recipe render-string [
   editor:address:editor-data <- next-ingredient
   color:number <- next-ingredient
   row:number <- next-ingredient
+  row:number <- add row:number, 1:literal
   reply-unless s:address:array:character, row:number
   left:number <- get editor:address:editor-data/deref, left:offset
   right:number <- get editor:address:editor-data/deref, right:offset
@@ -516,16 +453,14 @@ scenario editor-initializes-empty-text [
 
 ## handling events from the keyboard, mouse, touch screen, ...
 
-# takes two editors, sends each event from the console to each editor
 recipe event-loop [
   default-space:address:array:location <- new location:type, 30:literal
   screen:address <- next-ingredient
   console:address <- next-ingredient
-  recipes:address:editor-data <- next-ingredient
-  current-sandbox:address:editor-data <- next-ingredient
-  sandbox-in-focus?:boolean <- next-ingredient
-#?   $print [sandbox in focus? ], sandbox-in-focus?:boolean, [ 
-#? ] #? 1
+  env:address:programming-environment-data <- next-ingredient
+  recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
+  current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
+  sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, focus-in-sandbox?:offset
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -533,8 +468,6 @@ recipe event-loop [
     loop-unless found?:boolean
     break-if quit?:boolean  # only in tests
     trace [app], [next-event]
-#?     $print [--- new event
-#? ] #? 1
     # check for global events that will trigger regardless of which editor has focus
     {
       k:address:number <- maybe-convert e:event, keycode:variant
@@ -543,9 +476,8 @@ recipe event-loop [
       {
         do-run?:boolean <- equal k:address:number/deref, 65526:literal/F10
         break-unless do-run?:boolean
-#?         trace [app], [run] #? 1
-        run-sandboxes recipes:address:editor-data, current-sandbox:address:editor-data
-        render-all screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
+        run-sandboxes env:address:programming-environment-data
+        render-all screen:address, env:address:programming-environment-data
         loop +next-event:label  # done with this event; no need to send to editors
       }
     }
@@ -553,24 +485,59 @@ recipe event-loop [
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t:address:touch-event
-#?       trace [app], [touch] #? 1
-      _ <- move-cursor-in-editor recipes:address:editor-data, t:address:touch-event/deref
-      sandbox-in-focus?:boolean <- move-cursor-in-editor current-sandbox:address:editor-data, t:address:touch-event/deref
-      render-all screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
+      _ <- move-cursor-in-editor screen:address, recipes:address:editor-data, t:address:touch-event/deref
+      sandbox-in-focus?:boolean <- move-cursor-in-editor screen:address, current-sandbox:address:editor-data, t:address:touch-event/deref
+      render-all screen:address, env:address:programming-environment-data
       loop +next-event:label
     }
     # if it's not global, send to appropriate editor
     {
       {
         break-if sandbox-in-focus?:boolean
-#?         $print [event in recipes
-#? ] #? 1
         handle-event screen:address, console:address, recipes:address:editor-data, e:event
       }
       {
         break-unless sandbox-in-focus?:boolean
-#?         $print [event in current-sandbox: ], sandbox-in-focus?:boolean, [ 
-#? ] #? 1
+        handle-event screen:address, console:address, current-sandbox:address:editor-data, e:event
+      }
+    }
+    render-all screen:address, env:address:programming-environment-data
+    loop
+  }
+]
+
+# takes two editors, sends each event from the console to each editor
+recipe editor-event-loop [
+  default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
+  console:address <- next-ingredient
+  recipes:address:editor-data <- next-ingredient
+  current-sandbox:address:editor-data <- next-ingredient
+  sandbox-in-focus?:boolean <- next-ingredient
+  {
+    # looping over each (keyboard or touch) event as it occurs
+    +next-event
+    e:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
+    loop-unless found?:boolean
+    break-if quit?:boolean  # only in tests
+    trace [app], [next-event]
+    # 'touch' event - send to both editors
+    {
+      t:address:touch-event <- maybe-convert e:event, touch:variant
+      break-unless t:address:touch-event
+      _ <- move-cursor-in-editor screen:address, recipes:address:editor-data, t:address:touch-event/deref
+      sandbox-in-focus?:boolean <- move-cursor-in-editor screen:address, current-sandbox:address:editor-data, t:address:touch-event/deref
+      update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
+      loop +next-event:label
+    }
+    # other events - send to appropriate editor
+    {
+      {
+        break-if sandbox-in-focus?:boolean
+        handle-event screen:address, console:address, recipes:address:editor-data, e:event
+      }
+      {
+        break-unless sandbox-in-focus?:boolean
         handle-event screen:address, console:address, current-sandbox:address:editor-data, e:event
       }
     }
@@ -727,6 +694,7 @@ recipe handle-event [
 # todo: ignores menu bar (for now just displays shortcuts)
 recipe move-cursor-in-editor [
   default-space:address:array:location <- new location:type, 30:literal
+  screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   t:touch-event <- next-ingredient
   reply-unless editor:address:editor-data, 0:literal/false
@@ -742,6 +710,7 @@ recipe move-cursor-in-editor [
   cursor-row:address:number/deref <- get t:touch-event, row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- get t:touch-event, column:offset
+  editor:address:editor-data <- render screen:address, editor:address:editor-data
   # gain focus
   reply 1:literal/true
 ]
@@ -840,12 +809,63 @@ recipe previous-line-length [
 recipe render-all [
   default-space:address:array:location <- new location:type, 40:literal
   screen:address <- next-ingredient
-  recipes:address:editor-data <- next-ingredient
-  current-sandbox:address:editor-data <- next-ingredient
-  sandbox-in-focus?:boolean <- next-ingredient
-  render screen:address, recipes:address:editor-data
-  render screen:address, current-sandbox:address:editor-data
+  env:address:programming-environment-data <- next-ingredient
+  recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
+  current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
+  sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, focus-in-sandbox?:offset
+  recipes:address:editor-data, row:number <- render screen:address, recipes:address:editor-data
+  # print warnings, or response if no warnings
+  recipe-warnings:address:array:character <- get env:address:programming-environment-data/deref, recipe-warnings:offset
+  {
+    break-unless recipe-warnings:address:array:character
+    row:number <- render-string screen:address, recipe-warnings:address:array:character, recipes:address:editor-data, 1:literal/red, row:number
+  }
+  left:number <- get current-sandbox:address:editor-data/deref, left:offset
+  _, row:number <- render screen:address, current-sandbox:address:editor-data
+  sandbox:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
+  sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
+  sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/deref, warnings:offset
+  {
+    break-unless sandbox-warnings:address:array:character
+    row:number <- render-string screen:address, sandbox-warnings:address:array:character, current-sandbox:address:editor-data, 1:literal/red, row:number
+  }
+  {
+    break-if sandbox-warnings:address:array:character
+    row:number <- render-string screen:address, sandbox-response:address:array:character, current-sandbox:address:editor-data, 245:literal/grey, row:number
+  }
+#?   {
+#?     # draw a line after
+#?     # hack: not for tests
+#?     break-if screen:address
+#?     {
+#?       break-if left:number  # hacky
+#?       # left side, recipe editor
+#?       draw-horizontal screen:address, row:number, left:number, right:number, 9480:literal/horizontal-dotted
+#?     }
+#?     {
+#?       break-unless left:number
+#?       # right side, sandbox editor
+#?       draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
+#?     }
+#?     row:number <- add row:number, 1:literal
+#?   }
+#?   row:number <- add row:number, 1:literal
+#?   {
+#?     # clear one more line just in case we just backspaced out of it
+#?     done?:boolean <- greater-or-equal row:number, screen-height:number
+#?     break-if done?:boolean
+#?     draw-horizontal screen:address, row:number, left:number, right:number, 32:literal/space
+#?   }
+#?   # update cursor
+#?   {
+#?     cursor-inside-right-margin?:boolean <- lesser-or-equal cursor-column:address:number/deref, right:number
+#?     assert cursor-inside-right-margin?:boolean, [cursor outside right margin]
+#?     cursor-inside-left-margin?:boolean <- greater-or-equal cursor-column:address:number/deref, left:number
+#?     assert cursor-inside-left-margin?:boolean, [cursor outside left margin]
+#?     move-cursor screen:address, cursor-row:address:number/deref, cursor-column:address:number/deref
+#?   }
   update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
+  show-screen screen:address
 ]
 
 recipe update-cursor [
@@ -875,7 +895,7 @@ scenario editor-handles-empty-event-queue [
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
   assume-console []
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -892,7 +912,7 @@ scenario editor-handles-mouse-clicks [
     left-click 1, 1  # on the 'b'
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -915,7 +935,7 @@ scenario editor-handles-mouse-clicks-outside-text [
     left-click 1, 7  # last line, to the right of text
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -934,7 +954,7 @@ def]
     left-click 1, 7  # interior line, to the right of text
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -953,7 +973,7 @@ def]
     left-click 3, 7  # below text
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -973,7 +993,7 @@ scenario editor-handles-mouse-clicks-outside-column [
     left-click 3, 8
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -996,7 +1016,7 @@ scenario editor-inserts-characters-into-empty-editor [
     type [abc]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1015,7 +1035,7 @@ scenario editor-inserts-characters-at-cursor [
     type [d]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1033,7 +1053,7 @@ scenario editor-inserts-characters-at-cursor-2 [
     type [d]  # should append
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1051,7 +1071,7 @@ scenario editor-inserts-characters-at-cursor-3 [
     type [d]  # should append
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1070,7 +1090,7 @@ d]
     type [e]  # should append
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1090,7 +1110,7 @@ d]
     type [ef]  # should append multiple characters in order
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1109,7 +1129,7 @@ scenario editor-wraps-line-on-insert [
     type [e]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   # no wrap yet
   screen-should-contain [
@@ -1123,7 +1143,7 @@ scenario editor-wraps-line-on-insert [
     type [f]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   # now wrap
   screen-should-contain [
@@ -1142,7 +1162,7 @@ scenario editor-moves-cursor-after-inserting-characters [
     type [01]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1160,7 +1180,7 @@ scenario editor-wraps-cursor-after-inserting-characters [
     type [f]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1185,7 +1205,7 @@ scenario editor-wraps-cursor-after-inserting-characters-2 [
     type [f]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1210,7 +1230,7 @@ scenario editor-moves-cursor-down-after-inserting-newline [
 1]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1229,7 +1249,7 @@ scenario editor-moves-cursor-down-after-inserting-newline-2 [
 1]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1256,7 +1276,7 @@ scenario editor-clears-previous-line-completely-after-inserting-newline [
     .          .
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   # line should be fully cleared
   screen-should-contain [
@@ -1279,7 +1299,7 @@ scenario editor-handles-backspace-key [
   3:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
   replace-in-console 171:literal/«, 3:event/backspace
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get 2:address:editor-data/deref, cursor-row:offset
     5:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1307,7 +1327,7 @@ d]
   3:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
   replace-in-console 171:literal/«, 3:event/backspace
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1325,7 +1345,7 @@ scenario editor-moves-cursor-right-with-key [
     type [0]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1347,7 +1367,7 @@ d]
     type [0]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1370,7 +1390,7 @@ d]
     type [0]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1389,7 +1409,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
     press 65514  # right arrow
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1416,7 +1436,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
     press 65514  # right arrow
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1429,7 +1449,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
     press 65514
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1448,7 +1468,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
     press 65514  # right arrow
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1475,7 +1495,7 @@ d]
     type [0]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1495,7 +1515,7 @@ scenario editor-moves-cursor-left-with-key [
     type [0]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1516,7 +1536,7 @@ d]
     press 65515  # left arrow
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1543,7 +1563,7 @@ g]
     type [0]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1567,7 +1587,7 @@ g]
     type [0]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1592,7 +1612,7 @@ d]
     type [0]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
   screen-should-contain [
     .          .
@@ -1620,7 +1640,7 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
     press 65515  # left arrow
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1640,7 +1660,7 @@ def]
     press 65517  # up arrow
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1660,7 +1680,7 @@ def]
     press 65516  # down arrow
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1681,7 +1701,7 @@ def]
     press 65517  # up arrow
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1701,7 +1721,7 @@ de]
     press 65516  # down arrow
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -1712,88 +1732,84 @@ de]
 ]
 
 scenario point-at-multiple-editors [
-  assume-screen 10:literal/width, 5:literal/height
-  # initialize recipe editor covering left half of screen
+  assume-screen 30:literal/width, 5:literal/height
+  # initialize both halves of screen
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
-  # initialize sandbox editor covering right half of screen
-  3:address:array:character <- new [def]
-  4:address:editor-data <- new-editor 3:address:array:character, screen:address, 5:literal/left, 10:literal/right
+  2:address:array:character <- new [def]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # focus on both sides
   assume-console [
     left-click 1, 1
-    left-click 1, 8
+    left-click 1, 17
   ]
   # check cursor column in each
   run [
-    event-loop screen:address, console:address, 2:address:editor-data, 4:address:editor-data
-    6:number <- get 2:address:editor-data/deref, cursor-column:offset
-    7:number <- get 4:address:editor-data/deref, cursor-column:offset
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+    4:address:editor-data <- get 3:address:programming-environment-data/deref, recipes:offset
+    5:number <- get 4:address:editor-data/deref, cursor-column:offset
+    6:address:editor-data <- get 3:address:programming-environment-data/deref, current-sandbox:offset
+    7:number <- get 6:address:editor-data/deref, cursor-column:offset
   ]
   memory-should-contain [
-    6 <- 1
-    7 <- 8
+    5 <- 1
+    7 <- 17
   ]
 ]
 
 scenario editors-chain-to-cover-multiple-columns [
-  assume-screen 10:literal/width, 5:literal/height
-  # initialize recipe editor covering left half of screen
+  assume-screen 30:literal/width, 5:literal/height
+  # initialize both halves of screen
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
-  # initialize sandbox editor covering right half of screen
-  3:address:array:character <- new [def]
-  4:address:editor-data <- new-editor 3:address:array:character, screen:address, 5:literal/left, 10:literal/right
+  2:address:array:character <- new [def]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # type one letter in each of them
   assume-console [
     left-click 1, 1
     type [0]
-    left-click 1, 6
+    left-click 1, 17
     type [1]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data, 4:address:editor-data
-    5:number <- get 2:address:editor-data/deref, cursor-column:offset
-    6:number <- get 4:address:editor-data/deref, cursor-column:offset
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+    4:address:editor-data <- get 3:address:programming-environment-data/deref, recipes:offset
+    5:number <- get 4:address:editor-data/deref, cursor-column:offset
+    6:address:editor-data <- get 3:address:programming-environment-data/deref, current-sandbox:offset
+    7:number <- get 6:address:editor-data/deref, cursor-column:offset
   ]
   screen-should-contain [
-    .          .
-    .a0bc d1ef .
-    .          .
+    .           run (F10)          .
+    .a0bc           ┊d1ef          .
+    .               ┊              .
   ]
   memory-should-contain [
     5 <- 2  # cursor column of recipe editor
-    6 <- 7  # cursor column of sandbox editor
+    7 <- 18  # cursor column of sandbox editor
   ]
   # show the cursor at the right window
   run [
     screen:address <- print-character screen:address, 9251:literal/␣
   ]
   screen-should-contain [
-    .          .
-    .a0bc d1␣f .
-    .          .
+    .           run (F10)          .
+    .a0bc           ┊d1␣f          .
+    .               ┊              .
   ]
 ]
 
 scenario multiple-editors-cover-only-their-own-areas [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 60:literal/width, 10:literal/height
   run [
-    # draw a divider
-    draw-vertical screen:address, 5:literal/divider, 1:literal/top, 5:literal/height
-    # initialize editors on both sides of it
     1:address:array:character <- new [abc]
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
-    3:address:array:character <- new [def]
-    4:address:editor-data <- new-editor 3:address:array:character, screen:address, 6:literal/left, 10:literal/right
+    2:address:array:character <- new [def]
+    3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   ]
   # divider isn't messed up
   screen-should-contain [
-    .          .
-    .abc  │def .
-    .     │    .
-    .     │    .
-    .     │    .
+    .                                         run (F10)          .
+    .abc                           ┊def                          .
+    .                              ┊                             .
+    .                              ┊                             .
+    .                              ┊                             .
   ]
 ]
 
@@ -1804,7 +1820,8 @@ scenario editor-in-focus-keeps-cursor [
   # initialize programming environment and highlight cursor
   assume-console []
   run [
-    programming-environment screen:address, console:address, 1:address:array:character, 2:address:array:character
+    3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+    event-loop screen:address, console:address, 3:address:programming-environment-data
     screen:address <- print-character screen:address, 9251:literal/␣
   ]
   # is cursor at the right place?
@@ -1818,7 +1835,8 @@ scenario editor-in-focus-keeps-cursor [
     type [z]
   ]
   run [
-    programming-environment screen:address, console:address, 1:address:array:character, 2:address:array:character
+    3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+    event-loop screen:address, console:address, 3:address:programming-environment-data
     screen:address <- print-character screen:address, 9251:literal/␣
   ]
   # cursor should still be right
@@ -1830,6 +1848,110 @@ scenario editor-in-focus-keeps-cursor [
 ]
 
 ## Running code from the editors
+
+container sandbox-data [
+  data:address:array:character
+  response:address:array:character
+  warnings:address:array:character
+]
+
+scenario run-and-show-results [
+  assume-screen 120:literal/width, 10:literal/height
+  # recipe editor is empty
+  1:address:array:character <- new []
+  # sandbox editor contains an instruction without storing outputs
+  2:address:array:character <- new [divide-with-remainder 11:literal, 3:literal]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the code in the editors
+  assume-console [
+    press 65526  # F10
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # check that screen prints the results
+  screen-should-contain [
+    .                                                                                                     run (F10)          .
+    .                                                            ┊divide-with-remainder 11:literal, 3:literal                .
+    .                                                            ┊3                                                          .
+    .                                                            ┊2                                                          .
+    .                                                            ┊                                                           .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .                                                                                                                        .
+    .                                                             divide-with-remainder 11:literal, 3:literal                .
+    .                                                                                                                        .
+    .                                                                                                                        .
+    .                                                                                                                        .
+  ]
+  screen-should-contain-in-color, 245:literal/grey, [
+    .                                                                                                                        .
+    .                                                            ┊                                                           .
+    .                                                            ┊3                                                          .
+    .                                                            ┊2                                                          .
+    .                                                            ┊                                                           .
+  ]
+  $close-trace  # todo: try removing after we fix sluggishness
+]
+
+recipe run-sandboxes [
+  default-space:address:array:location <- new location:type, 30:literal
+  env:address:programming-environment-data <- next-ingredient
+  recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
+  current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
+  # load code from recipe editor, save any warnings
+  in:address:array:character <- editor-contents recipes:address:editor-data
+  recipe-warnings:address:address:array:character <- get-address env:address:programming-environment-data/deref, recipe-warnings:offset
+  recipe-warnings:address:address:array:character/deref <- reload in:address:array:character
+  # run contents of right editor (sandbox), save any warnings or output
+  in:address:array:character <- editor-contents current-sandbox:address:editor-data
+  sandbox:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
+  response:address:address:array:character <- get-address sandbox:address:sandbox-data/deref, response:offset
+  warnings:address:address:array:character <- get-address sandbox:address:sandbox-data/deref, warnings:offset
+  response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive in:address:array:character
+]
+
+scenario run-instruction-and-print-warnings [
+  assume-screen 120:literal/width, 10:literal/height
+  # left editor is empty
+  1:address:array:character <- new []
+  # right editor contains an illegal instruction
+  2:address:array:character <- new [get 1234:number, foo:offset]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the code in the editors
+  assume-console [
+    press 65526  # F10
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # check that screen prints error message in red
+  screen-should-contain [
+    .                                                                                                     run (F10)          .
+    .                                                            ┊get 1234:number, foo:offset                                .
+    .                                                            ┊unknown element foo in container number                    .
+    .                                                            ┊                                                           .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .                                                                                                                        .
+    .                                                             get 1234:number, foo:offset                                .
+    .                                                                                                                        .
+    .                                                                                                                        .
+  ]
+  screen-should-contain-in-color, 1:literal/red, [
+    .                                                                                                                        .
+    .                                                                                                                        .
+    .                                                             unknown element foo in container number                    .
+    .                                                                                                                        .
+  ]
+  screen-should-contain-in-color, 245:literal/grey, [
+    .                                                                                                                        .
+    .                                                            ┊                                                           .
+    .                                                            ┊                                                           .
+    .                                                            ┊                                                           .
+  ]
+  $close-trace  # todo: try removing after we fix sluggishness
+]
 
 recipe editor-contents [
   default-space:address:array:location <- new location:type, 30:literal
@@ -1859,102 +1981,12 @@ scenario editor-provides-edited-contents [
     type [def]
   ]
   run [
-    event-loop screen:address, console:address, 2:address:editor-data
+    editor-event-loop screen:address, console:address, 2:address:editor-data
     3:address:array:character <- editor-contents 2:address:editor-data
     4:array:character <- copy 3:address:array:character/deref
   ]
   memory-should-contain [
     4:string <- [abdefc]
-  ]
-]
-
-scenario run-and-show-results [
-  assume-screen 60:literal/width, 5:literal/height
-  # recipe editor is empty
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
-  # sandbox editor contains an instruction without storing outputs
-  3:address:array:character <- new [divide-with-remainder 11:literal, 3:literal]
-  4:address:editor-data <- new-editor 3:address:array:character, screen:address, 5:literal/left, 60:literal/right
-  # run the code in the editors
-  assume-console [
-    press 65526  # F10
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data, 4:address:editor-data
-  ]
-  # check that screen prints the results
-  screen-should-contain [
-    .                                                            .
-    .     divide-with-remainder 11:literal, 3:literal            .
-    .     3                                                      .
-    .     2                                                      .
-    .                                                            .
-  ]
-  screen-should-contain-in-color 7:literal/white, [
-    .                                                            .
-    .     divide-with-remainder 11:literal, 3:literal            .
-    .                                                            .
-    .                                                            .
-    .                                                            .
-  ]
-  screen-should-contain-in-color 245:literal/grey, [
-    .                                                            .
-    .                                                            .
-    .     3                                                      .
-    .     2                                                      .
-    .                                                            .
-  ]
-]
-
-recipe run-sandboxes [
-  default-space:address:array:location <- new location:type, 30:literal
-  recipes:address:editor-data <- next-ingredient
-  current-sandbox:address:editor-data <- next-ingredient
-  # load code from recipe editor, save any warnings
-  in:address:array:character <- editor-contents recipes:address:editor-data
-  warnings:address:address:array:character <- get-address recipes:address:editor-data/deref, warnings:offset
-  warnings:address:address:array:character/deref <- reload in:address:array:character
-  # run contents of right editor (sandbox), save any warnings or output
-  in:address:array:character <- editor-contents current-sandbox:address:editor-data
-  response:address:address:array:character <- get-address current-sandbox:address:editor-data/deref, response:offset
-  warnings:address:address:array:character <- get-address current-sandbox:address:editor-data/deref, warnings:offset
-  response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive in:address:array:character
-]
-
-scenario run-instruction-and-print-warnings [
-  assume-screen 60:literal/width, 5:literal/height
-  # left editor is empty
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
-  # right editor contains an illegal instruction
-  3:address:array:character <- new [get 1234:number, foo:offset]
-  4:address:editor-data <- new-editor 3:address:array:character, screen:address, 5:literal/left, 60:literal/right
-  # run the code in the editors
-  assume-console [
-    press 65526  # F10
-  ]
-  run [
-    event-loop screen:address, console:address, 2:address:editor-data, 4:address:editor-data
-  ]
-  # check that screen prints error message in red
-  screen-should-contain [
-    .                                                            .
-    .     get 1234:number, foo:offset                            .
-    .     unknown element foo in container number                .
-    .                                                            .
-  ]
-  screen-should-contain-in-color 7:literal/white, [
-    .                                                            .
-    .     get 1234:number, foo:offset                            .
-    .                                                            .
-    .                                                            .
-  ]
-  screen-should-contain-in-color, 1:literal/red, [
-    .                                                            .
-    .                                                            .
-    .     unknown element foo in container number                .
-    .                                                            .
   ]
 ]
 
