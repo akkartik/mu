@@ -85,6 +85,7 @@ recipe print-character [
     break-if bg-color-found?:boolean
     bg-color:number <- copy 0:literal/black
   }
+#?   trace [app], [print character] #? 1
   {
     # if x exists
     # (handle special cases exactly like in the real screen)
