@@ -217,7 +217,7 @@ long long int size_of(const vector<type_ordinal>& types) {
 }
 
 bool size_mismatch(const reagent& x, const vector<double>& data) {
-//?   if (size_of(x) != SIZE(data)) cerr << SIZE(data) << '\n'; //? 1
+//?   if (size_of(x) != SIZE(data)) cerr << size_of(x) << " vs " << SIZE(data) << '\n'; //? 2
   return size_of(x) != SIZE(data);
 }
 

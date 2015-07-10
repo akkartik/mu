@@ -500,19 +500,23 @@ recipe event-loop [
       }
     }
     +continue
-    render-all screen:address, env:address:programming-environment-data
+    # if no more events currently left to process, render
+    # todo: test this
+    {
+      more-events?:boolean <- has-more-events? console:address
+      break-if more-events?:boolean
+      render-all screen:address, env:address:programming-environment-data
+    }
     loop
   }
 ]
 
-# takes two editors, sends each event from the console to each editor
+# helper for testing a single editor
 recipe editor-event-loop [
   default-space:address:array:location <- new location:type, 30:literal
   screen:address <- next-ingredient
   console:address <- next-ingredient
-  recipes:address:editor-data <- next-ingredient
-  current-sandbox:address:editor-data <- next-ingredient
-  sandbox-in-focus?:boolean <- next-ingredient
+  editor:address:editor-data <- next-ingredient
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -524,22 +528,13 @@ recipe editor-event-loop [
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t:address:touch-event
-      _ <- move-cursor-in-editor screen:address, recipes:address:editor-data, t:address:touch-event/deref
-      sandbox-in-focus?:boolean <- move-cursor-in-editor screen:address, current-sandbox:address:editor-data, t:address:touch-event/deref
-      update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
-      loop +next-event:label
+      move-cursor-in-editor screen:address, editor:address:editor-data, t:address:touch-event/deref
+      jump +continue:label
     }
     # other events - send to appropriate editor
-    {
-      {
-        break-if sandbox-in-focus?:boolean
-        handle-event screen:address, console:address, recipes:address:editor-data, e:event
-      }
-      {
-        break-unless sandbox-in-focus?:boolean
-        handle-event screen:address, console:address, current-sandbox:address:editor-data, e:event
-      }
-    }
+    handle-event screen:address, console:address, editor:address:editor-data, e:event
+    +continue
+    render screen:address, editor:address:editor-data
     loop
   }
 ]
@@ -560,10 +555,10 @@ recipe handle-event [
       backspace?:boolean <- equal c:address:character/deref, 8:literal/backspace
       break-unless backspace?:boolean
       delete-before-cursor editor:address:editor-data
-      jump +render:label
+      reply
     }
     insert-at-cursor editor:address:editor-data, c:address:character/deref, screen:address
-    jump +render:label
+    reply
   }
   # otherwise it's a special key to control the editor
   k:address:number <- maybe-convert e:event, keycode:variant
@@ -596,7 +591,7 @@ recipe handle-event [
       screen-height:number <- screen-height screen:address
       above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
       assert above-screen-bottom?:boolean, [unimplemented: moving past bottom of screen]
-      jump +render:label
+      reply
     }
     # if the line wraps, move cursor to start of next row
     {
@@ -615,7 +610,7 @@ recipe handle-event [
       # todo: what happens when cursor is too far down?
       above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
       assert above-screen-bottom?:boolean, [unimplemented: moving past bottom of screen]
-      jump +render:label
+      reply
     }
     # otherwise move cursor one character right
     cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
@@ -634,7 +629,7 @@ recipe handle-event [
       break-if at-left-margin?:boolean
 #?       trace [app], [decrementing] #? 1
       cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
-      jump +render:label
+      reply
     }
     # if at left margin, there's guaranteed to be a previous line, since we're
     # not at start of text
@@ -648,7 +643,7 @@ recipe handle-event [
       end-of-line:number <- previous-line-length before-cursor:address:address:duplex-list/deref, d:address:duplex-list
       cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
       cursor-column:address:number/deref <- copy end-of-line:number
-      jump +render:label
+      reply
     }
     # if before-cursor is not at newline, we're just at a wrapped line
     assert cursor-row:address:number/deref, [unimplemented: moving cursor above top of screen]
@@ -678,14 +673,6 @@ recipe handle-event [
 #? ] #? 1
     cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
     # that's it; render will adjust cursor-column as necessary
-  }
-  +render
-  {
-    more-events?:boolean <- has-more-events? console:address
-    break-if more-events?:boolean
-#?     $print [trying to call render
-#? ] #? 1
-    render screen:address, editor:address:editor-data
   }
 ]
 
@@ -1543,8 +1530,6 @@ d]
     3 <- 1
     4 <- 3
   ]
-#?   $dump-trace [app] #? 1
-#?   $exit #? 1
 ]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2 [
@@ -1755,7 +1740,7 @@ scenario point-at-multiple-editors [
   ]
 ]
 
-scenario editors-chain-to-cover-multiple-columns [
+scenario edit-multiple-editors [
   assume-screen 30:literal/width, 5:literal/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]
