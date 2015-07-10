@@ -41,7 +41,11 @@ case REPLY: {
       vector<string> tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
       assert(SIZE(tmp) == 1);
       long long int ingredient_index = to_integer(tmp.at(0));
-      if (caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
+      if (ingredient_index >= SIZE(caller_instruction.ingredients))
+        raise << current_recipe_name() << ": 'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n';
+//?       cerr << caller_instruction.products.size() << ' ' << i << ' ' << caller_instruction.ingredients.size() << ' ' << ingredient_index << '\n'; //? 1
+//?       cerr << caller_instruction.to_string() << '\n'; //? 1
+      if (!is_dummy(caller_instruction.products.at(i)) && caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
         raise << current_recipe_name() << ": 'same-as-ingredient' result " << caller_instruction.products.at(i).value << " from call to " << callee << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n';
     }
   }
@@ -78,6 +82,18 @@ recipe test1 [
   reply 10:address:number/same-as-ingredient:0
 ]
 +warn: main: 'same-as-ingredient' result 2 from call to test1 must be location 1
+
+:(scenario reply_same_as_ingredient_dummy)
+% Hide_warnings = true;
+recipe main [
+  1:number <- copy 0:literal
+  _ <- test1 1:number  # call with different ingredient and product
+]
+recipe test1 [
+  10:address:number <- next-ingredient
+  reply 10:address:number/same-as-ingredient:0
+]
+$warn: 0
 
 :(code)
 string to_string(const vector<double>& in) {
