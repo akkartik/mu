@@ -870,7 +870,6 @@ recipe render-sandboxes [
   }
   # draw solid line after sandbox
   draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
-  row:number <- add row:number, 1:literal
   # draw next sandbox
   next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
   row:number, screen:address <- render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
