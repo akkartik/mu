@@ -1871,6 +1871,7 @@ container sandbox-data [
 ]
 
 scenario run-and-show-results [
+  $close-trace  # trace too long for github
   assume-screen 120:literal/width, 10:literal/height
   # recipe editor is empty
   1:address:array:character <- new []
@@ -1915,7 +1916,6 @@ scenario run-and-show-results [
     .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊                                                           .
   ]
-  $close-trace  # todo: try removing after we fix sluggishness
 ]
 
 recipe run-sandboxes [
@@ -1945,6 +1945,7 @@ recipe run-sandboxes [
 ]
 
 scenario run-instruction-and-print-warnings [
+  $close-trace  # trace too long for github
   assume-screen 120:literal/width, 10:literal/height
   # left editor is empty
   1:address:array:character <- new []
@@ -1994,7 +1995,6 @@ scenario run-instruction-and-print-warnings [
     .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊                                                           .
   ]
-  $close-trace  # todo: try removing after we fix sluggishness
 ]
 
 recipe editor-contents [
