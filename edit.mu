@@ -1872,7 +1872,7 @@ container sandbox-data [
 
 scenario run-and-show-results [
   $close-trace  # trace too long for github
-  assume-screen 120:literal/width, 10:literal/height
+  assume-screen 100:literal/width, 12:literal/height
   # recipe editor is empty
   1:address:array:character <- new []
   # sandbox editor contains an instruction without storing outputs
@@ -1887,34 +1887,57 @@ scenario run-and-show-results [
   ]
   # check that screen prints the results
   screen-should-contain [
-    .                                                                                                     run (F10)          .
-    .                                                            ┊                                                           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                            ┊divide-with-remainder 11:literal, 3:literal                .
-    .                                                            ┊3                                                          .
-    .                                                            ┊2                                                          .
-    .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                            ┊                                                           .
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊divide-with-remainder 11:literal, 3:literal      .
+    .                                                  ┊3                                                .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   screen-should-contain-in-color 7:literal/white, [
-    .                                                                                                                        .
-    .                                                                                                                        .
-    .                                                                                                                        .
-    .                                                             divide-with-remainder 11:literal, 3:literal                .
-    .                                                                                                                        .
-    .                                                                                                                        .
-    .                                                                                                                        .
-    .                                                                                                                        .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                   divide-with-remainder 11:literal, 3:literal      .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
   ]
   screen-should-contain-in-color, 245:literal/grey, [
-    .                                                                                                                        .
-    .                                                            ┊                                                           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                            ┊                                                           .
-    .                                                            ┊3                                                          .
-    .                                                            ┊2                                                          .
-    .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                            ┊                                                           .
+    .                                                                                                    .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+    .                                                  ┊3                                                .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+  # run another command
+  assume-console [
+    left-click 1, 80
+    type [add 2:literal, 2:literal]
+    press 65526  # F10
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # check that screen prints the results
+  screen-should-contain [
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊add 2:literal, 2:literal                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊divide-with-remainder 11:literal, 3:literal      .
+    .                                                  ┊3                                                .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -1946,7 +1969,7 @@ recipe run-sandboxes [
 
 scenario run-instruction-and-print-warnings [
   $close-trace  # trace too long for github
-  assume-screen 120:literal/width, 10:literal/height
+  assume-screen 100:literal/width, 10:literal/height
   # left editor is empty
   1:address:array:character <- new []
   # right editor contains an illegal instruction
@@ -1961,39 +1984,39 @@ scenario run-instruction-and-print-warnings [
   ]
   # check that screen prints error message in red
   screen-should-contain [
-    .                                                                                                     run (F10)          .
-    .                                                            ┊                                                           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                            ┊get 1234:number, foo:offset                                .
-    .                                                            ┊unknown element foo in container number                    .
-    .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                            ┊                                                           .
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊get 1234:number, foo:offset                      .
+    .                                                  ┊unknown element foo in container number          .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   screen-should-contain-in-color 7:literal/white, [
-    .                                                                                                                        .
-    .                                                                                                                        .
-    .                                                                                                                        .
-    .                                                             get 1234:number, foo:offset                                .
-    .                                                                                                                        .
-    .                                                                                                                        .
-    .                                                                                                                        .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                   get 1234:number, foo:offset                      .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
   ]
   screen-should-contain-in-color, 1:literal/red, [
-    .                                                                                                                        .
-    .                                                                                                                        .
-    .                                                                                                                        .
-    .                                                                                                                        .
-    .                                                             unknown element foo in container number                    .
-    .                                                                                                                        .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                   unknown element foo in container number          .
+    .                                                                                                    .
   ]
   screen-should-contain-in-color, 245:literal/grey, [
-    .                                                                                                                        .
-    .                                                            ┊                                                           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                            ┊                                                           .
-    .                                                            ┊                                                           .
-    .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                            ┊                                                           .
+    .                                                                                                    .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 
