@@ -831,6 +831,24 @@ recipe render-all [
   right:number <- get current-sandbox:address:editor-data/deref, right:offset
   row:number, screen:address <- render screen:address, current-sandbox:address:editor-data
   sandbox:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
+  row:number, screen:address <- render-sandboxes screen:address, sandbox:address:sandbox-data, left:number, right:number, row:number
+  # clear next line, in case we just processed a backspace
+  row:number <- add row:number, 1:literal
+  move-cursor screen:address, row:number, left:number
+  clear-line-delimited screen:address, left:number, right:number
+  update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
+  show-screen screen:address
+  reply screen:address/same-as-ingredient:0
+]
+
+recipe render-sandboxes [
+  default-space:address:array:location <- new location:type, 40:literal
+  screen:address <- next-ingredient
+  sandbox:address:sandbox-data <- next-ingredient
+  left:number <- next-ingredient
+  right:number <- next-ingredient
+  row:number <- next-ingredient
+  reply-unless sandbox:address:sandbox-data, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
   sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
   sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/deref, warnings:offset
   {
@@ -843,13 +861,7 @@ recipe render-all [
   }
   # draw solid line after sandbox
   draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
-  # clear next line, in case we just processed a backspace
-  row:number <- add row:number, 1:literal
-  move-cursor screen:address, row:number, left:number
-  clear-line-delimited screen:address, left:number, right:number
-  update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
-  show-screen screen:address
-  reply screen:address/same-as-ingredient:0
+  reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
 ]
 
 recipe update-cursor [
