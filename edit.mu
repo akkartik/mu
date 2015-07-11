@@ -133,9 +133,9 @@ recipe new-editor [
   # initialize cursor to top of screen
   y:address:address:duplex-list <- get-address result:address:editor-data/deref, before-cursor:offset
   y:address:address:duplex-list/deref <- copy init:address:address:duplex-list/deref
-  # perform initial rendering to screen
-  result:address:editor-data, _, screen:address <- render screen:address, result:address:editor-data
-  reply result:address:editor-data, screen:address/same-as-ingredient:0
+  # initial render to screen, just for some old tests
+  _, screen:address <- render screen:address, result:address:editor-data
+  reply result:address:editor-data
 ]
 
 scenario editor-initializes-without-data [
@@ -159,11 +159,12 @@ scenario editor-initializes-without-data [
   ]
 ]
 
+# bottom:number, screen:address <- render screen:address, editor:address:editor-data
 recipe render [
   default-space:address:array:location <- new location:type, 40:literal
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
-  reply-unless editor:address:editor-data, editor:address:editor-data/same-as-ingredient:1, 1:literal/top, screen:address/same-as-ingredient:0
+  reply-unless editor:address:editor-data, 1:literal/top, screen:address/same-as-ingredient:0
   left:number <- get editor:address:editor-data/deref, left:offset
   screen-height:number <- screen-height screen:address
   right:number <- get editor:address:editor-data/deref, right:offset
@@ -260,10 +261,10 @@ recipe render [
   }
   # clear rest of current line
   clear-line-delimited screen:address, column:number, right:number
-  reply editor:address:editor-data/same-as-ingredient:1, row:number, screen:address/same-as-ingredient:0
+  reply row:number, screen:address/same-as-ingredient:0
 ]
 
-# row:number <- render-string s:address:array:character, editor:address:editor-data, color:number, row:number
+# row:number, screen:address <- render-string screen:address, s:address:array:character, editor:address:editor-data, color:number, row:number
 # print a string 's' to 'editor' in 'color' starting at 'row'
 # leave cursor at start of next line
 recipe render-string [
@@ -274,7 +275,7 @@ recipe render-string [
   color:number <- next-ingredient
   row:number <- next-ingredient
   row:number <- add row:number, 1:literal
-  reply-unless s:address:array:character, row:number
+  reply-unless s:address:array:character, row:number, screen:address/same-as-ingredient:0
   left:number <- get editor:address:editor-data/deref, left:offset
   right:number <- get editor:address:editor-data/deref, right:offset
   column:number <- copy left:number
@@ -330,7 +331,7 @@ recipe render-string [
     column:number <- add column:number, 1:literal
     loop
   }
-  reply row:number/same-as-ingredient:4
+  reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
 ]
 
 recipe clear-line-delimited [
@@ -535,7 +536,7 @@ recipe editor-event-loop [
     # other events - send to appropriate editor
     handle-event screen:address, console:address, editor:address:editor-data, e:event
     +continue
-    _, row:number <- render screen:address, editor:address:editor-data
+    row:number, screen:address <- render screen:address, editor:address:editor-data
     # clear next line, in case we just processed a backspace
     left:number <- get editor:address:editor-data/deref, left:offset
     right:number <- get editor:address:editor-data/deref, right:offset
@@ -703,7 +704,7 @@ recipe move-cursor-in-editor [
   cursor-row:address:number/deref <- get t:touch-event, row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- get t:touch-event, column:offset
-  editor:address:editor-data <- render screen:address, editor:address:editor-data
+  render screen:address, editor:address:editor-data
   # gain focus
   reply 1:literal/true
 ]
@@ -807,11 +808,11 @@ recipe render-all [
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
   # render recipes, along with any warnings
-  recipes:address:editor-data, row:number <- render screen:address, recipes:address:editor-data
+  row:number, screen:address <- render screen:address, recipes:address:editor-data
   recipe-warnings:address:array:character <- get env:address:programming-environment-data/deref, recipe-warnings:offset
   {
     break-unless recipe-warnings:address:array:character
-    row:number <- render-string screen:address, recipe-warnings:address:array:character, recipes:address:editor-data, 1:literal/red, row:number
+    row:number, screen:address <- render-string screen:address, recipe-warnings:address:array:character, recipes:address:editor-data, 1:literal/red, row:number
   }
   {
     # no warnings? move to next lin
@@ -827,17 +828,17 @@ recipe render-all [
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
   # render sandboxes along with warnings for each
-  _, row:number <- render screen:address, current-sandbox:address:editor-data
+  row:number, screen:address <- render screen:address, current-sandbox:address:editor-data
   sandbox:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
   sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
   sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/deref, warnings:offset
   {
     break-unless sandbox-warnings:address:array:character
-    row:number <- render-string screen:address, sandbox-warnings:address:array:character, current-sandbox:address:editor-data, 1:literal/red, row:number
+    row:number, screen:address <- render-string screen:address, sandbox-warnings:address:array:character, current-sandbox:address:editor-data, 1:literal/red, row:number
   }
   {
     break-if sandbox-warnings:address:array:character
-    row:number <- render-string screen:address, sandbox-response:address:array:character, current-sandbox:address:editor-data, 245:literal/grey, row:number
+    row:number, screen:address <- render-string screen:address, sandbox-response:address:array:character, current-sandbox:address:editor-data, 245:literal/grey, row:number
   }
   # draw solid line after sandbox
   left:number <- get current-sandbox:address:editor-data/deref, left:offset

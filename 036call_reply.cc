@@ -34,6 +34,8 @@ case REPLY: {
   copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
   // check that any reply ingredients with /same-as-ingredient connect up
   // the corresponding ingredient and product in the caller.
+  if (SIZE(caller_instruction.products) > SIZE(ingredients))
+    raise << "too few values replied from " << callee << '\n';
   for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
 //?     cerr << Recipe[Current_routine->calls.front().running_recipe].name << '\n'; //? 1
     trace(Primitive_recipe_depth, "run") << "result " << i << " is " << to_string(ingredients.at(i));
