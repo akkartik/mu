@@ -51,6 +51,10 @@ bool run_interactive(long long int address) {
   if (command.empty()) return false;
   Recipe.erase(Recipe_ordinal["interactive"]);
   Hide_warnings = true;
+  if (!Trace_stream) {
+    Trace_file = "";  // if there wasn't already a stream we don't want to save it
+    Trace_stream = new trace_stream;
+  }
   // call run(string) but without the scheduling
   load("recipe interactive [\n"+command+"\n]\n");
   transform_all();
