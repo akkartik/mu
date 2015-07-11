@@ -19,7 +19,7 @@ container programming-environment-data [
   recipes:address:editor-data
   recipe-warnings:address:array:character
   current-sandbox:address:editor-data
-  sandbox:sandbox-data
+  sandbox:address:sandbox-data
   sandbox-in-focus?:boolean  # false => focus in recipes; true => focus in current-sandbox
 ]
 
@@ -830,7 +830,9 @@ recipe render-all [
   left:number <- get current-sandbox:address:editor-data/deref, left:offset
   right:number <- get current-sandbox:address:editor-data/deref, right:offset
   row:number, screen:address <- render screen:address, current-sandbox:address:editor-data
-  sandbox:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
+  row:number <- add row:number, 1:literal
+  draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
+  sandbox:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
   row:number, screen:address <- render-sandboxes screen:address, sandbox:address:sandbox-data, left:number, right:number, row:number
   # clear next line, in case we just processed a backspace
   row:number <- add row:number, 1:literal
@@ -1907,11 +1909,14 @@ recipe run-sandboxes [
   recipe-warnings:address:address:array:character <- get-address env:address:programming-environment-data/deref, recipe-warnings:offset
   recipe-warnings:address:address:array:character/deref <- reload in:address:array:character
   # run contents of right editor (sandbox), save any warnings or output
-  in:address:array:character <- editor-contents current-sandbox:address:editor-data
-  sandbox:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
-  response:address:address:array:character <- get-address sandbox:address:sandbox-data/deref, response:offset
-  warnings:address:address:array:character <- get-address sandbox:address:sandbox-data/deref, warnings:offset
-  response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive in:address:array:character
+  {
+    in:address:array:character <- editor-contents current-sandbox:address:editor-data
+    sandbox:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
+    break-unless sandbox:address:sandbox-data
+    response:address:address:array:character <- get-address sandbox:address:sandbox-data/deref, response:offset
+    warnings:address:address:array:character <- get-address sandbox:address:sandbox-data/deref, warnings:offset
+    response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive in:address:array:character
+  }
 ]
 
 scenario run-instruction-and-print-warnings [
