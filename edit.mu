@@ -851,6 +851,13 @@ recipe render-sandboxes [
   right:number <- next-ingredient
   row:number <- next-ingredient
   reply-unless sandbox:address:sandbox-data, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  screen-height:number <- screen-width screen:address
+  at-bottom?:boolean <- greater-or-equal row:number screen-height:number
+  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  # render sandbox contents
+  sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
+  row:number, screen:address <- render-string screen:address, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
+  # render sandbox warnings or response, in that order
   sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
   sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/deref, warnings:offset
   {
@@ -863,6 +870,10 @@ recipe render-sandboxes [
   }
   # draw solid line after sandbox
   draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
+  row:number <- add row:number, 1:literal
+  # draw next sandbox
+  next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
+  row:number, screen:address <- render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
   reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
 ]
 
@@ -1856,6 +1867,7 @@ container sandbox-data [
   data:address:array:character
   response:address:array:character
   warnings:address:array:character
+  next-sandbox:address:sandbox-data
 ]
 
 scenario run-and-show-results [
@@ -1875,15 +1887,20 @@ scenario run-and-show-results [
   # check that screen prints the results
   screen-should-contain [
     .                                                                                                     run (F10)          .
+    .                                                            ┊                                                           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊divide-with-remainder 11:literal, 3:literal                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊3                                                          .
+    .                                                            ┊3                                                          .
     .                                                            ┊2                                                          .
     .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊                                                           .
   ]
   screen-should-contain-in-color 7:literal/white, [
     .                                                                                                                        .
+    .                                                                                                                        .
+    .                                                                                                                        .
     .                                                             divide-with-remainder 11:literal, 3:literal                .
+    .                                                                                                                        .
     .                                                                                                                        .
     .                                                                                                                        .
     .                                                                                                                        .
@@ -1891,7 +1908,9 @@ scenario run-and-show-results [
   screen-should-contain-in-color, 245:literal/grey, [
     .                                                                                                                        .
     .                                                            ┊                                                           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊3                                                          .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                            ┊                                                           .
+    .                                                            ┊3                                                          .
     .                                                            ┊2                                                          .
     .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊                                                           .
@@ -1908,15 +1927,21 @@ recipe run-sandboxes [
   in:address:array:character <- editor-contents recipes:address:editor-data
   recipe-warnings:address:address:array:character <- get-address env:address:programming-environment-data/deref, recipe-warnings:offset
   recipe-warnings:address:address:array:character/deref <- reload in:address:array:character
-  # run contents of right editor (sandbox), save any warnings or output
-  {
-    in:address:array:character <- editor-contents current-sandbox:address:editor-data
-    sandbox:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
-    break-unless sandbox:address:sandbox-data
-    response:address:address:array:character <- get-address sandbox:address:sandbox-data/deref, response:offset
-    warnings:address:address:array:character <- get-address sandbox:address:sandbox-data/deref, warnings:offset
-    response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive in:address:array:character
-  }
+  # run contents of right editor (sandbox), turn into a new sandbox-data
+  new-sandbox:address:sandbox-data <- new sandbox-data:type
+  data:address:address:array:character <- get-address new-sandbox:address:sandbox-data/deref, data:offset
+  data:address:address:array:character/deref <- editor-contents current-sandbox:address:editor-data
+  response:address:address:array:character <- get-address new-sandbox:address:sandbox-data/deref, response:offset
+  warnings:address:address:array:character <- get-address new-sandbox:address:sandbox-data/deref, warnings:offset
+  response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive data:address:address:array:character/deref
+  next:address:address:sandbox-data <- get-address new-sandbox:address:sandbox-data/deref, next-sandbox:offset
+  # push to head of sandbox list
+  dest:address:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
+  next:address:address:sandbox-data/deref <- copy dest:address:address:sandbox-data/deref
+  dest:address:address:sandbox-data/deref <- copy new-sandbox:address:sandbox-data
+  # clear sandbox editor
+  init:address:address:duplex-list <- get-address current-sandbox:address:editor-data/deref, data:offset
+  init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
 ]
 
 scenario run-instruction-and-print-warnings [
@@ -1936,18 +1961,25 @@ scenario run-instruction-and-print-warnings [
   # check that screen prints error message in red
   screen-should-contain [
     .                                                                                                     run (F10)          .
+    .                                                            ┊                                                           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊get 1234:number, foo:offset                                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊unknown element foo in container number                    .
+    .                                                            ┊unknown element foo in container number                    .
     .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊                                                           .
   ]
   screen-should-contain-in-color 7:literal/white, [
     .                                                                                                                        .
+    .                                                                                                                        .
+    .                                                                                                                        .
     .                                                             get 1234:number, foo:offset                                .
+    .                                                                                                                        .
     .                                                                                                                        .
     .                                                                                                                        .
   ]
   screen-should-contain-in-color, 1:literal/red, [
+    .                                                                                                                        .
+    .                                                                                                                        .
     .                                                                                                                        .
     .                                                                                                                        .
     .                                                             unknown element foo in container number                    .
@@ -1956,7 +1988,9 @@ scenario run-instruction-and-print-warnings [
   screen-should-contain-in-color, 245:literal/grey, [
     .                                                                                                                        .
     .                                                            ┊                                                           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                           .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                            ┊                                                           .
+    .                                                            ┊                                                           .
     .                                                            ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                            ┊                                                           .
   ]
