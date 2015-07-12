@@ -38,11 +38,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
 <span class="Comment">//: We'll use this container as a running example, with two number elements.</span>
-type_number point = Type_number[<span class="Constant">&quot;point&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
+type_ordinal point = Type_ordinal[<span class="Constant">&quot;point&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
 Type[point]<span class="Delimiter">.</span>size = <span class="Constant">2</span><span class="Delimiter">;</span>
 Type[point]<span class="Delimiter">.</span>kind = container<span class="Delimiter">;</span>
 Type[point]<span class="Delimiter">.</span>name = <span class="Constant">&quot;point&quot;</span><span class="Delimiter">;</span>
-vector&lt;type_number&gt; i<span class="Delimiter">;</span>
+vector&lt;type_ordinal&gt; i<span class="Delimiter">;</span>
 i<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>number<span class="Delimiter">);</span>
 Type[point]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
 Type[point]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
@@ -65,14 +65,14 @@ recipe main [
 <span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
 <span class="Comment">// A more complex container, containing another container as one of its</span>
 <span class="Comment">// elements.</span>
-type_number point_number = Type_number[<span class="Constant">&quot;point-number&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
+type_ordinal point_number = Type_ordinal[<span class="Constant">&quot;point-number&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
 Type[point_number]<span class="Delimiter">.</span>size = <span class="Constant">2</span><span class="Delimiter">;</span>
 Type[point_number]<span class="Delimiter">.</span>kind = container<span class="Delimiter">;</span>
 Type[point_number]<span class="Delimiter">.</span>name = <span class="Constant">&quot;point-number&quot;</span><span class="Delimiter">;</span>
-vector&lt;type_number&gt; p2<span class="Delimiter">;</span>
+vector&lt;type_ordinal&gt; p2<span class="Delimiter">;</span>
 p2<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>point<span class="Delimiter">);</span>
 Type[point_number]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>p2<span class="Delimiter">);</span>
-vector&lt;type_number&gt; i2<span class="Delimiter">;</span>
+vector&lt;type_ordinal&gt; i2<span class="Delimiter">;</span>
 i2<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>number<span class="Delimiter">);</span>
 Type[point_number]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>i2<span class="Delimiter">);</span>
 
@@ -137,17 +137,19 @@ recipe main [
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 GET<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;get&quot;</span>] = GET<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;get&quot;</span>] = GET<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case GET: <span class="Delimiter">{</span>
   reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   long long int base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  type_number base_type = base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  type_ordinal base_type = base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>kind != container<span class="Delimiter">)</span>
     raise &lt;&lt; <span class="Constant">&quot;'get' on a non-container in &quot;</span> &lt;&lt; current_recipe_name <span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; die<span class="Delimiter">();</span>
   assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   long long int offset = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>offset &lt; size_of<span class="Delimiter">(</span>base<span class="Delimiter">));</span>
   long long int src = base_address<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; offset<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     src += size_of<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
@@ -155,7 +157,7 @@ case GET: <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy is &quot;</span> &lt;&lt; src<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>kind == container<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">)</span> &gt; offset<span class="Delimiter">);</span>
-  type_number src_type = Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  type_ordinal src_type = Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;its type is &quot;</span> &lt;&lt; Type[src_type]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
   reagent tmp<span class="Delimiter">;</span>
   tmp<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>src<span class="Delimiter">);</span>
@@ -186,17 +188,19 @@ recipe main [
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 GET_ADDRESS<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;get-address&quot;</span>] = GET_ADDRESS<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;get-address&quot;</span>] = GET_ADDRESS<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case GET_ADDRESS: <span class="Delimiter">{</span>
   reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   long long int base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  type_number base_type = base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  type_ordinal base_type = base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>kind != container<span class="Delimiter">)</span>
     raise &lt;&lt; <span class="Constant">&quot;'get' on a non-container in &quot;</span> &lt;&lt; current_recipe_name <span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; die<span class="Delimiter">();</span>
   assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   long long int offset = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>offset &lt; size_of<span class="Delimiter">(</span>base<span class="Delimiter">));</span>
   long long int result = base_address<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; offset<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     result += size_of<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
@@ -251,16 +255,16 @@ void insert_container<span class="Delimiter">(</span>const string&amp; command<s
   string name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;reading &quot;</span> &lt;&lt; command &lt;&lt; <span class="Constant">' '</span> &lt;&lt; name<span class="Delimiter">;</span>
 <span class="CommentedCode">//?   cout &lt;&lt; name &lt;&lt; '\n'; //? 2</span>
-<span class="CommentedCode">//?   if (Type_number.find(name) != Type_number.end()) //? 1</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; Type_number[name] &lt;&lt; '\n'; //? 1</span>
-  if <span class="Delimiter">(</span>Type_number<span class="Delimiter">.</span>find<span class="Delimiter">(</span>name<span class="Delimiter">)</span> == Type_number<span class="Delimiter">.</span>end<span class="Delimiter">()</span>
-      || Type_number[name] == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    Type_number[name] = Next_type_number++<span class="Delimiter">;</span>
+<span class="CommentedCode">//?   if (Type_ordinal.find(name) != Type_ordinal.end()) //? 1</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; Type_ordinal[name] &lt;&lt; '\n'; //? 1</span>
+  if <span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span>name<span class="Delimiter">)</span> == Type_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">()</span>
+      || Type_ordinal[name] == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    Type_ordinal[name] = Next_type_ordinal++<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  trace<span class="Delimiter">(</span><span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type number: &quot;</span> &lt;&lt; Type_number[name]<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type number: &quot;</span> &lt;&lt; Type_ordinal[name]<span class="Delimiter">;</span>
   skip_bracket<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">&quot;'container' must begin with '['&quot;</span><span class="Delimiter">);</span>
-  type_info&amp; t = Type[Type_number[name]]<span class="Delimiter">;</span>
-  recently_added_types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[name]<span class="Delimiter">);</span>
+  type_info&amp; t = Type[Type_ordinal[name]]<span class="Delimiter">;</span>
+  recently_added_types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_ordinal[name]<span class="Delimiter">);</span>
   t<span class="Delimiter">.</span>name = name<span class="Delimiter">;</span>
   t<span class="Delimiter">.</span>kind = kind<span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
@@ -270,14 +274,14 @@ void insert_container<span class="Delimiter">(</span>const string&amp; command<s
     istringstream inner<span class="Delimiter">(</span>element<span class="Delimiter">);</span>
     t<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>slurp_until<span class="Delimiter">(</span>inner<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">));</span>
     trace<span class="Delimiter">(</span><span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  element name: &quot;</span> &lt;&lt; t<span class="Delimiter">.</span>element_names<span class="Delimiter">.</span>back<span class="Delimiter">();</span>
-    vector&lt;type_number&gt; types<span class="Delimiter">;</span>
+    vector&lt;type_ordinal&gt; types<span class="Delimiter">;</span>
     while <span class="Delimiter">(</span>!inner<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
       string type_name = slurp_until<span class="Delimiter">(</span>inner<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">);</span>
-      if <span class="Delimiter">(</span>Type_number<span class="Delimiter">.</span>find<span class="Delimiter">(</span>type_name<span class="Delimiter">)</span> == Type_number<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?         cerr &lt;&lt; type_name &lt;&lt; &quot; is &quot; &lt;&lt; Next_type_number &lt;&lt; '\n'; //? 1</span>
-        Type_number[type_name] = Next_type_number++<span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span>type_name<span class="Delimiter">)</span> == Type_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?         cerr &lt;&lt; type_name &lt;&lt; &quot; is &quot; &lt;&lt; Next_type_ordinal &lt;&lt; '\n'; //? 1</span>
+        Type_ordinal[type_name] = Next_type_ordinal++<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
-      types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[type_name]<span class="Delimiter">);</span>
+      types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_ordinal[type_name]<span class="Delimiter">);</span>
       trace<span class="Delimiter">(</span><span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  type: &quot;</span> &lt;&lt; types<span class="Delimiter">.</span>back<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     t<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>types<span class="Delimiter">);</span>
@@ -288,38 +292,38 @@ void insert_container<span class="Delimiter">(</span>const string&amp; command<s
 
 <span class="Comment">//: ensure types created in one scenario don't leak outside it.</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-vector&lt;type_number&gt; recently_added_types<span class="Delimiter">;</span>
+vector&lt;type_ordinal&gt; recently_added_types<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End load_permanently&quot;)</span>  <span class="Comment">//: for non-tests</span>
 recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>  <span class="Comment">//: for tests</span>
 for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;erasing &quot; &lt;&lt; Type[recently_added_types.at(i)].name &lt;&lt; '\n'; //? 1</span>
-  Type_number<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Type[recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span>]<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
+  Type_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Type[recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span>]<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
   Type<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recently_added_types<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 recently_added_types<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Comment">// delete recent type references</span>
-<span class="Comment">// can't rely on recently_added_types to cleanup Type_number, because of deliberately misbehaving tests with references to undefined types</span>
-map&lt;string<span class="Delimiter">,</span> type_number&gt;::iterator p = Type_number<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>
-while<span class="Delimiter">(</span>p != Type_number<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span class="Comment">// can't rely on recently_added_types to cleanup Type_ordinal, because of deliberately misbehaving tests with references to undefined types</span>
+map&lt;string<span class="Delimiter">,</span> type_ordinal&gt;::iterator p = Type_ordinal<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>
+while<span class="Delimiter">(</span>p != Type_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
   <span class="Comment">// save current item</span>
   string name = p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">;</span>
-  type_number t = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
+  type_ordinal t = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
   <span class="Comment">// increment iterator</span>
   ++p<span class="Delimiter">;</span>
   <span class="Comment">// now delete current item if necessary</span>
   if <span class="Delimiter">(</span>t &gt;= <span class="Constant">1000</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; &quot;AAA &quot; &lt;&lt; name &lt;&lt; &quot; &quot; &lt;&lt; t &lt;&lt; '\n'; //? 1</span>
-    Type_number<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>name<span class="Delimiter">);</span>
+    Type_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>name<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 <span class="Comment">//: lastly, ensure scenarios are consistent by always starting them at the</span>
 <span class="Comment">//: same type number.</span>
-Next_type_number = <span class="Constant">1000</span><span class="Delimiter">;</span>
+Next_type_ordinal = <span class="Constant">1000</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Test Run Initialization&quot;)</span>
-assert<span class="Delimiter">(</span>Next_type_number &lt; <span class="Constant">1000</span><span class="Delimiter">);</span>
+assert<span class="Delimiter">(</span>Next_type_ordinal &lt; <span class="Constant">1000</span><span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Next_type_number = <span class="Constant">1000</span><span class="Delimiter">;</span>
+Next_type_ordinal = <span class="Constant">1000</span><span class="Delimiter">;</span>
 
 <span class="SalientComment">//:: Allow container definitions anywhere in the codebase, but warn if you</span>
 <span class="SalientComment">//:: can't find a definition.</span>
@@ -350,7 +354,7 @@ $warn: <span class="Constant">0</span>
   Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_invalid_types<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
-void check_invalid_types<span class="Delimiter">(</span>const recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void check_invalid_types<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   for <span class="Delimiter">(</span>long long int index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     const instruction&amp; inst = Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
     for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -395,7 +399,7 @@ check_container_field_types<span class="Delimiter">();</span>
 
 <span class="Delimiter">:(code)</span>
 void check_container_field_types<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>map&lt;type_number<span class="Delimiter">,</span> type_info&gt;::iterator p = Type<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Type<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt;::iterator p = Type<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Type<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     const type_info&amp; info = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; &quot;checking &quot; &lt;&lt; p-&gt;first &lt;&lt; '\n'; //? 1</span>
     for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -413,7 +417,7 @@ void check_container_field_types<span class="Delimiter">()</span> <span class="D
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 MERGE<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;merge&quot;</span>] = MERGE<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;merge&quot;</span>] = MERGE<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case MERGE: <span class="Delimiter">{</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>

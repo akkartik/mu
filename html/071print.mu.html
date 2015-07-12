@@ -113,6 +113,13 @@ container screen-cell [
     <span class="muControl">break-if</span> color-found?:boolean
     color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
   <span class="Delimiter">}</span>
+  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default bg-color to black</span>
+    <span class="muControl">break-if</span> bg-color-found?:boolean
+    bg-color:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal/black</span>
+  <span class="Delimiter">}</span>
+<span class="CommentedCode">#?   trace [app], [print character] #? 1</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if x exists</span>
     <span class="Comment"># (handle special cases exactly like in the real screen)</span>
@@ -180,7 +187,7 @@ container screen-cell [
     <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise, real screen</span>
-  print-character-to-display c:character, color:number
+  print-character-to-display c:character, color:number, bg-color:number
   <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
@@ -631,13 +638,19 @@ container screen-cell [
     <span class="muControl">break-if</span> color-found?:boolean
     color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
   <span class="Delimiter">}</span>
+  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default bg-color to black</span>
+    <span class="muControl">break-if</span> bg-color-found?:boolean
+    bg-color:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal/black</span>
+  <span class="Delimiter">}</span>
   len:number<span class="Special"> &lt;- </span>length s:address:array:character/deref
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, len:number
     <span class="muControl">break-if</span> done?:boolean
     c:character<span class="Special"> &lt;- </span>index s:address:array:character/deref, i:number
-    print-character x:address:screen, c:character, color:number
+    print-character x:address:screen, c:character, color:number, bg-color:number
     i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
@@ -674,9 +687,15 @@ container screen-cell [
     <span class="muControl">break-if</span> color-found?:boolean
     color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
   <span class="Delimiter">}</span>
+  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default bg-color to black</span>
+    <span class="muControl">break-if</span> bg-color-found?:boolean
+    bg-color:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal/black</span>
+  <span class="Delimiter">}</span>
   <span class="Comment"># todo: other bases besides decimal</span>
   s:address:array:character<span class="Special"> &lt;- </span>integer-to-decimal-string n:number
-  print-string x:address:screen, s:address:array:character, color:number
+  print-string x:address:screen, s:address:array:character, color:number, bg-color:number
   <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 </pre>

@@ -14,6 +14,7 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceContains { color: #008000; }
+.cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
@@ -69,7 +70,7 @@ recipe main [
   Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>transform_braces<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
-void transform_braces<span class="Delimiter">(</span>const recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void transform_braces<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;AAA transform_braces\n&quot;; //? 1</span>
 <span class="CommentedCode">//?   exit(0); //? 1</span>
   const int OPEN = <span class="Constant">0</span><span class="Delimiter">,</span> CLOSE = <span class="Constant">1</span><span class="Delimiter">;</span>
@@ -89,103 +90,65 @@ void transform_braces<span class="Delimiter">(</span>const recipe_number r<span 
   stack&lt;<span class="Comment">/*</span><span class="Comment">step</span><span class="Comment">*/</span>long long int&gt; open_braces<span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int index = <span class="Constant">0</span><span class="Delimiter">;</span> index &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?     cerr &lt;&lt; index &lt;&lt; '\n'; //? 1</span>
     instruction&amp; inst = Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
-<span class="CommentedCode">//?     cout &lt;&lt; &quot;AAA &quot; &lt;&lt; inst.name &lt;&lt; &quot;: &quot; &lt;&lt; inst.operation &lt;&lt; '\n'; //? 1</span>
-    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label == <span class="Constant">&quot;{&quot;</span><span class="Delimiter">)</span> open_braces<span class="Delimiter">.</span>push<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
-    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label == <span class="Constant">&quot;}&quot;</span><span class="Delimiter">)</span> open_braces<span class="Delimiter">.</span>pop<span class="Delimiter">();</span>
-    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span>
-      <span class="Delimiter">;</span>  <span class="Comment">// do nothing</span>
-    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_number[<span class="Constant">&quot;loop&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      inst<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;jump&quot;</span>]<span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        <span class="Comment">// explicit target; a later phase will handle it</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-      else <span class="Delimiter">{</span>
-        reagent ing<span class="Delimiter">;</span>
-        ing<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>top<span class="Delimiter">()</span>-index<span class="Delimiter">);</span>
-        ing<span class="Delimiter">.</span>types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;offset&quot;</span>]<span class="Delimiter">);</span>
-        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ing<span class="Delimiter">);</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; ing<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; index &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; ing<span class="Delimiter">.</span>to_string<span class="Delimiter">();</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; index &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>index<span class="Delimiter">).</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>to_string<span class="Delimiter">();</span>
-      <span class="Delimiter">}</span>
+    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label == <span class="Constant">&quot;{&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      open_braces<span class="Delimiter">.</span>push<span class="Delimiter">(</span>index<span class="Delimiter">);</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_number[<span class="Constant">&quot;break&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      inst<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;jump&quot;</span>]<span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        <span class="Comment">// explicit target; a later phase will handle it</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-      else <span class="Delimiter">{</span>
-        reagent ing<span class="Delimiter">;</span>
-        ing<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>matching_brace<span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>top<span class="Delimiter">(),</span> braces<span class="Delimiter">)</span> - index - <span class="Constant">1</span><span class="Delimiter">);</span>
-        ing<span class="Delimiter">.</span>types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;offset&quot;</span>]<span class="Delimiter">);</span>
-        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ing<span class="Delimiter">);</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; ing<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
+    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label == <span class="Constant">&quot;}&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      open_braces<span class="Delimiter">.</span>pop<span class="Delimiter">();</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_number[<span class="Constant">&quot;loop-if&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      inst<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;jump-if&quot;</span>]<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation != Recipe_ordinal[<span class="Constant">&quot;loop&quot;</span>]
+         &amp;&amp; inst<span class="Delimiter">.</span>operation != Recipe_ordinal[<span class="Constant">&quot;loop-if&quot;</span>]
+         &amp;&amp; inst<span class="Delimiter">.</span>operation != Recipe_ordinal[<span class="Constant">&quot;loop-unless&quot;</span>]
+         &amp;&amp; inst<span class="Delimiter">.</span>operation != Recipe_ordinal[<span class="Constant">&quot;break&quot;</span>]
+         &amp;&amp; inst<span class="Delimiter">.</span>operation != Recipe_ordinal[<span class="Constant">&quot;break-if&quot;</span>]
+         &amp;&amp; inst<span class="Delimiter">.</span>operation != Recipe_ordinal[<span class="Constant">&quot;break-unless&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; ...&quot;</span><span class="Delimiter">;</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment">// update instruction operation</span>
+    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-if&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span>
+      inst<span class="Delimiter">.</span>operation = Recipe_ordinal[<span class="Constant">&quot;jump-if&quot;</span>]<span class="Delimiter">;</span>
+    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-unless&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span>
+      inst<span class="Delimiter">.</span>operation = Recipe_ordinal[<span class="Constant">&quot;jump-unless&quot;</span>]<span class="Delimiter">;</span>
+    else
+      inst<span class="Delimiter">.</span>operation = Recipe_ordinal[<span class="Constant">&quot;jump&quot;</span>]<span class="Delimiter">;</span>
+    <span class="Comment">// check for explicitly provided targets</span>
+    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-if&quot;</span><span class="Delimiter">)</span> != string::npos || inst<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-unless&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Comment">// conditional branches check arg 1</span>
       if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span> &amp;&amp; is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        <span class="Comment">// explicit target; a later phase will handle it</span>
         trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-      else <span class="Delimiter">{</span>
-        reagent ing<span class="Delimiter">;</span>
-        ing<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>top<span class="Delimiter">()</span>-index<span class="Delimiter">);</span>
-        ing<span class="Delimiter">.</span>types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;offset&quot;</span>]<span class="Delimiter">);</span>
-        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ing<span class="Delimiter">);</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump-if &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; ing<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-    <span class="Delimiter">}</span>
-    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_number[<span class="Constant">&quot;break-if&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      inst<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;jump-if&quot;</span>]<span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span> &amp;&amp; is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        <span class="Comment">// explicit target; a later phase will handle it</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-      else <span class="Delimiter">{</span>
-        reagent ing<span class="Delimiter">;</span>
-        ing<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>matching_brace<span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>top<span class="Delimiter">(),</span> braces<span class="Delimiter">)</span> - index - <span class="Constant">1</span><span class="Delimiter">);</span>
-        ing<span class="Delimiter">.</span>types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;offset&quot;</span>]<span class="Delimiter">);</span>
-        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ing<span class="Delimiter">);</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump-if &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; ing<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-    <span class="Delimiter">}</span>
-    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_number[<span class="Constant">&quot;loop-unless&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      inst<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;jump-unless&quot;</span>]<span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span> &amp;&amp; is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        <span class="Comment">// explicit target; a later phase will handle it</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-      else <span class="Delimiter">{</span>
-        reagent ing<span class="Delimiter">;</span>
-        ing<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>top<span class="Delimiter">()</span>-index<span class="Delimiter">);</span>
-        ing<span class="Delimiter">.</span>types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;offset&quot;</span>]<span class="Delimiter">);</span>
-        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ing<span class="Delimiter">);</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump-unless &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; ing<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-    <span class="Delimiter">}</span>
-    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_number[<span class="Constant">&quot;break-unless&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?       cout &lt;&lt; &quot;AAA break-unless\n&quot;; //? 1</span>
-      inst<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;jump-unless&quot;</span>]<span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span> &amp;&amp; is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        <span class="Comment">// explicit target; a later phase will handle it</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-      else <span class="Delimiter">{</span>
-        reagent ing<span class="Delimiter">;</span>
-        ing<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>matching_brace<span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>top<span class="Delimiter">(),</span> braces<span class="Delimiter">)</span> - index - <span class="Constant">1</span><span class="Delimiter">);</span>
-        ing<span class="Delimiter">.</span>types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[<span class="Constant">&quot;offset&quot;</span>]<span class="Delimiter">);</span>
-        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ing<span class="Delimiter">);</span>
-        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump-unless &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; ing<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
+        <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
     else <span class="Delimiter">{</span>
-      trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; ...&quot;</span><span class="Delimiter">;</span>
+      <span class="Comment">// unconditional branches check arg 0</span>
+      if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+        trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
+        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
+    <span class="Comment">// if implicit, compute target</span>
+    reagent target<span class="Delimiter">;</span>
+    target<span class="Delimiter">.</span>types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_ordinal[<span class="Constant">&quot;offset&quot;</span>]<span class="Delimiter">);</span>
+    target<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    if <span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+      raise &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; wasn't inside {}</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;loop&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span>
+      target<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>top<span class="Delimiter">()</span>-index<span class="Delimiter">);</span>
+    else  <span class="Comment">// break instruction</span>
+      target<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>matching_brace<span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>top<span class="Delimiter">(),</span> braces<span class="Delimiter">)</span> - index - <span class="Constant">1</span><span class="Delimiter">);</span>
+    inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>target<span class="Delimiter">);</span>
+    <span class="Comment">// log computed target</span>
+    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-if&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span>
+      trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump-if &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; target<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
+    else if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-unless&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span>
+      trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump-unless &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; target<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
+    else
+      trace<span class="Delimiter">(</span><span class="Constant">&quot;after-brace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; target<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;:offset&quot;</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
@@ -219,12 +182,12 @@ LOOP<span class="Delimiter">,</span>
 LOOP_IF<span class="Delimiter">,</span>
 LOOP_UNLESS<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;break&quot;</span>] = BREAK<span class="Delimiter">;</span>
-Recipe_number[<span class="Constant">&quot;break-if&quot;</span>] = BREAK_IF<span class="Delimiter">;</span>
-Recipe_number[<span class="Constant">&quot;break-unless&quot;</span>] = BREAK_UNLESS<span class="Delimiter">;</span>
-Recipe_number[<span class="Constant">&quot;loop&quot;</span>] = LOOP<span class="Delimiter">;</span>
-Recipe_number[<span class="Constant">&quot;loop-if&quot;</span>] = LOOP_IF<span class="Delimiter">;</span>
-Recipe_number[<span class="Constant">&quot;loop-unless&quot;</span>] = LOOP_UNLESS<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;break&quot;</span>] = BREAK<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;break-if&quot;</span>] = BREAK_IF<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;break-unless&quot;</span>] = BREAK_UNLESS<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;loop&quot;</span>] = LOOP<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;loop-if&quot;</span>] = LOOP_IF<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;loop-unless&quot;</span>] = LOOP_UNLESS<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(scenario loop)</span>
 recipe main [
@@ -427,6 +390,13 @@ recipe test-factorial [
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:number  <span class="Comment"># trigger a read</span>
 ]
 <span class="traceContains">+mem: location 2 is 120</span>
+
+<span class="Delimiter">:(scenario break_outside_braces_warns)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  <span class="Identifier">break</span>
+]
+<span class="traceContains">+warn: break wasn't inside {}</span>
 </pre>
 </body>
 </html>

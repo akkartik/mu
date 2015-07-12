@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 037call_reply.cc</title>
+<title>Mu - 036call_reply.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -49,9 +49,10 @@ recipe f [
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 REPLY<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;reply&quot;</span>] = REPLY<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;reply&quot;</span>] = REPLY<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case REPLY: <span class="Delimiter">{</span>
+  <span class="Comment">// Starting Reply</span>
   const instruction&amp; reply_inst = current_instruction<span class="Delimiter">();</span>  <span class="Comment">// save pointer into recipe before pop</span>
   const string&amp; callee = current_recipe_name<span class="Delimiter">();</span>
   --Callstack_depth<span class="Delimiter">;</span>
@@ -67,6 +68,8 @@ case REPLY: <span class="Delimiter">{</span>
   copy<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>products<span class="Delimiter">,</span> products<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
   <span class="Comment">// check that any reply ingredients with /same-as-ingredient connect up</span>
   <span class="Comment">// the corresponding ingredient and product in the caller.</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">)</span> &gt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">))</span>
+    raise &lt;&lt; <span class="Constant">&quot;too few values replied from &quot;</span> &lt;&lt; callee &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; Recipe[Current_routine-&gt;calls.front().running_recipe].name &lt;&lt; '\n'; //? 1</span>
     trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;result &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
@@ -74,7 +77,11 @@ case REPLY: <span class="Delimiter">{</span>
       vector&lt;string&gt; tmp = property<span class="Delimiter">(</span>reply_inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;same-as-ingredient&quot;</span><span class="Delimiter">);</span>
       assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>tmp<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
       long long int ingredient_index = to_integer<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-      if <span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>value != caller_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">).</span>value<span class="Delimiter">)</span>
+      if <span class="Delimiter">(</span>ingredient_index &gt;= SIZE<span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">))</span>
+        raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'same-as-ingredient' metadata overflows ingredients in: &quot;</span> &lt;&lt; caller_instruction<span class="Delimiter">.</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; caller_instruction.products.size() &lt;&lt; ' ' &lt;&lt; i &lt;&lt; ' ' &lt;&lt; caller_instruction.ingredients.size() &lt;&lt; ' ' &lt;&lt; ingredient_index &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; caller_instruction.to_string() &lt;&lt; '\n'; //? 1</span>
+      if <span class="Delimiter">(</span>!is_dummy<span class="Delimiter">(</span>caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &amp;&amp; caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>value != caller_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">).</span>value<span class="Delimiter">)</span>
         raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'same-as-ingredient' result &quot;</span> &lt;&lt; caller_instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>value &lt;&lt; <span class="Constant">&quot; from call to &quot;</span> &lt;&lt; callee &lt;&lt; <span class="Constant">&quot; must be location &quot;</span> &lt;&lt; caller_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">).</span>value &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -111,6 +118,18 @@ recipe test1 [
   reply <span class="Constant">10</span>:address:number/same-as-ingredient:<span class="Constant">0</span>
 ]
 <span class="traceContains">+warn: main: 'same-as-ingredient' result 2 from call to test1 must be location 1</span>
+
+<span class="Delimiter">:(scenario reply_same_as_ingredient_dummy)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  _<span class="Special"> &lt;- </span>test1 <span class="Constant">1</span>:number  <span class="Comment"># call with different ingredient and product</span>
+]
+recipe test1 [
+  <span class="Constant">10</span>:address:number<span class="Special"> &lt;- </span>next-ingredient
+  reply <span class="Constant">10</span>:address:number/same-as-ingredient:<span class="Constant">0</span>
+]
+$warn: <span class="Constant">0</span>
 
 <span class="Delimiter">:(code)</span>
 string to_string<span class="Delimiter">(</span>const vector&lt;double&gt;&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -159,7 +178,7 @@ recipe test1 [
 <span class="Comment">//   ```</span>
 if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply-if&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;jump-unless&quot;</span>]<span class="Delimiter">;</span>
+  curr<span class="Delimiter">.</span>operation = Recipe_ordinal[<span class="Constant">&quot;jump-unless&quot;</span>]<span class="Delimiter">;</span>
   curr<span class="Delimiter">.</span>name = <span class="Constant">&quot;jump-unless&quot;</span><span class="Delimiter">;</span>
   vector&lt;reagent&gt; results<span class="Delimiter">;</span>
   copy<span class="Delimiter">(</span>++curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>results<span class="Delimiter">,</span> results<span class="Delimiter">.</span>end<span class="Delimiter">()));</span>
@@ -167,7 +186,7 @@ if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <
   curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;1:offset&quot;</span><span class="Delimiter">));</span>
   result<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
   curr<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;reply&quot;</span>]<span class="Delimiter">;</span>
+  curr<span class="Delimiter">.</span>operation = Recipe_ordinal[<span class="Constant">&quot;reply&quot;</span>]<span class="Delimiter">;</span>
   curr<span class="Delimiter">.</span>name = <span class="Constant">&quot;reply&quot;</span><span class="Delimiter">;</span>
   curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>results<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
@@ -178,7 +197,7 @@ if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <
 <span class="Comment">//   ```</span>
 if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply-unless&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;jump-if&quot;</span>]<span class="Delimiter">;</span>
+  curr<span class="Delimiter">.</span>operation = Recipe_ordinal[<span class="Constant">&quot;jump-if&quot;</span>]<span class="Delimiter">;</span>
   curr<span class="Delimiter">.</span>name = <span class="Constant">&quot;jump-if&quot;</span><span class="Delimiter">;</span>
   vector&lt;reagent&gt; results<span class="Delimiter">;</span>
   copy<span class="Delimiter">(</span>++curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>results<span class="Delimiter">,</span> results<span class="Delimiter">.</span>end<span class="Delimiter">()));</span>
@@ -186,7 +205,7 @@ if <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <
   curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;1:offset&quot;</span><span class="Delimiter">));</span>
   result<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
   curr<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  curr<span class="Delimiter">.</span>operation = Recipe_number[<span class="Constant">&quot;reply&quot;</span>]<span class="Delimiter">;</span>
+  curr<span class="Delimiter">.</span>operation = Recipe_ordinal[<span class="Constant">&quot;reply&quot;</span>]<span class="Delimiter">;</span>
   curr<span class="Delimiter">.</span>name = <span class="Constant">&quot;reply&quot;</span><span class="Delimiter">;</span>
   curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>results<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>

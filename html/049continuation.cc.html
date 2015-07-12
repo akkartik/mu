@@ -49,13 +49,13 @@ Continuation<span class="Delimiter">.</span>clear<span class="Delimiter">();</sp
 Next_continuation_id = <span class="Constant">0</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
-type_number continuation = Type_number[<span class="Constant">&quot;continuation&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
+type_ordinal continuation = Type_ordinal[<span class="Constant">&quot;continuation&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
 Type[continuation]<span class="Delimiter">.</span>name = <span class="Constant">&quot;continuation&quot;</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 CURRENT_CONTINUATION<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;current-continuation&quot;</span>] = CURRENT_CONTINUATION<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;current-continuation&quot;</span>] = CURRENT_CONTINUATION<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case CURRENT_CONTINUATION: <span class="Delimiter">{</span>
   <span class="Comment">// copy the current call stack</span>
@@ -72,7 +72,7 @@ case CURRENT_CONTINUATION: <span class="Delimiter">{</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 CONTINUE_FROM<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;continue-from&quot;</span>] = CONTINUE_FROM<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;continue-from&quot;</span>] = CONTINUE_FROM<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case CONTINUE_FROM: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
@@ -200,11 +200,11 @@ is_reset = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 CREATE_DELIMITED_CONTINUATION<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;create-delimited-continuation&quot;</span>] = CREATE_DELIMITED_CONTINUATION<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;create-delimited-continuation&quot;</span>] = CREATE_DELIMITED_CONTINUATION<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case CREATE_DELIMITED_CONTINUATION: <span class="Delimiter">{</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>is_reset = <span class="Constant">true</span><span class="Delimiter">;</span>
-  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>Recipe_number[current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name]<span class="Delimiter">));</span>
+  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>Recipe_ordinal[current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name]<span class="Delimiter">));</span>
   ingredients<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">());</span>  <span class="Comment">// drop the callee</span>
   <span class="Identifier">goto</span> complete_call<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -222,7 +222,7 @@ Next_delimited_continuation_id = <span class="Constant">0</span><span class="Del
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 REPLY_DELIMITED_CONTINUATION<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;reply-delimited-continuation&quot;</span>] = REPLY_DELIMITED_CONTINUATION<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;reply-delimited-continuation&quot;</span>] = REPLY_DELIMITED_CONTINUATION<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case REPLY_DELIMITED_CONTINUATION: <span class="Delimiter">{</span>
   <span class="Comment">// first clear any existing ingredients, to isolate the creation of the</span>

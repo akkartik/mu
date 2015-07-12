@@ -44,15 +44,15 @@ recipe main [
 <span class="traceContains">+parse:   product: {name: &quot;1&quot;, properties: [&quot;1&quot;: &quot;number&quot;]}</span>
 
 <span class="Delimiter">:(code)</span>
-vector&lt;recipe_number&gt; load<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   istringstream in<span class="Delimiter">(</span>form<span class="Delimiter">);</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   <span class="Identifier">return</span> load<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-vector&lt;recipe_number&gt; load<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
-  vector&lt;recipe_number&gt; result<span class="Delimiter">;</span>
+  vector&lt;recipe_ordinal&gt; result<span class="Delimiter">;</span>
   while <span class="Delimiter">(</span>!in<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; &quot;===\n&quot;; //? 1</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
@@ -64,20 +64,20 @@ vector&lt;recipe_number&gt; load<span class="Delimiter">(</span>istream&amp; in<
 <span class="CommentedCode">//?       cerr &lt;&lt; &quot;recipe: &quot; &lt;&lt; recipe_name &lt;&lt; '\n'; //? 1</span>
       if <span class="Delimiter">(</span>recipe_name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
         raise &lt;&lt; <span class="Constant">&quot;empty recipe name</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>Recipe_number<span class="Delimiter">.</span>find<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> == Recipe_number<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-        Recipe_number[recipe_name] = Next_recipe_number++<span class="Delimiter">;</span>
+      if <span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> == Recipe_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+        Recipe_ordinal[recipe_name] = Next_recipe_ordinal++<span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
-      if <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>Recipe_number[recipe_name]<span class="Delimiter">)</span> != Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-        raise &lt;&lt; <span class="Constant">&quot;redefining recipe &quot;</span> &lt;&lt; Recipe[Recipe_number[recipe_name]]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-        Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recipe_number[recipe_name]<span class="Delimiter">);</span>
+      if <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>Recipe_ordinal[recipe_name]<span class="Delimiter">)</span> != Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+        if <span class="Delimiter">(</span>!Loading_interactive<span class="Delimiter">)</span> raise &lt;&lt; <span class="Constant">&quot;redefining recipe &quot;</span> &lt;&lt; Recipe[Recipe_ordinal[recipe_name]]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+        Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recipe_ordinal[recipe_name]<span class="Delimiter">);</span>
       <span class="Delimiter">}</span>
       <span class="Comment">// todo: save user-defined recipes to mu's memory</span>
-      Recipe[Recipe_number[recipe_name]] = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; Recipe_number[recipe_name] &lt;&lt; &quot;: &quot; &lt;&lt; recipe_name &lt;&lt; '\n'; //? 1</span>
-      Recipe[Recipe_number[recipe_name]]<span class="Delimiter">.</span>name = recipe_name<span class="Delimiter">;</span>
+      Recipe[Recipe_ordinal[recipe_name]] = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; Recipe_ordinal[recipe_name] &lt;&lt; &quot;: &quot; &lt;&lt; recipe_name &lt;&lt; '\n'; //? 1</span>
+      Recipe[Recipe_ordinal[recipe_name]]<span class="Delimiter">.</span>name = recipe_name<span class="Delimiter">;</span>
       <span class="Comment">// track added recipes because we may need to undo them in tests; see below</span>
-      recently_added_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Recipe_number[recipe_name]<span class="Delimiter">);</span>
-      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Recipe_number[recipe_name]<span class="Delimiter">);</span>
+      recently_added_recipes<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Recipe_ordinal[recipe_name]<span class="Delimiter">);</span>
+      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Recipe_ordinal[recipe_name]<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
     <span class="Comment">// End Command Handlers</span>
     else <span class="Delimiter">{</span>
@@ -150,14 +150,14 @@ bool next_instruction<span class="Delimiter">(</span>istream&amp; in<span class=
   if <span class="Delimiter">(</span>p == words<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
     raise &lt;&lt; <span class="Constant">&quot;instruction prematurely ended with '&lt;-'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; die<span class="Delimiter">();</span>
   curr<span class="Delimiter">-&gt;</span>name = *p<span class="Delimiter">;</span>
-  if <span class="Delimiter">(</span>Recipe_number<span class="Delimiter">.</span>find<span class="Delimiter">(</span>*p<span class="Delimiter">)</span> == Recipe_number<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    Recipe_number[*p] = Next_recipe_number++<span class="Delimiter">;</span>
-<span class="CommentedCode">//?     cout &lt;&lt; &quot;AAA: &quot; &lt;&lt; *p &lt;&lt; &quot; is now &quot; &lt;&lt; Recipe_number[*p] &lt;&lt; '\n'; //? 1</span>
+  if <span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span>*p<span class="Delimiter">)</span> == Recipe_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    Recipe_ordinal[*p] = Next_recipe_ordinal++<span class="Delimiter">;</span>
+<span class="CommentedCode">//?     cout &lt;&lt; &quot;AAA: &quot; &lt;&lt; *p &lt;&lt; &quot; is now &quot; &lt;&lt; Recipe_ordinal[*p] &lt;&lt; '\n'; //? 1</span>
   <span class="Delimiter">}</span>
-  if <span class="Delimiter">(</span>Recipe_number[*p] == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>Recipe_ordinal[*p] == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;Recipe &quot;</span> &lt;&lt; *p &lt;&lt; <span class="Constant">&quot; has number 0, which is reserved for IDLE.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; die<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
-  curr<span class="Delimiter">-&gt;</span>operation = Recipe_number[*p]<span class="Delimiter">;</span>  ++p<span class="Delimiter">;</span>
+  curr<span class="Delimiter">-&gt;</span>operation = Recipe_ordinal[*p]<span class="Delimiter">;</span>  ++p<span class="Delimiter">;</span>
 
   for <span class="Delimiter">(;</span> p != words<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     if <span class="Delimiter">(</span>*p == <span class="Constant">&quot;,&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -248,11 +248,11 @@ void show_rest_of_stream<span class="Delimiter">(</span>istream&amp; in<span cla
 
 <span class="Comment">//: Have tests clean up any recipes they added.</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-vector&lt;recipe_number&gt; recently_added_recipes<span class="Delimiter">;</span>
+vector&lt;recipe_ordinal&gt; recently_added_recipes<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>recently_added_recipes<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;AAA clearing &quot; &lt;&lt; Recipe[recently_added_recipes.at(i)].name &lt;&lt; '\n'; //? 2</span>
-  Recipe_number<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recipe[recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span>]<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
+  Recipe_ordinal<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Recipe[recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span>]<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
   Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>recently_added_recipes<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 <span class="Comment">// Clear Other State For recently_added_recipes</span>
