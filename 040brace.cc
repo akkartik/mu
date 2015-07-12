@@ -56,103 +56,65 @@ void transform_braces(const recipe_ordinal r) {
   stack</*step*/long long int> open_braces;
   trace("after-brace") << "recipe " << Recipe[r].name;
   for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
-//?     cerr << index << '\n'; //? 1
     instruction& inst = Recipe[r].steps.at(index);
-//?     cout << "AAA " << inst.name << ": " << inst.operation << '\n'; //? 1
-    if (inst.label == "{") open_braces.push(index);
-    else if (inst.label == "}") open_braces.pop();
-    else if (inst.is_label)
-      ;  // do nothing
-    else if (inst.operation == Recipe_ordinal["loop"]) {
-      inst.operation = Recipe_ordinal["jump"];
-      if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
-        // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
-      }
-      else {
-        reagent ing;
-        ing.set_value(open_braces.top()-index);
-        ing.types.push_back(Type_ordinal["offset"]);
-        inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump " << ing.value << ":offset";
-        trace("after-brace") << index << ": " << ing.to_string();
-        trace("after-brace") << index << ": " << Recipe[r].steps.at(index).ingredients.at(0).to_string();
-      }
+    if (inst.label == "{") {
+      open_braces.push(index);
+      continue;
     }
-    else if (inst.operation == Recipe_ordinal["break"]) {
-      inst.operation = Recipe_ordinal["jump"];
-      if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
-        // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
-      }
-      else {
-        reagent ing;
-        ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
-        ing.types.push_back(Type_ordinal["offset"]);
-        inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump " << ing.value << ":offset";
-      }
+    if (inst.label == "}") {
+      open_braces.pop();
+      continue;
     }
-    else if (inst.operation == Recipe_ordinal["loop-if"]) {
+    if (inst.is_label) continue;
+    if (inst.operation != Recipe_ordinal["loop"]
+         && inst.operation != Recipe_ordinal["loop-if"]
+         && inst.operation != Recipe_ordinal["loop-unless"]
+         && inst.operation != Recipe_ordinal["break"]
+         && inst.operation != Recipe_ordinal["break-if"]
+         && inst.operation != Recipe_ordinal["break-unless"]) {
+      trace("after-brace") << inst.name << " ...";
+      continue;
+    }
+    // update instruction operation
+    if (inst.name.find("-if") != string::npos)
       inst.operation = Recipe_ordinal["jump-if"];
-      if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
-        // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
-      }
-      else {
-        reagent ing;
-        ing.set_value(open_braces.top()-index);
-        ing.types.push_back(Type_ordinal["offset"]);
-        inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
-      }
-    }
-    else if (inst.operation == Recipe_ordinal["break-if"]) {
-      inst.operation = Recipe_ordinal["jump-if"];
-      if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
-        // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
-      }
-      else {
-        reagent ing;
-        ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
-        ing.types.push_back(Type_ordinal["offset"]);
-        inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
-      }
-    }
-    else if (inst.operation == Recipe_ordinal["loop-unless"]) {
+    else if (inst.name.find("-unless") != string::npos)
       inst.operation = Recipe_ordinal["jump-unless"];
+    else
+      inst.operation = Recipe_ordinal["jump"];
+    // check for explicitly provided targets
+    if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
+      // conditional branches check arg 1
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
-        // explicit target; a later phase will handle it
         trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
-      }
-      else {
-        reagent ing;
-        ing.set_value(open_braces.top()-index);
-        ing.types.push_back(Type_ordinal["offset"]);
-        inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
-      }
-    }
-    else if (inst.operation == Recipe_ordinal["break-unless"]) {
-//?       cout << "AAA break-unless\n"; //? 1
-      inst.operation = Recipe_ordinal["jump-unless"];
-      if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
-        // explicit target; a later phase will handle it
-        trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
-      }
-      else {
-        reagent ing;
-        ing.set_value(matching_brace(open_braces.top(), braces) - index - 1);
-        ing.types.push_back(Type_ordinal["offset"]);
-        inst.ingredients.push_back(ing);
-        trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << ing.value << ":offset";
+        continue;
       }
     }
     else {
-      trace("after-brace") << inst.name << " ...";
+      // unconditional branches check arg 0
+      if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
+        trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
+        continue;
+      }
     }
+    // if implicit, compute target
+    reagent target;
+    target.types.push_back(Type_ordinal["offset"]);
+    target.set_value(0);
+    if (open_braces.empty())
+      raise << inst.name << " wasn't inside {}\n";
+    else if (inst.name.find("loop") != string::npos)
+      target.set_value(open_braces.top()-index);
+    else  // break instruction
+      target.set_value(matching_brace(open_braces.top(), braces) - index - 1);
+    inst.ingredients.push_back(target);
+    // log computed target
+    if (inst.name.find("-if") != string::npos)
+      trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << target.value << ":offset";
+    else if (inst.name.find("-unless") != string::npos)
+      trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << target.value << ":offset";
+    else
+      trace("after-brace") << "jump " << target.value << ":offset";
   }
 }
 
@@ -394,3 +356,10 @@ recipe test-factorial [
   4:number <- copy 2:number  # trigger a read
 ]
 +mem: location 2 is 120
+
+:(scenario break_outside_braces_warns)
+% Hide_warnings = true;
+recipe main [
+  break
+]
++warn: break wasn't inside {}
