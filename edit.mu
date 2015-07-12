@@ -1785,7 +1785,7 @@ scenario edit-multiple-editors [
     7:number <- get 6:address:editor-data/deref, cursor-column:offset
   ]
   screen-should-contain [
-    .           run (F10)          .
+    .           run (F10)          .  # this line has a different background, but we don't test that yet
     .a0bc           ┊d1ef          .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
@@ -1970,30 +1970,64 @@ recipe run-sandboxes [
   curr:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
   {
     break-unless curr:address:sandbox-data
-#?     clear-screen 0:literal #? 1
-#?     show-screen 0:literal #? 1
-#?     wait-for-some-interaction #? 1
     data:address:address:array:character <- get-address curr:address:sandbox-data/deref, data:offset
-#?     print-string 0:literal, data:address:address:array:character/deref #? 1
-#?     show-screen 0:literal #? 1
-#?     wait-for-some-interaction #? 1
     response:address:address:array:character <- get-address curr:address:sandbox-data/deref, response:offset
     warnings:address:address:array:character <- get-address curr:address:sandbox-data/deref, warnings:offset
     response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive data:address:address:array:character/deref
-#?     show-screen 0:literal #? 1
-#?     wait-for-some-interaction #? 1
-#?     print-string 0:literal, response:address:address:array:character/deref #? 1
-#?     $print response:address:address:array:character/deref #? 1
-#?     show-screen 0:literal #? 1
-#?     wait-for-some-interaction #? 1
-#?     # $ mu test edit.mu run-instruction-and-print-warnings #? 1
-#?     open-console #? 1
-#?     print-string 0:literal, warnings:address:address:array:character/deref #? 1
-#?     wait-for-some-interaction #? 1
-#?     close-console #? 1
     curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
     loop
   }
+]
+
+scenario run-updates-results [
+  $close-trace  # trace too long for github
+  assume-screen 100:literal/width, 12:literal/height
+  # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
+  1:address:array:character <- new [ 
+recipe foo [
+z:number <- add 2:literal, 2:literal
+]]
+  # sandbox editor contains an instruction without storing outputs
+  2:address:array:character <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the code in the editors
+  assume-console [
+    press 65526  # F10
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # check that screen prints the results
+  screen-should-contain [
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .z:number <- add 2:literal, 2:literal              ┊foo                                              .
+    .]                                                 ┊4                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+  # make a change (incrementing one of the args to 'add'), then rerun
+  assume-console [
+    left-click 3, 28  # one past the value of the second arg
+    type [«3]  # replace
+    press 65526  # F10
+  ]
+  4:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 171:literal/«, 4:event/backspace
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # check that screen updates the result on the right
+  screen-should-contain [
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .z:number <- add 2:literal, 3:literal              ┊foo                                              .
+    .]                                                 ┊5                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
 ]
 
 scenario run-instruction-and-print-warnings [
