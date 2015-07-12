@@ -198,6 +198,10 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
     }
     types.push_back(Type_ordinal[type]);
   }
+  if (is_integer(name) && types.empty()) {
+    types.push_back(0);
+    properties.at(0).second.push_back("literal");
+  }
   if (name == "_" && types.empty()) {
     types.push_back(0);
     properties.at(0).second.push_back("dummy");
