@@ -18,6 +18,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
+.CommentedCode { color: #6c6c6c; }
 .Identifier { color: #804000; }
 -->
 </style>
@@ -35,10 +36,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 ADD<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;add&quot;</span>] = ADD<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;add&quot;</span>] = ADD<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case ADD: <span class="Delimiter">{</span>
   double result = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="CommentedCode">//?   if (!tb_is_active()) cerr &lt;&lt; ingredients.at(1).at(0) &lt;&lt; '\n'; //? 1</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     result += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
@@ -71,7 +73,7 @@ recipe main [
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 SUBTRACT<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;subtract&quot;</span>] = SUBTRACT<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;subtract&quot;</span>] = SUBTRACT<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case SUBTRACT: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
@@ -108,7 +110,7 @@ recipe main [
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 MULTIPLY<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;multiply&quot;</span>] = MULTIPLY<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;multiply&quot;</span>] = MULTIPLY<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case MULTIPLY: <span class="Delimiter">{</span>
   double result = <span class="Constant">1</span><span class="Delimiter">;</span>
@@ -144,7 +146,7 @@ recipe main [
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 DIVIDE<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;divide&quot;</span>] = DIVIDE<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;divide&quot;</span>] = DIVIDE<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case DIVIDE: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
@@ -183,7 +185,7 @@ recipe main [
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 DIVIDE_WITH_REMAINDER<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_number[<span class="Constant">&quot;divide-with-remainder&quot;</span>] = DIVIDE_WITH_REMAINDER<span class="Delimiter">;</span>
+Recipe_ordinal[<span class="Constant">&quot;divide-with-remainder&quot;</span>] = DIVIDE_WITH_REMAINDER<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 case DIVIDE_WITH_REMAINDER: <span class="Delimiter">{</span>
   long long int quotient = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> / ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
@@ -219,10 +221,10 @@ recipe main [
 <span class="traceContains">+mem: storing 2.5 in location 1</span>
 
 <span class="Delimiter">:(code)</span>
-inline bool scalar<span class="Delimiter">(</span>vector&lt;long long int&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+inline bool scalar<span class="Delimiter">(</span>const vector&lt;long long int&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>x<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-inline bool scalar<span class="Delimiter">(</span>vector&lt;double&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+inline bool scalar<span class="Delimiter">(</span>const vector&lt;double&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>x<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>

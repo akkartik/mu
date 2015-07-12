@@ -145,7 +145,8 @@ container buffer [
   len:address:number<span class="Special"> &lt;- </span>get-address result:address:buffer/deref, length:offset
   len:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   s:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:buffer/deref, data:offset
-  capacity:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  capacity:number, found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  assert found?:boolean, <span class="Constant">[new-buffer must get a capacity argument]</span>
   s:address:address:array:character/deref<span class="Special"> &lt;- </span>new character:type, capacity:number
 <span class="CommentedCode">#?   $print s:address:address:array:character/deref, [</span>
 <span class="CommentedCode">#? ]</span>
@@ -207,7 +208,13 @@ container buffer [
     in:address:buffer<span class="Special"> &lt;- </span>grow-buffer in:address:buffer
   <span class="Delimiter">}</span>
   s:address:array:character<span class="Special"> &lt;- </span>get in:address:buffer/deref, data:offset
+<span class="CommentedCode">#?   $print [array underlying buf: ], s:address:array:character, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print [index: ], len:address:number/deref, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
   dest:address:character<span class="Special"> &lt;- </span>index-address s:address:array:character/deref, len:address:number/deref
+<span class="CommentedCode">#?   $print [storing ], c:character, [ in ], dest:address:character, [ </span>
+<span class="CommentedCode">#? ] #? 1</span>
   dest:address:character/deref<span class="Special"> &lt;- </span>copy c:character
   len:address:number/deref<span class="Special"> &lt;- </span>add len:address:number/deref, <span class="Constant">1:literal</span>
   <span class="muControl">reply</span> in:address:buffer/same-as-ingredient:0

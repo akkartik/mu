@@ -72,9 +72,9 @@ recipe main [
 <span class="Comment">// Book-keeping while running a recipe.</span>
 <span class="Comment">//: Later layers will change this.</span>
 struct routine <span class="Delimiter">{</span>
-  recipe_number running_recipe<span class="Delimiter">;</span>
+  recipe_ordinal running_recipe<span class="Delimiter">;</span>
   long long int running_step_index<span class="Delimiter">;</span>
-  routine<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)</span> :running_recipe<span class="Delimiter">(</span>r<span class="Delimiter">),</span> running_step_index<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> :running_recipe<span class="Delimiter">(</span>r<span class="Delimiter">),</span> running_step_index<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
   bool completed<span class="Delimiter">()</span> const<span class="Delimiter">;</span>
 <span class="Delimiter">};</span>
 
@@ -82,7 +82,7 @@ struct routine <span class="Delimiter">{</span>
 routine* Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(code)</span>
-void run<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void run<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   routine rr<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
   Current_routine = &amp;rr<span class="Delimiter">;</span>
   run_current_routine<span class="Delimiter">();</span>
@@ -112,6 +112,7 @@ void run_current_routine<span class="Delimiter">()</span>
     switch <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// Primitive Recipe Implementations</span>
       case COPY: <span class="Delimiter">{</span>
+<span class="CommentedCode">//?         if (!ingredients.empty()) cerr &lt;&lt; current_instruction().ingredients.at(0).to_string() &lt;&lt; ' ' &lt;&lt; ingredients.at(0).at(0) &lt;&lt; '\n'; //? 1</span>
         copy<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>products<span class="Delimiter">,</span> products<span class="Delimiter">.</span>begin<span class="Delimiter">()));</span>
         <span class="Identifier">break</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
@@ -167,7 +168,7 @@ if <span class="Delimiter">(</span>!Run_tests<span class="Delimiter">)</span> <s
   START_TRACING_UNTIL_END_OF_SCOPE<span class="Delimiter">;</span>
 <span class="CommentedCode">//?   Trace_stream-&gt;dump_layer = &quot;all&quot;; //? 2</span>
   transform_all<span class="Delimiter">();</span>
-  recipe_number r = Recipe_number[string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span>]<span class="Delimiter">;</span>
+  recipe_ordinal r = Recipe_ordinal[string<span class="Delimiter">(</span><span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span>]<span class="Delimiter">;</span>
 <span class="CommentedCode">//?   Trace_stream-&gt;dump_layer = &quot;all&quot;; //? 1</span>
   if <span class="Delimiter">(</span>r<span class="Delimiter">)</span> run<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
 <span class="CommentedCode">//?   dump_memory(); //? 1</span>
@@ -202,7 +203,7 @@ load_permanently<span class="Delimiter">(</span><span class="Constant">&quot;cor
 void run<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;AAA 2\n&quot;; //? 2</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; form &lt;&lt; '\n'; //? 1</span>
-  vector&lt;recipe_number&gt; tmp = load<span class="Delimiter">(</span>form<span class="Delimiter">);</span>
+  vector&lt;recipe_ordinal&gt; tmp = load<span class="Delimiter">(</span>form<span class="Delimiter">);</span>
   if <span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   transform_all<span class="Delimiter">();</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;AAA 3\n&quot;; //? 2</span>
@@ -246,12 +247,13 @@ void write_memory<span class="Delimiter">(</span>reagent x<span class="Delimiter
 long long int size_of<span class="Delimiter">(</span>const reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>r<span class="Delimiter">.</span>types<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
-long long int size_of<span class="Delimiter">(</span>const vector&lt;type_number&gt;&amp; types<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+long long int size_of<span class="Delimiter">(</span>const vector&lt;type_ordinal&gt;&amp; types<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// End size_of(types) Cases</span>
   <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 bool size_mismatch<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">,</span> const vector&lt;double&gt;&amp; data<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   if (size_of(x) != SIZE(data)) cerr &lt;&lt; size_of(x) &lt;&lt; &quot; vs &quot; &lt;&lt; SIZE(data) &lt;&lt; '\n'; //? 2</span>
   <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 

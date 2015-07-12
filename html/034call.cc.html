@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 035call.cc</title>
+<title>Mu - 034call.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="cpp">
@@ -70,10 +70,10 @@ recipe f [
 <span class="Comment">// recipe. When that finishes, we continue this one where we left off.</span>
 <span class="Comment">// This requires maintaining a 'stack' of interrupted recipes or 'calls'.</span>
 struct call <span class="Delimiter">{</span>
-  recipe_number running_recipe<span class="Delimiter">;</span>
+  recipe_ordinal running_recipe<span class="Delimiter">;</span>
   long long int running_step_index<span class="Delimiter">;</span>
   <span class="Comment">// End call Fields</span>
-  call<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  call<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     running_recipe = r<span class="Delimiter">;</span>
     running_step_index = <span class="Constant">0</span><span class="Delimiter">;</span>
     <span class="Comment">// End call Constructor</span>
@@ -85,12 +85,12 @@ typedef list&lt;call&gt; call_stack<span class="Delimiter">;</span>
 struct routine <span class="Delimiter">{</span>
   call_stack calls<span class="Delimiter">;</span>
   <span class="Comment">// End routine Fields</span>
-  routine<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">);</span>
+  routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">);</span>
   bool completed<span class="Delimiter">()</span> const<span class="Delimiter">;</span>
   const vector&lt;instruction&gt;&amp; steps<span class="Delimiter">()</span> const<span class="Delimiter">;</span>
 <span class="Delimiter">};</span>
 <span class="Delimiter">:(code)</span>
-routine::routine<span class="Delimiter">(</span>recipe_number r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+routine::routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
   <span class="Comment">// End routine Constructor</span>
 <span class="Delimiter">}</span>
@@ -143,10 +143,12 @@ inline const vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter
 <span class="Comment">// when we reach the end of one call, we may reach the end of the one below</span>
 <span class="Comment">// it, and the one below that, and so on</span>
 while <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &gt;= SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
+  <span class="Comment">// Falling Through End Of Recipe</span>
   --Callstack_depth<span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;reply &quot; &lt;&lt; Current_routine-&gt;calls.size() &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;reply &quot; &lt;&lt; Current_routine-&gt;calls.size() &lt;&lt; '\n'; //? 2</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
   if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Comment">// Complete Call Fallthrough</span>
   <span class="Comment">// todo: no results returned warning</span>
   ++current_step_index<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>

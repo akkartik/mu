@@ -15,11 +15,11 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
-.PreProc { color: #c000c0; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .SalientComment { color: #00ffff; }
 .CommentedCode { color: #6c6c6c; }
+.PreProc { color: #c000c0; }
 .Identifier { color: #804000; }
 -->
 </style>
@@ -32,17 +32,24 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Delimiter">:(after &quot;Types&quot;)</span>
-<span class="Comment">// A program is a book of 'recipes' (functions)</span>
-typedef long long int recipe_number<span class="Delimiter">;</span>
+<span class="Comment">//: A program is a book of 'recipes' (functions)</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-map&lt;string<span class="Delimiter">,</span> recipe_number&gt; Recipe_number<span class="Delimiter">;</span>
-map&lt;recipe_number<span class="Delimiter">,</span> recipe&gt; Recipe<span class="Delimiter">;</span>
-recipe_number Next_recipe_number = <span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Comment">//: Each recipe is stored at a specific page number, or ordinal.</span>
+map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt; Recipe<span class="Delimiter">;</span>
+<span class="Comment">//: You can also refer to each recipe by its name.</span>
+map&lt;string<span class="Delimiter">,</span> recipe_ordinal&gt; Recipe_ordinal<span class="Delimiter">;</span>
+recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class="Delimiter">;</span>
+
+<span class="Comment">//: Ordinals are like numbers, except you can't do arithmetic on them. Ordinal</span>
+<span class="Comment">//: 1 is not less than 2, it's just different. Phone numbers are ordinals;</span>
+<span class="Comment">//: adding two phone numbers is meaningless. Here each recipe does something</span>
+<span class="Comment">//: incommensurable with any other recipe.</span>
+<span class="Delimiter">:(after &quot;Types&quot;)</span>
+typedef long long int recipe_ordinal<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
-<span class="Comment">// Recipes are lists of instructions. To run a recipe, the computer runs its</span>
-<span class="Comment">// instructions.</span>
+<span class="Comment">// Recipes are lists of instructions. To perform or 'run' a recipe, the</span>
+<span class="Comment">// computer runs its instructions.</span>
 struct recipe <span class="Delimiter">{</span>
   string name<span class="Delimiter">;</span>
   vector&lt;instruction&gt; steps<span class="Delimiter">;</span>
@@ -59,7 +66,7 @@ struct instruction <span class="Delimiter">{</span>
   bool is_label<span class="Delimiter">;</span>
   string label<span class="Delimiter">;</span>  <span class="Comment">// only if is_label</span>
   string name<span class="Delimiter">;</span>  <span class="Comment">// only if !is_label</span>
-  recipe_number operation<span class="Delimiter">;</span>  <span class="Comment">// Recipe_number[name]</span>
+  recipe_ordinal operation<span class="Delimiter">;</span>  <span class="Comment">// Recipe_ordinal[name]</span>
   vector&lt;reagent&gt; ingredients<span class="Delimiter">;</span>  <span class="Comment">// only if !is_label</span>
   vector&lt;reagent&gt; products<span class="Delimiter">;</span>  <span class="Comment">// only if !is_label</span>
   instruction<span class="Delimiter">();</span>
@@ -78,7 +85,7 @@ struct reagent <span class="Delimiter">{</span>
   string name<span class="Delimiter">;</span>
   double value<span class="Delimiter">;</span>
   bool initialized<span class="Delimiter">;</span>
-  vector&lt;type_number&gt; types<span class="Delimiter">;</span>
+  vector&lt;type_ordinal&gt; types<span class="Delimiter">;</span>
   reagent<span class="Delimiter">(</span>string s<span class="Delimiter">);</span>
   reagent<span class="Delimiter">();</span>
   void set_value<span class="Delimiter">(</span>double v<span class="Delimiter">)</span> <span class="Delimiter">{</span> value = v<span class="Delimiter">;</span> initialized = <span class="Constant">true</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
@@ -105,29 +112,29 @@ Memory<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Comment">// Unlike most computers today, mu stores types in a single big table, shared</span>
 <span class="Comment">// by all the mu programs on the computer. This is useful in providing a</span>
 <span class="Comment">// seamless experience to help understand arbitrary mu programs.</span>
-typedef long long int type_number<span class="Delimiter">;</span>
+typedef long long int type_ordinal<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-map&lt;string<span class="Delimiter">,</span> type_number&gt; Type_number<span class="Delimiter">;</span>
-map&lt;type_number<span class="Delimiter">,</span> type_info&gt; Type<span class="Delimiter">;</span>
-type_number Next_type_number = <span class="Constant">1</span><span class="Delimiter">;</span>
+map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; Type_ordinal<span class="Delimiter">;</span>
+map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt; Type<span class="Delimiter">;</span>
+type_ordinal Next_type_ordinal = <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(code)</span>
 void setup_types<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  Type<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>  Type_number<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  Type_number[<span class="Constant">&quot;literal&quot;</span>] = <span class="Constant">0</span><span class="Delimiter">;</span>
-  Next_type_number = <span class="Constant">1</span><span class="Delimiter">;</span>
+  Type<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>  Type_ordinal<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  Type_ordinal[<span class="Constant">&quot;literal&quot;</span>] = <span class="Constant">0</span><span class="Delimiter">;</span>
+  Next_type_ordinal = <span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Comment">// Mu Types Initialization</span>
-  type_number number = Type_number[<span class="Constant">&quot;number&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
-  Type_number[<span class="Constant">&quot;location&quot;</span>] = Type_number[<span class="Constant">&quot;number&quot;</span>]<span class="Delimiter">;</span>  <span class="Comment">// wildcard type: either a pointer or a scalar</span>
+  type_ordinal number = Type_ordinal[<span class="Constant">&quot;number&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
+  Type_ordinal[<span class="Constant">&quot;location&quot;</span>] = Type_ordinal[<span class="Constant">&quot;number&quot;</span>]<span class="Delimiter">;</span>  <span class="Comment">// wildcard type: either a pointer or a scalar</span>
   Type[number]<span class="Delimiter">.</span>name = <span class="Constant">&quot;number&quot;</span><span class="Delimiter">;</span>
-  type_number address = Type_number[<span class="Constant">&quot;address&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
+  type_ordinal address = Type_ordinal[<span class="Constant">&quot;address&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
   Type[address]<span class="Delimiter">.</span>name = <span class="Constant">&quot;address&quot;</span><span class="Delimiter">;</span>
-  type_number boolean = Type_number[<span class="Constant">&quot;boolean&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
+  type_ordinal boolean = Type_ordinal[<span class="Constant">&quot;boolean&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
   Type[boolean]<span class="Delimiter">.</span>name = <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">;</span>
-  type_number character = Type_number[<span class="Constant">&quot;character&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
+  type_ordinal character = Type_ordinal[<span class="Constant">&quot;character&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
   Type[character]<span class="Delimiter">.</span>name = <span class="Constant">&quot;character&quot;</span><span class="Delimiter">;</span>
   <span class="Comment">// Array types are a special modifier to any other type. For example,</span>
   <span class="Comment">// array:number or array:address:boolean.</span>
-  type_number array = Type_number[<span class="Constant">&quot;array&quot;</span>] = Next_type_number++<span class="Delimiter">;</span>
+  type_ordinal array = Type_ordinal[<span class="Constant">&quot;array&quot;</span>] = Next_type_ordinal++<span class="Delimiter">;</span>
   Type[array]<span class="Delimiter">.</span>name = <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
   <span class="Comment">// End Mu Types Initialization</span>
 <span class="Delimiter">}</span>
@@ -155,7 +162,7 @@ struct type_info <span class="Delimiter">{</span>
   string name<span class="Delimiter">;</span>
   kind_of_type kind<span class="Delimiter">;</span>
   long long int size<span class="Delimiter">;</span>  <span class="Comment">// only if type is not primitive; primitives and addresses have size 1 (except arrays are dynamic)</span>
-  vector&lt;vector&lt;type_number&gt; &gt; elements<span class="Delimiter">;</span>
+  vector&lt;vector&lt;type_ordinal&gt; &gt; elements<span class="Delimiter">;</span>
   vector&lt;string&gt; element_names<span class="Delimiter">;</span>
   <span class="Comment">// End type_info Fields</span>
   type_info<span class="Delimiter">()</span> :kind<span class="Delimiter">(</span>primitive<span class="Delimiter">),</span> size<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
@@ -173,10 +180,10 @@ enum primitive_recipes <span class="Delimiter">{</span>
 <span class="Comment">//: recipes there are only codes, no entries in the book, because mu just knows</span>
 <span class="Comment">//: what to do for them.</span>
 void setup_recipes<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  Recipe<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>  Recipe_number<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  Recipe_number[<span class="Constant">&quot;idle&quot;</span>] = IDLE<span class="Delimiter">;</span>
+  Recipe<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>  Recipe_ordinal<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  Recipe_ordinal[<span class="Constant">&quot;idle&quot;</span>] = IDLE<span class="Delimiter">;</span>
   <span class="Comment">// Primitive Recipe Numbers</span>
-  Recipe_number[<span class="Constant">&quot;copy&quot;</span>] = COPY<span class="Delimiter">;</span>
+  Recipe_ordinal[<span class="Constant">&quot;copy&quot;</span>] = COPY<span class="Delimiter">;</span>
   <span class="Comment">// End Primitive Recipe Numbers</span>
 <span class="Delimiter">}</span>
 <span class="Comment">//: We could just reset the recipe table after every test, but that gets slow</span>
@@ -186,12 +193,12 @@ void setup_recipes<span class="Delimiter">()</span> <span class="Delimiter">{</s
 <span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
 setup_recipes<span class="Delimiter">();</span>
 assert<span class="Delimiter">(</span>MAX_PRIMITIVE_RECIPES &lt; <span class="Constant">100</span><span class="Delimiter">);</span>  <span class="Comment">// level 0 is primitives; until 99</span>
-Next_recipe_number = <span class="Constant">100</span><span class="Delimiter">;</span>
+Next_recipe_ordinal = <span class="Constant">100</span><span class="Delimiter">;</span>
 <span class="Comment">// End Load Recipes</span>
 <span class="Delimiter">:(before &quot;End Test Run Initialization&quot;)</span>
-assert<span class="Delimiter">(</span>Next_recipe_number &lt; <span class="Constant">1000</span><span class="Delimiter">);</span>  <span class="Comment">// recipes being tested didn't overflow into test space</span>
+assert<span class="Delimiter">(</span>Next_recipe_ordinal &lt; <span class="Constant">1000</span><span class="Delimiter">);</span>  <span class="Comment">// recipes being tested didn't overflow into test space</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Next_recipe_number = <span class="Constant">1000</span><span class="Delimiter">;</span>  <span class="Comment">// consistent new numbers for each test</span>
+Next_recipe_ordinal = <span class="Constant">1000</span><span class="Delimiter">;</span>  <span class="Comment">// consistent new numbers for each test</span>
 
 ^L
 
@@ -219,11 +226,15 @@ reagent::reagent<span class="Delimiter">(</span>string s<span class="Delimiter">
   name = properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>first<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     string type = properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>Type_number<span class="Delimiter">.</span>find<span class="Delimiter">(</span>type<span class="Delimiter">)</span> == Type_number<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; type &lt;&lt; &quot; is &quot; &lt;&lt; Next_type_number &lt;&lt; '\n'; //? 1</span>
-      Type_number[type] = Next_type_number++<span class="Delimiter">;</span>
+    if <span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span>type<span class="Delimiter">)</span> == Type_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?       cerr &lt;&lt; type &lt;&lt; &quot; is &quot; &lt;&lt; Next_type_ordinal &lt;&lt; '\n'; //? 1</span>
+      Type_ordinal[type] = Next_type_ordinal++<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_number[type]<span class="Delimiter">);</span>
+    types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>Type_ordinal[type]<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>name<span class="Delimiter">)</span> &amp;&amp; types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   if <span class="Delimiter">(</span>name == <span class="Constant">&quot;_&quot;</span> &amp;&amp; types<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     types<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>

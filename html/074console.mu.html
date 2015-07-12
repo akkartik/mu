@@ -133,6 +133,19 @@ container console [
     <span class="muControl">loop-unless</span> found?:boolean
   <span class="Delimiter">}</span>
 ]
+
+<span class="Comment"># use this helper to skip rendering if there's lots of other events queued up</span>
+<span class="muRecipe">recipe</span> has-more-events? [
+  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> console:address
+    <span class="Comment"># fake consoles should be plenty fast; never skip</span>
+    <span class="muControl">reply</span> <span class="Constant">0:literal/false</span>
+  <span class="Delimiter">}</span>
+  result:boolean<span class="Special"> &lt;- </span>interactions-left?
+  <span class="muControl">reply</span> result:boolean
+]
 </pre>
 </body>
 </html>
