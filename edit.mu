@@ -1949,21 +1949,51 @@ recipe run-sandboxes [
   in:address:array:character <- editor-contents recipes:address:editor-data
   recipe-warnings:address:address:array:character <- get-address env:address:programming-environment-data/deref, recipe-warnings:offset
   recipe-warnings:address:address:array:character/deref <- reload in:address:array:character
-  # run contents of right editor (sandbox), turn into a new sandbox-data
-  new-sandbox:address:sandbox-data <- new sandbox-data:type
-  data:address:address:array:character <- get-address new-sandbox:address:sandbox-data/deref, data:offset
-  data:address:address:array:character/deref <- editor-contents current-sandbox:address:editor-data
-  response:address:address:array:character <- get-address new-sandbox:address:sandbox-data/deref, response:offset
-  warnings:address:address:array:character <- get-address new-sandbox:address:sandbox-data/deref, warnings:offset
-  response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive data:address:address:array:character/deref
-  next:address:address:sandbox-data <- get-address new-sandbox:address:sandbox-data/deref, next-sandbox:offset
-  # push to head of sandbox list
-  dest:address:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
-  next:address:address:sandbox-data/deref <- copy dest:address:address:sandbox-data/deref
-  dest:address:address:sandbox-data/deref <- copy new-sandbox:address:sandbox-data
-  # clear sandbox editor
-  init:address:address:duplex-list <- get-address current-sandbox:address:editor-data/deref, data:offset
-  init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
+  # check contents of right editor (sandbox)
+  {
+    sandbox-contents:address:array:character <- editor-contents current-sandbox:address:editor-data
+    break-unless sandbox-contents:address:array:character
+    # if contents exist, run them and turn them into a new sandbox-data
+    new-sandbox:address:sandbox-data <- new sandbox-data:type
+    data:address:address:array:character <- get-address new-sandbox:address:sandbox-data/deref, data:offset
+    data:address:address:array:character/deref <- copy sandbox-contents:address:array:character
+    # push to head of sandbox list
+    dest:address:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
+    next:address:address:sandbox-data <- get-address new-sandbox:address:sandbox-data/deref, next-sandbox:offset
+    next:address:address:sandbox-data/deref <- copy dest:address:address:sandbox-data/deref
+    dest:address:address:sandbox-data/deref <- copy new-sandbox:address:sandbox-data
+    # clear sandbox editor
+    init:address:address:duplex-list <- get-address current-sandbox:address:editor-data/deref, data:offset
+    init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
+  }
+  # rerun other sandboxes
+  curr:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
+  {
+    break-unless curr:address:sandbox-data
+#?     clear-screen 0:literal #? 1
+#?     show-screen 0:literal #? 1
+#?     wait-for-some-interaction #? 1
+    data:address:address:array:character <- get-address curr:address:sandbox-data/deref, data:offset
+#?     print-string 0:literal, data:address:address:array:character/deref #? 1
+#?     show-screen 0:literal #? 1
+#?     wait-for-some-interaction #? 1
+    response:address:address:array:character <- get-address curr:address:sandbox-data/deref, response:offset
+    warnings:address:address:array:character <- get-address curr:address:sandbox-data/deref, warnings:offset
+    response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive data:address:address:array:character/deref
+#?     show-screen 0:literal #? 1
+#?     wait-for-some-interaction #? 1
+#?     print-string 0:literal, response:address:address:array:character/deref #? 1
+#?     $print response:address:address:array:character/deref #? 1
+#?     show-screen 0:literal #? 1
+#?     wait-for-some-interaction #? 1
+#?     # $ mu test edit.mu run-instruction-and-print-warnings #? 1
+#?     open-console #? 1
+#?     print-string 0:literal, warnings:address:address:array:character/deref #? 1
+#?     wait-for-some-interaction #? 1
+#?     close-console #? 1
+    curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
+    loop
+  }
 ]
 
 scenario run-instruction-and-print-warnings [
@@ -2027,6 +2057,7 @@ recipe editor-contents [
   # skip § sentinel
   assert curr:address:duplex-list, [editor without data is illegal; must have at least a sentinel]
   curr:address:duplex-list <- next-duplex curr:address:duplex-list
+  reply-unless curr:address:duplex-list, 0:literal
   {
     break-unless curr:address:duplex-list
     c:character <- get curr:address:duplex-list/deref, value:offset

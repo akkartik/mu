@@ -7,6 +7,7 @@ Recipe_ordinal["add"] = ADD;
 :(before "End Primitive Recipe Implementations")
 case ADD: {
   double result = 0;
+//?   if (!tb_is_active()) cerr << ingredients.at(1).at(0) << '\n'; //? 1
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
     assert(scalar(ingredients.at(i)));
     result += ingredients.at(i).at(0);

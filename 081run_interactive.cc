@@ -49,6 +49,8 @@ bool run_interactive(long long int address) {
     Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
   string command = trim(strip_comments(to_string(address)));
   if (command.empty()) return false;
+//?   tb_shutdown(); //? 1
+//?   cerr << command << '\n'; //? 2
   Recipe.erase(Recipe_ordinal["interactive"]);
   Hide_warnings = true;
   if (!Trace_stream) {
@@ -73,8 +75,11 @@ if (current_recipe_name() == "interactive") clean_up_interactive();
 if (current_recipe_name() == "interactive") clean_up_interactive();
 :(code)
 void clean_up_interactive() {
+//?   static int foo = 0; //? 1
   Hide_warnings = false;
   Running_interactive = false;
+//?   ++foo; //? 1
+//?   if (foo == 1) tb_init(); //? 1
 }
 
 :(scenario "run_interactive_returns_stringified_result")
@@ -188,6 +193,8 @@ string to_string(long long int address) {
     // todo: unicode
     tmp << (char)(int)Memory[curr];
   }
+//?   tb_shutdown(); //? 1
+//?   cerr << tmp.str() << '\n'; //? 1
   return tmp.str();
 }
 
@@ -236,6 +243,13 @@ case RELOAD: {
   Loading_interactive = true;
   Hide_warnings = true;
   load(to_string(ingredients.at(0).at(0)));
+//?   static int foo = 0;
+//?   if (++foo == 2) {
+//?     tb_shutdown();
+//?     cerr << Recipe_ordinal["new-add"] << '\n';
+//?     cerr << Recipe[Recipe_ordinal["new-add"]].steps[2].to_string() << '\n';
+//?     exit(0);
+//?   }
   transform_all();
   Hide_warnings = false;
   Loading_interactive = false;
