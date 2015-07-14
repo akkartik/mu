@@ -45,7 +45,7 @@ highlight link muNumber Constant
 syntax match muLabel "^\s\+[^ 0-9a-zA-Z{}\[\]][^ ]*\s*$"
 syntax match muLabel %[^ ]\+:label/\?[^ ,]*%
 highlight link muLabel Constant
-syntax keyword muKeyword default-space global-space next-ingredient ingredient | highlight link muKeyword Constant
+syntax keyword muKeyword default-space global-space new-default-space next-ingredient ingredient | highlight link muKeyword Constant
 
 syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
 syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
