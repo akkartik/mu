@@ -103,14 +103,17 @@ struct trace_stream {
   string curr_layer;
   int curr_depth;
   string dump_layer;
+  string collect_layer;  // if set, ignore all other layers
+  ofstream null_stream;  // never opens a file, so writes silently fail
   trace_stream() :curr_stream(NULL), curr_depth(0) {}
   ~trace_stream() { if (curr_stream) delete curr_stream; }
 
-  ostringstream& stream(string layer) {
+  ostream& stream(string layer) {
     return stream(0, layer);
   }
 
-  ostringstream& stream(int depth, string layer) {
+  ostream& stream(int depth, string layer) {
+    if (!collect_layer.empty() && layer != collect_layer) return null_stream;
     newline();
     curr_stream = new ostringstream;
     curr_layer = layer;
@@ -154,7 +157,6 @@ trace_stream* Trace_stream = NULL;
 
 // Top-level helper. IMPORTANT: can't nest.
 #define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
-//? #define trace(...)  true ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
 // Warnings should go straight to cerr by default since calls to trace() have
 // some unfriendly constraints (they delay printing, they can't nest)
 #define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream("warn"))

@@ -129,7 +129,7 @@ if (argc > 1) {
 if (!Run_tests) {
   setup();
 //?   Trace_file = "interactive"; //? 1
-  START_TRACING_UNTIL_END_OF_SCOPE;
+//?   START_TRACING_UNTIL_END_OF_SCOPE;
 //?   Trace_stream->dump_layer = "all"; //? 2
   transform_all();
   recipe_ordinal r = Recipe_ordinal[string("main")];
