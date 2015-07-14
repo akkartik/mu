@@ -75,6 +75,8 @@ case NEW: {
       size = size_of(type);
     }
   }
+//?   Total_alloc += size; //? 1
+//?   Num_alloc++; //? 1
   // compute the region of memory to return
   // really crappy at the moment
   ensure_space(size);
@@ -97,6 +99,18 @@ case NEW: {
   assert(Current_routine->alloc <= Current_routine->alloc_max);
   break;
 }
+
+//? :(before "End Globals") //? 1
+//? long long int Total_alloc = 0; //? 1
+//? long long int Num_alloc = 0; //? 1
+//? long long int Total_free = 0; //? 1
+//? long long int Num_free = 0; //? 1
+//? :(before "End Setup") //? 1
+//? Total_alloc = Num_alloc = Total_free = Num_free = 0; //? 1
+//? :(before "End Teardown") //? 1
+//? cerr << Total_alloc << "/" << Num_alloc //? 1
+//?      << " vs " << Total_free << "/" << Num_free << '\n'; //? 1
+//? cerr << Memory.size() << '\n'; //? 1
 
 :(code)
 void ensure_space(long long int size) {
@@ -211,6 +225,8 @@ case ABANDON: {
 
 :(code)
 void abandon(long long int address, long long int size) {
+//?   Total_free += size; //? 1
+//?   Num_free++; //? 1
 //?   cerr << "abandon: " << size << '\n'; //? 2
   // clear memory
   for (long long int curr = address; curr < address+size; ++curr)
@@ -299,6 +315,8 @@ long long int new_string(const string& contents) {
   // allocate an array just large enough for it
   long long int string_length = unicode_length(contents);
 //?   cout << "string_length is " << string_length << '\n'; //? 1
+//?   Total_alloc += string_length+1; //? 1
+//?   Num_alloc++; //? 1
   ensure_space(string_length+1);  // don't forget the extra location for array size
   // initialize string
 //?   cout << "new string literal: " << current_instruction().ingredients.at(0).name << '\n'; //? 1

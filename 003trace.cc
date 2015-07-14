@@ -154,6 +154,7 @@ trace_stream* Trace_stream = NULL;
 
 // Top-level helper. IMPORTANT: can't nest.
 #define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
+//? #define trace(...)  true ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
 // Warnings should go straight to cerr by default since calls to trace() have
 // some unfriendly constraints (they delay printing, they can't nest)
 #define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream("warn"))
