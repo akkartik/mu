@@ -170,6 +170,92 @@ recipe main [
 +new: routine allocated memory from 1000 to 1002
 +new: routine allocated memory from 1002 to 1004
 
+//: We also provide a way to return memory, and to reuse reclaimed memory.
+//: todo: custodians, etc. Following malloc/free is a temporary hack.
+
+:(scenario new_reclaim)
+recipe main [
+  1:address:number <- new number:type
+  abandon 1:address:number
+  2:address:number <- new number:type  # must be same size as abandoned memory to reuse
+  3:boolean <- equal 1:address:number, 2:address:number
+]
+# both allocations should have returned the same address
++mem: storing 1 in location 3
+
+:(before "End Globals")
+map<long long int, long long int> Free_list;
+:(before "End Setup")
+Free_list.clear();
+
+:(before "End Primitive Recipe Declarations")
+ABANDON,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["abandon"] = ABANDON;
+:(before "End Primitive Recipe Implementations")
+case ABANDON: {
+  if (!scalar(ingredients.at(0))) {
+    raise << "abandon's ingredient should be scalar\n";
+    break;
+  }
+  long long int address = ingredients.at(0).at(0);
+  reagent types = canonize(current_instruction().ingredients.at(0));
+  if (types.types.at(0) != Type_ordinal["address"]) {
+    raise << "abandon's ingredient should be an address\n";
+    break;
+  }
+  reagent target_type = deref(types);
+  abandon(address, size_of(target_type));
+  break;
+}
+
+:(code)
+void abandon(long long int address, long long int size) {
+//?   cerr << "abandon: " << size << '\n'; //? 1
+  // clear memory
+  for (long long int curr = address; curr < address+size; ++curr)
+    Memory[curr] = 0;
+  // append existing free list to address
+  Memory[address] = Free_list[size];
+  Free_list[size] = address;
+}
+
+:(before "ensure_space(size)" following "case NEW")
+if (Free_list[size]) {
+  long long int result = Free_list[size];
+  Free_list[size] = Memory[result];
+  for (long long int curr = result+1; curr < result+size; ++curr)
+    if (Memory[curr] != 0)
+      raise << "memory in free list was not zeroed out; somebody wrote to us after free!!!\n" << die();
+  if (SIZE(current_instruction().ingredients) > 1)
+    Memory[result] = array_length;
+  else
+    Memory[result] = 0;
+  products.resize(1);
+  products.at(0).push_back(result);
+  break;
+}
+
+:(scenario new_differing_size_no_reclaim)
+recipe main [
+  1:address:number <- new number:type
+  abandon 1:address:number
+  2:address:number <- new number:type, 2:literal  # different size
+  3:boolean <- equal 1:address:number, 2:address:number
+]
+# no reuse
++mem: storing 0 in location 3
+
+:(scenario new_reclaim_array)
+recipe main [
+  1:address:array:number <- new number:type, 2:literal
+  abandon 1:address:array:number
+  2:address:array:number <- new number:type, 2:literal
+  3:boolean <- equal 1:address:array:number, 2:address:array:number
+]
+# reuse
++mem: storing 1 in location 3
+
 //:: Next, extend 'new' to handle a unicode string literal argument.
 
 :(scenario new_string)
