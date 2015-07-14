@@ -1,14 +1,14 @@
 # example program: compute the factorial of 5
 
 recipe main [
-  new-default-space
+  local-scope
   x:number <- factorial 5:literal
   $print [result: ], x:number, [ 
 ]
 ]
 
 recipe factorial [
-  new-default-space
+  local-scope
   n:number <- next-ingredient
   {
     # if n=0 return 1

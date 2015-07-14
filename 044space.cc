@@ -124,14 +124,7 @@ if (s == "number-of-locals") return true;
 //   `default-space:address:array:location <- new location:type, number-of-locals:literal`
 // where N is Name[recipe][""]
 if (curr.name == "new-default-space") {
-  curr.operation = Recipe_ordinal["new"];
-  if (!curr.ingredients.empty())
-    raise << "new-default-space can't take any ingredients\n";
-  curr.ingredients.push_back(reagent("location:type"));
-  curr.ingredients.push_back(reagent("number-of-locals:literal"));
-  if (!curr.products.empty())
-    raise << "new-default-space can't take any results\n";
-  curr.products.push_back(reagent("default-space:address:array:location"));
+  rewrite_default_space_instruction(curr);
 }
 :(after "vector<double> read_memory(reagent x)")
   if (x.name == "number-of-locals") {
@@ -147,6 +140,58 @@ if (curr.name == "new-default-space") {
     raise << "can't write to special variable number-of-locals\n";
     return;
   }
+
+//:: a little hook to automatically reclaim the default-space when returning
+//:: from a recipe
+
+:(scenario local_scope)
+recipe main [
+  1:address <- foo
+  2:address <- foo
+  3:boolean <- equal 1:address, 2:address
+]
+recipe foo [
+  local-scope
+  x:number <- copy 34:literal
+  reply default-space:address:array:location
+]
+# both calls to foo should have received the same default-space
++mem: storing 1 in location 3
+
+:(after "Falling Through End Of Recipe")
+try_reclaim_locals();
+:(after "Starting Reply")
+try_reclaim_locals();
+
+//: now 'local-scope' is identical to 'new-default-space' except that we'll
+//: reclaim the default-space when the routine exits
+:(before "End Rewrite Instruction(curr)")
+if (curr.name == "local-scope") {
+  rewrite_default_space_instruction(curr);
+}
+
+:(code)
+void try_reclaim_locals() {
+  // only reclaim routines starting with 'local-scope'
+  const recipe_ordinal r = Recipe_ordinal[current_recipe_name()];
+  const instruction& inst = Recipe[r].steps.at(0);
+  if (inst.name != "local-scope")
+    return;
+//?   cerr << inst.to_string() << '\n'; //? 1
+  abandon(Current_routine->calls.front().default_space,
+          /*array length*/1+/*number-of-locals*/Name[r][""]);
+}
+
+void rewrite_default_space_instruction(instruction& curr) {
+  curr.operation = Recipe_ordinal["new"];
+  if (!curr.ingredients.empty())
+    raise << "new-default-space can't take any ingredients\n";
+  curr.ingredients.push_back(reagent("location:type"));
+  curr.ingredients.push_back(reagent("number-of-locals:literal"));
+  if (!curr.products.empty())
+    raise << "new-default-space can't take any results\n";
+  curr.products.push_back(reagent("default-space:address:array:location"));
+}
 
 //:: helpers
 

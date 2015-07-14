@@ -33,7 +33,7 @@ container channel [
 
 # result:address:channel <- new-channel capacity:number
 recipe new-channel [
-  new-default-space
+  local-scope
   # result = new channel
   result:address:channel <- new channel:type
   # result.first-full = 0
@@ -52,7 +52,7 @@ recipe new-channel [
 
 # chan:address:channel <- write chan:address:channel, val:location
 recipe write [
-  new-default-space
+  local-scope
   chan:address:channel <- next-ingredient
   val:location <- next-ingredient
   {
@@ -81,7 +81,7 @@ recipe write [
 
 # result:location, chan:address:channel <- read chan:address:channel
 recipe read [
-  new-default-space
+  local-scope
   chan:address:channel <- next-ingredient
   {
     # block if chan is empty
@@ -107,7 +107,7 @@ recipe read [
 ]
 
 recipe clear-channel [
-  new-default-space
+  local-scope
   chan:address:channel <- next-ingredient
   {
     empty?:boolean <- channel-empty? chan:address:channel
@@ -185,7 +185,7 @@ scenario channel-wrap [
 
 # An empty channel has first-empty and first-full both at the same value.
 recipe channel-empty? [
-  new-default-space
+  local-scope
   chan:address:channel <- next-ingredient
   # return chan.first-full == chan.first-free
   full:number <- get chan:address:channel/deref, first-full:offset
@@ -197,7 +197,7 @@ recipe channel-empty? [
 # A full channel has first-empty just before first-full, wasting one slot.
 # (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
 recipe channel-full? [
-  new-default-space
+  local-scope
   chan:address:channel <- next-ingredient
   # tmp = chan.first-free + 1
   tmp:number <- get chan:address:channel/deref, first-free:offset
@@ -217,7 +217,7 @@ recipe channel-full? [
 
 # result:number <- channel-capacity chan:address:channel
 recipe channel-capacity [
-  new-default-space
+  local-scope
   chan:address:channel <- next-ingredient
   q:address:array:location <- get chan:address:channel/deref, data:offset
   result:number <- length q:address:array:location/deref
@@ -279,7 +279,7 @@ scenario channel-read-not-full [
 # helper for channels of characters in particular
 # out:address:channel <- buffer-lines in:address:channel, out:address:channel
 recipe buffer-lines [
-  new-default-space
+  local-scope
 #?   $print [buffer-lines: aaa
 #? ]
   in:address:channel <- next-ingredient

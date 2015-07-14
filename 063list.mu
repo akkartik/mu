@@ -10,7 +10,7 @@ container list [
 
 # result:address:list <- push x:location, in:address:list
 recipe push [
-  new-default-space
+  local-scope
   x:location <- next-ingredient
   in:address:list <- next-ingredient
   result:address:list <- new list:type
@@ -23,7 +23,7 @@ recipe push [
 
 # result:location <- first in:address:list
 recipe first [
-  new-default-space
+  local-scope
   in:address:list <- next-ingredient
   result:location <- get in:address:list/deref, value:offset
   reply result:location
@@ -31,7 +31,7 @@ recipe first [
 
 # result:address:list <- rest in:address:list
 recipe rest [
-  new-default-space
+  local-scope
   in:address:list <- next-ingredient
   result:address:list <- get in:address:list/deref, next:offset
   reply result:address:list

@@ -211,7 +211,7 @@ case ABANDON: {
 
 :(code)
 void abandon(long long int address, long long int size) {
-//?   cerr << "abandon: " << size << '\n'; //? 1
+//?   cerr << "abandon: " << size << '\n'; //? 2
   // clear memory
   for (long long int curr = address; curr < address+size; ++curr)
     Memory[curr] = 0;
