@@ -56,6 +56,7 @@ bool run_interactive(long long int address) {
   if (!Trace_stream) {
     Trace_file = "";  // if there wasn't already a stream we don't want to save it
     Trace_stream = new trace_stream;
+    Trace_stream->collect_layer = "warn";
   }
   // call run(string) but without the scheduling
   load("recipe interactive [\n"+command+"\n]\n");
