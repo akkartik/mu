@@ -82,7 +82,7 @@ scenario print-board-and-read-move [
 recipe chessboard [
 #?   $start-tracing [schedule] #? 2
 #?   $start-tracing #? 1
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   screen:address <- next-ingredient
   console:address <- next-ingredient
 #?   $print [screen: ], screen:address, [, console: ], console:address, [ 
@@ -138,7 +138,7 @@ recipe chessboard [
 ## a board is an array of files, a file is an array of characters (squares)
 
 recipe new-board [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   initial-position:address:array:number <- next-ingredient
   # assert(length(initial-position) == 64)
   len:number <- length initial-position:address:array:number/deref
@@ -159,7 +159,7 @@ recipe new-board [
 ]
 
 recipe new-file [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   position:address:array:number <- next-ingredient
   index:number <- next-ingredient
   index:number <- multiply index:number, 8:literal
@@ -178,7 +178,7 @@ recipe new-file [
 ]
 
 recipe print-board [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   screen:address <- next-ingredient
   board:address:array:address:array:character <- next-ingredient
   row:number <- copy 7:literal  # start printing from the top of the board
@@ -227,7 +227,7 @@ recipe print-board [
 
 # board:address:array:address:array:character <- initial-position
 recipe initial-position [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   # layout in memory (in raster order):
   #   R P _ _ _ _ p r
   #   N P _ _ _ _ p n
@@ -287,7 +287,7 @@ container move [
 # result:address:move, quit?:boolean, error?:boolean <- read-move stdin:address:channel, screen:address
 # prints only error messages to screen
 recipe read-move [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   stdin:address:channel <- next-ingredient
   screen:address <- next-ingredient
 #?   $print screen:address #? 1
@@ -322,7 +322,7 @@ recipe read-move [
 # file:number, quit:boolean, error:boolean <- read-file stdin:address:channel, screen:address
 # valid values for file: 0-7
 recipe read-file [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   stdin:address:channel <- next-ingredient
   screen:address <- next-ingredient
   c:character, stdin:address:channel <- read stdin:address:channel
@@ -375,7 +375,7 @@ recipe read-file [
 # rank:number <- read-rank stdin:address:channel, screen:address
 # valid values: 0-7, -1 (quit), -2 (error)
 recipe read-rank [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   stdin:address:channel <- next-ingredient
   screen:address <- next-ingredient
   c:character, stdin:address:channel <- read stdin:address:channel
@@ -422,7 +422,7 @@ recipe read-rank [
 # read a character from the given channel and check that it's what we expect
 # return true on error
 recipe expect-from-channel [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   stdin:address:channel <- next-ingredient
   expected:character <- next-ingredient
   screen:address <- next-ingredient
@@ -624,7 +624,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 ]
 
 recipe make-move [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   b:address:array:address:array:character <- next-ingredient
   m:address:move <- next-ingredient
   from-file:number <- get m:address:move/deref, from-file:offset

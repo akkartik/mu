@@ -8,7 +8,7 @@ container duplex-list [
 
 # result:address:duplex-list <- push-duplex x:location, in:address:duplex-list
 recipe push-duplex [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   x:location <- next-ingredient
   in:address:duplex-list <- next-ingredient
   result:address:duplex-list <- new duplex-list:type
@@ -24,7 +24,7 @@ recipe push-duplex [
 
 # result:location <- first-duplex in:address:duplex-list
 recipe first-duplex [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   in:address:duplex-list <- next-ingredient
   reply-unless in:address:duplex-list, 0:literal
   result:location <- get in:address:duplex-list/deref, value:offset
@@ -33,7 +33,7 @@ recipe first-duplex [
 
 # result:address:duplex-list <- next-duplex in:address:duplex-list
 recipe next-duplex [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   in:address:duplex-list <- next-ingredient
   reply-unless in:address:duplex-list, 0:literal
   result:address:duplex-list <- get in:address:duplex-list/deref, next:offset
@@ -42,7 +42,7 @@ recipe next-duplex [
 
 # result:address:duplex-list <- prev-duplex in:address:duplex-list
 recipe prev-duplex [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   in:address:duplex-list <- next-ingredient
   reply-unless in:address:duplex-list, 0:literal
   result:address:duplex-list <- get in:address:duplex-list/deref, prev:offset
@@ -95,7 +95,7 @@ scenario duplex-list-handling [
 # l:address:duplex-list <- insert-duplex x:location, in:address:duplex-list
 # Inserts 'x' after 'in'. Returns some pointer into the list.
 recipe insert-duplex [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   x:location <- next-ingredient
   in:address:duplex-list <- next-ingredient
   new-node:address:duplex-list <- new duplex-list:type
@@ -237,7 +237,7 @@ scenario inserting-after-start-of-duplex-list [
 # Returns null if and only if list is empty. Beware: in that case any pointers
 # to the head are now invalid.
 recipe remove-duplex [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   in:address:duplex-list <- next-ingredient
   # if 'in' is null, return
   reply-unless in:address:duplex-list, in:address:duplex-list

@@ -1,14 +1,14 @@
 # example program: compute the factorial of 5
 
 recipe main [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   x:number <- factorial 5:literal
   $print [result: ], x:number, [ 
 ]
 ]
 
 recipe factorial [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   n:number <- next-ingredient
   {
     # if n=0 return 1

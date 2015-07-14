@@ -1,7 +1,7 @@
 # Some useful helpers for dealing with strings.
 
 recipe string-equal [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   a:address:array:character <- next-ingredient
   a-len:number <- length a:address:array:character/deref
   b:address:array:character <- next-ingredient
@@ -104,7 +104,7 @@ container buffer [
 ]
 
 recipe new-buffer [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
 #?   $print default-space:address:array:location, [
 #? ]
   result:address:buffer <- new buffer:type
@@ -120,7 +120,7 @@ recipe new-buffer [
 ]
 
 recipe grow-buffer [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   in:address:buffer <- next-ingredient
   # double buffer size
   x:address:address:array:character <- get-address in:address:buffer/deref, data:offset
@@ -143,7 +143,7 @@ recipe grow-buffer [
 ]
 
 recipe buffer-full? [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   in:address:buffer <- next-ingredient
   len:number <- get in:address:buffer/deref, length:offset
   s:address:array:character <- get in:address:buffer/deref, data:offset
@@ -154,7 +154,7 @@ recipe buffer-full? [
 
 # in:address:buffer <- buffer-append in:address:buffer, c:character
 recipe buffer-append [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   in:address:buffer <- next-ingredient
   c:character <- next-ingredient
   len:address:number <- get-address in:address:buffer/deref, length:offset
@@ -188,7 +188,7 @@ recipe buffer-append [
 
 scenario buffer-append-works [
   run [
-    default-space:address:array:location <- new location:type, 30:literal
+    new-default-space
     x:address:buffer <- new-buffer 3:literal
     s1:address:array:character <- get x:address:buffer/deref, data:offset
     x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
@@ -240,7 +240,7 @@ scenario buffer-append-works [
 
 scenario buffer-append-handles-backspace [
   run [
-    default-space:address:array:location <- new location:type, 30:literal
+    new-default-space
     x:address:buffer <- new-buffer 3:literal
     x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
     x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
@@ -257,7 +257,7 @@ scenario buffer-append-handles-backspace [
 
 # result:address:array:character <- integer-to-decimal-string n:number
 recipe integer-to-decimal-string [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   n:number <- next-ingredient
   # is it zero?
   {
@@ -313,7 +313,7 @@ recipe integer-to-decimal-string [
 ]
 
 recipe buffer-to-array [
-  default-space:address:array:character <- new location:type, 30:literal
+  new-default-space
   in:address:buffer <- next-ingredient
   {
     # propagate null buffer
@@ -374,7 +374,7 @@ scenario integer-to-decimal-digit-negative [
 
 # result:address:array:character <- string-append a:address:array:character, b:address:array:character
 recipe string-append [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   # result = new character[a.length + b.length]
   a:address:array:character <- next-ingredient
   a-len:number <- length a:address:array:character/deref
@@ -433,7 +433,7 @@ scenario string-append-1 [
 # replace underscores in first with remaining args
 # result:address:array:character <- interpolate template:address:array:character, ...
 recipe interpolate [
-  default-space:array:address:location <- new location:type, 60:literal
+  new-default-space
   template:address:array:character <- next-ingredient
   # compute result-len, space to allocate for result
   tem-len:number <- length template:address:array:character/deref
@@ -558,7 +558,7 @@ scenario interpolate-at-end [
 
 # result:boolean <- space? c:character
 recipe space? [
-  default-space:array:address:location <- new location:type, 30:literal
+  new-default-space
   c:character <- next-ingredient
   # most common case first
   result:boolean <- equal c:character, 32:literal/space
@@ -623,7 +623,7 @@ recipe space? [
 
 # result:address:array:character <- trim s:address:array:character
 recipe trim [
-  default-space:array:address:location <- new location:type, 30:literal
+  new-default-space
   s:address:array:character <- next-ingredient
   len:number <- length s:address:array:character/deref
   # left trim: compute start
@@ -732,7 +732,7 @@ scenario trim-newline-tab [
 
 # next-index:number <- find-next text:address:array:character, pattern:character
 recipe find-next [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   text:address:array:character <- next-ingredient
   pattern:character <- next-ingredient
   idx:number <- next-ingredient
@@ -832,7 +832,7 @@ scenario string-find-next-second [
 # like find-next, but searches for multiple characters
 # fairly dumb algorithm
 recipe find-substring [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   text:address:array:character <- next-ingredient
   pattern:address:array:character <- next-ingredient
   idx:number <- next-ingredient
@@ -911,7 +911,7 @@ scenario find-substring-suffix-match-2 [
 # result:boolean <- match-at text:address:array:character, pattern:address:array:character, idx:number
 # checks if substring matches at index 'idx'
 recipe match-at [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   text:address:array:character <- next-ingredient
   pattern:address:array:character <- next-ingredient
   idx:number <- next-ingredient
@@ -1042,7 +1042,7 @@ scenario match-at-inside-bounds-2 [
 
 # result:address:array:address:array:character <- split s:address:array:character, delim:character
 recipe split [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   s:address:array:character <- next-ingredient
   delim:character <- next-ingredient
   # empty string? return empty array
@@ -1172,7 +1172,7 @@ scenario string-split-empty-piece [
 
 # x:address:array:character, y:address:array:character <- split-first text:address:array:character, delim:character
 recipe split-first [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   text:address:array:character <- next-ingredient
   delim:character <- next-ingredient
   # empty string? return empty strings
@@ -1207,7 +1207,7 @@ scenario string-split-first [
 # result:address:array:character <- string-copy buf:address:array:character, start:number, end:number
 # todo: make this generic
 recipe string-copy [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   buf:address:array:character <- next-ingredient
   start:number <- next-ingredient
   end:number <- next-ingredient
@@ -1267,7 +1267,7 @@ scenario string-copy-out-of-bounds-2 [
 ]
 
 recipe min [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   x:number <- next-ingredient
   y:number <- next-ingredient
   {
@@ -1279,7 +1279,7 @@ recipe min [
 ]
 
 recipe max [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   x:number <- next-ingredient
   y:number <- next-ingredient
   {

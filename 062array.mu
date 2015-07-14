@@ -13,7 +13,7 @@ scenario array-from-args [
 
 # create an array out of a list of scalar args
 recipe new-array [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   capacity:number <- copy 0:literal
   {
     # while read curr-value

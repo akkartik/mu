@@ -2,7 +2,7 @@
 
 recipe producer [
   # produce numbers 1 to 5 on a channel
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   chan:address:channel <- next-ingredient
   # n = 0
   n:number <- copy 0:literal
@@ -20,7 +20,7 @@ recipe producer [
 
 recipe consumer [
   # consume and print integers from a channel
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   chan:address:channel <- next-ingredient
   {
     # read an integer from the channel
@@ -33,7 +33,7 @@ recipe consumer [
 ]
 
 recipe main [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   chan:address:channel <- new-channel 3:literal
   # create two background 'routines' that communicate by a channel
   routine1:number <- start-running producer:recipe, chan:address:channel
