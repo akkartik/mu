@@ -79,7 +79,7 @@ compiling.
 
 As a sneak peek, here's how you compute factorial in Mu:
 
-![code example](http://i.imgur.com/QbZMprn.png)
+![code example](html/factorial.png)
 
 Mu functions or 'recipes' are lists of instructions, one to a line. Each
 instruction operates on some *ingredients* and returns some *results*.
@@ -167,7 +167,7 @@ organize your names into spaces. At the start of each function (like
 `factorial` above), set its *default space*:
 
   ```nim
-    default-space:address:array:location <- new location:type, 30:literal
+    new-default-space
   ```
 
 Without this line, all variables in the function will be *global*, something
@@ -245,7 +245,7 @@ inserting code at them.
 
 ```nim
   recipe factorial [
-    default-space:address:array:location <- new location:type, 30:literal
+    new-default-space
     n:number <- next-ingredient
     {
       +base-case:
