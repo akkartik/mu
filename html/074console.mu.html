@@ -13,13 +13,13 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muRecipe { color: #ff8700; }
 .Delimiter { color: #a04060; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .CommentedCode { color: #6c6c6c; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -53,7 +53,7 @@ container console [
 ]
 
 <span class="muRecipe">recipe</span> new-fake-console [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   result:address:console<span class="Special"> &lt;- </span>new console:type
   buf:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:console/deref, data:offset
 <span class="CommentedCode">#?   $start-tracing #? 1</span>
@@ -65,7 +65,7 @@ container console [
 ]
 
 <span class="muRecipe">recipe</span> read-event [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   x:address:console<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> x:address:console
@@ -92,7 +92,7 @@ container console [
 <span class="Comment"># isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get</span>
 <span class="Comment"># newlines, tabs, ctrl-d..</span>
 <span class="muRecipe">recipe</span> read-key [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
 <span class="CommentedCode">#?   $print default-space:address:array:location #? 1</span>
 <span class="CommentedCode">#?   $exit #? 1</span>
 <span class="CommentedCode">#?   $start-tracing #? 1</span>
@@ -110,7 +110,7 @@ container console [
 ]
 
 <span class="muRecipe">recipe</span> send-keys-to-channel [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   chan:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -126,7 +126,7 @@ container console [
 ]
 
 <span class="muRecipe">recipe</span> wait-for-event [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     _, console:address, found?:boolean<span class="Special"> &lt;- </span>read-event console:address
@@ -136,7 +136,7 @@ container console [
 
 <span class="Comment"># use this helper to skip rendering if there's lots of other events queued up</span>
 <span class="muRecipe">recipe</span> has-more-events? [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> console:address

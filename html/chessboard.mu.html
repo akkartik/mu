@@ -13,15 +13,15 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muScenario { color: #00af00; }
+.muRecipe { color: #ff8700; }
 .Delimiter { color: #a04060; }
+.muScenario { color: #00af00; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .CommentedCode { color: #6c6c6c; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -117,7 +117,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="muRecipe">recipe</span> chessboard [
 <span class="CommentedCode">#?   $start-tracing [schedule] #? 2</span>
 <span class="CommentedCode">#?   $start-tracing #? 1</span>
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
 <span class="CommentedCode">#?   $print [screen: ], screen:address, [, console: ], console:address, [ </span>
@@ -173,7 +173,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="SalientComment">## a board is an array of files, a file is an array of characters (squares)</span>
 
 <span class="muRecipe">recipe</span> new-board [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   initial-position:address:array:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># assert(length(initial-position) == 64)</span>
   len:number<span class="Special"> &lt;- </span>length initial-position:address:array:number/deref
@@ -194,7 +194,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="muRecipe">recipe</span> new-file [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   position:address:array:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   index:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   index:number<span class="Special"> &lt;- </span>multiply index:number, <span class="Constant">8:literal</span>
@@ -213,7 +213,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="muRecipe">recipe</span> print-board [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   board:address:array:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   row:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal</span>  <span class="Comment"># start printing from the top of the board</span>
@@ -262,7 +262,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># board:address:array:address:array:character &lt;- initial-position</span>
 <span class="muRecipe">recipe</span> initial-position [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   <span class="Comment"># layout in memory (in raster order):</span>
   <span class="Comment">#   R P _ _ _ _ p r</span>
   <span class="Comment">#   N P _ _ _ _ p n</span>
@@ -322,7 +322,7 @@ container move [
 <span class="Comment"># result:address:move, quit?:boolean, error?:boolean &lt;- read-move stdin:address:channel, screen:address</span>
 <span class="Comment"># prints only error messages to screen</span>
 <span class="muRecipe">recipe</span> read-move [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
 <span class="CommentedCode">#?   $print screen:address #? 1</span>
@@ -357,7 +357,7 @@ container move [
 <span class="Comment"># file:number, quit:boolean, error:boolean &lt;- read-file stdin:address:channel, screen:address</span>
 <span class="Comment"># valid values for file: 0-7</span>
 <span class="muRecipe">recipe</span> read-file [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   c:character, stdin:address:channel<span class="Special"> &lt;- </span>read stdin:address:channel
@@ -410,7 +410,7 @@ container move [
 <span class="Comment"># rank:number &lt;- read-rank stdin:address:channel, screen:address</span>
 <span class="Comment"># valid values: 0-7, -1 (quit), -2 (error)</span>
 <span class="muRecipe">recipe</span> read-rank [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   c:character, stdin:address:channel<span class="Special"> &lt;- </span>read stdin:address:channel
@@ -457,7 +457,7 @@ container move [
 <span class="Comment"># read a character from the given channel and check that it's what we expect</span>
 <span class="Comment"># return true on error</span>
 <span class="muRecipe">recipe</span> expect-from-channel [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   expected:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -659,7 +659,7 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
 ]
 
 <span class="muRecipe">recipe</span> make-move [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   b:address:array:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   m:address:move<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   from-file:number<span class="Special"> &lt;- </span>get m:address:move/deref, from-file:offset

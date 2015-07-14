@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muScenario { color: #00af00; }
+.muRecipe { color: #ff8700; }
 .Delimiter { color: #a04060; }
+.muScenario { color: #00af00; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .CommentedCode { color: #6c6c6c; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -42,7 +42,7 @@ container duplex-list [
 
 <span class="Comment"># result:address:duplex-list &lt;- push-duplex x:location, in:address:duplex-list</span>
 <span class="muRecipe">recipe</span> push-duplex [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   x:location<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   result:address:duplex-list<span class="Special"> &lt;- </span>new duplex-list:type
@@ -58,7 +58,7 @@ container duplex-list [
 
 <span class="Comment"># result:location &lt;- first-duplex in:address:duplex-list</span>
 <span class="muRecipe">recipe</span> first-duplex [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="muControl">reply-unless</span> in:address:duplex-list, <span class="Constant">0:literal</span>
   result:location<span class="Special"> &lt;- </span>get in:address:duplex-list/deref, value:offset
@@ -67,7 +67,7 @@ container duplex-list [
 
 <span class="Comment"># result:address:duplex-list &lt;- next-duplex in:address:duplex-list</span>
 <span class="muRecipe">recipe</span> next-duplex [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="muControl">reply-unless</span> in:address:duplex-list, <span class="Constant">0:literal</span>
   result:address:duplex-list<span class="Special"> &lt;- </span>get in:address:duplex-list/deref, next:offset
@@ -76,7 +76,7 @@ container duplex-list [
 
 <span class="Comment"># result:address:duplex-list &lt;- prev-duplex in:address:duplex-list</span>
 <span class="muRecipe">recipe</span> prev-duplex [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="muControl">reply-unless</span> in:address:duplex-list, <span class="Constant">0:literal</span>
   result:address:duplex-list<span class="Special"> &lt;- </span>get in:address:duplex-list/deref, prev:offset
@@ -129,7 +129,7 @@ container duplex-list [
 <span class="Comment"># l:address:duplex-list &lt;- insert-duplex x:location, in:address:duplex-list</span>
 <span class="Comment"># Inserts 'x' after 'in'. Returns some pointer into the list.</span>
 <span class="muRecipe">recipe</span> insert-duplex [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   x:location<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   new-node:address:duplex-list<span class="Special"> &lt;- </span>new duplex-list:type
@@ -271,7 +271,7 @@ container duplex-list [
 <span class="Comment"># Returns null if and only if list is empty. Beware: in that case any pointers</span>
 <span class="Comment"># to the head are now invalid.</span>
 <span class="muRecipe">recipe</span> remove-duplex [
-  <span class="Constant">default-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">30:literal</span>
+  <span class="Constant">new-default-space</span>
   in:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if 'in' is null, return</span>
   <span class="muControl">reply-unless</span> in:address:duplex-list, in:address:duplex-list
