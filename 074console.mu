@@ -20,7 +20,7 @@ container console [
 ]
 
 recipe new-fake-console [
-  new-default-space
+  local-scope
   result:address:console <- new console:type
   buf:address:address:array:character <- get-address result:address:console/deref, data:offset
 #?   $start-tracing #? 1
@@ -32,7 +32,7 @@ recipe new-fake-console [
 ]
 
 recipe read-event [
-  new-default-space
+  local-scope
   x:address:console <- next-ingredient
   {
     break-unless x:address:console
@@ -59,7 +59,7 @@ recipe read-event [
 # isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get
 # newlines, tabs, ctrl-d..
 recipe read-key [
-  new-default-space
+  local-scope
 #?   $print default-space:address:array:location #? 1
 #?   $exit #? 1
 #?   $start-tracing #? 1
@@ -77,7 +77,7 @@ recipe read-key [
 ]
 
 recipe send-keys-to-channel [
-  new-default-space
+  local-scope
   console:address <- next-ingredient
   chan:address:channel <- next-ingredient
   screen:address <- next-ingredient
@@ -93,7 +93,7 @@ recipe send-keys-to-channel [
 ]
 
 recipe wait-for-event [
-  new-default-space
+  local-scope
   console:address <- next-ingredient
   {
     _, console:address, found?:boolean <- read-event console:address
@@ -103,7 +103,7 @@ recipe wait-for-event [
 
 # use this helper to skip rendering if there's lots of other events queued up
 recipe has-more-events? [
-  new-default-space
+  local-scope
   console:address <- next-ingredient
   {
     break-unless console:address

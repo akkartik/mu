@@ -1,7 +1,7 @@
 # Environment for learning programming using mu.
 
 recipe main [
-  new-default-space
+  local-scope
   open-console
   initial-recipe:address:array:character <- new [recipe new-add [
   x:number <- next-ingredient
@@ -24,7 +24,7 @@ container programming-environment-data [
 ]
 
 recipe new-programming-environment [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   initial-recipe-contents:address:array:character <- next-ingredient
   initial-sandbox-contents:address:array:character <- next-ingredient
@@ -91,7 +91,7 @@ container editor-data [
 #   top/left/right constrain the screen area available to the new editor.
 #   right is exclusive.
 recipe new-editor [
-  new-default-space
+  local-scope
   s:address:array:character <- next-ingredient
   screen:address <- next-ingredient
   # no clipping of bounds
@@ -161,7 +161,7 @@ scenario editor-initializes-without-data [
 
 # bottom:number, screen:address <- render screen:address, editor:address:editor-data
 recipe render [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   reply-unless editor:address:editor-data, 1:literal/top, screen:address/same-as-ingredient:0
@@ -268,7 +268,7 @@ recipe render [
 # print a string 's' to 'editor' in 'color' starting at 'row'
 # leave cursor at start of next line
 recipe render-string [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   s:address:array:character <- next-ingredient
   left:number <- next-ingredient
@@ -334,7 +334,7 @@ recipe render-string [
 ]
 
 recipe clear-line-delimited [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   left:number <- next-ingredient
   right:number <- next-ingredient
@@ -455,7 +455,7 @@ scenario editor-initializes-empty-text [
 ## handling events from the keyboard, mouse, touch screen, ...
 
 recipe event-loop [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   console:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
@@ -514,7 +514,7 @@ recipe event-loop [
 
 # helper for testing a single editor
 recipe editor-event-loop [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   console:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
@@ -547,7 +547,7 @@ recipe editor-event-loop [
 ]
 
 recipe handle-event [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   console:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
@@ -686,7 +686,7 @@ recipe handle-event [
 # process click, return if it was on current editor
 # todo: ignores menu bar (for now just displays shortcuts)
 recipe move-cursor-in-editor [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   t:touch-event <- next-ingredient
@@ -709,7 +709,7 @@ recipe move-cursor-in-editor [
 ]
 
 recipe insert-at-cursor [
-  new-default-space
+  local-scope
   editor:address:editor-data <- next-ingredient
   c:character <- next-ingredient
   screen:address <- next-ingredient
@@ -757,7 +757,7 @@ recipe insert-at-cursor [
 ]
 
 recipe delete-before-cursor [
-  new-default-space
+  local-scope
   editor:address:editor-data <- next-ingredient
   before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
   d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
@@ -778,7 +778,7 @@ recipe delete-before-cursor [
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
 # the length of the previous line before the 'curr' pointer.
 recipe previous-line-length [
-  new-default-space
+  local-scope
   curr:address:duplex-list <- next-ingredient
   start:address:duplex-list <- next-ingredient
   result:number <- copy 0:literal
@@ -800,7 +800,7 @@ recipe previous-line-length [
 ]
 
 recipe render-all [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
@@ -844,7 +844,7 @@ recipe render-all [
 ]
 
 recipe render-sandboxes [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   sandbox:address:sandbox-data <- next-ingredient
   left:number <- next-ingredient
@@ -877,7 +877,7 @@ recipe render-sandboxes [
 ]
 
 recipe update-cursor [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   recipes:address:editor-data <- next-ingredient
   current-sandbox:address:editor-data <- next-ingredient
@@ -1941,7 +1941,7 @@ scenario run-and-show-results [
 ]
 
 recipe run-sandboxes [
-  new-default-space
+  local-scope
   env:address:programming-environment-data <- next-ingredient
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
@@ -2084,7 +2084,7 @@ scenario run-instruction-and-print-warnings [
 ]
 
 recipe editor-contents [
-  new-default-space
+  local-scope
   editor:address:editor-data <- next-ingredient
   buf:address:buffer <- new-buffer 80:literal
   curr:address:duplex-list <- get editor:address:editor-data/deref, data:offset
@@ -2124,7 +2124,7 @@ scenario editor-provides-edited-contents [
 ## helpers for drawing editor borders
 
 recipe draw-box [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   top:number <- next-ingredient
   left:number <- next-ingredient
@@ -2152,7 +2152,7 @@ recipe draw-box [
 ]
 
 recipe draw-horizontal [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   row:number <- next-ingredient
   x:number <- next-ingredient
@@ -2184,7 +2184,7 @@ recipe draw-horizontal [
 ]
 
 recipe draw-vertical [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   col:number <- next-ingredient
   x:number <- next-ingredient
@@ -2211,7 +2211,7 @@ recipe draw-vertical [
 ]
 
 recipe draw-top-left [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   top:number <- next-ingredient
   left:number <- next-ingredient
@@ -2226,7 +2226,7 @@ recipe draw-top-left [
 ]
 
 recipe draw-top-right [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   top:number <- next-ingredient
   right:number <- next-ingredient
@@ -2241,7 +2241,7 @@ recipe draw-top-right [
 ]
 
 recipe draw-bottom-left [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   bottom:number <- next-ingredient
   left:number <- next-ingredient
@@ -2256,7 +2256,7 @@ recipe draw-bottom-left [
 ]
 
 recipe draw-bottom-right [
-  new-default-space
+  local-scope
   screen:address <- next-ingredient
   bottom:number <- next-ingredient
   right:number <- next-ingredient
@@ -2271,7 +2271,7 @@ recipe draw-bottom-right [
 ]
 
 recipe print-string-with-gradient-background [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   s:address:array:character <- next-ingredient
   color:number <- next-ingredient

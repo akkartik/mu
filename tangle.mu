@@ -7,7 +7,7 @@
 # possibilities.
 
 recipe factorial [
-  new-default-space
+  local-scope
   n:number <- next-ingredient
   {
     +base-case

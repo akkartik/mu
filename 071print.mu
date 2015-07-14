@@ -15,7 +15,7 @@ container screen-cell [
 ]
 
 recipe new-fake-screen [
-  new-default-space
+  local-scope
   result:address:screen <- new screen:type
   width:address:number <- get-address result:address:screen/deref, num-columns:offset
   width:address:number/deref <- next-ingredient
@@ -35,7 +35,7 @@ recipe new-fake-screen [
 ]
 
 recipe clear-screen [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
 #?   $print [clearing screen
 #? ] #? 1
@@ -70,7 +70,7 @@ recipe clear-screen [
 ]
 
 recipe print-character [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   c:character <- next-ingredient
   color:number, color-found?:boolean <- next-ingredient
@@ -314,7 +314,7 @@ scenario print-at-bottom-right [
 ]
 
 recipe clear-line [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists, clear line in fake screen
   {
@@ -343,7 +343,7 @@ recipe clear-line [
 ]
 
 recipe cursor-position [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists, lookup cursor in fake screen
   {
@@ -357,7 +357,7 @@ recipe cursor-position [
 ]
 
 recipe move-cursor [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   new-row:number <- next-ingredient
   new-column:number <- next-ingredient
@@ -407,7 +407,7 @@ scenario clear-line-erases-printed-characters [
 ]
 
 recipe cursor-down [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
@@ -434,7 +434,7 @@ recipe cursor-down [
 ]
 
 recipe cursor-up [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
@@ -455,7 +455,7 @@ recipe cursor-up [
 ]
 
 recipe cursor-right [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
@@ -477,7 +477,7 @@ recipe cursor-right [
 ]
 
 recipe cursor-left [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
@@ -498,7 +498,7 @@ recipe cursor-left [
 ]
 
 recipe cursor-to-start-of-line [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   row:number, _, x:address:screen <- cursor-position x:address:screen
   column:number <- copy 0:literal
@@ -507,7 +507,7 @@ recipe cursor-to-start-of-line [
 ]
 
 recipe cursor-to-next-line [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   x:address:screen <- cursor-down x:address:screen
   x:address:screen <- cursor-to-start-of-line x:address:screen
@@ -515,7 +515,7 @@ recipe cursor-to-next-line [
 ]
 
 recipe screen-width [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
@@ -529,7 +529,7 @@ recipe screen-width [
 ]
 
 recipe screen-height [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
@@ -543,7 +543,7 @@ recipe screen-height [
 ]
 
 recipe hide-cursor [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists (not real display), do nothing
   {
@@ -556,7 +556,7 @@ recipe hide-cursor [
 ]
 
 recipe show-cursor [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists (not real display), do nothing
   {
@@ -569,7 +569,7 @@ recipe show-cursor [
 ]
 
 recipe hide-screen [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists (not real display), do nothing
   {
@@ -582,7 +582,7 @@ recipe hide-screen [
 ]
 
 recipe show-screen [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   # if x exists (not real display), do nothing
   {
@@ -595,7 +595,7 @@ recipe show-screen [
 ]
 
 recipe print-string [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   s:address:array:character <- next-ingredient
   color:number, color-found?:boolean <- next-ingredient
@@ -644,7 +644,7 @@ scenario print-string-stops-at-right-margin [
 ]
 
 recipe print-integer [
-  new-default-space
+  local-scope
   x:address:screen <- next-ingredient
   n:number <- next-ingredient
   color:number, color-found?:boolean <- next-ingredient

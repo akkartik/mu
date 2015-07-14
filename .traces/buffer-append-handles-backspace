@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    new-default-space\n    x:address:buffer <- new-buffer 3:literal\n    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'\n    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'\n    x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace\n    s:address:array:character <- buffer-to-array x:address:buffer\n    1:array:character/raw <- copy s:address:array:character/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    local-scope\n    x:address:buffer <- new-buffer 3:literal\n    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'\n    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'\n    x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace\n    s:address:array:character <- buffer-to-array x:address:buffer\n    1:array:character/raw <- copy s:address:array:character/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    1 <- 1   # length\n    2 <- 97  # contents\n    3 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe buffer-append-handles-backspace
@@ -8,7 +8,7 @@ after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: buffer-append-handles-backspace
  101 run: run [
-    new-default-space
+    local-scope
     x:address:buffer <- new-buffer 3:literal
     x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
     x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
@@ -16,7 +16,7 @@ schedule: buffer-append-handles-backspace
     s:address:array:character <- buffer-to-array x:address:buffer
     1:array:character/raw <- copy s:address:array:character/deref
   ]
-parse: instruction: new-default-space
+parse: instruction: local-scope
 parse: instruction: new-buffer
 parse:   ingredient: {name: "3", properties: ["3": "literal"]}
 parse:   product: {name: "x", properties: ["x": "address":"buffer"]}
@@ -42,18 +42,18 @@ parse:   product: {name: "1", properties: ["1": "array":"character", "raw": ]}
 name: assign x 1
 name: assign s 2
 after-brace: recipe run1001
-after-brace: new-default-space ...
+after-brace: local-scope ...
 after-brace: new-buffer ...
 after-brace: buffer-append ...
 after-brace: buffer-append ...
 after-brace: buffer-append ...
 after-brace: buffer-to-array ...
 after-brace: copy ...
- 101 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 101 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1000
  101 run: x:address:buffer <- new-buffer 3:literal
- 102 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1004
  102 run: result:address:buffer <- new buffer:type
@@ -93,7 +93,7 @@ after-brace: copy ...
 9999 mem: storing 1011 in location 1002
  101 run: x:address:buffer <- buffer-append x:address:buffer, 97:literal
 9999 mem: location 1002 is 1011
- 102 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
 9999 mem: new alloc: 1017
  102 run: in:address:buffer <- next-ingredient 
@@ -115,43 +115,42 @@ after-brace: copy ...
 9999 run: jumping to instruction 12
  102 run: full?:boolean <- buffer-full? in:address:buffer
 9999 mem: location 1019 is 1011
- 103 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
-9999 mem: new alloc: 1027
  103 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1011 in location 1029
+9999 mem: storing 1011 in location 1006
  103 run: len:number <- get in:address:buffer/deref, length:offset
-9999 mem: location 1029 is 1011
+9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1012 is 1013
-9999 mem: location 1029 is 1011
+9999 mem: location 1006 is 1011
 9999 run: address to copy is 1011
 9999 run: its type is number
 9999 mem: location 1011 is 0
-9999 mem: storing 0 in location 1030
+9999 mem: storing 0 in location 1007
  103 run: s:address:array:character <- get in:address:buffer/deref, data:offset
-9999 mem: location 1029 is 1011
+9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1012 is 1013
-9999 mem: location 1029 is 1011
+9999 mem: location 1006 is 1011
 9999 run: address to copy is 1012
 9999 run: its type is address
 9999 mem: location 1012 is 1013
-9999 mem: storing 1013 in location 1031
+9999 mem: storing 1013 in location 1008
  103 run: capacity:number <- length s:address:array:character/deref
-9999 mem: location 1031 is 1013
+9999 mem: location 1008 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1014 is 0
 9999 mem: location 1015 is 0
 9999 mem: location 1016 is 0
-9999 mem: location 1031 is 1013
-9999 mem: storing 3 in location 1032
+9999 mem: location 1008 is 1013
+9999 mem: storing 3 in location 1009
  103 run: result:boolean <- greater-or-equal len:number, capacity:number
-9999 mem: location 1030 is 0
-9999 mem: location 1032 is 3
-9999 mem: storing 0 in location 1033
+9999 mem: location 1007 is 0
+9999 mem: location 1009 is 3
+9999 mem: storing 0 in location 1010
  103 run: reply result:boolean
-9999 mem: location 1033 is 0
+9999 mem: location 1010 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1024
  102 run: break-unless full?:boolean, 
@@ -193,229 +192,225 @@ after-brace: copy ...
 9999 mem: storing 1011 in location 1002
  101 run: x:address:buffer <- buffer-append x:address:buffer, 98:literal
 9999 mem: location 1002 is 1011
- 102 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
-9999 mem: new alloc: 1034
  102 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1011 in location 1036
+9999 mem: storing 1011 in location 1019
  102 run: c:character <- next-ingredient 
-9999 mem: storing 98 in location 1037
+9999 mem: storing 98 in location 1020
  102 run: len:address:number <- get-address in:address:buffer/deref, length:offset
-9999 mem: location 1036 is 1011
+9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
-9999 mem: location 1036 is 1011
+9999 mem: location 1019 is 1011
 9999 run: address to copy is 1011
-9999 mem: storing 1011 in location 1038
+9999 mem: storing 1011 in location 1021
  102 run: backspace?:boolean <- equal c:character, 8:literal/backspace
-9999 mem: location 1037 is 98
-9999 mem: storing 0 in location 1039
+9999 mem: location 1020 is 98
+9999 mem: storing 0 in location 1022
  102 run: break-unless backspace?:boolean, 
-9999 mem: location 1039 is 0
+9999 mem: location 1022 is 0
 9999 run: jumping to instruction 12
  102 run: full?:boolean <- buffer-full? in:address:buffer
-9999 mem: location 1036 is 1011
- 103 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+9999 mem: location 1019 is 1011
+ 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
-9999 mem: new alloc: 1044
  103 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1011 in location 1046
+9999 mem: storing 1011 in location 1006
  103 run: len:number <- get in:address:buffer/deref, length:offset
-9999 mem: location 1046 is 1011
+9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
-9999 mem: location 1046 is 1011
+9999 mem: location 1006 is 1011
 9999 run: address to copy is 1011
 9999 run: its type is number
 9999 mem: location 1011 is 1
-9999 mem: storing 1 in location 1047
+9999 mem: storing 1 in location 1007
  103 run: s:address:array:character <- get in:address:buffer/deref, data:offset
-9999 mem: location 1046 is 1011
+9999 mem: location 1006 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
-9999 mem: location 1046 is 1011
+9999 mem: location 1006 is 1011
 9999 run: address to copy is 1012
 9999 run: its type is address
 9999 mem: location 1012 is 1013
-9999 mem: storing 1013 in location 1048
+9999 mem: storing 1013 in location 1008
  103 run: capacity:number <- length s:address:array:character/deref
-9999 mem: location 1048 is 1013
+9999 mem: location 1008 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1014 is 97
 9999 mem: location 1015 is 0
 9999 mem: location 1016 is 0
-9999 mem: location 1048 is 1013
-9999 mem: storing 3 in location 1049
+9999 mem: location 1008 is 1013
+9999 mem: storing 3 in location 1009
  103 run: result:boolean <- greater-or-equal len:number, capacity:number
-9999 mem: location 1047 is 1
-9999 mem: location 1049 is 3
-9999 mem: storing 0 in location 1050
+9999 mem: location 1007 is 1
+9999 mem: location 1009 is 3
+9999 mem: storing 0 in location 1010
  103 run: reply result:boolean
-9999 mem: location 1050 is 0
+9999 mem: location 1010 is 0
 9999 run: result 0 is 0
-9999 mem: storing 0 in location 1041
+9999 mem: storing 0 in location 1024
  102 run: break-unless full?:boolean, 
-9999 mem: location 1041 is 0
+9999 mem: location 1024 is 0
 9999 run: jumping to instruction 17
  102 run: s:address:array:character <- get in:address:buffer/deref, data:offset
-9999 mem: location 1036 is 1011
+9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
-9999 mem: location 1036 is 1011
+9999 mem: location 1019 is 1011
 9999 run: address to copy is 1012
 9999 run: its type is address
 9999 mem: location 1012 is 1013
-9999 mem: storing 1013 in location 1042
+9999 mem: storing 1013 in location 1025
  102 run: dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
-9999 mem: location 1042 is 1013
+9999 mem: location 1025 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1014 is 97
 9999 mem: location 1015 is 0
 9999 mem: location 1016 is 0
-9999 mem: location 1038 is 1011
+9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 1
-9999 mem: location 1042 is 1013
-9999 mem: location 1038 is 1011
+9999 mem: location 1025 is 1013
+9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 1
-9999 mem: storing 1015 in location 1043
+9999 mem: storing 1015 in location 1026
  102 run: dest:address:character/deref <- copy c:character
-9999 mem: location 1037 is 98
-9999 mem: location 1043 is 1015
+9999 mem: location 1020 is 98
+9999 mem: location 1026 is 1015
 9999 mem: storing 98 in location 1015
  102 run: len:address:number/deref <- add len:address:number/deref, 1:literal
-9999 mem: location 1038 is 1011
+9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 1
-9999 mem: location 1038 is 1011
+9999 mem: location 1021 is 1011
 9999 mem: storing 2 in location 1011
  102 run: reply in:address:buffer/same-as-ingredient:0
-9999 mem: location 1036 is 1011
+9999 mem: location 1019 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
  101 run: x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace
 9999 mem: location 1002 is 1011
- 102 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
-9999 mem: new alloc: 1051
  102 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1011 in location 1053
+9999 mem: storing 1011 in location 1019
  102 run: c:character <- next-ingredient 
-9999 mem: storing 8 in location 1054
+9999 mem: storing 8 in location 1020
  102 run: len:address:number <- get-address in:address:buffer/deref, length:offset
-9999 mem: location 1053 is 1011
+9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 2
 9999 mem: location 1012 is 1013
-9999 mem: location 1053 is 1011
+9999 mem: location 1019 is 1011
 9999 run: address to copy is 1011
-9999 mem: storing 1011 in location 1055
+9999 mem: storing 1011 in location 1021
  102 run: backspace?:boolean <- equal c:character, 8:literal/backspace
-9999 mem: location 1054 is 8
-9999 mem: storing 1 in location 1056
+9999 mem: location 1020 is 8
+9999 mem: storing 1 in location 1022
  102 run: break-unless backspace?:boolean, 
-9999 mem: location 1056 is 1
+9999 mem: location 1022 is 1
 9999 run: jump-unless fell through
  102 run: empty?:boolean <- lesser-or-equal len:address:number/deref, 0:literal
-9999 mem: location 1055 is 1011
+9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 2
-9999 mem: storing 0 in location 1057
+9999 mem: storing 0 in location 1023
  102 run: jump-unless empty?:boolean, 1:offset
-9999 mem: location 1057 is 0
+9999 mem: location 1023 is 0
 9999 run: jumping to instruction 10
  102 run: len:address:number/deref <- subtract len:address:number/deref, 1:literal
-9999 mem: location 1055 is 1011
+9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 2
-9999 mem: location 1055 is 1011
+9999 mem: location 1021 is 1011
 9999 mem: storing 1 in location 1011
  102 run: reply in:address:buffer/same-as-ingredient:0
-9999 mem: location 1053 is 1011
+9999 mem: location 1019 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
  101 run: s:address:array:character <- buffer-to-array x:address:buffer
 9999 mem: location 1002 is 1011
- 102 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
-9999 mem: new alloc: 1061
  102 run: in:address:buffer <- next-ingredient 
-9999 mem: storing 1011 in location 1063
+9999 mem: storing 1011 in location 1019
  102 run: break-if in:address:buffer, 
-9999 mem: location 1063 is 1011
+9999 mem: location 1019 is 1011
 9999 run: jumping to instruction 5
  102 run: len:number <- get in:address:buffer/deref, length:offset
-9999 mem: location 1063 is 1011
+9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
-9999 mem: location 1063 is 1011
+9999 mem: location 1019 is 1011
 9999 run: address to copy is 1011
 9999 run: its type is number
 9999 mem: location 1011 is 1
-9999 mem: storing 1 in location 1064
+9999 mem: storing 1 in location 1020
  102 run: s:address:array:character <- get in:address:buffer/deref, data:offset
-9999 mem: location 1063 is 1011
+9999 mem: location 1019 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1012 is 1013
-9999 mem: location 1063 is 1011
+9999 mem: location 1019 is 1011
 9999 run: address to copy is 1012
 9999 run: its type is address
 9999 mem: location 1012 is 1013
-9999 mem: storing 1013 in location 1065
+9999 mem: storing 1013 in location 1021
  102 run: result:address:array:character <- new character:type, len:number
-9999 mem: location 1064 is 1
+9999 mem: location 1020 is 1
 9999 mem: array size is 1
-9999 mem: new alloc: 1071
-9999 mem: storing 1071 in location 1066
+9999 mem: new alloc: 1027
+9999 mem: storing 1027 in location 1022
  102 run: i:number <- copy 0:literal
-9999 mem: storing 0 in location 1067
+9999 mem: storing 0 in location 1023
  102 run: done?:boolean <- greater-or-equal i:number, len:number
-9999 mem: location 1067 is 0
-9999 mem: location 1064 is 1
-9999 mem: storing 0 in location 1068
+9999 mem: location 1023 is 0
+9999 mem: location 1020 is 1
+9999 mem: storing 0 in location 1024
  102 run: break-if done?:boolean, 
-9999 mem: location 1068 is 0
+9999 mem: location 1024 is 0
 9999 run: jump-if fell through
  102 run: src:character <- index s:address:array:character/deref, i:number
-9999 mem: location 1065 is 1013
+9999 mem: location 1021 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1014 is 97
 9999 mem: location 1015 is 98
 9999 mem: location 1016 is 0
-9999 mem: location 1067 is 0
-9999 mem: location 1065 is 1013
-9999 mem: location 1067 is 0
+9999 mem: location 1023 is 0
+9999 mem: location 1021 is 1013
+9999 mem: location 1023 is 0
 9999 run: address to copy is 1014
 9999 run: its type is character
 9999 mem: location 1014 is 97
-9999 mem: storing 97 in location 1069
+9999 mem: storing 97 in location 1025
  102 run: dest:address:character <- index-address result:address:array:character/deref, i:number
-9999 mem: location 1066 is 1071
-9999 mem: location 1071 is 1
-9999 mem: location 1072 is 0
-9999 mem: location 1067 is 0
-9999 mem: location 1066 is 1071
-9999 mem: location 1067 is 0
-9999 mem: storing 1072 in location 1070
+9999 mem: location 1022 is 1027
+9999 mem: location 1027 is 1
+9999 mem: location 1028 is 0
+9999 mem: location 1023 is 0
+9999 mem: location 1022 is 1027
+9999 mem: location 1023 is 0
+9999 mem: storing 1028 in location 1026
  102 run: dest:address:character/deref <- copy src:character
-9999 mem: location 1069 is 97
-9999 mem: location 1070 is 1072
-9999 mem: storing 97 in location 1072
+9999 mem: location 1025 is 97
+9999 mem: location 1026 is 1028
+9999 mem: storing 97 in location 1028
  102 run: i:number <- add i:number, 1:literal
-9999 mem: location 1067 is 0
-9999 mem: storing 1 in location 1067
+9999 mem: location 1023 is 0
+9999 mem: storing 1 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 11
  102 run: done?:boolean <- greater-or-equal i:number, len:number
-9999 mem: location 1067 is 1
-9999 mem: location 1064 is 1
-9999 mem: storing 1 in location 1068
+9999 mem: location 1023 is 1
+9999 mem: location 1020 is 1
+9999 mem: storing 1 in location 1024
  102 run: break-if done?:boolean, 
-9999 mem: location 1068 is 1
+9999 mem: location 1024 is 1
 9999 run: jumping to instruction 18
  102 run: reply result:address:array:character
-9999 mem: location 1066 is 1071
-9999 run: result 0 is 1071
-9999 mem: storing 1071 in location 1003
+9999 mem: location 1022 is 1027
+9999 run: result 0 is 1027
+9999 mem: storing 1027 in location 1003
  101 run: 1:array:character/raw <- copy s:address:array:character/deref
-9999 mem: location 1003 is 1071
-9999 mem: location 1071 is 1
-9999 mem: location 1072 is 97
+9999 mem: location 1003 is 1027
+9999 mem: location 1027 is 1
+9999 mem: location 1028 is 97
 9999 mem: storing 1 in location 1
 9999 mem: storing 97 in location 2
  100 run: memory-should-contain [

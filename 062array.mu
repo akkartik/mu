@@ -13,7 +13,7 @@ scenario array-from-args [
 
 # create an array out of a list of scalar args
 recipe new-array [
-  new-default-space
+  local-scope
   capacity:number <- copy 0:literal
   {
     # while read curr-value

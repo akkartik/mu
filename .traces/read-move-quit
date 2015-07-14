@@ -12,7 +12,7 @@ after-brace: trace-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: read-move-quit
  101 run: screen:address <- new-fake-screen 20:literal/width, 2:literal/height
- 102 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
 9999 mem: new alloc: 1000
  102 run: result:address:screen <- new screen:type
@@ -94,7 +94,7 @@ schedule: read-move-quit
 9999 mem: storing 1014 in location 1013
  102 run: clear-screen result:address:screen
 9999 mem: location 1002 is 1009
- 103 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1095
  103 run: x:address:screen <- next-ingredient 
@@ -5076,7 +5076,7 @@ after-brace: equal ...
 after-brace: assert ...
 after-brace: trace ...
  101 run: 1:address:channel <- new-channel 2:literal
- 102 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1106
  102 run: result:address:channel <- new channel:type
@@ -5136,80 +5136,79 @@ after-brace: trace ...
 9999 mem: location 2 is 2
 9999 run: waiting for routine 2
 schedule: read-move
- 101 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 101 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
-9999 mem: new alloc: 101000
  101 run: stdin:address:channel <- next-ingredient 
-9999 mem: storing 1113 in location 101002
+9999 mem: storing 1113 in location 1002
  101 run: screen:address <- next-ingredient 
-9999 mem: storing 1009 in location 101003
+9999 mem: storing 1009 in location 1003
  101 run: from-file:number, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
-9999 mem: location 101002 is 1113
-9999 mem: location 101003 is 1009
- 102 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+9999 mem: location 1002 is 1113
+9999 mem: location 1003 is 1009
+ 102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 11
-9999 mem: new alloc: 101009
+9999 mem: new alloc: 101000
  102 run: stdin:address:channel <- next-ingredient 
-9999 mem: storing 1113 in location 101011
+9999 mem: storing 1113 in location 101002
  102 run: screen:address <- next-ingredient 
-9999 mem: storing 1009 in location 101012
+9999 mem: storing 1009 in location 101003
  102 run: c:character, stdin:address:channel <- read stdin:address:channel
-9999 mem: location 101011 is 1113
- 103 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+9999 mem: location 101002 is 1113
+ 103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
-9999 mem: new alloc: 101021
+9999 mem: new alloc: 101012
  103 run: chan:address:channel <- next-ingredient 
-9999 mem: storing 1113 in location 101023
+9999 mem: storing 1113 in location 101014
  103 run: empty:boolean <- channel-empty? chan:address:channel
-9999 mem: location 101023 is 1113
- 104 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+9999 mem: location 101014 is 1113
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 5
-9999 mem: new alloc: 101031
+9999 mem: new alloc: 101022
  104 run: chan:address:channel <- next-ingredient 
-9999 mem: storing 1113 in location 101033
+9999 mem: storing 1113 in location 101024
  104 run: full:number <- get chan:address:channel/deref, first-full:offset
-9999 mem: location 101033 is 1113
+9999 mem: location 101024 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 1114 is 0
 9999 mem: location 1115 is 1116
-9999 mem: location 101033 is 1113
+9999 mem: location 101024 is 1113
 9999 run: address to copy is 1113
 9999 run: its type is number
 9999 mem: location 1113 is 0
-9999 mem: storing 0 in location 101034
+9999 mem: storing 0 in location 101025
  104 run: free:number <- get chan:address:channel/deref, first-free:offset
-9999 mem: location 101033 is 1113
+9999 mem: location 101024 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 1114 is 0
 9999 mem: location 1115 is 1116
-9999 mem: location 101033 is 1113
+9999 mem: location 101024 is 1113
 9999 run: address to copy is 1114
 9999 run: its type is number
 9999 mem: location 1114 is 0
-9999 mem: storing 0 in location 101035
+9999 mem: storing 0 in location 101026
  104 run: result:boolean <- equal full:number, free:number
-9999 mem: location 101034 is 0
-9999 mem: location 101035 is 0
-9999 mem: storing 1 in location 101036
+9999 mem: location 101025 is 0
+9999 mem: location 101026 is 0
+9999 mem: storing 1 in location 101027
  104 run: reply result:boolean
-9999 mem: location 101036 is 1
+9999 mem: location 101027 is 1
 9999 run: result 0 is 1
-9999 mem: storing 1 in location 101024
+9999 mem: storing 1 in location 101015
  103 run: break-unless empty:boolean, 
-9999 mem: location 101024 is 1
+9999 mem: location 101015 is 1
 9999 run: jump-unless fell through
  103 run: free-address:address:number <- get-address chan:address:channel/deref, first-free:offset
-9999 mem: location 101023 is 1113
+9999 mem: location 101014 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 1114 is 0
 9999 mem: location 1115 is 1116
-9999 mem: location 101023 is 1113
+9999 mem: location 101014 is 1113
 9999 run: address to copy is 1114
-9999 mem: storing 1114 in location 101025
+9999 mem: storing 1114 in location 101016
  103 run: wait-for-location free-address:address:number/deref
-9999 mem: location 101025 is 1114
+9999 mem: location 101016 is 1114
 9999 mem: location 1114 is 0
-9999 mem: location 101025 is 1114
+9999 mem: location 101016 is 1114
 9999 run: waiting for location 1114 to change from 0
 schedule: waking up routine 1
 schedule: run1001/read-move-quit
@@ -5224,147 +5223,146 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
 9999 mem: location 4 is 1
  103 run: 1:address:channel <- write 1:address:channel, 113:literal
 9999 mem: location 1 is 1113
- 104 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+ 104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
-9999 mem: new alloc: 1120
  104 run: chan:address:channel <- next-ingredient 
-9999 mem: storing 1113 in location 1122
+9999 mem: storing 1113 in location 1097
  104 run: val:location <- next-ingredient 
-9999 mem: storing 113 in location 1123
+9999 mem: storing 113 in location 1098
  104 run: full:boolean <- channel-full? chan:address:channel
-9999 mem: location 1122 is 1113
- 105 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+9999 mem: location 1097 is 1113
+ 105 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
-9999 mem: new alloc: 1131
+9999 mem: new alloc: 1120
  105 run: chan:address:channel <- next-ingredient 
-9999 mem: storing 1113 in location 1133
+9999 mem: storing 1113 in location 1122
  105 run: tmp:number <- get chan:address:channel/deref, first-free:offset
-9999 mem: location 1133 is 1113
+9999 mem: location 1122 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 1114 is 0
 9999 mem: location 1115 is 1116
-9999 mem: location 1133 is 1113
+9999 mem: location 1122 is 1113
 9999 run: address to copy is 1114
 9999 run: its type is number
 9999 mem: location 1114 is 0
-9999 mem: storing 0 in location 1134
+9999 mem: storing 0 in location 1123
  105 run: tmp:number <- add tmp:number, 1:literal
-9999 mem: location 1134 is 0
-9999 mem: storing 1 in location 1134
+9999 mem: location 1123 is 0
+9999 mem: storing 1 in location 1123
  105 run: len:number <- channel-capacity chan:address:channel
-9999 mem: location 1133 is 1113
- 106 run: default-space:address:array:location <- new-default-space location:type, number-of-locals:literal
+9999 mem: location 1122 is 1113
+ 106 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 4
-9999 mem: new alloc: 1139
+9999 mem: new alloc: 1128
  106 run: chan:address:channel <- next-ingredient 
-9999 mem: storing 1113 in location 1141
+9999 mem: storing 1113 in location 1130
  106 run: q:address:array:location <- get chan:address:channel/deref, data:offset
-9999 mem: location 1141 is 1113
+9999 mem: location 1130 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 1114 is 0
 9999 mem: location 1115 is 1116
-9999 mem: location 1141 is 1113
+9999 mem: location 1130 is 1113
 9999 run: address to copy is 1115
 9999 run: its type is address
 9999 mem: location 1115 is 1116
-9999 mem: storing 1116 in location 1142
+9999 mem: storing 1116 in location 1131
  106 run: result:number <- length q:address:array:location/deref
-9999 mem: location 1142 is 1116
+9999 mem: location 1131 is 1116
 9999 mem: location 1116 is 3
 9999 mem: location 1117 is 0
 9999 mem: location 1118 is 0
 9999 mem: location 1119 is 0
-9999 mem: location 1142 is 1116
-9999 mem: storing 3 in location 1143
+9999 mem: location 1131 is 1116
+9999 mem: storing 3 in location 1132
  106 run: reply result:number
-9999 mem: location 1143 is 3
+9999 mem: location 1132 is 3
 9999 run: result 0 is 3
-9999 mem: storing 3 in location 1135
+9999 mem: storing 3 in location 1124
  105 run: at-end?:boolean <- greater-or-equal tmp:number, len:number
-9999 mem: location 1134 is 1
-9999 mem: location 1135 is 3
-9999 mem: storing 0 in location 1136
+9999 mem: location 1123 is 1
+9999 mem: location 1124 is 3
+9999 mem: storing 0 in location 1125
  105 run: break-unless at-end?:boolean, 
-9999 mem: location 1136 is 0
+9999 mem: location 1125 is 0
 9999 run: jumping to instruction 9
  105 run: full:number <- get chan:address:channel/deref, first-full:offset
-9999 mem: location 1133 is 1113
+9999 mem: location 1122 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 1114 is 0
 9999 mem: location 1115 is 1116
-9999 mem: location 1133 is 1113
+9999 mem: location 1122 is 1113
 9999 run: address to copy is 1113
 9999 run: its type is number
 9999 mem: location 1113 is 0
-9999 mem: storing 0 in location 1137
+9999 mem: storing 0 in location 1126
  105 run: result:boolean <- equal full:number, tmp:number
-9999 mem: location 1137 is 0
-9999 mem: location 1134 is 1
-9999 mem: storing 0 in location 1138
+9999 mem: location 1126 is 0
+9999 mem: location 1123 is 1
+9999 mem: storing 0 in location 1127
  105 run: reply result:boolean
-9999 mem: location 1138 is 0
+9999 mem: location 1127 is 0
 9999 run: result 0 is 0
-9999 mem: storing 0 in location 1124
+9999 mem: storing 0 in location 1099
  104 run: break-unless full:boolean, 
-9999 mem: location 1124 is 0
+9999 mem: location 1099 is 0
 9999 run: jumping to instruction 8
  104 run: circular-buffer:address:array:location <- get chan:address:channel/deref, data:offset
-9999 mem: location 1122 is 1113
+9999 mem: location 1097 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 1114 is 0
 9999 mem: location 1115 is 1116
-9999 mem: location 1122 is 1113
+9999 mem: location 1097 is 1113
 9999 run: address to copy is 1115
 9999 run: its type is address
 9999 mem: location 1115 is 1116
-9999 mem: storing 1116 in location 1126
+9999 mem: storing 1116 in location 1101
  104 run: free:address:number <- get-address chan:address:channel/deref, first-free:offset
-9999 mem: location 1122 is 1113
+9999 mem: location 1097 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 1114 is 0
 9999 mem: location 1115 is 1116
-9999 mem: location 1122 is 1113
+9999 mem: location 1097 is 1113
 9999 run: address to copy is 1114
-9999 mem: storing 1114 in location 1127
+9999 mem: storing 1114 in location 1102
  104 run: dest:address:location <- index-address circular-buffer:address:array:location/deref, free:address:number/deref
-9999 mem: location 1126 is 1116
+9999 mem: location 1101 is 1116
 9999 mem: location 1116 is 3
 9999 mem: location 1117 is 0
 9999 mem: location 1118 is 0
 9999 mem: location 1119 is 0
-9999 mem: location 1127 is 1114
+9999 mem: location 1102 is 1114
 9999 mem: location 1114 is 0
-9999 mem: location 1126 is 1116
-9999 mem: location 1127 is 1114
+9999 mem: location 1101 is 1116
+9999 mem: location 1102 is 1114
 9999 mem: location 1114 is 0
-9999 mem: storing 1117 in location 1128
+9999 mem: storing 1117 in location 1103
  104 run: dest:address:location/deref <- copy val:location
-9999 mem: location 1123 is 113
-9999 mem: location 1128 is 1117
+9999 mem: location 1098 is 113
+9999 mem: location 1103 is 1117
 9999 mem: storing 113 in location 1117
  104 run: free:address:number/deref <- add free:address:number/deref, 1:literal
-9999 mem: location 1127 is 1114
+9999 mem: location 1102 is 1114
 9999 mem: location 1114 is 0
-9999 mem: location 1127 is 1114
+9999 mem: location 1102 is 1114
 9999 mem: storing 1 in location 1114
  104 run: len:number <- length circular-buffer:address:array:location/deref
-9999 mem: location 1126 is 1116
+9999 mem: location 1101 is 1116
 9999 mem: location 1116 is 3
 9999 mem: location 1117 is 113
 9999 mem: location 1118 is 0
 9999 mem: location 1119 is 0
-9999 mem: location 1126 is 1116
-9999 mem: storing 3 in location 1129
+9999 mem: location 1101 is 1116
+9999 mem: storing 3 in location 1104
  104 run: at-end?:boolean <- greater-or-equal free:address:number/deref, len:number
-9999 mem: location 1127 is 1114
+9999 mem: location 1102 is 1114
 9999 mem: location 1114 is 1
-9999 mem: location 1129 is 3
-9999 mem: storing 0 in location 1130
+9999 mem: location 1104 is 3
+9999 mem: storing 0 in location 1105
  104 run: break-unless at-end?:boolean, 
-9999 mem: location 1130 is 0
+9999 mem: location 1105 is 0
 9999 run: jumping to instruction 19
  104 run: reply chan:address:channel/same-as-ingredient:0
-9999 mem: location 1122 is 1113
+9999 mem: location 1097 is 1113
 9999 run: result 0 is 1113
 9999 mem: storing 1113 in location 1
  103 run: restart 2:number/routine
@@ -5374,91 +5372,91 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
 9999 run: waiting for routine 2
 schedule: read/read-file/read-move
  103 run: full:address:number <- get-address chan:address:channel/deref, first-full:offset
-9999 mem: location 101023 is 1113
+9999 mem: location 101014 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 1114 is 1
 9999 mem: location 1115 is 1116
-9999 mem: location 101023 is 1113
+9999 mem: location 101014 is 1113
 9999 run: address to copy is 1113
-9999 mem: storing 1113 in location 101026
+9999 mem: storing 1113 in location 101017
  103 run: circular-buffer:address:array:location <- get chan:address:channel/deref, data:offset
-9999 mem: location 101023 is 1113
+9999 mem: location 101014 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 1114 is 1
 9999 mem: location 1115 is 1116
-9999 mem: location 101023 is 1113
+9999 mem: location 101014 is 1113
 9999 run: address to copy is 1115
 9999 run: its type is address
 9999 mem: location 1115 is 1116
-9999 mem: storing 1116 in location 101027
+9999 mem: storing 1116 in location 101018
  103 run: result:location <- index circular-buffer:address:array:location/deref, full:address:number/deref
-9999 mem: location 101027 is 1116
+9999 mem: location 101018 is 1116
 9999 mem: location 1116 is 3
 9999 mem: location 1117 is 113
 9999 mem: location 1118 is 0
 9999 mem: location 1119 is 0
-9999 mem: location 101026 is 1113
+9999 mem: location 101017 is 1113
 9999 mem: location 1113 is 0
-9999 mem: location 101027 is 1116
-9999 mem: location 101026 is 1113
+9999 mem: location 101018 is 1116
+9999 mem: location 101017 is 1113
 9999 mem: location 1113 is 0
 9999 run: address to copy is 1117
 9999 run: its type is number
 9999 mem: location 1117 is 113
-9999 mem: storing 113 in location 101028
+9999 mem: storing 113 in location 101019
  103 run: full:address:number/deref <- add full:address:number/deref, 1:literal
-9999 mem: location 101026 is 1113
+9999 mem: location 101017 is 1113
 9999 mem: location 1113 is 0
-9999 mem: location 101026 is 1113
+9999 mem: location 101017 is 1113
 9999 mem: storing 1 in location 1113
  103 run: len:number <- length circular-buffer:address:array:location/deref
-9999 mem: location 101027 is 1116
+9999 mem: location 101018 is 1116
 9999 mem: location 1116 is 3
 9999 mem: location 1117 is 113
 9999 mem: location 1118 is 0
 9999 mem: location 1119 is 0
-9999 mem: location 101027 is 1116
-9999 mem: storing 3 in location 101029
+9999 mem: location 101018 is 1116
+9999 mem: storing 3 in location 101020
  103 run: at-end?:boolean <- greater-or-equal full:address:number/deref, len:number
-9999 mem: location 101026 is 1113
+9999 mem: location 101017 is 1113
 9999 mem: location 1113 is 1
-9999 mem: location 101029 is 3
-9999 mem: storing 0 in location 101030
+9999 mem: location 101020 is 3
+9999 mem: storing 0 in location 101021
  103 run: break-unless at-end?:boolean, 
-9999 mem: location 101030 is 0
+9999 mem: location 101021 is 0
 9999 run: jumping to instruction 17
  103 run: reply result:location, chan:address:channel/same-as-ingredient:0
-9999 mem: location 101028 is 113
-9999 mem: location 101023 is 1113
+9999 mem: location 101019 is 113
+9999 mem: location 101014 is 1113
 9999 run: result 0 is 113
 9999 run: result 1 is 1113
-9999 mem: storing 113 in location 101013
-9999 mem: storing 1113 in location 101011
+9999 mem: storing 113 in location 101004
+9999 mem: storing 1113 in location 101002
  102 run: q-pressed?:boolean <- equal c:character, 81:literal
-9999 mem: location 101013 is 113
-9999 mem: storing 0 in location 101014
+9999 mem: location 101004 is 113
+9999 mem: storing 0 in location 101005
  102 run: break-unless q-pressed?:boolean, 
-9999 mem: location 101014 is 0
+9999 mem: location 101005 is 0
 9999 run: jumping to instruction 8
  102 run: q-pressed?:boolean <- equal c:character, 113:literal
-9999 mem: location 101013 is 113
-9999 mem: storing 1 in location 101014
+9999 mem: location 101004 is 113
+9999 mem: storing 1 in location 101005
  102 run: break-unless q-pressed?:boolean, 
-9999 mem: location 101014 is 1
+9999 mem: location 101005 is 1
 9999 run: jump-unless fell through
  102 run: reply 0:literal/dummy, 1:literal/quit, 0:literal/error
 9999 run: result 0 is 0
 9999 run: result 1 is 1
 9999 run: result 2 is 0
-9999 mem: storing 0 in location 101004
-9999 mem: storing 1 in location 101005
-9999 mem: storing 0 in location 101006
+9999 mem: storing 0 in location 1004
+9999 mem: storing 1 in location 1005
+9999 mem: storing 0 in location 1006
  101 run: jump-unless quit?:boolean, 1:offset
-9999 mem: location 101005 is 1
+9999 mem: location 1005 is 1
 9999 run: jump-unless fell through
  101 run: reply 0:literal/dummy, quit?:boolean, error?:boolean
-9999 mem: location 101005 is 1
-9999 mem: location 101006 is 0
+9999 mem: location 1005 is 1
+9999 mem: location 1006 is 0
 schedule: waking up routine 1
 schedule: run1001/read-move-quit
  100 run: 3:number <- routine-state 2:number/id

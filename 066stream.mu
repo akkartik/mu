@@ -5,7 +5,7 @@ container stream [
 ]
 
 recipe new-stream [
-  new-default-space
+  local-scope
   result:address:stream <- new stream:type
   i:address:number <- get-address result:address:stream/deref, index:offset
   i:address:number/deref <- copy 0:literal
@@ -15,7 +15,7 @@ recipe new-stream [
 ]
 
 recipe rewind-stream [
-  new-default-space
+  local-scope
   in:address:stream <- next-ingredient
   x:address:number <- get-address in:address:stream/deref, index:offset
   x:address:number/deref <- copy 0:literal
@@ -23,7 +23,7 @@ recipe rewind-stream [
 ]
 
 recipe read-line [
-  new-default-space
+  local-scope
   in:address:stream <- next-ingredient
   idx:address:number <- get-address in:address:stream/deref, index:offset
   s:address:array:character <- get in:address:stream/deref, data:offset
@@ -34,7 +34,7 @@ recipe read-line [
 ]
 
 recipe end-of-stream? [
-  new-default-space
+  local-scope
   in:address:stream <- next-ingredient
   idx:number <- get in:address:stream/deref, index:offset
   s:address:array:character <- get in:address:stream/deref, data:offset
