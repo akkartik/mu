@@ -7,7 +7,7 @@
 # possibilities.
 
 recipe factorial [
-  default-space:address:array:location <- new location:type, 30:literal
+  new-default-space
   n:number <- next-ingredient
   {
     +base-case
