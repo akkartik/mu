@@ -49,17 +49,12 @@ default_space = 0;
 reagent r = absolutize(x);
 :(code)
 reagent absolutize(reagent x) {
-//?   if (Recipe_ordinal.find("increment-counter") != Recipe_ordinal.end()) //? 1
-//?     cout << "AAA " << "increment-counter/2: " << Recipe[Recipe_ordinal["increment-counter"]].steps.at(2).products.at(0).to_string() << '\n'; //? 1
 //?   cout << "absolutize " << x.to_string() << '\n'; //? 4
-//?   cout << is_raw(x) << '\n'; //? 1
   if (is_raw(x) || is_dummy(x)) return x;
-//?   cout << "not raw: " << x.to_string() << '\n'; //? 1
   if (!x.initialized)
     raise << current_instruction().to_string() << ": reagent not initialized: " << x.to_string() << die();
   reagent r = x;
   r.set_value(address(r.value, space_base(r)));
-//?   cout << "after absolutize: " << r.value << '\n'; //? 1
   r.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
   assert(is_raw(r));
   return r;
@@ -127,7 +122,6 @@ long long int address(long long int offset, long long int base) {
   if (x.name == "default-space") {
     assert(scalar(data));
     Current_routine->calls.front().default_space = data.at(0);
-//?     cout << "AAA " << Current_routine->calls.front().default_space << '\n'; //? 1
     return;
   }
 
