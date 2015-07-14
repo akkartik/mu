@@ -9,9 +9,9 @@ recipe main [
   10:number <- copy 5:literal
   20:number <- copy 5:literal
   # actual start of this recipe
+  global-space:address:array:location <- copy 20:literal
   default-space:address:array:location <- copy 10:literal
   1:number <- copy 23:literal
-  global-space:address:array:location <- copy 20:literal
   1:number/space:global <- copy 24:literal
 ]
 +mem: storing 23 in location 12
@@ -32,6 +32,8 @@ global_space = 0;
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "global-space") {
     assert(scalar(data));
+    if (Current_routine->global_space)
+      raise << "routine already has a global-space; you can't over-write your globals";
     Current_routine->global_space = data.at(0);
     return;
   }
@@ -44,11 +46,30 @@ global_space = 0;
     return Current_routine->global_space;
   }
 
+//: for now let's not bother giving global variables names.
+//: don't want to make them too comfortable to use.
+
+:(scenario global_space_with_names)
+% Hide_warnings = true;
+recipe main [
+  global-space:address:array:location <- new location:type, 10:literal
+  x:number <- copy 23:literal
+  1:number/space:global <- copy 24:literal
+]
+# don't warn that we're mixing numeric addresses and names
+$warn: 0
+
+:(after "bool is_numeric_location(const reagent& x)")
+  if (is_global(x)) return false;
+
+//: helpers
+
 :(code)
 bool is_global(const reagent& x) {
+//?   cerr << x.to_string() << '\n'; //? 1
   for (long long int i = /*skip name:type*/1; i < SIZE(x.properties); ++i) {
     if (x.properties.at(i).first == "space")
-      return x.properties.at(i).second.at(0) == "global";
+      return !x.properties.at(i).second.empty() && x.properties.at(i).second.at(0) == "global";
   }
   return false;
 }
