@@ -30,7 +30,7 @@ case REPLY: {
   // just in case 'main' returns a value, drop it for now
   if (Current_routine->calls.empty()) goto stop_running_current_routine;
   const instruction& caller_instruction = current_instruction();
-  // make reply results available to caller
+  // make reply products available to caller
   copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
   // check that any reply ingredients with /same-as-ingredient connect up
   // the corresponding ingredient and product in the caller.
@@ -71,7 +71,7 @@ recipe f [
 //: In mu we'd like to assume that any instruction doesn't modify its
 //: ingredients unless they're also products. The /same-as-ingredient inside
 //: the recipe's 'reply' will help catch accidental misuse of such
-//: 'ingredient-results' (sometimes called in-out parameters in other languages).
+//: 'ingredient-products' (sometimes called in-out parameters in other languages).
 
 :(scenario reply_same_as_ingredient)
 % Hide_warnings = true;

@@ -82,14 +82,14 @@ As a sneak peek, here's how you compute factorial in Mu:
 ![code example](html/factorial.png)
 
 Mu functions or 'recipes' are lists of instructions, one to a line. Each
-instruction operates on some *ingredients* and returns some *results*.
+instruction operates on some *ingredients* and returns some *products*.
 
 ```
-  [results] <- instruction [ingredients]
+  [products] <- instruction [ingredients]
 ```
 
 Result and ingredient *reagents* have to be variables. But you can have any
-number of them. In particular you can have any number of results. For example,
+number of them. In particular you can have any number of products. For example,
 you can perform integer division as follows:
 
 ```
@@ -105,7 +105,7 @@ can be multiple words, like:
 ```
 
 Recipes load their ingredients from their caller using the *next-ingredient*
-instruction, and return results using *reply*.
+instruction, and return products using *reply*.
 
 Try out the factorial program now:
 
@@ -226,7 +226,7 @@ system permits and forces them to use, you'll learn to create new checks that
 make sense for your specific program. If it makes sense to perform different
 checks in different parts of your program, you'll be able to do that.
 
-To summarize: Mu instructions have multiple ingredient and result reagents.
+To summarize: Mu instructions have multiple ingredient and product reagents.
 Values can have multiple rows separated by slashes, and rows can have multiple
 columns separated by colons. The address of a reagent is always in the very
 first column of the first row of its 'table'. You can visualize the last

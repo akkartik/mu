@@ -113,7 +113,7 @@ while (current_step_index() >= SIZE(Current_routine->steps())) {
   Current_routine->calls.pop_front();
   if (Current_routine->calls.empty()) return;
   // Complete Call Fallthrough
-  // todo: no results returned warning
+  // todo: no products returned warning
   ++current_step_index();
 }
 
