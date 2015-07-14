@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - fork.mu</title>
+<title>Mu - global.mu</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v1">
 <meta name="syntax" content="none">
@@ -14,10 +14,9 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .muRecipe { color: #ff8700; }
-.Constant { color: #00a0a0; }
 .Comment { color: #9090ff; }
-.Delimiter { color: #a04060; }
-.muControl { color: #c0a020; }
+.Constant { color: #00a0a0; }
+.Special { color: #ff6060; }
 -->
 </style>
 
@@ -29,21 +28,19 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment"># example program: running multiple routines</span>
+<span class="Comment"># example program: creating and using global variables</span>
 
 <span class="muRecipe">recipe</span> main [
-  start-running thread2:<span class="muRecipe">recipe</span>
-  <span class="Delimiter">{</span>
-    $print <span class="Constant">34:literal</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
+  <span class="Comment"># allocate 5 locations for globals</span>
+  <span class="Constant">global-space</span>:address:array:location<span class="Special"> &lt;- </span>new location:type, <span class="Constant">5:literal</span>
+  <span class="Comment"># read to globals by using /space:global</span>
+  <span class="Special">1:number/space:global</span><span class="Special"> &lt;- </span>copy <span class="Constant">3:literal</span>
+  foo
 ]
 
-<span class="muRecipe">recipe</span> thread2 [
-  <span class="Delimiter">{</span>
-    $print <span class="Constant">35:literal</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
+<span class="muRecipe">recipe</span> foo [
+  <span class="Comment"># ditto for writing to globals</span>
+  $print <span class="Special">1:number/space:global</span>
 ]
 </pre>
 </body>
