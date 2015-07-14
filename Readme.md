@@ -122,7 +122,7 @@ You can also run its unit tests:
 
 Here's what one of the tests inside `factorial.mu` looks like:
 
-![test example](http://i.imgur.com/SiQv9gn.png)
+![test example](html/factorial-test.png)
 
 Every test conceptually spins up a really lightweight virtual machine, so you
 can do things like check the value of specific locations in memory. You can
@@ -130,7 +130,7 @@ also print to screen and check that the screen contains what you expect at the
 end of a test. For example, `chessboard.mu` checks the initial position of a
 game of chess (delimiting the edges of the screen with periods):
 
-![screen test](http://i.imgur.com/ufopuF8.png)
+![screen test](html/chessboard-test.png)
 
 Similarly you can fake the keyboard to pretend someone typed something:
 
