@@ -101,6 +101,53 @@ recipe main [
 :(after "reagent tmp" following "case INDEX:")
 tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
 
+//:: convenience operation to automatically deduce the amount of space to
+//:: allocate in a default space with names
+
+:(scenario new_default_space)
+recipe main [
+  new-default-space
+  x:number <- copy 0:literal
+  y:number <- copy 3:literal
+]
+# allocate space for x and y, as well as the chaining slot at 0
++mem: array size is 3
+
+:(before "End Disqualified Reagents")
+if (x.name == "number-of-locals")
+  x.initialized = true;
+:(before "End is_special_name Cases")
+if (s == "number-of-locals") return true;
+
+:(before "End Rewrite Instruction(curr)")
+// rewrite `new-default-space` to
+//   `default-space:address:array:location <- new location:type, number-of-locals:literal`
+// where N is Name[recipe][""]
+if (curr.name == "new-default-space") {
+  curr.operation = Recipe_ordinal["new"];
+  if (!curr.ingredients.empty())
+    raise << "new-default-space can't take any ingredients\n";
+  curr.ingredients.push_back(reagent("location:type"));
+  curr.ingredients.push_back(reagent("number-of-locals:literal"));
+  if (!curr.products.empty())
+    raise << "new-default-space can't take any results\n";
+  curr.products.push_back(reagent("default-space:address:array:location"));
+}
+:(after "vector<double> read_memory(reagent x)")
+  if (x.name == "number-of-locals") {
+    vector<double> result;
+    result.push_back(Name[Recipe_ordinal[current_recipe_name()]][""]);
+    if (result.back() == 0)
+      raise << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names\n";
+    return result;
+  }
+:(after "void write_memory(reagent x, vector<double> data)")
+  if (x.name == "number-of-locals") {
+    assert(scalar(data));
+    raise << "can't write to special variable number-of-locals\n";
+    return;
+  }
+
 //:: helpers
 
 :(code)
