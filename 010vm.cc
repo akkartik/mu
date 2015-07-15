@@ -270,7 +270,5 @@ void dump_memory() {
   }
 }
 :(before "End Includes")
-#include <map>
-using std::map;
 #include<utility>
 using std::pair;

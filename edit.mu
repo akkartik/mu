@@ -3,13 +3,52 @@
 recipe main [
   local-scope
   open-console
-  initial-recipe:address:array:character <- new [recipe new-add [
-  x:number <- next-ingredient
-  y:number <- next-ingredient
-  z:number <- add x:number, y:number
-  reply z:number
+  initial-recipe:address:array:character <- new [ 
+# return true if a list of numbers contains the pattern 1, 5, 3
+recipe check [
+  default-space:address:array:location <- new location:type, 30:literal
+  state:number <- copy 0:literal
+  {
+    +next-number
+    curr:number, found?:boolean <- next-ingredient
+    break-unless found?:boolean
+    # if curr is 1, state = 1
+    {
+      state1:boolean <- equal curr:number, 1:literal
+      break-unless state1:boolean
+      state:number <- copy 1:literal
+      loop +next-number:label
+    }
+    # if state is 1 and curr is 5, state = 2
+    {
+      state-is-1?:boolean <- equal state:number, 1:literal
+      break-unless state-is-1?:boolean
+      state2:boolean <- equal curr:number, 5:literal
+      break-unless state2:boolean
+      state:number <- copy 2:literal
+      loop +next-number:label
+    }
+    # if state is 2 and curr is 3, return true
+    {
+      state-is-2?:boolean <- equal state:number, 2:literal
+      break-unless state-is-2?:boolean
+      state3:boolean <- equal curr:number, 3:literal
+      break-unless state3:boolean
+      reply 1:literal/found
+    }
+    # otherwise reset state
+    #state:number <- copy 0:literal
+    loop
+  }
+  reply 0:literal/not-found
 ]]
-  initial-sandbox:address:array:character <- new [new-add 2:literal, 3:literal]
+#?   initial-recipe:address:array:character <- new [recipe new-add [
+#?   x:number <- next-ingredient
+#?   y:number <- next-ingredient
+#?   z:number <- add x:number, y:number
+#?   reply z:number
+#? ]]
+  initial-sandbox:address:array:character <- new []
   env:address:programming-environment-data <- new-programming-environment 0:literal/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
   render-all 0:literal/address, env:address:programming-environment-data
   event-loop 0:literal/screen, 0:literal/console, env:address:programming-environment-data
