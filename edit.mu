@@ -841,20 +841,33 @@ recipe render-all [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
+  screen:address <- render-recipes screen:address, env:address:programming-environment-data
+  screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
-  # render recipes, along with any warnings
+  update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
+  show-screen screen:address
+  reply screen:address/same-as-ingredient:0
+]
+
+recipe render-recipes [
+  local-scope
+  screen:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
+  # render recipes
   left:number <- get recipes:address:editor-data/deref, left:offset
   right:number <- get recipes:address:editor-data/deref, right:offset
   row:number, screen:address <- render screen:address, recipes:address:editor-data
   recipe-warnings:address:array:character <- get env:address:programming-environment-data/deref, recipe-warnings:offset
   {
+    # print any warnings
     break-unless recipe-warnings:address:array:character
     row:number, screen:address <- render-string screen:address, recipe-warnings:address:array:character, left:number, right:number, 1:literal/red, row:number
   }
   {
-    # no warnings? move to next lin
+    # no warnings? move to next line
     break-if recipe-warnings:address:array:character
     row:number <- add row:number, 1:literal
   }
@@ -864,7 +877,14 @@ recipe render-all [
   row:number <- add row:number, 1:literal
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
-  # render sandboxes along with warnings for each
+  reply screen:address/same-as-ingredient:0
+]
+
+recipe render-sandbox-side [
+  local-scope
+  screen:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   left:number <- get current-sandbox:address:editor-data/deref, left:offset
   right:number <- get current-sandbox:address:editor-data/deref, right:offset
   row:number, screen:address <- render screen:address, current-sandbox:address:editor-data
@@ -876,8 +896,6 @@ recipe render-all [
   row:number <- add row:number, 1:literal
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
-  update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
-  show-screen screen:address
   reply screen:address/same-as-ingredient:0
 ]
 
