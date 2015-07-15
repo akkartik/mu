@@ -742,7 +742,6 @@ recipe move-cursor-in-editor [
   cursor-row:address:number/deref <- get t:touch-event, row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- get t:touch-event, column:offset
-  render screen:address, editor:address:editor-data
   # gain focus
   reply 1:literal/true
 ]
