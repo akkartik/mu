@@ -50,7 +50,6 @@ recipe check [
 #? ]]
   initial-sandbox:address:array:character <- new []
   env:address:programming-environment-data <- new-programming-environment 0:literal/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
-  render-all 0:literal/address, env:address:programming-environment-data
   event-loop 0:literal/screen, 0:literal/console, env:address:programming-environment-data
 ]
 
@@ -89,8 +88,7 @@ recipe new-programming-environment [
   new-right:number <- add new-left:number, 5:literal
   current-sandbox:address:address:editor-data <- get-address result:address:programming-environment-data/deref, current-sandbox:offset
   current-sandbox:address:address:editor-data/deref <- new-editor initial-sandbox-contents:address:array:character, screen:address, new-left:number, width:number
-  # initialize cursor
-  update-cursor screen:address, recipes:address:address:editor-data/deref, current-sandbox:address:address:editor-data/deref, 0:literal/focus-in-recipes
+  screen:address <- render-all screen:address, result:address:programming-environment-data
   reply result:address:programming-environment-data
 ]
 
@@ -517,7 +515,11 @@ recipe event-loop [
         do-run?:boolean <- equal k:address:number/deref, 65526:literal/F10
         break-unless do-run?:boolean
         run-sandboxes env:address:programming-environment-data
-        jump +continue:label
+        screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data
+        # F10 doesn't mess with the recipe side
+        update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
+        show-screen screen:address
+        loop +next-event:label
       }
     }
     # 'touch' event - send to both editors
@@ -545,7 +547,7 @@ recipe event-loop [
     {
       more-events?:boolean <- has-more-events? console:address
       break-if more-events?:boolean
-      render-all screen:address, env:address:programming-environment-data
+      render-minimal screen:address, env:address:programming-environment-data
     }
     loop
   }
@@ -847,6 +849,30 @@ recipe render-all [
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
   update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
+  show-screen screen:address
+  reply screen:address/same-as-ingredient:0
+]
+
+recipe render-minimal [
+  local-scope
+  screen:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
+  current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
+  sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
+  {
+    break-if sandbox-in-focus?:boolean
+    screen:address <- render-recipes screen:address, env:address:programming-environment-data
+    cursor-row:number <- get recipes:address:editor-data/deref, cursor-row:offset
+    cursor-column:number <- get recipes:address:editor-data/deref, cursor-column:offset
+  }
+  {
+    break-unless sandbox-in-focus?:boolean
+    screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data
+    cursor-row:number <- get current-sandbox:address:editor-data/deref, cursor-row:offset
+    cursor-column:number <- get current-sandbox:address:editor-data/deref, cursor-column:offset
+  }
+  move-cursor screen:address, cursor-row:number, cursor-column:number
   show-screen screen:address
   reply screen:address/same-as-ingredient:0
 ]
@@ -1873,7 +1899,7 @@ scenario multiple-editors-cover-only-their-own-areas [
   screen-should-contain [
     .                                         run (F10)          .
     .abc                           ┊def                          .
-    .                              ┊                             .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                              ┊                             .
     .                              ┊                             .
   ]
@@ -1894,8 +1920,7 @@ scenario editor-in-focus-keeps-cursor [
   screen-should-contain [
     .           run (F10)          .
     .␣bc            ┊def           .
-# artifact of fake console: no events = no render
-#   .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
   ]
   # now try typing a letter
