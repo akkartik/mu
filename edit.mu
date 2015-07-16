@@ -542,7 +542,9 @@ recipe event-loop [
       }
     }
     +continue
-    # if no more events currently left to process, render
+    # if no more events currently left to process, render.
+    # we rely on 'render' to update 'before-cursor' on pointer events, but
+    # they won't usually come fast enough to trigger this.
     # todo: test this
     {
       more-events?:boolean <- has-more-events? console:address
