@@ -131,7 +131,7 @@ const scenario* Current_scenario = NULL;
 void run_mu_scenario(const scenario& s) {
   Current_scenario = &s;
   bool not_already_inside_test = !Trace_stream;
-//?   cerr << s.name << '\n'; //? 11
+//?   cerr << s.name << '\n'; //? 12
   if (not_already_inside_test) {
     Trace_file = s.name;
     Trace_stream = new trace_stream;
