@@ -2055,6 +2055,8 @@ recipe run-sandboxes [
     response:address:address:array:character <- get-address curr:address:sandbox-data/deref, response:offset
     warnings:address:address:array:character <- get-address curr:address:sandbox-data/deref, warnings:offset
     response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive data:address:address:array:character/deref
+#?     $print warnings:address:address:array:character/deref, [ ], warnings:address:address:array:character/deref/deref, [ 
+#? ] #? 1
     curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
     loop
   }
@@ -2159,6 +2161,34 @@ scenario run-instruction-and-print-warnings [
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
     .                                                  ┊                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+]
+
+scenario run-instruction-and-print-warnings-only-once [
+  $close-trace  # trace too long for github
+  assume-screen 100:literal/width, 10:literal/height
+  # left editor is empty
+  1:address:array:character <- new []
+  # right editor contains an illegal instruction
+  2:address:array:character <- new [get 1234:number, foo:offset]
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run the code in the editors multiple times
+  assume-console [
+    press 65526  # F10
+    press 65526  # F10
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  # check that screen prints error message just once
+  screen-should-contain [
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊get 1234:number, foo:offset                      .
+    .                                                  ┊unknown element foo in container number          .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]

@@ -30,6 +30,7 @@ case RUN_INTERACTIVE: {
   if (!new_code_pushed_to_stack) {
     products.at(0).push_back(0);
     products.at(1).push_back(warnings_from_trace());
+    clean_up_interactive();
     break;  // done with this instruction
   }
   else {
@@ -49,8 +50,6 @@ bool run_interactive(long long int address) {
     Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
   string command = trim(strip_comments(to_string(address)));
   if (command.empty()) return false;
-//?   tb_shutdown(); //? 1
-//?   cerr << command << '\n'; //? 2
   Recipe.erase(Recipe_ordinal["interactive"]);
   Hide_warnings = true;
   if (!Trace_stream) {
@@ -61,10 +60,7 @@ bool run_interactive(long long int address) {
   // call run(string) but without the scheduling
   load("recipe interactive [\n"+command+"\n]\n");
   transform_all();
-  if (trace_count("warn") > 0) {
-    Hide_warnings = false;
-    return false;
-  }
+  if (trace_count("warn") > 0) return false;
   Running_interactive = true;
   Current_routine->calls.push_front(call(Recipe_ordinal["interactive"]));
   return true;
@@ -76,11 +72,13 @@ if (current_recipe_name() == "interactive") clean_up_interactive();
 if (current_recipe_name() == "interactive") clean_up_interactive();
 :(code)
 void clean_up_interactive() {
-//?   static int foo = 0; //? 1
   Hide_warnings = false;
   Running_interactive = false;
-//?   ++foo; //? 1
-//?   if (foo == 1) tb_init(); //? 1
+  // hack: assume collect_layer isn't set anywhere else
+  if (Trace_stream->collect_layer == "warn") {
+    delete Trace_stream;
+    Trace_stream = NULL;
+  }
 }
 
 :(scenario "run_interactive_returns_stringified_result")
@@ -132,27 +130,20 @@ if (Running_interactive) {
 :(code)
 void record_products(const instruction& instruction, const vector<vector<double> >& products) {
   ostringstream out;
-//?   cerr << current_instruction().to_string() << '\n'; //? 1
   for (long long int i = 0; i < SIZE(products); ++i) {
     // string
     if (i < SIZE(instruction.products)) {
-//?       cerr << "AA\n"; //? 1
-//?       cerr << instruction.products.size() << " vs " << i << '\n'; //? 1
       if (is_string(instruction.products.at(i))) {
-//?         cerr << "BB\n"; //? 1
         assert(scalar(products.at(i)));
         out << to_string(products.at(i).at(0)) << '\n';
         continue;
       }
       // End Record Product Special-cases
     }
-    for (long long int j = 0; j < SIZE(products.at(i)); ++j) {
-//?       cerr << "aa: " << i << ", " << j << ": " << products.at(i).at(j) << '\n'; //? 1
-        out << products.at(i).at(j) << ' ';
-    }
+    for (long long int j = 0; j < SIZE(products.at(i)); ++j)
+      out << products.at(i).at(j) << ' ';
     out << '\n';
   }
-//?   cerr << "aa: {\n" << out.str() << "}\n"; //? 2
   Most_recent_results = out.str();
 }
 :(before "Complete Call Fallthrough")
@@ -194,17 +185,13 @@ string to_string(long long int address) {
     // todo: unicode
     tmp << (char)(int)Memory[curr];
   }
-//?   tb_shutdown(); //? 1
-//?   cerr << tmp.str() << '\n'; //? 1
   return tmp.str();
 }
 
 long long int stringified_value_of_location(long long int address) {
   // convert to string
   ostringstream out;
-//?   trace(1, "foo") << "a: " << address; //? 1
   out << Memory[address];
-//?   trace(1, "foo") << "b: " << Memory[address]; //? 1
   return new_string(out.str());
 }
 
@@ -244,13 +231,6 @@ case RELOAD: {
   Loading_interactive = true;
   Hide_warnings = true;
   load(to_string(ingredients.at(0).at(0)));
-//?   static int foo = 0;
-//?   if (++foo == 2) {
-//?     tb_shutdown();
-//?     cerr << Recipe_ordinal["new-add"] << '\n';
-//?     cerr << Recipe[Recipe_ordinal["new-add"]].steps[2].to_string() << '\n';
-//?     exit(0);
-//?   }
   transform_all();
   Hide_warnings = false;
   Loading_interactive = false;
