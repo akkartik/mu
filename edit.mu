@@ -622,6 +622,20 @@ recipe handle-event [
       move-to-end-of-line editor:address:editor-data
       reply
     }
+    # ctrl-u
+    {
+      ctrl-u?:boolean <- equal c:address:character/deref, 21:literal/ctrl-u
+      break-unless ctrl-u?:boolean
+      delete-to-start-of-line editor:address:editor-data
+      reply
+    }
+    # ctrl-k
+    {
+      ctrl-k?:boolean <- equal c:address:character/deref, 11:literal/ctrl-k
+      break-unless ctrl-k?:boolean
+      delete-to-end-of-line editor:address:editor-data
+      reply
+    }
     # otherwise type it in
     insert-at-cursor editor:address:editor-data, c:address:character/deref, screen:address
     reply
@@ -912,6 +926,62 @@ recipe move-to-end-of-line [
   }
   # move one past end of line
   cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+]
+
+recipe delete-to-start-of-line [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  # compute range to delete
+  init:address:duplex-list <- get editor:address:editor-data/deref, data:offset
+  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
+  start:address:duplex-list <- copy before-cursor:address:address:duplex-list/deref
+  end:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
+  {
+    at-start-of-text?:boolean <- equal start:address:duplex-list, init:address:duplex-list
+    break-if at-start-of-text?:boolean
+    curr:character <- get start:address:duplex-list/deref, value:offset
+    at-start-of-line?:boolean <- equal curr:character, 10:literal/newline
+    break-if at-start-of-line?:boolean
+    start:address:duplex-list <- prev-duplex start:address:duplex-list
+    assert start:address:duplex-list, [delete-to-start-of-line tried to move before start of text]
+    loop
+  }
+  # snip it out
+  start-next:address:address:duplex-list <- get-address start:address:duplex-list/deref, next:offset
+  start-next:address:address:duplex-list/deref <- copy end:address:duplex-list
+  end-prev:address:address:duplex-list <- get-address end:address:duplex-list/deref, prev:offset
+  end-prev:address:address:duplex-list/deref <- copy start:address:duplex-list
+  # adjust cursor
+  before-cursor:address:address:duplex-list/deref <- prev-duplex end:address:duplex-list
+  left:number <- get editor:address:editor-data/deref, left:offset
+  cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+  cursor-column:address:number/deref <- copy left:number
+]
+
+recipe delete-to-end-of-line [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  # compute range to delete
+  start:address:duplex-list <- get editor:address:editor-data/deref, before-cursor:offset
+  start:address:duplex-list <- next-duplex start:address:duplex-list
+  end:address:duplex-list <- next-duplex start:address:duplex-list
+  {
+    at-end-of-text?:boolean <- equal end:address:duplex-list, 0:literal/null
+    break-if at-end-of-text?:boolean
+    curr:character <- get end:address:duplex-list/deref, value:offset
+    at-end-of-line?:boolean <- equal curr:character, 10:literal/newline
+    break-if at-end-of-line?:boolean
+    end:address:duplex-list <- next-duplex end:address:duplex-list
+    loop
+  }
+  # snip it out
+  start-next:address:address:duplex-list <- get-address start:address:duplex-list/deref, next:offset
+  start-next:address:address:duplex-list/deref <- copy end:address:duplex-list
+  {
+    break-unless end:address:duplex-list
+    end-prev:address:address:duplex-list <- get-address end:address:duplex-list/deref, prev:offset
+    end-prev:address:address:duplex-list/deref <- copy start:address:duplex-list
+  }
 ]
 
 recipe render-all [
@@ -2096,6 +2166,102 @@ scenario editor-moves-to-end-of-line-with-end-2 [
   memory-should-contain [
     3 <- 2
     4 <- 3
+  ]
+]
+
+scenario editor-deletes-to-start-of-line-with-ctrl-u [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on second line, press ctrl-u
+  assume-console [
+    left-click 2, 2
+    type [u]  # ctrl-u
+  ]
+  3:event/ctrl-a <- merge 0:literal/text, 21:literal/ctrl-u, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 117:literal/u, 3:event/ctrl-u
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor deletes to start of line
+  screen-should-contain [
+    .          .
+    .123       .
+    .6         .
+    .          .
+  ]
+]
+
+scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on first line (no newline before), press ctrl-u
+  assume-console [
+    left-click 1, 2
+    type [u]  # ctrl-u
+  ]
+  3:event/ctrl-u <- merge 0:literal/text, 21:literal/ctrl-a, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 117:literal/a, 3:event/ctrl-u
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor deletes to start of line
+  screen-should-contain [
+    .          .
+    .3         .
+    .456       .
+    .          .
+  ]
+]
+
+scenario editor-deletes-to-end-of-line-with-ctrl-k [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on first line, press ctrl-k
+  assume-console [
+    left-click 1, 0
+    type [k]  # ctrl-k
+  ]
+  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 107:literal/k, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor deletes to end of line
+  screen-should-contain [
+    .          .
+    .1         .
+    .456       .
+    .          .
+  ]
+]
+
+scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on second line (no newline after), press ctrl-k
+  assume-console [
+    left-click 2, 0
+    type [k]  # ctrl-k
+  ]
+  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 107:literal/k, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor deletes to end of line
+  screen-should-contain [
+    .          .
+    .123       .
+    .4         .
+    .          .
   ]
 ]
 
