@@ -43,11 +43,20 @@ bool Running_interactive = false;
 :(before "End Setup")
 Running_interactive = false;
 :(code)
-// reads a string, tries to call it as code, saving all warnings.
+// reads a string, tries to call it as code (treating it as a test), saving
+// all warnings.
 // returns true if successfully called (no errors found during load and transform)
 bool run_interactive(long long int address) {
   if (Recipe_ordinal.find("interactive") == Recipe_ordinal.end())
     Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
+  // try to sandbox the run as best you can
+  // todo: test this
+  if (!Current_scenario) {
+    // not already sandboxed
+    for (long long int i = 1; i < Reserved_for_tests; ++i)
+      Memory.erase(i);
+    Name[Recipe_ordinal["interactive"]].clear();
+  }
   string command = trim(strip_comments(to_string(address)));
   if (command.empty()) return false;
   Recipe.erase(Recipe_ordinal["interactive"]);
