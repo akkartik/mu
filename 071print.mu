@@ -69,6 +69,33 @@ recipe clear-screen [
   reply x:address:screen/same-as-ingredient:0
 ]
 
+recipe fake-screen-is-clear? [
+  local-scope
+  screen:address:screen <- next-ingredient
+#?   $print [screen: ], screen:address:screen, [ 
+#? ] #? 1
+  reply-unless screen:address:screen, 1:literal/true
+  buf:address:array:screen-cell <- get screen:address:screen/deref, data:offset
+  i:number <- copy 0:literal
+  len:number <- length buf:address:array:screen-cell/deref
+#?   $print len:number, [ 
+#? ] #? 1
+#?   $exit #? 1
+  {
+    done?:boolean <- greater-or-equal i:number, len:number
+    break-if done?:boolean
+    curr:screen-cell <- index buf:address:array:screen-cell/deref, i:number
+    curr-contents:character <- get curr:screen-cell, contents:offset
+    i:number <- add i:number, 1:literal
+#?     $print [char: ], curr-contents:character, [ 
+#? ] #? 1
+    loop-unless curr-contents:character
+    # not 0
+    reply 0:literal/false
+  }
+  reply 1:literal/true
+]
+
 recipe print-character [
   local-scope
   x:address:screen <- next-ingredient
@@ -90,6 +117,8 @@ recipe print-character [
     # if x exists
     # (handle special cases exactly like in the real screen)
     break-unless x:address:screen
+#?     $print [screen ], x:address:screen, [ 
+#? ] #? 1
     row:address:number <- get-address x:address:screen/deref, cursor-row:offset
     column:address:number <- get-address x:address:screen/deref, cursor-column:offset
     width:number <- get x:address:screen/deref, num-columns:offset
@@ -114,8 +143,20 @@ recipe print-character [
     # save character in fake screen
 #?     $print row:address:number/deref, [, ], column:address:number/deref, [ 
 #? ] #? 1
+#?     $print [0: ], x:address:screen, [ row ], row:address:number, [ ], row:address:number/deref, [ col ], column:address:number, [ ], column:address:number/deref, [ 
+#? ] #? 2
+#?     {
+#?       foo:boolean <- greater-than row:address:number/deref, 1000
+#? #?       break-unless foo:boolean
+#?       $print [0: ], x:address:screen, [ row ], row:address:number, [ ], row:address:number/deref, [ col ], column:address:number, [ ], column:address:number/deref, [ 
+#? ] #? 1
+#?     }
     index:number <- multiply row:address:number/deref, width:number
+#?     $print [1: ], index:number, [ 
+#? ] #? 1
     index:number <- add index:number, column:address:number/deref
+#?     $print [2: ], index:number, [ 
+#? ] #? 1
     buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
     # special-case: backspace
     {
@@ -137,6 +178,8 @@ recipe print-character [
       reply x:address:screen/same-as-ingredient:0
     }
 #?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, [ 
+#? ] #? 1
+#?     $print index:number, [ 
 #? ] #? 1
     cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
     cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
