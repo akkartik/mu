@@ -615,6 +615,13 @@ recipe handle-event [
       move-to-start-of-line editor:address:editor-data
       reply
     }
+    # ctrl-e
+    {
+      ctrl-e?:boolean <- equal c:address:character/deref, 5:literal/ctrl-e
+      break-unless ctrl-e?:boolean
+      move-to-end-of-line editor:address:editor-data
+      reply
+    }
     # otherwise type it in
     insert-at-cursor editor:address:editor-data, c:address:character/deref, screen:address
     reply
@@ -738,6 +745,13 @@ recipe handle-event [
     home?:boolean <- equal k:address:number/deref, 65521:literal/home
     break-unless home?:boolean
     move-to-start-of-line editor:address:editor-data
+    reply
+  }
+  # end
+  {
+    end?:boolean <- equal k:address:number/deref, 65520:literal/end
+    break-unless end?:boolean
+    move-to-end-of-line editor:address:editor-data
     reply
   }
 ]
@@ -878,6 +892,26 @@ recipe move-to-start-of-line [
     assert before-cursor:address:address:duplex-list/deref, [move-to-start-of-line tried to move before start of text]
     loop
   }
+]
+
+recipe move-to-end-of-line [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
+  cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+  # while not at start of line, move 
+  {
+    next:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
+    break-unless next:address:duplex-list  # end of text
+    nextc:character <- get next:address:duplex-list/deref, value:offset
+    at-end-of-line?:boolean <- equal nextc:character, 10:literal/newline
+    break-if at-end-of-line?:boolean
+    before-cursor:address:address:duplex-list/deref <- copy next:address:duplex-list
+    cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+    loop
+  }
+  # move one past end of line
+  cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
 ]
 
 recipe render-all [
@@ -1951,6 +1985,117 @@ scenario editor-moves-to-start-of-line-with-home-2 [
   memory-should-contain [
     3 <- 1
     4 <- 0
+  ]
+]
+
+scenario editor-moves-to-start-of-line-with-ctrl-e [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on first line, press ctrl-e
+  assume-console [
+    left-click 1, 1
+    type [e]  # ctrl-e
+  ]
+  3:event/ctrl-e <- merge 0:literal/text, 5:literal/ctrl-e, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 101:literal/e, 3:event/ctrl-e
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number <- get 2:address:editor-data/deref, cursor-row:offset
+    5:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # cursor moves to end of line
+  memory-should-contain [
+    4 <- 1
+    5 <- 3
+  ]
+  # editor inserts future characters at cursor
+  assume-console [
+    type [z]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number <- get 2:address:editor-data/deref, cursor-row:offset
+    5:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    4 <- 1
+    5 <- 4
+  ]
+  screen-should-contain [
+    .          .
+    .123z      .
+    .456       .
+    .          .
+  ]
+]
+
+scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on second line (no newline after), press ctrl-e
+  assume-console [
+    left-click 2, 1
+    type [e]  # ctrl-e
+  ]
+  3:event/ctrl-e <- merge 0:literal/text, 5:literal/ctrl-e, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 101:literal/e, 3:event/ctrl-e
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number <- get 2:address:editor-data/deref, cursor-row:offset
+    5:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # cursor moves to end of line
+  memory-should-contain [
+    4 <- 2
+    5 <- 3
+  ]
+]
+
+scenario editor-moves-to-end-of-line-with-end [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on first line, press 'end'
+  assume-console [
+    left-click 1, 1
+    press 65520  # 'end'
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # cursor moves to end of line
+  memory-should-contain [
+    3 <- 1
+    4 <- 3
+  ]
+]
+
+scenario editor-moves-to-end-of-line-with-end-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on second line (no newline after), press 'end'
+  assume-console [
+    left-click 2, 1
+    press 65520  # 'end'
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # cursor moves to end of line
+  memory-should-contain [
+    3 <- 2
+    4 <- 3
   ]
 ]
 
