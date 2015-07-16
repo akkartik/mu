@@ -963,7 +963,6 @@ recipe delete-to-end-of-line [
   editor:address:editor-data <- next-ingredient
   # compute range to delete
   start:address:duplex-list <- get editor:address:editor-data/deref, before-cursor:offset
-  start:address:duplex-list <- next-duplex start:address:duplex-list
   end:address:duplex-list <- next-duplex start:address:duplex-list
   {
     at-end-of-text?:boolean <- equal end:address:duplex-list, 0:literal/null
@@ -2217,6 +2216,30 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
   ]
 ]
 
+scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start past end of line, press ctrl-u
+  assume-console [
+    left-click 1, 3
+    type [u]  # ctrl-u
+  ]
+  3:event/ctrl-u <- merge 0:literal/text, 21:literal/ctrl-a, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 117:literal/a, 3:event/ctrl-u
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor deletes to start of line
+  screen-should-contain [
+    .          .
+    .          .
+    .456       .
+    .          .
+  ]
+]
+
 scenario editor-deletes-to-end-of-line-with-ctrl-k [
   assume-screen 10:literal/width, 5:literal/height
   1:address:array:character <- new [123
@@ -2224,7 +2247,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
   # start on first line, press ctrl-k
   assume-console [
-    left-click 1, 0
+    left-click 1, 1
     type [k]  # ctrl-k
   ]
   3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
@@ -2248,7 +2271,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
   2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
   # start on second line (no newline after), press ctrl-k
   assume-console [
-    left-click 2, 0
+    left-click 2, 1
     type [k]  # ctrl-k
   ]
   3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
@@ -2261,6 +2284,102 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
     .          .
     .123       .
     .4         .
+    .          .
+  ]
+]
+
+scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start at end of line
+  assume-console [
+    left-click 1, 2
+    type [k]  # ctrl-k
+  ]
+  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 107:literal/k, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor deletes to end of line
+  screen-should-contain [
+    .          .
+    .12        .
+    .456       .
+    .          .
+  ]
+]
+
+scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start past end of line
+  assume-console [
+    left-click 1, 3
+    type [k]  # ctrl-k
+  ]
+  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 107:literal/k, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor deletes to end of line
+  screen-should-contain [
+    .          .
+    .123       .
+    .456       .
+    .          .
+  ]
+]
+
+scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start at end of text
+  assume-console [
+    left-click 2, 2
+    type [k]  # ctrl-k
+  ]
+  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 107:literal/k, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor deletes to end of line
+  screen-should-contain [
+    .          .
+    .123       .
+    .45        .
+    .          .
+  ]
+]
+
+scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start past end of text
+  assume-console [
+    left-click 2, 3
+    type [k]  # ctrl-k
+  ]
+  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 107:literal/k, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  # cursor deletes to end of line
+  screen-should-contain [
+    .          .
+    .123       .
+    .456       .
     .          .
   ]
 ]
