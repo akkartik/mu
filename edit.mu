@@ -596,10 +596,11 @@ recipe handle-event [
   editor:address:editor-data <- next-ingredient
   e:event <- next-ingredient
   reply-unless editor:address:editor-data
-  # typing a character
+  # character
   {
     c:address:character <- maybe-convert e:event, text:variant
     break-unless c:address:character
+    # check for special characters
     # unless it's a backspace
     {
       backspace?:boolean <- equal c:address:character/deref, 8:literal/backspace
@@ -607,10 +608,18 @@ recipe handle-event [
       delete-before-cursor editor:address:editor-data
       reply
     }
+    # ctrl-a
+    {
+      ctrl-a?:boolean <- equal c:address:character/deref, 1:literal/ctrl-a
+      break-unless ctrl-a?:boolean
+      move-to-start-of-line editor:address:editor-data
+      reply
+    }
+    # otherwise type it in
     insert-at-cursor editor:address:editor-data, c:address:character/deref, screen:address
     reply
   }
-  # otherwise it's a special key to control the editor
+  # otherwise it's a special key
   k:address:number <- maybe-convert e:event, keycode:variant
   assert k:address:number, [event was of unknown type; neither keyboard nor mouse]
   d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
@@ -723,6 +732,13 @@ recipe handle-event [
 #? ] #? 1
     cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
     # that's it; render will adjust cursor-column as necessary
+  }
+  # home
+  {
+    home?:boolean <- equal k:address:number/deref, 65521:literal/home
+    break-unless home?:boolean
+    move-to-start-of-line editor:address:editor-data
+    reply
   }
 ]
 
@@ -839,6 +855,29 @@ recipe previous-line-length [
     loop
   }
   reply result:number
+]
+
+recipe move-to-start-of-line [
+  local-scope
+  editor:address:editor-data <- next-ingredient
+  # update cursor column
+  left:number <- get editor:address:editor-data/deref, left:offset
+  cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
+  cursor-column:address:number/deref <- copy left:number
+  # update before-cursor
+  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
+  init:address:duplex-list <- get editor:address:editor-data/deref, data:offset
+  # while not at start of line, move 
+  {
+    at-start-of-text?:boolean <- equal before-cursor:address:address:duplex-list/deref, init:address:duplex-list
+    break-if at-start-of-text?:boolean
+    prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
+    at-start-of-line?:boolean <- equal prev:character, 10:literal/newline
+    break-if at-start-of-line?:boolean
+    before-cursor:address:address:duplex-list/deref <- prev-duplex before-cursor:address:address:duplex-list/deref
+    assert before-cursor:address:address:duplex-list/deref, [move-to-start-of-line tried to move before start of text]
+    loop
+  }
 ]
 
 recipe render-all [
@@ -1820,6 +1859,98 @@ de]
   memory-should-contain [
     3 <- 2
     4 <- 2
+  ]
+]
+
+scenario editor-moves-to-start-of-line-with-ctrl-a [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on second line, press ctrl-a
+  assume-console [
+    left-click 2, 3
+    type [a]  # ctrl-a
+  ]
+  3:event/ctrl-a <- merge 0:literal/text, 1:literal/ctrl-a, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 97:literal/a, 3:event/ctrl-a
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number <- get 2:address:editor-data/deref, cursor-row:offset
+    5:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # cursor moves to start of line
+  memory-should-contain [
+    4 <- 2
+    5 <- 0
+  ]
+]
+
+scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on first line (no newline before), press ctrl-a
+  assume-console [
+    left-click 1, 3
+    type [a]  # ctrl-a
+  ]
+  3:event/ctrl-a <- merge 0:literal/text, 1:literal/ctrl-a, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 97:literal/a, 3:event/ctrl-a
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number <- get 2:address:editor-data/deref, cursor-row:offset
+    5:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # cursor moves to start of line
+  memory-should-contain [
+    4 <- 1
+    5 <- 0
+  ]
+]
+
+scenario editor-moves-to-start-of-line-with-home [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on second line, press 'home'
+  assume-console [
+    left-click 2, 3
+    press 65521  # 'home'
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # cursor moves to start of line
+  memory-should-contain [
+    3 <- 2
+    4 <- 0
+  ]
+]
+
+scenario editor-moves-to-start-of-line-with-home-2 [
+  assume-screen 10:literal/width, 5:literal/height
+  1:address:array:character <- new [123
+456]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # start on first line (no newline before), press 'home'
+  assume-console [
+    left-click 1, 3
+    press 65521  # 'home'
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # cursor moves to start of line
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
   ]
 ]
 
