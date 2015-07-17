@@ -302,7 +302,6 @@ recipe render [
 ]
 
 # row:number, screen:address <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
-# move cursor at start of next line
 # print a string 's' to 'editor' in 'color' starting at 'row'
 # leave cursor at start of next line
 recipe render-string [
@@ -369,74 +368,6 @@ recipe render-string [
     loop
   }
   reply row:number/same-as-ingredient:5, screen:address/same-as-ingredient:0
-]
-
-# row:number, screen:address <- render-screen screen:address, sandbox-screen:address:screen, left:number, right:number, row:number
-# print the fake sandbox screen to 'screen' with appropriate delimiters
-# leave cursor at start of next line
-recipe render-screen [
-  local-scope
-  screen:address <- next-ingredient
-  s:address:screen <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
-  row:number <- next-ingredient
-  row:number <- add row:number, 1:literal
-  reply-unless s:address:screen, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-#?   $start-tracing #? 1
-  # print 'screen:'
-  column:number <- copy left:number
-  move-cursor screen:address, row:number, column:number
-  screen-height:number <- screen-height screen:address
-  header:address:array:character <- new [screen:]
-  row:number <- subtract row:number, 1:literal  # compensate for render-string below
-  row:number <- render-string screen:address, header:address:array:character, left:number, right:number, 245:literal/grey, row:number
-  # start printing s
-  column:number <- copy left:number
-  move-cursor screen:address, row:number, column:number
-  s-width:number <- screen-width s:address:screen
-  s-height:number <- screen-height s:address:screen
-  buf:address:array:screen-cell <- get s:address:screen/deref, data:offset
-  stop-printing:number <- add s-width:number, 3:literal
-  max-column:number <- min stop-printing:number, right:number
-  i:number <- copy 0:literal
-  {
-    done?:boolean <- greater-or-equal i:number, s-height:number
-    break-if done?:boolean
-    done?:boolean <- greater-or-equal row:number, screen-height:number
-    break-if done?:boolean
-    column:number <- copy left:number
-    move-cursor screen:address, row:number, column:number
-    # initial leader for each row: two spaces and a '.'
-    print-character screen:address, 32:literal/space, 245:literal/grey
-    print-character screen:address, 32:literal/space, 245:literal/grey
-    print-character screen:address, 46:literal/full-stop, 245:literal/grey
-    column:number <- add left:number, 3:literal
-    {
-      # print row
-      row-done?:boolean <- greater-than column:number, max-column:number
-      break-if row-done?:boolean
-      curr:screen-cell <- index buf:address:array:screen-cell/deref, i:number
-      print-character screen:address, 32:literal/space
-      column:number <- add column:number, 1:literal
-      i:number <- add i:number, 1:literal
-      loop
-    }
-    # print final '.'
-    print-character screen:address, 46:literal/full-stop, 245:literal/grey
-    column:number <- add column:number, 1:literal
-    {
-      # clear rest of current line
-      line-done?:boolean <- greater-than column:number, right:number
-      break-if line-done?:boolean
-      print-character screen:address, 32:literal/space
-      column:number <- add column:number, 1:literal
-      loop
-    }
-    row:number <- add row:number, 1:literal
-    loop
-  }
-  reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
 ]
 
 recipe clear-line-delimited [
@@ -1130,11 +1061,7 @@ recipe render-sandbox-side [
   row:number <- add row:number, 1:literal
   draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
   sandbox:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
-  $print [ddd ], screen:address, [ 
-]
   row:number, screen:address <- render-sandboxes screen:address, sandbox:address:sandbox-data, left:number, right:number, row:number
-  $print [kkk ], screen:address, [ 
-]
   # clear next line, in case we just processed a backspace
   row:number <- add row:number, 1:literal
   move-cursor screen:address, row:number, left:number
@@ -1159,7 +1086,6 @@ recipe render-sandboxes [
   # render sandbox warnings or response, in that order
   sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
   sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/deref, warnings:offset
-  sandbox-screen:address:screen <- get sandbox:address:sandbox-data/deref, screen:offset
   {
     break-unless sandbox-warnings:address:array:character
     row:number, screen:address <- render-string screen:address, sandbox-warnings:address:array:character, left:number, right:number, 1:literal/red, row:number
@@ -1168,31 +1094,11 @@ recipe render-sandboxes [
     break-if sandbox-warnings:address:array:character
     row:number, screen:address <- render-string screen:address, sandbox-response:address:array:character, left:number, right:number, 245:literal/grey, row:number
   }
-  # render sandbox screen if necessary
-  {
-    empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address:screen
-#?     $print empty-screen?:boolean, [ 
-#? ] #? 1
-    break-if empty-screen?:boolean
-    $print [eee ], screen:address, [ 
-]
-    row:number, screen:address <- render-screen screen:address, sandbox-screen:address:screen, left:number, right:number, row:number
-    $print [fff ], screen:address, [ 
-]
-  }
-  $print [fffa ], screen:address, [ 
-]
   # draw solid line after sandbox
   draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
-  $print [ggg ], screen:address, [ 
-]
   # draw next sandbox
   next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
-  $print [hhh ], screen:address, [ 
-]
   row:number, screen:address <- render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
-  $print [jjj ], screen:address, [ 
-]
   reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
 ]
 
@@ -2604,7 +2510,6 @@ container sandbox-data [
   data:address:array:character
   response:address:array:character
   warnings:address:array:character
-  screen:address:screen
   next-sandbox:address:sandbox-data
 ]
 
@@ -2705,19 +2610,14 @@ recipe run-sandboxes [
     init:address:address:duplex-list <- get-address current-sandbox:address:editor-data/deref, data:offset
     init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
   }
-  # run all sandboxes
+  # rerun other sandboxes
   curr:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
   {
     break-unless curr:address:sandbox-data
     data:address:address:array:character <- get-address curr:address:sandbox-data/deref, data:offset
     response:address:address:array:character <- get-address curr:address:sandbox-data/deref, response:offset
     warnings:address:address:array:character <- get-address curr:address:sandbox-data/deref, warnings:offset
-    fake-screen:address:address:screen <- get-address curr:address:sandbox-data/deref, screen:offset
-    $print [bbb
-]
-    response:address:address:array:character/deref, warnings:address:address:array:character/deref, fake-screen:address:address:screen/deref <- run-interactive data:address:address:array:character/deref
-    $print [ccc
-]
+    response:address:address:array:character/deref, warnings:address:address:array:character/deref <- run-interactive data:address:address:array:character/deref
 #?     $print warnings:address:address:array:character/deref, [ ], warnings:address:address:array:character/deref/deref, [ 
 #? ] #? 1
     curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
@@ -2857,48 +2757,6 @@ scenario run-instruction-and-print-warnings-only-once [
   ]
 ]
 
-scenario run-instruction-can-print-and-render-screen [
-#?   $close-trace  # trace too long for github #? 1
-  assume-screen 100:literal/width, 20:literal/height
-  # left editor is empty
-  1:address:array:character <- new []
-  # right editor contains an illegal instruction
-  2:address:array:character <- new [print-integer screen:address, 4]
-  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
-  # run the code in the editor
-  assume-console [
-    press 65526  # F10
-  ]
-  run [
-  $print [aaa
-]
-    event-loop screen:address, console:address, 3:address:programming-environment-data
-  $print [lll
-]
-  ]
-  # check that it prints a little 5x5 toy screen
-  # hack: screen address is brittle
-  $print [mmm
-]
-  screen-should-contain [
-    .                                                                                 run (F10)          .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊print-integer screen:address, 4                  .
-    .                                                  ┊5557                                             .
-    .                                                  ┊screen:                                          .
-    .                                                  ┊  .4    .                                        .
-    .                                                  ┊  .     .                                        .
-    .                                                  ┊  .     .                                        .
-    .                                                  ┊  .     .                                        .
-    .                                                  ┊  .     .                                        .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
-  ]
-  $print [zzz
-]
-]
-
 recipe editor-contents [
   local-scope
   editor:address:editor-data <- next-ingredient
@@ -2993,16 +2851,10 @@ recipe draw-horizontal [
   {
     continue?:boolean <- lesser-or-equal x:number, right:number  # right is inclusive, to match editor-data semantics
     break-unless continue?:boolean
-#?     $print [aaaa ], screen:address, [ 
-#? ] #? 1
     print-character screen:address, style:character, color:number, bg-color:number
-#?     $print [bbbb ], screen:address, [ 
-#? ] #? 1
     x:number <- add x:number, 1:literal
     loop
   }
-  $print [fffz ], screen:address, [ 
-]
 ]
 
 recipe draw-vertical [

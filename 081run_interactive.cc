@@ -15,10 +15,8 @@ recipe main [
 # result is null
 +mem: storing 0 in location 1
 
-//: run code in 'interactive mode', i.e. with warnings off and return:
-//:   stringified output in case we want to print it to screen
-//:   any warnings encountered
-//:   simulated screen any prints went to
+//: run code in 'interactive mode', i.e. with warnings off, and recording
+//: output in case we want to print it to screen
 :(before "End Primitive Recipe Declarations")
 RUN_INTERACTIVE,
 :(before "End Primitive Recipe Numbers")
@@ -27,12 +25,11 @@ Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
   assert(scalar(ingredients.at(0)));
-  products.resize(3);
+  products.resize(2);
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
   if (!new_code_pushed_to_stack) {
     products.at(0).push_back(0);
     products.at(1).push_back(warnings_from_trace());
-    products.at(2).push_back(0);
     clean_up_interactive();
     break;  // done with this instruction
   }
@@ -43,10 +40,8 @@ case RUN_INTERACTIVE: {
 
 :(before "End Globals")
 bool Running_interactive = false;
-long long int Old_screen = 0;  // we can support one iteration of screen inside screen
 :(before "End Setup")
 Running_interactive = false;
-Old_screen = 0;
 :(code)
 // reads a string, tries to call it as code (treating it as a test), saving
 // all warnings.
@@ -54,8 +49,6 @@ Old_screen = 0;
 bool run_interactive(long long int address) {
   if (Recipe_ordinal.find("interactive") == Recipe_ordinal.end())
     Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
-  Old_screen = Memory[SCREEN];
-  cerr << "save screen: " << Old_screen << '\n'; //? 1
   // try to sandbox the run as best you can
   // todo: test this
   if (!Current_scenario) {
@@ -64,7 +57,6 @@ bool run_interactive(long long int address) {
       Memory.erase(i);
     Name[Recipe_ordinal["interactive"]].clear();
   }
-  Name[Recipe_ordinal["interactive"]]["screen"] = SCREEN;
   string command = trim(strip_comments(to_string(address)));
   if (command.empty()) return false;
   Recipe.erase(Recipe_ordinal["interactive"]);
@@ -75,15 +67,27 @@ bool run_interactive(long long int address) {
     Trace_stream->collect_layer = "warn";
   }
   // call run(string) but without the scheduling
-  load(string("recipe interactive [\n") +
-          "screen:address <- new-fake-screen 5, 5\n" +
-          command + "\n" +
-       "]\n");
+  load("recipe interactive [\n"+command+"\n]\n");
   transform_all();
   if (trace_count("warn") > 0) return false;
   Running_interactive = true;
   Current_routine->calls.push_front(call(Recipe_ordinal["interactive"]));
   return true;
+}
+
+:(after "Starting Reply")
+if (current_recipe_name() == "interactive") clean_up_interactive();
+:(after "Falling Through End Of Recipe")
+if (current_recipe_name() == "interactive") clean_up_interactive();
+:(code)
+void clean_up_interactive() {
+  Hide_warnings = false;
+  Running_interactive = false;
+  // hack: assume collect_layer isn't set anywhere else
+  if (Trace_stream->collect_layer == "warn") {
+    delete Trace_stream;
+    Trace_stream = NULL;
+  }
 }
 
 :(scenario "run_interactive_returns_stringified_result")
@@ -153,49 +157,17 @@ void record_products(const instruction& instruction, const vector<vector<double>
 }
 :(before "Complete Call Fallthrough")
 if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction().products.empty()) {
-  assert(SIZE(current_instruction().products) <= 3);
+  assert(SIZE(current_instruction().products) <= 2);
   // Send the results of the most recently executed instruction, regardless of
   // call depth, to be converted to string and potentially printed to string.
   vector<double> result;
   result.push_back(new_string(Most_recent_results));
   write_memory(current_instruction().products.at(0), result);
-  if (SIZE(current_instruction().products) >= 2) {
+  if (SIZE(current_instruction().products) == 2) {
     vector<double> warnings;
     warnings.push_back(warnings_from_trace());
     write_memory(current_instruction().products.at(1), warnings);
   }
-  if (SIZE(current_instruction().products) >= 3) {
-    vector<double> screen;
-    cerr << "returning screen " << Memory[SCREEN] << '\n'; //? 1
-    screen.push_back(Memory[SCREEN]);
-    write_memory(current_instruction().products.at(2), screen);
-  }
-}
-
-//: clean up reply after we've popped it off the call-stack
-//: however, we need what was on the stack to decide whether to clean up
-:(after "Starting Reply")
-bool must_clean_up_interactive = (current_recipe_name() == "interactive");
-cerr << "reply: " << Memory[SCREEN] << '\n';
-:(after "Falling Through End Of Recipe")
-bool must_clean_up_interactive = (current_recipe_name() == "interactive");
-cerr << "pop: " << Memory[SCREEN] << '\n';
-:(before "End Reply")
-if (must_clean_up_interactive) clean_up_interactive();
-:(before "Complete Call Fallthrough")
-if (must_clean_up_interactive) clean_up_interactive();
-:(code)
-void clean_up_interactive() {
-  Hide_warnings = false;
-  Running_interactive = false;
-  // hack: assume collect_layer isn't set anywhere else
-  if (Trace_stream->collect_layer == "warn") {
-    delete Trace_stream;
-    Trace_stream = NULL;
-  }
-  cerr << "restore screen: " << Old_screen << '\n'; //? 1
-  Memory[SCREEN] = Old_screen;
-  Old_screen = 0;
 }
 
 :(code)
