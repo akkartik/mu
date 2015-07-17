@@ -91,6 +91,8 @@ recipe fake-screen-is-clear? [
 
 recipe print-character [
   local-scope
+#?   $print [--- #? 1
+#? ] #? 1
   x:address:screen <- next-ingredient
   c:character <- next-ingredient
   color:number, color-found?:boolean <- next-ingredient
@@ -105,8 +107,6 @@ recipe print-character [
     break-if bg-color-found?:boolean
     bg-color:number <- copy 0:literal/black
   }
-  screen-width:number <- screen-width x:address:screen
-  screen-height:number <- screen-height x:address:screen
 #?   $print [eee ] #? 1
 #?   $foo #? 1
 #?   trace [app], [print character] #? 1
@@ -114,23 +114,18 @@ recipe print-character [
     # if x exists
     # (handle special cases exactly like in the real screen)
     break-unless x:address:screen
-    row:address:number <- get-address x:address:screen/deref, cursor-row:offset
-#?     $dump row:address:number/deref
-    legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
-    reply-unless legal?:boolean, x:address:screen
-    assert legal?:boolean, [row too small in print-character]
-    legal?:boolean <- lesser-than row:address:number/deref, screen-height:number
-    reply-unless legal?:boolean, x:address:screen
-    assert legal?:boolean, [row too large in print-character]
-    column:address:number <- get-address x:address:screen/deref, cursor-column:offset
-    legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
-    reply-unless legal?:boolean, x:address:screen
-    assert legal?:boolean, [column too small in print-character]
-    legal?:boolean <- lesser-than column:address:number/deref, screen-width:number
-    reply-unless legal?:boolean, x:address:screen
-    assert legal?:boolean, [column too large in print-character]
     width:number <- get x:address:screen/deref, num-columns:offset
     height:number <- get x:address:screen/deref, num-rows:offset
+    row:address:number <- get-address x:address:screen/deref, cursor-row:offset
+#?     legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+#?     reply-unless legal?:boolean, x:address:screen
+#?     legal?:boolean <- lesser-than row:address:number/deref, height:number
+#?     reply-unless legal?:boolean, x:address:screen
+    column:address:number <- get-address x:address:screen/deref, cursor-column:offset
+#?     legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+#?     reply-unless legal?:boolean, x:address:screen
+#?     legal?:boolean <- lesser-than column:address:number/deref, width:number
+#?     reply-unless legal?:boolean, x:address:screen
 #?   $print [fff ] #? 1
 #?   $foo #? 1
     # special-case: newline
@@ -163,6 +158,7 @@ recipe print-character [
     {
       backspace?:boolean <- equal c:character, 8:literal
       break-unless backspace?:boolean
+#?       $print [$$$]  # shouldn't come here #? 1
       {
         # unless cursor is already at left margin
         at-left?:boolean <- lesser-or-equal column:address:number/deref, 0:literal
@@ -183,29 +179,31 @@ recipe print-character [
 #?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, [ 
 #? ] #? 1
     cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
+#?     $dump cursor:address:screen-cell #? 1
 #?     $print [iii ] #? 1
 #?     $foo #? 1
     cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
+#?     $dump cursor-contents:address:character #? 1
 #?     $print [jjj ] #? 1
 #?     $foo #? 1
     cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
-#?     $print [kkk ] #? 1
-#?     $foo #? 1
-#?   $dump cursor-contents:address:character
+#?     $print [kkk ] #? 2
+#?     $foo #? 2
+#?     $dump cursor-color:address:character #? 1
     cursor-contents:address:character/deref <- copy c:character
-#?     $print [lll ] #? 1
-#?     $foo #? 1
-#?     $dump x:address:screen
-#?     $dump buf:address:array:screen-cell
-#?     $dump height:number
-#?     $dump width:number
-#?     $dump row:address:number/deref
-#?     $dump column:address:number/deref
-#?     $dump index:number
-#?     $dump len:number
+#?     $print [lll ] #? 2
+#?     $foo #? 2
+#?     $dump x:address:screen #? 1
+#?     $dump buf:address:array:screen-cell #? 1
+#?     $dump height:number #? 1
+#?     $dump width:number #? 1
+#?     $dump row:address:number/deref #? 1
+#?     $dump column:address:number/deref #? 1
+#?     $dump index:number #? 1
+#?     $dump len:number #? 1
     cursor-color:address:number/deref <- copy color:number
-#?     $print [mmm ] #? 1
-#?     $foo #? 1
+#?     $print [mmm ] #? 2
+#?     $foo #? 2
     # increment column unless it's already all the way to the right
     {
       right:number <- subtract width:number, 1:literal
