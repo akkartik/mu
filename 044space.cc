@@ -178,6 +178,7 @@ void try_reclaim_locals() {
   if (inst.name != "local-scope")
     return;
 //?   cerr << inst.to_string() << '\n'; //? 1
+//?   cerr << current_recipe_name() << ": abandon " << Current_routine->calls.front().default_space << '\n'; //? 1
   abandon(Current_routine->calls.front().default_space,
           /*array length*/1+/*number-of-locals*/Name[r][""]);
 }
