@@ -112,15 +112,17 @@ case GET: {
   assert(is_literal(current_instruction().ingredients.at(1)));
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
-  assert(offset >= 0);
-  assert(offset < size_of(base));
   long long int src = base_address;
   for (long long int i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements.at(i));
   }
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src;
   assert(Type[base_type].kind == container);
-  assert(SIZE(Type[base_type].elements) > offset);
+  if (offset < 0 || offset >= SIZE(Type[base_type].elements)) {
+    raise << current_recipe_name() << ": invalid offset " << offset << " for " << Type[base_type].name << '\n';
+    products.resize(1);
+    break;
+  }
   type_ordinal src_type = Type[base_type].elements.at(offset).at(0);
   trace(Primitive_recipe_depth, "run") << "its type is " << Type[src_type].name;
   reagent tmp;
@@ -149,6 +151,26 @@ recipe main [
 ]
 +mem: storing 13 in location 15
 
+:(scenario get_out_of_bounds)
+% Hide_warnings = true;
+recipe main [
+  12:number <- copy 34:literal
+  13:number <- copy 35:literal
+  14:number <- copy 36:literal
+  get 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
+]
++warn: main: invalid offset 2 for point-number
+
+:(scenario get_out_of_bounds2)
+% Hide_warnings = true;
+recipe main [
+  12:number <- copy 34:literal
+  13:number <- copy 35:literal
+  14:number <- copy 36:literal
+  get 12:point-number/raw, -1:offset
+]
++warn: main: invalid offset -1 for point-number
+
 :(before "End Primitive Recipe Declarations")
 GET_ADDRESS,
 :(before "End Primitive Recipe Numbers")
@@ -163,8 +185,11 @@ case GET_ADDRESS: {
   assert(is_literal(current_instruction().ingredients.at(1)));
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
-  assert(offset >= 0);
-  assert(offset < size_of(base));
+  if (offset < 0 || offset >= SIZE(Type[base_type].elements)) {
+    raise << "invalid offset " << offset << " for " << Type[base_type].name << '\n';
+    products.resize(1);
+    break;
+  }
   long long int result = base_address;
   for (long long int i = 0; i < offset; ++i) {
     result += size_of(Type[base_type].elements.at(i));
@@ -174,6 +199,26 @@ case GET_ADDRESS: {
   products.at(0).push_back(result);
   break;
 }
+
+:(scenario get_address_out_of_bounds)
+% Hide_warnings = true;
+recipe main [
+  12:number <- copy 34:literal
+  13:number <- copy 35:literal
+  14:number <- copy 36:literal
+  get-address 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
+]
++warn: invalid offset 2 for point-number
+
+:(scenario get_address_out_of_bounds2)
+% Hide_warnings = true;
+recipe main [
+  12:number <- copy 34:literal
+  13:number <- copy 35:literal
+  14:number <- copy 36:literal
+  get-address 12:point-number/raw, -1:offset
+]
++warn: invalid offset -1 for point-number
 
 //:: Allow containers to be defined in mu code.
 

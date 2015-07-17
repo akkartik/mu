@@ -369,6 +369,7 @@ recipe render-screen [
     done?:boolean <- greater-or-equal row:number, screen-height:number
     break-if done?:boolean
     column:number <- copy left:number
+    $dump row:number
     move-cursor screen:address, row:number, column:number
     # initial leader for each row: two spaces and a '.'
     print-character screen:address, 32:literal/space, 245:literal/grey
@@ -1112,6 +1113,7 @@ recipe render-sandboxes [
   screen-height:number <- screen-height screen:address:screen
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+  $dump row:number
   # render sandbox contents
   sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
   row:number, screen:address:screen <- render-string screen:address:screen, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
@@ -1129,26 +1131,28 @@ recipe render-sandboxes [
   }
   # render sandbox screen if necessary
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+#?   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+  $dump row:number
   {
     empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address:screen
     break-if empty-screen?:boolean
     row:number, screen:address:screen <- render-screen screen:address:screen, sandbox-screen:address:screen, left:number, right:number, row:number
   }
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+#?   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+  $dump row:number
   # draw solid line after sandbox
-#?   $print [aaa ]
-#?   $dump screen:address:screen
+  $print [aaa ]
+  $dump screen:address:screen
 #?   $dump right:number
-#?   $foo screen:address:screen
+  $foo screen:address:screen
 #?   xxx:address:array:screen-cell <- get screen:address:screen/deref, data:offset
 #?   $dump xxx:address:array:screen-cell
 #?   yyy:number <- length xxx:address:array:screen-cell/deref
 #?   $dump yyy:number
   draw-horizontal screen:address:screen, row:number, left:number, right:number, 9473:literal/horizontal-double
-#?   $print [zzz ]
-#?   $dump screen:address:screen
+  $print [zzz ]
+  $dump screen:address:screen
   # draw next sandbox
   next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
   row:number, screen:address:screen <- render-sandboxes screen:address:screen, next-sandbox:address:sandbox-data, left:number, right:number, row:number

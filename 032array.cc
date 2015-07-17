@@ -87,8 +87,11 @@ case INDEX: {
   vector<type_ordinal> element_type = array_element(base.types);
 //?   trace(Primitive_recipe_depth, "run") << "offset: " << offset_val.at(0); //? 1
 //?   trace(Primitive_recipe_depth, "run") << "size of elements: " << size_of(element_type); //? 1
-  assert(offset_val.at(0) >= 0);
-  assert(offset_val.at(0) < Memory[base_address]*size_of(element_type) + 1);
+  if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
+    raise << current_recipe_name() << ": invalid index " << offset_val.at(0) << '\n';
+    products.resize(1);
+    break;
+  }
   long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src;
   trace(Primitive_recipe_depth, "run") << "its type is " << Type[element_type.at(0)].name;
@@ -104,18 +107,6 @@ vector<type_ordinal> array_element(const vector<type_ordinal>& types) {
   return vector<type_ordinal>(++types.begin(), types.end());
 }
 
-:(scenario index_address)
-recipe main [
-  1:number <- copy 3:literal  # length
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
-  5:number <- index-address 1:array:number/raw, 0:literal  # unsafe
-]
-+mem: storing 2 in location 5
-
-//:: To write to elements of containers, you need their address.
-
 :(scenario index_indirect)
 recipe main [
   1:number <- copy 3:literal  # length
@@ -126,6 +117,48 @@ recipe main [
   6:number <- index 5:address:array:number/deref, 1:literal
 ]
 +mem: storing 15 in location 6
+
+:(scenario index_out_of_bounds)
+% Hide_warnings = true;
+recipe main [
+  1:number <- copy 3:literal  # 3 points
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:number <- copy 14:literal
+  6:number <- copy 15:literal
+  7:number <- copy 16:literal
+  8:address:array:point <- copy 1:literal
+  index 8:address:array:point/deref, 4:literal  # less than size of array in locations, but larger than its length in elements
+]
++warn: main: invalid index 4
+
+:(scenario index_out_of_bounds2)
+% Hide_warnings = true;
+recipe main [
+  1:number <- copy 3:literal  # 3 points
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:number <- copy 14:literal
+  6:number <- copy 15:literal
+  7:number <- copy 16:literal
+  8:address:array:point <- copy 1:literal
+  index 8:address:array:point/deref, -1:literal
+]
++warn: main: invalid index -1
+
+//:: To write to elements of containers, you need their address.
+
+:(scenario index_address)
+recipe main [
+  1:number <- copy 3:literal  # length
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:number <- index-address 1:array:number/raw, 0:literal  # unsafe
+]
++mem: storing 2 in location 5
 
 :(before "End Primitive Recipe Declarations")
 INDEX_ADDRESS,
@@ -139,13 +172,46 @@ case INDEX_ADDRESS: {
   reagent offset = canonize(current_instruction().ingredients.at(1));
   vector<double> offset_val(read_memory(offset));
   vector<type_ordinal> element_type = array_element(base.types);
-  assert(offset_val.at(0) >= 0);
-  assert(offset_val.at(0) < Memory[base_address]*size_of(element_type) + 1);
+  if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
+    raise << current_recipe_name() << ": invalid index " << offset_val.at(0) << '\n';
+    products.resize(1);
+    break;
+  }
   long long int result = base_address + 1 + offset_val.at(0)*size_of(element_type);
   products.resize(1);
   products.at(0).push_back(result);
   break;
 }
+
+:(scenario index_address_out_of_bounds)
+% Hide_warnings = true;
+recipe main [
+  1:number <- copy 3:literal  # 3 points
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:number <- copy 14:literal
+  6:number <- copy 15:literal
+  7:number <- copy 16:literal
+  8:address:array:point <- copy 1:literal
+  index-address 8:address:array:point/deref, 4:literal  # less than size of array in locations, but larger than its length in elements
+]
++warn: main: invalid index 4
+
+:(scenario index_address_out_of_bounds2)
+% Hide_warnings = true;
+recipe main [
+  1:number <- copy 3:literal  # 3 points
+  2:number <- copy 14:literal
+  3:number <- copy 15:literal
+  4:number <- copy 16:literal
+  5:number <- copy 14:literal
+  6:number <- copy 15:literal
+  7:number <- copy 16:literal
+  8:address:array:point <- copy 1:literal
+  index-address 8:address:array:point/deref, -1:literal
+]
++warn: main: invalid index -1
 
 //:: compute the length of an array
 
