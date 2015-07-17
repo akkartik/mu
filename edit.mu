@@ -3,13 +3,52 @@
 recipe main [
   local-scope
   open-console
-  initial-recipe:address:array:character <- new [recipe new-add [
-  x:number <- next-ingredient
-  y:number <- next-ingredient
-  z:number <- add x:number, y:number
-  reply z:number
+  initial-recipe:address:array:character <- new [ 
+# return true if a list of numbers contains the pattern 1, 5, 3
+recipe check [
+  default-space:address:array:location <- new location:type, 30:literal
+  state:number <- copy 0:literal
+  {
+    +next-number
+    curr:number, found?:boolean <- next-ingredient
+    break-unless found?:boolean
+    # if curr is 1, state = 1
+    {
+      state1:boolean <- equal curr:number, 1:literal
+      break-unless state1:boolean
+      state:number <- copy 1:literal
+      loop +next-number:label
+    }
+    # if state is 1 and curr is 5, state = 2
+    {
+      state-is-1?:boolean <- equal state:number, 1:literal
+      break-unless state-is-1?:boolean
+      state2:boolean <- equal curr:number, 5:literal
+      break-unless state2:boolean
+      state:number <- copy 2:literal
+      loop +next-number:label
+    }
+    # if state is 2 and curr is 3, return true
+    {
+      state-is-2?:boolean <- equal state:number, 2:literal
+      break-unless state-is-2?:boolean
+      state3:boolean <- equal curr:number, 3:literal
+      break-unless state3:boolean
+      reply 1:literal/found
+    }
+    # otherwise reset state
+    #state:number <- copy 0:literal
+    loop
+  }
+  reply 0:literal/not-found
 ]]
-  initial-sandbox:address:array:character <- new [print-character screen:address, 97]
+#?   initial-recipe:address:array:character <- new [recipe new-add [
+#?   x:number <- next-ingredient
+#?   y:number <- next-ingredient
+#?   z:number <- add x:number, y:number
+#?   reply z:number
+#? ]]
+  initial-sandbox:address:array:character <- new []
   env:address:programming-environment-data <- new-programming-environment 0:literal/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
   event-loop 0:literal/screen, 0:literal/console, env:address:programming-environment-data
 ]
@@ -344,7 +383,6 @@ recipe render-screen [
   row:number <- next-ingredient
   row:number <- add row:number, 1:literal
   reply-unless s:address:screen, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-#?   $start-tracing #? 1
   # print 'screen:'
   column:number <- copy left:number
   move-cursor screen:address, row:number, column:number
@@ -368,7 +406,6 @@ recipe render-screen [
     done?:boolean <- greater-or-equal row:number, screen-height:number
     break-if done?:boolean
     column:number <- copy left:number
-#?     $dump row:number #? 1
     move-cursor screen:address, row:number, column:number
     # initial leader for each row: two spaces and a '.'
     print-character screen:address, 32:literal/space, 245:literal/grey
@@ -1112,7 +1149,6 @@ recipe render-sandboxes [
   screen-height:number <- screen-height screen:address:screen
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
-#?   $dump row:number #? 1
   # render sandbox contents
   sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
   row:number, screen:address:screen <- render-string screen:address:screen, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
@@ -1131,7 +1167,6 @@ recipe render-sandboxes [
   # render sandbox screen if necessary
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
 #?   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
-#?   $dump row:number #? 1
   {
     empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address:screen
     break-if empty-screen?:boolean
@@ -1139,19 +1174,8 @@ recipe render-sandboxes [
   }
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
 #?   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
-#?   $dump row:number #? 1
   # draw solid line after sandbox
-#?   $print [aaa ] #? 1
-#?   $dump screen:address:screen #? 1
-#?   $dump right:number
-#?   $foo screen:address:screen #? 1
-#?   xxx:address:array:screen-cell <- get screen:address:screen/deref, data:offset
-#?   $dump xxx:address:array:screen-cell
-#?   yyy:number <- length xxx:address:array:screen-cell/deref
-#?   $dump yyy:number
   draw-horizontal screen:address:screen, row:number, left:number, right:number, 9473:literal/horizontal-double
-#?   $print [zzz ] #? 1
-#?   $dump screen:address:screen #? 1
   # draw next sandbox
   next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
   row:number, screen:address:screen <- render-sandboxes screen:address:screen, next-sandbox:address:sandbox-data, left:number, right:number, row:number
@@ -2939,22 +2963,12 @@ recipe draw-horizontal [
     break-if bg-color-found?:boolean
     bg-color:number <- copy 0:literal/black
   }
-#?   $print [bbb ], 5155:number/raw, [  #? 1
-#? ] #? 1
   move-cursor screen:address, row:number, x:number
   {
-#?   $print [ccc ], 5155:number/raw, [  #? 1
-#? ] #? 1
     continue?:boolean <- lesser-or-equal x:number, right:number  # right is inclusive, to match editor-data semantics
     break-unless continue?:boolean
-#?   $print [ddd ], 5155:number/raw, [  #? 1
-#? ] #? 1
     print-character screen:address, style:character, color:number, bg-color:number
-#?   $print [xxx ], 5155:number/raw, [  #? 1
-#? ] #? 1
     x:number <- add x:number, 1:literal
-#?   $print [yyy ], 5155:number/raw, [  #? 1
-#? ] #? 1
     loop
   }
 ]
