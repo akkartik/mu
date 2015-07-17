@@ -1080,6 +1080,11 @@ recipe render-sandboxes [
   screen-height:number <- screen-width screen:address
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  # render sandbox menu
+  row:number <- add row:number, 1:literal
+  move-cursor screen:address, row:number, left:number
+  clear-line-delimited screen:address, left:number, right:number
+  print-character screen:address, 120:literal/x, 245:literal/grey
   # render sandbox contents
   sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
   row:number, screen:address <- render-string screen:address, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
@@ -2515,7 +2520,7 @@ container sandbox-data [
 
 scenario run-and-show-results [
   $close-trace  # trace too long for github
-  assume-screen 100:literal/width, 12:literal/height
+  assume-screen 100:literal/width, 15:literal/height
   # recipe editor is empty
   1:address:array:character <- new []
   # sandbox editor contains an instruction without storing outputs
@@ -2533,6 +2538,7 @@ scenario run-and-show-results [
     .                                                                                 run (F10)          .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
     .                                                  ┊divide-with-remainder 11:literal, 3:literal      .
     .                                                  ┊3                                                .
     .                                                  ┊2                                                .
@@ -2540,6 +2546,7 @@ scenario run-and-show-results [
     .                                                  ┊                                                 .
   ]
   screen-should-contain-in-color 7:literal/white, [
+    .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -2553,6 +2560,7 @@ scenario run-and-show-results [
     .                                                                                                    .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
     .                                                  ┊                                                 .
     .                                                  ┊3                                                .
     .                                                  ┊2                                                .
@@ -2573,9 +2581,11 @@ scenario run-and-show-results [
     .                                                                                 run (F10)          .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
     .                                                  ┊add 2:literal, 2:literal                         .
     .                                                  ┊4                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
     .                                                  ┊divide-with-remainder 11:literal, 3:literal      .
     .                                                  ┊3                                                .
     .                                                  ┊2                                                .
@@ -2648,9 +2658,10 @@ z:number <- add 2:literal, 2:literal
     .                                                                                 run (F10)          .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .z:number <- add 2:literal, 2:literal              ┊foo                                              .
-    .]                                                 ┊4                                                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .z:number <- add 2:literal, 2:literal              ┊                                                x.
+    .]                                                 ┊foo                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
   # make a change (incrementing one of the args to 'add'), then rerun
@@ -2669,9 +2680,10 @@ z:number <- add 2:literal, 2:literal
     .                                                                                 run (F10)          .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .z:number <- add 2:literal, 3:literal              ┊foo                                              .
-    .]                                                 ┊5                                                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .z:number <- add 2:literal, 3:literal              ┊                                                x.
+    .]                                                 ┊foo                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊5                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
 ]
@@ -2696,12 +2708,14 @@ scenario run-instruction-and-print-warnings [
     .                                                                                 run (F10)          .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
     .                                                  ┊get 1234:number, foo:offset                      .
     .                                                  ┊unknown element foo in container number          .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
   screen-should-contain-in-color 7:literal/white, [
+    .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -2715,6 +2729,7 @@ scenario run-instruction-and-print-warnings [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
+    .                                                                                                    .
     .                                                   unknown element foo in container number          .
     .                                                                                                    .
   ]
@@ -2722,6 +2737,7 @@ scenario run-instruction-and-print-warnings [
     .                                                                                                    .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
     .                                                  ┊                                                 .
     .                                                  ┊                                                 .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -2750,6 +2766,7 @@ scenario run-instruction-and-print-warnings-only-once [
     .                                                                                 run (F10)          .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
     .                                                  ┊get 1234:number, foo:offset                      .
     .                                                  ┊unknown element foo in container number          .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
