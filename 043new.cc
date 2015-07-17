@@ -242,7 +242,7 @@ if (Free_list[size]) {
   Free_list[size] = Memory[result];
   for (long long int curr = result+1; curr < result+size; ++curr)
     if (Memory[curr] != 0)
-      raise << "memory in free list was not zeroed out; somebody wrote to us after free!!!\n" << die();
+      raise << current_recipe_name() << ": memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << die();
   if (SIZE(current_instruction().ingredients) > 1)
     Memory[result] = array_length;
   else
