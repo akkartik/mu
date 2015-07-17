@@ -55,7 +55,7 @@ bool run_interactive(long long int address) {
   if (Recipe_ordinal.find("interactive") == Recipe_ordinal.end())
     Recipe_ordinal["interactive"] = Next_recipe_ordinal++;
   Old_screen = Memory[SCREEN];
-  cerr << "save screen: " << Old_screen << '\n'; //? 1
+//?   cerr << "save screen: " << Old_screen << '\n'; //? 2
   // try to sandbox the run as best you can
   // todo: test this
   if (!Current_scenario) {
@@ -170,7 +170,7 @@ if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction()
   }
   if (SIZE(current_instruction().products) >= 3) {
     vector<double> screen;
-    cerr << "returning screen " << Memory[SCREEN] << " to " << current_instruction().products.at(2).to_string() << " value " << current_instruction().products.at(2).value << '\n';
+//?     cerr << "returning screen " << Memory[SCREEN] << " to " << current_instruction().products.at(2).to_string() << " value " << current_instruction().products.at(2).value << '\n'; //? 1
     screen.push_back(Memory[SCREEN]);
     write_memory(current_instruction().products.at(2), screen);
   }
@@ -180,12 +180,8 @@ if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction()
 //: however, we need what was on the stack to decide whether to clean up
 :(after "Starting Reply")
 bool must_clean_up_interactive = (current_recipe_name() == "interactive");
-//? cerr << "reply: " << Memory[SCREEN] << '\n'; //? 1
-//? cerr << "reply2: " << Name[Recipe_ordinal["render-sandboxes"]]["screen"] << '\n'; //? 1
 :(after "Falling Through End Of Recipe")
 bool must_clean_up_interactive = (current_recipe_name() == "interactive");
-//? cerr << "pop: " << Memory[SCREEN] << '\n'; //? 1
-//? cerr << "pop2: " << Name[Recipe_ordinal["render-sandboxes"]]["screen"] << '\n'; //? 1
 :(before "End Reply")
 if (must_clean_up_interactive) clean_up_interactive();
 :(before "Complete Call Fallthrough")
@@ -199,7 +195,7 @@ void clean_up_interactive() {
     delete Trace_stream;
     Trace_stream = NULL;
   }
-  cerr << "restore screen: " << Memory[SCREEN] << " to " << Old_screen << '\n';
+//?   cerr << "restore screen: " << Memory[SCREEN] << " to " << Old_screen << '\n'; //? 1
   Memory[SCREEN] = Old_screen;
   Old_screen = 0;
 }

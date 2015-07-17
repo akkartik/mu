@@ -91,8 +91,6 @@ recipe fake-screen-is-clear? [
 
 recipe print-character [
   local-scope
-#?   $print [--- #? 1
-#? ] #? 1
   x:address:screen <- next-ingredient
   c:character <- next-ingredient
   color:number, color-found?:boolean <- next-ingredient
@@ -107,8 +105,6 @@ recipe print-character [
     break-if bg-color-found?:boolean
     bg-color:number <- copy 0:literal/black
   }
-#?   $print [eee ] #? 1
-#?   $foo #? 1
 #?   trace [app], [print character] #? 1
   {
     # if x exists
@@ -126,8 +122,6 @@ recipe print-character [
 #?     reply-unless legal?:boolean, x:address:screen
 #?     legal?:boolean <- lesser-than column:address:number/deref, width:number
 #?     reply-unless legal?:boolean, x:address:screen
-#?   $print [fff ] #? 1
-#?   $foo #? 1
     # special-case: newline
     {
       newline?:boolean <- equal c:character, 10:literal/newline
@@ -146,19 +140,14 @@ recipe print-character [
       reply x:address:screen/same-as-ingredient:0
     }
     # save character in fake screen
-#?     $print [ggg ] #? 1
-#?     $foo #? 1
     index:number <- multiply row:address:number/deref, width:number
     index:number <- add index:number, column:address:number/deref
     buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
     len:number <- length buf:address:array:screen-cell/deref
-#?     $print row:address:number/deref, [, ], column:address:number/deref, [ vs ], screen-height:number, [, ], screen-width:number, [ length ], len:number, [ 
-#? ] #? 1
     # special-case: backspace
     {
       backspace?:boolean <- equal c:character, 8:literal
       break-unless backspace?:boolean
-#?       $print [$$$]  # shouldn't come here #? 1
       {
         # unless cursor is already at left margin
         at-left?:boolean <- lesser-or-equal column:address:number/deref, 0:literal
@@ -174,51 +163,20 @@ recipe print-character [
       }
       reply x:address:screen/same-as-ingredient:0
     }
-#?     $print [hhh ] #? 1
-#?     $foo #? 1
 #?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, [ 
 #? ] #? 1
     cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
-#?     $dump cursor:address:screen-cell #? 1
-#?     $print [iii ] #? 1
-#?     $foo #? 1
     cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
-#?     $dump cursor-contents:address:character #? 1
-#?     $print [jjj ] #? 1
-#?     $foo #? 1
     cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
-#?     $print [kkk ] #? 2
-#?     $foo #? 2
-#?     $dump cursor-color:address:character #? 1
     cursor-contents:address:character/deref <- copy c:character
-#?     $print [lll ] #? 2
-#?     $foo #? 2
-#?     $dump x:address:screen #? 1
-#?     $dump buf:address:array:screen-cell #? 1
-#?     $dump height:number #? 1
-#?     $dump width:number #? 1
-#?     $dump row:address:number/deref #? 1
-#?     $dump column:address:number/deref #? 1
-#?     $dump index:number #? 1
-#?     $dump len:number #? 1
     cursor-color:address:number/deref <- copy color:number
-#?     $print [mmm ] #? 2
-#?     $foo #? 2
     # increment column unless it's already all the way to the right
     {
       right:number <- subtract width:number, 1:literal
-#?     $print [nnn ] #? 1
-#?     $foo #? 1
       at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
-#?     $print [ooo ] #? 1
-#?     $foo #? 1
       break-if at-right?:boolean
-#?     $print [ppp ] #? 1
-#?     $foo #? 1
       column:address:number/deref <- add column:address:number/deref, 1:literal
     }
-#?     $print [qqq ] #? 1
-#?     $foo #? 1
     reply x:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
@@ -430,24 +388,12 @@ recipe move-cursor [
   x:address:screen <- next-ingredient
   new-row:number <- next-ingredient
   new-column:number <- next-ingredient
-#?   screen-width:number <- screen-width x:address:screen
-#?   screen-height:number <- screen-height x:address:screen
   # if x exists, move cursor in fake screen
   {
     break-unless x:address:screen
     row:address:number <- get-address x:address:screen/deref, cursor-row:offset
-#?     $print row:address:number/deref, [ vs ], screen-height:number, [ 
-#? ] #? 1
-#?     legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
-#?     assert legal?:boolean, [row too small in move-cursor]
-#?     legal?:boolean <- lesser-than row:address:number/deref, screen-height:number
-#?     assert legal?:boolean, [row too large in move-cursor]
     row:address:number/deref <- copy new-row:number
     column:address:number <- get-address x:address:screen/deref, cursor-column:offset
-#?     legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
-#?     assert legal?:boolean, [column too small in move-cursor]
-#?     legal?:boolean <- lesser-than column:address:number/deref, screen-width:number
-#?     assert legal?:boolean, [column too large in move-cursor]
     column:address:number/deref <- copy new-column:number
     reply x:address:screen/same-as-ingredient:0
   }

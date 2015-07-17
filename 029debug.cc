@@ -115,6 +115,7 @@ case _DUMP: {
   break;
 }
 
+//: Helper for debugging: grab an address and then dump its value.
 :(before "End Globals")
 long long int foo = -1;
 :(before "End Primitive Recipe Declarations")
