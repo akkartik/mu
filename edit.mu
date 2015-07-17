@@ -522,10 +522,19 @@ recipe event-loop [
         loop +next-event:label
       }
     }
-    # 'touch' event - send to both editors
+    # 'touch' event
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t:address:touch-event
+      # on a sandbox delete icon? process delete
+      {
+        was-delete?:boolean <- delete-sandbox t:address:touch-event/deref, env:address:programming-environment-data
+        break-unless was-delete?:boolean
+        screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data, 1:literal/clear
+        update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
+        loop +next-event:label
+      }
+      # if not, send to both editors
       _ <- move-cursor-in-editor screen:address, recipes:address:editor-data, t:address:touch-event/deref
       sandbox-in-focus?:address:boolean/deref <- move-cursor-in-editor screen:address, current-sandbox:address:editor-data, t:address:touch-event/deref
       jump +continue:label
@@ -1054,6 +1063,7 @@ recipe render-sandbox-side [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
+  clear:boolean <- next-ingredient
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   left:number <- get current-sandbox:address:editor-data/deref, left:offset
   right:number <- get current-sandbox:address:editor-data/deref, right:offset
@@ -1066,6 +1076,16 @@ recipe render-sandbox-side [
   row:number <- add row:number, 1:literal
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
+  reply-unless clear:boolean, screen:address/same-as-ingredient:0
+  screen-height:number <- screen-height screen:address
+  {
+    at-bottom-of-screen?:boolean <- greater-or-equal row:number, screen-height:number
+    break-if at-bottom-of-screen?:boolean
+    move-cursor screen:address, row:number, left:number
+    clear-line-delimited screen:address, left:number, right:number
+    row:number <- add row:number, 1:literal
+    loop
+  }
   reply screen:address/same-as-ingredient:0
 ]
 
@@ -1080,11 +1100,16 @@ recipe render-sandboxes [
   screen-height:number <- screen-width screen:address
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+#?   $print [rendering sandbox ], sandbox:address:sandbox-data, [ 
+#? ] #? 1
   # render sandbox menu
   row:number <- add row:number, 1:literal
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
   print-character screen:address, 120:literal/x, 245:literal/grey
+  # save menu row so we can detect clicks to it later
+  starting-row:address:number <- get-address sandbox:address:sandbox-data/deref, starting-row-on-screen:offset
+  starting-row:address:number/deref <- copy row:number
   # render sandbox contents
   sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
   row:number, screen:address <- render-string screen:address, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
@@ -1103,6 +1128,8 @@ recipe render-sandboxes [
   draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
   # draw next sandbox
   next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
+#?   $print [next sandbox is ], next-sandbox:address:sandbox-data, [ 
+#? ] #? 1
   row:number, screen:address <- render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
   reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
 ]
@@ -2515,6 +2542,7 @@ container sandbox-data [
   data:address:array:character
   response:address:array:character
   warnings:address:array:character
+  starting-row-on-screen:number  # to track clicks on delete
   next-sandbox:address:sandbox-data
 ]
 
@@ -2633,6 +2661,55 @@ recipe run-sandboxes [
     curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
     loop
   }
+]
+
+# was-deleted?:boolean <- delete-sandbox t:touch-event, env:address:programming-environment-data
+recipe delete-sandbox [
+  local-scope
+  t:touch-event <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  click-column:number <- get t:touch-event, column:offset
+  current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
+  right:number <- get current-sandbox:address:editor-data/deref, right:offset
+#?   $print [comparing column ], click-column:number, [ vs ], right:number, [ 
+#? ] #? 1
+  at-right?:boolean <- equal click-column:number, right:number
+  reply-unless at-right?:boolean, 0:literal/false
+#?   $print [trying to delete
+#? ] #? 1
+  click-row:number <- get t:touch-event, row:offset
+  prev:address:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
+#?   $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, [ 
+#? ] #? 1
+  curr:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
+  {
+#?     $print [next sandbox
+#? ] #? 1
+    break-unless curr:address:sandbox-data
+    # more sandboxes to check
+    {
+#?       $print [checking
+#? ] #? 1
+      target-row:number <- get curr:address:sandbox-data/deref, starting-row-on-screen:offset
+#?       $print [comparing row ], target-row:number, [ vs ], click-row:number, [ 
+#? ] #? 1
+      delete-curr?:boolean <- equal target-row:number, click-row:number
+      break-unless delete-curr?:boolean
+#?       $print [found!
+#? ] #? 1
+      # delete this sandbox, rerender and stop
+      prev:address:address:sandbox-data/deref <- get curr:address:sandbox-data/deref, next-sandbox:offset
+#?       $print [setting prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, [ 
+#? ] #? 1
+      reply 1:literal/true
+    }
+    prev:address:address:sandbox-data <- get-address curr:address:sandbox-data/deref, next-sandbox:offset
+#?     $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, [ 
+#? ] #? 1
+    curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
+    loop
+  }
+  reply 0:literal/false
 ]
 
 scenario run-updates-results [
@@ -2770,6 +2847,72 @@ scenario run-instruction-and-print-warnings-only-once [
     .                                                  ┊get 1234:number, foo:offset                      .
     .                                                  ┊unknown element foo in container number          .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+]
+
+scenario deleting-sandboxes [
+  $close-trace  # trace too long for github
+  assume-screen 100:literal/width, 15:literal/height
+  1:address:array:character <- new []
+  2:address:array:character <- new []
+  3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  # run a few commands
+  assume-console [
+    left-click 1, 80
+    type [divide-with-remainder 11:literal, 3:literal]
+    press 65526  # F10
+    type [add 2:literal, 2:literal]
+    press 65526  # F10
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
+    .                                                  ┊add 2:literal, 2:literal                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
+    .                                                  ┊divide-with-remainder 11:literal, 3:literal      .
+    .                                                  ┊3                                                .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+  # delete second sandbox
+  assume-console [
+    left-click 7, 99
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
+    .                                                  ┊add 2:literal, 2:literal                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+  # delete first sandbox
+  assume-console [
+    left-click 3, 99
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
     .                                                  ┊                                                 .
   ]
 ]
