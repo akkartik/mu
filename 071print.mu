@@ -112,16 +112,17 @@ recipe print-character [
     break-unless x:address:screen
     width:number <- get x:address:screen/deref, num-columns:offset
     height:number <- get x:address:screen/deref, num-rows:offset
+    # if cursor is out of bounds, silently exit
     row:address:number <- get-address x:address:screen/deref, cursor-row:offset
-#?     legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
-#?     reply-unless legal?:boolean, x:address:screen
-#?     legal?:boolean <- lesser-than row:address:number/deref, height:number
-#?     reply-unless legal?:boolean, x:address:screen
+    legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+    reply-unless legal?:boolean, x:address:screen
+    legal?:boolean <- lesser-than row:address:number/deref, height:number
+    reply-unless legal?:boolean, x:address:screen
     column:address:number <- get-address x:address:screen/deref, cursor-column:offset
-#?     legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
-#?     reply-unless legal?:boolean, x:address:screen
-#?     legal?:boolean <- lesser-than column:address:number/deref, width:number
-#?     reply-unless legal?:boolean, x:address:screen
+    legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+    reply-unless legal?:boolean, x:address:screen
+    legal?:boolean <- lesser-than column:address:number/deref, width:number
+    reply-unless legal?:boolean, x:address:screen
     # special-case: newline
     {
       newline?:boolean <- equal c:character, 10:literal/newline

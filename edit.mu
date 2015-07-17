@@ -1166,14 +1166,14 @@ recipe render-sandboxes [
   }
   # render sandbox screen if necessary
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-#?   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
   {
     empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address:screen
     break-if empty-screen?:boolean
     row:number, screen:address:screen <- render-screen screen:address:screen, sandbox-screen:address:screen, left:number, right:number, row:number
   }
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-#?   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
   # draw solid line after sandbox
   draw-horizontal screen:address:screen, row:number, left:number, right:number, 9473:literal/horizontal-double
   # draw next sandbox
