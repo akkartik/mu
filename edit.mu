@@ -358,8 +358,7 @@ recipe render-screen [
   s-width:number <- screen-width s:address:screen
   s-height:number <- screen-height s:address:screen
   buf:address:array:screen-cell <- get s:address:screen/deref, data:offset
-  stop-printing:number <- add s-width:number, 3:literal
-#?   stop-printing:number <- add left:number, s-width:number, 3:literal
+  stop-printing:number <- add left:number, s-width:number, 3:literal
   max-column:number <- min stop-printing:number, right:number
   i:number <- copy 0:literal
   len:number <- length buf:address:array:screen-cell/deref
@@ -369,7 +368,7 @@ recipe render-screen [
     done?:boolean <- greater-or-equal row:number, screen-height:number
     break-if done?:boolean
     column:number <- copy left:number
-    $dump row:number
+#?     $dump row:number #? 1
     move-cursor screen:address, row:number, column:number
     # initial leader for each row: two spaces and a '.'
     print-character screen:address, 32:literal/space, 245:literal/grey
@@ -378,7 +377,7 @@ recipe render-screen [
     column:number <- add left:number, 3:literal
     {
       # print row
-      row-done?:boolean <- greater-than column:number, max-column:number
+      row-done?:boolean <- greater-or-equal column:number, max-column:number
       break-if row-done?:boolean
       curr:screen-cell <- index buf:address:array:screen-cell/deref, i:number
       print-character screen:address, 32:literal/space
@@ -1113,7 +1112,7 @@ recipe render-sandboxes [
   screen-height:number <- screen-height screen:address:screen
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
-  $dump row:number
+#?   $dump row:number #? 1
   # render sandbox contents
   sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
   row:number, screen:address:screen <- render-string screen:address:screen, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
@@ -1132,7 +1131,7 @@ recipe render-sandboxes [
   # render sandbox screen if necessary
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
 #?   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
-  $dump row:number
+#?   $dump row:number #? 1
   {
     empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address:screen
     break-if empty-screen?:boolean
@@ -1140,19 +1139,19 @@ recipe render-sandboxes [
   }
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
 #?   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
-  $dump row:number
+#?   $dump row:number #? 1
   # draw solid line after sandbox
-  $print [aaa ]
-  $dump screen:address:screen
+#?   $print [aaa ] #? 1
+#?   $dump screen:address:screen #? 1
 #?   $dump right:number
-  $foo screen:address:screen
+#?   $foo screen:address:screen #? 1
 #?   xxx:address:array:screen-cell <- get screen:address:screen/deref, data:offset
 #?   $dump xxx:address:array:screen-cell
 #?   yyy:number <- length xxx:address:array:screen-cell/deref
 #?   $dump yyy:number
   draw-horizontal screen:address:screen, row:number, left:number, right:number, 9473:literal/horizontal-double
-  $print [zzz ]
-  $dump screen:address:screen
+#?   $print [zzz ] #? 1
+#?   $dump screen:address:screen #? 1
   # draw next sandbox
   next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
   row:number, screen:address:screen <- render-sandboxes screen:address:screen, next-sandbox:address:sandbox-data, left:number, right:number, row:number
