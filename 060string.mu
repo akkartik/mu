@@ -105,8 +105,7 @@ container buffer [
 
 recipe new-buffer [
   local-scope
-#?   $print default-space:address:array:location, [
-#? ]
+#?   $print default-space:address:array:location, 10:literal/newline
   result:address:buffer <- new buffer:type
   len:address:number <- get-address result:address:buffer/deref, length:offset
   len:address:number/deref <- copy 0:literal
@@ -114,8 +113,7 @@ recipe new-buffer [
   capacity:number, found?:boolean <- next-ingredient
   assert found?:boolean, [new-buffer must get a capacity argument]
   s:address:address:array:character/deref <- new character:type, capacity:number
-#?   $print s:address:address:array:character/deref, [
-#? ]
+#?   $print s:address:address:array:character/deref, 10:literal/newline
   reply result:address:buffer
 ]
 
@@ -174,13 +172,10 @@ recipe buffer-append [
     in:address:buffer <- grow-buffer in:address:buffer
   }
   s:address:array:character <- get in:address:buffer/deref, data:offset
-#?   $print [array underlying buf: ], s:address:array:character, [ 
-#? ] #? 1
-#?   $print [index: ], len:address:number/deref, [ 
-#? ] #? 1
+#?   $print [array underlying buf: ], s:address:array:character, 10:literal/newline
+#?   $print [index: ], len:address:number/deref, 10:literal/newline
   dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
-#?   $print [storing ], c:character, [ in ], dest:address:character, [ 
-#? ] #? 1
+#?   $print [storing ], c:character, [ in ], dest:address:character, 10:literal/newline
   dest:address:character/deref <- copy c:character
   len:address:number/deref <- add len:address:number/deref, 1:literal
   reply in:address:buffer/same-as-ingredient:0
@@ -196,20 +191,6 @@ scenario buffer-append-works [
     x:address:buffer <- buffer-append x:address:buffer, 99:literal  # 'c'
     s2:address:array:character <- get x:address:buffer/deref, data:offset
     1:boolean/raw <- equal s1:address:array:character, s2:address:array:character
-#?     $print s2:address:array:character, [
-#? ]
-#?     $print 1060:number/raw, [
-#? ]
-#?     $print 1061:number/raw, [
-#? ]
-#?     $print 1062:number/raw, [
-#? ]
-#?     $print 1063:number/raw, [
-#? ]
-#?     $print 1064:number/raw, [
-#? ]
-#?     $print 1065:number/raw, [
-#? ]
     2:array:character/raw <- copy s2:address:array:character/deref
     +buffer-filled
     x:address:buffer <- buffer-append x:address:buffer, 100:literal  # 'd'
@@ -321,8 +302,7 @@ recipe buffer-to-array [
     reply 0:literal
   }
   len:number <- get in:address:buffer/deref, length:offset
-#?   $print [size ], len:number, [ 
-#? ] #? 1
+#?   $print [size ], len:number, 10:literal/newline
   s:address:array:character <- get in:address:buffer/deref, data:offset
   # we can't just return s because it is usually the wrong length
   result:address:array:character <- new character:type, len:number
@@ -448,8 +428,7 @@ recipe interpolate [
     result-len:number <- subtract result-len:number, 1:literal
     loop
   }
-#?   $print tem-len:number, [ ], $result-len:number, [ 
-#? ] #? 1
+#?   $print tem-len:number, [ ], $result-len:number, 10:literal/newline
   rewind-ingredients
   _ <- next-ingredient  # skip template
   # result = new array:character[result-len]
