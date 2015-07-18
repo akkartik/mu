@@ -101,27 +101,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
   ]
 ]
 
-<span class="CommentedCode">#? scenario foo [ #? 1</span>
-<span class="CommentedCode">#?   $print [aaa] #? 1</span>
-<span class="CommentedCode">#?   run [ #? 1</span>
-<span class="CommentedCode">#?     1:number &lt;- copy 34:literal #? 1</span>
-<span class="CommentedCode">#?   ] #? 1</span>
-<span class="CommentedCode">#?   memory-should-contain [ #? 1</span>
-<span class="CommentedCode">#?     1 &lt;- 34 #? 1</span>
-<span class="CommentedCode">#?   ] #? 1</span>
-<span class="CommentedCode">#?   $print [zzz] #? 1</span>
-<span class="CommentedCode">#? ] #? 1</span>
-
 <span class="SalientComment">## Here's how 'chessboard' is implemented.</span>
 
 <span class="muRecipe">recipe</span> chessboard [
 <span class="CommentedCode">#?   $start-tracing [schedule] #? 2</span>
 <span class="CommentedCode">#?   $start-tracing #? 1</span>
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-<span class="CommentedCode">#?   $print [screen: ], screen:address, [, console: ], console:address, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print [screen: ], screen:address, [, console: ], console:address, 10:literal/newline</span>
   board:address:array:address:array:character<span class="Special"> &lt;- </span>initial-position
   <span class="Comment"># hook up stdin</span>
   stdin:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">10:literal/capacity</span>
@@ -133,31 +121,21 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     msg:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.</span>
 <span class="Constant">]</span>
     print-string screen:address, msg:address:array:character
-<span class="CommentedCode">#?     $print [aaa</span>
-<span class="CommentedCode">#? ] #? 1</span>
     cursor-to-next-line screen:address
     print-board screen:address, board:address:array:address:array:character
     cursor-to-next-line screen:address
     msg:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[Type in your move as &lt;from square&gt;-&lt;to square&gt;. For example: 'a2-a4'. Then press &lt;enter&gt;.</span>
 <span class="Constant">]</span>
     print-string screen:address, msg:address:array:character
-<span class="CommentedCode">#?     $print [bbb</span>
-<span class="CommentedCode">#? ] #? 1</span>
     cursor-to-next-line screen:address
     msg:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[Hit 'q' to exit.</span>
 <span class="Constant">]</span>
     print-string screen:address, msg:address:array:character
-<span class="CommentedCode">#?     $print [ccc</span>
-<span class="CommentedCode">#? ] #? 1</span>
     <span class="Delimiter">{</span>
       cursor-to-next-line screen:address
       msg:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[move: ]</span>
       print-string screen:address, msg:address:array:character
-<span class="CommentedCode">#?     $print [ddd</span>
-<span class="CommentedCode">#? ] #? 1</span>
       m:address:move, quit:boolean, error:boolean<span class="Special"> &lt;- </span>read-move buffered-stdin:address:channel, screen:address
-<span class="CommentedCode">#?     $print [eee</span>
-<span class="CommentedCode">#? ] #? 1</span>
       <span class="muControl">break-if</span> quit:boolean, +quit:offset
       buffered-stdin:address:channel<span class="Special"> &lt;- </span>clear-channel buffered-stdin:address:channel  <span class="Comment"># cleanup after error. todo: test this?</span>
       <span class="muControl">loop-if</span> error:boolean
@@ -167,13 +145,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 <span class="Constant">  +quit</span>
-<span class="CommentedCode">#?   $print [aaa] #? 1</span>
 ]
 
 <span class="SalientComment">## a board is an array of files, a file is an array of characters (squares)</span>
 
 <span class="muRecipe">recipe</span> new-board [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   initial-position:address:array:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># assert(length(initial-position) == 64)</span>
   len:number<span class="Special"> &lt;- </span>length initial-position:address:array:number/deref
@@ -194,7 +171,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="muRecipe">recipe</span> new-file [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   position:address:array:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   index:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   index:number<span class="Special"> &lt;- </span>multiply index:number, <span class="Constant">8:literal</span>
@@ -213,18 +190,16 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 ]
 
 <span class="muRecipe">recipe</span> print-board [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   board:address:array:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   row:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal</span>  <span class="Comment"># start printing from the top of the board</span>
   <span class="Comment"># print each row</span>
-<span class="CommentedCode">#?   $print [printing board to screen ], screen:address, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print [printing board to screen ], screen:address, 10:literal/newline</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>lesser-than row:number, <span class="Constant">0:literal</span>
     <span class="muControl">break-if</span> done?:boolean
-<span class="CommentedCode">#?     $print [printing rank ], row:number, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [printing rank ], row:number, 10:literal/newline</span>
     <span class="Comment"># print rank number as a legend</span>
     rank:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
     print-integer screen:address, rank:number
@@ -262,7 +237,7 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="Comment"># board:address:array:address:array:character &lt;- initial-position</span>
 <span class="muRecipe">recipe</span> initial-position [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   <span class="Comment"># layout in memory (in raster order):</span>
   <span class="Comment">#   R P _ _ _ _ p r</span>
   <span class="Comment">#   N P _ _ _ _ p n</span>
@@ -322,7 +297,7 @@ container move [
 <span class="Comment"># result:address:move, quit?:boolean, error?:boolean &lt;- read-move stdin:address:channel, screen:address</span>
 <span class="Comment"># prints only error messages to screen</span>
 <span class="muRecipe">recipe</span> read-move [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
 <span class="CommentedCode">#?   $print screen:address #? 1</span>
@@ -357,7 +332,7 @@ container move [
 <span class="Comment"># file:number, quit:boolean, error:boolean &lt;- read-file stdin:address:channel, screen:address</span>
 <span class="Comment"># valid values for file: 0-7</span>
 <span class="muRecipe">recipe</span> read-file [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   c:character, stdin:address:channel<span class="Special"> &lt;- </span>read stdin:address:channel
@@ -384,8 +359,7 @@ container move [
     <span class="muControl">reply</span> <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/quit</span>, <span class="Constant">1:literal/error</span>
   <span class="Delimiter">}</span>
   file:number<span class="Special"> &lt;- </span>subtract c:character, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
-<span class="CommentedCode">#?   $print file:number, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print file:number, 10:literal/newline</span>
   <span class="Comment"># 'a' &lt;= file &lt;= 'h'</span>
   <span class="Delimiter">{</span>
     above-min:boolean<span class="Special"> &lt;- </span>greater-or-equal file:number, <span class="Constant">0:literal</span>
@@ -410,7 +384,7 @@ container move [
 <span class="Comment"># rank:number &lt;- read-rank stdin:address:channel, screen:address</span>
 <span class="Comment"># valid values: 0-7, -1 (quit), -2 (error)</span>
 <span class="muRecipe">recipe</span> read-rank [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   c:character, stdin:address:channel<span class="Special"> &lt;- </span>read stdin:address:channel
@@ -432,8 +406,7 @@ container move [
     <span class="muControl">reply</span> <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/quit</span>, <span class="Constant">1:literal/error</span>
   <span class="Delimiter">}</span>
   rank:number<span class="Special"> &lt;- </span>subtract c:character, <span class="Constant">49:literal</span>  <span class="Comment"># '1'</span>
-<span class="CommentedCode">#?   $print rank:number, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print rank:number, 10:literal/newline</span>
   <span class="Comment"># assert'1' &lt;= rank &lt;= '8'</span>
   <span class="Delimiter">{</span>
     above-min:boolean<span class="Special"> &lt;- </span>greater-or-equal rank:number, <span class="Constant">0:literal</span>
@@ -457,7 +430,7 @@ container move [
 <span class="Comment"># read a character from the given channel and check that it's what we expect</span>
 <span class="Comment"># return true on error</span>
 <span class="muRecipe">recipe</span> expect-from-channel [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   stdin:address:channel<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   expected:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -477,30 +450,25 @@ container move [
   run [
 <span class="CommentedCode">#?     $start-tracing #? 1</span>
     1:address:channel<span class="Special"> &lt;- </span>new-channel <span class="Constant">2:literal</span>
-<span class="CommentedCode">#?     $print [aaa channel address: ], 1:address:channel, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [aaa channel address: ], 1:address:channel, 10:literal/newline</span>
     2:number/routine<span class="Special"> &lt;- </span>start-running read-move:<span class="muRecipe">recipe</span>, 1:address:channel, screen:address
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine 2:number
-<span class="CommentedCode">#?     $print [bbb channel address: ], 1:address:channel, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [bbb channel address: ], 1:address:channel, 10:literal/newline</span>
     3:number<span class="Special"> &lt;- </span>routine-state 2:number/id
-<span class="CommentedCode">#?     $print [I: routine ], 2:number, [ state ], 3:number [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [I: routine ], 2:number, [ state ], 3:number 10:literal/newline</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> coming up (<span class="muRecipe">before</span> any keys were pressed)]
     <span class="Comment"># press 'a'</span>
-<span class="CommentedCode">#?     $print [ccc channel address: ], 1:address:channel, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [ccc channel address: ], 1:address:channel, 10:literal/newline</span>
 <span class="CommentedCode">#?     $exit #? 1</span>
     1:address:channel<span class="Special"> &lt;- </span>write 1:address:channel, <span class="Constant">97:literal</span>  <span class="Comment"># 'a'</span>
     restart 2:number/routine
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine 2:number
     3:number<span class="Special"> &lt;- </span>routine-state 2:number/id
-<span class="CommentedCode">#?     $print [II: routine ], 2:number, [ state ], 3:number [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [II: routine ], 2:number, [ state ], 3:number 10:literal/newline</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> rank 'a']
@@ -510,8 +478,7 @@ F read-move-blocking: routine failed to pause <span class="muRecipe">after</span
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine 2:number
     3:number<span class="Special"> &lt;- </span>routine-state 2:number/id
-<span class="CommentedCode">#?     $print [III: routine ], 2:number, [ state ], 3:number [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [III: routine ], 2:number, [ state ], 3:number 10:literal/newline</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> file 'a2']
@@ -521,8 +488,7 @@ F read-move-blocking: routine failed to pause <span class="muRecipe">after</span
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine 2:number
     3:number<span class="Special"> &lt;- </span>routine-state 2:number
-<span class="CommentedCode">#?     $print [IV: routine ], 2:number, [ state ], 3:number [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [IV: routine ], 2:number, [ state ], 3:number 10:literal/newline</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?/routine-state, [
 F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> hyphen 'a2-']
@@ -532,8 +498,7 @@ F read-move-blocking: routine failed to pause <span class="muRecipe">after</span
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine 2:number
     3:number<span class="Special"> &lt;- </span>routine-state 2:number
-<span class="CommentedCode">#?     $print [V: routine ], 2:number, [ state ], 3:number [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [V: routine ], 2:number, [ state ], 3:number 10:literal/newline</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?/routine-state, [
 F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> rank 'a2-a']
@@ -543,8 +508,7 @@ F read-move-blocking: routine failed to pause <span class="muRecipe">after</span
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine 2:number
     3:number<span class="Special"> &lt;- </span>routine-state 2:number
-<span class="CommentedCode">#?     $print [VI: routine ], 2:number, [ state ], 3:number [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [VI: routine ], 2:number, [ state ], 3:number 10:literal/newline</span>
     4:boolean/waiting?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">2:literal/waiting</span>
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause <span class="muRecipe">after</span> file 'a2-a4']
@@ -554,8 +518,7 @@ F read-move-blocking: routine failed to pause <span class="muRecipe">after</span
     <span class="Comment"># 'read-move' now completes</span>
     wait-for-routine 2:number
     3:number<span class="Special"> &lt;- </span>routine-state 2:number
-<span class="CommentedCode">#?     $print [VII: routine ], 2:number, [ state ], 3:number [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [VII: routine ], 2:number, [ state ], 3:number 10:literal/newline</span>
     4:boolean/completed?<span class="Special"> &lt;- </span>equal 3:number/routine-state, <span class="Constant">1:literal/completed</span>
     assert 4:boolean/completed?, [
 F read-move-blocking: routine failed to terminate on newline]
@@ -659,27 +622,22 @@ F read-move-file: routine failed to pause <span class="muRecipe">after</span> co
 ]
 
 <span class="muRecipe">recipe</span> make-move [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   b:address:array:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   m:address:move<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   from-file:number<span class="Special"> &lt;- </span>get m:address:move/deref, from-file:offset
-<span class="CommentedCode">#?   $print from-file:number, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print from-file:number, 10:literal/newline</span>
   from-rank:number<span class="Special"> &lt;- </span>get m:address:move/deref, from-rank:offset
-<span class="CommentedCode">#?   $print from-rank:number, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print from-rank:number, 10:literal/newline</span>
   to-file:number<span class="Special"> &lt;- </span>get m:address:move/deref, to-file:offset
-<span class="CommentedCode">#?   $print to-file:number, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print to-file:number, 10:literal/newline</span>
   to-rank:number<span class="Special"> &lt;- </span>get m:address:move/deref, to-rank:offset
-<span class="CommentedCode">#?   $print to-rank:number, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print to-rank:number, 10:literal/newline</span>
   f:address:array:character<span class="Special"> &lt;- </span>index b:address:array:address:array:character/deref, from-file:number
   src:address:character/square<span class="Special"> &lt;- </span>index-address f:address:array:character/deref, from-rank:number
   f:address:array:character<span class="Special"> &lt;- </span>index b:address:array:address:array:character/deref, to-file:number
   dest:address:character/square<span class="Special"> &lt;- </span>index-address f:address:array:character/deref, to-rank:number
-<span class="CommentedCode">#?   $print src:address:character/deref, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print src:address:character/deref, 10:literal/newline</span>
   dest:address:character/deref/square<span class="Special"> &lt;- </span>copy src:address:character/deref/square
   src:address:character/deref/square<span class="Special"> &lt;- </span>copy <span class="Constant">32:literal</span>  <span class="Comment"># ' '</span>
   <span class="muControl">reply</span> b:address:array:address:array:character/same-as-ingredient:0

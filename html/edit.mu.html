@@ -36,17 +36,12 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># Environment for learning programming using mu.</span>
 
 <span class="muRecipe">recipe</span> main [
-  <span class="Constant">new-default-space</span>
-  open-console
-  initial-recipe:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[recipe new-add [</span>
-<span class="Constant">  x:number &lt;- next-ingredient</span>
-<span class="Constant">  y:number &lt;- next-ingredient</span>
-<span class="Constant">  z:number &lt;- add x:number, y:number</span>
-<span class="Constant">  reply z:number</span>
-<span class="Constant">]</span>]
-  initial-sandbox:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[new-add 2:literal, 3:literal]</span>
+  <span class="Constant">local-scope</span>
+  open-console <span class="CommentedCode">#? 1</span>
+  initial-recipe:address:array:character<span class="Special"> &lt;- </span>restore <span class="Constant">[recipes.mu]</span>
+<span class="CommentedCode">#?   $exit #? 1</span>
+  initial-sandbox:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[test 2, 2]</span>
   env:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment <span class="Constant">0:literal/screen</span>, initial-recipe:address:array:character, initial-sandbox:address:array:character
-  render-all <span class="Constant">0:literal/address</span>, env:address:programming-environment-data
   event-loop <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/console</span>, env:address:programming-environment-data
 ]
 
@@ -59,7 +54,7 @@ container programming-environment-data [
 ]
 
 <span class="muRecipe">recipe</span> new-programming-environment [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   initial-recipe-contents:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   initial-sandbox-contents:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -85,8 +80,7 @@ container programming-environment-data [
   new-right:number<span class="Special"> &lt;- </span>add new-left:number, <span class="Constant">5:literal</span>
   current-sandbox:address:address:editor-data<span class="Special"> &lt;- </span>get-address result:address:programming-environment-data/deref, current-sandbox:offset
   current-sandbox:address:address:editor-data/deref<span class="Special"> &lt;- </span>new-editor initial-sandbox-contents:address:array:character, screen:address, new-left:number, width:number
-  <span class="Comment"># initialize cursor</span>
-  update-cursor screen:address, recipes:address:address:editor-data/deref, current-sandbox:address:address:editor-data/deref, <span class="Constant">0:literal/focus-in-recipes</span>
+  screen:address<span class="Special"> &lt;- </span>render-all screen:address, result:address:programming-environment-data
   <span class="muControl">reply</span> result:address:programming-environment-data
 ]
 
@@ -126,7 +120,7 @@ container editor-data [
 <span class="Comment">#   top/left/right constrain the screen area available to the new editor.</span>
 <span class="Comment">#   right is exclusive.</span>
 <span class="muRecipe">recipe</span> new-editor [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   s:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># no clipping of bounds</span>
@@ -196,7 +190,7 @@ container editor-data [
 
 <span class="Comment"># bottom:number, screen:address &lt;- render screen:address, editor:address:editor-data</span>
 <span class="muRecipe">recipe</span> render [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="muControl">reply-unless</span> editor:address:editor-data, <span class="Constant">1:literal/top</span>, screen:address/same-as-ingredient:0
@@ -204,6 +198,9 @@ container editor-data [
   screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
   right:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, right:offset
   hide-screen screen:address
+  <span class="Comment"># highlight mu code with color</span>
+  color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
+  highlighting-state:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal/normal</span>
   <span class="Comment"># traversing editor</span>
   curr:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, data:offset
   prev:address:duplex-list<span class="Special"> &lt;- </span>copy curr:address:duplex-list
@@ -231,6 +228,7 @@ container editor-data [
       before-cursor:address:address:duplex-list/deref<span class="Special"> &lt;- </span>prev-duplex curr:address:duplex-list
     <span class="Delimiter">}</span>
     c:character<span class="Special"> &lt;- </span>get curr:address:duplex-list/deref, value:offset
+    color:number, highlighting-state:number<span class="Special"> &lt;- </span>get-color color:number, highlighting-state:number, c:character
     <span class="Delimiter">{</span>
       <span class="Comment"># newline? move to left rather than 0</span>
       newline?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
@@ -267,7 +265,7 @@ container editor-data [
       <span class="Comment"># don't increment curr</span>
       <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
     <span class="Delimiter">}</span>
-    print-character screen:address, c:character
+    print-character screen:address, c:character, color:number
     curr:address:duplex-list<span class="Special"> &lt;- </span>next-duplex curr:address:duplex-list
     prev:address:duplex-list<span class="Special"> &lt;- </span>next-duplex prev:address:duplex-list
     column:number<span class="Special"> &lt;- </span>add column:number, <span class="Constant">1:literal</span>
@@ -300,10 +298,11 @@ container editor-data [
 ]
 
 <span class="Comment"># row:number, screen:address &lt;- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number</span>
+<span class="Comment"># move cursor at start of next line</span>
 <span class="Comment"># print a string 's' to 'editor' in 'color' starting at 'row'</span>
-<span class="Comment"># leave cursor at start of next line</span>
+<span class="Comment"># clear rest of last line, but don't move cursor to next line</span>
 <span class="muRecipe">recipe</span> render-string [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   s:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -368,8 +367,77 @@ container editor-data [
   <span class="muControl">reply</span> row:number/same-as-ingredient:5, screen:address/same-as-ingredient:0
 ]
 
+<span class="Comment"># row:number, screen:address &lt;- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number</span>
+<span class="Comment"># print the fake sandbox screen to 'screen' with appropriate delimiters</span>
+<span class="Comment"># leave cursor at start of next line</span>
+<span class="muRecipe">recipe</span> render-screen [
+  <span class="Constant">local-scope</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  s:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+  <span class="muControl">reply-unless</span> s:address:screen, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  <span class="Comment"># print 'screen:'</span>
+  header:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[screen:]</span>
+  row:number<span class="Special"> &lt;- </span>subtract row:number, <span class="Constant">1:literal</span>  <span class="Comment"># compensate for render-string below</span>
+  row:number<span class="Special"> &lt;- </span>render-string screen:address, header:address:array:character, left:number, right:number, <span class="Constant">245:literal/grey</span>, row:number
+  <span class="Comment"># newline</span>
+  row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+  move-cursor screen:address, row:number, left:number
+  <span class="Comment"># start printing s</span>
+  column:number<span class="Special"> &lt;- </span>copy left:number
+  s-width:number<span class="Special"> &lt;- </span>screen-width s:address:screen
+  s-height:number<span class="Special"> &lt;- </span>screen-height s:address:screen
+  buf:address:array:screen-cell<span class="Special"> &lt;- </span>get s:address:screen/deref, data:offset
+  stop-printing:number<span class="Special"> &lt;- </span>add left:number, s-width:number, <span class="Constant">3:literal</span>
+  max-column:number<span class="Special"> &lt;- </span>min stop-printing:number, right:number
+  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  len:number<span class="Special"> &lt;- </span>length buf:address:array:screen-cell/deref
+  screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, len:number
+    <span class="muControl">break-if</span> done?:boolean
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number, screen-height:number
+    <span class="muControl">break-if</span> done?:boolean
+    column:number<span class="Special"> &lt;- </span>copy left:number
+    move-cursor screen:address, row:number, column:number
+    <span class="Comment"># initial leader for each row: two spaces and a '.'</span>
+    print-character screen:address, <span class="Constant">32:literal/space</span>, <span class="Constant">245:literal/grey</span>
+    print-character screen:address, <span class="Constant">32:literal/space</span>, <span class="Constant">245:literal/grey</span>
+    print-character screen:address, <span class="Constant">46:literal/full-stop</span>, <span class="Constant">245:literal/grey</span>
+    column:number<span class="Special"> &lt;- </span>add left:number, <span class="Constant">3:literal</span>
+    <span class="Delimiter">{</span>
+      <span class="Comment"># print row</span>
+      row-done?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:number, max-column:number
+      <span class="muControl">break-if</span> row-done?:boolean
+      curr:screen-cell<span class="Special"> &lt;- </span>index buf:address:array:screen-cell/deref, i:number
+      c:character<span class="Special"> &lt;- </span>get curr:screen-cell, contents:offset
+      print-character screen:address, c:character, <span class="Constant">245:literal/grey</span>
+      column:number<span class="Special"> &lt;- </span>add column:number, <span class="Constant">1:literal</span>
+      i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
+      <span class="muControl">loop</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># print final '.'</span>
+    print-character screen:address, <span class="Constant">46:literal/full-stop</span>, <span class="Constant">245:literal/grey</span>
+    column:number<span class="Special"> &lt;- </span>add column:number, <span class="Constant">1:literal</span>
+    <span class="Delimiter">{</span>
+      <span class="Comment"># clear rest of current line</span>
+      line-done?:boolean<span class="Special"> &lt;- </span>greater-than column:number, right:number
+      <span class="muControl">break-if</span> line-done?:boolean
+      print-character screen:address, <span class="Constant">32:literal/space</span>
+      column:number<span class="Special"> &lt;- </span>add column:number, <span class="Constant">1:literal</span>
+      <span class="muControl">loop</span>
+    <span class="Delimiter">}</span>
+    row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">reply</span> row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+]
+
 <span class="muRecipe">recipe</span> clear-line-delimited [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -438,7 +506,7 @@ container editor-data [
    <span class="Constant"> .def  .</span>
    <span class="Constant"> .     .</span>
   ]
-  screen-should-contain-in-color, <span class="Constant">245:literal/grey</span> [
+  screen-should-contain-in-color <span class="Constant">245:literal/grey</span> [
    <span class="Constant"> .     .</span>
    <span class="Constant"> .    ↩.</span>
    <span class="Constant"> .     .</span>
@@ -460,7 +528,7 @@ container editor-data [
    <span class="Constant"> .e    .</span>
    <span class="Constant"> .     .</span>
   ]
-  screen-should-contain-in-color, <span class="Constant">245:literal/grey</span> [
+  screen-should-contain-in-color <span class="Constant">245:literal/grey</span> [
    <span class="Constant"> .     .</span>
    <span class="Constant"> .    ↩.</span>
    <span class="Constant"> .     .</span>
@@ -487,10 +555,116 @@ container editor-data [
   ]
 ]
 
+<span class="SalientComment">## highlighting mu code</span>
+
+<span class="muScenario">scenario</span> render-colors-comments [
+  assume-screen <span class="Constant">5:literal/width</span>, <span class="Constant">5:literal/height</span>
+  run [
+    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant"># de</span>
+<span class="Constant">f]</span>
+    new-editor s:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">5:literal/right</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .abc  .</span>
+   <span class="Constant"> .# de .</span>
+   <span class="Constant"> .f    .</span>
+   <span class="Constant"> .     .</span>
+  ]
+  screen-should-contain-in-color <span class="Constant">12:literal/lightblue</span>, [
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .# de .</span>
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .     .</span>
+  ]
+  screen-should-contain-in-color <span class="Constant">7:literal/white</span>, [
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .abc  .</span>
+   <span class="Constant"> .     .</span>
+   <span class="Constant"> .f    .</span>
+   <span class="Constant"> .     .</span>
+  ]
+]
+
+<span class="Comment"># color:number, highlighting-state:number &lt;- get-color color:number, highlighting-state:number, c:character</span>
+<span class="muRecipe">recipe</span> get-color [
+  <span class="Constant">local-scope</span>
+  color:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  highlighting-state:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  c:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color-is-white?:boolean<span class="Special"> &lt;- </span>equal color:number, <span class="Constant">7:literal/white</span>
+<span class="CommentedCode">#?   $print [character: ], c:character, 10:literal/newline #? 1</span>
+  <span class="Comment"># if color is white and next character is '#', switch color to blue</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> color-is-white?:boolean
+    starting-comment?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">35:literal/#</span>
+    <span class="muControl">break-unless</span> starting-comment?:boolean
+<span class="CommentedCode">#?     $print [switch color back to blue], 10:literal/newline #? 1</span>
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">12:literal/lightblue</span>
+    <span class="muControl">jump</span> <span class="Constant">+exit:label</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># if color is blue and next character is newline, switch color to white</span>
+  <span class="Delimiter">{</span>
+    color-is-blue?:boolean<span class="Special"> &lt;- </span>equal color:number, <span class="Constant">12:literal/lightblue</span>
+    <span class="muControl">break-unless</span> color-is-blue?:boolean
+    ending-comment?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
+    <span class="muControl">break-unless</span> ending-comment?:boolean
+<span class="CommentedCode">#?     $print [switch color back to white], 10:literal/newline #? 1</span>
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
+    <span class="muControl">jump</span> <span class="Constant">+exit:label</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># if color is white (no comments) and next character is '&lt;', switch color to red</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> color-is-white?:boolean
+    starting-assignment?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">60:literal/&lt;</span>
+    <span class="muControl">break-unless</span> starting-assignment?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">1:literal/red</span>
+    <span class="muControl">jump</span> <span class="Constant">+exit:label</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># if color is red and next character is space, switch color to white</span>
+  <span class="Delimiter">{</span>
+    color-is-red?:boolean<span class="Special"> &lt;- </span>equal color:number, <span class="Constant">1:literal/red</span>
+    <span class="muControl">break-unless</span> color-is-red?:boolean
+    ending-assignment?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">32:literal/space</span>
+    <span class="muControl">break-unless</span> ending-assignment?:boolean
+    color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7:literal/white</span>
+    <span class="muControl">jump</span> <span class="Constant">+exit:label</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># otherwise no change</span>
+<span class="Constant">  +exit</span>
+  <span class="muControl">reply</span> color:number, highlighting-state:number
+]
+
+<span class="muScenario">scenario</span> render-colors-assignment [
+  assume-screen <span class="Constant">8:literal/width</span>, <span class="Constant">5:literal/height</span>
+  run [
+    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">d &lt;- e</span>
+<span class="Constant">f]</span>
+    new-editor s:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">8:literal/right</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> .        .</span>
+   <span class="Constant"> .abc     .</span>
+   <span class="Constant"> .d &lt;- e  .</span>
+   <span class="Constant"> .f       .</span>
+   <span class="Constant"> .        .</span>
+  ]
+  screen-should-contain-in-color <span class="Constant">1:literal/red</span>, [
+   <span class="Constant"> .        .</span>
+   <span class="Constant"> .        .</span>
+   <span class="Constant"> .  &lt;-    .</span>
+   <span class="Constant"> .        .</span>
+   <span class="Constant"> .        .</span>
+  ]
+]
+
 <span class="SalientComment">## handling events from the keyboard, mouse, touch screen, ...</span>
 
 <span class="muRecipe">recipe</span> event-loop [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -513,13 +687,26 @@ container editor-data [
         do-run?:boolean<span class="Special"> &lt;- </span>equal k:address:number/deref, <span class="Constant">65526:literal/F10</span>
         <span class="muControl">break-unless</span> do-run?:boolean
         run-sandboxes env:address:programming-environment-data
-        <span class="muControl">jump</span> <span class="Constant">+continue:label</span>
+        screen:address<span class="Special"> &lt;- </span>render-sandbox-side screen:address, env:address:programming-environment-data
+        <span class="Comment"># F10 doesn't mess with the recipe side</span>
+        update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
+        show-screen screen:address
+        <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
-    <span class="Comment"># 'touch' event - send to both editors</span>
+    <span class="Comment"># 'touch' event</span>
     <span class="Delimiter">{</span>
       t:address:touch-event<span class="Special"> &lt;- </span>maybe-convert e:event, touch:variant
       <span class="muControl">break-unless</span> t:address:touch-event
+      <span class="Comment"># on a sandbox delete icon? process delete</span>
+      <span class="Delimiter">{</span>
+        was-delete?:boolean<span class="Special"> &lt;- </span>delete-sandbox t:address:touch-event/deref, env:address:programming-environment-data
+        <span class="muControl">break-unless</span> was-delete?:boolean
+        screen:address<span class="Special"> &lt;- </span>render-sandbox-side screen:address, env:address:programming-environment-data, <span class="Constant">1:literal/clear</span>
+        update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
+        <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
+      <span class="Delimiter">}</span>
+      <span class="Comment"># if not, send to both editors</span>
       _<span class="Special"> &lt;- </span>move-cursor-in-editor screen:address, recipes:address:editor-data, t:address:touch-event/deref
       sandbox-in-focus?:address:boolean/deref<span class="Special"> &lt;- </span>move-cursor-in-editor screen:address, current-sandbox:address:editor-data, t:address:touch-event/deref
       <span class="muControl">jump</span> <span class="Constant">+continue:label</span>
@@ -536,12 +723,14 @@ container editor-data [
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
 <span class="Constant">    +continue</span>
-    <span class="Comment"># if no more events currently left to process, render</span>
+    <span class="Comment"># if no more events currently left to process, render.</span>
+    <span class="Comment"># we rely on 'render' to update 'before-cursor' on pointer events, but</span>
+    <span class="Comment"># they won't usually come fast enough to trigger this.</span>
     <span class="Comment"># todo: test this</span>
     <span class="Delimiter">{</span>
       more-events?:boolean<span class="Special"> &lt;- </span>has-more-events? console:address
       <span class="muControl">break-if</span> more-events?:boolean
-      render-all screen:address, env:address:programming-environment-data
+      render-minimal screen:address, env:address:programming-environment-data
     <span class="Delimiter">}</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
@@ -549,7 +738,7 @@ container editor-data [
 
 <span class="Comment"># helper for testing a single editor</span>
 <span class="muRecipe">recipe</span> editor-event-loop [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -582,16 +771,17 @@ container editor-data [
 ]
 
 <span class="muRecipe">recipe</span> handle-event [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   console:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   e:event<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="muControl">reply-unless</span> editor:address:editor-data
-  <span class="Comment"># typing a character</span>
+  <span class="Comment"># character</span>
   <span class="Delimiter">{</span>
     c:address:character<span class="Special"> &lt;- </span>maybe-convert e:event, text:variant
     <span class="muControl">break-unless</span> c:address:character
+    <span class="Comment"># check for special characters</span>
     <span class="Comment"># unless it's a backspace</span>
     <span class="Delimiter">{</span>
       backspace?:boolean<span class="Special"> &lt;- </span>equal c:address:character/deref, <span class="Constant">8:literal/backspace</span>
@@ -599,10 +789,39 @@ container editor-data [
       delete-before-cursor editor:address:editor-data
       <span class="muControl">reply</span>
     <span class="Delimiter">}</span>
+    <span class="Comment"># ctrl-a</span>
+    <span class="Delimiter">{</span>
+      ctrl-a?:boolean<span class="Special"> &lt;- </span>equal c:address:character/deref, <span class="Constant">1:literal/ctrl-a</span>
+      <span class="muControl">break-unless</span> ctrl-a?:boolean
+      move-to-start-of-line editor:address:editor-data
+      <span class="muControl">reply</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># ctrl-e</span>
+    <span class="Delimiter">{</span>
+      ctrl-e?:boolean<span class="Special"> &lt;- </span>equal c:address:character/deref, <span class="Constant">5:literal/ctrl-e</span>
+      <span class="muControl">break-unless</span> ctrl-e?:boolean
+      move-to-end-of-line editor:address:editor-data
+      <span class="muControl">reply</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># ctrl-u</span>
+    <span class="Delimiter">{</span>
+      ctrl-u?:boolean<span class="Special"> &lt;- </span>equal c:address:character/deref, <span class="Constant">21:literal/ctrl-u</span>
+      <span class="muControl">break-unless</span> ctrl-u?:boolean
+      delete-to-start-of-line editor:address:editor-data
+      <span class="muControl">reply</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># ctrl-k</span>
+    <span class="Delimiter">{</span>
+      ctrl-k?:boolean<span class="Special"> &lt;- </span>equal c:address:character/deref, <span class="Constant">11:literal/ctrl-k</span>
+      <span class="muControl">break-unless</span> ctrl-k?:boolean
+      delete-to-end-of-line editor:address:editor-data
+      <span class="muControl">reply</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># otherwise type it in</span>
     insert-at-cursor editor:address:editor-data, c:address:character/deref, screen:address
     <span class="muControl">reply</span>
   <span class="Delimiter">}</span>
-  <span class="Comment"># otherwise it's a special key to control the editor</span>
+  <span class="Comment"># otherwise it's a special key</span>
   k:address:number<span class="Special"> &lt;- </span>maybe-convert e:event, keycode:variant
   assert k:address:number, <span class="Constant">[event was of unknown type; neither keyboard nor mouse]</span>
   d:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, data:offset
@@ -716,12 +935,26 @@ container editor-data [
     cursor-row:address:number/deref<span class="Special"> &lt;- </span>subtract cursor-row:address:number/deref, <span class="Constant">1:literal</span>
     <span class="Comment"># that's it; render will adjust cursor-column as necessary</span>
   <span class="Delimiter">}</span>
+  <span class="Comment"># home</span>
+  <span class="Delimiter">{</span>
+    home?:boolean<span class="Special"> &lt;- </span>equal k:address:number/deref, <span class="Constant">65521:literal/home</span>
+    <span class="muControl">break-unless</span> home?:boolean
+    move-to-start-of-line editor:address:editor-data
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># end</span>
+  <span class="Delimiter">{</span>
+    end?:boolean<span class="Special"> &lt;- </span>equal k:address:number/deref, <span class="Constant">65520:literal/end</span>
+    <span class="muControl">break-unless</span> end?:boolean
+    move-to-end-of-line editor:address:editor-data
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
 ]
 
 <span class="Comment"># process click, return if it was on current editor</span>
 <span class="Comment"># todo: ignores menu bar (for now just displays shortcuts)</span>
 <span class="muRecipe">recipe</span> move-cursor-in-editor [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   t:touch-event<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -738,18 +971,16 @@ container editor-data [
   cursor-row:address:number/deref<span class="Special"> &lt;- </span>get t:touch-event, row:offset
   cursor-column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref<span class="Special"> &lt;- </span>get t:touch-event, column:offset
-  render screen:address, editor:address:editor-data
   <span class="Comment"># gain focus</span>
   <span class="muControl">reply</span> <span class="Constant">1:literal/true</span>
 ]
 
 <span class="muRecipe">recipe</span> insert-at-cursor [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   c:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-<span class="CommentedCode">#?   $print [insert ], c:character, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print [insert ], c:character, 10:literal/newline</span>
   before-cursor:address:address:duplex-list<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, before-cursor:offset
   d:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, data:offset
   insert-duplex c:character, before-cursor:address:address:duplex-list/deref
@@ -771,8 +1002,7 @@ container editor-data [
   <span class="Delimiter">{</span>
     <span class="Comment"># if we're at the column just before the wrap indicator</span>
     wrap-column:number<span class="Special"> &lt;- </span>subtract right:number, <span class="Constant">1:literal</span>
-<span class="CommentedCode">#?     $print [wrap? ], cursor-column:address:number/deref, [ vs ], wrap-column:number, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [wrap? ], cursor-column:address:number/deref, [ vs ], wrap-column:number, 10:literal/newline</span>
     at-wrap?:boolean<span class="Special"> &lt;- </span>greater-or-equal cursor-column:address:number/deref, wrap-column:number
     <span class="muControl">break-unless</span> at-wrap?:boolean
 <span class="CommentedCode">#?     $print [wrap!</span>
@@ -792,7 +1022,7 @@ container editor-data [
 ]
 
 <span class="muRecipe">recipe</span> delete-before-cursor [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   before-cursor:address:address:duplex-list<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, before-cursor:offset
   d:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, data:offset
@@ -806,14 +1036,13 @@ container editor-data [
   before-cursor:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy prev:address:duplex-list
   cursor-column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref<span class="Special"> &lt;- </span>subtract cursor-column:address:number/deref, <span class="Constant">1:literal</span>
-<span class="CommentedCode">#?   $print [delete-before-cursor: ], cursor-column:address:number/deref, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print [delete-before-cursor: ], cursor-column:address:number/deref, 10:literal/newline</span>
 ]
 
 <span class="Comment"># takes a pointer 'curr' into the doubly-linked list and its sentinel, counts</span>
 <span class="Comment"># the length of the previous line before the 'curr' pointer.</span>
 <span class="muRecipe">recipe</span> previous-line-length [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   curr:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   start:address:duplex-list<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   result:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
@@ -834,24 +1063,159 @@ container editor-data [
   <span class="muControl">reply</span> result:number
 ]
 
+<span class="muRecipe">recipe</span> move-to-start-of-line [
+  <span class="Constant">local-scope</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Comment"># update cursor column</span>
+  left:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, left:offset
+  cursor-column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
+  cursor-column:address:number/deref<span class="Special"> &lt;- </span>copy left:number
+  <span class="Comment"># update before-cursor</span>
+  before-cursor:address:address:duplex-list<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, before-cursor:offset
+  init:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, data:offset
+  <span class="Comment"># while not at start of line, move </span>
+  <span class="Delimiter">{</span>
+    at-start-of-text?:boolean<span class="Special"> &lt;- </span>equal before-cursor:address:address:duplex-list/deref, init:address:duplex-list
+    <span class="muControl">break-if</span> at-start-of-text?:boolean
+    prev:character<span class="Special"> &lt;- </span>get before-cursor:address:address:duplex-list/deref/deref, value:offset
+    at-start-of-line?:boolean<span class="Special"> &lt;- </span>equal prev:character, <span class="Constant">10:literal/newline</span>
+    <span class="muControl">break-if</span> at-start-of-line?:boolean
+    before-cursor:address:address:duplex-list/deref<span class="Special"> &lt;- </span>prev-duplex before-cursor:address:address:duplex-list/deref
+    assert before-cursor:address:address:duplex-list/deref, <span class="Constant">[move-to-start-of-line tried to move before start of text]</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> move-to-end-of-line [
+  <span class="Constant">local-scope</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  before-cursor:address:address:duplex-list<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, before-cursor:offset
+  cursor-column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
+  <span class="Comment"># while not at start of line, move </span>
+  <span class="Delimiter">{</span>
+    next:address:duplex-list<span class="Special"> &lt;- </span>next-duplex before-cursor:address:address:duplex-list/deref
+    <span class="muControl">break-unless</span> next:address:duplex-list  <span class="Comment"># end of text</span>
+    nextc:character<span class="Special"> &lt;- </span>get next:address:duplex-list/deref, value:offset
+    at-end-of-line?:boolean<span class="Special"> &lt;- </span>equal nextc:character, <span class="Constant">10:literal/newline</span>
+    <span class="muControl">break-if</span> at-end-of-line?:boolean
+    before-cursor:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy next:address:duplex-list
+    cursor-column:address:number/deref<span class="Special"> &lt;- </span>add cursor-column:address:number/deref, <span class="Constant">1:literal</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># move one past end of line</span>
+  cursor-column:address:number/deref<span class="Special"> &lt;- </span>add cursor-column:address:number/deref, <span class="Constant">1:literal</span>
+]
+
+<span class="muRecipe">recipe</span> delete-to-start-of-line [
+  <span class="Constant">local-scope</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Comment"># compute range to delete</span>
+  init:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, data:offset
+  before-cursor:address:address:duplex-list<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, before-cursor:offset
+  start:address:duplex-list<span class="Special"> &lt;- </span>copy before-cursor:address:address:duplex-list/deref
+  end:address:duplex-list<span class="Special"> &lt;- </span>next-duplex before-cursor:address:address:duplex-list/deref
+  <span class="Delimiter">{</span>
+    at-start-of-text?:boolean<span class="Special"> &lt;- </span>equal start:address:duplex-list, init:address:duplex-list
+    <span class="muControl">break-if</span> at-start-of-text?:boolean
+    curr:character<span class="Special"> &lt;- </span>get start:address:duplex-list/deref, value:offset
+    at-start-of-line?:boolean<span class="Special"> &lt;- </span>equal curr:character, <span class="Constant">10:literal/newline</span>
+    <span class="muControl">break-if</span> at-start-of-line?:boolean
+    start:address:duplex-list<span class="Special"> &lt;- </span>prev-duplex start:address:duplex-list
+    assert start:address:duplex-list, <span class="Constant">[delete-to-start-of-line tried to move before start of text]</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># snip it out</span>
+  start-next:address:address:duplex-list<span class="Special"> &lt;- </span>get-address start:address:duplex-list/deref, next:offset
+  start-next:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy end:address:duplex-list
+  end-prev:address:address:duplex-list<span class="Special"> &lt;- </span>get-address end:address:duplex-list/deref, prev:offset
+  end-prev:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy start:address:duplex-list
+  <span class="Comment"># adjust cursor</span>
+  before-cursor:address:address:duplex-list/deref<span class="Special"> &lt;- </span>prev-duplex end:address:duplex-list
+  left:number<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, left:offset
+  cursor-column:address:number<span class="Special"> &lt;- </span>get-address editor:address:editor-data/deref, cursor-column:offset
+  cursor-column:address:number/deref<span class="Special"> &lt;- </span>copy left:number
+]
+
+<span class="muRecipe">recipe</span> delete-to-end-of-line [
+  <span class="Constant">local-scope</span>
+  editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Comment"># compute range to delete</span>
+  start:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, before-cursor:offset
+  end:address:duplex-list<span class="Special"> &lt;- </span>next-duplex start:address:duplex-list
+  <span class="Delimiter">{</span>
+    at-end-of-text?:boolean<span class="Special"> &lt;- </span>equal end:address:duplex-list, <span class="Constant">0:literal/null</span>
+    <span class="muControl">break-if</span> at-end-of-text?:boolean
+    curr:character<span class="Special"> &lt;- </span>get end:address:duplex-list/deref, value:offset
+    at-end-of-line?:boolean<span class="Special"> &lt;- </span>equal curr:character, <span class="Constant">10:literal/newline</span>
+    <span class="muControl">break-if</span> at-end-of-line?:boolean
+    end:address:duplex-list<span class="Special"> &lt;- </span>next-duplex end:address:duplex-list
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># snip it out</span>
+  start-next:address:address:duplex-list<span class="Special"> &lt;- </span>get-address start:address:duplex-list/deref, next:offset
+  start-next:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy end:address:duplex-list
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> end:address:duplex-list
+    end-prev:address:address:duplex-list<span class="Special"> &lt;- </span>get-address end:address:duplex-list/deref, prev:offset
+    end-prev:address:address:duplex-list/deref<span class="Special"> &lt;- </span>copy start:address:duplex-list
+  <span class="Delimiter">}</span>
+]
+
 <span class="muRecipe">recipe</span> render-all [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  screen:address<span class="Special"> &lt;- </span>render-recipes screen:address, env:address:programming-environment-data
+  screen:address<span class="Special"> &lt;- </span>render-sandbox-side screen:address, env:address:programming-environment-data
+  recipes:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, recipes:offset
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, current-sandbox:offset
+  sandbox-in-focus?:boolean<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
+  update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
+  show-screen screen:address
+  <span class="muControl">reply</span> screen:address/same-as-ingredient:0
+]
+
+<span class="muRecipe">recipe</span> render-minimal [
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   recipes:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, current-sandbox:offset
   sandbox-in-focus?:boolean<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
-  <span class="Comment"># render recipes, along with any warnings</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> sandbox-in-focus?:boolean
+    screen:address<span class="Special"> &lt;- </span>render-recipes screen:address, env:address:programming-environment-data
+    cursor-row:number<span class="Special"> &lt;- </span>get recipes:address:editor-data/deref, cursor-row:offset
+    cursor-column:number<span class="Special"> &lt;- </span>get recipes:address:editor-data/deref, cursor-column:offset
+  <span class="Delimiter">}</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> sandbox-in-focus?:boolean
+    screen:address<span class="Special"> &lt;- </span>render-sandbox-side screen:address, env:address:programming-environment-data
+    cursor-row:number<span class="Special"> &lt;- </span>get current-sandbox:address:editor-data/deref, cursor-row:offset
+    cursor-column:number<span class="Special"> &lt;- </span>get current-sandbox:address:editor-data/deref, cursor-column:offset
+  <span class="Delimiter">}</span>
+  move-cursor screen:address, cursor-row:number, cursor-column:number
+  show-screen screen:address
+  <span class="muControl">reply</span> screen:address/same-as-ingredient:0
+]
+
+<span class="muRecipe">recipe</span> render-recipes [
+  <span class="Constant">local-scope</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  recipes:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, recipes:offset
+  <span class="Comment"># render recipes</span>
   left:number<span class="Special"> &lt;- </span>get recipes:address:editor-data/deref, left:offset
   right:number<span class="Special"> &lt;- </span>get recipes:address:editor-data/deref, right:offset
   row:number, screen:address<span class="Special"> &lt;- </span>render screen:address, recipes:address:editor-data
   recipe-warnings:address:array:character<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, recipe-warnings:offset
   <span class="Delimiter">{</span>
+    <span class="Comment"># print any warnings</span>
     <span class="muControl">break-unless</span> recipe-warnings:address:array:character
     row:number, screen:address<span class="Special"> &lt;- </span>render-string screen:address, recipe-warnings:address:array:character, left:number, right:number, <span class="Constant">1:literal/red</span>, row:number
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    <span class="Comment"># no warnings? move to next lin</span>
+    <span class="Comment"># no warnings? move to next line</span>
     <span class="muControl">break-if</span> recipe-warnings:address:array:character
     row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
   <span class="Delimiter">}</span>
@@ -861,7 +1225,15 @@ container editor-data [
   row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
-  <span class="Comment"># render sandboxes along with warnings for each</span>
+  <span class="muControl">reply</span> screen:address/same-as-ingredient:0
+]
+
+<span class="muRecipe">recipe</span> render-sandbox-side [
+  <span class="Constant">local-scope</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  clear:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, current-sandbox:offset
   left:number<span class="Special"> &lt;- </span>get current-sandbox:address:editor-data/deref, left:offset
   right:number<span class="Special"> &lt;- </span>get current-sandbox:address:editor-data/deref, right:offset
   row:number, screen:address<span class="Special"> &lt;- </span>render screen:address, current-sandbox:address:editor-data
@@ -873,36 +1245,63 @@ container editor-data [
   row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
-  update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
-  show-screen screen:address
+  <span class="muControl">reply-unless</span> clear:boolean, screen:address/same-as-ingredient:0
+  screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
+  <span class="Delimiter">{</span>
+    at-bottom-of-screen?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number, screen-height:number
+    <span class="muControl">break-if</span> at-bottom-of-screen?:boolean
+    move-cursor screen:address, row:number, left:number
+    clear-line-delimited screen:address, left:number, right:number
+    row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
   <span class="muControl">reply</span> screen:address/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> render-sandboxes [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   sandbox:address:sandbox-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="muControl">reply-unless</span> sandbox:address:sandbox-data, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-  screen-height:number<span class="Special"> &lt;- </span>screen-width screen:address
+  screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
   at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number screen-height:number
   <span class="muControl">reply-if</span> at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+<span class="CommentedCode">#?   $print [rendering sandbox ], sandbox:address:sandbox-data, 10:literal/newline</span>
+  <span class="Comment"># render sandbox menu</span>
+  row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+  move-cursor screen:address, row:number, left:number
+  clear-line-delimited screen:address, left:number, right:number
+  print-character screen:address, <span class="Constant">120:literal/x</span>, <span class="Constant">245:literal/grey</span>
+  <span class="Comment"># save menu row so we can detect clicks to it later</span>
+  starting-row:address:number<span class="Special"> &lt;- </span>get-address sandbox:address:sandbox-data/deref, starting-row-on-screen:offset
+  starting-row:address:number/deref<span class="Special"> &lt;- </span>copy row:number
   <span class="Comment"># render sandbox contents</span>
   sandbox-data:address:array:character<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, data:offset
   row:number, screen:address<span class="Special"> &lt;- </span>render-string screen:address, sandbox-data:address:array:character, left:number, right:number, <span class="Constant">7:literal/white</span>, row:number
-  <span class="Comment"># render sandbox warnings or response, in that order</span>
+  <span class="Comment"># render sandbox warnings, screen or response, in that order</span>
   sandbox-response:address:array:character<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, response:offset
   sandbox-warnings:address:array:character<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, warnings:offset
+  sandbox-screen:address<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, screen:offset
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sandbox-warnings:address:array:character
     row:number, screen:address<span class="Special"> &lt;- </span>render-string screen:address, sandbox-warnings:address:array:character, left:number, right:number, <span class="Constant">1:literal/red</span>, row:number
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> sandbox-warnings:address:array:character
+    empty-screen?:boolean<span class="Special"> &lt;- </span>fake-screen-is-clear? sandbox-screen:address
+    <span class="muControl">break-if</span> empty-screen?:boolean
+    row:number, screen:address<span class="Special"> &lt;- </span>render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
+  <span class="Delimiter">}</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> sandbox-warnings:address:array:character
+    <span class="muControl">break-unless</span> empty-screen?:boolean
     row:number, screen:address<span class="Special"> &lt;- </span>render-string screen:address, sandbox-response:address:array:character, left:number, right:number, <span class="Constant">245:literal/grey</span>, row:number
   <span class="Delimiter">}</span>
+  at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number screen-height:number
+  <span class="muControl">reply-if</span> at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
   <span class="Comment"># draw solid line after sandbox</span>
   draw-horizontal screen:address, row:number, left:number, right:number, <span class="Constant">9473:literal/horizontal-double</span>
   <span class="Comment"># draw next sandbox</span>
@@ -912,7 +1311,7 @@ container editor-data [
 ]
 
 <span class="muRecipe">recipe</span> update-cursor [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   recipes:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   current-sandbox:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -1774,6 +2173,425 @@ d]
   ]
 ]
 
+<span class="muScenario">scenario</span> editor-moves-to-start-of-line-with-ctrl-a [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on second line, press ctrl-a</span>
+  assume-console [
+    left-click 2, 3
+    type <span class="Constant">[a]</span>  <span class="Comment"># ctrl-a</span>
+  ]
+  3:event/ctrl-a<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">1:literal/ctrl-a</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">97:literal/a</span>, 3:event/ctrl-a
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    5:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># cursor moves to start of line</span>
+  memory-should-contain [
+    4<span class="Special"> &lt;- </span>2
+    5<span class="Special"> &lt;- </span>0
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-to-start-of-line-with-ctrl-a-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on first line (no newline before), press ctrl-a</span>
+  assume-console [
+    left-click 1, 3
+    type <span class="Constant">[a]</span>  <span class="Comment"># ctrl-a</span>
+  ]
+  3:event/ctrl-a<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">1:literal/ctrl-a</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">97:literal/a</span>, 3:event/ctrl-a
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    5:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># cursor moves to start of line</span>
+  memory-should-contain [
+    4<span class="Special"> &lt;- </span>1
+    5<span class="Special"> &lt;- </span>0
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-to-start-of-line-with-home [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on second line, press 'home'</span>
+  assume-console [
+    left-click 2, 3
+    press 65521  <span class="Comment"># 'home'</span>
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># cursor moves to start of line</span>
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>2
+    4<span class="Special"> &lt;- </span>0
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-to-start-of-line-with-home-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on first line (no newline before), press 'home'</span>
+  assume-console [
+    left-click 1, 3
+    press 65521  <span class="Comment"># 'home'</span>
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># cursor moves to start of line</span>
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>1
+    4<span class="Special"> &lt;- </span>0
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-to-start-of-line-with-ctrl-e [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on first line, press ctrl-e</span>
+  assume-console [
+    left-click 1, 1
+    type <span class="Constant">[e]</span>  <span class="Comment"># ctrl-e</span>
+  ]
+  3:event/ctrl-e<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">5:literal/ctrl-e</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">101:literal/e</span>, 3:event/ctrl-e
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    5:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># cursor moves to end of line</span>
+  memory-should-contain [
+    4<span class="Special"> &lt;- </span>1
+    5<span class="Special"> &lt;- </span>3
+  ]
+  <span class="Comment"># editor inserts future characters at cursor</span>
+  assume-console [
+    type <span class="Constant">[z]</span>
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    5:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  memory-should-contain [
+    4<span class="Special"> &lt;- </span>1
+    5<span class="Special"> &lt;- </span>4
+  ]
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .123z      .</span>
+   <span class="Constant"> .456       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-to-end-of-line-with-ctrl-e-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on second line (no newline after), press ctrl-e</span>
+  assume-console [
+    left-click 2, 1
+    type <span class="Constant">[e]</span>  <span class="Comment"># ctrl-e</span>
+  ]
+  3:event/ctrl-e<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">5:literal/ctrl-e</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">101:literal/e</span>, 3:event/ctrl-e
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    5:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># cursor moves to end of line</span>
+  memory-should-contain [
+    4<span class="Special"> &lt;- </span>2
+    5<span class="Special"> &lt;- </span>3
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-to-end-of-line-with-end [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on first line, press 'end'</span>
+  assume-console [
+    left-click 1, 1
+    press 65520  <span class="Comment"># 'end'</span>
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># cursor moves to end of line</span>
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>1
+    4<span class="Special"> &lt;- </span>3
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-moves-to-end-of-line-with-end-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on second line (no newline after), press 'end'</span>
+  assume-console [
+    left-click 2, 1
+    press 65520  <span class="Comment"># 'end'</span>
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-row:offset
+    4:number<span class="Special"> &lt;- </span>get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  <span class="Comment"># cursor moves to end of line</span>
+  memory-should-contain [
+    3<span class="Special"> &lt;- </span>2
+    4<span class="Special"> &lt;- </span>3
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-deletes-to-start-of-line-with-ctrl-u [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on second line, press ctrl-u</span>
+  assume-console [
+    left-click 2, 2
+    type <span class="Constant">[u]</span>  <span class="Comment"># ctrl-u</span>
+  ]
+  3:event/ctrl-a<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">21:literal/ctrl-u</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">117:literal/u</span>, 3:event/ctrl-u
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># cursor deletes to start of line</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .123       .</span>
+   <span class="Constant"> .6         .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-deletes-to-start-of-line-with-ctrl-u-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on first line (no newline before), press ctrl-u</span>
+  assume-console [
+    left-click 1, 2
+    type <span class="Constant">[u]</span>  <span class="Comment"># ctrl-u</span>
+  ]
+  3:event/ctrl-u<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">21:literal/ctrl-a</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">117:literal/a</span>, 3:event/ctrl-u
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># cursor deletes to start of line</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .3         .</span>
+   <span class="Constant"> .456       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-deletes-to-start-of-line-with-ctrl-u-3 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start past end of line, press ctrl-u</span>
+  assume-console [
+    left-click 1, 3
+    type <span class="Constant">[u]</span>  <span class="Comment"># ctrl-u</span>
+  ]
+  3:event/ctrl-u<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">21:literal/ctrl-a</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">117:literal/a</span>, 3:event/ctrl-u
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># cursor deletes to start of line</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .456       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on first line, press ctrl-k</span>
+  assume-console [
+    left-click 1, 1
+    type <span class="Constant">[k]</span>  <span class="Comment"># ctrl-k</span>
+  ]
+  3:event/ctrl-k<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">11:literal/ctrl-k</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">107:literal/k</span>, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># cursor deletes to end of line</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .1         .</span>
+   <span class="Constant"> .456       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-2 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start on second line (no newline after), press ctrl-k</span>
+  assume-console [
+    left-click 2, 1
+    type <span class="Constant">[k]</span>  <span class="Comment"># ctrl-k</span>
+  ]
+  3:event/ctrl-k<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">11:literal/ctrl-k</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">107:literal/k</span>, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># cursor deletes to end of line</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .123       .</span>
+   <span class="Constant"> .4         .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-3 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start at end of line</span>
+  assume-console [
+    left-click 1, 2
+    type <span class="Constant">[k]</span>  <span class="Comment"># ctrl-k</span>
+  ]
+  3:event/ctrl-k<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">11:literal/ctrl-k</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">107:literal/k</span>, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># cursor deletes to end of line</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .12        .</span>
+   <span class="Constant"> .456       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-4 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start past end of line</span>
+  assume-console [
+    left-click 1, 3
+    type <span class="Constant">[k]</span>  <span class="Comment"># ctrl-k</span>
+  ]
+  3:event/ctrl-k<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">11:literal/ctrl-k</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">107:literal/k</span>, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># cursor deletes to end of line</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .123       .</span>
+   <span class="Constant"> .456       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-5 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start at end of text</span>
+  assume-console [
+    left-click 2, 2
+    type <span class="Constant">[k]</span>  <span class="Comment"># ctrl-k</span>
+  ]
+  3:event/ctrl-k<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">11:literal/ctrl-k</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">107:literal/k</span>, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># cursor deletes to end of line</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .123       .</span>
+   <span class="Constant"> .45        .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-6 [
+  assume-screen <span class="Constant">10:literal/width</span>, <span class="Constant">5:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+<span class="Constant">456]</span>
+  2:address:editor-data<span class="Special"> &lt;- </span>new-editor 1:address:array:character, screen:address, <span class="Constant">0:literal/left</span>, <span class="Constant">10:literal/right</span>
+  <span class="Comment"># start past end of text</span>
+  assume-console [
+    left-click 2, 3
+    type <span class="Constant">[k]</span>  <span class="Comment"># ctrl-k</span>
+  ]
+  3:event/ctrl-k<span class="Special"> &lt;- </span>merge <span class="Constant">0:literal/text</span>, <span class="Constant">11:literal/ctrl-k</span>, <span class="Constant">0:literal/dummy</span>, <span class="Constant">0:literal/dummy</span>
+  replace-in-console <span class="Constant">107:literal/k</span>, 3:event/ctrl-k
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  <span class="Comment"># cursor deletes to end of line</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .123       .</span>
+   <span class="Constant"> .456       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+]
+
 <span class="muScenario">scenario</span> point-at-multiple-editors [
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
   <span class="Comment"># initialize both halves of screen</span>
@@ -1852,7 +2670,7 @@ d]
   screen-should-contain [
    <span class="Constant"> .                                         run (F10)          .</span>
    <span class="Constant"> .abc                           ┊def                          .</span>
-   <span class="Constant"> .                              ┊                             .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                              ┊                             .</span>
    <span class="Constant"> .                              ┊                             .</span>
   ]
@@ -1873,8 +2691,7 @@ d]
   screen-should-contain [
    <span class="Constant"> .           run (F10)          .</span>
    <span class="Constant"> .␣bc            ┊def           .</span>
-<span class="Comment"># artifact of fake console: no events = no render</span>
-<span class="Comment">#   .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .               ┊              .</span>
   ]
   <span class="Comment"># now try typing a letter</span>
@@ -1901,12 +2718,14 @@ container sandbox-data [
   data:address:array:character
   response:address:array:character
   warnings:address:array:character
+  starting-row-on-screen:number  <span class="Comment"># to track clicks on delete</span>
+  screen:address:screen  <span class="Comment"># prints in the sandbox go here</span>
   next-sandbox:address:sandbox-data
 ]
 
 <span class="muScenario">scenario</span> run-and-show-results [
   $close-trace  <span class="Comment"># trace too long for github</span>
-  assume-screen <span class="Constant">100:literal/width</span>, <span class="Constant">12:literal/height</span>
+  assume-screen <span class="Constant">100:literal/width</span>, <span class="Constant">15:literal/height</span>
   <span class="Comment"># recipe editor is empty</span>
   1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
@@ -1924,6 +2743,7 @@ container sandbox-data [
    <span class="Constant"> .                                                                                 run (F10)          .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
    <span class="Constant"> .                                                  ┊divide-with-remainder 11:literal, 3:literal      .</span>
    <span class="Constant"> .                                                  ┊3                                                .</span>
    <span class="Constant"> .                                                  ┊2                                                .</span>
@@ -1934,16 +2754,18 @@ container sandbox-data [
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                   divide-with-remainder 11:literal, 3:literal      .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
   ]
-  screen-should-contain-in-color, <span class="Constant">245:literal/grey</span>, [
+  screen-should-contain-in-color <span class="Constant">245:literal/grey</span>, [
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .                                                  ┊3                                                .</span>
    <span class="Constant"> .                                                  ┊2                                                .</span>
@@ -1964,9 +2786,11 @@ container sandbox-data [
    <span class="Constant"> .                                                                                 run (F10)          .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
    <span class="Constant"> .                                                  ┊add 2:literal, 2:literal                         .</span>
    <span class="Constant"> .                                                  ┊4                                                .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
    <span class="Constant"> .                                                  ┊divide-with-remainder 11:literal, 3:literal      .</span>
    <span class="Constant"> .                                                  ┊3                                                .</span>
    <span class="Constant"> .                                                  ┊2                                                .</span>
@@ -1976,19 +2800,21 @@ container sandbox-data [
 ]
 
 <span class="muRecipe">recipe</span> run-sandboxes [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   recipes:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, current-sandbox:offset
-  <span class="Comment"># load code from recipe editor, save any warnings</span>
+  <span class="Comment"># copy code from recipe editor, persist, load into mu, save any warnings</span>
   in:address:array:character<span class="Special"> &lt;- </span>editor-contents recipes:address:editor-data
+  save <span class="Constant">[recipes.mu]</span>, in:address:array:character
   recipe-warnings:address:address:array:character<span class="Special"> &lt;- </span>get-address env:address:programming-environment-data/deref, recipe-warnings:offset
   recipe-warnings:address:address:array:character/deref<span class="Special"> &lt;- </span>reload in:address:array:character
   <span class="Comment"># check contents of right editor (sandbox)</span>
   <span class="Delimiter">{</span>
     sandbox-contents:address:array:character<span class="Special"> &lt;- </span>editor-contents current-sandbox:address:editor-data
     <span class="muControl">break-unless</span> sandbox-contents:address:array:character
-    <span class="Comment"># if contents exist, run them and turn them into a new sandbox-data</span>
+    <span class="Comment"># if contents exist, first save them</span>
+    <span class="Comment"># run them and turn them into a new sandbox-data</span>
     new-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>new sandbox-data:type
     data:address:address:array:character<span class="Special"> &lt;- </span>get-address new-sandbox:address:sandbox-data/deref, data:offset
     data:address:address:array:character/deref<span class="Special"> &lt;- </span>copy sandbox-contents:address:array:character
@@ -2001,17 +2827,74 @@ container sandbox-data [
     init:address:address:duplex-list<span class="Special"> &lt;- </span>get-address current-sandbox:address:editor-data/deref, data:offset
     init:address:address:duplex-list/deref<span class="Special"> &lt;- </span>push-duplex <span class="Constant">167:literal/§</span>, <span class="Constant">0:literal/tail</span>
   <span class="Delimiter">}</span>
-  <span class="Comment"># rerun other sandboxes</span>
+  <span class="Comment"># save all sandboxes before running, just in case we die when running</span>
+  curr:address:sandbox-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, sandbox:offset
+  filename:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> curr:address:sandbox-data
+    data:address:address:array:character<span class="Special"> &lt;- </span>get-address curr:address:sandbox-data/deref, data:offset
+    save filename:number, data:address:address:array:character/deref
+    filename:number<span class="Special"> &lt;- </span>add filename:number, <span class="Constant">1:literal</span>
+    curr:address:sandbox-data<span class="Special"> &lt;- </span>get curr:address:sandbox-data/deref, next-sandbox:offset
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># run all sandboxes</span>
   curr:address:sandbox-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, sandbox:offset
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr:address:sandbox-data
     data:address:address:array:character<span class="Special"> &lt;- </span>get-address curr:address:sandbox-data/deref, data:offset
     response:address:address:array:character<span class="Special"> &lt;- </span>get-address curr:address:sandbox-data/deref, response:offset
     warnings:address:address:array:character<span class="Special"> &lt;- </span>get-address curr:address:sandbox-data/deref, warnings:offset
-    response:address:address:array:character/deref, warnings:address:address:array:character/deref<span class="Special"> &lt;- </span>run-interactive data:address:address:array:character/deref
+    fake-screen:address:address:screen<span class="Special"> &lt;- </span>get-address curr:address:sandbox-data/deref, screen:offset
+    response:address:address:array:character/deref, warnings:address:address:array:character/deref, fake-screen:address:address:screen/deref<span class="Special"> &lt;- </span>run-interactive data:address:address:array:character/deref
+<span class="CommentedCode">#?     $print warnings:address:address:array:character/deref, [ ], warnings:address:address:array:character/deref/deref, 10:literal/newline</span>
     curr:address:sandbox-data<span class="Special"> &lt;- </span>get curr:address:sandbox-data/deref, next-sandbox:offset
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
+]
+
+<span class="Comment"># was-deleted?:boolean &lt;- delete-sandbox t:touch-event, env:address:programming-environment-data</span>
+<span class="muRecipe">recipe</span> delete-sandbox [
+  <span class="Constant">local-scope</span>
+  t:touch-event<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  click-column:number<span class="Special"> &lt;- </span>get t:touch-event, column:offset
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, current-sandbox:offset
+  right:number<span class="Special"> &lt;- </span>get current-sandbox:address:editor-data/deref, right:offset
+<span class="CommentedCode">#?   $print [comparing column ], click-column:number, [ vs ], right:number, 10:literal/newline</span>
+  at-right?:boolean<span class="Special"> &lt;- </span>equal click-column:number, right:number
+  <span class="muControl">reply-unless</span> at-right?:boolean, <span class="Constant">0:literal/false</span>
+<span class="CommentedCode">#?   $print [trying to delete</span>
+<span class="CommentedCode">#? ] #? 1</span>
+  click-row:number<span class="Special"> &lt;- </span>get t:touch-event, row:offset
+  prev:address:address:sandbox-data<span class="Special"> &lt;- </span>get-address env:address:programming-environment-data/deref, sandbox:offset
+<span class="CommentedCode">#?   $print [prev: ], prev:address:address:sandbox-data, [ -&gt; ], prev:address:address:sandbox-data/deref, 10:literal/newline</span>
+  curr:address:sandbox-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, sandbox:offset
+  <span class="Delimiter">{</span>
+<span class="CommentedCode">#?     $print [next sandbox</span>
+<span class="CommentedCode">#? ] #? 1</span>
+    <span class="muControl">break-unless</span> curr:address:sandbox-data
+    <span class="Comment"># more sandboxes to check</span>
+    <span class="Delimiter">{</span>
+<span class="CommentedCode">#?       $print [checking</span>
+<span class="CommentedCode">#? ] #? 1</span>
+      target-row:number<span class="Special"> &lt;- </span>get curr:address:sandbox-data/deref, starting-row-on-screen:offset
+<span class="CommentedCode">#?       $print [comparing row ], target-row:number, [ vs ], click-row:number, 10:literal/newline</span>
+      delete-curr?:boolean<span class="Special"> &lt;- </span>equal target-row:number, click-row:number
+      <span class="muControl">break-unless</span> delete-curr?:boolean
+<span class="CommentedCode">#?       $print [found!</span>
+<span class="CommentedCode">#? ] #? 1</span>
+      <span class="Comment"># delete this sandbox, rerender and stop</span>
+      prev:address:address:sandbox-data/deref<span class="Special"> &lt;- </span>get curr:address:sandbox-data/deref, next-sandbox:offset
+<span class="CommentedCode">#?       $print [setting prev: ], prev:address:address:sandbox-data, [ -&gt; ], prev:address:address:sandbox-data/deref, 10:literal/newline</span>
+      <span class="muControl">reply</span> <span class="Constant">1:literal/true</span>
+    <span class="Delimiter">}</span>
+    prev:address:address:sandbox-data<span class="Special"> &lt;- </span>get-address curr:address:sandbox-data/deref, next-sandbox:offset
+<span class="CommentedCode">#?     $print [prev: ], prev:address:address:sandbox-data, [ -&gt; ], prev:address:address:sandbox-data/deref, 10:literal/newline</span>
+    curr:address:sandbox-data<span class="Special"> &lt;- </span>get curr:address:sandbox-data/deref, next-sandbox:offset
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">reply</span> <span class="Constant">0:literal/false</span>
 ]
 
 <span class="muScenario">scenario</span> run-updates-results [
@@ -2037,9 +2920,10 @@ container sandbox-data [
    <span class="Constant"> .                                                                                 run (F10)          .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .z:number &lt;- add 2:literal, 2:literal              ┊foo                                              .</span>
-   <span class="Constant"> .]                                                 ┊4                                                .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .z:number &lt;- add 2:literal, 2:literal              ┊                                                x.</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
   <span class="Comment"># make a change (incrementing one of the args to 'add'), then rerun</span>
@@ -2058,9 +2942,10 @@ container sandbox-data [
    <span class="Constant"> .                                                                                 run (F10)          .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .z:number &lt;- add 2:literal, 3:literal              ┊foo                                              .</span>
-   <span class="Constant"> .]                                                 ┊5                                                .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .z:number &lt;- add 2:literal, 3:literal              ┊                                                x.</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊5                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
@@ -2085,6 +2970,7 @@ container sandbox-data [
    <span class="Constant"> .                                                                                 run (F10)          .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
    <span class="Constant"> .                                                  ┊get 1234:number, foo:offset                      .</span>
    <span class="Constant"> .                                                  ┊unknown element foo in container number          .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
@@ -2094,12 +2980,14 @@ container sandbox-data [
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                   get 1234:number, foo:offset                      .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
   ]
-  screen-should-contain-in-color, <span class="Constant">1:literal/red</span>, [
+  screen-should-contain-in-color <span class="Constant">1:literal/red</span>, [
+   <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
@@ -2107,10 +2995,11 @@ container sandbox-data [
    <span class="Constant"> .                                                   unknown element foo in container number          .</span>
    <span class="Constant"> .                                                                                                    .</span>
   ]
-  screen-should-contain-in-color, <span class="Constant">245:literal/grey</span>, [
+  screen-should-contain-in-color <span class="Constant">245:literal/grey</span>, [
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
@@ -2118,8 +3007,137 @@ container sandbox-data [
   ]
 ]
 
+<span class="muScenario">scenario</span> run-instruction-and-print-warnings-only-once [
+  $close-trace  <span class="Comment"># trace too long for github</span>
+  assume-screen <span class="Constant">100:literal/width</span>, <span class="Constant">10:literal/height</span>
+  <span class="Comment"># left editor is empty</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Comment"># right editor contains an illegal instruction</span>
+  2:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:number, foo:offset]</span>
+  3:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  <span class="Comment"># run the code in the editors multiple times</span>
+  assume-console [
+    press 65526  <span class="Comment"># F10</span>
+    press 65526  <span class="Comment"># F10</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  <span class="Comment"># check that screen prints error message just once</span>
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F10)          .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
+   <span class="Constant"> .                                                  ┊get 1234:number, foo:offset                      .</span>
+   <span class="Constant"> .                                                  ┊unknown element foo in container number          .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> deleting-sandboxes [
+  $close-trace  <span class="Comment"># trace too long for github</span>
+  assume-screen <span class="Constant">100:literal/width</span>, <span class="Constant">15:literal/height</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  2:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  3:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  <span class="Comment"># run a few commands</span>
+  assume-console [
+    left-click 1, 80
+    type <span class="Constant">[divide-with-remainder 11:literal, 3:literal]</span>
+    press 65526  <span class="Comment"># F10</span>
+    type <span class="Constant">[add 2:literal, 2:literal]</span>
+    press 65526  <span class="Comment"># F10</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F10)          .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
+   <span class="Constant"> .                                                  ┊add 2:literal, 2:literal                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
+   <span class="Constant"> .                                                  ┊divide-with-remainder 11:literal, 3:literal      .</span>
+   <span class="Constant"> .                                                  ┊3                                                .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># delete second sandbox</span>
+  assume-console [
+    left-click 7, 99
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F10)          .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
+   <span class="Constant"> .                                                  ┊add 2:literal, 2:literal                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># delete first sandbox</span>
+  assume-console [
+    left-click 3, 99
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F10)          .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-instruction-manages-screen-per-sandbox [
+  $close-trace  <span class="Comment"># trace too long for github #? 1</span>
+  assume-screen <span class="Constant">100:literal/width</span>, <span class="Constant">20:literal/height</span>
+  <span class="Comment"># left editor is empty</span>
+  1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Comment"># right editor contains an illegal instruction</span>
+  2:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[print-integer screen:address, 4]</span>
+  3:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
+  <span class="Comment"># run the code in the editor</span>
+  assume-console [
+    press 65526  <span class="Comment"># F10</span>
+  ]
+  run [
+    event-loop screen:address, console:address, 3:address:programming-environment-data
+  ]
+  <span class="Comment"># check that it prints a little 5x5 toy screen</span>
+  <span class="Comment"># hack: screen address is brittle</span>
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F10)          .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                x.</span>
+   <span class="Constant"> .                                                  ┊print-integer screen:address, 4                  .</span>
+   <span class="Constant"> .                                                  ┊screen:                                          .</span>
+   <span class="Constant"> .                                                  ┊  .4    .                                        .</span>
+   <span class="Constant"> .                                                  ┊  .     .                                        .</span>
+   <span class="Constant"> .                                                  ┊  .     .                                        .</span>
+   <span class="Constant"> .                                                  ┊  .     .                                        .</span>
+   <span class="Constant"> .                                                  ┊  .     .                                        .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
 <span class="muRecipe">recipe</span> editor-contents [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   editor:address:editor-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80:literal</span>
   curr:address:duplex-list<span class="Special"> &lt;- </span>get editor:address:editor-data/deref, data:offset
@@ -2159,7 +3177,7 @@ container sandbox-data [
 <span class="SalientComment">## helpers for drawing editor borders</span>
 
 <span class="muRecipe">recipe</span> draw-box [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -2187,7 +3205,7 @@ container sandbox-data [
 ]
 
 <span class="muRecipe">recipe</span> draw-horizontal [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   x:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -2219,7 +3237,7 @@ container sandbox-data [
 ]
 
 <span class="muRecipe">recipe</span> draw-vertical [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   col:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   x:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -2246,7 +3264,7 @@ container sandbox-data [
 ]
 
 <span class="muRecipe">recipe</span> draw-top-left [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -2261,7 +3279,7 @@ container sandbox-data [
 ]
 
 <span class="muRecipe">recipe</span> draw-top-right [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   top:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -2276,7 +3294,7 @@ container sandbox-data [
 ]
 
 <span class="muRecipe">recipe</span> draw-bottom-left [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   bottom:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -2291,7 +3309,7 @@ container sandbox-data [
 ]
 
 <span class="muRecipe">recipe</span> draw-bottom-right [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   bottom:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -2306,7 +3324,7 @@ container sandbox-data [
 ]
 
 <span class="muRecipe">recipe</span> print-string-with-gradient-background [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   s:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   color:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -2316,8 +3334,7 @@ container sandbox-data [
   color-range:number<span class="Special"> &lt;- </span>subtract bg-color2:number, bg-color1:number
   color-quantum:number<span class="Special"> &lt;- </span>divide color-range:number, len:number
 <span class="CommentedCode">#?   close-console #? 2</span>
-<span class="CommentedCode">#?   $print len:number, [, ], color-range:number, [, ], color-quantum:number, [ </span>
-<span class="CommentedCode">#? ] #? 2</span>
+<span class="CommentedCode">#?   $print len:number, [, ], color-range:number, [, ], color-quantum:number, 10:literal/newline</span>
 <span class="CommentedCode">#? #?   $exit #? 3</span>
   bg-color:number<span class="Special"> &lt;- </span>copy bg-color1:number
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
@@ -2328,8 +3345,7 @@ container sandbox-data [
     print-character x:address:screen, c:character, color:number, bg-color:number
     i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
     bg-color:number<span class="Special"> &lt;- </span>add bg-color:number, color-quantum:number
-<span class="CommentedCode">#?     $print [=&gt; ], bg-color:number, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [=&gt; ], bg-color:number, 10:literal/newline</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 <span class="CommentedCode">#?   $exit #? 1</span>
