@@ -3,7 +3,7 @@
 recipe main [
   local-scope
   open-console
-  initial-recipe:address:array:character <- read
+  initial-recipe:address:array:character <- restore
   initial-sandbox:address:array:character <- new [test 2, 2]
   env:address:programming-environment-data <- new-programming-environment 0:literal/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
   event-loop 0:literal/screen, 0:literal/console, env:address:programming-environment-data
