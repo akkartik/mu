@@ -371,7 +371,7 @@ recipe render-string [
   reply row:number/same-as-ingredient:5, screen:address/same-as-ingredient:0
 ]
 
-# row:number, screen:address <- render-screen screen:address, sandbox-screen:address:screen, left:number, right:number, row:number
+# row:number, screen:address <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
 # print the fake sandbox screen to 'screen' with appropriate delimiters
 # leave cursor at start of next line
 recipe render-screen [
@@ -1140,46 +1140,46 @@ recipe render-sandbox-side [
 
 recipe render-sandboxes [
   local-scope
-  screen:address:screen <- next-ingredient
+  screen:address <- next-ingredient
   sandbox:address:sandbox-data <- next-ingredient
   left:number <- next-ingredient
   right:number <- next-ingredient
   row:number <- next-ingredient
-  reply-unless sandbox:address:sandbox-data, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
-  screen-height:number <- screen-height screen:address:screen
+  reply-unless sandbox:address:sandbox-data, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  screen-height:number <- screen-height screen:address
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
   # render sandbox contents
   sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
-  row:number, screen:address:screen <- render-string screen:address:screen, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
+  row:number, screen:address <- render-string screen:address, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
   # render sandbox warnings or response, in that order
   sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
   sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/deref, warnings:offset
-  sandbox-screen:address:screen <- get sandbox:address:sandbox-data/deref, screen:offset
+  sandbox-screen:address <- get sandbox:address:sandbox-data/deref, screen:offset
   {
     break-unless sandbox-warnings:address:array:character
-    row:number, screen:address:screen <- render-string screen:address:screen, sandbox-warnings:address:array:character, left:number, right:number, 1:literal/red, row:number
+    row:number, screen:address <- render-string screen:address, sandbox-warnings:address:array:character, left:number, right:number, 1:literal/red, row:number
   }
   {
     break-if sandbox-warnings:address:array:character
-    row:number, screen:address:screen <- render-string screen:address:screen, sandbox-response:address:array:character, left:number, right:number, 245:literal/grey, row:number
+    row:number, screen:address <- render-string screen:address, sandbox-response:address:array:character, left:number, right:number, 245:literal/grey, row:number
   }
   # render sandbox screen if necessary
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
   {
-    empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address:screen
+    empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address
     break-if empty-screen?:boolean
-    row:number, screen:address:screen <- render-screen screen:address:screen, sandbox-screen:address:screen, left:number, right:number, row:number
+    row:number, screen:address <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
   }
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
   # draw solid line after sandbox
-  draw-horizontal screen:address:screen, row:number, left:number, right:number, 9473:literal/horizontal-double
+  draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
   # draw next sandbox
   next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
-  row:number, screen:address:screen <- render-sandboxes screen:address:screen, next-sandbox:address:sandbox-data, left:number, right:number, row:number
-  reply row:number/same-as-ingredient:4, screen:address:screen/same-as-ingredient:0
+  row:number, screen:address <- render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
+  reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
 ]
 
 recipe update-cursor [
