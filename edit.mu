@@ -471,7 +471,7 @@ scenario editor-initially-wraps-long-lines [
     .def  .
     .     .
   ]
-  screen-should-contain-in-color, 245:literal/grey [
+  screen-should-contain-in-color 245:literal/grey [
     .     .
     .    ↩.
     .     .
@@ -493,7 +493,7 @@ scenario editor-initially-wraps-barely-long-lines [
     .e    .
     .     .
   ]
-  screen-should-contain-in-color, 245:literal/grey [
+  screen-should-contain-in-color 245:literal/grey [
     .     .
     .    ↩.
     .     .
@@ -2620,7 +2620,7 @@ scenario run-and-show-results [
     .                                                                                                    .
     .                                                                                                    .
   ]
-  screen-should-contain-in-color, 245:literal/grey, [
+  screen-should-contain-in-color 245:literal/grey, [
     .                                                                                                    .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -2832,7 +2832,7 @@ scenario run-instruction-and-print-warnings [
     .                                                                                                    .
     .                                                                                                    .
   ]
-  screen-should-contain-in-color, 1:literal/red, [
+  screen-should-contain-in-color 1:literal/red, [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -2841,7 +2841,7 @@ scenario run-instruction-and-print-warnings [
     .                                                   unknown element foo in container number          .
     .                                                                                                    .
   ]
-  screen-should-contain-in-color, 245:literal/grey, [
+  screen-should-contain-in-color 245:literal/grey, [
     .                                                                                                    .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
