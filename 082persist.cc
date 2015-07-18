@@ -1,13 +1,13 @@
 //: Dead simple persistence.
-//:   'read' - reads string from a hardcoded file
+//:   'restore' - reads string from a hardcoded file
 //:   'save' - writes string to a hardcoded file
 
 :(before "End Primitive Recipe Declarations")
-READ,
+RESTORE,
 :(before "End Primitive Recipe Numbers")
-Recipe_ordinal["read"] = READ;
+Recipe_ordinal["restore"] = RESTORE;
 :(before "End Primitive Recipe Implementations")
-case READ: {
+case RESTORE: {
   products.resize(1);
   products.at(0).push_back(new_string(slurp("lesson/recipe.mu")));
   break;
