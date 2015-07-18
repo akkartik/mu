@@ -304,7 +304,7 @@ recipe render [
 # row:number, screen:address <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
 # move cursor at start of next line
 # print a string 's' to 'editor' in 'color' starting at 'row'
-# leave cursor at start of next line
+# clear rest of last line, but don't move cursor to next line
 recipe render-string [
   local-scope
   screen:address <- next-ingredient
@@ -384,15 +384,14 @@ recipe render-screen [
   row:number <- add row:number, 1:literal
   reply-unless s:address:screen, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
   # print 'screen:'
-  column:number <- copy left:number
-  move-cursor screen:address, row:number, column:number
-  screen-height:number <- screen-height screen:address
   header:address:array:character <- new [screen:]
   row:number <- subtract row:number, 1:literal  # compensate for render-string below
   row:number <- render-string screen:address, header:address:array:character, left:number, right:number, 245:literal/grey, row:number
+  # newline
+  row:number <- add row:number, 1:literal
+  move-cursor screen:address, row:number, left:number
   # start printing s
   column:number <- copy left:number
-  move-cursor screen:address, row:number, column:number
   s-width:number <- screen-width s:address:screen
   s-height:number <- screen-height s:address:screen
   buf:address:array:screen-cell <- get s:address:screen/deref, data:offset
@@ -400,6 +399,7 @@ recipe render-screen [
   max-column:number <- min stop-printing:number, right:number
   i:number <- copy 0:literal
   len:number <- length buf:address:array:screen-cell/deref
+  screen-height:number <- screen-height screen:address
   {
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
@@ -417,7 +417,8 @@ recipe render-screen [
       row-done?:boolean <- greater-or-equal column:number, max-column:number
       break-if row-done?:boolean
       curr:screen-cell <- index buf:address:array:screen-cell/deref, i:number
-      print-character screen:address, 32:literal/space
+      c:character <- get curr:screen-cell, contents:offset
+      print-character screen:address, c:character, 245:literal/grey
       column:number <- add column:number, 1:literal
       i:number <- add i:number, 1:literal
       loop
@@ -1182,7 +1183,7 @@ recipe render-sandboxes [
   # render sandbox contents
   sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
   row:number, screen:address <- render-string screen:address, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
-  # render sandbox warnings or response, in that order
+  # render sandbox warnings, screen or response, in that order
   sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
   sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/deref, warnings:offset
   sandbox-screen:address <- get sandbox:address:sandbox-data/deref, screen:offset
@@ -1192,15 +1193,14 @@ recipe render-sandboxes [
   }
   {
     break-if sandbox-warnings:address:array:character
-    row:number, screen:address <- render-string screen:address, sandbox-response:address:array:character, left:number, right:number, 245:literal/grey, row:number
-  }
-  # render sandbox screen if necessary
-  at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-  {
     empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address
     break-if empty-screen?:boolean
     row:number, screen:address <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
+  }
+  {
+    break-if sandbox-warnings:address:array:character
+    break-unless empty-screen?:boolean
+    row:number, screen:address <- render-string screen:address, sandbox-response:address:array:character, left:number, right:number, 245:literal/grey, row:number
   }
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
@@ -3018,8 +3018,8 @@ scenario run-instruction-manages-screen-per-sandbox [
     .                                                                                 run (F10)          .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                x.
     .                                                  ┊print-integer screen:address, 4                  .
-    .                                                  ┊5557                                             .
     .                                                  ┊screen:                                          .
     .                                                  ┊  .4    .                                        .
     .                                                  ┊  .     .                                        .
