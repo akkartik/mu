@@ -2,8 +2,9 @@
 
 recipe main [
   local-scope
-  open-console
-  initial-recipe:address:array:character <- restore
+  open-console #? 1
+  initial-recipe:address:array:character <- restore [recipes.mu]
+#?   $exit #? 1
   initial-sandbox:address:array:character <- new [test 2, 2]
   env:address:programming-environment-data <- new-programming-environment 0:literal/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
   event-loop 0:literal/screen, 0:literal/console, env:address:programming-environment-data
@@ -2770,7 +2771,7 @@ recipe run-sandboxes [
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   # copy code from recipe editor, persist, load into mu, save any warnings
   in:address:array:character <- editor-contents recipes:address:editor-data
-  save in:address:array:character
+  save [recipes.mu], in:address:array:character
   recipe-warnings:address:address:array:character <- get-address env:address:programming-environment-data/deref, recipe-warnings:offset
   recipe-warnings:address:address:array:character/deref <- reload in:address:array:character
   # check contents of right editor (sandbox)
@@ -2790,6 +2791,17 @@ recipe run-sandboxes [
     # clear sandbox editor
     init:address:address:duplex-list <- get-address current-sandbox:address:editor-data/deref, data:offset
     init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
+  }
+  # save all sandboxes before running, just in case we die when running
+  curr:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
+  filename:number <- copy 0:literal
+  {
+    break-unless curr:address:sandbox-data
+    data:address:address:array:character <- get-address curr:address:sandbox-data/deref, data:offset
+    save filename:number, data:address:address:array:character/deref
+    filename:number <- add filename:number, 1:literal
+    curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
+    loop
   }
   # run all sandboxes
   curr:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset

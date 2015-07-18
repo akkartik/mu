@@ -1,6 +1,6 @@
 //: Dead simple persistence.
-//:   'restore' - reads string from a hardcoded file
-//:   'save' - writes string to a hardcoded file
+//:   'restore' - reads string from a file
+//:   'save' - writes string to a file
 
 :(before "End Primitive Recipe Declarations")
 RESTORE,
@@ -8,13 +8,16 @@ RESTORE,
 Recipe_ordinal["restore"] = RESTORE;
 :(before "End Primitive Recipe Implementations")
 case RESTORE: {
+  if (!scalar(ingredients.at(0)))
+    raise << "restore: illegal operand " << current_instruction().ingredients.at(0).to_string() << '\n';
   products.resize(1);
-  products.at(0).push_back(new_string(slurp("lesson/recipe.mu")));
+  products.at(0).push_back(new_string(slurp("lesson/"+current_instruction().ingredients.at(0).name)));
   break;
 }
 
 :(code)
 string slurp(const string& filename) {
+//?   cerr << filename << '\n'; //? 1
   ostringstream result;
   ifstream fin(filename.c_str());
   fin.peek();
@@ -27,6 +30,7 @@ string slurp(const string& filename) {
     result << buf;
   }
   fin.close();
+//?   cerr << "=> " << result.str(); //? 1
   return result.str();
 }
 
@@ -37,14 +41,22 @@ Recipe_ordinal["save"] = SAVE;
 :(before "End Primitive Recipe Implementations")
 case SAVE: {
   if (!scalar(ingredients.at(0)))
-    raise << "save: illegal operand " << current_instruction().ingredients.at(0).to_string() << '\n';
-  string contents = to_string(ingredients.at(0).at(0));
-  ofstream fout("lesson/recipe.mu");
+    raise << "save: illegal operand 0 " << current_instruction().ingredients.at(0).to_string() << '\n';
+  string filename = current_instruction().ingredients.at(0).name;
+  if (!is_literal(current_instruction().ingredients.at(0))) {
+    ostringstream tmp;
+    tmp << ingredients.at(0).at(0);
+    filename = tmp.str();
+  }
+  ofstream fout(("lesson/"+filename).c_str());
+  if (!scalar(ingredients.at(1)))
+    raise << "save: illegal operand 1 " << current_instruction().ingredients.at(1).to_string() << '\n';
+  string contents = to_string(ingredients.at(1).at(0));
   fout << contents;
   fout.close();
   if (!exists("lesson/.git")) break;
   // bug in git: git diff -q messes up --exit-code
-  int status = system("cd lesson; git diff --exit-code >/dev/null || git commit -a -m . >/dev/null");
+  int status = system("cd lesson; git add .; git diff HEAD --exit-code >/dev/null || git commit -a -m . >/dev/null");
   if (status != 0)
     raise << "error in commit: contents " << contents << '\n';
   break;
