@@ -542,7 +542,7 @@ f]
     .f    .
     .     .
   ]
-  screen-should-contain-in-color 4:literal/blue, [
+  screen-should-contain-in-color 12:literal/lightblue, [
     .     .
     .     .
     .# de .
@@ -594,12 +594,12 @@ recipe get-color [
     starting-comment?:boolean <- equal c:character, 35:literal/#
     break-unless starting-comment?:boolean
 #?     $print [switch color back to blue], 10:literal/newline #? 1
-    color:number <- copy 4:literal/blue
+    color:number <- copy 12:literal/lightblue
     jump +exit:label
   }
   # if color is blue and next character is newline, switch color to white
   {
-    color-is-blue?:boolean <- equal color:number, 4:literal/blue
+    color-is-blue?:boolean <- equal color:number, 12:literal/lightblue
     break-unless color-is-blue?:boolean
     ending-comment?:boolean <- equal c:character, 10:literal/newline
     break-unless ending-comment?:boolean
@@ -663,7 +663,7 @@ e]
     .e    .
     .     .
   ]
-  screen-should-contain-in-color 4:literal/blue, [
+  screen-should-contain-in-color 12:literal/lightblue, [
     .     .
     .     .
     .#[d] .
@@ -687,7 +687,7 @@ c]
     .c    .
     .     .
   ]
-  screen-should-contain-in-color 4:literal/blue, [
+  screen-should-contain-in-color 12:literal/lightblue, [
     # nothing
     .     .
     .     .
