@@ -158,8 +158,8 @@ void setup_recipes() {
 //: itself.
 :(before "End One-time Setup")
 setup_recipes();
-assert(MAX_PRIMITIVE_RECIPES < 100);  // level 0 is primitives; until 99
-Next_recipe_ordinal = 100;
+assert(MAX_PRIMITIVE_RECIPES < 200);  // level 0 is primitives; until 199
+Next_recipe_ordinal = 200;
 // End Load Recipes
 :(before "End Test Run Initialization")
 assert(Next_recipe_ordinal < 1000);  // recipes being tested didn't overflow into test space
