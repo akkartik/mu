@@ -566,28 +566,6 @@ recipe get-color [
   c:character <- next-ingredient
   color-is-white?:boolean <- equal color:number, 7:literal/white
 #?   $print [character: ], c:character, 10:literal/newline #? 1
-  # if inside a string, ignore
-  {
-    break-unless color-is-white?:boolean  # ignore strings inside comments
-#?     $print [not inside comment], 10:literal/newline
-    {
-      string-start?:boolean <- equal c:character, 91:literal/[
-      break-unless string-start?:boolean
-      highlighting-state:number <- add highlighting-state:number, 1:literal
-    }
-    {
-      string-end?:boolean <- equal c:character, 93:literal/]
-      break-unless string-end?:boolean
-      highlighting-state:number <- subtract highlighting-state:number, 1:literal
-    }
-    {
-      unbalanced-paren?:boolean <- lesser-than highlighting-state:number, 0:literal
-      break-unless unbalanced-paren?:boolean
-      reply 1:literal/red, 1:literal/never-reset-red
-    }
-    inside-string?:boolean <- greater-than highlighting-state:number, 0:literal
-    jump-if inside-string?:boolean, +exit:label
-  }
   # if color is white and next character is '#', switch color to blue
   {
     break-unless color-is-white?:boolean
@@ -607,7 +585,7 @@ recipe get-color [
     color:number <- copy 7:literal/white
     jump +exit:label
   }
-  # if color is white (no comments or strings) and next character is '<', switch color to red
+  # if color is white (no comments) and next character is '<', switch color to red
   {
     break-unless color-is-white?:boolean
     starting-assignment?:boolean <- equal c:character, 60:literal/<
@@ -615,10 +593,8 @@ recipe get-color [
     color:number <- copy 1:literal/red
     jump +exit:label
   }
-  # if color is red and highlight is 0 (not an error) and next character is space, switch color to white
+  # if color is red and next character is space, switch color to white
   {
-    inside-string?:boolean <- greater-than highlighting-state:number, 0:literal
-    break-if inside-string?:boolean
     color-is-red?:boolean <- equal color:number, 1:literal/red
     break-unless color-is-red?:boolean
     ending-assignment?:boolean <- equal c:character, 32:literal/space
@@ -629,96 +605,6 @@ recipe get-color [
   # otherwise no change
   +exit
   reply color:number, highlighting-state:number
-]
-
-scenario render-ignores-comments-inside-strings [
-  assume-screen 5:literal/width, 5:literal/height
-  run [
-    s:address:array:character <- new [abc
-[#d]
-e]
-    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
-  ]
-  screen-should-contain-in-color 7:literal/white, [
-    .     .
-    .abc  .
-    .[#d] .
-    .e    .
-    .     .
-  ]
-]
-
-scenario render-handles-strings-inside-comments [
-  assume-screen 5:literal/width, 5:literal/height
-  run [
-    s:address:array:character <- new [abc
-#[d]
-e]
-    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
-  ]
-  screen-should-contain [
-    .     .
-    .abc  .
-    .#[d] .
-    .e    .
-    .     .
-  ]
-  screen-should-contain-in-color 12:literal/lightblue, [
-    .     .
-    .     .
-    .#[d] .
-    .     .
-    .     .
-  ]
-]
-
-scenario render-handles-nested-strings [
-  assume-screen 5:literal/width, 5:literal/height
-  run [
-    s:address:array:character <- new [[[a]
-#b]
-c]
-    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
-  ]
-  screen-should-contain [
-    .     .
-    .[[a] .
-    .#b]  .
-    .c    .
-    .     .
-  ]
-  screen-should-contain-in-color 12:literal/lightblue, [
-    # nothing
-    .     .
-    .     .
-    .     .
-    .     .
-    .     .
-  ]
-]
-
-scenario render-flags-unbalanced-close-bracket [
-  assume-screen 5:literal/width, 5:literal/height
-  run [
-    s:address:array:character <- new [abc
-d\\\\\\\]
-e]
-    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
-  ]
-  screen-should-contain [
-    .     .
-    .abc  .
-    .d\\\]   .
-    .e    .
-    .     .
-  ]
-  screen-should-contain-in-color 1:literal/red, [
-    .     .
-    .     .
-    . \\\]   .
-    .e    .
-    .     .
-  ]
 ]
 
 scenario render-colors-assignment [
