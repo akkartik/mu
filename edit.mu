@@ -3,7 +3,8 @@
 recipe main [
   local-scope
   open-console
-  initial-recipe:address:array:character <- new [recipe test [
+  initial-recipe:address:array:character <- new [# example: add two numbers
+recipe test [
   x:number <- next-ingredient
   y:number <- next-ingredient
   z:number <- add x:number, y:number
@@ -167,6 +168,9 @@ recipe render [
   screen-height:number <- screen-height screen:address
   right:number <- get editor:address:editor-data/deref, right:offset
   hide-screen screen:address
+  # highlight mu code with color
+  color:number <- copy 7:literal/white
+  highlighting-state:number <- copy 0:literal/normal
   # traversing editor
   curr:address:duplex-list <- get editor:address:editor-data/deref, data:offset
   prev:address:duplex-list <- copy curr:address:duplex-list
@@ -194,6 +198,7 @@ recipe render [
       before-cursor:address:address:duplex-list/deref <- prev-duplex curr:address:duplex-list
     }
     c:character <- get curr:address:duplex-list/deref, value:offset
+    color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
     {
       # newline? move to left rather than 0
       newline?:boolean <- equal c:character, 10:literal/newline
@@ -230,7 +235,7 @@ recipe render [
       # don't increment curr
       loop +next-character:label
     }
-    print-character screen:address, c:character
+    print-character screen:address, c:character, color:number
     curr:address:duplex-list <- next-duplex curr:address:duplex-list
     prev:address:duplex-list <- next-duplex prev:address:duplex-list
     column:number <- add column:number, 1:literal
@@ -517,6 +522,226 @@ scenario editor-initializes-empty-text [
   memory-should-contain [
     3 <- 1  # cursor row
     4 <- 0  # cursor column
+  ]
+]
+
+## highlighting mu code
+
+scenario render-colors-comments [
+  assume-screen 5:literal/width, 5:literal/height
+  run [
+    s:address:array:character <- new [abc
+# de
+f]
+    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  ]
+  screen-should-contain [
+    .     .
+    .abc  .
+    .# de .
+    .f    .
+    .     .
+  ]
+  screen-should-contain-in-color 4:literal/blue, [
+    .     .
+    .     .
+    .# de .
+    .     .
+    .     .
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .     .
+    .abc  .
+    .     .
+    .f    .
+    .     .
+  ]
+]
+
+# color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+recipe get-color [
+  local-scope
+  color:number <- next-ingredient
+  highlighting-state:number <- next-ingredient
+  c:character <- next-ingredient
+  color-is-white?:boolean <- equal color:number, 7:literal/white
+#?   $print [character: ], c:character, 10:literal/newline #? 1
+  # if inside a string, ignore
+  {
+    break-unless color-is-white?:boolean  # ignore strings inside comments
+#?     $print [not inside comment], 10:literal/newline
+    {
+      string-start?:boolean <- equal c:character, 91:literal/[
+      break-unless string-start?:boolean
+      highlighting-state:number <- add highlighting-state:number, 1:literal
+    }
+    {
+      string-end?:boolean <- equal c:character, 93:literal/]
+      break-unless string-end?:boolean
+      highlighting-state:number <- subtract highlighting-state:number, 1:literal
+    }
+    {
+      unbalanced-paren?:boolean <- lesser-than highlighting-state:number, 0:literal
+      break-unless unbalanced-paren?:boolean
+      reply 1:literal/red, 1:literal/never-reset-red
+    }
+    inside-string?:boolean <- greater-than highlighting-state:number, 0:literal
+    jump-if inside-string?:boolean, +exit:label
+  }
+  # if color is white and next character is '#', switch color to blue
+  {
+    break-unless color-is-white?:boolean
+    starting-comment?:boolean <- equal c:character, 35:literal/#
+    break-unless starting-comment?:boolean
+#?     $print [switch color back to blue], 10:literal/newline #? 1
+    color:number <- copy 4:literal/blue
+    jump +exit:label
+  }
+  # if color is blue and next character is newline, switch color to white
+  {
+    color-is-blue?:boolean <- equal color:number, 4:literal/blue
+    break-unless color-is-blue?:boolean
+    ending-comment?:boolean <- equal c:character, 10:literal/newline
+    break-unless ending-comment?:boolean
+#?     $print [switch color back to white], 10:literal/newline #? 1
+    color:number <- copy 7:literal/white
+    jump +exit:label
+  }
+  # if color is white (no comments or strings) and next character is '<', switch color to red
+  {
+    break-unless color-is-white?:boolean
+    starting-assignment?:boolean <- equal c:character, 60:literal/<
+    break-unless starting-assignment?:boolean
+    color:number <- copy 1:literal/red
+    jump +exit:label
+  }
+  # if color is red and highlight is 0 (not an error) and next character is space, switch color to white
+  {
+    inside-string?:boolean <- greater-than highlighting-state:number, 0:literal
+    break-if inside-string?:boolean
+    color-is-red?:boolean <- equal color:number, 1:literal/red
+    break-unless color-is-red?:boolean
+    ending-assignment?:boolean <- equal c:character, 32:literal/space
+    break-unless ending-assignment?:boolean
+    color:number <- copy 7:literal/white
+    jump +exit:label
+  }
+  # otherwise no change
+  +exit
+  reply color:number, highlighting-state:number
+]
+
+scenario render-ignores-comments-inside-strings [
+  assume-screen 5:literal/width, 5:literal/height
+  run [
+    s:address:array:character <- new [abc
+[#d]
+e]
+    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  ]
+  screen-should-contain-in-color 7:literal/white, [
+    .     .
+    .abc  .
+    .[#d] .
+    .e    .
+    .     .
+  ]
+]
+
+scenario render-handles-strings-inside-comments [
+  assume-screen 5:literal/width, 5:literal/height
+  run [
+    s:address:array:character <- new [abc
+#[d]
+e]
+    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  ]
+  screen-should-contain [
+    .     .
+    .abc  .
+    .#[d] .
+    .e    .
+    .     .
+  ]
+  screen-should-contain-in-color 4:literal/blue, [
+    .     .
+    .     .
+    .#[d] .
+    .     .
+    .     .
+  ]
+]
+
+scenario render-handles-nested-strings [
+  assume-screen 5:literal/width, 5:literal/height
+  run [
+    s:address:array:character <- new [[[a]
+#b]
+c]
+    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  ]
+  screen-should-contain [
+    .     .
+    .[[a] .
+    .#b]  .
+    .c    .
+    .     .
+  ]
+  screen-should-contain-in-color 4:literal/blue, [
+    # nothing
+    .     .
+    .     .
+    .     .
+    .     .
+    .     .
+  ]
+]
+
+scenario render-flags-unbalanced-close-bracket [
+  assume-screen 5:literal/width, 5:literal/height
+  run [
+    s:address:array:character <- new [abc
+d\\\\\\\]
+e]
+    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  ]
+  screen-should-contain [
+    .     .
+    .abc  .
+    .d\\\]   .
+    .e    .
+    .     .
+  ]
+  screen-should-contain-in-color 1:literal/red, [
+    .     .
+    .     .
+    . \\\]   .
+    .e    .
+    .     .
+  ]
+]
+
+scenario render-colors-assignment [
+  assume-screen 8:literal/width, 5:literal/height
+  run [
+    s:address:array:character <- new [abc
+d <- e
+f]
+    new-editor s:address:array:character, screen:address, 0:literal/left, 8:literal/right
+  ]
+  screen-should-contain [
+    .        .
+    .abc     .
+    .d <- e  .
+    .f       .
+    .        .
+  ]
+  screen-should-contain-in-color 1:literal/red, [
+    .        .
+    .        .
+    .  <-    .
+    .        .
+    .        .
   ]
 ]
 
