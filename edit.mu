@@ -3,13 +3,7 @@
 recipe main [
   local-scope
   open-console
-  initial-recipe:address:array:character <- new [# example: add two numbers
-recipe test [
-  x:number <- next-ingredient
-  y:number <- next-ingredient
-  z:number <- add x:number, y:number
-  reply z:number
-]]
+  initial-recipe:address:array:character <- read
   initial-sandbox:address:array:character <- new [test 2, 2]
   env:address:programming-environment-data <- new-programming-environment 0:literal/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
   event-loop 0:literal/screen, 0:literal/console, env:address:programming-environment-data
@@ -2774,15 +2768,17 @@ recipe run-sandboxes [
   env:address:programming-environment-data <- next-ingredient
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
-  # load code from recipe editor, save any warnings
+  # copy code from recipe editor, persist, load into mu, save any warnings
   in:address:array:character <- editor-contents recipes:address:editor-data
+  save in:address:array:character
   recipe-warnings:address:address:array:character <- get-address env:address:programming-environment-data/deref, recipe-warnings:offset
   recipe-warnings:address:address:array:character/deref <- reload in:address:array:character
   # check contents of right editor (sandbox)
   {
     sandbox-contents:address:array:character <- editor-contents current-sandbox:address:editor-data
     break-unless sandbox-contents:address:array:character
-    # if contents exist, run them and turn them into a new sandbox-data
+    # if contents exist, first save them
+    # run them and turn them into a new sandbox-data
     new-sandbox:address:sandbox-data <- new sandbox-data:type
     data:address:address:array:character <- get-address new-sandbox:address:sandbox-data/deref, data:offset
     data:address:address:array:character/deref <- copy sandbox-contents:address:array:character
