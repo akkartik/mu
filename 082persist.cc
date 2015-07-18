@@ -42,9 +42,19 @@ case SAVE: {
   ofstream fout("lesson/recipe.mu");
   fout << contents;
   fout.close();
+  if (!exists("lesson/.git")) break;
   // bug in git: git diff -q messes up --exit-code
   int status = system("cd lesson; git diff --exit-code >/dev/null || git commit -a -m . >/dev/null");
   if (status != 0)
     raise << "error in commit: contents " << contents << '\n';
   break;
 }
+
+:(code)
+bool exists(const string& filename) {
+  struct stat dummy;
+  return 0 == stat(filename.c_str(), &dummy);
+}
+
+:(before "End Includes")
+#include<sys/stat.h>
