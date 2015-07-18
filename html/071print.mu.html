@@ -49,14 +49,13 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> new-fake-screen [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   result:address:screen<span class="Special"> &lt;- </span>new screen:type
   width:address:number<span class="Special"> &lt;- </span>get-address result:address:screen/deref, num-columns:offset
   width:address:number/deref<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   height:address:number<span class="Special"> &lt;- </span>get-address result:address:screen/deref, num-rows:offset
   height:address:number/deref<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-<span class="CommentedCode">#?   $print height:address:number/deref, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?   $print height:address:number/deref, 10:literal/newline</span>
   row:address:number<span class="Special"> &lt;- </span>get-address result:address:screen/deref, cursor-row:offset
   row:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
   column:address:number<span class="Special"> &lt;- </span>get-address result:address:screen/deref, cursor-column:offset
@@ -69,7 +68,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> clear-screen [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
 <span class="CommentedCode">#?   $print [clearing screen</span>
 <span class="CommentedCode">#? ] #? 1</span>
@@ -103,8 +102,28 @@ container screen-cell [
   <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
 ]
 
+<span class="muRecipe">recipe</span> fake-screen-is-clear? [
+  <span class="Constant">local-scope</span>
+  screen:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="muControl">reply-unless</span> screen:address:screen, <span class="Constant">1:literal/true</span>
+  buf:address:array:screen-cell<span class="Special"> &lt;- </span>get screen:address:screen/deref, data:offset
+  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  len:number<span class="Special"> &lt;- </span>length buf:address:array:screen-cell/deref
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i:number, len:number
+    <span class="muControl">break-if</span> done?:boolean
+    curr:screen-cell<span class="Special"> &lt;- </span>index buf:address:array:screen-cell/deref, i:number
+    curr-contents:character<span class="Special"> &lt;- </span>get curr:screen-cell, contents:offset
+    i:number<span class="Special"> &lt;- </span>add i:number, <span class="Constant">1:literal</span>
+    <span class="muControl">loop-unless</span> curr-contents:character
+    <span class="Comment"># not 0</span>
+    <span class="muControl">reply</span> <span class="Constant">0:literal/false</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">reply</span> <span class="Constant">1:literal/true</span>
+]
+
 <span class="muRecipe">recipe</span> print-character [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   c:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -124,15 +143,23 @@ container screen-cell [
     <span class="Comment"># if x exists</span>
     <span class="Comment"># (handle special cases exactly like in the real screen)</span>
     <span class="muControl">break-unless</span> x:address:screen
-    row:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-row:offset
-    column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
     width:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
     height:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-rows:offset
+    <span class="Comment"># if cursor is out of bounds, silently exit</span>
+    row:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-row:offset
+    legal?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:address:number/deref, <span class="Constant">0:literal</span>
+    <span class="muControl">reply-unless</span> legal?:boolean, x:address:screen
+    legal?:boolean<span class="Special"> &lt;- </span>lesser-than row:address:number/deref, height:number
+    <span class="muControl">reply-unless</span> legal?:boolean, x:address:screen
+    column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
+    legal?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:number/deref, <span class="Constant">0:literal</span>
+    <span class="muControl">reply-unless</span> legal?:boolean, x:address:screen
+    legal?:boolean<span class="Special"> &lt;- </span>lesser-than column:address:number/deref, width:number
+    <span class="muControl">reply-unless</span> legal?:boolean, x:address:screen
     <span class="Comment"># special-case: newline</span>
     <span class="Delimiter">{</span>
       newline?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">10:literal/newline</span>
-<span class="CommentedCode">#?       $print c:character, [ ], newline?:boolean, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?       $print c:character, [ ], newline?:boolean, 10:literal/newline</span>
       <span class="muControl">break-unless</span> newline?:boolean
       <span class="Delimiter">{</span>
         <span class="Comment"># unless cursor is already at bottom</span>
@@ -146,11 +173,10 @@ container screen-cell [
       <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
     <span class="Delimiter">}</span>
     <span class="Comment"># save character in fake screen</span>
-<span class="CommentedCode">#?     $print row:address:number/deref, [, ], column:address:number/deref, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
     index:number<span class="Special"> &lt;- </span>multiply row:address:number/deref, width:number
     index:number<span class="Special"> &lt;- </span>add index:number, column:address:number/deref
     buf:address:array:screen-cell<span class="Special"> &lt;- </span>get x:address:screen/deref, data:offset
+    len:number<span class="Special"> &lt;- </span>length buf:address:array:screen-cell/deref
     <span class="Comment"># special-case: backspace</span>
     <span class="Delimiter">{</span>
       backspace?:boolean<span class="Special"> &lt;- </span>equal c:character, <span class="Constant">8:literal</span>
@@ -170,8 +196,7 @@ container screen-cell [
       <span class="Delimiter">}</span>
       <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
     <span class="Delimiter">}</span>
-<span class="CommentedCode">#?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, 10:literal/newline</span>
     cursor:address:screen-cell<span class="Special"> &lt;- </span>index-address buf:address:array:screen-cell/deref, index:number
     cursor-contents:address:character<span class="Special"> &lt;- </span>get-address cursor:address:screen-cell/deref, contents:offset
     cursor-color:address:number<span class="Special"> &lt;- </span>get-address cursor:address:screen-cell/deref, color:offset
@@ -348,7 +373,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> clear-line [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, clear line in fake screen</span>
   <span class="Delimiter">{</span>
@@ -359,8 +384,7 @@ container screen-cell [
     <span class="Comment"># space over the entire line</span>
 <span class="CommentedCode">#?     $start-tracing #? 1</span>
     <span class="Delimiter">{</span>
-<span class="CommentedCode">#?       $print column:address:number/deref, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?       $print column:address:number/deref, 10:literal/newline</span>
       right:number<span class="Special"> &lt;- </span>subtract width:number, <span class="Constant">1:literal</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:number/deref, right:number
       <span class="muControl">break-if</span> done?:boolean
@@ -377,7 +401,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> cursor-position [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, lookup cursor in fake screen</span>
   <span class="Delimiter">{</span>
@@ -391,7 +415,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> move-cursor [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   new-row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   new-column:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -441,23 +465,22 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> cursor-down [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> x:address:screen
     <span class="Delimiter">{</span>
-      <span class="Comment"># if row &lt; height</span>
+      <span class="Comment"># if row &lt; height-1</span>
       height:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-rows:offset
       row:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-row:offset
-      at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:address:number/deref, height:number
+      max:number<span class="Special"> &lt;- </span>subtract height:number, <span class="Constant">1:literal</span>
+      at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:address:number/deref, max:number
       <span class="muControl">break-if</span> at-bottom?:boolean
       <span class="Comment"># row = row+1</span>
-<span class="CommentedCode">#?       $print [AAA: ], row:address:number, [ -&gt; ], row:address:number/deref, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?       $print [AAA: ], row:address:number, [ -&gt; ], row:address:number/deref, 10:literal/newline</span>
       row:address:number/deref<span class="Special"> &lt;- </span>add row:address:number/deref, <span class="Constant">1:literal</span>
-<span class="CommentedCode">#?       $print [BBB: ], row:address:number, [ -&gt; ], row:address:number/deref, [ </span>
-<span class="CommentedCode">#? ] #? 1</span>
+<span class="CommentedCode">#?       $print [BBB: ], row:address:number, [ -&gt; ], row:address:number/deref, 10:literal/newline</span>
 <span class="CommentedCode">#?       $start-tracing #? 1</span>
     <span class="Delimiter">}</span>
     <span class="muControl">reply</span> x:address:screen/same-as-ingredient:0
@@ -468,15 +491,15 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> cursor-up [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> x:address:screen
     <span class="Delimiter">{</span>
-      <span class="Comment"># if row &gt;= 0</span>
+      <span class="Comment"># if row &gt; 0</span>
       row:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-row:offset
-      at-top?:boolean<span class="Special"> &lt;- </span>lesser-than row:address:number/deref, <span class="Constant">0:literal</span>
+      at-top?:boolean<span class="Special"> &lt;- </span>lesser-or-equal row:address:number/deref, <span class="Constant">0:literal</span>
       <span class="muControl">break-if</span> at-top?:boolean
       <span class="Comment"># row = row-1</span>
       row:address:number/deref<span class="Special"> &lt;- </span>subtract row:address:number/deref, <span class="Constant">1:literal</span>
@@ -489,16 +512,17 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> cursor-right [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> x:address:screen
     <span class="Delimiter">{</span>
-      <span class="Comment"># if column &lt; width</span>
+      <span class="Comment"># if column &lt; width-1</span>
       width:number<span class="Special"> &lt;- </span>get x:address:screen/deref, num-columns:offset
       column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
-      at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:number/deref, width:number
+      max:number<span class="Special"> &lt;- </span>subtract width:number, <span class="Constant">1:literal</span>
+      at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal column:address:number/deref, max:number
       <span class="muControl">break-if</span> at-bottom?:boolean
       <span class="Comment"># column = column+1</span>
       column:address:number/deref<span class="Special"> &lt;- </span>add column:address:number/deref, <span class="Constant">1:literal</span>
@@ -511,15 +535,15 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> cursor-left [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> x:address:screen
     <span class="Delimiter">{</span>
-      <span class="Comment"># if column &gt;= 0</span>
+      <span class="Comment"># if column &gt; 0</span>
       column:address:number<span class="Special"> &lt;- </span>get-address x:address:screen/deref, cursor-column:offset
-      at-top?:boolean<span class="Special"> &lt;- </span>lesser-than column:address:number/deref, <span class="Constant">0:literal</span>
+      at-top?:boolean<span class="Special"> &lt;- </span>lesser-or-equal column:address:number/deref, <span class="Constant">0:literal</span>
       <span class="muControl">break-if</span> at-top?:boolean
       <span class="Comment"># column = column-1</span>
       column:address:number/deref<span class="Special"> &lt;- </span>subtract column:address:number/deref, <span class="Constant">1:literal</span>
@@ -532,7 +556,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> cursor-to-start-of-line [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   row:number, _, x:address:screen<span class="Special"> &lt;- </span>cursor-position x:address:screen
   column:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
@@ -541,7 +565,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> cursor-to-next-line [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   x:address:screen<span class="Special"> &lt;- </span>cursor-down x:address:screen
   x:address:screen<span class="Special"> &lt;- </span>cursor-to-start-of-line x:address:screen
@@ -549,7 +573,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> screen-width [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
@@ -563,7 +587,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> screen-height [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
   <span class="Delimiter">{</span>
@@ -577,7 +601,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> hide-cursor [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Delimiter">{</span>
@@ -590,7 +614,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> show-cursor [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Delimiter">{</span>
@@ -603,7 +627,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> hide-screen [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Delimiter">{</span>
@@ -616,7 +640,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> show-screen [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
   <span class="Delimiter">{</span>
@@ -629,7 +653,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> print-string [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   s:address:array:character<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
@@ -678,7 +702,7 @@ container screen-cell [
 ]
 
 <span class="muRecipe">recipe</span> print-integer [
-  <span class="Constant">new-default-space</span>
+  <span class="Constant">local-scope</span>
   x:address:screen<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   n:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>

@@ -110,6 +110,8 @@ case NEW: <span class="Delimiter">{</span>
       size = size_of<span class="Delimiter">(</span>type<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
+<span class="CommentedCode">//?   Total_alloc += size; //? 1</span>
+<span class="CommentedCode">//?   Num_alloc++; //? 1</span>
   <span class="Comment">// compute the region of memory to return</span>
   <span class="Comment">// really crappy at the moment</span>
   ensure_space<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
@@ -132,6 +134,18 @@ case NEW: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;= Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+
+<span class="CommentedCode">//? :(before &quot;End Globals&quot;) //? 1</span>
+<span class="CommentedCode">//? long long int Total_alloc = 0; //? 1</span>
+<span class="CommentedCode">//? long long int Num_alloc = 0; //? 1</span>
+<span class="CommentedCode">//? long long int Total_free = 0; //? 1</span>
+<span class="CommentedCode">//? long long int Num_free = 0; //? 1</span>
+<span class="CommentedCode">//? :(before &quot;End Setup&quot;) //? 1</span>
+<span class="CommentedCode">//? Total_alloc = Num_alloc = Total_free = Num_free = 0; //? 1</span>
+<span class="CommentedCode">//? :(before &quot;End Teardown&quot;) //? 1</span>
+<span class="CommentedCode">//? cerr &lt;&lt; Total_alloc &lt;&lt; &quot;/&quot; &lt;&lt; Num_alloc //? 1</span>
+<span class="CommentedCode">//?      &lt;&lt; &quot; vs &quot; &lt;&lt; Total_free &lt;&lt; &quot;/&quot; &lt;&lt; Num_free &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//? cerr &lt;&lt; Memory.size() &lt;&lt; '\n'; //? 1</span>
 
 <span class="Delimiter">:(code)</span>
 void ensure_space<span class="Delimiter">(</span>long long int size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -205,6 +219,94 @@ recipe main [
 <span class="traceContains">+new: routine allocated memory from 1000 to 1002</span>
 <span class="traceContains">+new: routine allocated memory from 1002 to 1004</span>
 
+<span class="Comment">//: We also provide a way to return memory, and to reuse reclaimed memory.</span>
+<span class="Comment">//: todo: custodians, etc. Following malloc/free is a temporary hack.</span>
+
+<span class="Delimiter">:(scenario new_reclaim)</span>
+recipe main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>new number:type
+  abandon <span class="Constant">1</span>:address:number
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>new number:type  <span class="Comment"># must be same size as abandoned memory to reuse</span>
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:number
+]
+<span class="Comment"># both allocations should have returned the same address</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+map&lt;long long int<span class="Delimiter">,</span> long long int&gt; Free_list<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+Free_list<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+ABANDON<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;abandon&quot;</span>] = ABANDON<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case ABANDON: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;abandon's ingredient should be scalar</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  long long int address = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  reagent types = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  if <span class="Delimiter">(</span>types<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_ordinal[<span class="Constant">&quot;address&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;abandon's ingredient should be an address</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  reagent target_type = deref<span class="Delimiter">(</span>types<span class="Delimiter">);</span>
+  abandon<span class="Delimiter">(</span>address<span class="Delimiter">,</span> size_of<span class="Delimiter">(</span>target_type<span class="Delimiter">));</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+void abandon<span class="Delimiter">(</span>long long int address<span class="Delimiter">,</span> long long int size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   Total_free += size; //? 1</span>
+<span class="CommentedCode">//?   Num_free++; //? 1</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;abandon: &quot; &lt;&lt; size &lt;&lt; '\n'; //? 2</span>
+  <span class="Comment">// clear memory</span>
+  for <span class="Delimiter">(</span>long long int curr = address<span class="Delimiter">;</span> curr &lt; address+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span>
+    Memory[curr] = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Comment">// append existing free list to address</span>
+  Memory[address] = Free_list[size]<span class="Delimiter">;</span>
+  Free_list[size] = address<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;ensure_space(size)&quot; following &quot;case NEW&quot;)</span>
+if <span class="Delimiter">(</span>Free_list[size]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  long long int result = Free_list[size]<span class="Delimiter">;</span>
+  Free_list[size] = Memory[result]<span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int curr = result+<span class="Constant">1</span><span class="Delimiter">;</span> curr &lt; result+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span>
+    if <span class="Delimiter">(</span>Memory[curr] != <span class="Constant">0</span><span class="Delimiter">)</span>
+      raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: memory in free list was not zeroed out: &quot;</span> &lt;&lt; curr &lt;&lt; <span class="Constant">'/'</span> &lt;&lt; result &lt;&lt; <span class="Constant">&quot;; somebody wrote to us after free!!!</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; die<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span>
+    Memory[result] = array_length<span class="Delimiter">;</span>
+  else
+    Memory[result] = <span class="Constant">0</span><span class="Delimiter">;</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario new_differing_size_no_reclaim)</span>
+recipe main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>new number:type
+  abandon <span class="Constant">1</span>:address:number
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>new number:type<span class="Delimiter">,</span> <span class="Constant">2</span>:literal  <span class="Comment"># different size</span>
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:number
+]
+<span class="Comment"># no reuse</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+
+<span class="Delimiter">:(scenario new_reclaim_array)</span>
+recipe main [
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>new number:type<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  abandon <span class="Constant">1</span>:address:array:number
+  <span class="Constant">2</span>:address:array:number<span class="Special"> &lt;- </span>new number:type<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:array:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:array:number
+]
+<span class="Comment"># reuse</span>
+<span class="traceContains">+mem: storing 1 in location 3</span>
+
 <span class="SalientComment">//:: Next, extend 'new' to handle a unicode string literal argument.</span>
 
 <span class="Delimiter">:(scenario new_string)</span>
@@ -248,6 +350,8 @@ long long int new_string<span class="Delimiter">(</span>const string&amp; conten
   <span class="Comment">// allocate an array just large enough for it</span>
   long long int string_length = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;string_length is &quot; &lt;&lt; string_length &lt;&lt; '\n'; //? 1</span>
+<span class="CommentedCode">//?   Total_alloc += string_length+1; //? 1</span>
+<span class="CommentedCode">//?   Num_alloc++; //? 1</span>
   ensure_space<span class="Delimiter">(</span>string_length+<span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// don't forget the extra location for array size</span>
   <span class="Comment">// initialize string</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;new string literal: &quot; &lt;&lt; current_instruction().ingredients.at(0).name &lt;&lt; '\n'; //? 1</span>

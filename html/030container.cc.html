@@ -148,15 +148,17 @@ case GET: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   long long int offset = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>offset &lt; size_of<span class="Delimiter">(</span>base<span class="Delimiter">));</span>
   long long int src = base_address<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; offset<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     src += size_of<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy is &quot;</span> &lt;&lt; src<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>kind == container<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">)</span> &gt; offset<span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>offset &lt; <span class="Constant">0</span> || offset &gt;= SIZE<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: invalid offset &quot;</span> &lt;&lt; offset &lt;&lt; <span class="Constant">&quot; for &quot;</span> &lt;&lt; Type[base_type]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   type_ordinal src_type = Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;its type is &quot;</span> &lt;&lt; Type[src_type]<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
   reagent tmp<span class="Delimiter">;</span>
@@ -185,6 +187,26 @@ recipe main [
 ]
 <span class="traceContains">+mem: storing 13 in location 15</span>
 
+<span class="Delimiter">:(scenario get_out_of_bounds)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
+  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>:literal
+  get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:offset  <span class="Comment"># point-number occupies 3 locations but has only 2 fields; out of bounds</span>
+]
+<span class="traceContains">+warn: main: invalid offset 2 for point-number</span>
+
+<span class="Delimiter">:(scenario get_out_of_bounds2)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
+  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>:literal
+  get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> -<span class="Constant">1</span>:offset
+]
+<span class="traceContains">+warn: main: invalid offset -1 for point-number</span>
+
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 GET_ADDRESS<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
@@ -199,8 +221,11 @@ case GET_ADDRESS: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)));</span>
   long long int offset = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>offset &lt; size_of<span class="Delimiter">(</span>base<span class="Delimiter">));</span>
+  if <span class="Delimiter">(</span>offset &lt; <span class="Constant">0</span> || offset &gt;= SIZE<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;invalid offset &quot;</span> &lt;&lt; offset &lt;&lt; <span class="Constant">&quot; for &quot;</span> &lt;&lt; Type[base_type]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   long long int result = base_address<span class="Delimiter">;</span>
   for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; offset<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     result += size_of<span class="Delimiter">(</span>Type[base_type]<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
@@ -210,6 +235,26 @@ case GET_ADDRESS: <span class="Delimiter">{</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario get_address_out_of_bounds)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
+  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>:literal
+  get-address <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:offset  <span class="Comment"># point-number occupies 3 locations but has only 2 fields; out of bounds</span>
+]
+<span class="traceContains">+warn: invalid offset 2 for point-number</span>
+
+<span class="Delimiter">:(scenario get_address_out_of_bounds2)</span>
+<span class="Special">% Hide_warnings = true;</span>
+recipe main [
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>:literal
+  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>:literal
+  get-address <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> -<span class="Constant">1</span>:offset
+]
+<span class="traceContains">+warn: invalid offset -1 for point-number</span>
 
 <span class="SalientComment">//:: Allow containers to be defined in mu code.</span>
 

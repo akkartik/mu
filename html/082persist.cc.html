@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 082persist.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 1.05em; }
+.cSpecial { color: #008000; }
+.Constant { color: #00a0a0; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #a04060; }
+.Identifier { color: #804000; }
+.PreProc { color: #c000c0; }
+.CommentedCode { color: #6c6c6c; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Dead simple persistence.</span>
+<span class="Comment">//:   'restore' - reads string from a file</span>
+<span class="Comment">//:   'save' - writes string to a file</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+RESTORE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;restore&quot;</span>] = RESTORE<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case RESTORE: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span>
+    raise &lt;&lt; <span class="Constant">&quot;restore: illegal operand &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_string<span class="Delimiter">(</span>slurp<span class="Delimiter">(</span><span class="Constant">&quot;lesson/&quot;</span>+current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">)));</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+string slurp<span class="Delimiter">(</span>const string&amp; filename<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; filename &lt;&lt; '\n'; //? 1</span>
+  ostringstream result<span class="Delimiter">;</span>
+  ifstream fin<span class="Delimiter">(</span>filename<span class="Delimiter">.</span>c_str<span class="Delimiter">());</span>
+  fin<span class="Delimiter">.</span>peek<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>!fin<span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>  <span class="Comment">// don't bother checking errno</span>
+  const int N = <span class="Constant">1024</span><span class="Delimiter">;</span>
+  char buf[N]<span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>!fin<span class="Delimiter">.</span>eof<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    bzero<span class="Delimiter">(</span>buf<span class="Delimiter">,</span> N<span class="Delimiter">);</span>
+    fin<span class="Delimiter">.</span>read<span class="Delimiter">(</span>buf<span class="Delimiter">,</span> N-<span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// leave at least one null</span>
+    result &lt;&lt; buf<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  fin<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;=&gt; &quot; &lt;&lt; result.str(); //? 1</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+SAVE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+Recipe_ordinal[<span class="Constant">&quot;save&quot;</span>] = SAVE<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+case SAVE: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span>
+    raise &lt;&lt; <span class="Constant">&quot;save: illegal operand 0 &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  string filename = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    ostringstream tmp<span class="Delimiter">;</span>
+    tmp &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    filename = tmp<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+  ofstream fout<span class="Delimiter">((</span><span class="Constant">&quot;lesson/&quot;</span>+filename<span class="Delimiter">).</span>c_str<span class="Delimiter">());</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span>
+    raise &lt;&lt; <span class="Constant">&quot;save: illegal operand 1 &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  string contents = to_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  fout &lt;&lt; contents<span class="Delimiter">;</span>
+  fout<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
+  if <span class="Delimiter">(</span>!exists<span class="Delimiter">(</span><span class="Constant">&quot;lesson/.git&quot;</span><span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Comment">// bug in git: git diff -q messes up --exit-code</span>
+  int status = system<span class="Delimiter">(</span><span class="Constant">&quot;cd lesson; git add .; git diff HEAD --exit-code &gt;/dev/null || git commit -a -m . &gt;/dev/null&quot;</span><span class="Delimiter">);</span>
+  if <span class="Delimiter">(</span>status != <span class="Constant">0</span><span class="Delimiter">)</span>
+    raise &lt;&lt; <span class="Constant">&quot;error in commit: contents &quot;</span> &lt;&lt; contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+bool exists<span class="Delimiter">(</span>const string&amp; filename<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  struct stat dummy<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> <span class="Constant">0</span> == stat<span class="Delimiter">(</span>filename<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> &amp;dummy<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span class="PreProc">#include</span><span class="Constant">&lt;sys/stat.h&gt;</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
