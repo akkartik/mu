@@ -878,8 +878,7 @@ recipe insert-at-cursor [
   editor:address:editor-data <- next-ingredient
   c:character <- next-ingredient
   screen:address <- next-ingredient
-#?   $print [insert ], c:character, [ 
-#? ] #? 1
+#?   $print [insert ], c:character, 10:literal/newline
   before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
   d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
   insert-duplex c:character, before-cursor:address:address:duplex-list/deref
@@ -901,8 +900,7 @@ recipe insert-at-cursor [
   {
     # if we're at the column just before the wrap indicator
     wrap-column:number <- subtract right:number, 1:literal
-#?     $print [wrap? ], cursor-column:address:number/deref, [ vs ], wrap-column:number, [ 
-#? ] #? 1
+#?     $print [wrap? ], cursor-column:address:number/deref, [ vs ], wrap-column:number, 10:literal/newline
     at-wrap?:boolean <- greater-or-equal cursor-column:address:number/deref, wrap-column:number
     break-unless at-wrap?:boolean
 #?     $print [wrap!
@@ -936,8 +934,7 @@ recipe delete-before-cursor [
   before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
-#?   $print [delete-before-cursor: ], cursor-column:address:number/deref, [ 
-#? ] #? 1
+#?   $print [delete-before-cursor: ], cursor-column:address:number/deref, 10:literal/newline
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -1170,8 +1167,7 @@ recipe render-sandboxes [
   screen-height:number <- screen-height screen:address
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-#?   $print [rendering sandbox ], sandbox:address:sandbox-data, [ 
-#? ] #? 1
+#?   $print [rendering sandbox ], sandbox:address:sandbox-data, 10:literal/newline
   # render sandbox menu
   row:number <- add row:number, 1:literal
   move-cursor screen:address, row:number, left:number
@@ -2736,8 +2732,7 @@ recipe run-sandboxes [
     warnings:address:address:array:character <- get-address curr:address:sandbox-data/deref, warnings:offset
     fake-screen:address:address:screen <- get-address curr:address:sandbox-data/deref, screen:offset
     response:address:address:array:character/deref, warnings:address:address:array:character/deref, fake-screen:address:address:screen/deref <- run-interactive data:address:address:array:character/deref
-#?     $print warnings:address:address:array:character/deref, [ ], warnings:address:address:array:character/deref/deref, [ 
-#? ] #? 1
+#?     $print warnings:address:address:array:character/deref, [ ], warnings:address:address:array:character/deref/deref, 10:literal/newline
     curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
     loop
   }
@@ -2751,16 +2746,14 @@ recipe delete-sandbox [
   click-column:number <- get t:touch-event, column:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   right:number <- get current-sandbox:address:editor-data/deref, right:offset
-#?   $print [comparing column ], click-column:number, [ vs ], right:number, [ 
-#? ] #? 1
+#?   $print [comparing column ], click-column:number, [ vs ], right:number, 10:literal/newline
   at-right?:boolean <- equal click-column:number, right:number
   reply-unless at-right?:boolean, 0:literal/false
 #?   $print [trying to delete
 #? ] #? 1
   click-row:number <- get t:touch-event, row:offset
   prev:address:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
-#?   $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, [ 
-#? ] #? 1
+#?   $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, 10:literal/newline
   curr:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
   {
 #?     $print [next sandbox
@@ -2771,21 +2764,18 @@ recipe delete-sandbox [
 #?       $print [checking
 #? ] #? 1
       target-row:number <- get curr:address:sandbox-data/deref, starting-row-on-screen:offset
-#?       $print [comparing row ], target-row:number, [ vs ], click-row:number, [ 
-#? ] #? 1
+#?       $print [comparing row ], target-row:number, [ vs ], click-row:number, 10:literal/newline
       delete-curr?:boolean <- equal target-row:number, click-row:number
       break-unless delete-curr?:boolean
 #?       $print [found!
 #? ] #? 1
       # delete this sandbox, rerender and stop
       prev:address:address:sandbox-data/deref <- get curr:address:sandbox-data/deref, next-sandbox:offset
-#?       $print [setting prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, [ 
-#? ] #? 1
+#?       $print [setting prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, 10:literal/newline
       reply 1:literal/true
     }
     prev:address:address:sandbox-data <- get-address curr:address:sandbox-data/deref, next-sandbox:offset
-#?     $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, [ 
-#? ] #? 1
+#?     $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, 10:literal/newline
     curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
     loop
   }
@@ -3229,8 +3219,7 @@ recipe print-string-with-gradient-background [
   color-range:number <- subtract bg-color2:number, bg-color1:number
   color-quantum:number <- divide color-range:number, len:number
 #?   close-console #? 2
-#?   $print len:number, [, ], color-range:number, [, ], color-quantum:number, [ 
-#? ] #? 2
+#?   $print len:number, [, ], color-range:number, [, ], color-quantum:number, 10:literal/newline
 #? #?   $exit #? 3
   bg-color:number <- copy bg-color1:number
   i:number <- copy 0:literal
@@ -3241,8 +3230,7 @@ recipe print-string-with-gradient-background [
     print-character x:address:screen, c:character, color:number, bg-color:number
     i:number <- add i:number, 1:literal
     bg-color:number <- add bg-color:number, color-quantum:number
-#?     $print [=> ], bg-color:number, [ 
-#? ] #? 1
+#?     $print [=> ], bg-color:number, 10:literal/newline
     loop
   }
 #?   $exit #? 1

@@ -298,25 +298,22 @@ recipe buffer-lines [
         break-unless backspace?:boolean
         # drop previous character
 #?         close-console #? 2
-#?         $print [backspace! #? 1
+#?         $print [backspace!
 #? ] #? 1
         {
           buffer-length:address:number <- get-address line:address:buffer/deref, length:offset
           buffer-empty?:boolean <- equal buffer-length:address:number/deref, 0:literal
           break-if buffer-empty?:boolean
-#?           $print [before: ], buffer-length:address:number/deref, [ 
-#? ] #? 1
+#?           $print [before: ], buffer-length:address:number/deref, 10:literal/newline
           buffer-length:address:number/deref <- subtract buffer-length:address:number/deref, 1:literal
-#?           $print [after: ], buffer-length:address:number/deref, [ 
-#? ] #? 1
+#?           $print [after: ], buffer-length:address:number/deref, 10:literal/newline
         }
 #?         $exit #? 2
         # and don't append this one
         loop +next-character:label
       }
       # append anything else
-#?       $print [buffer-lines: appending ], c:character, [ 
-#? ]
+#?       $print [buffer-lines: appending ], c:character, 10:literal/newline
       line:address:buffer <- buffer-append line:address:buffer, c:character
       line-done?:boolean <- equal c:character, 10:literal/newline
       break-if line-done?:boolean
@@ -337,8 +334,7 @@ recipe buffer-lines [
       break-if done?:boolean
       c:character <- index line-contents:address:array:character/deref, i:number
       out:address:channel <- write out:address:channel, c:character
-#?       $print [writing ], i:number, [: ], c:character, [ 
-#? ] #? 1
+#?       $print [writing ], i:number, [: ], c:character, 10:literal/newline
       i:number <- add i:number, 1:literal
       loop
     }

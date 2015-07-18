@@ -21,8 +21,7 @@ recipe new-fake-screen [
   width:address:number/deref <- next-ingredient
   height:address:number <- get-address result:address:screen/deref, num-rows:offset
   height:address:number/deref <- next-ingredient
-#?   $print height:address:number/deref, [ 
-#? ] #? 1
+#?   $print height:address:number/deref, 10:literal/newline
   row:address:number <- get-address result:address:screen/deref, cursor-row:offset
   row:address:number/deref <- copy 0:literal
   column:address:number <- get-address result:address:screen/deref, cursor-column:offset
@@ -126,8 +125,7 @@ recipe print-character [
     # special-case: newline
     {
       newline?:boolean <- equal c:character, 10:literal/newline
-#?       $print c:character, [ ], newline?:boolean, [ 
-#? ] #? 1
+#?       $print c:character, [ ], newline?:boolean, 10:literal/newline
       break-unless newline?:boolean
       {
         # unless cursor is already at bottom
@@ -164,8 +162,7 @@ recipe print-character [
       }
       reply x:address:screen/same-as-ingredient:0
     }
-#?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, [ 
-#? ] #? 1
+#?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, 10:literal/newline
     cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
     cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
     cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
@@ -353,8 +350,7 @@ recipe clear-line [
     # space over the entire line
 #?     $start-tracing #? 1
     {
-#?       $print column:address:number/deref, [ 
-#? ] #? 1
+#?       $print column:address:number/deref, 10:literal/newline
       right:number <- subtract width:number, 1:literal
       done?:boolean <- greater-or-equal column:address:number/deref, right:number
       break-if done?:boolean
@@ -448,11 +444,9 @@ recipe cursor-down [
       at-bottom?:boolean <- greater-or-equal row:address:number/deref, max:number
       break-if at-bottom?:boolean
       # row = row+1
-#?       $print [AAA: ], row:address:number, [ -> ], row:address:number/deref, [ 
-#? ] #? 1
+#?       $print [AAA: ], row:address:number, [ -> ], row:address:number/deref, 10:literal/newline
       row:address:number/deref <- add row:address:number/deref, 1:literal
-#?       $print [BBB: ], row:address:number, [ -> ], row:address:number/deref, [ 
-#? ] #? 1
+#?       $print [BBB: ], row:address:number, [ -> ], row:address:number/deref, 10:literal/newline
 #?       $start-tracing #? 1
     }
     reply x:address:screen/same-as-ingredient:0

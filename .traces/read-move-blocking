@@ -2,7 +2,7 @@ parse: instruction: assume-screen
 parse:   ingredient: {name: "20", properties: ["20": "literal", "width": ]}
 parse:   ingredient: {name: "2", properties: ["2": "literal", "height": ]}
 parse: instruction: run
-parse:   ingredient: {name: "\n#?     $start-tracing #? 1\n    1:address:channel <- new-channel 2:literal\n#?     $print [aaa channel address: ], 1:address:channel, [ \n#? ] #? 1\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n#?     $print [bbb channel address: ], 1:address:channel, [ \n#? ] #? 1\n    3:number <- routine-state 2:number/id\n#?     $print [I: routine ], 2:number, [ state ], 3:number [ \n#? ] #? 1\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]\n    # press 'a'\n#?     $print [ccc channel address: ], 1:address:channel, [ \n#? ] #? 1\n#?     $exit #? 1\n    1:address:channel <- write 1:address:channel, 97:literal  # 'a'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n#?     $print [II: routine ], 2:number, [ state ], 3:number [ \n#? ] #? 1\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after rank 'a']\n    # press '2'\n    1:address:channel <- write 1:address:channel, 50:literal  # '2'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n#?     $print [III: routine ], 2:number, [ state ], 3:number [ \n#? ] #? 1\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after file 'a2']\n    # press '-'\n    1:address:channel <- write 1:address:channel, 45:literal  # '-'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [IV: routine ], 2:number, [ state ], 3:number [ \n#? ] #? 1\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?/routine-state, [\nF read-move-blocking: routine failed to pause after hyphen 'a2-']\n    # press 'a'\n    1:address:channel <- write 1:address:channel, 97:literal  # 'a'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [V: routine ], 2:number, [ state ], 3:number [ \n#? ] #? 1\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?/routine-state, [\nF read-move-blocking: routine failed to pause after rank 'a2-a']\n    # press '4'\n    1:address:channel <- write 1:address:channel, 52:literal  # '4'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [VI: routine ], 2:number, [ state ], 3:number [ \n#? ] #? 1\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after file 'a2-a4']\n    # press 'newline'\n    1:address:channel <- write 1:address:channel, 10:literal  # newline\n    restart 2:number/routine\n    # 'read-move' now completes\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [VII: routine ], 2:number, [ state ], 3:number [ \n#? ] #? 1\n    4:boolean/completed? <- equal 3:number/routine-state, 1:literal/completed\n    assert 4:boolean/completed?, [\nF read-move-blocking: routine failed to terminate on newline]\n    trace [test], [reached end]\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n#?     $start-tracing #? 1\n    1:address:channel <- new-channel 2:literal\n#?     $print [aaa channel address: ], 1:address:channel, 10:literal/newline\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n#?     $print [bbb channel address: ], 1:address:channel, 10:literal/newline\n    3:number <- routine-state 2:number/id\n#?     $print [I: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]\n    # press 'a'\n#?     $print [ccc channel address: ], 1:address:channel, 10:literal/newline\n#?     $exit #? 1\n    1:address:channel <- write 1:address:channel, 97:literal  # 'a'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n#?     $print [II: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after rank 'a']\n    # press '2'\n    1:address:channel <- write 1:address:channel, 50:literal  # '2'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n#?     $print [III: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after file 'a2']\n    # press '-'\n    1:address:channel <- write 1:address:channel, 45:literal  # '-'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [IV: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?/routine-state, [\nF read-move-blocking: routine failed to pause after hyphen 'a2-']\n    # press 'a'\n    1:address:channel <- write 1:address:channel, 97:literal  # 'a'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [V: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?/routine-state, [\nF read-move-blocking: routine failed to pause after rank 'a2-a']\n    # press '4'\n    1:address:channel <- write 1:address:channel, 52:literal  # '4'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [VI: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after file 'a2-a4']\n    # press 'newline'\n    1:address:channel <- write 1:address:channel, 10:literal  # newline\n    restart 2:number/routine\n    # 'read-move' now completes\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [VII: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/completed? <- equal 3:number/routine-state, 1:literal/completed\n    assert 4:boolean/completed?, [\nF read-move-blocking: routine failed to terminate on newline]\n    trace [test], [reached end]\n  ", properties: [_: "literal-string"]}
 parse: instruction: trace-should-contain
 parse:   ingredient: {name: "\n    test: reached end\n  ", properties: [_: "literal-string"]}
 after-brace: recipe read-move-blocking
@@ -5003,30 +5003,25 @@ schedule: read-move-blocking
  101 run: run [
 #?     $start-tracing #? 1
     1:address:channel <- new-channel 2:literal
-#?     $print [aaa channel address: ], 1:address:channel, [ 
-#? ] #? 1
+#?     $print [aaa channel address: ], 1:address:channel, 10:literal/newline
     2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:number
-#?     $print [bbb channel address: ], 1:address:channel, [ 
-#? ] #? 1
+#?     $print [bbb channel address: ], 1:address:channel, 10:literal/newline
     3:number <- routine-state 2:number/id
-#?     $print [I: routine ], 2:number, [ state ], 3:number [ 
-#? ] #? 1
+#?     $print [I: routine ], 2:number, [ state ], 3:number 10:literal/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
     # press 'a'
-#?     $print [ccc channel address: ], 1:address:channel, [ 
-#? ] #? 1
+#?     $print [ccc channel address: ], 1:address:channel, 10:literal/newline
 #?     $exit #? 1
     1:address:channel <- write 1:address:channel, 97:literal  # 'a'
     restart 2:number/routine
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-#?     $print [II: routine ], 2:number, [ state ], 3:number [ 
-#? ] #? 1
+#?     $print [II: routine ], 2:number, [ state ], 3:number 10:literal/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after rank 'a']
@@ -5036,8 +5031,7 @@ F read-move-blocking: routine failed to pause after rank 'a']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-#?     $print [III: routine ], 2:number, [ state ], 3:number [ 
-#? ] #? 1
+#?     $print [III: routine ], 2:number, [ state ], 3:number 10:literal/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after file 'a2']
@@ -5047,8 +5041,7 @@ F read-move-blocking: routine failed to pause after file 'a2']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [IV: routine ], 2:number, [ state ], 3:number [ 
-#? ] #? 1
+#?     $print [IV: routine ], 2:number, [ state ], 3:number 10:literal/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?/routine-state, [
 F read-move-blocking: routine failed to pause after hyphen 'a2-']
@@ -5058,8 +5051,7 @@ F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [V: routine ], 2:number, [ state ], 3:number [ 
-#? ] #? 1
+#?     $print [V: routine ], 2:number, [ state ], 3:number 10:literal/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?/routine-state, [
 F read-move-blocking: routine failed to pause after rank 'a2-a']
@@ -5069,8 +5061,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     # 'read-move' still waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [VI: routine ], 2:number, [ state ], 3:number [ 
-#? ] #? 1
+#?     $print [VI: routine ], 2:number, [ state ], 3:number 10:literal/newline
     4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
     assert 4:boolean/waiting?, [
 F read-move-blocking: routine failed to pause after file 'a2-a4']
@@ -5080,8 +5071,7 @@ F read-move-blocking: routine failed to pause after file 'a2-a4']
     # 'read-move' now completes
     wait-for-routine 2:number
     3:number <- routine-state 2:number
-#?     $print [VII: routine ], 2:number, [ state ], 3:number [ 
-#? ] #? 1
+#?     $print [VII: routine ], 2:number, [ state ], 3:number 10:literal/newline
     4:boolean/completed? <- equal 3:number/routine-state, 1:literal/completed
     assert 4:boolean/completed?, [
 F read-move-blocking: routine failed to terminate on newline]
