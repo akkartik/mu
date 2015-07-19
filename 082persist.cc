@@ -11,7 +11,14 @@ case RESTORE: {
   if (!scalar(ingredients.at(0)))
     raise << "restore: illegal operand " << current_instruction().ingredients.at(0).to_string() << '\n';
   products.resize(1);
-  products.at(0).push_back(new_mu_string(slurp("lesson/"+current_instruction().ingredients.at(0).name)));
+  string filename = current_instruction().ingredients.at(0).name;
+  if (!is_literal(current_instruction().ingredients.at(0)))
+    filename = to_string(ingredients.at(0).at(0));
+  string contents = slurp("lesson/"+filename);
+  if (contents.empty())
+    products.at(0).push_back(0);
+  else
+    products.at(0).push_back(new_mu_string(contents));
   break;
 }
 
@@ -43,11 +50,8 @@ case SAVE: {
   if (!scalar(ingredients.at(0)))
     raise << "save: illegal operand 0 " << current_instruction().ingredients.at(0).to_string() << '\n';
   string filename = current_instruction().ingredients.at(0).name;
-  if (!is_literal(current_instruction().ingredients.at(0))) {
-    ostringstream tmp;
-    tmp << ingredients.at(0).at(0);
-    filename = tmp.str();
-  }
+  if (!is_literal(current_instruction().ingredients.at(0)))
+    filename = to_string(ingredients.at(0).at(0));
   ofstream fout(("lesson/"+filename).c_str());
   if (!scalar(ingredients.at(1)))
     raise << "save: illegal operand 1 " << current_instruction().ingredients.at(1).to_string() << '\n';
@@ -66,6 +70,12 @@ case SAVE: {
 bool exists(const string& filename) {
   struct stat dummy;
   return 0 == stat(filename.c_str(), &dummy);
+}
+
+string to_string(long long int x) {
+  ostringstream tmp;
+  tmp << x;
+  return tmp.str();
 }
 
 :(before "End Includes")

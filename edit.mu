@@ -4,8 +4,11 @@ recipe main [
   local-scope
   open-console
   initial-recipe:address:array:character <- restore [recipes.mu]
-  initial-sandbox:address:array:character <- new [test 2, 2]
+  initial-sandbox:address:array:character <- new []
   env:address:programming-environment-data <- new-programming-environment 0:literal/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
+  env:address:programming-environment-data <- restore-sandboxes env:address:programming-environment-data
+  render-sandbox-side 0:literal/screen, env:address:programming-environment-data
+  show-screen 0:literal/screen
   event-loop 0:literal/screen, 0:literal/console, env:address:programming-environment-data
   # never gets here
 ]
@@ -2816,6 +2819,29 @@ recipe render-sandboxes [
   next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
   row:number, screen:address <- render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
   reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+]
+
+# assumes programming environment has no sandboxes; restores them from previous session
+recipe restore-sandboxes [
+  local-scope
+  env:address:programming-environment-data <- next-ingredient
+  # read all scenarios, pushing them to end of a list of scenarios
+  filename:number <- copy 0:literal
+  curr:address:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
+  {
+    contents:address:array:character <- restore filename:number
+    break-unless contents:address:array:character  # stop at first error; assuming file didn't exist
+#?     $print contents:address:array:character, 10:literal/newline
+    # create new sandbox for file
+    curr:address:address:sandbox-data/deref <- new sandbox-data:type
+    data:address:address:array:character <- get-address curr:address:address:sandbox-data/deref/deref, data:offset
+    data:address:address:array:character/deref <- copy contents:address:array:character
+    # increment loop variables
+    filename:number <- add filename:number, 1:literal
+    curr:address:address:sandbox-data <- get-address curr:address:address:sandbox-data/deref/deref, next-sandbox:offset
+    loop
+  }
+  reply env:address:programming-environment-data/same-as-ingredient:0
 ]
 
 # was-deleted?:boolean <- delete-sandbox t:touch-event, env:address:programming-environment-data
