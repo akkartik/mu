@@ -1193,88 +1193,6 @@ recipe render-recipes [
   reply screen:address/same-as-ingredient:0
 ]
 
-recipe render-sandbox-side [
-  local-scope
-  screen:address <- next-ingredient
-  env:address:programming-environment-data <- next-ingredient
-  clear:boolean <- next-ingredient
-  current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
-  left:number <- get current-sandbox:address:editor-data/deref, left:offset
-  right:number <- get current-sandbox:address:editor-data/deref, right:offset
-  row:number, screen:address <- render screen:address, current-sandbox:address:editor-data
-  row:number <- add row:number, 1:literal
-  draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
-  sandbox:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
-  row:number, screen:address <- render-sandboxes screen:address, sandbox:address:sandbox-data, left:number, right:number, row:number
-  # clear next line, in case we just processed a backspace
-  row:number <- add row:number, 1:literal
-  move-cursor screen:address, row:number, left:number
-  clear-line-delimited screen:address, left:number, right:number
-  reply-unless clear:boolean, screen:address/same-as-ingredient:0
-  screen-height:number <- screen-height screen:address
-  {
-    at-bottom-of-screen?:boolean <- greater-or-equal row:number, screen-height:number
-    break-if at-bottom-of-screen?:boolean
-    move-cursor screen:address, row:number, left:number
-    clear-line-delimited screen:address, left:number, right:number
-    row:number <- add row:number, 1:literal
-    loop
-  }
-  reply screen:address/same-as-ingredient:0
-]
-
-recipe render-sandboxes [
-  local-scope
-  screen:address <- next-ingredient
-  sandbox:address:sandbox-data <- next-ingredient
-  left:number <- next-ingredient
-  right:number <- next-ingredient
-  row:number <- next-ingredient
-  reply-unless sandbox:address:sandbox-data, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-  screen-height:number <- screen-height screen:address
-  at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-#?   $print [rendering sandbox ], sandbox:address:sandbox-data, 10:literal/newline
-  # render sandbox menu
-  row:number <- add row:number, 1:literal
-  move-cursor screen:address, row:number, left:number
-  clear-line-delimited screen:address, left:number, right:number
-  print-character screen:address, 120:literal/x, 245:literal/grey
-  # save menu row so we can detect clicks to it later
-  starting-row:address:number <- get-address sandbox:address:sandbox-data/deref, starting-row-on-screen:offset
-  starting-row:address:number/deref <- copy row:number
-  # render sandbox contents
-  sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
-  row:number, screen:address <- render-string screen:address, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
-  # render sandbox warnings, screen or response, in that order
-  sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
-  sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/deref, warnings:offset
-  sandbox-screen:address <- get sandbox:address:sandbox-data/deref, screen:offset
-  {
-    break-unless sandbox-warnings:address:array:character
-    row:number, screen:address <- render-string screen:address, sandbox-warnings:address:array:character, left:number, right:number, 1:literal/red, row:number
-  }
-  {
-    break-if sandbox-warnings:address:array:character
-    empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address
-    break-if empty-screen?:boolean
-    row:number, screen:address <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
-  }
-  {
-    break-if sandbox-warnings:address:array:character
-    break-unless empty-screen?:boolean
-    row:number, screen:address <- render-string screen:address, sandbox-response:address:array:character, left:number, right:number, 245:literal/grey, row:number
-  }
-  at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-  # draw solid line after sandbox
-  draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
-  # draw next sandbox
-  next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
-  row:number, screen:address <- render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
-  reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-]
-
 recipe update-cursor [
   local-scope
   screen:address <- next-ingredient
@@ -2816,6 +2734,88 @@ recipe run-sandboxes [
     curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
     loop
   }
+]
+
+recipe render-sandbox-side [
+  local-scope
+  screen:address <- next-ingredient
+  env:address:programming-environment-data <- next-ingredient
+  clear:boolean <- next-ingredient
+  current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
+  left:number <- get current-sandbox:address:editor-data/deref, left:offset
+  right:number <- get current-sandbox:address:editor-data/deref, right:offset
+  row:number, screen:address <- render screen:address, current-sandbox:address:editor-data
+  row:number <- add row:number, 1:literal
+  draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
+  sandbox:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
+  row:number, screen:address <- render-sandboxes screen:address, sandbox:address:sandbox-data, left:number, right:number, row:number
+  # clear next line, in case we just processed a backspace
+  row:number <- add row:number, 1:literal
+  move-cursor screen:address, row:number, left:number
+  clear-line-delimited screen:address, left:number, right:number
+  reply-unless clear:boolean, screen:address/same-as-ingredient:0
+  screen-height:number <- screen-height screen:address
+  {
+    at-bottom-of-screen?:boolean <- greater-or-equal row:number, screen-height:number
+    break-if at-bottom-of-screen?:boolean
+    move-cursor screen:address, row:number, left:number
+    clear-line-delimited screen:address, left:number, right:number
+    row:number <- add row:number, 1:literal
+    loop
+  }
+  reply screen:address/same-as-ingredient:0
+]
+
+recipe render-sandboxes [
+  local-scope
+  screen:address <- next-ingredient
+  sandbox:address:sandbox-data <- next-ingredient
+  left:number <- next-ingredient
+  right:number <- next-ingredient
+  row:number <- next-ingredient
+  reply-unless sandbox:address:sandbox-data, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  screen-height:number <- screen-height screen:address
+  at-bottom?:boolean <- greater-or-equal row:number screen-height:number
+  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+#?   $print [rendering sandbox ], sandbox:address:sandbox-data, 10:literal/newline
+  # render sandbox menu
+  row:number <- add row:number, 1:literal
+  move-cursor screen:address, row:number, left:number
+  clear-line-delimited screen:address, left:number, right:number
+  print-character screen:address, 120:literal/x, 245:literal/grey
+  # save menu row so we can detect clicks to it later
+  starting-row:address:number <- get-address sandbox:address:sandbox-data/deref, starting-row-on-screen:offset
+  starting-row:address:number/deref <- copy row:number
+  # render sandbox contents
+  sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
+  row:number, screen:address <- render-string screen:address, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
+  # render sandbox warnings, screen or response, in that order
+  sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
+  sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/deref, warnings:offset
+  sandbox-screen:address <- get sandbox:address:sandbox-data/deref, screen:offset
+  {
+    break-unless sandbox-warnings:address:array:character
+    row:number, screen:address <- render-string screen:address, sandbox-warnings:address:array:character, left:number, right:number, 1:literal/red, row:number
+  }
+  {
+    break-if sandbox-warnings:address:array:character
+    empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address
+    break-if empty-screen?:boolean
+    row:number, screen:address <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
+  }
+  {
+    break-if sandbox-warnings:address:array:character
+    break-unless empty-screen?:boolean
+    row:number, screen:address <- render-string screen:address, sandbox-response:address:array:character, left:number, right:number, 245:literal/grey, row:number
+  }
+  at-bottom?:boolean <- greater-or-equal row:number screen-height:number
+  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  # draw solid line after sandbox
+  draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
+  # draw next sandbox
+  next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
+  row:number, screen:address <- render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
+  reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
 ]
 
 # was-deleted?:boolean <- delete-sandbox t:touch-event, env:address:programming-environment-data
