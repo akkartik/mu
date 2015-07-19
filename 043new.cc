@@ -306,12 +306,12 @@ recipe main [
 if (is_literal(current_instruction().ingredients.at(0))
     && current_instruction().ingredients.at(0).properties.at(0).second.at(0) == "literal-string") {
   products.resize(1);
-  products.at(0).push_back(new_string(current_instruction().ingredients.at(0).name));
+  products.at(0).push_back(new_mu_string(current_instruction().ingredients.at(0).name));
   break;
 }
 
 :(code)
-long long int new_string(const string& contents) {
+long long int new_mu_string(const string& contents) {
   // allocate an array just large enough for it
   long long int string_length = unicode_length(contents);
 //?   cout << "string_length is " << string_length << '\n'; //? 1
