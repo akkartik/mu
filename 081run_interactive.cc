@@ -67,7 +67,7 @@ bool run_interactive(long long int address) {
 //?   cerr << "screen was at " << Name[Recipe_ordinal["interactive"]]["screen"] << '\n'; //? 1
   Name[Recipe_ordinal["interactive"]]["screen"] = SCREEN;
 //?   cerr << "screen now at " << Name[Recipe_ordinal["interactive"]]["screen"] << '\n'; //? 1
-  string command = trim(strip_comments(to_string(address)));
+  string command = trim(strip_comments(read_mu_string(address)));
   if (command.empty()) return false;
   Recipe.erase(Recipe_ordinal["interactive"]);
   Hide_warnings = true;
@@ -144,7 +144,7 @@ void record_products(const instruction& instruction, const vector<vector<double>
     if (i < SIZE(instruction.products)) {
       if (is_string(instruction.products.at(i))) {
         assert(scalar(products.at(i)));
-        out << to_string(products.at(i).at(0)) << '\n';
+        out << read_mu_string(products.at(i).at(0)) << '\n';
         continue;
       }
       // End Record Product Special-cases
@@ -161,7 +161,7 @@ if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction()
   // Send the results of the most recently executed instruction, regardless of
   // call depth, to be converted to string and potentially printed to string.
   vector<double> result;
-  result.push_back(new_string(Most_recent_results));
+  result.push_back(new_mu_string(Most_recent_results));
   write_memory(current_instruction().products.at(0), result);
   if (SIZE(current_instruction().products) >= 2) {
     vector<double> warnings;
@@ -216,7 +216,7 @@ string strip_comments(string in) {
   return result.str();
 }
 
-string to_string(long long int address) {
+string read_mu_string(long long int address) {
   long long int size = Memory[address];
   if (size == 0) return "";
   ostringstream tmp;
@@ -231,7 +231,7 @@ long long int stringified_value_of_location(long long int address) {
   // convert to string
   ostringstream out;
   out << Memory[address];
-  return new_string(out.str());
+  return new_mu_string(out.str());
 }
 
 bool is_string(const reagent& x) {
@@ -251,7 +251,7 @@ long long int warnings_from_trace() {
     if (*--p->contents.end() != '\n') out << '\n';
   }
   assert(!out.str().empty());
-  return new_string(out.str());
+  return new_mu_string(out.str());
 }
 
 //: simpler version of run-interactive: doesn't do any running, just loads
@@ -269,7 +269,7 @@ case RELOAD: {
   assert(scalar(ingredients.at(0)));
   Loading_interactive = true;
   Hide_warnings = true;
-  load(to_string(ingredients.at(0).at(0)));
+  load(read_mu_string(ingredients.at(0).at(0)));
   transform_all();
   Hide_warnings = false;
   Loading_interactive = false;

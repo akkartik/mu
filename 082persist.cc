@@ -11,7 +11,7 @@ case RESTORE: {
   if (!scalar(ingredients.at(0)))
     raise << "restore: illegal operand " << current_instruction().ingredients.at(0).to_string() << '\n';
   products.resize(1);
-  products.at(0).push_back(new_string(slurp("lesson/"+current_instruction().ingredients.at(0).name)));
+  products.at(0).push_back(new_mu_string(slurp("lesson/"+current_instruction().ingredients.at(0).name)));
   break;
 }
 
@@ -51,7 +51,7 @@ case SAVE: {
   ofstream fout(("lesson/"+filename).c_str());
   if (!scalar(ingredients.at(1)))
     raise << "save: illegal operand 1 " << current_instruction().ingredients.at(1).to_string() << '\n';
-  string contents = to_string(ingredients.at(1).at(0));
+  string contents = read_mu_string(ingredients.at(1).at(0));
   fout << contents;
   fout.close();
   if (!exists("lesson/.git")) break;
