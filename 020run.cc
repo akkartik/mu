@@ -61,7 +61,8 @@ void run_current_routine()
     // Running One Instruction
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string();
-    assert(Memory[0] == 0);
+    if (Memory[0] != 0)
+      raise << "something wrote to location 0; this should never happen\n" << die();
     // Read all ingredients from memory.
     // Each ingredient loads a vector of values rather than a single value; mu
     // permits operating on reagents spanning multiple locations.
