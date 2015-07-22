@@ -188,6 +188,7 @@ if (must_clean_up_interactive) clean_up_interactive();
 if (must_clean_up_interactive) clean_up_interactive();
 :(code)
 void clean_up_interactive() {
+  Trace_stream->newline();  // flush trace
   Hide_warnings = false;
   Running_interactive = false;
   // hack: assume collect_layer isn't set anywhere else
@@ -267,13 +268,23 @@ Recipe_ordinal["reload"] = RELOAD;
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
   assert(scalar(ingredients.at(0)));
+  if (!Trace_stream) {
+    Trace_file = "";  // if there wasn't already a stream we don't want to save it
+    Trace_stream = new trace_stream;
+    Trace_stream->collect_layer = "warn";
+  }
   Loading_interactive = true;
   Hide_warnings = true;
   load(read_mu_string(ingredients.at(0).at(0)));
   transform_all();
+  Trace_stream->newline();  // flush trace
   Hide_warnings = false;
   Loading_interactive = false;
   products.resize(1);
   products.at(0).push_back(warnings_from_trace());
+  if (Trace_stream->collect_layer == "warn") {
+    delete Trace_stream;
+    Trace_stream = NULL;
+  }
   break;
 }

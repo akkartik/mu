@@ -112,7 +112,7 @@ int find_element_name(const type_ordinal t, const string& name) {
   for (long long int i = 0; i < SIZE(container.element_names); ++i) {
     if (container.element_names.at(i) == name) return i;
   }
-  raise << "unknown element " << name << " in container " << Type[t].name << '\n' << die();
+  raise << "unknown element " << name << " in container " << Type[t].name << '\n';
   return -1;
 }
 
