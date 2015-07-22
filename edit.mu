@@ -655,7 +655,7 @@ recipe event-loop [
         do-run?:boolean <- equal k:address:number/deref, 65526:literal/F10
         break-unless do-run?:boolean
         run-sandboxes env:address:programming-environment-data
-        screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data
+        screen:address <- render-all screen:address, env:address:programming-environment-data
         # F10 doesn't mess with the recipe side
         update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
         show-screen screen:address
@@ -3162,6 +3162,44 @@ scenario editor-provides-edited-contents [
   ]
   memory-should-contain [
     4:string <- [abdefc]
+  ]
+]
+
+## handling malformed programs
+
+scenario run-shows-warnings-in-get [
+  $close-trace
+  assume-screen 100:literal/width, 15:literal/height
+  assume-console [
+    press 65526  # F10
+  ]
+  run [
+    x:address:array:character <- new [ 
+recipe foo2 [
+  get 123:number, foo:offset
+]]
+    y:address:array:character <- new [foo2]
+    env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
+    event-loop screen:address, console:address, env:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .recipe foo2 [                                     ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  get 123:number, foo:offset                      ┊                                                x.
+    .]                                                 ┊foo2                                             .
+    .unknown element foo in container number           ┊foo2: 'get' on a non-container 123:number        .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+  screen-should-contain-in-color 1:literal/red, [
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .unknown element foo in container number            foo2: 'get' on a non-container 123:number        .
+    .                                                                                                    .
   ]
 ]
 
