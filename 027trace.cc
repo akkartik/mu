@@ -29,3 +29,13 @@ case HIDE_WARNINGS: {
   Hide_warnings = true;
   break;
 }
+
+:(before "End Primitive Recipe Declarations")
+SHOW_WARNINGS,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["show-warnings"] = SHOW_WARNINGS;
+:(before "End Primitive Recipe Implementations")
+case SHOW_WARNINGS: {
+  Hide_warnings = false;
+  break;
+}
