@@ -7,7 +7,7 @@ recipe main [
   initial-sandbox:address:array:character <- new []
   env:address:programming-environment-data <- new-programming-environment 0:literal/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
   env:address:programming-environment-data <- restore-sandboxes env:address:programming-environment-data
-  render-sandbox-side 0:literal/screen, env:address:programming-environment-data
+  render-all 0:literal/screen, env:address:programming-environment-data
   show-screen 0:literal/screen
   event-loop 0:literal/screen, 0:literal/console, env:address:programming-environment-data
   # never gets here
@@ -655,8 +655,8 @@ recipe event-loop [
         do-run?:boolean <- equal k:address:number/deref, 65526:literal/F10
         break-unless do-run?:boolean
         run-sandboxes env:address:programming-environment-data
+        # F10 might update warnings and results on both sides
         screen:address <- render-all screen:address, env:address:programming-environment-data
-        # F10 doesn't mess with the recipe side
         update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
         show-screen screen:address
         loop +next-event:label
