@@ -43,7 +43,7 @@ void transform_names(const recipe_ordinal r) {
       check_metadata(metadata, inst.ingredients.at(in), r);
       if (is_numeric_location(inst.ingredients.at(in))) numeric_locations_used = true;
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
-      if (disqualified(inst.ingredients.at(in))) continue;
+      if (disqualified(inst.ingredients.at(in), inst)) continue;
       if (!already_transformed(inst.ingredients.at(in), names)) {
         raise << "use before set: " << inst.ingredients.at(in).name << " in " << Recipe[r].name << '\n';
       }
@@ -53,7 +53,7 @@ void transform_names(const recipe_ordinal r) {
       check_metadata(metadata, inst.products.at(out), r);
       if (is_numeric_location(inst.products.at(out))) numeric_locations_used = true;
       if (is_named_location(inst.products.at(out))) names_used = true;
-      if (disqualified(inst.products.at(out))) continue;
+      if (disqualified(inst.products.at(out), inst)) continue;
       if (names.find(inst.products.at(out).name) == names.end()) {
         trace("name") << "assign " << inst.products.at(out).name << " " << curr_idx;
         names[inst.products.at(out).name] = curr_idx;
@@ -71,17 +71,19 @@ void check_metadata(map<string, vector<type_ordinal> >& metadata, const reagent&
   if (is_raw(x)) return;
   // if you use raw locations you're probably doing something unsafe
   if (is_integer(x.name)) return;
+  if (x.types.empty()) return;  // will throw a more precise warning elsewhere
   if (metadata.find(x.name) == metadata.end())
     metadata[x.name] = x.types;
   if (metadata[x.name] != x.types)
     raise << x.name << " used with multiple types in " << Recipe[r].name << '\n';
 }
 
-bool disqualified(/*mutable*/ reagent& x) {
+bool disqualified(/*mutable*/ reagent& x, const instruction& inst) {
 //?   cerr << x.to_string() << '\n'; //? 1
-  if (x.types.empty())
-    raise << "missing type in " << x.to_string() << '\n';
-  assert(!x.types.empty());
+  if (x.types.empty()) {
+    raise << "missing type in '" << inst.to_string() << "'\n";
+    return true;
+  }
   if (is_raw(x)) return true;
   if (is_literal(x)) return true;
   if (is_integer(x.name)) return true;
