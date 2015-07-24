@@ -94,8 +94,14 @@ case MAYBE_CONVERT: {
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
   type_ordinal base_type = base.types.at(0);
-  assert(Type[base_type].kind == exclusive_container);
-  assert(is_literal(current_instruction().ingredients.at(1)));
+  if (Type[base_type].kind != exclusive_container) {
+    raise << current_recipe_name () << ": 'maybe-convert' on a non-exclusive-container " << base.original_string << '\n';
+    break;
+  }
+  if (!is_literal(current_instruction().ingredients.at(1))) {
+    raise << current_recipe_name() << ": expected ingredient 1 of 'get' to have type 'variant', got '" << current_instruction().ingredients.at(1).original_string << "'\n";
+    break;
+  }
   long long int tag = current_instruction().ingredients.at(1).value;
   long long int result;
   if (tag == static_cast<long long int>(Memory[base_address])) {
