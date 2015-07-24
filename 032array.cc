@@ -42,7 +42,10 @@ recipe main [
 if (x.types.at(0) == Type_ordinal["array"]) return false;
 :(before "End size_of(reagent) Cases")
   if (r.types.at(0) == Type_ordinal["array"]) {
-    assert(SIZE(r.types) > 1);
+    if (SIZE(r.types) == 1) {
+      raise << current_recipe_name() << ": '" << r.original_string << "' is an array of what?\n";
+      return 1;
+    }
     // skip the 'array' type to get at the element type
     return 1 + Memory[r.value]*size_of(array_element(r.types));
   }
@@ -80,7 +83,10 @@ case INDEX: {
   reagent base = canonize(current_instruction().ingredients.at(0));
 //?   trace(Primitive_recipe_depth, "run") << "ingredient 0 after canonize: " << base.to_string(); //? 1
   long long int base_address = base.value;
-  assert(base.types.at(0) == Type_ordinal["array"]);
+  if (base.types.at(0) != Type_ordinal["array"]) {
+    raise << current_recipe_name () << ": 'index' on a non-array " << base.original_string << '\n';
+    break;
+  }
   reagent offset = canonize(current_instruction().ingredients.at(1));
 //?   trace(Primitive_recipe_depth, "run") << "ingredient 1 after canonize: " << offset.to_string(); //? 1
   vector<double> offset_val(read_memory(offset));
@@ -168,7 +174,10 @@ Recipe_ordinal["index-address"] = INDEX_ADDRESS;
 case INDEX_ADDRESS: {
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
-  assert(base.types.at(0) == Type_ordinal["array"]);
+  if (base.types.at(0) != Type_ordinal["array"]) {
+    raise << current_recipe_name () << ": 'index-address' on a non-array " << base.original_string << '\n';
+    break;
+  }
   reagent offset = canonize(current_instruction().ingredients.at(1));
   vector<double> offset_val(read_memory(offset));
   vector<type_ordinal> element_type = array_element(base.types);
