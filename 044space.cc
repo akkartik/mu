@@ -52,7 +52,7 @@ reagent absolutize(reagent x) {
 //?   cout << "absolutize " << x.to_string() << '\n'; //? 4
   if (is_raw(x) || is_dummy(x)) return x;
   if (!x.initialized)
-    raise << current_instruction().to_string() << ": reagent not initialized: " << x.to_string() << die();
+    raise << current_instruction().to_string() << ": reagent not initialized: " << x.original_string << die();
   reagent r = x;
   r.set_value(address(r.value, space_base(r)));
   r.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));

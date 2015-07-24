@@ -40,7 +40,7 @@ recipe main [
 //: disable the size mismatch check since the destination array need not be initialized
 :(after "bool size_mismatch(const reagent& x, const vector<double>& data)")
 if (x.types.at(0) == Type_ordinal["array"]) return false;
-:(after "long long int size_of(const reagent& r)")
+:(before "End size_of(reagent) Cases")
   if (r.types.at(0) == Type_ordinal["array"]) {
     assert(SIZE(r.types) > 1);
     // skip the 'array' type to get at the element type

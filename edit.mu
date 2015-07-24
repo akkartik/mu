@@ -3215,7 +3215,7 @@ recipe foo [
   x:number <- copy 0
   copy x
 ]]
-    y:address:array:character <- new []
+    y:address:array:character <- new [foo]
     env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
     event-loop screen:address, console:address, env:address:programming-environment-data
   ]
@@ -3223,10 +3223,10 @@ recipe foo [
     .                                                                                 run (F10)          .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  x:number <- copy 0                              ┊                                                 .
-    .  copy x                                          ┊                                                 .
-    .]                                                 ┊                                                 .
-    .missing type in 'copy x'                          ┊                                                 .
+    .  x:number <- copy 0                              ┊                                                x.
+    .  copy x                                          ┊foo                                              .
+    .]                                                 ┊copy x: reagent not initialized: x               .
+    .missing type in 'copy x'                          ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
