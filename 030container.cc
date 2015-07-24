@@ -129,7 +129,6 @@ case GET: {
     src += size_of(Type[base_type].elements.at(i));
   }
   trace(Primitive_recipe_depth, "run") << "address to copy is " << src;
-  assert(Type[base_type].kind == container);
   if (offset < 0 || offset >= SIZE(Type[base_type].elements)) {
     raise << current_recipe_name() << ": invalid offset " << offset << " for " << Type[base_type].name << '\n';
     products.resize(1);
@@ -192,9 +191,14 @@ case GET_ADDRESS: {
   reagent base = current_instruction().ingredients.at(0);
   long long int base_address = base.value;
   type_ordinal base_type = base.types.at(0);
-  if (Type[base_type].kind != container)
-    raise << "'get' on a non-container in " << current_recipe_name () << ": " << current_instruction().to_string() << '\n' << die();
-  assert(is_literal(current_instruction().ingredients.at(1)));
+  if (Type[base_type].kind != container) {
+    raise << current_recipe_name () << ": 'get-address' on a non-container " << base.original_string << '\n';
+    break;
+  }
+  if (!is_literal(current_instruction().ingredients.at(1))) {
+    raise << current_recipe_name() << ": expected ingredient 1 of 'get-address' to have type 'offset', got '" << current_instruction().ingredients.at(1).original_string << "'\n";
+    break;
+  }
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(Type[base_type].elements)) {
