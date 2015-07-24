@@ -3175,20 +3175,20 @@ scenario run-shows-warnings-in-get [
   ]
   run [
     x:address:array:character <- new [ 
-recipe foo2 [
+recipe foo [
   get 123:number, foo:offset
 ]]
-    y:address:array:character <- new [foo2]
+    y:address:array:character <- new [foo]
     env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
     event-loop screen:address, console:address, env:address:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F10)          .
     .                                                  ┊                                                 .
-    .recipe foo2 [                                     ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  get 123:number, foo:offset                      ┊                                                x.
-    .]                                                 ┊foo2                                             .
-    .unknown element foo in container number           ┊foo2: 'get' on a non-container 123:number        .
+    .]                                                 ┊foo                                              .
+    .unknown element foo in container number           ┊foo: 'get' on a non-container 123:number         .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
@@ -3198,7 +3198,7 @@ recipe foo2 [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
-    .unknown element foo in container number            foo2: 'get' on a non-container 123:number        .
+    .unknown element foo in container number            foo: 'get' on a non-container 123:number         .
     .                                                                                                    .
   ]
 ]
