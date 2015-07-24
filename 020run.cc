@@ -210,9 +210,12 @@ void write_memory(reagent x, vector<double> data) {
 
 :(code)
 long long int size_of(const reagent& r) {
+  if (r.types.empty()) return 0;
+  // End size_of(reagent) Cases
   return size_of(r.types);
 }
 long long int size_of(const vector<type_ordinal>& types) {
+  if (types.empty()) return 0;
   // End size_of(types) Cases
   return 1;
 }
