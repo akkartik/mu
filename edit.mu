@@ -3232,6 +3232,34 @@ recipe foo [
   ]
 ]
 
+scenario run-shows-get-on-non-container-warnings [
+  $close-trace
+  assume-screen 100:literal/width, 15:literal/height
+  assume-console [
+    press 65526  # F10
+  ]
+  run [
+    x:address:array:character <- new [ 
+recipe foo [
+  x:address:point <- new point:type
+  get x:address:point, 1:offset
+]]
+    y:address:array:character <- new [foo]
+    env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
+    event-loop screen:address, console:address, env:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  x:address:point <- new point:type               ┊                                                x.
+    .  get x:address:point, 1:offset                   ┊foo                                              .
+    .]                                                 ┊foo: 'get' on a non-container x:address:point    .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+]
+
 ## helpers for drawing editor borders
 
 recipe draw-box [
