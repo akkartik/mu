@@ -32,7 +32,7 @@ type_ordinal recipe_ordinal = Type_ordinal["recipe-ordinal"] = Next_type_ordinal
 Type[recipe_ordinal].name = "recipe-ordinal";
 
 :(before "End Reagent-parsing Exceptions")
-if (r.properties.at(0).second.at(0) == "recipe") {
+if (!r.properties.at(0).second.empty() && r.properties.at(0).second.at(0) == "recipe") {
   r.set_value(Recipe_ordinal[r.name]);
   return;
 }
