@@ -111,7 +111,10 @@ case GET: {
     raise << current_recipe_name () << ": 'get' on a non-container " << base.original_string << '\n';
     break;
   }
-  assert(is_literal(current_instruction().ingredients.at(1)));
+  if (!is_literal(current_instruction().ingredients.at(1))) {
+    raise << current_recipe_name() << ": expected ingredient 1 of 'get' to have type 'offset', got '" << current_instruction().ingredients.at(1).original_string << "'\n";
+    break;
+  }
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
   long long int src = base_address;

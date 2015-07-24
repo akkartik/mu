@@ -3260,6 +3260,38 @@ recipe foo [
   ]
 ]
 
+scenario run-shows-non-literal-get-argument-warnings [
+  $close-trace
+  assume-screen 100:literal/width, 15:literal/height
+  assume-console [
+    press 65526  # F10
+  ]
+  run [
+    x:address:array:character <- new [ 
+recipe foo [
+  x:number <- copy 0
+  y:address:point <- new point:type
+  get y:address:point/deref, x:number
+]]
+    y:address:array:character <- new [foo]
+    env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
+    event-loop screen:address, console:address, env:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F10)          .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  x:number <- copy 0                              ┊                                                x.
+    .  y:address:point <- new point:type               ┊foo                                              .
+    .  get y:address:point/deref, x:number             ┊foo: expected ingredient 1 of 'get' to have type↩.
+    .]                                                 ┊ 'offset', got 'x:number'                        .
+    .foo: expected ingredient 1 of 'get' to have type ↩┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .'offset'; got x:number                            ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
 ## helpers for drawing editor borders
 
 recipe draw-box [

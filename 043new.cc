@@ -36,7 +36,7 @@ if (inst.operation == Recipe_ordinal["new"]) {
   // first arg must be of type 'type'
   assert(SIZE(inst.ingredients) >= 1);
   if (!is_literal(inst.ingredients.at(0)))
-    raise << "expected literal, got " << inst.ingredients.at(0).to_string() << '\n' << die();
+    raise << "expected literal, got " << inst.ingredients.at(0).original_string << '\n' << die();
   if (inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
     raise << "tried to allocate non-type " << inst.ingredients.at(0).to_string() << " in recipe " << Recipe[r].name << '\n' << die();
   if (Type_ordinal.find(inst.ingredients.at(0).name) == Type_ordinal.end())
