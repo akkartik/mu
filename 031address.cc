@@ -98,20 +98,69 @@ recipe main [
 :(after "reagent base = " following "case GET_ADDRESS:")
 base = canonize(base);
 
-//:: helpers
+//:: Helpers for debugging
 
-:(code)
-bool has_property(reagent x, string name) {
-  for (long long int i = /*skip name:type*/1; i < SIZE(x.properties); ++i) {
-    if (x.properties.at(i).first == name) return true;
+:(before "End Primitive Recipe Declarations")
+_DUMP_TRACE,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$dump-trace"] = _DUMP_TRACE;
+:(before "End Primitive Recipe Implementations")
+case _DUMP_TRACE: {
+  if (ingredients.empty()) {
+    DUMP("");
   }
-  return false;
+  else {
+    DUMP(current_instruction().ingredients.at(0).name);
+  }
+  break;
 }
 
-vector<string> property(const reagent& r, const string& name) {
-  for (long long int p = /*skip name:type*/1; p != SIZE(r.properties); ++p) {
-    if (r.properties.at(p).first == name)
-      return r.properties.at(p).second;
+:(before "End Primitive Recipe Declarations")
+_CLEAR_TRACE,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$clear-trace"] = _CLEAR_TRACE;
+:(before "End Primitive Recipe Implementations")
+case _CLEAR_TRACE: {
+  CLEAR_TRACE;
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+_DUMP_MEMORY,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$dump-memory"] = _DUMP_MEMORY;
+:(before "End Primitive Recipe Implementations")
+case _DUMP_MEMORY: {
+  dump_memory();
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+_DUMP,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$dump"] = _DUMP;
+:(before "End Primitive Recipe Implementations")
+case _DUMP: {
+  reagent after_canonize = canonize(current_instruction().ingredients.at(0));
+  cerr << current_recipe_name() << ": " << current_instruction().ingredients.at(0).name << ' ' << current_instruction().ingredients.at(0).value << " => " << after_canonize.value << " => " << Memory[after_canonize.value] << '\n';
+  break;
+}
+
+//: grab an address, and then dump its value at intervals
+:(before "End Globals")
+long long int foo = -1;
+:(before "End Primitive Recipe Declarations")
+_FOO,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$foo"] = _FOO;
+:(before "End Primitive Recipe Implementations")
+case _FOO: {
+  if (current_instruction().ingredients.empty()) {
+    if (foo != -1) cerr << foo << ": " << Memory[foo] << '\n';
+    else cerr << '\n';
   }
-  return vector<string>();
+  else {
+    foo = canonize(current_instruction().ingredients.at(0)).value;
+  }
+  break;
 }

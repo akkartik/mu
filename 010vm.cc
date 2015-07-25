@@ -264,6 +264,21 @@ string slurp_until(istream& in, char delim) {
   return out.str();
 }
 
+bool has_property(reagent x, string name) {
+  for (long long int i = /*skip name:type*/1; i < SIZE(x.properties); ++i) {
+    if (x.properties.at(i).first == name) return true;
+  }
+  return false;
+}
+
+vector<string> property(const reagent& r, const string& name) {
+  for (long long int p = /*skip name:type*/1; p != SIZE(r.properties); ++p) {
+    if (r.properties.at(p).first == name)
+      return r.properties.at(p).second;
+  }
+  return vector<string>();
+}
+
 void dump_memory() {
   for (map<long long int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
     cout << p->first << ": " << p->second << '\n';
