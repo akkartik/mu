@@ -204,12 +204,12 @@ void skip_comma(istream& in) {
 //: step on their own toes. But there'll be many occasions later where
 //: we'll want to disable the warnings.
 :(before "End Globals")
-bool Hide_redefine_warnings = false;
+bool Disable_redefine_warnings = false;
 :(before "End Setup")
-Hide_redefine_warnings = false;
+Disable_redefine_warnings = false;
 :(code)
 bool warn_on_redefine(const string& recipe_name) {
-  if (Hide_redefine_warnings) return false;
+  if (Disable_redefine_warnings) return false;
   return true;
 }
 
