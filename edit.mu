@@ -2695,6 +2695,8 @@ recipe run-sandboxes [
   save [recipes.mu], in:address:array:character
   recipe-warnings:address:address:array:character <- get-address env:address:programming-environment-data/deref, recipe-warnings:offset
   recipe-warnings:address:address:array:character/deref <- reload in:address:array:character
+  # if recipe editor has errors, stop
+  reply-if recipe-warnings:address:address:array:character/deref
   # check contents of right editor (sandbox)
   {
     sandbox-contents:address:array:character <- editor-contents current-sandbox:address:editor-data
@@ -3184,12 +3186,12 @@ recipe foo [
   ]
   screen-should-contain [
     .                                                                                 run (F10)          .
-    .                                                  ┊                                                 .
+    .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  get 123:number, foo:offset                      ┊                                                x.
-    .]                                                 ┊foo                                              .
-    .unknown element foo in container number           ┊foo: 'get' on a non-container 123:number         .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  get 123:number, foo:offset                      ┊                                                 .
+    .]                                                 ┊                                                 .
+    .unknown element foo in container number           ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
   screen-should-contain-in-color 1:literal/red, [
@@ -3198,7 +3200,7 @@ recipe foo [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
-    .unknown element foo in container number            foo: 'get' on a non-container 123:number         .
+    .unknown element foo in container number                                                             .
     .                                                                                                    .
   ]
 ]
@@ -3221,12 +3223,12 @@ recipe foo [
   ]
   screen-should-contain [
     .                                                                                 run (F10)          .
-    .                                                  ┊                                                 .
+    .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  x:number <- copy 0                              ┊                                                x.
-    .  copy x                                          ┊foo                                              .
-    .]                                                 ┊copy x: reagent not initialized: x               .
-    .missing type in 'copy x'                          ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  x:number <- copy 0                              ┊                                                 .
+    .  copy x                                          ┊                                                 .
+    .]                                                 ┊                                                 .
+    .missing type in 'copy x'                          ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -3279,13 +3281,13 @@ recipe foo [
   ]
   screen-should-contain [
     .                                                                                 run (F10)          .
-    .                                                  ┊                                                 .
+    .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  x:number <- copy 0                              ┊                                                x.
-    .  y:address:point <- new point:type               ┊foo                                              .
-    .  get y:address:point/deref, x:number             ┊foo: expected ingredient 1 of 'get' to have type↩.
-    .]                                                 ┊ 'offset', got 'x:number'                        .
-    .foo: expected ingredient 1 of 'get' to have type ↩┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  x:number <- copy 0                              ┊                                                 .
+    .  y:address:point <- new point:type               ┊                                                 .
+    .  get y:address:point/deref, x:number             ┊                                                 .
+    .]                                                 ┊                                                 .
+    .foo: expected ingredient 1 of 'get' to have type ↩┊                                                 .
     .'offset'; got x:number                            ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
