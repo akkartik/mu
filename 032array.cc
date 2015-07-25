@@ -43,7 +43,7 @@ if (x.types.at(0) == Type_ordinal["array"]) return false;
 :(before "End size_of(reagent) Cases")
   if (r.types.at(0) == Type_ordinal["array"]) {
     if (SIZE(r.types) == 1) {
-      raise << current_recipe_name() << ": '" << r.original_string << "' is an array of what?\n";
+      raise << current_recipe_name() << ": '" << r.original_string << "' is an array of what?\n" << end();
       return 1;
     }
     // skip the 'array' type to get at the element type
@@ -81,26 +81,26 @@ Recipe_ordinal["index"] = INDEX;
 case INDEX: {
 //?   if (Trace_stream) Trace_stream->dump_layer = "run"; //? 1
   reagent base = canonize(current_instruction().ingredients.at(0));
-//?   trace(Primitive_recipe_depth, "run") << "ingredient 0 after canonize: " << base.to_string(); //? 1
+//?   trace(Primitive_recipe_depth, "run") << "ingredient 0 after canonize: " << base.to_string() << end(); //? 1
   long long int base_address = base.value;
   if (base.types.at(0) != Type_ordinal["array"]) {
-    raise << current_recipe_name () << ": 'index' on a non-array " << base.original_string << '\n';
+    raise << current_recipe_name () << ": 'index' on a non-array " << base.original_string << '\n' << end();
     break;
   }
   reagent offset = canonize(current_instruction().ingredients.at(1));
-//?   trace(Primitive_recipe_depth, "run") << "ingredient 1 after canonize: " << offset.to_string(); //? 1
+//?   trace(Primitive_recipe_depth, "run") << "ingredient 1 after canonize: " << offset.to_string() << end(); //? 1
   vector<double> offset_val(read_memory(offset));
   vector<type_ordinal> element_type = array_element(base.types);
-//?   trace(Primitive_recipe_depth, "run") << "offset: " << offset_val.at(0); //? 1
-//?   trace(Primitive_recipe_depth, "run") << "size of elements: " << size_of(element_type); //? 1
+//?   trace(Primitive_recipe_depth, "run") << "offset: " << offset_val.at(0) << end(); //? 1
+//?   trace(Primitive_recipe_depth, "run") << "size of elements: " << size_of(element_type) << end(); //? 1
   if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
-    raise << current_recipe_name() << ": invalid index " << offset_val.at(0) << '\n';
+    raise << current_recipe_name() << ": invalid index " << offset_val.at(0) << '\n' << end();
     products.resize(1);
     break;
   }
   long long int src = base_address + 1 + offset_val.at(0)*size_of(element_type);
-  trace(Primitive_recipe_depth, "run") << "address to copy is " << src;
-  trace(Primitive_recipe_depth, "run") << "its type is " << Type[element_type.at(0)].name;
+  trace(Primitive_recipe_depth, "run") << "address to copy is " << src << end();
+  trace(Primitive_recipe_depth, "run") << "its type is " << Type[element_type.at(0)].name << end();
   reagent tmp;
   tmp.set_value(src);
   copy(element_type.begin(), element_type.end(), inserter(tmp.types, tmp.types.begin()));
@@ -175,14 +175,14 @@ case INDEX_ADDRESS: {
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
   if (base.types.at(0) != Type_ordinal["array"]) {
-    raise << current_recipe_name () << ": 'index-address' on a non-array " << base.original_string << '\n';
+    raise << current_recipe_name () << ": 'index-address' on a non-array " << base.original_string << '\n' << end();
     break;
   }
   reagent offset = canonize(current_instruction().ingredients.at(1));
   vector<double> offset_val(read_memory(offset));
   vector<type_ordinal> element_type = array_element(base.types);
   if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
-    raise << current_recipe_name() << ": invalid index " << offset_val.at(0) << '\n';
+    raise << current_recipe_name() << ": invalid index " << offset_val.at(0) << '\n' << end();
     products.resize(1);
     break;
   }
@@ -242,7 +242,7 @@ Recipe_ordinal["length"] = LENGTH;
 case LENGTH: {
   reagent x = canonize(current_instruction().ingredients.at(0));
   if (x.types.at(0) != Type_ordinal["array"]) {
-    raise << "tried to calculate length of non-array " << x.to_string() << '\n';
+    raise << "tried to calculate length of non-array " << x.to_string() << '\n' << end();
     break;
   }
   products.resize(1);

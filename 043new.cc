@@ -23,7 +23,7 @@ long long int alloc, alloc_max;
 alloc = Memory_allocated_until;
 Memory_allocated_until += Initial_memory_per_routine;
 alloc_max = Memory_allocated_until;
-trace(Primitive_recipe_depth, "new") << "routine allocated memory from " << alloc << " to " << alloc_max;
+trace(Primitive_recipe_depth, "new") << "routine allocated memory from " << alloc << " to " << alloc_max << end();
 
 //:: First handle 'type' operands.
 
@@ -36,14 +36,14 @@ if (inst.operation == Recipe_ordinal["new"]) {
   // first arg must be of type 'type'
   assert(SIZE(inst.ingredients) >= 1);
   if (!is_literal(inst.ingredients.at(0)))
-    raise << "expected literal, got " << inst.ingredients.at(0).original_string << '\n' << die();
+    raise << "expected literal, got " << inst.ingredients.at(0).original_string << '\n' << end();
   if (inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
-    raise << "tried to allocate non-type " << inst.ingredients.at(0).to_string() << " in recipe " << Recipe[r].name << '\n' << die();
+    raise << "tried to allocate non-type " << inst.ingredients.at(0).to_string() << " in recipe " << Recipe[r].name << '\n' << end();
   if (Type_ordinal.find(inst.ingredients.at(0).name) == Type_ordinal.end())
-    raise << "unknown type " << inst.ingredients.at(0).name << " in recipe " << Recipe[r].name << '\n' << die();
+    raise << "unknown type " << inst.ingredients.at(0).name << " in recipe " << Recipe[r].name << '\n' << end();
 //?   cerr << "type " << inst.ingredients.at(0).name << " => " << Type_ordinal[inst.ingredients.at(0).name] << '\n'; //? 1
   inst.ingredients.at(0).set_value(Type_ordinal[inst.ingredients.at(0).name]);
-  trace(Primitive_recipe_depth, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).name;
+  trace(Primitive_recipe_depth, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).name << end();
   end_new_transform:;
 }
 
@@ -63,11 +63,11 @@ case NEW: {
     vector<type_ordinal> type;
     assert(is_literal(current_instruction().ingredients.at(0)));
     type.push_back(current_instruction().ingredients.at(0).value);
-//?     trace(Primitive_recipe_depth, "mem") << "type " << current_instruction().ingredients.at(0).to_string() << ' ' << type.size() << ' ' << type.back() << " has size " << size_of(type); //? 1
+//?     trace(Primitive_recipe_depth, "mem") << "type " << current_instruction().ingredients.at(0).to_string() << ' ' << type.size() << ' ' << type.back() << " has size " << size_of(type) << end(); //? 1
     if (SIZE(current_instruction().ingredients) > 1) {
       // array
       array_length = ingredients.at(1).at(0);
-      trace(Primitive_recipe_depth, "mem") << "array size is " << array_length;
+      trace(Primitive_recipe_depth, "mem") << "array size is " << array_length << end();
       size = array_length*size_of(type) + /*space for length*/1;
     }
     else {
@@ -81,8 +81,8 @@ case NEW: {
   // really crappy at the moment
   ensure_space(size);
   const long long int result = Current_routine->alloc;
-  trace(Primitive_recipe_depth, "mem") << "new alloc: " << result;
-//?   trace(Primitive_recipe_depth, "mem") << "size: " << size << " locations"; //? 1
+  trace(Primitive_recipe_depth, "mem") << "new alloc: " << result << end();
+//?   trace(Primitive_recipe_depth, "mem") << "size: " << size << " locations" << end(); //? 1
   // save result
   products.resize(1);
   products.at(0).push_back(result);
@@ -121,7 +121,7 @@ void ensure_space(long long int size) {
     Current_routine->alloc = Memory_allocated_until;
     Memory_allocated_until += Initial_memory_per_routine;
     Current_routine->alloc_max = Memory_allocated_until;
-    trace(Primitive_recipe_depth, "new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max;
+    trace(Primitive_recipe_depth, "new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max << end();
   }
 }
 
@@ -209,13 +209,13 @@ Recipe_ordinal["abandon"] = ABANDON;
 :(before "End Primitive Recipe Implementations")
 case ABANDON: {
   if (!scalar(ingredients.at(0))) {
-    raise << "abandon's ingredient should be scalar\n";
+    raise << "abandon's ingredient should be scalar\n" << end();
     break;
   }
   long long int address = ingredients.at(0).at(0);
   reagent types = canonize(current_instruction().ingredients.at(0));
   if (types.types.at(0) != Type_ordinal["address"]) {
-    raise << "abandon's ingredient should be an address\n";
+    raise << "abandon's ingredient should be an address\n" << end();
     break;
   }
   reagent target_type = deref(types);
@@ -240,9 +240,12 @@ void abandon(long long int address, long long int size) {
 if (Free_list[size]) {
   long long int result = Free_list[size];
   Free_list[size] = Memory[result];
-  for (long long int curr = result+1; curr < result+size; ++curr)
-    if (Memory[curr] != 0)
-      raise << current_recipe_name() << ": memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << die();
+  for (long long int curr = result+1; curr < result+size; ++curr) {
+    if (Memory[curr] != 0) {
+      raise << current_recipe_name() << ": memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
+      break;  // always fatal
+    }
+  }
   if (SIZE(current_instruction().ingredients) > 1)
     Memory[result] = array_length;
   else

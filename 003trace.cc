@@ -114,7 +114,6 @@ struct trace_stream {
 
   ostream& stream(int depth, string layer) {
     if (!collect_layer.empty() && layer != collect_layer) return null_stream;
-    newline();
     curr_stream = new ostringstream;
     curr_layer = layer;
     curr_depth = depth;
@@ -125,6 +124,7 @@ struct trace_stream {
   void newline() {
     if (!curr_stream) return;
     string curr_contents = curr_stream->str();
+    if (curr_contents.empty()) return;
     past_lines.push_back(trace_line(curr_depth, trim(curr_layer), curr_contents));  // preserve indent in contents
     if (curr_layer == dump_layer || curr_layer == "dump" || dump_layer == "all" ||
         (!Hide_warnings && curr_layer == "warn"))
@@ -138,7 +138,6 @@ struct trace_stream {
 
   // Useful for debugging.
   string readable_contents(string layer) {  // missing layer = everything
-    newline();
     ostringstream output;
     layer = trim(layer);
     for (vector<trace_line>::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
@@ -161,22 +160,12 @@ trace_stream* Trace_stream = NULL;
 // some unfriendly constraints (they delay printing, they can't nest)
 #define raise  ((!Trace_stream || !Hide_warnings) ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream("warn"))
 
-// A separate helper for debugging. We should only trace domain-specific
-// facts. For everything else use log.
-#define xlog if (false) log
-// To turn on logging replace 'xlog' with 'log'.
-#define log cerr
-
 :(before "End Types")
-// raise << die exits after printing -- unless Hide_warnings is set.
-struct die {};
+struct end {};
 :(before "End Tracing")
-ostream& operator<<(ostream& os, unused die) {
-  if (Hide_warnings) return os;
-  tb_shutdown();
-  os << "dying";
+ostream& operator<<(ostream& os, unused end) {
   if (Trace_stream) Trace_stream->newline();
-  exit(1);
+  return os;
 }
 
 #define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream;
@@ -217,7 +206,6 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
     ++curr_expected_line;
   if (curr_expected_line == SIZE(expected_lines)) return true;
-  Trace_stream->newline();
   string layer, contents;
   split_layer_contents(expected_lines.at(curr_expected_line), &layer, &contents);
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
@@ -265,7 +253,6 @@ int trace_count(string layer) {
 }
 
 int trace_count(string layer, string line) {
-  Trace_stream->newline();
   long result = 0;
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
     if (layer == p->label) {

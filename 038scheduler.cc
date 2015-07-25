@@ -56,9 +56,9 @@ void run(recipe_ordinal r) {
 //?     cout << "scheduler: " << Current_routine_index << '\n'; //? 1
     assert(Current_routine);
     assert(Current_routine->state == RUNNING);
-    trace("schedule") << current_routine_label();
-//?     trace("schedule") << Current_routine_index << ": " << current_recipe_name(); //? 1
-//?     trace("schedule") << Current_routine->id << " " << current_recipe_name(); //? 1
+    trace("schedule") << current_routine_label() << end();
+//?     trace("schedule") << Current_routine_index << ": " << current_recipe_name() << end(); //? 1
+//?     trace("schedule") << Current_routine->id << " " << current_recipe_name() << end(); //? 1
     run_current_routine(Scheduling_interval);
     // Scheduler State Transitions
 //?     cerr << "AAA completed? " << Current_routine->completed() << '\n'; //? 1
@@ -252,29 +252,29 @@ recipe f1 [
 -schedule: f1
 
 :(before "End Scheduler Cleanup")
-//? trace("schedule") << "Before cleanup"; //? 1
+//? trace("schedule") << "Before cleanup" << end(); //? 1
 //? for (long long int i = 0; i < SIZE(Routines); ++i) { //? 1
-//?   trace("schedule") << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << ' ' << Routines.at(i)->state; //? 1
+//?   trace("schedule") << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << ' ' << Routines.at(i)->state << end(); //? 1
 //? } //? 1
 for (long long int i = 0; i < SIZE(Routines); ++i) {
   if (Routines.at(i)->state == COMPLETED) continue;
   if (Routines.at(i)->parent_index < 0) continue;  // root thread
-//?   trace("schedule") << "AAA " << i; //? 1
+//?   trace("schedule") << "AAA " << i << end(); //? 1
   if (has_completed_parent(i)) {
-//?     trace("schedule") << "BBB " << i; //? 1
+//?     trace("schedule") << "BBB " << i << end(); //? 1
     Routines.at(i)->state = COMPLETED;
   }
 }
-//? trace("schedule") << "After cleanup"; //? 1
+//? trace("schedule") << "After cleanup" << end(); //? 1
 //? for (long long int i = 0; i < SIZE(Routines); ++i) { //? 1
-//?   trace("schedule") << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << ' ' << Routines.at(i)->state; //? 1
+//?   trace("schedule") << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << ' ' << Routines.at(i)->state << end(); //? 1
 //? } //? 1
 
 :(code)
 bool has_completed_parent(long long int routine_index) {
-//?   trace("schedule") << "CCC " << routine_index << '\n'; //? 2
+//?   trace("schedule") << "CCC " << routine_index << '\n' << end(); //? 2
   for (long long int j = routine_index; j >= 0; j = Routines.at(j)->parent_index) {
-//?     trace("schedule") << "DDD " << j << '\n'; //? 2
+//?     trace("schedule") << "DDD " << j << '\n' << end(); //? 2
     if (Routines.at(j)->state == COMPLETED)
       return true;
   }

@@ -60,9 +60,11 @@ void run_current_routine()
 //?     cerr << "AAA 7: " << current_step_index() << '\n'; //? 1
     // Running One Instruction
     if (current_instruction().is_label) { ++current_step_index(); continue; }
-    trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string();
-    if (Memory[0] != 0)
-      raise << "something wrote to location 0; this should never happen\n" << die();
+    trace(Initial_callstack_depth+Callstack_depth, "run") << current_instruction().to_string() << end();
+    if (Memory[0] != 0) {
+      raise << "something wrote to location 0; this should never happen\n" << end();
+      break;
+    }
     // Read all ingredients from memory.
     // Each ingredient loads a vector of values rather than a single value; mu
     // permits operating on reagents spanning multiple locations.
@@ -87,7 +89,7 @@ void run_current_routine()
       }
     }
     if (SIZE(products) < SIZE(current_instruction().products))
-      raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << current_instruction().to_string();
+      raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << current_instruction().to_string() << end();
     for (long long int i = 0; i < SIZE(current_instruction().products); ++i) {
       write_memory(current_instruction().products.at(i), products.at(i));
     }
@@ -147,7 +149,7 @@ void load_permanently(string filename) {
 //?   cerr << "AAA: " << filename << ' ' << static_cast<bool>(fin) << ' ' << fin.fail() << '\n'; //? 1
 //?   return; //? 1
   if (!fin) {
-    raise << "no such file " << filename << '\n';
+    raise << "no such file " << filename << '\n' << end();
     return;
   }
   fin >> std::noskipws;
@@ -189,7 +191,7 @@ vector<double> read_memory(reagent x) {
   long long int size = size_of(x);
   for (long long int offset = 0; offset < size; ++offset) {
     double val = Memory[base+offset];
-    trace(Primitive_recipe_depth, "mem") << "location " << base+offset << " is " << val;
+    trace(Primitive_recipe_depth, "mem") << "location " << base+offset << " is " << val << end();
     result.push_back(val);
   }
   return result;
@@ -200,10 +202,11 @@ void write_memory(reagent x, vector<double> data) {
   if (is_literal(x)) return;
   long long int base = x.value;
   if (size_mismatch(x, data)) {
-    raise << current_recipe_name() << ": size mismatch in storing to " << x.to_string() << " at " << current_instruction().to_string() << '\n' << die();
+    raise << current_recipe_name() << ": size mismatch in storing to " << x.to_string() << " at " << current_instruction().to_string() << '\n' << end();
+    return;
   }
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
-    trace(Primitive_recipe_depth, "mem") << "storing " << data.at(offset) << " in location " << base+offset;
+    trace(Primitive_recipe_depth, "mem") << "storing " << data.at(offset) << " in location " << base+offset << end();
     Memory[base+offset] = data.at(offset);
   }
 }

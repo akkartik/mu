@@ -29,7 +29,7 @@ vector<recipe_ordinal> load(istream& in) {
       string recipe_name = next_word(in);
 //?       cerr << "recipe: " << recipe_name << '\n'; //? 1
       if (recipe_name.empty())
-        raise << "empty recipe name\n";
+        raise << "empty recipe name\n" << end();
       if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
         Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
       }
@@ -44,7 +44,7 @@ vector<recipe_ordinal> load(istream& in) {
     }
     // End Command Handlers
     else {
-      raise << "unknown top-level command: " << command << '\n';
+      raise << "unknown top-level command: " << command << '\n' << end();
     }
   }
   // End Load Sanity Checks
@@ -55,7 +55,7 @@ recipe slurp_recipe(istream& in) {
   recipe result;
   skip_whitespace(in);
   if (in.get() != '[')
-    raise << "recipe body must begin with '['\n";
+    raise << "recipe body must begin with '['\n" << end();
   skip_whitespace_and_comments(in);
   instruction curr;
   while (next_instruction(in, &curr)) {
@@ -96,7 +96,7 @@ bool next_instruction(istream& in, instruction* curr) {
   if (SIZE(words) == 1 && !isalnum(words.at(0).at(0)) && words.at(0).at(0) != '$') {
     curr->is_label = true;
     curr->label = words.at(0);
-    trace("parse") << "label: " << curr->label;
+    trace("parse") << "label: " << curr->label << end();
     return !in.eof();
   }
 
@@ -110,15 +110,18 @@ bool next_instruction(istream& in, instruction* curr) {
     ++p;  // skip <-
   }
 
-  if (p == words.end())
-    raise << "instruction prematurely ended with '<-'\n" << die();
+  if (p == words.end()) {
+    raise << "instruction prematurely ended with '<-'\n" << end() << end();
+    return false;
+  }
   curr->name = *p;
   if (Recipe_ordinal.find(*p) == Recipe_ordinal.end()) {
     Recipe_ordinal[*p] = Next_recipe_ordinal++;
 //?     cout << "AAA: " << *p << " is now " << Recipe_ordinal[*p] << '\n'; //? 1
   }
   if (Recipe_ordinal[*p] == 0) {
-    raise << "Recipe " << *p << " has number 0, which is reserved for IDLE.\n" << die();
+    raise << "Recipe " << *p << " has number 0, which is reserved for IDLE.\n" << end() << end();
+    return false;
   }
   curr->operation = Recipe_ordinal[*p];  ++p;
 
@@ -128,12 +131,12 @@ bool next_instruction(istream& in, instruction* curr) {
 //?     cerr << "ingredient: " << curr->ingredients.back().to_string() << '\n'; //? 1
   }
 
-  trace("parse") << "instruction: " << curr->name;
+  trace("parse") << "instruction: " << curr->name << end();
   for (vector<reagent>::iterator p = curr->ingredients.begin(); p != curr->ingredients.end(); ++p) {
-    trace("parse") << "  ingredient: " << p->to_string();
+    trace("parse") << "  ingredient: " << p->to_string() << end();
   }
   for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p) {
-    trace("parse") << "  product: " << p->to_string();
+    trace("parse") << "  product: " << p->to_string() << end();
   }
   return !in.eof();
 }
@@ -204,7 +207,7 @@ Hide_redefine_warnings = false;
 :(after "Warn On Redefinition")
 if (!Hide_redefine_warnings
     && Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
-  raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n";
+  raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
 }
 
 // for debugging

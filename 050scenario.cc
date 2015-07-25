@@ -257,16 +257,16 @@ void check_memory(const string& s) {
     skip_whitespace_and_comments(in);
     int value = 0;  in >> value;
     if (locations_checked.find(address) != locations_checked.end())
-      raise << "duplicate expectation for location " << address << '\n';
-    trace(Primitive_recipe_depth, "run") << "checking location " << address;
+      raise << "duplicate expectation for location " << address << '\n' << end();
+    trace(Primitive_recipe_depth, "run") << "checking location " << address << end();
     if (Memory[address] != value) {
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
+        raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n' << end();
       }
       else {
         // just testing scenario support
-        raise << "expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n';
+        raise << "expected location " << address << " to contain " << value << " but saw " << Memory[address] << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -294,16 +294,16 @@ void check_type(const string& lhs, istream& in) {
     check_string(address, literal);
     return;
   }
-  raise << "don't know how to check memory for " << lhs << '\n';
+  raise << "don't know how to check memory for " << lhs << '\n' << end();
 }
 
 void check_string(long long int address, const string& literal) {
-  trace(Primitive_recipe_depth, "run") << "checking string length at " << address;
+  trace(Primitive_recipe_depth, "run") << "checking string length at " << address << end();
   if (Memory[address] != SIZE(literal)) {
     if (Current_scenario && !Scenario_testing_scenario)
-      raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n';
+      raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n' << end();
     else
-      raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n';
+      raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << Memory[address] << '\n' << end();
     if (!Scenario_testing_scenario) {
       Passed = false;
       ++Num_failures;
@@ -312,15 +312,15 @@ void check_string(long long int address, const string& literal) {
   }
   ++address;  // now skip length
   for (long long int i = 0; i < SIZE(literal); ++i) {
-    trace(Primitive_recipe_depth, "run") << "checking location " << address+i;
+    trace(Primitive_recipe_depth, "run") << "checking location " << address+i << end();
     if (Memory[address+i] != literal.at(i)) {
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
+        raise << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n' << end();
       }
       else {
         // just testing scenario support
-        raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n';
+        raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << Memory[address+i] << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -421,7 +421,7 @@ bool check_trace(const string& expected) {
   }
 
   raise << "missing [" << expected_lines.at(curr_expected_line).contents << "] "
-        << "in trace layer " << expected_lines.at(curr_expected_line).label << '\n';
+        << "in trace layer " << expected_lines.at(curr_expected_line).label << '\n' << end();
   Passed = false;
   return false;
 }
@@ -502,7 +502,7 @@ bool check_trace_missing(const string& in) {
   vector<trace_line> lines = parse_trace(in);
   for (long long int i = 0; i < SIZE(lines); ++i) {
     if (trace_count(lines.at(i).label, lines.at(i).contents) != 0) {
-      raise << "unexpected [" << lines.at(i).contents << "] in trace layer " << lines.at(i).label << '\n';
+      raise << "unexpected [" << lines.at(i).contents << "] in trace layer " << lines.at(i).label << '\n' << end();
       Passed = false;
       return false;
     }

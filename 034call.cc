@@ -81,7 +81,7 @@ inline const instruction& current_instruction() {
 default: {
   // not a primitive; try to look up the book of recipes
   if (Recipe.find(current_instruction().operation) == Recipe.end()) {
-    raise << "undefined operation " << current_instruction().operation << ": " << current_instruction().to_string() << '\n';
+    raise << "undefined operation " << current_instruction().operation << ": " << current_instruction().to_string() << '\n' << end();
     break;
   }
   Current_routine->calls.push_front(call(current_instruction().operation));

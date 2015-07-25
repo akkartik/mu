@@ -45,7 +45,7 @@ void transform_names(const recipe_ordinal r) {
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
       if (disqualified(inst.ingredients.at(in), inst)) continue;
       if (!already_transformed(inst.ingredients.at(in), names)) {
-        raise << "use before set: " << inst.ingredients.at(in).name << " in " << Recipe[r].name << '\n';
+        raise << "use before set: " << inst.ingredients.at(in).name << " in " << Recipe[r].name << '\n' << end();
       }
       inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
     }
@@ -55,7 +55,7 @@ void transform_names(const recipe_ordinal r) {
       if (is_named_location(inst.products.at(out))) names_used = true;
       if (disqualified(inst.products.at(out), inst)) continue;
       if (names.find(inst.products.at(out).name) == names.end()) {
-        trace("name") << "assign " << inst.products.at(out).name << " " << curr_idx;
+        trace("name") << "assign " << inst.products.at(out).name << " " << curr_idx << end();
         names[inst.products.at(out).name] = curr_idx;
         curr_idx += size_of(inst.products.at(out));
       }
@@ -63,7 +63,7 @@ void transform_names(const recipe_ordinal r) {
     }
   }
   if (names_used && numeric_locations_used && r != Recipe_ordinal["interactive"])
-    raise << "mixing variable names and numeric addresses in " << Recipe[r].name << '\n';
+    raise << "mixing variable names and numeric addresses in " << Recipe[r].name << '\n' << end();
 }
 
 void check_metadata(map<string, vector<type_ordinal> >& metadata, const reagent& x, const recipe_ordinal r) {
@@ -75,13 +75,13 @@ void check_metadata(map<string, vector<type_ordinal> >& metadata, const reagent&
   if (metadata.find(x.name) == metadata.end())
     metadata[x.name] = x.types;
   if (metadata[x.name] != x.types)
-    raise << x.name << " used with multiple types in " << Recipe[r].name << '\n';
+    raise << x.name << " used with multiple types in " << Recipe[r].name << '\n' << end();
 }
 
 bool disqualified(/*mutable*/ reagent& x, const instruction& inst) {
 //?   cerr << x.to_string() << '\n'; //? 1
   if (x.types.empty()) {
-    raise << "missing type in '" << inst.to_string() << "'\n";
+    raise << "missing type in '" << inst.to_string() << "'\n" << end();
     return true;
   }
   if (is_raw(x)) return true;
@@ -104,7 +104,7 @@ type_ordinal skip_addresses(const vector<type_ordinal>& types) {
   for (long long int i = 0; i < SIZE(types); ++i) {
     if (types.at(i) != Type_ordinal["address"]) return types.at(i);
   }
-  raise << "expected a container" << '\n' << die();
+  raise << "expected a container" << '\n' << end();
   return -1;
 }
 
@@ -114,7 +114,7 @@ int find_element_name(const type_ordinal t, const string& name) {
   for (long long int i = 0; i < SIZE(container.element_names); ++i) {
     if (container.element_names.at(i) == name) return i;
   }
-  raise << "unknown element " << name << " in container " << Type[t].name << '\n';
+  raise << "unknown element " << name << " in container " << Type[t].name << '\n' << end();
   return -1;
 }
 
@@ -223,12 +223,12 @@ if (inst.operation == Recipe_ordinal["get"]
   assert(SIZE(inst.ingredients) >= 2);
 //?   cout << inst.ingredients.at(1).to_string() << '\n'; //? 1
   if (!is_literal(inst.ingredients.at(1)))
-    raise << Recipe[r].name << ": expected ingredient 1 of " << (inst.operation == Recipe_ordinal["get"] ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << die();
+    raise << Recipe[r].name << ": expected ingredient 1 of " << (inst.operation == Recipe_ordinal["get"] ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be a container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).types);
     inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
-    trace("name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << inst.ingredients.at(1).value;
+    trace("name") << "element " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " is at offset " << inst.ingredients.at(1).value << end();
   }
 }
 
@@ -265,6 +265,6 @@ if (inst.operation == Recipe_ordinal["maybe-convert"]) {
     // since first non-address in base type must be an exclusive container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).types);
     inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name));
-    trace("name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << inst.ingredients.at(1).value;
+    trace("name") << "variant " << inst.ingredients.at(1).name << " of type " << Type[base_type].name << " has tag " << inst.ingredients.at(1).value << end();
   }
 }

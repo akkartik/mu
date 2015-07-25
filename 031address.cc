@@ -44,7 +44,7 @@ reagent deref(reagent x) {
 
   // compute value
   result.set_value(Memory[x.value]);
-  trace(Primitive_recipe_depth, "mem") << "location " << x.value << " is " << result.value;
+  trace(Primitive_recipe_depth, "mem") << "location " << x.value << " is " << result.value << end();
 
   // populate types
   copy(++x.types.begin(), x.types.end(), inserter(result.types, result.types.begin()));

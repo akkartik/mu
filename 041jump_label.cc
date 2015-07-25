@@ -54,7 +54,7 @@ void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, co
   if (is_integer(x.name)) return;  // non-labels will be handled like other number operands
 //?   cerr << "DDD " << x.to_string() << '\n'; //? 1
   if (offset.find(x.name) == offset.end())
-    raise << "can't find label " << x.name << " in routine " << Recipe[r].name << '\n';
+    raise << "can't find label " << x.name << " in routine " << Recipe[r].name << '\n' << end();
   x.set_value(offset[x.name]-current_offset);
 }
 

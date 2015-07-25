@@ -95,11 +95,11 @@ case MAYBE_CONVERT: {
   long long int base_address = base.value;
   type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != exclusive_container) {
-    raise << current_recipe_name () << ": 'maybe-convert' on a non-exclusive-container " << base.original_string << '\n';
+    raise << current_recipe_name () << ": 'maybe-convert' on a non-exclusive-container " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": expected ingredient 1 of 'get' to have type 'variant', got '" << current_instruction().ingredients.at(1).original_string << "'\n";
+    raise << current_recipe_name() << ": expected ingredient 1 of 'get' to have type 'variant', got '" << current_instruction().ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   long long int tag = current_instruction().ingredients.at(1).value;

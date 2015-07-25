@@ -167,8 +167,10 @@ Recipe_ordinal["replace-in-console"] = REPLACE_IN_CONSOLE;
 case REPLACE_IN_CONSOLE: {
   assert(scalar(ingredients.at(0)));
 //?   cerr << "console: " << Memory[CONSOLE] << '\n'; //? 1
-  if (!Memory[CONSOLE])
-    raise << "console not initialized\n" << die();
+  if (!Memory[CONSOLE]) {
+    raise << "console not initialized\n" << end();
+    break;
+  }
   long long int console_data = Memory[Memory[CONSOLE]+1];
 //?   cerr << "console data starts at " << console_data << '\n'; //? 1
   long long int size = Memory[console_data];  // array size
