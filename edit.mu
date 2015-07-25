@@ -1133,8 +1133,8 @@ recipe render-all [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-  screen:address <- render-recipes screen:address, env:address:programming-environment-data
-  screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data
+  screen:address <- render-recipes screen:address, env:address:programming-environment-data, 1:literal/clear-below
+  screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data, 1:literal/clear-below
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
@@ -1171,6 +1171,7 @@ recipe render-recipes [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
+  clear:boolean <- next-ingredient
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
   # render recipes
   left:number <- get recipes:address:editor-data/deref, left:offset
@@ -1193,6 +1194,17 @@ recipe render-recipes [
   row:number <- add row:number, 1:literal
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
+  # clear rest of screen in this column, if requested
+  reply-unless clear:boolean, screen:address/same-as-ingredient:0
+  screen-height:number <- screen-height screen:address
+  {
+    at-bottom-of-screen?:boolean <- greater-or-equal row:number, screen-height:number
+    break-if at-bottom-of-screen?:boolean
+    move-cursor screen:address, row:number, left:number
+    clear-line-delimited screen:address, left:number, right:number
+    row:number <- add row:number, 1:literal
+    loop
+  }
   reply screen:address/same-as-ingredient:0
 ]
 
