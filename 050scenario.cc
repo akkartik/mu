@@ -159,7 +159,7 @@ void run_mu_scenario(const scenario& s) {
 :(scenarios run)
 :(scenario warn_on_redefine_scenario)
 % Hide_warnings = true;
-% Hide_redefine_warnings = true;
+% Disable_redefine_warnings = true;
 recipe scenario-foo [
   1:number <- copy 34:literal
 ]

@@ -270,11 +270,11 @@ case RELOAD: {
     Trace_stream->collect_layer = "warn";
   }
   Hide_warnings = true;
-  Hide_redefine_warnings = true;
+  Disable_redefine_warnings = true;
   load(read_mu_string(ingredients.at(0).at(0)));
   transform_all();
   Trace_stream->newline();  // flush trace
-  Hide_redefine_warnings = false;
+  Disable_redefine_warnings = false;
   Hide_warnings = false;
   products.resize(1);
   products.at(0).push_back(warnings_from_trace());
