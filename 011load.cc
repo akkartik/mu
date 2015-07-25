@@ -33,9 +33,7 @@ vector<recipe_ordinal> load(istream& in) {
       if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
         Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
       }
-      if (Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
-        if (!Loading_interactive) raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n";
-      }
+      // Warn On Redefinition
       // todo: save user-defined recipes to mu's memory
       Recipe[Recipe_ordinal[recipe_name]] = slurp_recipe(in);
 //?       cerr << Recipe_ordinal[recipe_name] << ": " << recipe_name << '\n'; //? 1
@@ -194,6 +192,19 @@ void skip_comma(istream& in) {
   skip_whitespace(in);
   if (in.peek() == ',') in.get();
   skip_whitespace(in);
+}
+
+//: Warn if a recipe gets redefined, because large codebases can accidentally
+//: step on their own toes. But there'll be many occasions later where
+//: we'll want to disable the warnings.
+:(before "End Globals")
+bool Hide_redefine_warnings = false;
+:(before "End Setup")
+Hide_redefine_warnings = false;
+:(after "Warn On Redefinition")
+if (!Hide_redefine_warnings
+    && Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
+  raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n";
 }
 
 // for debugging

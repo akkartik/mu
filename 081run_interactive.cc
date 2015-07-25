@@ -257,10 +257,6 @@ long long int warnings_from_trace() {
 
 //: simpler version of run-interactive: doesn't do any running, just loads
 //: recipes and reports warnings.
-:(before "End Globals")
-bool Loading_interactive = false;
-:(before "End Setup")
-Loading_interactive = false;
 :(before "End Primitive Recipe Declarations")
 RELOAD,
 :(before "End Primitive Recipe Numbers")
@@ -273,13 +269,13 @@ case RELOAD: {
     Trace_stream = new trace_stream;
     Trace_stream->collect_layer = "warn";
   }
-  Loading_interactive = true;
   Hide_warnings = true;
+  Hide_redefine_warnings = true;
   load(read_mu_string(ingredients.at(0).at(0)));
   transform_all();
   Trace_stream->newline();  // flush trace
+  Hide_redefine_warnings = false;
   Hide_warnings = false;
-  Loading_interactive = false;
   products.resize(1);
   products.at(0).push_back(warnings_from_trace());
   if (Trace_stream->collect_layer == "warn") {
