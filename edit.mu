@@ -2491,6 +2491,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
 ]
 
 scenario point-at-multiple-editors [
+  $close-trace
   assume-screen 30:literal/width, 5:literal/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]
@@ -2516,6 +2517,7 @@ scenario point-at-multiple-editors [
 ]
 
 scenario edit-multiple-editors [
+  $close-trace
   assume-screen 30:literal/width, 5:literal/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]
@@ -2558,6 +2560,7 @@ scenario edit-multiple-editors [
 ]
 
 scenario multiple-editors-cover-only-their-own-areas [
+  $close-trace
   assume-screen 60:literal/width, 10:literal/height
   run [
     1:address:array:character <- new [abc]
@@ -2575,6 +2578,7 @@ scenario multiple-editors-cover-only-their-own-areas [
 ]
 
 scenario editor-in-focus-keeps-cursor [
+  $close-trace
   assume-screen 30:literal/width, 5:literal/height
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
