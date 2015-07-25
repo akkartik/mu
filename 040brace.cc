@@ -106,7 +106,7 @@ void transform_braces(const recipe_ordinal r) {
     else if (inst.name.find("loop") != string::npos)
       target.set_value(open_braces.top()-index);
     else  // break instruction
-      target.set_value(matching_brace(open_braces.top(), braces) - index - 1);
+      target.set_value(matching_brace(open_braces.top(), braces, r) - index - 1);
     inst.ingredients.push_back(target);
     // log computed target
     if (inst.name.find("-if") != string::npos)
@@ -120,15 +120,15 @@ void transform_braces(const recipe_ordinal r) {
 
 // returns a signed integer not just so that we can return -1 but also to
 // enable future signed arithmetic
-long long int matching_brace(long long int index, const list<pair<int, long long int> >& braces) {
+long long int matching_brace(long long int index, const list<pair<int, long long int> >& braces, recipe_ordinal r) {
   int stacksize = 0;
   for (list<pair<int, long long int> >::const_iterator p = braces.begin(); p != braces.end(); ++p) {
     if (p->second < index) continue;
     stacksize += (p->first ? 1 : -1);
     if (stacksize == 0) return p->second;
   }
-  assert(false);
-  return -1;
+  raise << Recipe[r].name << ": unbalanced '{'\n";
+  return SIZE(Recipe[r].steps);  // exit current routine
 }
 
 // temporarily suppress run
