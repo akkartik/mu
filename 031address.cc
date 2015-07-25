@@ -40,9 +40,15 @@ reagent deref(reagent x) {
 //?   cout << "deref: " << x.to_string() << "\n"; //? 2
   static const type_ordinal ADDRESS = Type_ordinal["address"];
   reagent result;
-  assert(x.types.at(0) == ADDRESS);
-
+  if (x.types.at(0) != ADDRESS) {
+    raise << current_recipe_name() << ": tried to /deref " << x.original_string << " but it isn't an address\n" << end();
+    return result;
+  }
   // compute value
+  if (x.value == 0) {
+    raise << current_recipe_name() << ": tried to /deref 0\n" << end();
+    return result;
+  }
   result.set_value(Memory[x.value]);
   trace(Primitive_recipe_depth, "mem") << "location " << x.value << " is " << result.value << end();
 

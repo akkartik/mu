@@ -11,16 +11,12 @@ type_ordinal tmp = Type_ordinal["number-or-point"] = Next_type_ordinal++;
 Type[tmp].size = 2;
 Type[tmp].kind = exclusive_container;
 Type[tmp].name = "number-or-point";
-//? cout << tmp << ": " << SIZE(Type[tmp].elements) << '\n'; //? 1
 vector<type_ordinal> t1;
 t1.push_back(number);
 Type[tmp].elements.push_back(t1);
-//? cout << SIZE(Type[tmp].elements) << '\n'; //? 1
 vector<type_ordinal> t2;
 t2.push_back(point);
 Type[tmp].elements.push_back(t2);
-//? cout << SIZE(Type[tmp].elements) << '\n'; //? 1
-//? cout << "point: " << point << '\n'; //? 1
 Type[tmp].element_names.push_back("i");
 Type[tmp].element_names.push_back("p");
 }
@@ -44,13 +40,9 @@ recipe main [
 if (t.kind == exclusive_container) {
   // size of an exclusive container is the size of its largest variant
   // (So like containers, it can't contain arrays.)
-//?   cout << "--- " << types.at(0) << ' ' << t.size << '\n'; //? 1
-//?   cout << "point: " << Type_ordinal["point"] << " " << Type[Type_ordinal["point"]].name << " " << Type[Type_ordinal["point"]].size << '\n'; //? 1
-//?   cout << t.name << ' ' << t.size << ' ' << SIZE(t.elements) << '\n'; //? 1
   long long int result = 0;
   for (long long int i = 0; i < t.size; ++i) {
     long long int tmp = size_of(t.elements.at(i));
-//?     cout << i << ": " << t.elements.at(i).at(0) << ' ' << tmp << ' ' << result << '\n'; //? 1
     if (tmp > result) result = tmp;
   }
   // ...+1 for its tag.
@@ -91,15 +83,19 @@ MAYBE_CONVERT,
 Recipe_ordinal["maybe-convert"] = MAYBE_CONVERT;
 :(before "End Primitive Recipe Implementations")
 case MAYBE_CONVERT: {
+  if (SIZE(ingredients) != 2) {
+    raise << current_recipe_name() << ": 'maybe-convert' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
   type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != exclusive_container) {
-    raise << current_recipe_name () << ": 'maybe-convert' on a non-exclusive-container " << base.original_string << '\n' << end();
+    raise << current_recipe_name () << ": first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": expected ingredient 1 of 'get' to have type 'variant', got '" << current_instruction().ingredients.at(1).original_string << "'\n" << end();
+    raise << current_recipe_name() << ": second ingredient of 'maybe-convert' should have type 'variant', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
     break;
   }
   long long int tag = current_instruction().ingredients.at(1).value;

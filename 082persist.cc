@@ -8,8 +8,12 @@ RESTORE,
 Recipe_ordinal["restore"] = RESTORE;
 :(before "End Primitive Recipe Implementations")
 case RESTORE: {
+  if (SIZE(ingredients) != 1) {
+    raise << current_recipe_name() << ": 'restore' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+    break;
+  }
   if (!scalar(ingredients.at(0)))
-    raise << "restore: illegal operand " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
+    raise << current_recipe_name() << ": first ingredient of 'restore' should be a literal string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
   products.resize(1);
   string filename = current_instruction().ingredients.at(0).name;
   if (!is_literal(current_instruction().ingredients.at(0)))
@@ -47,14 +51,18 @@ SAVE,
 Recipe_ordinal["save"] = SAVE;
 :(before "End Primitive Recipe Implementations")
 case SAVE: {
+  if (SIZE(ingredients) != 1) {
+    raise << current_recipe_name() << ": 'save' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+    break;
+  }
   if (!scalar(ingredients.at(0)))
-    raise << "save: illegal operand 0 " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
+    raise << current_recipe_name() << ": first ingredient of 'save' should be a literal string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
   string filename = current_instruction().ingredients.at(0).name;
   if (!is_literal(current_instruction().ingredients.at(0)))
     filename = to_string(ingredients.at(0).at(0));
   ofstream fout(("lesson/"+filename).c_str());
   if (!scalar(ingredients.at(1)))
-    raise << "save: illegal operand 1 " << current_instruction().ingredients.at(1).to_string() << '\n' << end();
+    raise << current_recipe_name() << ": second ingredient of 'save' should be an address:array:character, but got " << current_instruction().ingredients.at(1).to_string() << '\n' << end();
   string contents = read_mu_string(ingredients.at(1).at(0));
   fout << contents;
   fout.close();

@@ -26,7 +26,6 @@ void transform_labels(const recipe_ordinal r) {
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
     if (inst.operation == Recipe_ordinal["jump"]) {
-//?       cerr << inst.to_string() << '\n'; //? 1
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
     if (inst.operation == Recipe_ordinal["jump-if"] || inst.operation == Recipe_ordinal["jump-unless"]) {
@@ -46,15 +45,14 @@ void transform_labels(const recipe_ordinal r) {
 
 :(code)
 void replace_offset(reagent& x, /*const*/ map<string, long long int>& offset, const long long int current_offset, const recipe_ordinal r) {
-//?   cerr << "AAA " << x.to_string() << '\n'; //? 1
-  assert(is_literal(x));
-//?   cerr << "BBB " << x.to_string() << '\n'; //? 1
+  if (!is_literal(x)) {
+    raise << Recipe[r].name << ": jump target must be offset or label but is " << x.original_string << '\n' << end();
+    return;
+  }
   assert(!x.initialized);
-//?   cerr << "CCC " << x.to_string() << '\n'; //? 1
   if (is_integer(x.name)) return;  // non-labels will be handled like other number operands
-//?   cerr << "DDD " << x.to_string() << '\n'; //? 1
   if (offset.find(x.name) == offset.end())
-    raise << "can't find label " << x.name << " in routine " << Recipe[r].name << '\n' << end();
+    raise << Recipe[r].name << ": can't find label " << x.name << '\n' << end();
   x.set_value(offset[x.name]-current_offset);
 }
 

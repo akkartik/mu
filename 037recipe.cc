@@ -43,11 +43,19 @@ CALL,
 Recipe_ordinal["call"] = CALL;
 :(before "End Primitive Recipe Implementations")
 case CALL: {
-  assert(scalar(ingredients.at(0)));
+  if (ingredients.empty()) {
+    raise << current_recipe_name() << ": 'call' requires at least one ingredient (the recipe to call)\n" << end();
+    break;
+  }
+  // Begin Call
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": first ingredient of 'call' should be a recipe, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
   // todo: when we start doing type checking this will be a prime point of
   // attention, so we don't accidentally allow external data to a program to
   // run as code.
   Current_routine->calls.push_front(call(ingredients.at(0).at(0)));
   ingredients.erase(ingredients.begin());  // drop the callee
-  goto complete_call;
+  goto call_housekeeping;
 }

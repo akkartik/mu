@@ -34,14 +34,14 @@ Type_ordinal["type"] = 0;
 if (inst.operation == Recipe_ordinal["new"]) {
   // End NEW Transform Special-cases
   // first arg must be of type 'type'
-  assert(SIZE(inst.ingredients) >= 1);
-  if (!is_literal(inst.ingredients.at(0)))
-    raise << "expected literal, got " << inst.ingredients.at(0).original_string << '\n' << end();
-  if (inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
-    raise << "tried to allocate non-type " << inst.ingredients.at(0).to_string() << " in recipe " << Recipe[r].name << '\n' << end();
+  if (inst.ingredients.empty())
+    raise << Recipe[r].name << ": 'new' expects one or two ingredients\n" << end();
+  if (inst.ingredients.at(0).properties.empty()
+      || inst.ingredients.at(0).properties.at(0).second.empty()
+      || inst.ingredients.at(0).properties.at(0).second.at(0) != "type")
+    raise << Recipe[r].name << ": first ingredient of 'new' should be a type, but got " << inst.ingredients.at(0).original_string << '\n' << end();
   if (Type_ordinal.find(inst.ingredients.at(0).name) == Type_ordinal.end())
-    raise << "unknown type " << inst.ingredients.at(0).name << " in recipe " << Recipe[r].name << '\n' << end();
-//?   cerr << "type " << inst.ingredients.at(0).name << " => " << Type_ordinal[inst.ingredients.at(0).name] << '\n'; //? 1
+    raise << Recipe[r].name << ": unknown type " << inst.ingredients.at(0).name << '\n' << end();
   inst.ingredients.at(0).set_value(Type_ordinal[inst.ingredients.at(0).name]);
   trace(Primitive_recipe_depth, "new") << inst.ingredients.at(0).name << " -> " << inst.ingredients.at(0).name << end();
   end_new_transform:;
@@ -56,14 +56,19 @@ NEW,
 Recipe_ordinal["new"] = NEW;
 :(before "End Primitive Recipe Implementations")
 case NEW: {
+  if (ingredients.empty() || SIZE(ingredients) > 2) {
+    raise << current_recipe_name() << ": 'new' requires one or two ingredients, but got " << current_instruction().to_string() << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": first ingredient of 'new' should be a type, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+  }
   // compute the space we need
   long long int size = 0;
   long long int array_length = 0;
   {
     vector<type_ordinal> type;
-    assert(is_literal(current_instruction().ingredients.at(0)));
     type.push_back(current_instruction().ingredients.at(0).value);
-//?     trace(Primitive_recipe_depth, "mem") << "type " << current_instruction().ingredients.at(0).to_string() << ' ' << type.size() << ' ' << type.back() << " has size " << size_of(type) << end(); //? 1
     if (SIZE(current_instruction().ingredients) > 1) {
       // array
       array_length = ingredients.at(1).at(0);
@@ -82,7 +87,6 @@ case NEW: {
   ensure_space(size);
   const long long int result = Current_routine->alloc;
   trace(Primitive_recipe_depth, "mem") << "new alloc: " << result << end();
-//?   trace(Primitive_recipe_depth, "mem") << "size: " << size << " locations" << end(); //? 1
   // save result
   products.resize(1);
   products.at(0).push_back(result);
@@ -115,7 +119,6 @@ case NEW: {
 :(code)
 void ensure_space(long long int size) {
   assert(size <= Initial_memory_per_routine);
-//?   cout << Current_routine->alloc << " " << Current_routine->alloc_max << " " << size << '\n'; //? 1
   if (Current_routine->alloc + size > Current_routine->alloc_max) {
     // waste the remaining space and create a new chunk
     Current_routine->alloc = Memory_allocated_until;
@@ -208,14 +211,18 @@ ABANDON,
 Recipe_ordinal["abandon"] = ABANDON;
 :(before "End Primitive Recipe Implementations")
 case ABANDON: {
+  if (SIZE(ingredients) != 1) {
+    raise << current_recipe_name() << ": 'abandon' requires one ingredient, but got '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   if (!scalar(ingredients.at(0))) {
-    raise << "abandon's ingredient should be scalar\n" << end();
+    raise << current_recipe_name() << ": first ingredient of 'abandon' should be an address, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   long long int address = ingredients.at(0).at(0);
   reagent types = canonize(current_instruction().ingredients.at(0));
   if (types.types.at(0) != Type_ordinal["address"]) {
-    raise << "abandon's ingredient should be an address\n" << end();
+    raise << current_recipe_name() << ": first ingredient of 'abandon' should be an address, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
     break;
   }
   reagent target_type = deref(types);
@@ -322,7 +329,6 @@ long long int new_mu_string(const string& contents) {
 //?   Num_alloc++; //? 1
   ensure_space(string_length+1);  // don't forget the extra location for array size
   // initialize string
-//?   cout << "new string literal: " << current_instruction().ingredients.at(0).name << '\n'; //? 1
   long long int result = Current_routine->alloc;
   Memory[Current_routine->alloc++] = string_length;
   long long int curr = 0;

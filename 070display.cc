@@ -14,7 +14,6 @@ bool Autodisplay = true;
 OPEN_CONSOLE,
 :(before "End Primitive Recipe Numbers")
 Recipe_ordinal["open-console"] = OPEN_CONSOLE;
-//? cerr << "open-console: " << OPEN_CONSOLE << '\n'; //? 1
 :(before "End Primitive Recipe Implementations")
 case OPEN_CONSOLE: {
   tb_init();
@@ -71,22 +70,29 @@ case PRINT_CHARACTER_TO_DISPLAY: {
   int h=tb_height(), w=tb_width();
   long long int height = (h >= 0) ? h : 0;
   long long int width = (w >= 0) ? w : 0;
-  assert(scalar(ingredients.at(0)));
+  if (ingredients.empty()) {
+    raise << current_recipe_name() << ": 'print-character-to-display' requires at least one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": first ingredient of 'print-character-to-display' should be a character, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
   long long int c = ingredients.at(0).at(0);
-//?   tb_shutdown(); //? 1
-//?   cerr << "AAA " << c << ' ' << (int)'\n' << ' ' << (int)'\r' << '\n'; //? 1
-//?   exit(1); //? 1
   int color = TB_BLACK;
   if (SIZE(ingredients) > 1) {
-    assert(scalar(ingredients.at(1)));
+    if (!scalar(ingredients.at(1))) {
+      raise << current_recipe_name() << ": second ingredient of 'print-character-to-display' should be a foreground color number, but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
+      break;
+    }
     color = ingredients.at(1).at(0);
-//?     tb_shutdown(); //? 1
-//?     cerr << "AAA " << color << '\n'; //? 1
-//?     exit(1); //? 1
   }
   int bg_color = TB_BLACK;
   if (SIZE(ingredients) > 2) {
-    assert(scalar(ingredients.at(2)));
+    if (!scalar(ingredients.at(2))) {
+      raise << current_recipe_name() << ": third ingredient of 'print-character-to-display' should be a background color number, but got " << current_instruction().ingredients.at(2).original_string << '\n' << end();
+      break;
+    }
     bg_color = ingredients.at(2).at(0);
     if (bg_color == 0) bg_color = TB_BLACK;
   }
@@ -135,9 +141,19 @@ MOVE_CURSOR_ON_DISPLAY,
 Recipe_ordinal["move-cursor-on-display"] = MOVE_CURSOR_ON_DISPLAY;
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_ON_DISPLAY: {
-  assert(scalar(ingredients.at(0)));
+  if (SIZE(ingredients) != 2) {
+    raise << current_recipe_name() << ": 'move-cursor-on-display' requires two ingredients, but got " << current_instruction().to_string() << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": first ingredient of 'move-cursor-on-display' should be a row number, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
   Display_row = ingredients.at(0).at(0);
-  assert(scalar(ingredients.at(1)));
+  if (!scalar(ingredients.at(1))) {
+    raise << current_recipe_name() << ": second ingredient of 'move-cursor-on-display' should be a column number, but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
   Display_column = ingredients.at(1).at(0);
   tb_set_cursor(Display_column, Display_row);
   if (Autodisplay) tb_present();
