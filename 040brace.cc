@@ -102,7 +102,7 @@ void transform_braces(const recipe_ordinal r) {
     target.types.push_back(Type_ordinal["offset"]);
     target.set_value(0);
     if (open_braces.empty())
-      raise << inst.name << " wasn't inside {}\n" << end();
+      raise << inst.name << " needs a '{' before\n" << end();
     else if (inst.name.find("loop") != string::npos)
       target.set_value(open_braces.top()-index);
     else  // break instruction
@@ -362,4 +362,4 @@ recipe test-factorial [
 recipe main [
   break
 ]
-+warn: break wasn't inside {}
++warn: break needs a '{' before
