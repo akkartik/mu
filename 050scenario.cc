@@ -138,7 +138,7 @@ void run_mu_scenario(const scenario& s) {
     setup();
   }
   assert(Routines.empty());
-  vector<recipe_ordinal> tmp = load("recipe "+s.name+" [ "+s.to_run+" ]");
+  vector<recipe_ordinal> tmp = load("recipe scenario-"+s.name+" [ "+s.to_run+" ]");
   bind_special_scenario_names(tmp.at(0));
   transform_all();
   run(tmp.front());
@@ -154,12 +154,29 @@ void run_mu_scenario(const scenario& s) {
   Current_scenario = NULL;
 }
 
+//: Watch out for redefinitions of scenario routines. We should never ever be
+//: doing that, regardless of anything else.
+:(scenarios run)
+:(scenario warn_on_redefine_scenario)
+% Hide_warnings = true;
+% Hide_redefine_warnings = true;
+recipe scenario-foo [
+  1:number <- copy 34:literal
+]
+
+recipe scenario-foo [
+  1:number <- copy 35:literal
+]
++warn: redefining recipe scenario-foo
+
+:(after "bool warn_on_redefine(const string& recipe_name)")
+if (recipe_name.find("scenario-") == 0) return true;
+
 //:: The special instructions we want to support inside scenarios.
 //: In a compiler for the mu VM these will require more work.
 
 //: 'run' interprets a string as a set of instructions
 
-:(scenarios run)
 :(scenario run)
 #? % Trace_stream->dump_layer = "all";
 recipe main [

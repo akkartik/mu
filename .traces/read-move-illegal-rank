@@ -5,12 +5,12 @@ parse: instruction: run
 parse:   ingredient: {name: "\n    1:address:channel <- new-channel 2:literal\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-file: routine failed to pause after coming up (before any keys were pressed)]\n    1:address:channel <- write 1:address:channel, 97:literal  # 'a'\n    1:address:channel <- write 1:address:channel, 97:literal  # 'a'\n    restart 2:number/routine\n    wait-for-routine 2:number\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "\n    .rank too high: a    .\n    .                    .\n  ", properties: [_: "literal-string"]}
-after-brace: recipe read-move-illegal-rank
+after-brace: recipe scenario-read-move-illegal-rank
 after-brace: new-fake-screen ...
 after-brace: run ...
 after-brace: screen-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
-schedule: read-move-illegal-rank
+schedule: scenario-read-move-illegal-rank
  101 run: screen:address <- new-fake-screen 20:literal/width, 2:literal/height
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
@@ -5193,7 +5193,7 @@ schedule: read-move
 9999 mem: location 101016 is 1114
 9999 run: waiting for location 1114 to change from 0
 schedule: waking up routine 1
-schedule: run1001/read-move-illegal-rank
+schedule: run1001/scenario-read-move-illegal-rank
  103 run: 3:number <- routine-state 2:number/id
 9999 mem: location 2 is 2
 9999 mem: storing 2 in location 3
@@ -11951,7 +11951,7 @@ schedule: print-character/print-string/read-rank/read-move
 9999 mem: location 1005 is 0
 9999 mem: location 1006 is 1
 schedule: waking up routine 1
-schedule: run1001/read-move-illegal-rank
+schedule: run1001/scenario-read-move-illegal-rank
   99 run: screen-should-contain [
     .rank too high: a    .
     .                    .

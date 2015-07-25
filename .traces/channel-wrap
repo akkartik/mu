@@ -2,11 +2,11 @@ parse: instruction: run
 parse:   ingredient: {name: "\n    # channel with just 1 slot\n    1:address:channel <- new-channel 1:literal/capacity\n    # write and read a value\n    1:address:channel <- write 1:address:channel, 34:literal\n    _, 1:address:channel <- read 1:address:channel\n    # first-free will now be 1\n    2:number <- get 1:address:channel/deref, first-free:offset\n    3:number <- get 1:address:channel/deref, first-free:offset\n    # write second value, verify that first-free wraps\n    1:address:channel <- write 1:address:channel, 34:literal\n    4:number <- get 1:address:channel/deref, first-free:offset\n    # read second value, verify that first-full wraps\n    _, 1:address:channel <- read 1:address:channel\n    5:number <- get 1:address:channel/deref, first-full:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 1  # first-free after first write\n    3 <- 1  # first-full after first read\n    4 <- 0  # first-free after second write, wrapped\n    5 <- 0  # first-full after second read, wrapped\n  ", properties: [_: "literal-string"]}
-after-brace: recipe channel-wrap
+after-brace: recipe scenario-channel-wrap
 after-brace: run ...
 after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
-schedule: channel-wrap
+schedule: scenario-channel-wrap
  101 run: run [
     # channel with just 1 slot
     1:address:channel <- new-channel 1:literal/capacity

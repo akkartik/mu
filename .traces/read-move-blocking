@@ -5,12 +5,12 @@ parse: instruction: run
 parse:   ingredient: {name: "\n#?     $start-tracing #? 1\n    1:address:channel <- new-channel 2:literal\n#?     $print [aaa channel address: ], 1:address:channel, 10:literal/newline\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n#?     $print [bbb channel address: ], 1:address:channel, 10:literal/newline\n    3:number <- routine-state 2:number/id\n#?     $print [I: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]\n    # press 'a'\n#?     $print [ccc channel address: ], 1:address:channel, 10:literal/newline\n#?     $exit #? 1\n    1:address:channel <- write 1:address:channel, 97:literal  # 'a'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n#?     $print [II: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after rank 'a']\n    # press '2'\n    1:address:channel <- write 1:address:channel, 50:literal  # '2'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n#?     $print [III: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after file 'a2']\n    # press '-'\n    1:address:channel <- write 1:address:channel, 45:literal  # '-'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [IV: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?/routine-state, [\nF read-move-blocking: routine failed to pause after hyphen 'a2-']\n    # press 'a'\n    1:address:channel <- write 1:address:channel, 97:literal  # 'a'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [V: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?/routine-state, [\nF read-move-blocking: routine failed to pause after rank 'a2-a']\n    # press '4'\n    1:address:channel <- write 1:address:channel, 52:literal  # '4'\n    restart 2:number/routine\n    # 'read-move' still waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [VI: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-blocking: routine failed to pause after file 'a2-a4']\n    # press 'newline'\n    1:address:channel <- write 1:address:channel, 10:literal  # newline\n    restart 2:number/routine\n    # 'read-move' now completes\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number\n#?     $print [VII: routine ], 2:number, [ state ], 3:number 10:literal/newline\n    4:boolean/completed? <- equal 3:number/routine-state, 1:literal/completed\n    assert 4:boolean/completed?, [\nF read-move-blocking: routine failed to terminate on newline]\n    trace [test], [reached end]\n  ", properties: [_: "literal-string"]}
 parse: instruction: trace-should-contain
 parse:   ingredient: {name: "\n    test: reached end\n  ", properties: [_: "literal-string"]}
-after-brace: recipe read-move-blocking
+after-brace: recipe scenario-read-move-blocking
 after-brace: new-fake-screen ...
 after-brace: run ...
 after-brace: trace-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
-schedule: read-move-blocking
+schedule: scenario-read-move-blocking
  101 run: screen:address <- new-fake-screen 20:literal/width, 2:literal/height
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
@@ -5388,7 +5388,7 @@ schedule: read-move
 9999 mem: location 101016 is 1114
 9999 run: waiting for location 1114 to change from 0
 schedule: waking up routine 1
-schedule: run1001/read-move-blocking
+schedule: run1001/scenario-read-move-blocking
  103 run: 3:number <- routine-state 2:number/id
 9999 mem: location 2 is 2
 9999 mem: storing 2 in location 3
@@ -5753,7 +5753,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101016 is 1114
 9999 run: waiting for location 1114 to change from 1
 schedule: waking up routine 1
-schedule: run1001/read-move-blocking
+schedule: run1001/scenario-read-move-blocking
  103 run: 3:number <- routine-state 2:number/id
 9999 mem: location 2 is 2
 9999 mem: storing 2 in location 3
@@ -6090,7 +6090,7 @@ schedule: read/read-rank/read-move
 9999 mem: location 101016 is 1114
 9999 run: waiting for location 1114 to change from 2
 schedule: waking up routine 1
-schedule: run1001/read-move-blocking
+schedule: run1001/scenario-read-move-blocking
  103 run: 3:number <- routine-state 2:number/id
 9999 mem: location 2 is 2
 9999 mem: storing 2 in location 3
@@ -6409,7 +6409,7 @@ schedule: read/expect-from-channel/read-move
 9999 mem: location 101016 is 1114
 9999 run: waiting for location 1114 to change from 0
 schedule: waking up routine 1
-schedule: run1001/read-move-blocking
+schedule: run1001/scenario-read-move-blocking
  103 run: 3:number <- routine-state 2:number
 9999 mem: location 2 is 2
 9999 mem: storing 2 in location 3
@@ -6757,7 +6757,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101016 is 1114
 9999 run: waiting for location 1114 to change from 1
 schedule: waking up routine 1
-schedule: run1001/read-move-blocking
+schedule: run1001/scenario-read-move-blocking
  103 run: 3:number <- routine-state 2:number
 9999 mem: location 2 is 2
 9999 mem: storing 2 in location 3
@@ -7092,7 +7092,7 @@ schedule: read/read-rank/read-move
 9999 mem: location 101016 is 1114
 9999 run: waiting for location 1114 to change from 2
 schedule: waking up routine 1
-schedule: run1001/read-move-blocking
+schedule: run1001/scenario-read-move-blocking
  103 run: 3:number <- routine-state 2:number
 9999 mem: location 2 is 2
 9999 mem: storing 2 in location 3
@@ -7341,7 +7341,7 @@ schedule: read/expect-from-channel/read-move
 9999 mem: location 1005 is 0
 9999 mem: location 1006 is 0
 schedule: waking up routine 1
-schedule: run1001/read-move-blocking
+schedule: run1001/scenario-read-move-blocking
  100 run: 3:number <- routine-state 2:number
 9999 mem: location 2 is 2
 9999 mem: storing 1 in location 3

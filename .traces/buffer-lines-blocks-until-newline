@@ -2,11 +2,11 @@ parse: instruction: run
 parse:   ingredient: {name: "\n    1:address:channel/stdin <- new-channel 10:literal/capacity\n    2:address:channel/buffered-stdin <- new-channel 10:literal/capacity\n    3:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 3:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after init]\n    # buffer stdin into buffered-stdin, try to read from buffered-stdin\n    4:number/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin\n    wait-for-routine 4:number/buffer-routine\n    5:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 5:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]\n    # write 'a'\n    1:address:channel <- write 1:address:channel, 97:literal/a\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    6:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 6:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a']\n    # write 'b'\n    1:address:channel <- write 1:address:channel, 98:literal/b\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    7:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 7:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b']\n    # write newline\n    1:address:channel <- write 1:address:channel, 10:literal/newline\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    8:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    9:boolean/completed? <- not 8:boolean\n    assert 9:boolean/completed?, [\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline]\n    trace [test], [reached end]\n  ", properties: [_: "literal-string"]}
 parse: instruction: trace-should-contain
 parse:   ingredient: {name: "\n    test: reached end\n  ", properties: [_: "literal-string"]}
-after-brace: recipe buffer-lines-blocks-until-newline
+after-brace: recipe scenario-buffer-lines-blocks-until-newline
 after-brace: run ...
 after-brace: trace-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
-schedule: buffer-lines-blocks-until-newline
+schedule: scenario-buffer-lines-blocks-until-newline
  101 run: run [
     1:address:channel/stdin <- new-channel 10:literal/capacity
     2:address:channel/buffered-stdin <- new-channel 10:literal/capacity
@@ -395,7 +395,7 @@ schedule: buffer-lines
 9999 mem: location 101052 is 1008
 9999 run: waiting for location 1008 to change from 0
 schedule: waking up routine 1
-schedule: run1001/buffer-lines-blocks-until-newline
+schedule: run1001/scenario-buffer-lines-blocks-until-newline
  102 run: 5:boolean <- channel-empty? 2:address:channel/buffered-stdin
 9999 mem: location 2 is 1022
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -915,7 +915,7 @@ schedule: read/buffer-lines
 9999 mem: location 101052 is 1008
 9999 run: waiting for location 1008 to change from 1
 schedule: waking up routine 1
-schedule: run1001/buffer-lines-blocks-until-newline
+schedule: run1001/scenario-buffer-lines-blocks-until-newline
  102 run: 6:boolean <- channel-empty? 2:address:channel/buffered-stdin
 9999 mem: location 2 is 1022
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -1432,7 +1432,7 @@ schedule: read/buffer-lines
 9999 mem: location 101052 is 1008
 9999 run: waiting for location 1008 to change from 2
 schedule: waking up routine 1
-schedule: run1001/buffer-lines-blocks-until-newline
+schedule: run1001/scenario-buffer-lines-blocks-until-newline
  102 run: 7:boolean <- channel-empty? 2:address:channel/buffered-stdin
 9999 mem: location 2 is 1022
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -2665,7 +2665,7 @@ schedule: read/buffer-lines
 9999 mem: location 101052 is 1008
 9999 run: waiting for location 1008 to change from 3
 schedule: waking up routine 1
-schedule: run1001/buffer-lines-blocks-until-newline
+schedule: run1001/scenario-buffer-lines-blocks-until-newline
  102 run: 8:boolean <- channel-empty? 2:address:channel/buffered-stdin
 9999 mem: location 2 is 1022
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal

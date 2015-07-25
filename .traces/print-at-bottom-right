@@ -2,11 +2,11 @@ parse: instruction: run
 parse:   ingredient: {name: "\n    1:address:screen <- new-fake-screen 2:literal/width, 2:literal/height\n    1:address:screen <- print-character 1:address:screen, 10:literal/newline\n    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'\n    1:address:screen <- print-character 1:address:screen, 98:literal  # 'b'\n    1:address:screen <- print-character 1:address:screen, 99:literal  # 'c'\n    1:address:screen <- print-character 1:address:screen, 10:literal/newline\n    1:address:screen <- print-character 1:address:screen, 100:literal  # 'd'\n    2:number <- get 1:address:screen/deref, cursor-row:offset\n    3:number <- get 1:address:screen/deref, cursor-column:offset\n    4:address:array:screen-cell <- get 1:address:screen/deref, data:offset\n    5:array:screen-cell <- copy 4:address:array:screen-cell/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 1  # cursor row\n    3 <- 1  # cursor column\n    5 <- 4  # width*height\n    6 <- 0  # unused\n    7 <- 7  # white\n    8 <- 0  # unused\n    9 <- 7  # white\n    10 <- 97 # 'a'\n    11 <- 7  # white\n    12 <- 100  # 'd' over 'b' and 'c' and newline\n    13 <- 7  # white\n    14 <- 0\n  ", properties: [_: "literal-string"]}
-after-brace: recipe print-at-bottom-right
+after-brace: recipe scenario-print-at-bottom-right
 after-brace: run ...
 after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
-schedule: print-at-bottom-right
+schedule: scenario-print-at-bottom-right
  101 run: run [
     1:address:screen <- new-fake-screen 2:literal/width, 2:literal/height
     1:address:screen <- print-character 1:address:screen, 10:literal/newline

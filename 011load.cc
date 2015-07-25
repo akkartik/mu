@@ -33,7 +33,10 @@ vector<recipe_ordinal> load(istream& in) {
       if (Recipe_ordinal.find(recipe_name) == Recipe_ordinal.end()) {
         Recipe_ordinal[recipe_name] = Next_recipe_ordinal++;
       }
-      // Warn On Redefinition
+      if (warn_on_redefine(recipe_name)
+          && Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
+        raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
+      }
       // todo: save user-defined recipes to mu's memory
       Recipe[Recipe_ordinal[recipe_name]] = slurp_recipe(in);
 //?       cerr << Recipe_ordinal[recipe_name] << ": " << recipe_name << '\n'; //? 1
@@ -204,10 +207,10 @@ void skip_comma(istream& in) {
 bool Hide_redefine_warnings = false;
 :(before "End Setup")
 Hide_redefine_warnings = false;
-:(after "Warn On Redefinition")
-if (!Hide_redefine_warnings
-    && Recipe.find(Recipe_ordinal[recipe_name]) != Recipe.end()) {
-  raise << "redefining recipe " << Recipe[Recipe_ordinal[recipe_name]].name << "\n" << end();
+:(code)
+bool warn_on_redefine(const string& recipe_name) {
+  if (Hide_redefine_warnings) return false;
+  return true;
 }
 
 // for debugging
