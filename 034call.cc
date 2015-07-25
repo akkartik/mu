@@ -85,7 +85,7 @@ default: {
     break;
   }
   Current_routine->calls.push_front(call(current_instruction().operation));
-complete_call:
+  call_housekeeping:
   ++Callstack_depth;
   assert(Callstack_depth < 9000);  // 9998-101 plus cushion
   continue;  // not done with caller; don't increment current_step_index()

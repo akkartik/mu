@@ -11,10 +11,19 @@ ASSERT,
 Recipe_ordinal["assert"] = ASSERT;
 :(before "End Primitive Recipe Implementations")
 case ASSERT: {
-  assert(SIZE(ingredients) == 2);
-  assert(scalar(ingredients.at(0)));
+  if (SIZE(ingredients) != 2) {
+    raise << current_recipe_name() << ": 'assert' takes exactly two ingredients rather than '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": 'assert' requires a boolean for its first ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(1))) {
+    raise << current_recipe_name() << ": 'assert' requires a literal string for its second ingredient, but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
+    break;
+  }
   if (!ingredients.at(0).at(0)) {
-    assert(is_literal(current_instruction().ingredients.at(1)));
     raise << current_instruction().ingredients.at(1).name << '\n' << end();
   }
   break;

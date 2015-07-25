@@ -138,8 +138,7 @@ if (curr.name == "new-default-space") {
   }
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "number-of-locals") {
-    assert(scalar(data));
-    raise << "can't write to special variable number-of-locals\n" << end();
+    raise << current_recipe_name() << ": can't write to special name 'number-of-locals'\n" << end();
     return;
   }
 
@@ -176,11 +175,9 @@ if (curr.name == "local-scope") {
 void try_reclaim_locals() {
   // only reclaim routines starting with 'local-scope'
   const recipe_ordinal r = Recipe_ordinal[current_recipe_name()];
+  if (Recipe[r].steps.empty()) return;
   const instruction& inst = Recipe[r].steps.at(0);
-  if (inst.name != "local-scope")
-    return;
-//?   cerr << inst.to_string() << '\n'; //? 1
-//?   cerr << current_recipe_name() << ": abandon " << Current_routine->calls.front().default_space << '\n'; //? 1
+  if (inst.name != "local-scope") return;
   abandon(Current_routine->calls.front().default_space,
           /*array length*/1+/*number-of-locals*/Name[r][""]);
 }
@@ -215,7 +212,8 @@ long long int address(long long int offset, long long int base) {
 
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "default-space") {
-    assert(scalar(data));
+    if (!scalar(data))
+      raise << current_recipe_name() << ": 'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
     Current_routine->calls.front().default_space = data.at(0);
     return;
   }

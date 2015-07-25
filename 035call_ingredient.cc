@@ -26,7 +26,7 @@ long long int next_ingredient_to_process;
 :(before "End call Constructor")
 next_ingredient_to_process = 0;
 
-:(after "complete_call:")
+:(after "call_housekeeping:")
 for (long long int i = 0; i < SIZE(ingredients); ++i) {
   Current_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
 }
@@ -37,6 +37,10 @@ NEXT_INGREDIENT,
 Recipe_ordinal["next-ingredient"] = NEXT_INGREDIENT;
 :(before "End Primitive Recipe Implementations")
 case NEXT_INGREDIENT: {
+  if (!ingredients.empty()) {
+    raise << current_recipe_name() << ": 'next-ingredient' didn't expect any ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   assert(!Current_routine->calls.empty());
   if (Current_routine->calls.front().next_ingredient_to_process < SIZE(Current_routine->calls.front().ingredient_atoms)) {
     products.push_back(
@@ -95,7 +99,14 @@ INGREDIENT,
 Recipe_ordinal["ingredient"] = INGREDIENT;
 :(before "End Primitive Recipe Implementations")
 case INGREDIENT: {
-  assert(is_literal(current_instruction().ingredients.at(0)));
+  if (SIZE(ingredients) != 1) {
+    raise << current_recipe_name() << ": 'ingredient' expects exactly one ingredient, but got '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
+  if (!is_literal(current_instruction().ingredients.at(0))) {
+    raise << current_recipe_name() << ": 'ingredient' expects a literal ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
   assert(scalar(ingredients.at(0)));
   if (static_cast<long long int>(ingredients.at(0).at(0)) < SIZE(Current_routine->calls.front().ingredient_atoms)) {
     Current_routine->calls.front().next_ingredient_to_process = ingredients.at(0).at(0);

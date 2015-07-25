@@ -90,7 +90,7 @@ NOT,
 Recipe_ordinal["not"] = NOT;
 :(before "End Primitive Recipe Implementations")
 case NOT: {
-  products.resize(ingredients.size());
+  products.resize(SIZE(ingredients));
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
     assert(scalar(ingredients.at(i)));
     products.at(i).push_back(!ingredients.at(i).at(0));

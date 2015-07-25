@@ -107,7 +107,7 @@ GET,
 Recipe_ordinal["get"] = GET;
 :(before "End Primitive Recipe Implementations")
 case GET: {
-  if (ingredients.size() != 2) {
+  if (SIZE(ingredients) != 2) {
     raise << current_recipe_name() << ": 'get' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
@@ -115,11 +115,11 @@ case GET: {
   long long int base_address = base.value;
   type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != container) {
-    raise << current_recipe_name () << ": 'get' on a non-container " << base.original_string << '\n' << end();
+    raise << current_recipe_name () << ": first ingredient of 'get' should be a container, but got " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": expected ingredient 1 of 'get' to have type 'offset', got '" << current_instruction().ingredients.at(1).original_string << "'\n" << end();
+    raise << current_recipe_name() << ": second ingredient of 'get' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
     break;
   }
   assert(scalar(ingredients.at(1)));
@@ -192,11 +192,11 @@ case GET_ADDRESS: {
   long long int base_address = base.value;
   type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != container) {
-    raise << current_recipe_name () << ": 'get-address' on a non-container " << base.original_string << '\n' << end();
+    raise << current_recipe_name () << ": first ingredient of 'get-address' should be a container, but got " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": expected ingredient 1 of 'get-address' to have type 'offset', got '" << current_instruction().ingredients.at(1).original_string << "'\n" << end();
+    raise << current_recipe_name() << ": second ingredient of 'get-address' should have type 'offset', but got " << current_instruction().ingredients.at(1).original_string << '\n' << end();
     break;
   }
   assert(scalar(ingredients.at(1)));

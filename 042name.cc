@@ -219,9 +219,10 @@ recipe main [
 // replace element names of containers with offsets
 if (inst.operation == Recipe_ordinal["get"]
     || inst.operation == Recipe_ordinal["get-address"]) {
-  // at least 2 args, and second arg is offset
-  assert(SIZE(inst.ingredients) >= 2);
-//?   cout << inst.ingredients.at(1).to_string() << '\n'; //? 1
+  if (SIZE(inst.ingredients) != 2) {
+    raise << Recipe[r].name << ": exactly 2 ingredients expected in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   if (!is_literal(inst.ingredients.at(1)))
     raise << Recipe[r].name << ": expected ingredient 1 of " << (inst.operation == Recipe_ordinal["get"] ? "'get'" : "'get-address'") << " to have type 'offset'; got " << inst.ingredients.at(1).original_string << '\n' << end();
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
@@ -258,8 +259,10 @@ recipe main [
 :(after "Per-recipe Transforms")
 // convert variant names of exclusive containers
 if (inst.operation == Recipe_ordinal["maybe-convert"]) {
-  // at least 2 args, and second arg is offset
-  assert(SIZE(inst.ingredients) >= 2);
+  if (SIZE(inst.ingredients) != 2) {
+    raise << Recipe[r].name << ": exactly 2 ingredients expected in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   assert(is_literal(inst.ingredients.at(1)));
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be an exclusive container, we don't have to canonize

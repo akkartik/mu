@@ -26,7 +26,14 @@ Recipe_ordinal["run-interactive"] = RUN_INTERACTIVE;
 //? cerr << "run-interactive: " << RUN_INTERACTIVE << '\n'; //? 1
 :(before "End Primitive Recipe Implementations")
 case RUN_INTERACTIVE: {
-  assert(scalar(ingredients.at(0)));
+  if (SIZE(ingredients) != 1) {
+    raise << current_recipe_name() << ": 'run-interactive' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": first ingredient of 'run-interactive' should be a literal string, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
   products.resize(3);
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
   if (!new_code_pushed_to_stack) {
@@ -170,7 +177,6 @@ if (current_instruction().operation == RUN_INTERACTIVE && !current_instruction()
   }
   if (SIZE(current_instruction().products) >= 3) {
     vector<double> screen;
-//?     cerr << "returning screen " << Memory[SCREEN] << " to " << current_instruction().products.at(2).to_string() << " value " << current_instruction().products.at(2).value << '\n'; //? 1
     screen.push_back(Memory[SCREEN]);
     write_memory(current_instruction().products.at(2), screen);
   }
@@ -263,7 +269,14 @@ RELOAD,
 Recipe_ordinal["reload"] = RELOAD;
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
-  assert(scalar(ingredients.at(0)));
+  if (SIZE(ingredients) != 1) {
+    raise << current_recipe_name() << ": 'reload' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": first ingredient of 'reload' should be a literal string, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
   if (!Trace_stream) {
     Trace_file = "";  // if there wasn't already a stream we don't want to save it
     Trace_stream = new trace_stream;

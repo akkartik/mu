@@ -22,10 +22,6 @@ case REPLY: {
   const instruction& reply_inst = current_instruction();  // save pointer into recipe before pop
   const string& callee = current_recipe_name();
   --Callstack_depth;
-//?   if (tb_is_active()) { //? 1
-//?     tb_clear(); //? 1
-//?     cerr << Recipe[Current_routine->calls.front().running_recipe].name << ' ' << current_step_index() << '\n'; //? 1
-//?   } //? 1
   Current_routine->calls.pop_front();
   // just in case 'main' returns a value, drop it for now
   if (Current_routine->calls.empty()) goto stop_running_current_routine;
@@ -37,21 +33,22 @@ case REPLY: {
   if (SIZE(caller_instruction.products) > SIZE(ingredients))
     raise << "too few values replied from " << callee << '\n' << end();
   for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
-//?     cerr << Recipe[Current_routine->calls.front().running_recipe].name << '\n'; //? 1
     trace(Primitive_recipe_depth, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
     if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
       vector<string> tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
-      assert(SIZE(tmp) == 1);
+      if (SIZE(tmp) != 1) {
+        raise << current_recipe_name() << ": 'same-as-ingredient' metadata should take exactly one value in " << reply_inst.to_string() << '\n' << end();
+        goto finish_reply;
+      }
       long long int ingredient_index = to_integer(tmp.at(0));
       if (ingredient_index >= SIZE(caller_instruction.ingredients))
         raise << current_recipe_name() << ": 'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
-//?       cerr << caller_instruction.products.size() << ' ' << i << ' ' << caller_instruction.ingredients.size() << ' ' << ingredient_index << '\n'; //? 1
-//?       cerr << caller_instruction.to_string() << '\n'; //? 1
       if (!is_dummy(caller_instruction.products.at(i)) && caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
         raise << current_recipe_name() << ": 'same-as-ingredient' result " << caller_instruction.products.at(i).value << " from call to " << callee << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n' << end();
     }
   }
   // End Reply
+  finish_reply:
   break;  // continue to process rest of *caller* instruction
 }
 
@@ -144,18 +141,22 @@ recipe test1 [
 //   reply b, c, ...
 //   ```
 if (curr.name == "reply-if") {
-  assert(curr.products.empty());
-  curr.operation = Recipe_ordinal["jump-unless"];
-  curr.name = "jump-unless";
-  vector<reagent> results;
-  copy(++curr.ingredients.begin(), curr.ingredients.end(), inserter(results, results.end()));
-  curr.ingredients.resize(1);
-  curr.ingredients.push_back(reagent("1:offset"));
-  result.steps.push_back(curr);
-  curr.clear();
-  curr.operation = Recipe_ordinal["reply"];
-  curr.name = "reply";
-  curr.ingredients.swap(results);
+  if (curr.products.empty()) {
+    curr.operation = Recipe_ordinal["jump-unless"];
+    curr.name = "jump-unless";
+    vector<reagent> results;
+    copy(++curr.ingredients.begin(), curr.ingredients.end(), inserter(results, results.end()));
+    curr.ingredients.resize(1);
+    curr.ingredients.push_back(reagent("1:offset"));
+    result.steps.push_back(curr);
+    curr.clear();
+    curr.operation = Recipe_ordinal["reply"];
+    curr.name = "reply";
+    curr.ingredients.swap(results);
+  }
+  else {
+    raise << "'reply-if' never yields any products\n" << end();
+  }
 }
 // rewrite `reply-unless a, b, c, ...` to
 //   ```
@@ -163,16 +164,20 @@ if (curr.name == "reply-if") {
 //   reply b, c, ...
 //   ```
 if (curr.name == "reply-unless") {
-  assert(curr.products.empty());
-  curr.operation = Recipe_ordinal["jump-if"];
-  curr.name = "jump-if";
-  vector<reagent> results;
-  copy(++curr.ingredients.begin(), curr.ingredients.end(), inserter(results, results.end()));
-  curr.ingredients.resize(1);
-  curr.ingredients.push_back(reagent("1:offset"));
-  result.steps.push_back(curr);
-  curr.clear();
-  curr.operation = Recipe_ordinal["reply"];
-  curr.name = "reply";
-  curr.ingredients.swap(results);
+  if (curr.products.empty()) {
+    curr.operation = Recipe_ordinal["jump-if"];
+    curr.name = "jump-if";
+    vector<reagent> results;
+    copy(++curr.ingredients.begin(), curr.ingredients.end(), inserter(results, results.end()));
+    curr.ingredients.resize(1);
+    curr.ingredients.push_back(reagent("1:offset"));
+    result.steps.push_back(curr);
+    curr.clear();
+    curr.operation = Recipe_ordinal["reply"];
+    curr.name = "reply";
+    curr.ingredients.swap(results);
+  }
+  else {
+    raise << "'reply-unless' never yields any products\n" << end();
+  }
 }

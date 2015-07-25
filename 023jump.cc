@@ -16,9 +16,15 @@ JUMP,
 Recipe_ordinal["jump"] = JUMP;
 :(before "End Primitive Recipe Implementations")
 case JUMP: {
+  if (SIZE(ingredients) != 1) {
+    raise << current_recipe_name() << ": 'jump' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": first ingredient of 'jump' should be a label or offset, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
   assert(current_instruction().ingredients.at(0).initialized);
-  assert(SIZE(ingredients) == 1);
-  assert(scalar(ingredients.at(0)));
   current_step_index() += ingredients.at(0).at(0)+1;
   trace(Primitive_recipe_depth, "run") << "jumping to instruction " << current_step_index() << end();
   continue;  // skip rest of this instruction
@@ -45,14 +51,23 @@ JUMP_IF,
 Recipe_ordinal["jump-if"] = JUMP_IF;
 :(before "End Primitive Recipe Implementations")
 case JUMP_IF: {
+  if (SIZE(ingredients) != 2) {
+    raise << current_recipe_name() << ": 'jump-if' requires exactly two ingredients, but got " << current_instruction().to_string() << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": 'jump-if' requires a boolean for its first ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(1))) {
+    raise << current_recipe_name() << ": 'jump-if' requires a label or offset for its second ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
   assert(current_instruction().ingredients.at(1).initialized);
-  assert(SIZE(ingredients) == 2);
-  assert(scalar(ingredients.at(0)));
   if (!ingredients.at(0).at(0)) {
     trace(Primitive_recipe_depth, "run") << "jump-if fell through" << end();
     break;
   }
-  assert(scalar(ingredients.at(1)));
   current_step_index() += ingredients.at(1).at(0)+1;
   trace(Primitive_recipe_depth, "run") << "jumping to instruction " << current_step_index() << end();
   continue;  // skip rest of this instruction
@@ -84,14 +99,23 @@ JUMP_UNLESS,
 Recipe_ordinal["jump-unless"] = JUMP_UNLESS;
 :(before "End Primitive Recipe Implementations")
 case JUMP_UNLESS: {
+  if (SIZE(ingredients) != 2) {
+    raise << current_recipe_name() << ": 'jump-unless' requires exactly two ingredients, but got " << current_instruction().to_string() << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(0))) {
+    raise << current_recipe_name() << ": 'jump-unless' requires a boolean for its first ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
+  if (!scalar(ingredients.at(1))) {
+    raise << current_recipe_name() << ": 'jump-unless' requires a label or offset for its second ingredient, but got " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+    break;
+  }
   assert(current_instruction().ingredients.at(1).initialized);
-  assert(SIZE(ingredients) == 2);
-  assert(scalar(ingredients.at(0)));
   if (ingredients.at(0).at(0)) {
     trace(Primitive_recipe_depth, "run") << "jump-unless fell through" << end();
     break;
   }
-  assert(scalar(ingredients.at(1)));
   current_step_index() += ingredients.at(1).at(0)+1;
   trace(Primitive_recipe_depth, "run") << "jumping to instruction " << current_step_index() << end();
   continue;  // skip rest of this instruction

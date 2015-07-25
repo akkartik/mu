@@ -6,6 +6,10 @@ EQUAL,
 Recipe_ordinal["equal"] = EQUAL;
 :(before "End Primitive Recipe Implementations")
 case EQUAL: {
+  if (SIZE(ingredients) <= 1) {
+    raise << current_recipe_name() << ": 'equal' needs at least two ingredients to compare in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   vector<double>& exemplar = ingredients.at(0);
   bool result = true;
   for (long long int i = 1; i < SIZE(ingredients); ++i) {
@@ -58,14 +62,22 @@ Recipe_ordinal["greater-than"] = GREATER_THAN;
 :(before "End Primitive Recipe Implementations")
 case GREATER_THAN: {
   bool result = true;
+  if (SIZE(ingredients) <= 1) {
+    raise << current_recipe_name() << ": 'greater-than' needs at least two ingredients to compare in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'greater-than' can only compare numbers; got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_greater_than;
+    }
   }
   for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) <= ingredients.at(i).at(0)) {
       result = false;
     }
   }
+  finish_greater_than:
   products.resize(1);
   products.at(0).push_back(result);
   break;
@@ -106,14 +118,22 @@ Recipe_ordinal["lesser-than"] = LESSER_THAN;
 :(before "End Primitive Recipe Implementations")
 case LESSER_THAN: {
   bool result = true;
+  if (SIZE(ingredients) <= 1) {
+    raise << current_recipe_name() << ": 'lesser-than' needs at least two ingredients to compare in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'lesser-than' can only compare numbers; got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_lesser_than;
+    }
   }
   for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) >= ingredients.at(i).at(0)) {
       result = false;
     }
   }
+  finish_lesser_than:
   products.resize(1);
   products.at(0).push_back(result);
   break;
@@ -154,14 +174,22 @@ Recipe_ordinal["greater-or-equal"] = GREATER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case GREATER_OR_EQUAL: {
   bool result = true;
+  if (SIZE(ingredients) <= 1) {
+    raise << current_recipe_name() << ": 'greater-or-equal' needs at least two ingredients to compare in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'greater-or-equal' can only compare numbers; got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_greater_or_equal;
+    }
   }
   for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) < ingredients.at(i).at(0)) {
       result = false;
     }
   }
+  finish_greater_or_equal:
   products.resize(1);
   products.at(0).push_back(result);
   break;
@@ -210,14 +238,22 @@ Recipe_ordinal["lesser-or-equal"] = LESSER_OR_EQUAL;
 :(before "End Primitive Recipe Implementations")
 case LESSER_OR_EQUAL: {
   bool result = true;
+  if (SIZE(ingredients) <= 1) {
+    raise << current_recipe_name() << ": 'lesser-or-equal' needs at least two ingredients to compare in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   for (long long int i = 0; i < SIZE(ingredients); ++i) {
-    assert(scalar(ingredients.at(i)));
+    if (!scalar(ingredients.at(i))) {
+      raise << current_recipe_name() << ": 'lesser-or-equal' can only compare numbers; got " << current_instruction().ingredients.at(i).original_string << '\n' << end();
+      goto finish_lesser_or_equal;
+    }
   }
   for (long long int i = /**/1; i < SIZE(ingredients); ++i) {
     if (ingredients.at(i-1).at(0) > ingredients.at(i).at(0)) {
       result = false;
     }
   }
+  finish_lesser_or_equal:
   products.resize(1);
   products.at(0).push_back(result);
   break;

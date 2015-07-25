@@ -79,20 +79,19 @@ INDEX,
 Recipe_ordinal["index"] = INDEX;
 :(before "End Primitive Recipe Implementations")
 case INDEX: {
-//?   if (Trace_stream) Trace_stream->dump_layer = "run"; //? 1
+  if (SIZE(ingredients) != 2) {
+    raise << current_recipe_name() << ": 'index' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   reagent base = canonize(current_instruction().ingredients.at(0));
-//?   trace(Primitive_recipe_depth, "run") << "ingredient 0 after canonize: " << base.to_string() << end(); //? 1
   long long int base_address = base.value;
   if (base.types.at(0) != Type_ordinal["array"]) {
     raise << current_recipe_name () << ": 'index' on a non-array " << base.original_string << '\n' << end();
     break;
   }
   reagent offset = canonize(current_instruction().ingredients.at(1));
-//?   trace(Primitive_recipe_depth, "run") << "ingredient 1 after canonize: " << offset.to_string() << end(); //? 1
   vector<double> offset_val(read_memory(offset));
   vector<type_ordinal> element_type = array_element(base.types);
-//?   trace(Primitive_recipe_depth, "run") << "offset: " << offset_val.at(0) << end(); //? 1
-//?   trace(Primitive_recipe_depth, "run") << "size of elements: " << size_of(element_type) << end(); //? 1
   if (offset_val.at(0) < 0 || offset_val.at(0) >= Memory[base_address]) {
     raise << current_recipe_name() << ": invalid index " << offset_val.at(0) << '\n' << end();
     products.resize(1);
@@ -172,6 +171,10 @@ INDEX_ADDRESS,
 Recipe_ordinal["index-address"] = INDEX_ADDRESS;
 :(before "End Primitive Recipe Implementations")
 case INDEX_ADDRESS: {
+  if (SIZE(ingredients) != 2) {
+    raise << current_recipe_name() << ": 'index-address' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   reagent base = canonize(current_instruction().ingredients.at(0));
   long long int base_address = base.value;
   if (base.types.at(0) != Type_ordinal["array"]) {
@@ -240,9 +243,13 @@ LENGTH,
 Recipe_ordinal["length"] = LENGTH;
 :(before "End Primitive Recipe Implementations")
 case LENGTH: {
+  if (SIZE(ingredients) != 1) {
+    raise << current_recipe_name() << ": 'length' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
+    break;
+  }
   reagent x = canonize(current_instruction().ingredients.at(0));
   if (x.types.at(0) != Type_ordinal["array"]) {
-    raise << "tried to calculate length of non-array " << x.to_string() << '\n' << end();
+    raise << "tried to calculate length of non-array " << x.original_string << '\n' << end();
     break;
   }
   products.resize(1);

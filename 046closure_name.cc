@@ -7,8 +7,6 @@
 recipe main [
   default-space:address:array:location <- new location:type, 30:literal
   1:address:array:location/names:new-counter <- new-counter
-#?   $print [AAAAAAAAAAAAAAAA]
-#?   $print 1:address:array:location
   2:number/raw <- increment-counter 1:address:array:location/names:new-counter
   3:number/raw <- increment-counter 1:address:array:location/names:new-counter
 ]
@@ -60,7 +58,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
         raise << "slot 0 requires a /names property in recipe " << Recipe[r].name << end();
         continue;
       }
-      if (SIZE(s) > 1) raise << "slot 0 should have a single value in /names, got " << inst.products.at(j).to_string() << '\n' << end();
+      if (SIZE(s) > 1) raise << "slot 0 should have a single value in /names, but got " << inst.products.at(j).to_string() << '\n' << end();
       string surrounding_recipe_name = s.at(0);
       if (Surrounding_space.find(r) != Surrounding_space.end()
           && Surrounding_space[r] != Recipe_ordinal[surrounding_recipe_name]) {
@@ -128,7 +126,10 @@ recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n
 bool already_transformed(const reagent& r, const map<string, long long int>& names) {
   if (has_property(r, "space")) {
     vector<string> p = property(r, "space");
-    assert(SIZE(p) == 1);
+    if (SIZE(p) != 1) {
+      raise << "/space property should have exactly one (non-negative integer) value in " << r.original_string << '\n' << end();
+      return false;
+    }
     if (p.at(0) != "0") return true;
   }
   return names.find(r.name) != names.end();
