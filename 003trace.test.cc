@@ -1,58 +1,58 @@
 void test_trace_check_compares() {
-  trace("test layer") << "foo";
+  trace("test layer") << "foo" << end();
   CHECK_TRACE_CONTENTS("test layer: foo");
 }
 
 void test_trace_check_ignores_other_layers() {
-  trace("test layer 1") << "foo";
-  trace("test layer 2") << "bar";
+  trace("test layer 1") << "foo" << end();
+  trace("test layer 2") << "bar" << end();
   CHECK_TRACE_CONTENTS("test layer 1: foo");
   CHECK_TRACE_DOESNT_CONTAIN("test layer 2: foo");
 }
 
 void test_trace_check_ignores_other_lines() {
-  trace("test layer 1") << "foo";
-  trace("test layer 1") << "bar";
+  trace("test layer 1") << "foo" << end();
+  trace("test layer 1") << "bar" << end();
   CHECK_TRACE_CONTENTS("test layer 1: foo");
 }
 
 void test_trace_check_ignores_other_lines2() {
-  trace("test layer 1") << "foo";
-  trace("test layer 1") << "bar";
+  trace("test layer 1") << "foo" << end();
+  trace("test layer 1") << "bar" << end();
   CHECK_TRACE_CONTENTS("test layer 1: bar");
 }
 
 void test_trace_ignores_trailing_whitespace() {
-  trace("test layer 1") << "foo\n";
+  trace("test layer 1") << "foo\n" << end();
   CHECK_TRACE_CONTENTS("test layer 1: foo");
 }
 
 void test_trace_ignores_trailing_whitespace2() {
-  trace("test layer 1") << "foo ";
+  trace("test layer 1") << "foo " << end();
   CHECK_TRACE_CONTENTS("test layer 1: foo");
 }
 
 void test_trace_orders_across_layers() {
-  trace("test layer 1") << "foo";
-  trace("test layer 2") << "bar";
-  trace("test layer 1") << "qux";
+  trace("test layer 1") << "foo" << end();
+  trace("test layer 2") << "bar" << end();
+  trace("test layer 1") << "qux" << end();
   CHECK_TRACE_CONTENTS("test layer 1: footest layer 2: bartest layer 1: qux");
 }
 
 void test_trace_supports_count() {
-  trace("test layer 1") << "foo";
-  trace("test layer 1") << "foo";
+  trace("test layer 1") << "foo" << end();
+  trace("test layer 1") << "foo" << end();
   CHECK_EQ(trace_count("test layer 1", "foo"), 2);
 }
 
 void test_trace_supports_count2() {
-  trace("test layer 1") << "foo";
-  trace("test layer 1") << "bar";
+  trace("test layer 1") << "foo" << end();
+  trace("test layer 1") << "bar" << end();
   CHECK_EQ(trace_count("test layer 1"), 2);
 }
 
 void test_trace_count_ignores_trailing_whitespace() {
-  trace("test layer 1") << "foo\n";
+  trace("test layer 1") << "foo\n" << end();
   CHECK(trace_count("test layer 1", "foo") == 1);
 }
 

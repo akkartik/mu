@@ -84,7 +84,7 @@ if (t.kind == container) {
   for (long long int i = 0; i < SIZE(t.elements); ++i) {
     // todo: strengthen assertion to disallow mutual type recursion
     if (types.at(0) == t.elements.at(i).at(0)) {
-      raise << "container " << t.name << " can't include itself as a member\n";
+      raise << "container " << t.name << " can't include itself as a member\n" << end();
       return 0;
     }
     result += size_of(t.elements.at(i));
@@ -108,18 +108,18 @@ Recipe_ordinal["get"] = GET;
 :(before "End Primitive Recipe Implementations")
 case GET: {
   if (ingredients.size() != 2) {
-    raise << current_recipe_name() << ": 'get' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n";
+    raise << current_recipe_name() << ": 'get' expects exactly 2 ingredients in '" << current_instruction().to_string() << "'\n" << end();
     break;
   }
   reagent base = current_instruction().ingredients.at(0);
   long long int base_address = base.value;
   type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != container) {
-    raise << current_recipe_name () << ": 'get' on a non-container " << base.original_string << '\n';
+    raise << current_recipe_name () << ": 'get' on a non-container " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": expected ingredient 1 of 'get' to have type 'offset', got '" << current_instruction().ingredients.at(1).original_string << "'\n";
+    raise << current_recipe_name() << ": expected ingredient 1 of 'get' to have type 'offset', got '" << current_instruction().ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   assert(scalar(ingredients.at(1)));
@@ -128,14 +128,14 @@ case GET: {
   for (long long int i = 0; i < offset; ++i) {
     src += size_of(Type[base_type].elements.at(i));
   }
-  trace(Primitive_recipe_depth, "run") << "address to copy is " << src;
+  trace(Primitive_recipe_depth, "run") << "address to copy is " << src << end();
   if (offset < 0 || offset >= SIZE(Type[base_type].elements)) {
-    raise << current_recipe_name() << ": invalid offset " << offset << " for " << Type[base_type].name << '\n';
+    raise << current_recipe_name() << ": invalid offset " << offset << " for " << Type[base_type].name << '\n' << end();
     products.resize(1);
     break;
   }
   type_ordinal src_type = Type[base_type].elements.at(offset).at(0);
-  trace(Primitive_recipe_depth, "run") << "its type is " << Type[src_type].name;
+  trace(Primitive_recipe_depth, "run") << "its type is " << Type[src_type].name << end();
   reagent tmp;
   tmp.set_value(src);
   tmp.types.push_back(src_type);
@@ -192,17 +192,17 @@ case GET_ADDRESS: {
   long long int base_address = base.value;
   type_ordinal base_type = base.types.at(0);
   if (Type[base_type].kind != container) {
-    raise << current_recipe_name () << ": 'get-address' on a non-container " << base.original_string << '\n';
+    raise << current_recipe_name () << ": 'get-address' on a non-container " << base.original_string << '\n' << end();
     break;
   }
   if (!is_literal(current_instruction().ingredients.at(1))) {
-    raise << current_recipe_name() << ": expected ingredient 1 of 'get-address' to have type 'offset', got '" << current_instruction().ingredients.at(1).original_string << "'\n";
+    raise << current_recipe_name() << ": expected ingredient 1 of 'get-address' to have type 'offset', got '" << current_instruction().ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   assert(scalar(ingredients.at(1)));
   long long int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(Type[base_type].elements)) {
-    raise << "invalid offset " << offset << " for " << Type[base_type].name << '\n';
+    raise << "invalid offset " << offset << " for " << Type[base_type].name << '\n' << end();
     products.resize(1);
     break;
   }
@@ -210,7 +210,7 @@ case GET_ADDRESS: {
   for (long long int i = 0; i < offset; ++i) {
     result += size_of(Type[base_type].elements.at(i));
   }
-  trace(Primitive_recipe_depth, "run") << "address to copy is " << result;
+  trace(Primitive_recipe_depth, "run") << "address to copy is " << result << end();
   products.resize(1);
   products.at(0).push_back(result);
   break;
@@ -278,7 +278,7 @@ else if (command == "container") {
 void insert_container(const string& command, kind_of_type kind, istream& in) {
   skip_whitespace(in);
   string name = next_word(in);
-  trace("parse") << "reading " << command << ' ' << name;
+  trace("parse") << "reading " << command << ' ' << name << end();
 //?   cout << name << '\n'; //? 2
 //?   if (Type_ordinal.find(name) != Type_ordinal.end()) //? 1
 //?     cerr << Type_ordinal[name] << '\n'; //? 1
@@ -286,7 +286,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
       || Type_ordinal[name] == 0) {
     Type_ordinal[name] = Next_type_ordinal++;
   }
-  trace("parse") << "type number: " << Type_ordinal[name];
+  trace("parse") << "type number: " << Type_ordinal[name] << end();
   skip_bracket(in, "'container' must begin with '['");
   type_info& t = Type[Type_ordinal[name]];
   recently_added_types.push_back(Type_ordinal[name]);
@@ -298,7 +298,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     if (element == "]") break;
     istringstream inner(element);
     t.element_names.push_back(slurp_until(inner, ':'));
-    trace("parse") << "  element name: " << t.element_names.back();
+    trace("parse") << "  element name: " << t.element_names.back() << end();
     vector<type_ordinal> types;
     while (!inner.eof()) {
       string type_name = slurp_until(inner, ':');
@@ -307,7 +307,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
         Type_ordinal[type_name] = Next_type_ordinal++;
       }
       types.push_back(Type_ordinal[type_name]);
-      trace("parse") << "  type: " << types.back();
+      trace("parse") << "  type: " << types.back() << end();
     }
     t.elements.push_back(types);
   }
@@ -395,7 +395,7 @@ void check_invalid_types(const reagent& r) {
   for (long long int i = 0; i < SIZE(r.types); ++i) {
     if (r.types.at(i) == 0) continue;
     if (Type.find(r.types.at(i)) == Type.end())
-      raise << "unknown type: " << r.properties.at(0).second.at(i) << '\n';
+      raise << "unknown type: " << r.properties.at(0).second.at(i) << '\n' << end();
   }
 }
 
@@ -431,7 +431,7 @@ void check_container_field_types() {
       for (long long int j = 0; j < SIZE(info.elements.at(i)); ++j) {
         if (info.elements.at(i).at(j) == 0) continue;
         if (Type.find(info.elements.at(i).at(j)) == Type.end())
-          raise << "unknown type for field " << info.element_names.at(i) << " in " << info.name << '\n';
+          raise << "unknown type for field " << info.element_names.at(i) << " in " << info.name << '\n' << end();
       }
     }
   }
@@ -470,5 +470,5 @@ recipe main [
 void skip_bracket(istream& in, string message) {
   skip_whitespace_and_comments(in);
   if (in.get() != '[')
-    raise << message << '\n';
+    raise << message << '\n' << end();
 }

@@ -35,20 +35,20 @@ case REPLY: {
   // check that any reply ingredients with /same-as-ingredient connect up
   // the corresponding ingredient and product in the caller.
   if (SIZE(caller_instruction.products) > SIZE(ingredients))
-    raise << "too few values replied from " << callee << '\n';
+    raise << "too few values replied from " << callee << '\n' << end();
   for (long long int i = 0; i < SIZE(caller_instruction.products); ++i) {
 //?     cerr << Recipe[Current_routine->calls.front().running_recipe].name << '\n'; //? 1
-    trace(Primitive_recipe_depth, "run") << "result " << i << " is " << to_string(ingredients.at(i));
+    trace(Primitive_recipe_depth, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
     if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
       vector<string> tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
       assert(SIZE(tmp) == 1);
       long long int ingredient_index = to_integer(tmp.at(0));
       if (ingredient_index >= SIZE(caller_instruction.ingredients))
-        raise << current_recipe_name() << ": 'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n';
+        raise << current_recipe_name() << ": 'same-as-ingredient' metadata overflows ingredients in: " << caller_instruction.to_string() << '\n' << end();
 //?       cerr << caller_instruction.products.size() << ' ' << i << ' ' << caller_instruction.ingredients.size() << ' ' << ingredient_index << '\n'; //? 1
 //?       cerr << caller_instruction.to_string() << '\n'; //? 1
       if (!is_dummy(caller_instruction.products.at(i)) && caller_instruction.products.at(i).value != caller_instruction.ingredients.at(ingredient_index).value)
-        raise << current_recipe_name() << ": 'same-as-ingredient' result " << caller_instruction.products.at(i).value << " from call to " << callee << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n';
+        raise << current_recipe_name() << ": 'same-as-ingredient' result " << caller_instruction.products.at(i).value << " from call to " << callee << " must be location " << caller_instruction.ingredients.at(ingredient_index).value << '\n' << end();
     }
   }
   // End Reply

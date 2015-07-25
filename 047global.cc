@@ -33,7 +33,7 @@ global_space = 0;
   if (x.name == "global-space") {
     assert(scalar(data));
     if (Current_routine->global_space)
-      raise << "routine already has a global-space; you can't over-write your globals";
+      raise << "routine already has a global-space; you can't over-write your globals" << end();
     Current_routine->global_space = data.at(0);
     return;
   }
@@ -42,7 +42,7 @@ global_space = 0;
 :(after "long long int space_base(const reagent& x)")
   if (is_global(x)) {
     if (!Current_routine->global_space)
-      raise << "routine has no global space\n" << die();
+      raise << "routine has no global space\n" << end();
     return Current_routine->global_space;
   }
 

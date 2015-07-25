@@ -45,16 +45,16 @@ void transform_braces(const recipe_ordinal r) {
   for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
     const instruction& inst = Recipe[r].steps.at(index);
     if (inst.label == "{") {
-      trace("brace") << r << ": push (open, " << index << ")";
+      trace("brace") << r << ": push (open, " << index << ")" << end();
       braces.push_back(pair<int,long long int>(OPEN, index));
     }
     if (inst.label == "}") {
-      trace("brace") << "push (close, " << index << ")";
+      trace("brace") << "push (close, " << index << ")" << end();
       braces.push_back(pair<int,long long int>(CLOSE, index));
     }
   }
   stack</*step*/long long int> open_braces;
-  trace("after-brace") << "recipe " << Recipe[r].name;
+  trace("after-brace") << "recipe " << Recipe[r].name << end();
   for (long long int index = 0; index < SIZE(Recipe[r].steps); ++index) {
     instruction& inst = Recipe[r].steps.at(index);
     if (inst.label == "{") {
@@ -72,7 +72,7 @@ void transform_braces(const recipe_ordinal r) {
          && inst.operation != Recipe_ordinal["break"]
          && inst.operation != Recipe_ordinal["break-if"]
          && inst.operation != Recipe_ordinal["break-unless"]) {
-      trace("after-brace") << inst.name << " ...";
+      trace("after-brace") << inst.name << " ..." << end();
       continue;
     }
     // update instruction operation
@@ -86,14 +86,14 @@ void transform_braces(const recipe_ordinal r) {
     if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
       // conditional branches check arg 1
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
-        trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset";
+        trace("after-brace") << "jump " << inst.ingredients.at(1).name << ":offset" << end();
         continue;
       }
     }
     else {
       // unconditional branches check arg 0
       if (!inst.ingredients.empty() && is_literal(inst.ingredients.at(0))) {
-        trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset";
+        trace("after-brace") << "jump " << inst.ingredients.at(0).name << ":offset" << end();
         continue;
       }
     }
@@ -102,7 +102,7 @@ void transform_braces(const recipe_ordinal r) {
     target.types.push_back(Type_ordinal["offset"]);
     target.set_value(0);
     if (open_braces.empty())
-      raise << inst.name << " wasn't inside {}\n";
+      raise << inst.name << " wasn't inside {}\n" << end();
     else if (inst.name.find("loop") != string::npos)
       target.set_value(open_braces.top()-index);
     else  // break instruction
@@ -110,11 +110,11 @@ void transform_braces(const recipe_ordinal r) {
     inst.ingredients.push_back(target);
     // log computed target
     if (inst.name.find("-if") != string::npos)
-      trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << target.value << ":offset";
+      trace("after-brace") << "jump-if " << inst.ingredients.at(0).name << ", " << target.value << ":offset" << end();
     else if (inst.name.find("-unless") != string::npos)
-      trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << target.value << ":offset";
+      trace("after-brace") << "jump-unless " << inst.ingredients.at(0).name << ", " << target.value << ":offset" << end();
     else
-      trace("after-brace") << "jump " << target.value << ":offset";
+      trace("after-brace") << "jump " << target.value << ":offset" << end();
   }
 }
 
@@ -127,7 +127,7 @@ long long int matching_brace(long long int index, const list<pair<int, long long
     stacksize += (p->first ? 1 : -1);
     if (stacksize == 0) return p->second;
   }
-  raise << Recipe[r].name << ": unbalanced '{'\n";
+  raise << Recipe[r].name << ": unbalanced '{'\n" << end();
   return SIZE(Recipe[r].steps);  // exit current routine
 }
 

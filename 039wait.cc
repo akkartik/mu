@@ -40,8 +40,8 @@ case WAIT_FOR_LOCATION: {
   Current_routine->state = WAITING;
   Current_routine->waiting_on_location = loc.value;
   Current_routine->old_value_of_waiting_location = Memory[loc.value];
-  trace(Primitive_recipe_depth, "run") << "waiting for location " << loc.value << " to change from " << Memory[loc.value];
-//?   trace("schedule") << Current_routine->id << ": waiting for location " << loc.value << " to change from " << Memory[loc.value]; //? 2
+  trace(Primitive_recipe_depth, "run") << "waiting for location " << loc.value << " to change from " << Memory[loc.value] << end();
+//?   trace("schedule") << Current_routine->id << ": waiting for location " << loc.value << " to change from " << Memory[loc.value] << end(); //? 2
   break;
 }
 
@@ -49,15 +49,15 @@ case WAIT_FOR_LOCATION: {
 
 :(before "End Scheduler State Transitions")
 for (long long int i = 0; i < SIZE(Routines); ++i) {
-//?   trace("schedule") << "wake up loop 1: routine " << Routines.at(i)->id << " has state " << Routines.at(i)->state; //? 1
+//?   trace("schedule") << "wake up loop 1: routine " << Routines.at(i)->id << " has state " << Routines.at(i)->state << end(); //? 1
   if (Routines.at(i)->state != WAITING) continue;
-//?   trace("schedule") << "waiting on location: " << Routines.at(i)->waiting_on_location; //? 1
+//?   trace("schedule") << "waiting on location: " << Routines.at(i)->waiting_on_location << end(); //? 1
 //?   if (Routines.at(i)->waiting_on_location) //? 2
 //?     trace("schedule") << "checking routine " << Routines.at(i)->id << " waiting on location " //? 2
 //?       << Routines.at(i)->waiting_on_location << ": " << Memory[Routines.at(i)->waiting_on_location] << " vs " << Routines.at(i)->old_value_of_waiting_location; //? 2
   if (Routines.at(i)->waiting_on_location &&
       Memory[Routines.at(i)->waiting_on_location] != Routines.at(i)->old_value_of_waiting_location) {
-    trace("schedule") << "waking up routine\n";
+    trace("schedule") << "waking up routine\n" << end();
     Routines.at(i)->state = RUNNING;
     Routines.at(i)->waiting_on_location = Routines.at(i)->old_value_of_waiting_location = 0;
   }
@@ -99,7 +99,7 @@ case WAIT_FOR_ROUTINE: {
   Current_routine->state = WAITING;
   assert(scalar(ingredients.at(0)));
   Current_routine->waiting_on_routine = ingredients.at(0).at(0);
-  trace(Primitive_recipe_depth, "run") << "waiting for routine " << ingredients.at(0).at(0);
+  trace(Primitive_recipe_depth, "run") << "waiting for routine " << ingredients.at(0).at(0) << end();
   break;
 }
 
@@ -114,7 +114,7 @@ for (long long int i = 0; i < SIZE(Routines); ++i) {
   assert(id != Routines.at(i)->id);
   for (long long int j = 0; j < SIZE(Routines); ++j) {
     if (Routines.at(j)->id == id && Routines.at(j)->state != RUNNING) {
-      trace("schedule") << "waking up routine " << Routines.at(i)->id;
+      trace("schedule") << "waking up routine " << Routines.at(i)->id << end();
       Routines.at(i)->state = RUNNING;
       Routines.at(i)->waiting_on_routine = 0;
     }

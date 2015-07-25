@@ -52,20 +52,22 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
           || inst.products.at(j).types.at(0) != Type_ordinal["address"]
           || inst.products.at(j).types.at(1) != Type_ordinal["array"]
           || inst.products.at(j).types.at(2) != Type_ordinal["location"]) {
-        raise << "slot 0 should always have type address:array:location, but is " << inst.products.at(j).to_string() << '\n';
+        raise << "slot 0 should always have type address:array:location, but is " << inst.products.at(j).to_string() << '\n' << end();
         continue;
       }
       vector<string> s = property(inst.products.at(j), "names");
-      if (s.empty())
-        raise << "slot 0 requires a /names property in recipe " << Recipe[r].name << die();
-      if (SIZE(s) > 1) raise << "slot 0 should have a single value in /names, got " << inst.products.at(j).to_string() << '\n';
+      if (s.empty()) {
+        raise << "slot 0 requires a /names property in recipe " << Recipe[r].name << end();
+        continue;
+      }
+      if (SIZE(s) > 1) raise << "slot 0 should have a single value in /names, got " << inst.products.at(j).to_string() << '\n' << end();
       string surrounding_recipe_name = s.at(0);
       if (Surrounding_space.find(r) != Surrounding_space.end()
           && Surrounding_space[r] != Recipe_ordinal[surrounding_recipe_name]) {
-        raise << "recipe " << Recipe[r].name << " can have only one 'surrounding' recipe but has " << Recipe[Surrounding_space[r]].name << " and " << surrounding_recipe_name << '\n';
+        raise << "recipe " << Recipe[r].name << " can have only one 'surrounding' recipe but has " << Recipe[Surrounding_space[r]].name << " and " << surrounding_recipe_name << '\n' << end();
         continue;
       }
-      trace("name") << "recipe " << Recipe[r].name << " is surrounded by " << surrounding_recipe_name;
+      trace("name") << "recipe " << Recipe[r].name << " is surrounded by " << surrounding_recipe_name << end();
       Surrounding_space[r] = Recipe_ordinal[surrounding_recipe_name];
     }
   }
@@ -79,11 +81,11 @@ long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe)
 //?   cout << "AAA " << default_recipe << " " << Recipe[default_recipe].name << '\n'; //? 2
 //?   cout << "AAA " << x.to_string() << '\n'; //? 1
   if (!has_property(x, "space")) {
-    if (Name[default_recipe].empty()) raise << "name not found: " << x.name << '\n' << die();
+    if (Name[default_recipe].empty()) raise << "name not found: " << x.name << '\n' << end();
     return Name[default_recipe][x.name];
   }
   vector<string> p = property(x, "space");
-  if (SIZE(p) != 1) raise << "/space property should have exactly one (non-negative integer) value\n";
+  if (SIZE(p) != 1) raise << "/space property should have exactly one (non-negative integer) value\n" << end();
   long long int n = to_integer(p.at(0));
   assert(n >= 0);
   recipe_ordinal surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
@@ -97,11 +99,11 @@ long long int lookup_name(const reagent& x, const recipe_ordinal default_recipe)
 long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_ordinal>& done, vector<recipe_ordinal>& path) {
   if (!Name[r].empty()) return Name[r][x.name];
   if (done.find(r) != done.end()) {
-    raise << "can't compute address of " << x.to_string() << " because ";
+    raise << "can't compute address of " << x.to_string() << " because " << end();
     for (long long int i = 1; i < SIZE(path); ++i) {
-      raise << path.at(i-1) << " requires computing names of " << path.at(i) << '\n';
+      raise << path.at(i-1) << " requires computing names of " << path.at(i) << '\n' << end();
     }
-    raise << path.at(SIZE(path)-1) << " requires computing names of " << r << "..ad infinitum\n" << die();
+    raise << path.at(SIZE(path)-1) << " requires computing names of " << r << "..ad infinitum\n" << end();
     return 0;
   }
   done.insert(r);
@@ -114,7 +116,7 @@ long long int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_o
 recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, long long int n) {
   if (n == 0) return r;
   if (Surrounding_space.find(r) == Surrounding_space.end()) {
-    raise << "don't know surrounding recipe of " << Recipe[r].name << '\n';
+    raise << "don't know surrounding recipe of " << Recipe[r].name << '\n' << end();
     return 0;
   }
   assert(Surrounding_space[r]);

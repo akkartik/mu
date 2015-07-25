@@ -30,7 +30,7 @@ case CURRENT_CONTINUATION: {
   products.resize(1);
   products.at(0).push_back(Next_continuation_id);
   ++Next_continuation_id;
-  trace("current-continuation") << "new continuation " << Next_continuation_id;
+  trace("current-continuation") << "new continuation " << Next_continuation_id << end();
   break;
 }
 

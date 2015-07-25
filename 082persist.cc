@@ -9,7 +9,7 @@ Recipe_ordinal["restore"] = RESTORE;
 :(before "End Primitive Recipe Implementations")
 case RESTORE: {
   if (!scalar(ingredients.at(0)))
-    raise << "restore: illegal operand " << current_instruction().ingredients.at(0).to_string() << '\n';
+    raise << "restore: illegal operand " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
   products.resize(1);
   string filename = current_instruction().ingredients.at(0).name;
   if (!is_literal(current_instruction().ingredients.at(0)))
@@ -48,13 +48,13 @@ Recipe_ordinal["save"] = SAVE;
 :(before "End Primitive Recipe Implementations")
 case SAVE: {
   if (!scalar(ingredients.at(0)))
-    raise << "save: illegal operand 0 " << current_instruction().ingredients.at(0).to_string() << '\n';
+    raise << "save: illegal operand 0 " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
   string filename = current_instruction().ingredients.at(0).name;
   if (!is_literal(current_instruction().ingredients.at(0)))
     filename = to_string(ingredients.at(0).at(0));
   ofstream fout(("lesson/"+filename).c_str());
   if (!scalar(ingredients.at(1)))
-    raise << "save: illegal operand 1 " << current_instruction().ingredients.at(1).to_string() << '\n';
+    raise << "save: illegal operand 1 " << current_instruction().ingredients.at(1).to_string() << '\n' << end();
   string contents = read_mu_string(ingredients.at(1).at(0));
   fout << contents;
   fout.close();
@@ -62,7 +62,7 @@ case SAVE: {
   // bug in git: git diff -q messes up --exit-code
   int status = system("cd lesson; git add .; git diff HEAD --exit-code >/dev/null || git commit -a -m . >/dev/null");
   if (status != 0)
-    raise << "error in commit: contents " << contents << '\n';
+    raise << "error in commit: contents " << contents << '\n' << end();
   break;
 }
 

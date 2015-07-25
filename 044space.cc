@@ -51,8 +51,10 @@ reagent r = absolutize(x);
 reagent absolutize(reagent x) {
 //?   cout << "absolutize " << x.to_string() << '\n'; //? 4
   if (is_raw(x) || is_dummy(x)) return x;
-  if (!x.initialized)
-    raise << current_instruction().to_string() << ": reagent not initialized: " << x.original_string << die();
+  if (!x.initialized) {
+    raise << current_instruction().to_string() << ": reagent not initialized: " << x.original_string << end();
+    return x;
+  }
   reagent r = x;
   r.set_value(address(r.value, space_base(r)));
   r.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
@@ -131,13 +133,13 @@ if (curr.name == "new-default-space") {
     vector<double> result;
     result.push_back(Name[Recipe_ordinal[current_recipe_name()]][""]);
     if (result.back() == 0)
-      raise << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names\n";
+      raise << "no space allocated for default-space in recipe " << current_recipe_name() << "; are you using names\n" << end();
     return result;
   }
 :(after "void write_memory(reagent x, vector<double> data)")
   if (x.name == "number-of-locals") {
     assert(scalar(data));
-    raise << "can't write to special variable number-of-locals\n";
+    raise << "can't write to special variable number-of-locals\n" << end();
     return;
   }
 
@@ -186,11 +188,11 @@ void try_reclaim_locals() {
 void rewrite_default_space_instruction(instruction& curr) {
   curr.operation = Recipe_ordinal["new"];
   if (!curr.ingredients.empty())
-    raise << "new-default-space can't take any ingredients\n";
+    raise << "new-default-space can't take any ingredients\n" << end();
   curr.ingredients.push_back(reagent("location:type"));
   curr.ingredients.push_back(reagent("number-of-locals:literal"));
   if (!curr.products.empty())
-    raise << "new-default-space can't take any results\n";
+    raise << "new-default-space can't take any results\n" << end();
   curr.products.push_back(reagent("default-space:address:array:location"));
 }
 
@@ -206,7 +208,7 @@ long long int address(long long int offset, long long int base) {
 //?   cout << base << '\n'; //? 2
   if (offset >= static_cast<long long int>(Memory[base])) {
     // todo: test
-    raise << "location " << offset << " is out of bounds " << Memory[base] << " at " << base << '\n';
+    raise << "location " << offset << " is out of bounds " << Memory[base] << " at " << base << '\n' << end();
   }
   return base+1 + offset;
 }
