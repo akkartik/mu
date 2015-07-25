@@ -20,7 +20,7 @@ assert(Reserved_for_tests == 1000);
 //: 1-199 - primitives
 assert(MAX_PRIMITIVE_RECIPES < 200);
 //: 200-999 - defined in .mu files as sequences of primitives
-assert(Next_recipe_ordinal < 1000);
+assert(Next_recipe_ordinal == 1000);
 //: 1000 onwards - reserved for tests, cleared between tests
 
 //:: Depths for tracing
