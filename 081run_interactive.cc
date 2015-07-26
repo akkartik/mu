@@ -242,7 +242,7 @@ long long int stringified_value_of_location(long long int address) {
 }
 
 bool is_string(const reagent& x) {
-  return x.types.size() == 3
+  return SIZE(x.types) == 3
       && x.types.at(0) == Type_ordinal["address"]
       && x.types.at(1) == Type_ordinal["array"]
       && x.types.at(2) == Type_ordinal["character"];

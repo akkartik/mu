@@ -7,7 +7,6 @@
 :(scenarios run_mu_scenario)
 :(scenario screen_in_scenario)
 scenario screen-in-scenario [
-#?   $start-tracing #? 2
   assume-screen 5:literal/width, 3:literal/height
   run [
     screen:address <- print-character screen:address, 97:literal  # 'a'
@@ -18,7 +17,6 @@ scenario screen-in-scenario [
     .     .
     .     .
   ]
-#?   $exit #? 1
 ]
 
 :(scenario screen_in_scenario_unicode)
@@ -34,7 +32,6 @@ scenario screen-in-scenario-unicode-color [
     .     .
     .     .
   ]
-#?   $exit
 ]
 
 :(scenario screen_in_scenario_color)
@@ -67,7 +64,6 @@ scenario screen-in-scenario-color [
     .     .
     .     .
   ]
-#?   $exit
 ]
 
 :(scenario screen_in_scenario_error)
@@ -144,7 +140,6 @@ Name[r]["screen"] = SCREEN;
 :(before "End Rewrite Instruction(curr)")
 // rewrite `assume-screen width, height` to
 // `screen:address <- new-fake-screen width, height`
-//? cout << "before: " << curr.to_string() << '\n'; //? 1
 if (curr.name == "assume-screen") {
   curr.operation = Recipe_ordinal["new-fake-screen"];
   curr.name = "new-fake-screen";
@@ -152,8 +147,6 @@ if (curr.name == "assume-screen") {
   assert(curr.products.empty());
   curr.products.push_back(reagent("screen:address"));
   curr.products.at(0).set_value(SCREEN);
-//? cout << "after: " << curr.to_string() << '\n'; //? 1
-//? cout << "AAA " << Recipe_ordinal["new-fake-screen"] << '\n'; //? 1
 }
 
 //: screen-should-contain is a regular instruction
@@ -196,7 +189,6 @@ struct raw_string_stream {
 
 :(code)
 void check_screen(const string& expected_contents, const int color) {
-//?   cerr << "Checking screen for color " << color << "\n"; //? 2
   assert(!Current_routine->calls.front().default_space);  // not supported
   long long int screen_location = Memory[SCREEN];
   int data_offset = find_element_name(Type_ordinal["screen"], "data");
@@ -210,29 +202,20 @@ void check_screen(const string& expected_contents, const int color) {
   raw_string_stream cursor(expected_contents);
   // todo: too-long expected_contents should fail
   long long int addr = screen_data_start+1;  // skip length
-//?   cerr << "screen height " << screen_height << '\n'; //? 1
   for (long long int row = 0; row < screen_height; ++row) {
-//?     cerr << "row: " << row << '\n'; //? 3
-//?     cerr << "contents: " << cursor.buf+cursor.index << "$\n"; //? 1
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
-//?     cerr << "row2\n"; //? 2
     assert(cursor.get() == '.');
     for (long long int column = 0;  column < screen_width;  ++column, addr+= /*size of screen-cell*/2) {
       const int cell_color_offset = 1;
       uint32_t curr = cursor.get();
-//?       cerr << "col: " << column << '\n'; //? 1
       if (Memory[addr] == 0 && isspace(curr)) continue;
-//?       cerr << color << " vs " << Memory[addr+1] << '\n'; //? 1
       if (curr == ' ' && color != -1 && color != Memory[addr+cell_color_offset]) {
         // filter out other colors
         continue;
       }
-//?       cerr << "col3 " << column << ": " << Memory[addr] << " " << curr << '\n'; //? 1
       if (Memory[addr] != 0 && Memory[addr] == curr) {
-//?         cerr << "col4\n"; //? 1
         if (color == -1 || color == Memory[addr+cell_color_offset]) continue;
-//?         cerr << "col5: " << column << '\n'; //? 1
         // contents match but color is off
         if (Current_scenario && !Scenario_testing_scenario) {
           // genuine test in a mu file
@@ -249,7 +232,6 @@ void check_screen(const string& expected_contents, const int color) {
         return;
       }
 
-//?       cerr << "col6 " << column << ": " << Memory[addr] << " " << curr << '\n'; //? 1
       // really a mismatch
       // can't print multi-byte unicode characters in warnings just yet. not very useful for debugging anyway.
       char expected_pretty[10] = {0};
@@ -284,11 +266,9 @@ void check_screen(const string& expected_contents, const int color) {
   assert(cursor.at_end());
 }
 
-raw_string_stream::raw_string_stream(const string& backing) :index(0), max(backing.size()), buf(backing.c_str()) {}
+raw_string_stream::raw_string_stream(const string& backing) :index(0), max(SIZE(backing)), buf(backing.c_str()) {}
 
 bool raw_string_stream::at_end() const {
-//?   cerr << index << ' ' << max << '\n'; //? 1
-//?   cerr << buf << "$\n"; //? 1
   if (index >= max) return true;
   if (tb_utf8_char_length(buf[index]) > max-index) {
     raise << "unicode string seems corrupted at index "<< index << " character " << static_cast<int>(buf[index]) << '\n' << end();
@@ -348,11 +328,9 @@ void dump_screen() {
   assert(data_offset >= 0);
   long long int screen_data_location = screen_location+data_offset;  // type: address:array:character
   long long int screen_data_start = Memory[screen_data_location];  // type: array:character
-//?   cerr << "data start: " << screen_data_start << '\n'; //? 1
   assert(Memory[screen_data_start] == screen_width*screen_height);
   long long int curr = screen_data_start+1;  // skip length
   for (long long int row = 0; row < screen_height; ++row) {
-//?     cerr << curr << ":\n"; //? 2
     cerr << '.';
     for (long long int col = 0; col < screen_width; ++col) {
       if (Memory[curr])

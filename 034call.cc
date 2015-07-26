@@ -109,7 +109,7 @@ inline const vector<instruction>& routine::steps() const {
 while (current_step_index() >= SIZE(Current_routine->steps())) {
   // Falling Through End Of Recipe
   --Callstack_depth;
-//?   cerr << "reply " << Current_routine->calls.size() << '\n'; //? 2
+//?   cerr << "reply " << SIZE(Current_routine->calls) << '\n'; //? 2
   Current_routine->calls.pop_front();
   if (Current_routine->calls.empty()) return;
   // Complete Call Fallthrough
