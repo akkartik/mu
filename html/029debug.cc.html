@@ -15,10 +15,9 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
-.Comment { color: #9090ff; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Delimiter { color: #a04060; }
 .Identifier { color: #804000; }
-.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -30,66 +29,27 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment">//: Recipe to look at elements of containers.</span>
-
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 _PRINT<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;$print&quot;</span>] = _PRINT<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _PRINT: <span class="Delimiter">{</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-      trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;$print: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
-      if <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;newline&quot;</span><span class="Delimiter">))</span>
+<span class="Normal">case</span> _PRINT: <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+      trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;$print: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;newline&quot;</span><span class="Delimiter">))</span>
         cout &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-      else
+      <span class="Normal">else</span>
         cout &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    else <span class="Delimiter">{</span>
-      for <span class="Delimiter">(</span>long long int j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;$print: &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
-        if <span class="Delimiter">(</span>j &gt; <span class="Constant">0</span><span class="Delimiter">)</span> cout &lt;&lt; <span class="Constant">&quot; &quot;</span><span class="Delimiter">;</span>
+    <span class="Normal">else</span> <span class="Delimiter">{</span>
+      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;$print: &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>j &gt; <span class="Constant">0</span><span class="Delimiter">)</span> cout &lt;&lt; <span class="Constant">&quot; &quot;</span><span class="Delimiter">;</span>
         cout &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_START_TRACING<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_ordinal[<span class="Constant">&quot;$start-tracing&quot;</span>] = _START_TRACING<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _START_TRACING: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
-    Trace_stream<span class="Delimiter">-&gt;</span>dump_layer = <span class="Constant">&quot;all&quot;</span><span class="Delimiter">;</span>
-  else
-    Trace_stream<span class="Delimiter">-&gt;</span>dump_layer = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
-<span class="CommentedCode">//?   cout &lt;&lt; Trace_stream &lt;&lt; &quot;: &quot; &lt;&lt; Trace_stream-&gt;dump_layer &lt;&lt; '\n'; //? 1</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_STOP_TRACING<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_ordinal[<span class="Constant">&quot;$stop-tracing&quot;</span>] = _STOP_TRACING<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _STOP_TRACING: <span class="Delimiter">{</span>
-  Trace_stream<span class="Delimiter">-&gt;</span>dump_layer = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_CLOSE_TRACE<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_ordinal[<span class="Constant">&quot;$close-trace&quot;</span>] = _CLOSE_TRACE<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _CLOSE_TRACE: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    delete Trace_stream<span class="Delimiter">;</span>
-    Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -99,73 +59,8 @@ _EXIT<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;$exit&quot;</span>] = _EXIT<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _EXIT: <span class="Delimiter">{</span>
+<span class="Normal">case</span> _EXIT: <span class="Delimiter">{</span>
   exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_DUMP_TRACE<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_ordinal[<span class="Constant">&quot;$dump-trace&quot;</span>] = _DUMP_TRACE<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _DUMP_TRACE: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    DUMP<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  else <span class="Delimiter">{</span>
-    DUMP<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_CLEAR_TRACE<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_ordinal[<span class="Constant">&quot;$clear-trace&quot;</span>] = _CLEAR_TRACE<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _CLEAR_TRACE: <span class="Delimiter">{</span>
-  CLEAR_TRACE<span class="Delimiter">;</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_DUMP_MEMORY<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_ordinal[<span class="Constant">&quot;$dump-memory&quot;</span>] = _DUMP_MEMORY<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _DUMP_MEMORY: <span class="Delimiter">{</span>
-  dump_memory<span class="Delimiter">();</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_DUMP<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_ordinal[<span class="Constant">&quot;$dump&quot;</span>] = _DUMP<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _DUMP: <span class="Delimiter">{</span>
-  reagent after_canonize = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  cerr &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">' '</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value &lt;&lt; <span class="Constant">&quot; =&gt; &quot;</span> &lt;&lt; after_canonize<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; =&gt; &quot;</span> &lt;&lt; Memory[after_canonize<span class="Delimiter">.</span>value] &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">//: Helper for debugging: grab an address and then dump its value.</span>
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-long long int foo = -<span class="Constant">1</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_FOO<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-Recipe_ordinal[<span class="Constant">&quot;$foo&quot;</span>] = _FOO<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-case _FOO: <span class="Delimiter">{</span>
-  if <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>foo != -<span class="Constant">1</span><span class="Delimiter">)</span> cerr &lt;&lt; foo &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; Memory[foo] &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-    else cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  else <span class="Delimiter">{</span>
-    foo = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)).</span>value<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>

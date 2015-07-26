@@ -13,15 +13,15 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.muRecipe { color: #ff8700; }
-.Delimiter { color: #a04060; }
 .muScenario { color: #00af00; }
 .SalientComment { color: #00ffff; }
+.Delimiter { color: #a04060; }
+.CommentedCode { color: #6c6c6c; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
 .muControl { color: #c0a020; }
+.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -37,12 +37,15 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> main [
   <span class="Constant">local-scope</span>
-  open-console <span class="CommentedCode">#? 1</span>
+  open-console
   initial-recipe:address:array:character<span class="Special"> &lt;- </span>restore <span class="Constant">[recipes.mu]</span>
-<span class="CommentedCode">#?   $exit #? 1</span>
-  initial-sandbox:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[test 2, 2]</span>
+  initial-sandbox:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   env:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment <span class="Constant">0:literal/screen</span>, initial-recipe:address:array:character, initial-sandbox:address:array:character
+  env:address:programming-environment-data<span class="Special"> &lt;- </span>restore-sandboxes env:address:programming-environment-data
+  render-all <span class="Constant">0:literal/screen</span>, env:address:programming-environment-data
+  show-screen <span class="Constant">0:literal/screen</span>
   event-loop <span class="Constant">0:literal/screen</span>, <span class="Constant">0:literal/console</span>, env:address:programming-environment-data
+  <span class="Comment"># never gets here</span>
 ]
 
 container programming-environment-data [
@@ -687,8 +690,8 @@ container editor-data [
         do-run?:boolean<span class="Special"> &lt;- </span>equal k:address:number/deref, <span class="Constant">65526:literal/F10</span>
         <span class="muControl">break-unless</span> do-run?:boolean
         run-sandboxes env:address:programming-environment-data
-        screen:address<span class="Special"> &lt;- </span>render-sandbox-side screen:address, env:address:programming-environment-data
-        <span class="Comment"># F10 doesn't mess with the recipe side</span>
+        <span class="Comment"># F10 might update warnings and results on both sides</span>
+        screen:address<span class="Special"> &lt;- </span>render-all screen:address, env:address:programming-environment-data
         update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
         show-screen screen:address
         <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
@@ -1165,8 +1168,8 @@ container editor-data [
   <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  screen:address<span class="Special"> &lt;- </span>render-recipes screen:address, env:address:programming-environment-data
-  screen:address<span class="Special"> &lt;- </span>render-sandbox-side screen:address, env:address:programming-environment-data
+  screen:address<span class="Special"> &lt;- </span>render-recipes screen:address, env:address:programming-environment-data, <span class="Constant">1:literal/clear-below</span>
+  screen:address<span class="Special"> &lt;- </span>render-sandbox-side screen:address, env:address:programming-environment-data, <span class="Constant">1:literal/clear-below</span>
   recipes:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, current-sandbox:offset
   sandbox-in-focus?:boolean<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
@@ -1203,6 +1206,7 @@ container editor-data [
   <span class="Constant">local-scope</span>
   screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  clear:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   recipes:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, recipes:offset
   <span class="Comment"># render recipes</span>
   left:number<span class="Special"> &lt;- </span>get recipes:address:editor-data/deref, left:offset
@@ -1225,26 +1229,7 @@ container editor-data [
   row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
-  <span class="muControl">reply</span> screen:address/same-as-ingredient:0
-]
-
-<span class="muRecipe">recipe</span> render-sandbox-side [
-  <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  clear:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, current-sandbox:offset
-  left:number<span class="Special"> &lt;- </span>get current-sandbox:address:editor-data/deref, left:offset
-  right:number<span class="Special"> &lt;- </span>get current-sandbox:address:editor-data/deref, right:offset
-  row:number, screen:address<span class="Special"> &lt;- </span>render screen:address, current-sandbox:address:editor-data
-  row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
-  draw-horizontal screen:address, row:number, left:number, right:number, <span class="Constant">9473:literal/horizontal-double</span>
-  sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, sandbox:offset
-  row:number, screen:address<span class="Special"> &lt;- </span>render-sandboxes screen:address, sandbox:address:sandbox-data, left:number, right:number, row:number
-  <span class="Comment"># clear next line, in case we just processed a backspace</span>
-  row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
-  move-cursor screen:address, row:number, left:number
-  clear-line-delimited screen:address, left:number, right:number
+  <span class="Comment"># clear rest of screen in this column, if requested</span>
   <span class="muControl">reply-unless</span> clear:boolean, screen:address/same-as-ingredient:0
   screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
   <span class="Delimiter">{</span>
@@ -1256,58 +1241,6 @@ container editor-data [
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="muControl">reply</span> screen:address/same-as-ingredient:0
-]
-
-<span class="muRecipe">recipe</span> render-sandboxes [
-  <span class="Constant">local-scope</span>
-  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  sandbox:address:sandbox-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="muControl">reply-unless</span> sandbox:address:sandbox-data, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-  screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
-  at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number screen-height:number
-  <span class="muControl">reply-if</span> at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-<span class="CommentedCode">#?   $print [rendering sandbox ], sandbox:address:sandbox-data, 10:literal/newline</span>
-  <span class="Comment"># render sandbox menu</span>
-  row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
-  move-cursor screen:address, row:number, left:number
-  clear-line-delimited screen:address, left:number, right:number
-  print-character screen:address, <span class="Constant">120:literal/x</span>, <span class="Constant">245:literal/grey</span>
-  <span class="Comment"># save menu row so we can detect clicks to it later</span>
-  starting-row:address:number<span class="Special"> &lt;- </span>get-address sandbox:address:sandbox-data/deref, starting-row-on-screen:offset
-  starting-row:address:number/deref<span class="Special"> &lt;- </span>copy row:number
-  <span class="Comment"># render sandbox contents</span>
-  sandbox-data:address:array:character<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, data:offset
-  row:number, screen:address<span class="Special"> &lt;- </span>render-string screen:address, sandbox-data:address:array:character, left:number, right:number, <span class="Constant">7:literal/white</span>, row:number
-  <span class="Comment"># render sandbox warnings, screen or response, in that order</span>
-  sandbox-response:address:array:character<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, response:offset
-  sandbox-warnings:address:array:character<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, warnings:offset
-  sandbox-screen:address<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, screen:offset
-  <span class="Delimiter">{</span>
-    <span class="muControl">break-unless</span> sandbox-warnings:address:array:character
-    row:number, screen:address<span class="Special"> &lt;- </span>render-string screen:address, sandbox-warnings:address:array:character, left:number, right:number, <span class="Constant">1:literal/red</span>, row:number
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    <span class="muControl">break-if</span> sandbox-warnings:address:array:character
-    empty-screen?:boolean<span class="Special"> &lt;- </span>fake-screen-is-clear? sandbox-screen:address
-    <span class="muControl">break-if</span> empty-screen?:boolean
-    row:number, screen:address<span class="Special"> &lt;- </span>render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    <span class="muControl">break-if</span> sandbox-warnings:address:array:character
-    <span class="muControl">break-unless</span> empty-screen?:boolean
-    row:number, screen:address<span class="Special"> &lt;- </span>render-string screen:address, sandbox-response:address:array:character, left:number, right:number, <span class="Constant">245:literal/grey</span>, row:number
-  <span class="Delimiter">}</span>
-  at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number screen-height:number
-  <span class="muControl">reply-if</span> at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-  <span class="Comment"># draw solid line after sandbox</span>
-  draw-horizontal screen:address, row:number, left:number, right:number, <span class="Constant">9473:literal/horizontal-double</span>
-  <span class="Comment"># draw next sandbox</span>
-  next-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, next-sandbox:offset
-  row:number, screen:address<span class="Special"> &lt;- </span>render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
-  <span class="muControl">reply</span> row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
 ]
 
 <span class="muRecipe">recipe</span> update-cursor [
@@ -2593,6 +2526,7 @@ d]
 ]
 
 <span class="muScenario">scenario</span> point-at-multiple-editors [
+<span class="Constant">  $close-trace</span>
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
   <span class="Comment"># initialize both halves of screen</span>
   1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
@@ -2618,6 +2552,7 @@ d]
 ]
 
 <span class="muScenario">scenario</span> edit-multiple-editors [
+<span class="Constant">  $close-trace</span>
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
   <span class="Comment"># initialize both halves of screen</span>
   1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
@@ -2660,6 +2595,7 @@ d]
 ]
 
 <span class="muScenario">scenario</span> multiple-editors-cover-only-their-own-areas [
+<span class="Constant">  $close-trace</span>
   assume-screen <span class="Constant">60:literal/width</span>, <span class="Constant">10:literal/height</span>
   run [
     1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
@@ -2677,6 +2613,7 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-in-focus-keeps-cursor [
+<span class="Constant">  $close-trace</span>
   assume-screen <span class="Constant">30:literal/width</span>, <span class="Constant">5:literal/height</span>
   1:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   2:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
@@ -2809,6 +2746,8 @@ container sandbox-data [
   save <span class="Constant">[recipes.mu]</span>, in:address:array:character
   recipe-warnings:address:address:array:character<span class="Special"> &lt;- </span>get-address env:address:programming-environment-data/deref, recipe-warnings:offset
   recipe-warnings:address:address:array:character/deref<span class="Special"> &lt;- </span>reload in:address:array:character
+  <span class="Comment"># if recipe editor has errors, stop</span>
+  <span class="muControl">reply-if</span> recipe-warnings:address:address:array:character/deref
   <span class="Comment"># check contents of right editor (sandbox)</span>
   <span class="Delimiter">{</span>
     sandbox-contents:address:array:character<span class="Special"> &lt;- </span>editor-contents current-sandbox:address:editor-data
@@ -2851,6 +2790,111 @@ container sandbox-data [
     curr:address:sandbox-data<span class="Special"> &lt;- </span>get curr:address:sandbox-data/deref, next-sandbox:offset
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">recipe</span> render-sandbox-side [
+  <span class="Constant">local-scope</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  clear:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, current-sandbox:offset
+  left:number<span class="Special"> &lt;- </span>get current-sandbox:address:editor-data/deref, left:offset
+  right:number<span class="Special"> &lt;- </span>get current-sandbox:address:editor-data/deref, right:offset
+  row:number, screen:address<span class="Special"> &lt;- </span>render screen:address, current-sandbox:address:editor-data
+  row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+  draw-horizontal screen:address, row:number, left:number, right:number, <span class="Constant">9473:literal/horizontal-double</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get env:address:programming-environment-data/deref, sandbox:offset
+  row:number, screen:address<span class="Special"> &lt;- </span>render-sandboxes screen:address, sandbox:address:sandbox-data, left:number, right:number, row:number
+  <span class="Comment"># clear next line, in case we just processed a backspace</span>
+  row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+  move-cursor screen:address, row:number, left:number
+  clear-line-delimited screen:address, left:number, right:number
+  <span class="muControl">reply-unless</span> clear:boolean, screen:address/same-as-ingredient:0
+  screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
+  <span class="Delimiter">{</span>
+    at-bottom-of-screen?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number, screen-height:number
+    <span class="muControl">break-if</span> at-bottom-of-screen?:boolean
+    move-cursor screen:address, row:number, left:number
+    clear-line-delimited screen:address, left:number, right:number
+    row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">reply</span> screen:address/same-as-ingredient:0
+]
+
+<span class="muRecipe">recipe</span> render-sandboxes [
+  <span class="Constant">local-scope</span>
+  screen:address<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  left:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  right:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  row:number<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="muControl">reply-unless</span> sandbox:address:sandbox-data, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  screen-height:number<span class="Special"> &lt;- </span>screen-height screen:address
+  at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number screen-height:number
+  <span class="muControl">reply-if</span> at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+<span class="CommentedCode">#?   $print [rendering sandbox ], sandbox:address:sandbox-data, 10:literal/newline</span>
+  <span class="Comment"># render sandbox menu</span>
+  row:number<span class="Special"> &lt;- </span>add row:number, <span class="Constant">1:literal</span>
+  move-cursor screen:address, row:number, left:number
+  clear-line-delimited screen:address, left:number, right:number
+  print-character screen:address, <span class="Constant">120:literal/x</span>, <span class="Constant">245:literal/grey</span>
+  <span class="Comment"># save menu row so we can detect clicks to it later</span>
+  starting-row:address:number<span class="Special"> &lt;- </span>get-address sandbox:address:sandbox-data/deref, starting-row-on-screen:offset
+  starting-row:address:number/deref<span class="Special"> &lt;- </span>copy row:number
+  <span class="Comment"># render sandbox contents</span>
+  sandbox-data:address:array:character<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, data:offset
+  row:number, screen:address<span class="Special"> &lt;- </span>render-string screen:address, sandbox-data:address:array:character, left:number, right:number, <span class="Constant">7:literal/white</span>, row:number
+  <span class="Comment"># render sandbox warnings, screen or response, in that order</span>
+  sandbox-response:address:array:character<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, response:offset
+  sandbox-warnings:address:array:character<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, warnings:offset
+  sandbox-screen:address<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, screen:offset
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> sandbox-warnings:address:array:character
+    row:number, screen:address<span class="Special"> &lt;- </span>render-string screen:address, sandbox-warnings:address:array:character, left:number, right:number, <span class="Constant">1:literal/red</span>, row:number
+  <span class="Delimiter">}</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> sandbox-warnings:address:array:character
+    empty-screen?:boolean<span class="Special"> &lt;- </span>fake-screen-is-clear? sandbox-screen:address
+    <span class="muControl">break-if</span> empty-screen?:boolean
+    row:number, screen:address<span class="Special"> &lt;- </span>render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
+  <span class="Delimiter">}</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> sandbox-warnings:address:array:character
+    <span class="muControl">break-unless</span> empty-screen?:boolean
+    row:number, screen:address<span class="Special"> &lt;- </span>render-string screen:address, sandbox-response:address:array:character, left:number, right:number, <span class="Constant">245:literal/grey</span>, row:number
+  <span class="Delimiter">}</span>
+  at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row:number screen-height:number
+  <span class="muControl">reply-if</span> at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  <span class="Comment"># draw solid line after sandbox</span>
+  draw-horizontal screen:address, row:number, left:number, right:number, <span class="Constant">9473:literal/horizontal-double</span>
+  <span class="Comment"># draw next sandbox</span>
+  next-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get sandbox:address:sandbox-data/deref, next-sandbox:offset
+  row:number, screen:address<span class="Special"> &lt;- </span>render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
+  <span class="muControl">reply</span> row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+]
+
+<span class="Comment"># assumes programming environment has no sandboxes; restores them from previous session</span>
+<span class="muRecipe">recipe</span> restore-sandboxes [
+  <span class="Constant">local-scope</span>
+  env:address:programming-environment-data<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Comment"># read all scenarios, pushing them to end of a list of scenarios</span>
+  filename:number<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
+  curr:address:address:sandbox-data<span class="Special"> &lt;- </span>get-address env:address:programming-environment-data/deref, sandbox:offset
+  <span class="Delimiter">{</span>
+    contents:address:array:character<span class="Special"> &lt;- </span>restore filename:number
+    <span class="muControl">break-unless</span> contents:address:array:character  <span class="Comment"># stop at first error; assuming file didn't exist</span>
+<span class="CommentedCode">#?     $print contents:address:array:character, 10:literal/newline</span>
+    <span class="Comment"># create new sandbox for file</span>
+    curr:address:address:sandbox-data/deref<span class="Special"> &lt;- </span>new sandbox-data:type
+    data:address:address:array:character<span class="Special"> &lt;- </span>get-address curr:address:address:sandbox-data/deref/deref, data:offset
+    data:address:address:array:character/deref<span class="Special"> &lt;- </span>copy contents:address:array:character
+    <span class="Comment"># increment loop variables</span>
+    filename:number<span class="Special"> &lt;- </span>add filename:number, <span class="Constant">1:literal</span>
+    curr:address:address:sandbox-data<span class="Special"> &lt;- </span>get-address curr:address:address:sandbox-data/deref/deref, next-sandbox:offset
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">reply</span> env:address:programming-environment-data/same-as-ingredient:0
 ]
 
 <span class="Comment"># was-deleted?:boolean &lt;- delete-sandbox t:touch-event, env:address:programming-environment-data</span>
@@ -3171,6 +3215,133 @@ container sandbox-data [
   ]
   memory-should-contain [
     4:string<span class="Special"> &lt;- </span><span class="Constant">[abdefc]</span>
+  ]
+]
+
+<span class="SalientComment">## handling malformed programs</span>
+
+<span class="muScenario">scenario</span> run-shows-warnings-in-get [
+<span class="Constant">  $close-trace</span>
+  assume-screen <span class="Constant">100:literal/width</span>, <span class="Constant">15:literal/height</span>
+  assume-console [
+    press 65526  <span class="Comment"># F10</span>
+  ]
+  run [
+    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  get 123:number, foo:offset</span>
+<span class="Constant">]</span>]
+    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+    env:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, x:address:array:character, y:address:array:character
+    event-loop screen:address, console:address, env:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F10)          .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  get 123:number, foo:offset                      ┊                                                 .</span>
+   <span class="Constant"> .]                                                 ┊                                                 .</span>
+   <span class="Constant"> .unknown element foo in container number           ┊                                                 .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  screen-should-contain-in-color <span class="Constant">1:literal/red</span>, [
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .unknown element foo in container number                                                             .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-shows-missing-type-warnings [
+<span class="Constant">  $close-trace</span>
+  assume-screen <span class="Constant">100:literal/width</span>, <span class="Constant">15:literal/height</span>
+  assume-console [
+    press 65526  <span class="Comment"># F10</span>
+  ]
+  run [
+    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  x:number &lt;- copy 0</span>
+<span class="Constant">  copy x</span>
+<span class="Constant">]</span>]
+    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+    env:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, x:address:array:character, y:address:array:character
+    event-loop screen:address, console:address, env:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F10)          .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  x:number &lt;- copy 0                              ┊                                                 .</span>
+   <span class="Constant"> .  copy x                                          ┊                                                 .</span>
+   <span class="Constant"> .]                                                 ┊                                                 .</span>
+   <span class="Constant"> .missing type in 'copy x'                          ┊                                                 .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-shows-get-on-non-container-warnings [
+<span class="Constant">  $close-trace</span>
+  assume-screen <span class="Constant">100:literal/width</span>, <span class="Constant">15:literal/height</span>
+  assume-console [
+    press 65526  <span class="Comment"># F10</span>
+  ]
+  run [
+    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  x:address:point &lt;- new point:type</span>
+<span class="Constant">  get x:address:point, 1:offset</span>
+<span class="Constant">]</span>]
+    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+    env:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, x:address:array:character, y:address:array:character
+    event-loop screen:address, console:address, env:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F10)          .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  x:address:point &lt;- new point:type               ┊                                                x.</span>
+   <span class="Constant"> .  get x:address:point, 1:offset                   ┊foo                                              .</span>
+   <span class="Constant"> .]                                                 ┊foo: 'get' on a non-container x:address:point    .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> run-shows-non-literal-get-argument-warnings [
+<span class="Constant">  $close-trace</span>
+  assume-screen <span class="Constant">100:literal/width</span>, <span class="Constant">15:literal/height</span>
+  assume-console [
+    press 65526  <span class="Comment"># F10</span>
+  ]
+  run [
+    x:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  x:number &lt;- copy 0</span>
+<span class="Constant">  y:address:point &lt;- new point:type</span>
+<span class="Constant">  get y:address:point/deref, x:number</span>
+<span class="Constant">]</span>]
+    y:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+    env:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address, x:address:array:character, y:address:array:character
+    event-loop screen:address, console:address, env:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F10)          .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  x:number &lt;- copy 0                              ┊                                                 .</span>
+   <span class="Constant"> .  y:address:point &lt;- new point:type               ┊                                                 .</span>
+   <span class="Constant"> .  get y:address:point/deref, x:number             ┊                                                 .</span>
+   <span class="Constant"> .]                                                 ┊                                                 .</span>
+   <span class="Constant"> .foo: expected ingredient 1 of 'get' to have type ↩┊                                                 .</span>
+   <span class="Constant"> .'offset'; got x:number                            ┊                                                 .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
 

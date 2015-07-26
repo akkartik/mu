@@ -13,14 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
-.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
-.CommentedCode { color: #6c6c6c; }
+.traceContains { color: #008000; }
 -->
 </style>
 
@@ -44,7 +44,7 @@ recipe main [
   <span class="Constant">20</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:literal
   <span class="Comment"># actual start of this recipe</span>
   global-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>:literal
-  default-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:literal
+  <span class="Normal">default</span>-space:address:array:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:literal
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
   <span class="Constant">1</span>:number/space:global<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>:literal
 ]
@@ -53,30 +53,31 @@ recipe main [
 
 <span class="Comment">//: to support it, create another special variable called global space</span>
 <span class="Delimiter">:(before &quot;End Disqualified Reagents&quot;)</span>
-if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span>
   x<span class="Delimiter">.</span>initialized = <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End is_special_name Cases&quot;)</span>
-if <span class="Delimiter">(</span>s == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 
 <span class="Comment">//: writes to this variable go to a field in the current routine</span>
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-long long int global_space<span class="Delimiter">;</span>
+<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> global_space<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(after &quot;void write_memory(reagent x, vector&lt;double&gt; data)&quot;)</span>
-  if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>data<span class="Delimiter">));</span>
-    if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
-      raise &lt;&lt; <span class="Constant">&quot;routine already has a global-space; you can't over-write your globals&quot;</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>data<span class="Delimiter">))</span>
+      raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'global-space' should be of type address:array:location, but tried to write &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
+      raise &lt;&lt; <span class="Constant">&quot;routine already has a global-space; you can't over-write your globals&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     Current_routine<span class="Delimiter">-&gt;</span>global_space = data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
 <span class="Comment">//: now marking variables as /space:global looks them up inside this field</span>
 <span class="Delimiter">:(after &quot;long long int space_base(const reagent&amp; x)&quot;)</span>
-  if <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
-      raise &lt;&lt; <span class="Constant">&quot;routine has no global space</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; die<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
+      raise &lt;&lt; <span class="Constant">&quot;routine has no global space</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
@@ -86,23 +87,22 @@ global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(scenario global_space_with_names)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
-  global-space:address:array:location<span class="Special"> &lt;- </span>new location:type<span class="Delimiter">,</span> <span class="Constant">10</span>:literal
-  x:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
+  global-space:address:array:location<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">10</span>:literal
+  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
   <span class="Constant">1</span>:number/space:global<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>:literal
 ]
 <span class="Comment"># don't warn that we're mixing numeric addresses and names</span>
 $warn: <span class="Constant">0</span>
 
 <span class="Delimiter">:(after &quot;bool is_numeric_location(const reagent&amp; x)&quot;)</span>
-  if <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Comment">//: helpers</span>
 
 <span class="Delimiter">:(code)</span>
-bool is_global<span class="Delimiter">(</span>const reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Comment">/*</span><span class="Comment">skip name:type</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span>
+<span class="Normal">bool</span> is_global<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Comment">/*</span><span class="Comment">skip name:type</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == <span class="Constant">&quot;space&quot;</span><span class="Delimiter">)</span>
       <span class="Identifier">return</span> !x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;global&quot;</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>

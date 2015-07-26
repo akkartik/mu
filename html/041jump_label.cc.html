@@ -14,14 +14,15 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
 .traceAbsent { color: #c00000; }
-.cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
-.traceContains { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
+.cSpecial { color: #008000; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
-.CommentedCode { color: #6c6c6c; }
 .Identifier { color: #804000; }
+.traceContains { color: #008000; }
 -->
 </style>
 
@@ -52,26 +53,25 @@ Type_ordinal[<span class="Constant">&quot;label&quot;</span>] = <span class="Con
   Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>transform_labels<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
-void transform_labels<span class="Delimiter">(</span>const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  map&lt;string<span class="Delimiter">,</span> long long int&gt; offset<span class="Delimiter">;</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    const instruction&amp; inst = Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>label<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> offset[inst<span class="Delimiter">.</span>label] = i<span class="Delimiter">;</span>
+<span class="Normal">void</span> transform_labels<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  map&lt;string<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt; offset<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">const</span> instruction&amp; inst = Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>label<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> offset[inst<span class="Delimiter">.</span>label] = i<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = Recipe[r]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;jump&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?       cerr &lt;&lt; inst.to_string() &lt;&lt; '\n'; //? 1</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;jump&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       replace_offset<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> offset<span class="Delimiter">,</span> i<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;jump-if&quot;</span>] || inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;jump-unless&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;jump-if&quot;</span>] || inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;jump-unless&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       replace_offset<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">),</span> offset<span class="Delimiter">,</span> i<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">((</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;loop&quot;</span>] || inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;break&quot;</span>]<span class="Delimiter">)</span>
+    <span class="Normal">if</span> <span class="Delimiter">((</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;loop&quot;</span>] || inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;break&quot;</span>]<span class="Delimiter">)</span>
         &amp;&amp; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       replace_offset<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> offset<span class="Delimiter">,</span> i<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
-    if <span class="Delimiter">((</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;loop-if&quot;</span>] || inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;loop-unless&quot;</span>]
+    <span class="Normal">if</span> <span class="Delimiter">((</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;loop-if&quot;</span>] || inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;loop-unless&quot;</span>]
             || inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;break-if&quot;</span>] || inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;break-unless&quot;</span>]<span class="Delimiter">)</span>
         &amp;&amp; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> == <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       replace_offset<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">),</span> offset<span class="Delimiter">,</span> i<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
@@ -80,16 +80,15 @@ void transform_labels<span class="Delimiter">(</span>const recipe_ordinal r<span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-void replace_offset<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">const</span><span class="Comment">*/</span> map&lt;string<span class="Delimiter">,</span> long long int&gt;&amp; offset<span class="Delimiter">,</span> const long long int current_offset<span class="Delimiter">,</span> const recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;AAA &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
-  assert<span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">));</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;BBB &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
+<span class="Normal">void</span> replace_offset<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">const</span><span class="Comment">*/</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;&amp; offset<span class="Delimiter">,</span> <span class="Normal">const</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> current_offset<span class="Delimiter">,</span> <span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: jump target must be offset or label but is &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>!x<span class="Delimiter">.</span>initialized<span class="Delimiter">);</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;CCC &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
-  if <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// non-labels will be handled like other number operands</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;DDD &quot; &lt;&lt; x.to_string() &lt;&lt; '\n'; //? 1</span>
-  if <span class="Delimiter">(</span>offset<span class="Delimiter">.</span>find<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == offset<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
-    raise &lt;&lt; <span class="Constant">&quot;can't find label &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; in routine &quot;</span> &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// non-labels will be handled like other number operands</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>offset<span class="Delimiter">.</span>find<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == offset<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+    raise &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: can't find label &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>offset[x<span class="Delimiter">.</span>name]-current_offset<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -110,7 +109,7 @@ recipe main [
 recipe main [
   <span class="Delimiter">{</span>
     <span class="Delimiter">{</span>
-      jump-if <span class="Constant">1</span>:literal<span class="Delimiter">,</span> +target:label
+      jump-<span class="Normal">if</span> <span class="Constant">1</span>:literal<span class="Delimiter">,</span> +target:label
       <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
