@@ -757,32 +757,40 @@ recipe handle-event [
       delete-before-cursor editor:address:editor-data
       reply
     }
-    # ctrl-a
+    # ctrl-a - move cursor to start of line
     {
       ctrl-a?:boolean <- equal c:address:character/deref, 1:literal/ctrl-a
       break-unless ctrl-a?:boolean
       move-to-start-of-line editor:address:editor-data
       reply
     }
-    # ctrl-e
+    # ctrl-e - move cursor to end of line
     {
       ctrl-e?:boolean <- equal c:address:character/deref, 5:literal/ctrl-e
       break-unless ctrl-e?:boolean
       move-to-end-of-line editor:address:editor-data
       reply
     }
-    # ctrl-u
+    # ctrl-u - delete until start of line (excluding cursor)
     {
       ctrl-u?:boolean <- equal c:address:character/deref, 21:literal/ctrl-u
       break-unless ctrl-u?:boolean
       delete-to-start-of-line editor:address:editor-data
       reply
     }
-    # ctrl-k
+    # ctrl-k - delete until end of line (including cursor)
     {
       ctrl-k?:boolean <- equal c:address:character/deref, 11:literal/ctrl-k
       break-unless ctrl-k?:boolean
       delete-to-end-of-line editor:address:editor-data
+      reply
+    }
+    # tab - insert two spaces
+    {
+      tab?:boolean <- equal c:address:character/deref, 9:literal/tab
+      break-unless tab?:boolean
+      insert-at-cursor editor:address:editor-data, 32:literal/space, screen:address
+      insert-at-cursor editor:address:editor-data, 32:literal/space, screen:address
       reply
     }
     # otherwise type it in
@@ -1675,6 +1683,27 @@ cd]
     .          .
     .abcd      .
     .          .
+  ]
+]
+
+scenario editor-inserts-two-spaces-on-tab [
+  assume-screen 10:literal/width, 5:literal/height
+  # just one character in final line
+  1:address:array:character <- new [ab
+cd]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  assume-console [
+    type [»]
+  ]
+  3:event/tab <- merge 0:literal/text, 9:literal/tab, 0:literal/dummy, 0:literal/dummy
+  replace-in-console 187:literal/», 3:event/tab
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+  ]
+  screen-should-contain [
+    .          .
+    .  ab      .
+    .cd        .
   ]
 ]
 
