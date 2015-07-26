@@ -3164,11 +3164,11 @@ scenario run-instruction-manages-screen-per-sandbox [
     .                                                  ┊                                                x.
     .                                                  ┊print-integer screen:address, 4                  .
     .                                                  ┊screen:                                          .
-    .                                                  ┊  .4    .                                        .
-    .                                                  ┊  .     .                                        .
-    .                                                  ┊  .     .                                        .
-    .                                                  ┊  .     .                                        .
-    .                                                  ┊  .     .                                        .
+    .                                                  ┊  .4                             .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
