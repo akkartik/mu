@@ -114,7 +114,7 @@ case NEW: {
 //? :(before "End Teardown") //? 1
 //? cerr << Total_alloc << "/" << Num_alloc //? 1
 //?      << " vs " << Total_free << "/" << Num_free << '\n'; //? 1
-//? cerr << Memory.size() << '\n'; //? 1
+//? cerr << SIZE(Memory) << '\n'; //? 1
 
 :(code)
 void ensure_space(long long int size) {

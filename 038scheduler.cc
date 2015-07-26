@@ -47,21 +47,15 @@ Scheduling_interval = 500;
 Routines.clear();
 :(replace{} "void run(recipe_ordinal r)")
 void run(recipe_ordinal r) {
-//?   cerr << "AAA 4\n"; //? 1
   Routines.push_back(new routine(r));
-//?   cerr << "AAA " << Routines.size() << " routines\n"; //? 1
   Current_routine_index = 0, Current_routine = Routines.at(0);
   while (!all_routines_done()) {
     skip_to_next_routine();
-//?     cout << "scheduler: " << Current_routine_index << '\n'; //? 1
     assert(Current_routine);
     assert(Current_routine->state == RUNNING);
     trace("schedule") << current_routine_label() << end();
-//?     trace("schedule") << Current_routine_index << ": " << current_recipe_name() << end(); //? 1
-//?     trace("schedule") << Current_routine->id << " " << current_recipe_name() << end(); //? 1
     run_current_routine(Scheduling_interval);
     // Scheduler State Transitions
-//?     cerr << "AAA completed? " << Current_routine->completed() << '\n'; //? 1
     if (Current_routine->completed())
       Current_routine->state = COMPLETED;
     // End Scheduler State Transitions
@@ -69,13 +63,11 @@ void run(recipe_ordinal r) {
     // Scheduler Cleanup
     // End Scheduler Cleanup
   }
-//?   cout << "done with run\n"; //? 1
 }
 
 :(code)
 bool all_routines_done() {
   for (long long int i = 0; i < SIZE(Routines); ++i) {
-//?     cout << "routine " << i << ' ' << Routines.at(i)->state << '\n'; //? 1
     if (Routines.at(i)->state == RUNNING) {
       return false;
     }
@@ -89,13 +81,11 @@ void skip_to_next_routine() {
   assert(Current_routine_index < SIZE(Routines));
   for (long long int i = (Current_routine_index+1)%SIZE(Routines);  i != Current_routine_index;  i = (i+1)%SIZE(Routines)) {
     if (Routines.at(i)->state == RUNNING) {
-//?       cout << "switching to " << i << '\n'; //? 1
       Current_routine_index = i;
       Current_routine = Routines.at(i);
       return;
     }
   }
-//?   cout << "all done\n"; //? 1
 }
 
 string current_routine_label() {
@@ -141,7 +131,6 @@ Recipe_ordinal["start-running"] = START_RUNNING;
 :(before "End Primitive Recipe Implementations")
 case START_RUNNING: {
   routine* new_routine = new routine(ingredients.at(0).at(0));
-//?   cerr << new_routine->id << " -> " << Current_routine->id << '\n'; //? 1
   new_routine->parent_index = Current_routine_index;
   // populate ingredients
   for (long long int i = 1; i < SIZE(current_instruction().ingredients); ++i)
@@ -252,29 +241,17 @@ recipe f1 [
 -schedule: f1
 
 :(before "End Scheduler Cleanup")
-//? trace("schedule") << "Before cleanup" << end(); //? 1
-//? for (long long int i = 0; i < SIZE(Routines); ++i) { //? 1
-//?   trace("schedule") << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << ' ' << Routines.at(i)->state << end(); //? 1
-//? } //? 1
 for (long long int i = 0; i < SIZE(Routines); ++i) {
   if (Routines.at(i)->state == COMPLETED) continue;
   if (Routines.at(i)->parent_index < 0) continue;  // root thread
-//?   trace("schedule") << "AAA " << i << end(); //? 1
   if (has_completed_parent(i)) {
-//?     trace("schedule") << "BBB " << i << end(); //? 1
     Routines.at(i)->state = COMPLETED;
   }
 }
-//? trace("schedule") << "After cleanup" << end(); //? 1
-//? for (long long int i = 0; i < SIZE(Routines); ++i) { //? 1
-//?   trace("schedule") << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << ' ' << Routines.at(i)->state << end(); //? 1
-//? } //? 1
 
 :(code)
 bool has_completed_parent(long long int routine_index) {
-//?   trace("schedule") << "CCC " << routine_index << '\n' << end(); //? 2
   for (long long int j = routine_index; j >= 0; j = Routines.at(j)->parent_index) {
-//?     trace("schedule") << "DDD " << j << '\n' << end(); //? 2
     if (Routines.at(j)->state == COMPLETED)
       return true;
   }
