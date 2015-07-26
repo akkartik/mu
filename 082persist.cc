@@ -51,8 +51,8 @@ SAVE,
 Recipe_ordinal["save"] = SAVE;
 :(before "End Primitive Recipe Implementations")
 case SAVE: {
-  if (SIZE(ingredients) != 1) {
-    raise << current_recipe_name() << ": 'save' requires exactly one ingredient, but got " << current_instruction().to_string() << '\n' << end();
+  if (SIZE(ingredients) != 2) {
+    raise << current_recipe_name() << ": 'save' requires exactly two ingredients, but got " << current_instruction().to_string() << '\n' << end();
     break;
   }
   if (!scalar(ingredients.at(0)))
