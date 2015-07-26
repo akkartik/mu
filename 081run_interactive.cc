@@ -87,7 +87,7 @@ bool run_interactive(long long int address) {
   // we won't create a local scope so that we can get to the new screen after
   // we return from 'interactive'.
   load(string("recipe interactive [\n") +
-          "screen:address <- new-fake-screen 5, 5\n" +
+          "screen:address <- new-fake-screen 30, 5\n" +
           command + "\n" +
        "]\n");
   transform_all();
