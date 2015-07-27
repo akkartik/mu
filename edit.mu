@@ -749,8 +749,8 @@ recipe handle-event [
   {
     c:address:character <- maybe-convert e:event, text:variant
     break-unless c:address:character
-    # check for special characters
-    # unless it's a backspace
+    ## check for special characters
+    # backspace - delete character before cursor
     {
       backspace?:boolean <- equal c:address:character/deref, 8:literal/backspace
       break-unless backspace?:boolean
@@ -956,9 +956,8 @@ recipe insert-at-cursor [
   editor:address:editor-data <- next-ingredient
   c:character <- next-ingredient
   screen:address <- next-ingredient
-#?   $print [insert ], c:character, 10:literal/newline
+#?   $print [insert ], c:character, 10:literal/newline #? 1
   before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
-  d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
   insert-duplex c:character, before-cursor:address:address:duplex-list/deref
   before-cursor:address:address:duplex-list/deref <- next-duplex before-cursor:address:address:duplex-list/deref
   cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
@@ -972,6 +971,20 @@ recipe insert-at-cursor [
     break-unless newline?:boolean
     cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
     cursor-column:address:number/deref <- copy left:number
+    # indent if necessary
+#?     $print [computing indent], 10:literal/newline #? 1
+    d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
+    end-of-previous-line:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/deref
+    indent:number <- line-indent end-of-previous-line:address:duplex-list, d:address:duplex-list
+#?     $print indent:number, 10:literal/newline #? 1
+    i:number <- copy 0:literal
+    {
+      indent-done?:boolean <- greater-or-equal i:number, indent:number
+      break-if indent-done?:boolean
+      insert-at-cursor editor:address:editor-data, 32:literal/space, screen:address
+      i:number <- add i:number, 1:literal
+      loop
+    }
     reply
   }
   # if the line wraps at the cursor, move cursor to start of next row
@@ -1034,6 +1047,45 @@ recipe previous-line-length [
     at-newline?:boolean <- equal c:character 10:literal/newline
     break-if at-newline?:boolean
     result:number <- add result:number, 1:literal
+    loop
+  }
+  reply result:number
+]
+
+# takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
+# the number of spaces at the start of the line containing 'curr'.
+recipe line-indent [
+  local-scope
+  curr:address:duplex-list <- next-ingredient
+  start:address:duplex-list <- next-ingredient
+  result:number <- copy 0:literal
+  reply-unless curr:address:duplex-list, result:number
+#?   $print [a0], 10:literal/newline #? 1
+  at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
+  reply-if at-start?:boolean, result:number
+#?   $print [a1], 10:literal/newline #? 1
+  {
+    curr:address:duplex-list <- prev-duplex curr:address:duplex-list
+    break-unless curr:address:duplex-list
+#?   $print [a2], 10:literal/newline #? 1
+    at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
+    break-if at-start?:boolean
+#?   $print [a3], 10:literal/newline #? 1
+    c:character <- get curr:address:duplex-list/deref, value:offset
+    at-newline?:boolean <- equal c:character, 10:literal/newline
+    break-if at-newline?:boolean
+#?   $print [a4], 10:literal/newline #? 1
+    # if c is a space, increment result
+    is-space?:boolean <- equal c:character, 32:literal/space
+    {
+      break-unless is-space?:boolean
+      result:number <- add result:number, 1:literal
+    }
+    # if c is not a space, reset result
+    {
+      break-if is-space?:boolean
+      result:number <- copy 0:literal
+    }
     loop
   }
   reply result:number
@@ -1635,6 +1687,30 @@ scenario editor-clears-previous-line-completely-after-inserting-newline [
     .abcd↩     .
     .e         .
     .          .
+  ]
+]
+
+scenario editor-inserts-indent-after-newline [
+  assume-screen 10:literal/width, 10:literal/height
+  1:address:array:character <- new [ab
+  cd
+ef]
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  # position cursor after 'cd' and hit 'newline'
+  assume-console [
+    left-click 2, 8
+    type [
+]
+  ]
+  run [
+    editor-event-loop screen:address, console:address, 2:address:editor-data
+    3:number <- get 2:address:editor-data/deref, cursor-row:offset
+    4:number <- get 2:address:editor-data/deref, cursor-column:offset
+  ]
+  # cursor should be below start of previous line
+  memory-should-contain [
+    3 <- 3  # cursor row
+    4 <- 2  # cursor column (indented)
   ]
 ]
 
