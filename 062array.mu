@@ -1,7 +1,7 @@
 scenario array-from-args [
   run [
     1:address:array:location <- new-array 0, 1, 2
-    2:array:location <- copy 1:address:array:location/deref
+    2:array:location <- copy 1:address:array:location/lookup
   ]
   memory-should-contain [
     2 <- 3  # array length
@@ -31,8 +31,8 @@ recipe new-array [
     break-if done?:boolean
     curr-value:location, exists?:boolean <- next-ingredient
     assert exists?:boolean, [error in rewinding ingredients to new-array]
-    tmp:address:location <- index-address result:address:array:location/deref, i:number
-    tmp:address:location/deref <- copy curr-value:location
+    tmp:address:location <- index-address result:address:array:location/lookup, i:number
+    tmp:address:location/lookup <- copy curr-value:location
     i:number <- add i:number, 1
     loop
   }

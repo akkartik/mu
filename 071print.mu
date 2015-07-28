@@ -17,18 +17,18 @@ container screen-cell [
 recipe new-fake-screen [
   local-scope
   result:address:screen <- new screen:type
-  width:address:number <- get-address result:address:screen/deref, num-columns:offset
-  width:address:number/deref <- next-ingredient
-  height:address:number <- get-address result:address:screen/deref, num-rows:offset
-  height:address:number/deref <- next-ingredient
-#?   $print height:address:number/deref, 10/newline
-  row:address:number <- get-address result:address:screen/deref, cursor-row:offset
-  row:address:number/deref <- copy 0
-  column:address:number <- get-address result:address:screen/deref, cursor-column:offset
-  column:address:number/deref <- copy 0
-  bufsize:number <- multiply width:address:number/deref, height:address:number/deref
-  buf:address:address:array:screen-cell <- get-address result:address:screen/deref, data:offset
-  buf:address:address:array:screen-cell/deref <- new screen-cell:type, bufsize:number
+  width:address:number <- get-address result:address:screen/lookup, num-columns:offset
+  width:address:number/lookup <- next-ingredient
+  height:address:number <- get-address result:address:screen/lookup, num-rows:offset
+  height:address:number/lookup <- next-ingredient
+#?   $print height:address:number/lookup, 10/newline
+  row:address:number <- get-address result:address:screen/lookup, cursor-row:offset
+  row:address:number/lookup <- copy 0
+  column:address:number <- get-address result:address:screen/lookup, cursor-column:offset
+  column:address:number/lookup <- copy 0
+  bufsize:number <- multiply width:address:number/lookup, height:address:number/lookup
+  buf:address:address:array:screen-cell <- get-address result:address:screen/lookup, data:offset
+  buf:address:address:array:screen-cell/lookup <- new screen-cell:type, bufsize:number
   clear-screen result:address:screen
   reply result:address:screen
 ]
@@ -42,25 +42,25 @@ recipe clear-screen [
   {
     break-unless x:address:screen
     # clear fake screen
-    buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
-    max:number <- length buf:address:array:screen-cell/deref
+    buf:address:array:screen-cell <- get x:address:screen/lookup, data:offset
+    max:number <- length buf:address:array:screen-cell/lookup
     i:number <- copy 0
     {
       done?:boolean <- greater-or-equal i:number, max:number
       break-if done?:boolean
-      curr:address:screen-cell <- index-address buf:address:array:screen-cell/deref, i:number
-      curr-content:address:character <- get-address curr:address:screen-cell/deref, contents:offset
-      curr-content:address:character/deref <- copy [ ]
-      curr-color:address:character <- get-address curr:address:screen-cell/deref, color:offset
-      curr-color:address:character/deref <- copy 7/white
+      curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+      curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+      curr-content:address:character/lookup <- copy [ ]
+      curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+      curr-color:address:character/lookup <- copy 7/white
       i:number <- add i:number, 1
       loop
     }
     # reset cursor
-    cur:address:number <- get-address x:address:screen/deref, cursor-row:offset
-    cur:address:number/deref <- copy 0
-    cur:address:number <- get-address x:address:screen/deref, cursor-column:offset
-    cur:address:number/deref <- copy 0
+    cur:address:number <- get-address x:address:screen/lookup, cursor-row:offset
+    cur:address:number/lookup <- copy 0
+    cur:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+    cur:address:number/lookup <- copy 0
     reply x:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
@@ -72,13 +72,13 @@ recipe fake-screen-is-clear? [
   local-scope
   screen:address:screen <- next-ingredient
   reply-unless screen:address:screen, 1/true
-  buf:address:array:screen-cell <- get screen:address:screen/deref, data:offset
+  buf:address:array:screen-cell <- get screen:address:screen/lookup, data:offset
   i:number <- copy 0
-  len:number <- length buf:address:array:screen-cell/deref
+  len:number <- length buf:address:array:screen-cell/lookup
   {
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
-    curr:screen-cell <- index buf:address:array:screen-cell/deref, i:number
+    curr:screen-cell <- index buf:address:array:screen-cell/lookup, i:number
     curr-contents:character <- get curr:screen-cell, contents:offset
     i:number <- add i:number, 1
     loop-unless curr-contents:character
@@ -109,18 +109,18 @@ recipe print-character [
     # if x exists
     # (handle special cases exactly like in the real screen)
     break-unless x:address:screen
-    width:number <- get x:address:screen/deref, num-columns:offset
-    height:number <- get x:address:screen/deref, num-rows:offset
+    width:number <- get x:address:screen/lookup, num-columns:offset
+    height:number <- get x:address:screen/lookup, num-rows:offset
     # if cursor is out of bounds, silently exit
-    row:address:number <- get-address x:address:screen/deref, cursor-row:offset
-    legal?:boolean <- greater-or-equal row:address:number/deref, 0
+    row:address:number <- get-address x:address:screen/lookup, cursor-row:offset
+    legal?:boolean <- greater-or-equal row:address:number/lookup, 0
     reply-unless legal?:boolean, x:address:screen
-    legal?:boolean <- lesser-than row:address:number/deref, height:number
+    legal?:boolean <- lesser-than row:address:number/lookup, height:number
     reply-unless legal?:boolean, x:address:screen
-    column:address:number <- get-address x:address:screen/deref, cursor-column:offset
-    legal?:boolean <- greater-or-equal column:address:number/deref, 0
+    column:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+    legal?:boolean <- greater-or-equal column:address:number/lookup, 0
     reply-unless legal?:boolean, x:address:screen
-    legal?:boolean <- lesser-than column:address:number/deref, width:number
+    legal?:boolean <- lesser-than column:address:number/lookup, width:number
     reply-unless legal?:boolean, x:address:screen
     # special-case: newline
     {
@@ -130,50 +130,50 @@ recipe print-character [
       {
         # unless cursor is already at bottom
         bottom:number <- subtract height:number, 1
-        at-bottom?:boolean <- greater-or-equal row:address:number/deref, bottom:number
+        at-bottom?:boolean <- greater-or-equal row:address:number/lookup, bottom:number
         break-if at-bottom?:boolean
         # move it to the next row
-        column:address:number/deref <- copy 0
-        row:address:number/deref <- add row:address:number/deref, 1
+        column:address:number/lookup <- copy 0
+        row:address:number/lookup <- add row:address:number/lookup, 1
       }
       reply x:address:screen/same-as-ingredient:0
     }
     # save character in fake screen
-    index:number <- multiply row:address:number/deref, width:number
-    index:number <- add index:number, column:address:number/deref
-    buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
-    len:number <- length buf:address:array:screen-cell/deref
+    index:number <- multiply row:address:number/lookup, width:number
+    index:number <- add index:number, column:address:number/lookup
+    buf:address:array:screen-cell <- get x:address:screen/lookup, data:offset
+    len:number <- length buf:address:array:screen-cell/lookup
     # special-case: backspace
     {
       backspace?:boolean <- equal c:character, 8
       break-unless backspace?:boolean
       {
         # unless cursor is already at left margin
-        at-left?:boolean <- lesser-or-equal column:address:number/deref, 0
+        at-left?:boolean <- lesser-or-equal column:address:number/lookup, 0
         break-if at-left?:boolean
         # clear previous location
-        column:address:number/deref <- subtract column:address:number/deref, 1
+        column:address:number/lookup <- subtract column:address:number/lookup, 1
         index:number <- subtract index:number, 1
-        cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
-        cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
-        cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
-        cursor-contents:address:character/deref <- copy 32/space
-        cursor-color:address:number/deref <- copy 7/white
+        cursor:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, index:number
+        cursor-contents:address:character <- get-address cursor:address:screen-cell/lookup, contents:offset
+        cursor-color:address:number <- get-address cursor:address:screen-cell/lookup, color:offset
+        cursor-contents:address:character/lookup <- copy 32/space
+        cursor-color:address:number/lookup <- copy 7/white
       }
       reply x:address:screen/same-as-ingredient:0
     }
 #?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, 10/newline
-    cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
-    cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
-    cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
-    cursor-contents:address:character/deref <- copy c:character
-    cursor-color:address:number/deref <- copy color:number
+    cursor:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, index:number
+    cursor-contents:address:character <- get-address cursor:address:screen-cell/lookup, contents:offset
+    cursor-color:address:number <- get-address cursor:address:screen-cell/lookup, color:offset
+    cursor-contents:address:character/lookup <- copy c:character
+    cursor-color:address:number/lookup <- copy color:number
     # increment column unless it's already all the way to the right
     {
       right:number <- subtract width:number, 1
-      at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
+      at-right?:boolean <- greater-or-equal column:address:number/lookup, right:number
       break-if at-right?:boolean
-      column:address:number/deref <- add column:address:number/deref, 1
+      column:address:number/lookup <- add column:address:number/lookup, 1
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -187,8 +187,8 @@ scenario print-character-at-top-left [
 #?     $start-tracing #? 3
     1:address:screen <- new-fake-screen 3/width, 2/height
     1:address:screen <- print-character 1:address:screen, 97  # 'a'
-    2:address:array:screen-cell <- get 1:address:screen/deref, data:offset
-    3:array:screen-cell <- copy 2:address:array:screen-cell/deref
+    2:address:array:screen-cell <- get 1:address:screen/lookup, data:offset
+    3:array:screen-cell <- copy 2:address:array:screen-cell/lookup
   ]
   memory-should-contain [
     3 <- 6  # width*height
@@ -202,8 +202,8 @@ scenario print-character-color [
   run [
     1:address:screen <- new-fake-screen 3/width, 2/height
     1:address:screen <- print-character 1:address:screen, 97/a, 1/red
-    2:address:array:screen-cell <- get 1:address:screen/deref, data:offset
-    3:array:screen-cell <- copy 2:address:array:screen-cell/deref
+    2:address:array:screen-cell <- get 1:address:screen/lookup, data:offset
+    3:array:screen-cell <- copy 2:address:array:screen-cell/lookup
   ]
   memory-should-contain [
     3 <- 6  # width*height
@@ -219,9 +219,9 @@ scenario print-backspace-character [
     1:address:screen <- new-fake-screen 3/width, 2/height
     1:address:screen <- print-character 1:address:screen, 97  # 'a'
     1:address:screen <- print-character 1:address:screen, 8  # backspace
-    2:number <- get 1:address:screen/deref, cursor-column:offset
-    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
-    4:array:screen-cell <- copy 3:address:array:screen-cell/deref
+    2:number <- get 1:address:screen/lookup, cursor-column:offset
+    3:address:array:screen-cell <- get 1:address:screen/lookup, data:offset
+    4:array:screen-cell <- copy 3:address:array:screen-cell/lookup
   ]
   memory-should-contain [
     2 <- 0  # cursor column
@@ -238,9 +238,9 @@ scenario print-extra-backspace-character [
     1:address:screen <- print-character 1:address:screen, 97  # 'a'
     1:address:screen <- print-character 1:address:screen, 8  # backspace
     1:address:screen <- print-character 1:address:screen, 8  # backspace
-    2:number <- get 1:address:screen/deref, cursor-column:offset
-    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
-    4:array:screen-cell <- copy 3:address:array:screen-cell/deref
+    2:number <- get 1:address:screen/lookup, cursor-column:offset
+    3:address:array:screen-cell <- get 1:address:screen/lookup, data:offset
+    4:array:screen-cell <- copy 3:address:array:screen-cell/lookup
   ]
   memory-should-contain [
     2 <- 0  # cursor column
@@ -257,9 +257,9 @@ scenario print-at-right-margin [
     1:address:screen <- print-character 1:address:screen, 97  # 'a'
     1:address:screen <- print-character 1:address:screen, 98  # 'b'
     1:address:screen <- print-character 1:address:screen, 99  # 'c'
-    2:number <- get 1:address:screen/deref, cursor-column:offset
-    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
-    4:array:screen-cell <- copy 3:address:array:screen-cell/deref
+    2:number <- get 1:address:screen/lookup, cursor-column:offset
+    3:address:array:screen-cell <- get 1:address:screen/lookup, data:offset
+    4:array:screen-cell <- copy 3:address:array:screen-cell/lookup
   ]
   memory-should-contain [
     2 <- 1  # cursor column
@@ -278,10 +278,10 @@ scenario print-newline-character [
     1:address:screen <- new-fake-screen 3/width, 2/height
     1:address:screen <- print-character 1:address:screen, 97  # 'a'
     1:address:screen <- print-character 1:address:screen, 10/newline
-    2:number <- get 1:address:screen/deref, cursor-row:offset
-    3:number <- get 1:address:screen/deref, cursor-column:offset
-    4:address:array:screen-cell <- get 1:address:screen/deref, data:offset
-    5:array:screen-cell <- copy 4:address:array:screen-cell/deref
+    2:number <- get 1:address:screen/lookup, cursor-row:offset
+    3:number <- get 1:address:screen/lookup, cursor-column:offset
+    4:address:array:screen-cell <- get 1:address:screen/lookup, data:offset
+    5:array:screen-cell <- copy 4:address:array:screen-cell/lookup
   ]
   memory-should-contain [
     2 <- 1  # cursor row
@@ -299,8 +299,8 @@ scenario print-newline-at-bottom-line [
     1:address:screen <- print-character 1:address:screen, 10/newline
     1:address:screen <- print-character 1:address:screen, 10/newline
     1:address:screen <- print-character 1:address:screen, 10/newline
-    2:number <- get 1:address:screen/deref, cursor-row:offset
-    3:number <- get 1:address:screen/deref, cursor-column:offset
+    2:number <- get 1:address:screen/lookup, cursor-row:offset
+    3:number <- get 1:address:screen/lookup, cursor-column:offset
   ]
   memory-should-contain [
     2 <- 1  # cursor row
@@ -317,10 +317,10 @@ scenario print-at-bottom-right [
     1:address:screen <- print-character 1:address:screen, 99  # 'c'
     1:address:screen <- print-character 1:address:screen, 10/newline
     1:address:screen <- print-character 1:address:screen, 100  # 'd'
-    2:number <- get 1:address:screen/deref, cursor-row:offset
-    3:number <- get 1:address:screen/deref, cursor-column:offset
-    4:address:array:screen-cell <- get 1:address:screen/deref, data:offset
-    5:array:screen-cell <- copy 4:address:array:screen-cell/deref
+    2:number <- get 1:address:screen/lookup, cursor-row:offset
+    3:number <- get 1:address:screen/lookup, cursor-column:offset
+    4:address:array:screen-cell <- get 1:address:screen/lookup, data:offset
+    5:array:screen-cell <- copy 4:address:array:screen-cell/lookup
   ]
   memory-should-contain [
     2 <- 1  # cursor row
@@ -344,21 +344,21 @@ recipe clear-line [
   # if x exists, clear line in fake screen
   {
     break-unless x:address:screen
-    width:number <- get x:address:screen/deref, num-columns:offset
-    column:address:number <- get-address x:address:screen/deref, cursor-column:offset
-    original-column:number <- copy column:address:number/deref
+    width:number <- get x:address:screen/lookup, num-columns:offset
+    column:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+    original-column:number <- copy column:address:number/lookup
     # space over the entire line
 #?     $start-tracing #? 1
     {
-#?       $print column:address:number/deref, 10/newline
+#?       $print column:address:number/lookup, 10/newline
       right:number <- subtract width:number, 1
-      done?:boolean <- greater-or-equal column:address:number/deref, right:number
+      done?:boolean <- greater-or-equal column:address:number/lookup, right:number
       break-if done?:boolean
       print-character x:address:screen, [ ]  # implicitly updates 'column'
       loop
     }
     # now back to where the cursor was
-    column:address:number/deref <- copy original-column:number
+    column:address:number/lookup <- copy original-column:number
     reply x:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
@@ -372,8 +372,8 @@ recipe cursor-position [
   # if x exists, lookup cursor in fake screen
   {
     break-unless x:address:screen
-    row:number <- get x:address:screen/deref, cursor-row:offset
-    column:number <- get x:address:screen/deref, cursor-column:offset
+    row:number <- get x:address:screen/lookup, cursor-row:offset
+    column:number <- get x:address:screen/lookup, cursor-column:offset
     reply row:number, column:number, x:address:screen/same-as-ingredient:0
   }
   row:number, column:number <- cursor-position-on-display
@@ -388,10 +388,10 @@ recipe move-cursor [
   # if x exists, move cursor in fake screen
   {
     break-unless x:address:screen
-    row:address:number <- get-address x:address:screen/deref, cursor-row:offset
-    row:address:number/deref <- copy new-row:number
-    column:address:number <- get-address x:address:screen/deref, cursor-column:offset
-    column:address:number/deref <- copy new-column:number
+    row:address:number <- get-address x:address:screen/lookup, cursor-row:offset
+    row:address:number/lookup <- copy new-row:number
+    column:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+    column:address:number/lookup <- copy new-column:number
     reply x:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
@@ -409,8 +409,8 @@ scenario clear-line-erases-printed-characters [
     1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column
     # clear line
     1:address:screen <- clear-line 1:address:screen
-    2:address:array:screen-cell <- get 1:address:screen/deref, data:offset
-    3:array:screen-cell <- copy 2:address:array:screen-cell/deref
+    2:address:array:screen-cell <- get 1:address:screen/lookup, data:offset
+    3:array:screen-cell <- copy 2:address:array:screen-cell/lookup
   ]
   # screen should be blank
   memory-should-contain [
@@ -438,15 +438,15 @@ recipe cursor-down [
     break-unless x:address:screen
     {
       # if row < height-1
-      height:number <- get x:address:screen/deref, num-rows:offset
-      row:address:number <- get-address x:address:screen/deref, cursor-row:offset
+      height:number <- get x:address:screen/lookup, num-rows:offset
+      row:address:number <- get-address x:address:screen/lookup, cursor-row:offset
       max:number <- subtract height:number, 1
-      at-bottom?:boolean <- greater-or-equal row:address:number/deref, max:number
+      at-bottom?:boolean <- greater-or-equal row:address:number/lookup, max:number
       break-if at-bottom?:boolean
       # row = row+1
-#?       $print [AAA: ], row:address:number, [ -> ], row:address:number/deref, 10/newline
-      row:address:number/deref <- add row:address:number/deref, 1
-#?       $print [BBB: ], row:address:number, [ -> ], row:address:number/deref, 10/newline
+#?       $print [AAA: ], row:address:number, [ -> ], row:address:number/lookup, 10/newline
+      row:address:number/lookup <- add row:address:number/lookup, 1
+#?       $print [BBB: ], row:address:number, [ -> ], row:address:number/lookup, 10/newline
 #?       $start-tracing #? 1
     }
     reply x:address:screen/same-as-ingredient:0
@@ -464,11 +464,11 @@ recipe cursor-up [
     break-unless x:address:screen
     {
       # if row > 0
-      row:address:number <- get-address x:address:screen/deref, cursor-row:offset
-      at-top?:boolean <- lesser-or-equal row:address:number/deref, 0
+      row:address:number <- get-address x:address:screen/lookup, cursor-row:offset
+      at-top?:boolean <- lesser-or-equal row:address:number/lookup, 0
       break-if at-top?:boolean
       # row = row-1
-      row:address:number/deref <- subtract row:address:number/deref, 1
+      row:address:number/lookup <- subtract row:address:number/lookup, 1
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -485,13 +485,13 @@ recipe cursor-right [
     break-unless x:address:screen
     {
       # if column < width-1
-      width:number <- get x:address:screen/deref, num-columns:offset
-      column:address:number <- get-address x:address:screen/deref, cursor-column:offset
+      width:number <- get x:address:screen/lookup, num-columns:offset
+      column:address:number <- get-address x:address:screen/lookup, cursor-column:offset
       max:number <- subtract width:number, 1
-      at-bottom?:boolean <- greater-or-equal column:address:number/deref, max:number
+      at-bottom?:boolean <- greater-or-equal column:address:number/lookup, max:number
       break-if at-bottom?:boolean
       # column = column+1
-      column:address:number/deref <- add column:address:number/deref, 1
+      column:address:number/lookup <- add column:address:number/lookup, 1
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -508,11 +508,11 @@ recipe cursor-left [
     break-unless x:address:screen
     {
       # if column > 0
-      column:address:number <- get-address x:address:screen/deref, cursor-column:offset
-      at-top?:boolean <- lesser-or-equal column:address:number/deref, 0
+      column:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+      at-top?:boolean <- lesser-or-equal column:address:number/lookup, 0
       break-if at-top?:boolean
       # column = column-1
-      column:address:number/deref <- subtract column:address:number/deref, 1
+      column:address:number/lookup <- subtract column:address:number/lookup, 1
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -544,7 +544,7 @@ recipe screen-width [
   # if x exists, move cursor in fake screen
   {
     break-unless x:address:screen
-    width:number <- get x:address:screen/deref, num-columns:offset
+    width:number <- get x:address:screen/lookup, num-columns:offset
     reply width:number
   }
   # otherwise, real screen
@@ -558,7 +558,7 @@ recipe screen-height [
   # if x exists, move cursor in fake screen
   {
     break-unless x:address:screen
-    height:number <- get x:address:screen/deref, num-rows:offset
+    height:number <- get x:address:screen/lookup, num-rows:offset
     reply height:number
   }
   # otherwise, real screen
@@ -634,12 +634,12 @@ recipe print-string [
     break-if bg-color-found?:boolean
     bg-color:number <- copy 0/black
   }
-  len:number <- length s:address:array:character/deref
+  len:number <- length s:address:array:character/lookup
   i:number <- copy 0
   {
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
-    c:character <- index s:address:array:character/deref, i:number
+    c:character <- index s:address:array:character/lookup, i:number
     print-character x:address:screen, c:character, color:number, bg-color:number
     i:number <- add i:number, 1
     loop
@@ -652,8 +652,8 @@ scenario print-string-stops-at-right-margin [
     1:address:screen <- new-fake-screen 3/width, 2/height
     2:address:array:character <- new [abcd]
     1:address:screen <- print-string 1:address:screen, 2:address:array:character
-    3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
-    4:array:screen-cell <- copy 3:address:array:screen-cell/deref
+    3:address:array:screen-cell <- get 1:address:screen/lookup, data:offset
+    4:array:screen-cell <- copy 3:address:array:screen-cell/lookup
   ]
   memory-should-contain [
     4 <- 6  # width*height

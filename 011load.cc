@@ -342,6 +342,6 @@ recipe main [
 
 :(scenario parse_properties)
 recipe main [
-  1:number:address/deref <- copy 23
+  1:number:address/lookup <- copy 23
 ]
-+parse:   product: {name: "1", properties: ["1": "number":"address", "deref": ]}
++parse:   product: {name: "1", properties: ["1": "number":"address", "lookup": ]}

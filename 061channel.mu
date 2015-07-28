@@ -37,16 +37,16 @@ recipe new-channel [
   # result = new channel
   result:address:channel <- new channel:type
   # result.first-full = 0
-  full:address:number <- get-address result:address:channel/deref, first-full:offset
-  full:address:number/deref <- copy 0
+  full:address:number <- get-address result:address:channel/lookup, first-full:offset
+  full:address:number/lookup <- copy 0
   # result.first-free = 0
-  free:address:number <- get-address result:address:channel/deref, first-free:offset
-  free:address:number/deref <- copy 0
+  free:address:number <- get-address result:address:channel/lookup, first-free:offset
+  free:address:number/lookup <- copy 0
   # result.data = new location[ingredient+1]
   capacity:number <- next-ingredient
   capacity:number <- add capacity:number, 1  # unused slot for 'full?' below
-  dest:address:address:array:location <- get-address result:address:channel/deref, data:offset
-  dest:address:address:array:location/deref <- new location:type, capacity:number
+  dest:address:address:array:location <- get-address result:address:channel/lookup, data:offset
+  dest:address:address:array:location/lookup <- new location:type, capacity:number
   reply result:address:channel
 ]
 
@@ -59,22 +59,22 @@ recipe write [
     # block if chan is full
     full:boolean <- channel-full? chan:address:channel
     break-unless full:boolean
-    full-address:address:number <- get-address chan:address:channel/deref, first-full:offset
-    wait-for-location full-address:address:number/deref
+    full-address:address:number <- get-address chan:address:channel/lookup, first-full:offset
+    wait-for-location full-address:address:number/lookup
   }
   # store val
-  circular-buffer:address:array:location <- get chan:address:channel/deref, data:offset
-  free:address:number <- get-address chan:address:channel/deref, first-free:offset
-  dest:address:location <- index-address circular-buffer:address:array:location/deref, free:address:number/deref
-  dest:address:location/deref <- copy val:location
+  circular-buffer:address:array:location <- get chan:address:channel/lookup, data:offset
+  free:address:number <- get-address chan:address:channel/lookup, first-free:offset
+  dest:address:location <- index-address circular-buffer:address:array:location/lookup, free:address:number/lookup
+  dest:address:location/lookup <- copy val:location
   # increment free
-  free:address:number/deref <- add free:address:number/deref, 1
+  free:address:number/lookup <- add free:address:number/lookup, 1
   {
     # wrap free around to 0 if necessary
-    len:number <- length circular-buffer:address:array:location/deref
-    at-end?:boolean <- greater-or-equal free:address:number/deref, len:number
+    len:number <- length circular-buffer:address:array:location/lookup
+    at-end?:boolean <- greater-or-equal free:address:number/lookup, len:number
     break-unless at-end?:boolean
-    free:address:number/deref <- copy 0
+    free:address:number/lookup <- copy 0
   }
   reply chan:address:channel/same-as-ingredient:0
 ]
@@ -87,21 +87,21 @@ recipe read [
     # block if chan is empty
     empty:boolean <- channel-empty? chan:address:channel
     break-unless empty:boolean
-    free-address:address:number <- get-address chan:address:channel/deref, first-free:offset
-    wait-for-location free-address:address:number/deref
+    free-address:address:number <- get-address chan:address:channel/lookup, first-free:offset
+    wait-for-location free-address:address:number/lookup
   }
   # read result
-  full:address:number <- get-address chan:address:channel/deref, first-full:offset
-  circular-buffer:address:array:location <- get chan:address:channel/deref, data:offset
-  result:location <- index circular-buffer:address:array:location/deref, full:address:number/deref
+  full:address:number <- get-address chan:address:channel/lookup, first-full:offset
+  circular-buffer:address:array:location <- get chan:address:channel/lookup, data:offset
+  result:location <- index circular-buffer:address:array:location/lookup, full:address:number/lookup
   # increment full
-  full:address:number/deref <- add full:address:number/deref, 1
+  full:address:number/lookup <- add full:address:number/lookup, 1
   {
     # wrap full around to 0 if necessary
-    len:number <- length circular-buffer:address:array:location/deref
-    at-end?:boolean <- greater-or-equal full:address:number/deref, len:number
+    len:number <- length circular-buffer:address:array:location/lookup
+    at-end?:boolean <- greater-or-equal full:address:number/lookup, len:number
     break-unless at-end?:boolean
-    full:address:number/deref <- copy 0
+    full:address:number/lookup <- copy 0
   }
   reply result:location, chan:address:channel/same-as-ingredient:0
 ]
@@ -120,8 +120,8 @@ recipe clear-channel [
 scenario channel-initialization [
   run [
     1:address:channel <- new-channel 3/capacity
-    2:number <- get 1:address:channel/deref, first-full:offset
-    3:number <- get 1:address:channel/deref, first-free:offset
+    2:number <- get 1:address:channel/lookup, first-full:offset
+    3:number <- get 1:address:channel/lookup, first-free:offset
   ]
   memory-should-contain [
     2 <- 0  # first-full
@@ -133,8 +133,8 @@ scenario channel-write-increments-free [
   run [
     1:address:channel <- new-channel 3/capacity
     1:address:channel <- write 1:address:channel, 34
-    2:number <- get 1:address:channel/deref, first-full:offset
-    3:number <- get 1:address:channel/deref, first-free:offset
+    2:number <- get 1:address:channel/lookup, first-full:offset
+    3:number <- get 1:address:channel/lookup, first-free:offset
   ]
   memory-should-contain [
     2 <- 0  # first-full
@@ -147,8 +147,8 @@ scenario channel-read-increments-full [
     1:address:channel <- new-channel 3/capacity
     1:address:channel <- write 1:address:channel, 34
     _, 1:address:channel <- read 1:address:channel
-    2:number <- get 1:address:channel/deref, first-full:offset
-    3:number <- get 1:address:channel/deref, first-free:offset
+    2:number <- get 1:address:channel/lookup, first-full:offset
+    3:number <- get 1:address:channel/lookup, first-free:offset
   ]
   memory-should-contain [
     2 <- 1  # first-full
@@ -164,14 +164,14 @@ scenario channel-wrap [
     1:address:channel <- write 1:address:channel, 34
     _, 1:address:channel <- read 1:address:channel
     # first-free will now be 1
-    2:number <- get 1:address:channel/deref, first-free:offset
-    3:number <- get 1:address:channel/deref, first-free:offset
+    2:number <- get 1:address:channel/lookup, first-free:offset
+    3:number <- get 1:address:channel/lookup, first-free:offset
     # write second value, verify that first-free wraps
     1:address:channel <- write 1:address:channel, 34
-    4:number <- get 1:address:channel/deref, first-free:offset
+    4:number <- get 1:address:channel/lookup, first-free:offset
     # read second value, verify that first-full wraps
     _, 1:address:channel <- read 1:address:channel
-    5:number <- get 1:address:channel/deref, first-full:offset
+    5:number <- get 1:address:channel/lookup, first-full:offset
   ]
   memory-should-contain [
     2 <- 1  # first-free after first write
@@ -188,8 +188,8 @@ recipe channel-empty? [
   local-scope
   chan:address:channel <- next-ingredient
   # return chan.first-full == chan.first-free
-  full:number <- get chan:address:channel/deref, first-full:offset
-  free:number <- get chan:address:channel/deref, first-free:offset
+  full:number <- get chan:address:channel/lookup, first-full:offset
+  free:number <- get chan:address:channel/lookup, first-free:offset
   result:boolean <- equal full:number, free:number
   reply result:boolean
 ]
@@ -200,7 +200,7 @@ recipe channel-full? [
   local-scope
   chan:address:channel <- next-ingredient
   # tmp = chan.first-free + 1
-  tmp:number <- get chan:address:channel/deref, first-free:offset
+  tmp:number <- get chan:address:channel/lookup, first-free:offset
   tmp:number <- add tmp:number, 1
   {
     # if tmp == chan.capacity, tmp = 0
@@ -210,7 +210,7 @@ recipe channel-full? [
     tmp:number <- copy 0
   }
   # return chan.first-full == tmp
-  full:number <- get chan:address:channel/deref, first-full:offset
+  full:number <- get chan:address:channel/lookup, first-full:offset
   result:boolean <- equal full:number, tmp:number
   reply result:boolean
 ]
@@ -219,8 +219,8 @@ recipe channel-full? [
 recipe channel-capacity [
   local-scope
   chan:address:channel <- next-ingredient
-  q:address:array:location <- get chan:address:channel/deref, data:offset
-  result:number <- length q:address:array:location/deref
+  q:address:array:location <- get chan:address:channel/lookup, data:offset
+  result:number <- length q:address:array:location/lookup
   reply result:number
 ]
 
@@ -301,12 +301,12 @@ recipe buffer-lines [
 #?         $print [backspace!
 #? ] #? 1
         {
-          buffer-length:address:number <- get-address line:address:buffer/deref, length:offset
-          buffer-empty?:boolean <- equal buffer-length:address:number/deref, 0
+          buffer-length:address:number <- get-address line:address:buffer/lookup, length:offset
+          buffer-empty?:boolean <- equal buffer-length:address:number/lookup, 0
           break-if buffer-empty?:boolean
-#?           $print [before: ], buffer-length:address:number/deref, 10/newline
-          buffer-length:address:number/deref <- subtract buffer-length:address:number/deref, 1
-#?           $print [after: ], buffer-length:address:number/deref, 10/newline
+#?           $print [before: ], buffer-length:address:number/lookup, 10/newline
+          buffer-length:address:number/lookup <- subtract buffer-length:address:number/lookup, 1
+#?           $print [after: ], buffer-length:address:number/lookup, 10/newline
         }
 #?         $exit #? 2
         # and don't append this one
@@ -327,12 +327,12 @@ recipe buffer-lines [
 #?     $print [buffer-lines: emitting
 #? ]
     i:number <- copy 0
-    line-contents:address:array:character <- get line:address:buffer/deref, data:offset
-    max:number <- get line:address:buffer/deref, length:offset
+    line-contents:address:array:character <- get line:address:buffer/lookup, data:offset
+    max:number <- get line:address:buffer/lookup, length:offset
     {
       done?:boolean <- greater-or-equal i:number, max:number
       break-if done?:boolean
-      c:character <- index line-contents:address:array:character/deref, i:number
+      c:character <- index line-contents:address:array:character/lookup, i:number
       out:address:channel <- write out:address:channel, c:character
 #?       $print [writing ], i:number, [: ], c:character, 10/newline
       i:number <- add i:number, 1
