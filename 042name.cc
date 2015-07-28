@@ -40,7 +40,6 @@ void transform_names(const recipe_ordinal r) {
     // Per-recipe Transforms
     // map names to addresses
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
-      check_metadata(metadata, inst.ingredients.at(in), r);
       if (is_numeric_location(inst.ingredients.at(in))) numeric_locations_used = true;
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
       if (disqualified(inst.ingredients.at(in), inst)) continue;
@@ -50,7 +49,6 @@ void transform_names(const recipe_ordinal r) {
       inst.ingredients.at(in).set_value(lookup_name(inst.ingredients.at(in), r));
     }
     for (long long int out = 0; out < SIZE(inst.products); ++out) {
-      check_metadata(metadata, inst.products.at(out), r);
       if (is_numeric_location(inst.products.at(out))) numeric_locations_used = true;
       if (is_named_location(inst.products.at(out))) names_used = true;
       if (disqualified(inst.products.at(out), inst)) continue;
@@ -64,18 +62,6 @@ void transform_names(const recipe_ordinal r) {
   }
   if (names_used && numeric_locations_used && r != Recipe_ordinal["interactive"])
     raise << "mixing variable names and numeric addresses in " << Recipe[r].name << '\n' << end();
-}
-
-void check_metadata(map<string, vector<type_ordinal> >& metadata, const reagent& x, const recipe_ordinal r) {
-  if (is_literal(x)) return;
-  if (is_raw(x)) return;
-  // if you use raw locations you're probably doing something unsafe
-  if (is_integer(x.name)) return;
-  if (x.types.empty()) return;  // will throw a more precise warning elsewhere
-  if (metadata.find(x.name) == metadata.end())
-    metadata[x.name] = x.types;
-  if (metadata[x.name] != x.types)
-    raise << x.name << " used with multiple types in " << Recipe[r].name << '\n' << end();
 }
 
 bool disqualified(/*mutable*/ reagent& x, const instruction& inst) {
@@ -191,14 +177,6 @@ recipe main [
 ]
 -warn: mixing variable names and numeric addresses in main
 $warn: 0
-
-:(scenario convert_names_warns_on_reusing_name_with_different_type)
-% Hide_warnings = true;
-recipe main [
-  x:number <- copy 1
-  x:boolean <- copy 1
-]
-+warn: x used with multiple types in main
 
 //:: Support element names for containers in 'get' and 'get-address'.
 
