@@ -31,7 +31,6 @@ void transform_names(const recipe_ordinal r) {
   bool names_used = false;
   bool numeric_locations_used = false;
   map<string, long long int>& names = Name[r];
-  map<string, vector<type_ordinal> > metadata;
   // store the indices 'used' so far in the map
   long long int& curr_idx = names[""];
   ++curr_idx;  // avoid using index 0, benign skip in some other cases
