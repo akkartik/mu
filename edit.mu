@@ -2837,6 +2837,8 @@ recipe run-sandboxes [
     init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
   }
   # save all sandboxes before running, just in case we die when running
+  # first clear previous versions, in case we deleted some sandbox
+  $system [rm lesson/[0-9]*]
   curr:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
   filename:number <- copy 0:literal
   {
