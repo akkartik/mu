@@ -104,9 +104,21 @@ recipe main [
 :(after "reagent base = " following "case GET_ADDRESS:")
 base = canonize(base);
 
-//:: helper for debugging memory corruption (writing to an out-of-bounds address)
+//:: helpers for debugging
+
+:(before "End Primitive Recipe Declarations")
+_DUMP,
+:(before "End Primitive Recipe Numbers")
+Recipe_ordinal["$dump"] = _DUMP;
+:(before "End Primitive Recipe Implementations")
+case _DUMP: {
+  reagent after_canonize = canonize(current_instruction().ingredients.at(0));
+  cerr << current_recipe_name() << ": " << current_instruction().ingredients.at(0).name << ' ' << current_instruction().ingredients.at(0).value << " => " << after_canonize.value << " => " << Memory[after_canonize.value] << '\n';
+  break;
+}
 
 //: grab an address, and then dump its value at intervals
+//: useful for tracking down memory corruption (writing to an out-of-bounds address)
 :(before "End Globals")
 long long int foo = -1;
 :(before "End Primitive Recipe Declarations")

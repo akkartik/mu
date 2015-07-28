@@ -203,14 +203,3 @@ case _DUMP_MEMORY: {
   dump_memory();
   break;
 }
-
-:(before "End Primitive Recipe Declarations")
-_DUMP,
-:(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$dump"] = _DUMP;
-:(before "End Primitive Recipe Implementations")
-case _DUMP: {
-  reagent after_canonize = canonize(current_instruction().ingredients.at(0));
-  cerr << current_recipe_name() << ": " << current_instruction().ingredients.at(0).name << ' ' << current_instruction().ingredients.at(0).value << " => " << after_canonize.value << " => " << Memory[after_canonize.value] << '\n';
-  break;
-}
