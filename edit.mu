@@ -662,6 +662,19 @@ recipe event-loop [
         loop +next-event:label
       }
     }
+    {
+      c:address:character <- maybe-convert e:event, text:variant
+      break-unless c:address:character
+      # ctrl-n? - switch focus
+      {
+        ctrl-n?:boolean <- equal c:address:character/deref, 14:literal/ctrl-n
+        break-unless ctrl-n?:boolean
+        sandbox-in-focus?:address:boolean/deref <- not sandbox-in-focus?:address:boolean/deref
+        update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
+        show-screen screen:address
+        loop +next-event:label
+      }
+    }
     # 'touch' event
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
