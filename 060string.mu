@@ -3,9 +3,9 @@
 recipe string-equal [
   local-scope
   a:address:array:character <- next-ingredient
-  a-len:number <- length a:address:array:character/deref
+  a-len:number <- length a:address:array:character/lookup
   b:address:array:character <- next-ingredient
-  b-len:number <- length b:address:array:character/deref
+  b-len:number <- length b:address:array:character/lookup
   # compare lengths
   {
     trace [string-equal], [comparing lengths]
@@ -19,8 +19,8 @@ recipe string-equal [
   {
     done?:boolean <- greater-or-equal i:number, a-len:number
     break-if done?:boolean
-    a2:character <- index a:address:array:character/deref, i:number
-    b2:character <- index b:address:array:character/deref, i:number
+    a2:character <- index a:address:array:character/lookup, i:number
+    b2:character <- index b:address:array:character/lookup, i:number
     {
       chars-match?:boolean <- equal a2:character, b2:character
       break-if chars-match?:boolean
@@ -107,13 +107,13 @@ recipe new-buffer [
   local-scope
 #?   $print default-space:address:array:location, 10/newline
   result:address:buffer <- new buffer:type
-  len:address:number <- get-address result:address:buffer/deref, length:offset
-  len:address:number/deref <- copy 0
-  s:address:address:array:character <- get-address result:address:buffer/deref, data:offset
+  len:address:number <- get-address result:address:buffer/lookup, length:offset
+  len:address:number/lookup <- copy 0
+  s:address:address:array:character <- get-address result:address:buffer/lookup, data:offset
   capacity:number, found?:boolean <- next-ingredient
   assert found?:boolean, [new-buffer must get a capacity argument]
-  s:address:address:array:character/deref <- new character:type, capacity:number
-#?   $print s:address:address:array:character/deref, 10/newline
+  s:address:address:array:character/lookup <- new character:type, capacity:number
+#?   $print s:address:address:array:character/lookup, 10/newline
   reply result:address:buffer
 ]
 
@@ -121,19 +121,19 @@ recipe grow-buffer [
   local-scope
   in:address:buffer <- next-ingredient
   # double buffer size
-  x:address:address:array:character <- get-address in:address:buffer/deref, data:offset
-  oldlen:number <- length x:address:address:array:character/deref/deref
+  x:address:address:array:character <- get-address in:address:buffer/lookup, data:offset
+  oldlen:number <- length x:address:address:array:character/lookup/lookup
   newlen:number <- multiply oldlen:number, 2
-  olddata:address:array:character <- copy x:address:address:array:character/deref
-  x:address:address:array:character/deref <- new character:type, newlen:number
+  olddata:address:array:character <- copy x:address:address:array:character/lookup
+  x:address:address:array:character/lookup <- new character:type, newlen:number
   # copy old contents
   i:number <- copy 0
   {
     done?:boolean <- greater-or-equal i:number, oldlen:number
     break-if done?:boolean
-    src:character <- index olddata:address:array:character/deref, i:number
-    dest:address:character <- index-address x:address:address:array:character/deref/deref, i:number
-    dest:address:character/deref <- copy src:character
+    src:character <- index olddata:address:array:character/lookup, i:number
+    dest:address:character <- index-address x:address:address:array:character/lookup/lookup, i:number
+    dest:address:character/lookup <- copy src:character
     i:number <- add i:number, 1
     loop
   }
@@ -143,9 +143,9 @@ recipe grow-buffer [
 recipe buffer-full? [
   local-scope
   in:address:buffer <- next-ingredient
-  len:number <- get in:address:buffer/deref, length:offset
-  s:address:array:character <- get in:address:buffer/deref, data:offset
-  capacity:number <- length s:address:array:character/deref
+  len:number <- get in:address:buffer/lookup, length:offset
+  s:address:array:character <- get in:address:buffer/lookup, data:offset
+  capacity:number <- length s:address:array:character/lookup
   result:boolean <- greater-or-equal len:number, capacity:number
   reply result:boolean
 ]
@@ -155,14 +155,14 @@ recipe buffer-append [
   local-scope
   in:address:buffer <- next-ingredient
   c:character <- next-ingredient
-  len:address:number <- get-address in:address:buffer/deref, length:offset
+  len:address:number <- get-address in:address:buffer/lookup, length:offset
   {
     # backspace? just drop last character if it exists and return
     backspace?:boolean <- equal c:character, 8/backspace
     break-unless backspace?:boolean
-    empty?:boolean <- lesser-or-equal len:address:number/deref, 0
+    empty?:boolean <- lesser-or-equal len:address:number/lookup, 0
     reply-if empty?:boolean, in:address:buffer/same-as-ingredient:0
-    len:address:number/deref <- subtract len:address:number/deref, 1
+    len:address:number/lookup <- subtract len:address:number/lookup, 1
     reply in:address:buffer/same-as-ingredient:0
   }
   {
@@ -171,13 +171,13 @@ recipe buffer-append [
     break-unless full?:boolean
     in:address:buffer <- grow-buffer in:address:buffer
   }
-  s:address:array:character <- get in:address:buffer/deref, data:offset
+  s:address:array:character <- get in:address:buffer/lookup, data:offset
 #?   $print [array underlying buf: ], s:address:array:character, 10/newline
-#?   $print [index: ], len:address:number/deref, 10/newline
-  dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
+#?   $print [index: ], len:address:number/lookup, 10/newline
+  dest:address:character <- index-address s:address:array:character/lookup, len:address:number/lookup
 #?   $print [storing ], c:character, [ in ], dest:address:character, 10/newline
-  dest:address:character/deref <- copy c:character
-  len:address:number/deref <- add len:address:number/deref, 1
+  dest:address:character/lookup <- copy c:character
+  len:address:number/lookup <- add len:address:number/lookup, 1
   reply in:address:buffer/same-as-ingredient:0
 ]
 
@@ -185,19 +185,19 @@ scenario buffer-append-works [
   run [
     local-scope
     x:address:buffer <- new-buffer 3
-    s1:address:array:character <- get x:address:buffer/deref, data:offset
+    s1:address:array:character <- get x:address:buffer/lookup, data:offset
     x:address:buffer <- buffer-append x:address:buffer, 97  # 'a'
     x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'
     x:address:buffer <- buffer-append x:address:buffer, 99  # 'c'
-    s2:address:array:character <- get x:address:buffer/deref, data:offset
+    s2:address:array:character <- get x:address:buffer/lookup, data:offset
     1:boolean/raw <- equal s1:address:array:character, s2:address:array:character
-    2:array:character/raw <- copy s2:address:array:character/deref
+    2:array:character/raw <- copy s2:address:array:character/lookup
     +buffer-filled
     x:address:buffer <- buffer-append x:address:buffer, 100  # 'd'
-    s3:address:array:character <- get x:address:buffer/deref, data:offset
+    s3:address:array:character <- get x:address:buffer/lookup, data:offset
     10:boolean/raw <- equal s1:address:array:character, s3:address:array:character
-    11:number/raw <- get x:address:buffer/deref, length:offset
-    12:array:character/raw <- copy s3:address:array:character/deref
+    11:number/raw <- get x:address:buffer/lookup, length:offset
+    12:array:character/raw <- copy s3:address:array:character/lookup
   ]
   memory-should-contain [
     # before +buffer-filled
@@ -227,7 +227,7 @@ scenario buffer-append-handles-backspace [
     x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'
     x:address:buffer <- buffer-append x:address:buffer, 8/backspace
     s:address:array:character <- buffer-to-array x:address:buffer
-    1:array:character/raw <- copy s:address:array:character/deref
+    1:array:character/raw <- copy s:address:array:character/lookup
   ]
   memory-should-contain [
     1 <- 1   # length
@@ -271,8 +271,8 @@ recipe integer-to-decimal-string [
     tmp:address:buffer <- buffer-append tmp:address:buffer, 45  # '-'
   }
   # reverse buffer into string result
-  len:number <- get tmp:address:buffer/deref, length:offset
-  buf:address:array:character <- get tmp:address:buffer/deref, data:offset
+  len:number <- get tmp:address:buffer/lookup, length:offset
+  buf:address:array:character <- get tmp:address:buffer/lookup, data:offset
   result:address:array:character <- new character:type, len:number
   i:number <- subtract len:number, 1
   j:number <- copy 0
@@ -281,9 +281,9 @@ recipe integer-to-decimal-string [
     done?:boolean <- lesser-than i:number, 0
     break-if done?:boolean
     # result[j] = tmp[i]
-    src:character <- index buf:address:array:character/deref, i:number
-    dest:address:character <- index-address result:address:array:character/deref, j:number
-    dest:address:character/deref <- copy src:character
+    src:character <- index buf:address:array:character/lookup, i:number
+    dest:address:character <- index-address result:address:array:character/lookup, j:number
+    dest:address:character/lookup <- copy src:character
     # ++i
     i:number <- subtract i:number, 1
     # --j
@@ -301,9 +301,9 @@ recipe buffer-to-array [
     break-if in:address:buffer
     reply 0
   }
-  len:number <- get in:address:buffer/deref, length:offset
+  len:number <- get in:address:buffer/lookup, length:offset
 #?   $print [size ], len:number, 10/newline
-  s:address:array:character <- get in:address:buffer/deref, data:offset
+  s:address:array:character <- get in:address:buffer/lookup, data:offset
   # we can't just return s because it is usually the wrong length
   result:address:array:character <- new character:type, len:number
   i:number <- copy 0
@@ -311,9 +311,9 @@ recipe buffer-to-array [
 #?     $print i:number #? 1
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
-    src:character <- index s:address:array:character/deref, i:number
-    dest:address:character <- index-address result:address:array:character/deref, i:number
-    dest:address:character/deref <- copy src:character
+    src:character <- index s:address:array:character/lookup, i:number
+    dest:address:character <- index-address result:address:array:character/lookup, i:number
+    dest:address:character/lookup <- copy src:character
     i:number <- add i:number, 1
     loop
   }
@@ -323,7 +323,7 @@ recipe buffer-to-array [
 scenario integer-to-decimal-digit-zero [
   run [
     1:address:array:character/raw <- integer-to-decimal-string 0
-    2:array:character/raw <- copy 1:address:array:character/deref/raw
+    2:array:character/raw <- copy 1:address:array:character/lookup/raw
   ]
   memory-should-contain [
     2:string <- [0]
@@ -333,7 +333,7 @@ scenario integer-to-decimal-digit-zero [
 scenario integer-to-decimal-digit-positive [
   run [
     1:address:array:character/raw <- integer-to-decimal-string 234
-    2:array:character/raw <- copy 1:address:array:character/deref/raw
+    2:array:character/raw <- copy 1:address:array:character/lookup/raw
   ]
   memory-should-contain [
     2:string <- [234]
@@ -343,7 +343,7 @@ scenario integer-to-decimal-digit-positive [
 scenario integer-to-decimal-digit-negative [
   run [
     1:address:array:character/raw <- integer-to-decimal-string -1
-    2:array:character/raw <- copy 1:address:array:character/deref/raw
+    2:array:character/raw <- copy 1:address:array:character/lookup/raw
   ]
   memory-should-contain [
     2 <- 2
@@ -357,9 +357,9 @@ recipe string-append [
   local-scope
   # result = new character[a.length + b.length]
   a:address:array:character <- next-ingredient
-  a-len:number <- length a:address:array:character/deref
+  a-len:number <- length a:address:array:character/lookup
   b:address:array:character <- next-ingredient
-  b-len:number <- length b:address:array:character/deref
+  b-len:number <- length b:address:array:character/lookup
   result-len:number <- add a-len:number, b-len:number
   result:address:array:character <- new character:type, result-len:number
   # copy a into result
@@ -370,9 +370,9 @@ recipe string-append [
     a-done?:boolean <- greater-or-equal i:number, a-len:number
     break-if a-done?:boolean
     # result[result-idx] = a[i]
-    out:address:character <- index-address result:address:array:character/deref, result-idx:number
-    in:character <- index a:address:array:character/deref, i:number
-    out:address:character/deref <- copy in:character
+    out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+    in:character <- index a:address:array:character/lookup, i:number
+    out:address:character/lookup <- copy in:character
     # ++i
     i:number <- add i:number, 1
     # ++result-idx
@@ -386,9 +386,9 @@ recipe string-append [
     b-done?:boolean <- greater-or-equal i:number, b-len:number
     break-if b-done?:boolean
     # result[result-idx] = a[i]
-    out:address:character <- index-address result:address:array:character/deref, result-idx:number
-    in:character <- index b:address:array:character/deref, i:number
-    out:address:character/deref <- copy in:character
+    out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+    in:character <- index b:address:array:character/lookup, i:number
+    out:address:character/lookup <- copy in:character
     # ++i
     i:number <- add i:number, 1
     # ++result-idx
@@ -403,7 +403,7 @@ scenario string-append-1 [
     1:address:array:character/raw <- new [hello,]
     2:address:array:character/raw <- new [ world!]
     3:address:array:character/raw <- string-append 1:address:array:character/raw, 2:address:array:character/raw
-    4:array:character/raw <- copy 3:address:array:character/raw/deref
+    4:array:character/raw <- copy 3:address:array:character/raw/lookup
   ]
   memory-should-contain [
     4:string <- [hello, world!]
@@ -416,14 +416,14 @@ recipe interpolate [
   local-scope
   template:address:array:character <- next-ingredient
   # compute result-len, space to allocate for result
-  tem-len:number <- length template:address:array:character/deref
+  tem-len:number <- length template:address:array:character/lookup
   result-len:number <- copy tem-len:number
   {
     # while arg received
     a:address:array:character, arg-received?:boolean <- next-ingredient
     break-unless arg-received?:boolean
     # result-len = result-len + arg.length - 1 for the 'underscore' being replaced
-    a-len:number <- length a:address:array:character/deref
+    a-len:number <- length a:address:array:character/lookup
     result-len:number <- add result-len:number, a-len:number
     result-len:number <- subtract result-len:number, 1
     loop
@@ -446,12 +446,12 @@ recipe interpolate [
       tem-done?:boolean <- greater-or-equal i:number, tem-len:number
       break-if tem-done?:boolean, +done:label
       # while template[i] != '_'
-      in:character <- index template:address:array:character/deref, i:number
+      in:character <- index template:address:array:character/lookup, i:number
       underscore?:boolean <- equal in:character, 95  # '_'
       break-if underscore?:boolean
       # result[result-idx] = template[i]
-      out:address:character <- index-address result:address:array:character/deref, result-idx:number
-      out:address:character/deref <- copy in:character
+      out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+      out:address:character/lookup <- copy in:character
       # ++i
       i:number <- add i:number, 1
       # ++result-idx
@@ -465,9 +465,9 @@ recipe interpolate [
       arg-done?:boolean <- greater-or-equal j:number, a-len:number
       break-if arg-done?:boolean
       # result[result-idx] = a[j]
-      in:character <- index a:address:array:character/deref, j:number
-      out:address:character <- index-address result:address:array:character/deref, result-idx:number
-      out:address:character/deref <- copy in:character
+      in:character <- index a:address:array:character/lookup, j:number
+      out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+      out:address:character/lookup <- copy in:character
       # ++j
       j:number <- add j:number, 1
       # ++result-idx
@@ -485,9 +485,9 @@ recipe interpolate [
     tem-done?:boolean <- greater-or-equal i:number, tem-len:number
     break-if tem-done?:boolean
     # result[result-idx] = template[i]
-    in:character <- index template:address:array:character/deref, i:number
-    out:address:character <- index-address result:address:array:character/deref, result-idx:number
-    out:address:character/deref <- copy in:character
+    in:character <- index template:address:array:character/lookup, i:number
+    out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+    out:address:character/lookup <- copy in:character
     # ++i
     i:number <- add i:number, 1
     # ++result-idx
@@ -503,7 +503,7 @@ scenario interpolate-works [
     1:address:array:character/raw <- new [abc _]
     2:address:array:character/raw <- new [def]
     3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
-    4:array:character/raw <- copy 3:address:array:character/raw/deref
+    4:array:character/raw <- copy 3:address:array:character/raw/lookup
   ]
   memory-should-contain [
     4:string <- [abc def]
@@ -515,7 +515,7 @@ scenario interpolate-at-start [
     1:address:array:character/raw <- new [_, hello!]
     2:address:array:character/raw <- new [abc]
     3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
-    4:array:character/raw <- copy 3:address:array:character/raw/deref
+    4:array:character/raw <- copy 3:address:array:character/raw/lookup
   ]
   memory-should-contain [
     4:string <- [abc, hello!]
@@ -528,7 +528,7 @@ scenario interpolate-at-end [
     1:address:array:character/raw <- new [hello, _]
     2:address:array:character/raw <- new [abc]
     3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
-    4:array:character/raw <- copy 3:address:array:character/raw/deref
+    4:array:character/raw <- copy 3:address:array:character/raw/lookup
   ]
   memory-should-contain [
     4:string <- [hello, abc]
@@ -604,7 +604,7 @@ recipe space? [
 recipe trim [
   local-scope
   s:address:array:character <- next-ingredient
-  len:number <- length s:address:array:character/deref
+  len:number <- length s:address:array:character/lookup
   # left trim: compute start
   start:number <- copy 0
   {
@@ -614,7 +614,7 @@ recipe trim [
       result:address:array:character <- new character:type, 0
       reply result:address:array:character
     }
-    curr:character <- index s:address:array:character/deref, start:number
+    curr:character <- index s:address:array:character/lookup, start:number
     whitespace?:boolean <- space? curr:character
     break-unless whitespace?:boolean
     start:number <- add start:number, 1
@@ -625,7 +625,7 @@ recipe trim [
   {
     not-at-start?:boolean <- greater-than end:number, start:number
     assert not-at-start?:boolean [end ran up against start]
-    curr:character <- index s:address:array:character/deref, end:number
+    curr:character <- index s:address:array:character/lookup, end:number
     whitespace?:boolean <- space? curr:character
     break-unless whitespace?:boolean
     end:number <- subtract end:number, 1
@@ -642,9 +642,9 @@ recipe trim [
     done?:boolean <- greater-than i:number, end:number
     break-if done?:boolean
     # result[j] = s[i]
-    src:character <- index s:address:array:character/deref, i:number
-    dest:address:character <- index-address result:address:array:character/deref, j:number
-    dest:address:character/deref <- copy src:character
+    src:character <- index s:address:array:character/lookup, i:number
+    dest:address:character <- index-address result:address:array:character/lookup, j:number
+    dest:address:character/lookup <- copy src:character
     # ++i, ++j
     i:number <- add i:number, 1
     j:number <- add j:number, 1
@@ -657,7 +657,7 @@ scenario trim-unmodified [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- trim 1:address:array:character
-    3:array:character <- copy 2:address:array:character/deref
+    3:array:character <- copy 2:address:array:character/lookup
   ]
   memory-should-contain [
     3:string <- [abc]
@@ -668,7 +668,7 @@ scenario trim-left [
   run [
     1:address:array:character <- new [  abc]
     2:address:array:character <- trim 1:address:array:character
-    3:array:character <- copy 2:address:array:character/deref
+    3:array:character <- copy 2:address:array:character/lookup
   ]
   memory-should-contain [
     3:string <- [abc]
@@ -679,7 +679,7 @@ scenario trim-right [
   run [
     1:address:array:character <- new [abc  ]
     2:address:array:character <- trim 1:address:array:character
-    3:array:character <- copy 2:address:array:character/deref
+    3:array:character <- copy 2:address:array:character/lookup
   ]
   memory-should-contain [
     3:string <- [abc]
@@ -690,7 +690,7 @@ scenario trim-left-right [
   run [
     1:address:array:character <- new [  abc   ]
     2:address:array:character <- trim 1:address:array:character
-    3:array:character <- copy 2:address:array:character/deref
+    3:array:character <- copy 2:address:array:character/lookup
   ]
   memory-should-contain [
     3:string <- [abc]
@@ -702,7 +702,7 @@ scenario trim-newline-tab [
     1:address:array:character <- new [	abc
 ]
     2:address:array:character <- trim 1:address:array:character
-    3:array:character <- copy 2:address:array:character/deref
+    3:array:character <- copy 2:address:array:character/lookup
   ]
   memory-should-contain [
     3:string <- [abc]
@@ -715,11 +715,11 @@ recipe find-next [
   text:address:array:character <- next-ingredient
   pattern:character <- next-ingredient
   idx:number <- next-ingredient
-  len:number <- length text:address:array:character/deref
+  len:number <- length text:address:array:character/lookup
   {
     eof?:boolean <- greater-or-equal idx:number, len:number
     break-if eof?:boolean
-    curr:character <- index text:address:array:character/deref, idx:number
+    curr:character <- index text:address:array:character/lookup, idx:number
     found?:boolean <- equal curr:character, pattern:character
     break-if found?:boolean
     idx:number <- add idx:number, 1
@@ -815,9 +815,9 @@ recipe find-substring [
   text:address:array:character <- next-ingredient
   pattern:address:array:character <- next-ingredient
   idx:number <- next-ingredient
-  first:character <- index pattern:address:array:character/deref, 0
+  first:character <- index pattern:address:array:character/lookup, 0
   # repeatedly check for match at current idx
-  len:number <- length text:address:array:character/deref
+  len:number <- length text:address:array:character/lookup
   {
     # does some unnecessary work checking for substrings even when there isn't enough of text left
     done?:boolean <- greater-or-equal idx:number, len:number
@@ -894,10 +894,10 @@ recipe match-at [
   text:address:array:character <- next-ingredient
   pattern:address:array:character <- next-ingredient
   idx:number <- next-ingredient
-  pattern-len:number <- length pattern:address:array:character/deref
+  pattern-len:number <- length pattern:address:array:character/lookup
   # check that there's space left for the pattern
   {
-    x:number <- length text:address:array:character/deref
+    x:number <- length text:address:array:character/lookup
     x:number <- subtract x:number, pattern-len:number
     enough-room?:boolean <- lesser-or-equal idx:number, x:number
     break-if enough-room?:boolean
@@ -908,8 +908,8 @@ recipe match-at [
   {
     done?:boolean <- greater-or-equal pattern-idx:number, pattern-len:number
     break-if done?:boolean
-    c:character <- index text:address:array:character/deref, idx:number
-    exp:character <- index pattern:address:array:character/deref, pattern-idx:number
+    c:character <- index text:address:array:character/lookup, idx:number
+    exp:character <- index pattern:address:array:character/lookup, pattern-idx:number
     {
       match?:boolean <- equal c:character, exp:character
       break-if match?:boolean
@@ -1025,7 +1025,7 @@ recipe split [
   s:address:array:character <- next-ingredient
   delim:character <- next-ingredient
   # empty string? return empty array
-  len:number <- length s:address:array:character/deref
+  len:number <- length s:address:array:character/lookup
   {
     empty?:boolean <- equal len:number, 0
     break-unless empty?:boolean
@@ -1054,8 +1054,8 @@ recipe split [
     break-if done?:boolean
     end:number <- find-next s:address:array:character, delim:character, start:number
     # copy start..end into result[curr-result]
-    dest:address:address:array:character <- index-address result:address:array:address:array:character/deref, curr-result:number
-    dest:address:address:array:character/deref <- string-copy s:address:array:character, start:number, end:number
+    dest:address:address:array:character <- index-address result:address:array:address:array:character/lookup, curr-result:number
+    dest:address:address:array:character/lookup <- string-copy s:address:array:character, start:number, end:number
     # slide over to next slice
     start:number <- add end:number, 1
     curr-result:number <- add curr-result:number, 1
@@ -1068,11 +1068,11 @@ scenario string-split-1 [
   run [
     1:address:array:character <- new [a/b]
     2:address:array:address:array:character <- split 1:address:array:character, 47/slash
-    3:number <- length 2:address:array:address:array:character/deref
-    4:address:array:character <- index 2:address:array:address:array:character/deref, 0
-    5:address:array:character <- index 2:address:array:address:array:character/deref, 1
-    10:array:character <- copy 4:address:array:character/deref
-    20:array:character <- copy 5:address:array:character/deref
+    3:number <- length 2:address:array:address:array:character/lookup
+    4:address:array:character <- index 2:address:array:address:array:character/lookup, 0
+    5:address:array:character <- index 2:address:array:address:array:character/lookup, 1
+    10:array:character <- copy 4:address:array:character/lookup
+    20:array:character <- copy 5:address:array:character/lookup
   ]
   memory-should-contain [
     3 <- 2  # length of result
@@ -1085,13 +1085,13 @@ scenario string-split-2 [
   run [
     1:address:array:character <- new [a/b/c]
     2:address:array:address:array:character <- split 1:address:array:character, 47/slash
-    3:number <- length 2:address:array:address:array:character/deref
-    4:address:array:character <- index 2:address:array:address:array:character/deref, 0
-    5:address:array:character <- index 2:address:array:address:array:character/deref, 1
-    6:address:array:character <- index 2:address:array:address:array:character/deref, 2
-    10:array:character <- copy 4:address:array:character/deref
-    20:array:character <- copy 5:address:array:character/deref
-    30:array:character <- copy 6:address:array:character/deref
+    3:number <- length 2:address:array:address:array:character/lookup
+    4:address:array:character <- index 2:address:array:address:array:character/lookup, 0
+    5:address:array:character <- index 2:address:array:address:array:character/lookup, 1
+    6:address:array:character <- index 2:address:array:address:array:character/lookup, 2
+    10:array:character <- copy 4:address:array:character/lookup
+    20:array:character <- copy 5:address:array:character/lookup
+    30:array:character <- copy 6:address:array:character/lookup
   ]
   memory-should-contain [
     3 <- 3  # length of result
@@ -1105,9 +1105,9 @@ scenario string-split-missing [
   run [
     1:address:array:character <- new [abc]
     2:address:array:address:array:character <- split 1:address:array:character, 47/slash
-    3:number <- length 2:address:array:address:array:character/deref
-    4:address:array:character <- index 2:address:array:address:array:character/deref, 0
-    10:array:character <- copy 4:address:array:character/deref
+    3:number <- length 2:address:array:address:array:character/lookup
+    4:address:array:character <- index 2:address:array:address:array:character/lookup, 0
+    10:array:character <- copy 4:address:array:character/lookup
   ]
   memory-should-contain [
     3 <- 1  # length of result
@@ -1119,7 +1119,7 @@ scenario string-split-empty [
   run [
     1:address:array:character <- new []
     2:address:array:address:array:character <- split 1:address:array:character, 47/slash
-    3:number <- length 2:address:array:address:array:character/deref
+    3:number <- length 2:address:array:address:array:character/lookup
   ]
   memory-should-contain [
     3 <- 0  # empty result
@@ -1130,15 +1130,15 @@ scenario string-split-empty-piece [
   run [
     1:address:array:character <- new [a/b//c]
     2:address:array:address:array:character <- split 1:address:array:character, 47/slash
-    3:number <- length 2:address:array:address:array:character/deref
-    4:address:array:character <- index 2:address:array:address:array:character/deref, 0
-    5:address:array:character <- index 2:address:array:address:array:character/deref, 1
-    6:address:array:character <- index 2:address:array:address:array:character/deref, 2
-    7:address:array:character <- index 2:address:array:address:array:character/deref, 3
-    10:array:character <- copy 4:address:array:character/deref
-    20:array:character <- copy 5:address:array:character/deref
-    30:array:character <- copy 6:address:array:character/deref
-    40:array:character <- copy 7:address:array:character/deref
+    3:number <- length 2:address:array:address:array:character/lookup
+    4:address:array:character <- index 2:address:array:address:array:character/lookup, 0
+    5:address:array:character <- index 2:address:array:address:array:character/lookup, 1
+    6:address:array:character <- index 2:address:array:address:array:character/lookup, 2
+    7:address:array:character <- index 2:address:array:address:array:character/lookup, 3
+    10:array:character <- copy 4:address:array:character/lookup
+    20:array:character <- copy 5:address:array:character/lookup
+    30:array:character <- copy 6:address:array:character/lookup
+    40:array:character <- copy 7:address:array:character/lookup
   ]
   memory-should-contain [
     3 <- 4  # length of result
@@ -1155,7 +1155,7 @@ recipe split-first [
   text:address:array:character <- next-ingredient
   delim:character <- next-ingredient
   # empty string? return empty strings
-  len:number <- length text:address:array:character/deref
+  len:number <- length text:address:array:character/lookup
   {
     empty?:boolean <- equal len:number, 0
     break-unless empty?:boolean
@@ -1174,8 +1174,8 @@ scenario string-split-first [
   run [
     1:address:array:character <- new [a/b]
     2:address:array:character, 3:address:array:character <- split-first 1:address:array:character, 47/slash
-    10:array:character <- copy 2:address:array:character/deref
-    20:array:character <- copy 3:address:array:character/deref
+    10:array:character <- copy 2:address:array:character/lookup
+    20:array:character <- copy 3:address:array:character/lookup
   ]
   memory-should-contain [
     10:string <- [a]
@@ -1191,7 +1191,7 @@ recipe string-copy [
   start:number <- next-ingredient
   end:number <- next-ingredient
   # if end is out of bounds, trim it
-  len:number <- length buf:address:array:character/deref
+  len:number <- length buf:address:array:character/lookup
   end:number <- min len:number, end:number
   # allocate space for result
   len:number <- subtract end:number, start:number
@@ -1202,9 +1202,9 @@ recipe string-copy [
   {
     done?:boolean <- greater-or-equal src-idx:number, end:number
     break-if done?:boolean
-    src:character <- index buf:address:array:character/deref, src-idx:number
-    dest:address:character <- index-address result:address:array:character/deref, dest-idx:number
-    dest:address:character/deref <- copy src:character
+    src:character <- index buf:address:array:character/lookup, src-idx:number
+    dest:address:character <- index-address result:address:array:character/lookup, dest-idx:number
+    dest:address:character/lookup <- copy src:character
     src-idx:number <- add src-idx:number, 1
     dest-idx:number <- add dest-idx:number, 1
     loop
@@ -1216,7 +1216,7 @@ scenario string-copy-copies-substring [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- string-copy 1:address:array:character, 1, 3
-    3:array:character <- copy 2:address:array:character/deref
+    3:array:character <- copy 2:address:array:character/lookup
   ]
   memory-should-contain [
     3:string <- [bc]
@@ -1227,7 +1227,7 @@ scenario string-copy-out-of-bounds [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- string-copy 1:address:array:character, 2, 4
-    3:array:character <- copy 2:address:array:character/deref
+    3:array:character <- copy 2:address:array:character/lookup
   ]
   memory-should-contain [
     3:string <- [c]
@@ -1238,7 +1238,7 @@ scenario string-copy-out-of-bounds-2 [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- string-copy 1:address:array:character, 3, 3
-    3:array:character <- copy 2:address:array:character/deref
+    3:array:character <- copy 2:address:array:character/lookup
   ]
   memory-should-contain [
     3:string <- []

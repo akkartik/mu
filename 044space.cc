@@ -12,7 +12,7 @@ recipe main [
 ]
 +mem: storing 23 in location 12
 
-:(scenario deref_sidesteps_default_space)
+:(scenario lookup_sidesteps_default_space)
 recipe main [
   # pretend pointer from outside
   3:number <- copy 34
@@ -21,7 +21,7 @@ recipe main [
   # actual start of this recipe
   default-space:address:array:location <- copy 1000
   1:address:number <- copy 3
-  8:number/raw <- copy 1:address:number/deref
+  8:number/raw <- copy 1:address:number/lookup
 ]
 +mem: storing 34 in location 8
 
@@ -61,12 +61,12 @@ reagent absolutize(reagent x) {
   assert(is_raw(r));
   return r;
 }
-:(before "return result" following "reagent deref(reagent x)")
+:(before "return result" following "reagent lookup_memory(reagent x)")
 result.properties.push_back(pair<string, vector<string> >("raw", vector<string>()));
 
 //:: fix 'get'
 
-:(scenario deref_sidesteps_default_space_in_get)
+:(scenario lookup_sidesteps_default_space_in_get)
 recipe main [
   # pretend pointer to container from outside
   12:number <- copy 34
@@ -76,7 +76,7 @@ recipe main [
   # actual start of this recipe
   default-space:address:array:location <- copy 1000
   1:address:point <- copy 12
-  9:number/raw <- get 1:address:point/deref, 1:offset
+  9:number/raw <- get 1:address:point/lookup, 1:offset
 ]
 +mem: storing 35 in location 9
 
@@ -85,7 +85,7 @@ tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()))
 
 //:: fix 'index'
 
-:(scenario deref_sidesteps_default_space_in_index)
+:(scenario lookup_sidesteps_default_space_in_index)
 recipe main [
   # pretend pointer to array from outside
   12:number <- copy 2
@@ -96,7 +96,7 @@ recipe main [
   # actual start of this recipe
   default-space:address:array:location <- copy 1000
   1:address:array:number <- copy 12
-  9:number/raw <- index 1:address:array:number/deref, 1
+  9:number/raw <- index 1:address:array:number/lookup, 1
 ]
 +mem: storing 35 in location 9
 

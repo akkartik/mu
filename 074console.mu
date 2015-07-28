@@ -22,12 +22,12 @@ container console [
 recipe new-fake-console [
   local-scope
   result:address:console <- new console:type
-  buf:address:address:array:character <- get-address result:address:console/deref, data:offset
+  buf:address:address:array:character <- get-address result:address:console/lookup, data:offset
 #?   $start-tracing #? 1
-  buf:address:address:array:character/deref <- next-ingredient
+  buf:address:address:array:character/lookup <- next-ingredient
 #?   $stop-tracing #? 1
-  idx:address:number <- get-address result:address:console/deref, index:offset
-  idx:address:number/deref <- copy 0
+  idx:address:number <- get-address result:address:console/lookup, index:offset
+  idx:address:number/lookup <- copy 0
   reply result:address:console
 ]
 
@@ -36,17 +36,17 @@ recipe read-event [
   x:address:console <- next-ingredient
   {
     break-unless x:address:console
-    idx:address:number <- get-address x:address:console/deref, index:offset
-    buf:address:array:event <- get x:address:console/deref, data:offset
+    idx:address:number <- get-address x:address:console/lookup, index:offset
+    buf:address:array:event <- get x:address:console/lookup, data:offset
     {
-      max:number <- length buf:address:array:event/deref
-      done?:boolean <- greater-or-equal idx:address:number/deref, max:number
+      max:number <- length buf:address:array:event/lookup
+      done?:boolean <- greater-or-equal idx:address:number/lookup, max:number
       break-unless done?:boolean
       dummy:address:event <- new event:type
-      reply dummy:address:event/deref, x:address:console/same-as-ingredient:0, 1/found, 1/quit
+      reply dummy:address:event/lookup, x:address:console/same-as-ingredient:0, 1/found, 1/quit
     }
-    result:event <- index buf:address:array:event/deref, idx:address:number/deref
-    idx:address:number/deref <- add idx:address:number/deref, 1
+    result:event <- index buf:address:array:event/lookup, idx:address:number/lookup
+    idx:address:number/lookup <- add idx:address:number/lookup, 1
     reply result:event, x:address:console/same-as-ingredient:0, 1/found, 0/quit
   }
   # real event source is infrequent; avoid polling it too much
@@ -73,7 +73,7 @@ recipe read-key [
   c:address:character <- maybe-convert x:event, text:variant
   reply-unless c:address:character, 0, console:address/same-as-ingredient:0, 0/found, 0/quit
 #?   $print [aaa 4] #? 1
-  reply c:address:character/deref, console:address/same-as-ingredient:0, 1/found, 0/quit
+  reply c:address:character/lookup, console:address/same-as-ingredient:0, 1/found, 0/quit
 ]
 
 recipe send-keys-to-channel [

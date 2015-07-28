@@ -14,10 +14,10 @@ recipe push [
   x:location <- next-ingredient
   in:address:list <- next-ingredient
   result:address:list <- new list:type
-  val:address:location <- get-address result:address:list/deref, value:offset
-  val:address:location/deref <- copy x:location
-  next:address:address:list <- get-address result:address:list/deref, next:offset
-  next:address:address:list/deref <- copy in:address:list
+  val:address:location <- get-address result:address:list/lookup, value:offset
+  val:address:location/lookup <- copy x:location
+  next:address:address:list <- get-address result:address:list/lookup, next:offset
+  next:address:address:list/lookup <- copy in:address:list
   reply result:address:list
 ]
 
@@ -25,7 +25,7 @@ recipe push [
 recipe first [
   local-scope
   in:address:list <- next-ingredient
-  result:location <- get in:address:list/deref, value:offset
+  result:location <- get in:address:list/lookup, value:offset
   reply result:location
 ]
 
@@ -33,7 +33,7 @@ recipe first [
 recipe rest [
   local-scope
   in:address:list <- next-ingredient
-  result:address:list <- get in:address:list/deref, next:offset
+  result:address:list <- get in:address:list/lookup, next:offset
   reply result:address:list
 ]
 

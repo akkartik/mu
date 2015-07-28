@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character/raw <- new [abc _]\n    2:address:array:character/raw <- new [def]\n    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw\n    4:array:character/raw <- copy 3:address:array:character/raw/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character/raw <- new [abc _]\n    2:address:array:character/raw <- new [def]\n    3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw\n    4:array:character/raw <- copy 3:address:array:character/raw/lookup\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    4:string <- [abc def]\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-interpolate-works
@@ -11,7 +11,7 @@ schedule: scenario-interpolate-works
     1:address:array:character/raw <- new [abc _]
     2:address:array:character/raw <- new [def]
     3:address:array:character/raw <- interpolate 1:address:array:character/raw, 2:address:array:character/raw
-    4:array:character/raw <- copy 3:address:array:character/raw/deref
+    4:array:character/raw <- copy 3:address:array:character/raw/lookup
   ]
 parse: instruction: new
 parse:   ingredient: {name: "abc _", properties: [_: "literal-string"]}
@@ -24,7 +24,7 @@ parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"
 parse:   ingredient: {name: "2", properties: ["2": "address":"array":"character", "raw": ]}
 parse:   product: {name: "3", properties: ["3": "address":"array":"character", "raw": ]}
 parse: instruction: copy
-parse:   ingredient: {name: "3", properties: ["3": "address":"array":"character", "raw": , "deref": ]}
+parse:   ingredient: {name: "3", properties: ["3": "address":"array":"character", "raw": , "lookup": ]}
 parse:   product: {name: "4", properties: ["4": "array":"character", "raw": ]}
 after-brace: recipe run1001
 after-brace: new ...
@@ -43,7 +43,7 @@ after-brace: copy ...
 9999 mem: new alloc: 1010
  102 run: template:address:array:character <- next-ingredient 
 9999 mem: storing 1000 in location 1012
- 102 run: tem-len:number <- length template:address:array:character/deref
+ 102 run: tem-len:number <- length template:address:array:character/lookup
 9999 mem: location 1012 is 1000
 9999 mem: location 1000 is 5
 9999 mem: location 1001 is 97
@@ -62,7 +62,7 @@ after-brace: copy ...
  102 run: break-unless arg-received?:boolean, 
 9999 mem: location 1016 is 1
 9999 run: jump-unless fell through
- 102 run: a-len:number <- length a:address:array:character/deref
+ 102 run: a-len:number <- length a:address:array:character/lookup
 9999 mem: location 1015 is 1006
 9999 mem: location 1006 is 3
 9999 mem: location 1007 is 100
@@ -109,7 +109,7 @@ after-brace: copy ...
  102 run: break-if tem-done?:boolean, +done:label
 9999 mem: location 1021 is 0
 9999 run: jump-if fell through
- 102 run: in:character <- index template:address:array:character/deref, i:number
+ 102 run: in:character <- index template:address:array:character/lookup, i:number
 9999 mem: location 1012 is 1000
 9999 mem: location 1000 is 5
 9999 mem: location 1001 is 97
@@ -130,7 +130,7 @@ after-brace: copy ...
  102 run: break-if underscore?:boolean, 
 9999 mem: location 1023 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
+ 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
 9999 mem: location 1018 is 1027
 9999 mem: location 1027 is 7
 9999 mem: location 1028 is 0
@@ -144,7 +144,7 @@ after-brace: copy ...
 9999 mem: location 1018 is 1027
 9999 mem: location 1019 is 0
 9999 mem: storing 1028 in location 1024
- 102 run: out:address:character/deref <- copy in:character
+ 102 run: out:address:character/lookup <- copy in:character
 9999 mem: location 1022 is 97
 9999 mem: location 1024 is 1028
 9999 mem: storing 97 in location 1028
@@ -163,7 +163,7 @@ after-brace: copy ...
  102 run: break-if tem-done?:boolean, +done:label
 9999 mem: location 1021 is 0
 9999 run: jump-if fell through
- 102 run: in:character <- index template:address:array:character/deref, i:number
+ 102 run: in:character <- index template:address:array:character/lookup, i:number
 9999 mem: location 1012 is 1000
 9999 mem: location 1000 is 5
 9999 mem: location 1001 is 97
@@ -184,7 +184,7 @@ after-brace: copy ...
  102 run: break-if underscore?:boolean, 
 9999 mem: location 1023 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
+ 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
 9999 mem: location 1018 is 1027
 9999 mem: location 1027 is 7
 9999 mem: location 1028 is 97
@@ -198,7 +198,7 @@ after-brace: copy ...
 9999 mem: location 1018 is 1027
 9999 mem: location 1019 is 1
 9999 mem: storing 1029 in location 1024
- 102 run: out:address:character/deref <- copy in:character
+ 102 run: out:address:character/lookup <- copy in:character
 9999 mem: location 1022 is 98
 9999 mem: location 1024 is 1029
 9999 mem: storing 98 in location 1029
@@ -217,7 +217,7 @@ after-brace: copy ...
  102 run: break-if tem-done?:boolean, +done:label
 9999 mem: location 1021 is 0
 9999 run: jump-if fell through
- 102 run: in:character <- index template:address:array:character/deref, i:number
+ 102 run: in:character <- index template:address:array:character/lookup, i:number
 9999 mem: location 1012 is 1000
 9999 mem: location 1000 is 5
 9999 mem: location 1001 is 97
@@ -238,7 +238,7 @@ after-brace: copy ...
  102 run: break-if underscore?:boolean, 
 9999 mem: location 1023 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
+ 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
 9999 mem: location 1018 is 1027
 9999 mem: location 1027 is 7
 9999 mem: location 1028 is 97
@@ -252,7 +252,7 @@ after-brace: copy ...
 9999 mem: location 1018 is 1027
 9999 mem: location 1019 is 2
 9999 mem: storing 1030 in location 1024
- 102 run: out:address:character/deref <- copy in:character
+ 102 run: out:address:character/lookup <- copy in:character
 9999 mem: location 1022 is 99
 9999 mem: location 1024 is 1030
 9999 mem: storing 99 in location 1030
@@ -271,7 +271,7 @@ after-brace: copy ...
  102 run: break-if tem-done?:boolean, +done:label
 9999 mem: location 1021 is 0
 9999 run: jump-if fell through
- 102 run: in:character <- index template:address:array:character/deref, i:number
+ 102 run: in:character <- index template:address:array:character/lookup, i:number
 9999 mem: location 1012 is 1000
 9999 mem: location 1000 is 5
 9999 mem: location 1001 is 97
@@ -292,7 +292,7 @@ after-brace: copy ...
  102 run: break-if underscore?:boolean, 
 9999 mem: location 1023 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
+ 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
 9999 mem: location 1018 is 1027
 9999 mem: location 1027 is 7
 9999 mem: location 1028 is 97
@@ -306,7 +306,7 @@ after-brace: copy ...
 9999 mem: location 1018 is 1027
 9999 mem: location 1019 is 3
 9999 mem: storing 1031 in location 1024
- 102 run: out:address:character/deref <- copy in:character
+ 102 run: out:address:character/lookup <- copy in:character
 9999 mem: location 1022 is 32
 9999 mem: location 1024 is 1031
 9999 mem: storing 32 in location 1031
@@ -325,7 +325,7 @@ after-brace: copy ...
  102 run: break-if tem-done?:boolean, +done:label
 9999 mem: location 1021 is 0
 9999 run: jump-if fell through
- 102 run: in:character <- index template:address:array:character/deref, i:number
+ 102 run: in:character <- index template:address:array:character/lookup, i:number
 9999 mem: location 1012 is 1000
 9999 mem: location 1000 is 5
 9999 mem: location 1001 is 97
@@ -355,7 +355,7 @@ after-brace: copy ...
  102 run: break-if arg-done?:boolean, 
 9999 mem: location 1026 is 0
 9999 run: jump-if fell through
- 102 run: in:character <- index a:address:array:character/deref, j:number
+ 102 run: in:character <- index a:address:array:character/lookup, j:number
 9999 mem: location 1015 is 1006
 9999 mem: location 1006 is 3
 9999 mem: location 1007 is 100
@@ -368,7 +368,7 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1007 is 100
 9999 mem: storing 100 in location 1022
- 102 run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
+ 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
 9999 mem: location 1018 is 1027
 9999 mem: location 1027 is 7
 9999 mem: location 1028 is 97
@@ -382,7 +382,7 @@ after-brace: copy ...
 9999 mem: location 1018 is 1027
 9999 mem: location 1019 is 4
 9999 mem: storing 1032 in location 1024
- 102 run: out:address:character/deref <- copy in:character
+ 102 run: out:address:character/lookup <- copy in:character
 9999 mem: location 1022 is 100
 9999 mem: location 1024 is 1032
 9999 mem: storing 100 in location 1032
@@ -401,7 +401,7 @@ after-brace: copy ...
  102 run: break-if arg-done?:boolean, 
 9999 mem: location 1026 is 0
 9999 run: jump-if fell through
- 102 run: in:character <- index a:address:array:character/deref, j:number
+ 102 run: in:character <- index a:address:array:character/lookup, j:number
 9999 mem: location 1015 is 1006
 9999 mem: location 1006 is 3
 9999 mem: location 1007 is 100
@@ -414,7 +414,7 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1008 is 101
 9999 mem: storing 101 in location 1022
- 102 run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
+ 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
 9999 mem: location 1018 is 1027
 9999 mem: location 1027 is 7
 9999 mem: location 1028 is 97
@@ -428,7 +428,7 @@ after-brace: copy ...
 9999 mem: location 1018 is 1027
 9999 mem: location 1019 is 5
 9999 mem: storing 1033 in location 1024
- 102 run: out:address:character/deref <- copy in:character
+ 102 run: out:address:character/lookup <- copy in:character
 9999 mem: location 1022 is 101
 9999 mem: location 1024 is 1033
 9999 mem: storing 101 in location 1033
@@ -447,7 +447,7 @@ after-brace: copy ...
  102 run: break-if arg-done?:boolean, 
 9999 mem: location 1026 is 0
 9999 run: jump-if fell through
- 102 run: in:character <- index a:address:array:character/deref, j:number
+ 102 run: in:character <- index a:address:array:character/lookup, j:number
 9999 mem: location 1015 is 1006
 9999 mem: location 1006 is 3
 9999 mem: location 1007 is 100
@@ -460,7 +460,7 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1009 is 102
 9999 mem: storing 102 in location 1022
- 102 run: out:address:character <- index-address result:address:array:character/deref, result-idx:number
+ 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
 9999 mem: location 1018 is 1027
 9999 mem: location 1027 is 7
 9999 mem: location 1028 is 97
@@ -474,7 +474,7 @@ after-brace: copy ...
 9999 mem: location 1018 is 1027
 9999 mem: location 1019 is 6
 9999 mem: storing 1034 in location 1024
- 102 run: out:address:character/deref <- copy in:character
+ 102 run: out:address:character/lookup <- copy in:character
 9999 mem: location 1022 is 102
 9999 mem: location 1024 is 1034
 9999 mem: storing 102 in location 1034
@@ -515,7 +515,7 @@ after-brace: copy ...
 9999 mem: location 1018 is 1027
 9999 run: result 0 is 1027
 9999 mem: storing 1027 in location 3
- 101 run: 4:array:character/raw <- copy 3:address:array:character/raw/deref
+ 101 run: 4:array:character/raw <- copy 3:address:array:character/raw/lookup
 9999 mem: location 3 is 1027
 9999 mem: location 1027 is 7
 9999 mem: location 1028 is 97

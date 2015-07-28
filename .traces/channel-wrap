@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    # channel with just 1 slot\n    1:address:channel <- new-channel 1/capacity\n    # write and read a value\n    1:address:channel <- write 1:address:channel, 34\n    _, 1:address:channel <- read 1:address:channel\n    # first-free will now be 1\n    2:number <- get 1:address:channel/deref, first-free:offset\n    3:number <- get 1:address:channel/deref, first-free:offset\n    # write second value, verify that first-free wraps\n    1:address:channel <- write 1:address:channel, 34\n    4:number <- get 1:address:channel/deref, first-free:offset\n    # read second value, verify that first-full wraps\n    _, 1:address:channel <- read 1:address:channel\n    5:number <- get 1:address:channel/deref, first-full:offset\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    # channel with just 1 slot\n    1:address:channel <- new-channel 1/capacity\n    # write and read a value\n    1:address:channel <- write 1:address:channel, 34\n    _, 1:address:channel <- read 1:address:channel\n    # first-free will now be 1\n    2:number <- get 1:address:channel/lookup, first-free:offset\n    3:number <- get 1:address:channel/lookup, first-free:offset\n    # write second value, verify that first-free wraps\n    1:address:channel <- write 1:address:channel, 34\n    4:number <- get 1:address:channel/lookup, first-free:offset\n    # read second value, verify that first-full wraps\n    _, 1:address:channel <- read 1:address:channel\n    5:number <- get 1:address:channel/lookup, first-full:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 1  # first-free after first write\n    3 <- 1  # first-full after first read\n    4 <- 0  # first-free after second write, wrapped\n    5 <- 0  # first-full after second read, wrapped\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-channel-wrap
@@ -14,14 +14,14 @@ schedule: scenario-channel-wrap
     1:address:channel <- write 1:address:channel, 34
     _, 1:address:channel <- read 1:address:channel
     # first-free will now be 1
-    2:number <- get 1:address:channel/deref, first-free:offset
-    3:number <- get 1:address:channel/deref, first-free:offset
+    2:number <- get 1:address:channel/lookup, first-free:offset
+    3:number <- get 1:address:channel/lookup, first-free:offset
     # write second value, verify that first-free wraps
     1:address:channel <- write 1:address:channel, 34
-    4:number <- get 1:address:channel/deref, first-free:offset
+    4:number <- get 1:address:channel/lookup, first-free:offset
     # read second value, verify that first-full wraps
     _, 1:address:channel <- read 1:address:channel
-    5:number <- get 1:address:channel/deref, first-full:offset
+    5:number <- get 1:address:channel/lookup, first-full:offset
   ]
 parse: instruction: new-channel
 parse:   ingredient: {name: "1", properties: ["1": "literal", "capacity": ]}
@@ -35,11 +35,11 @@ parse:   ingredient: {name: "1", properties: ["1": "address":"channel"]}
 parse:   product: {name: "_", properties: ["_": "dummy"]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 parse: instruction: get
-parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "deref": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "lookup": ]}
 parse:   ingredient: {name: "first-free", properties: ["first-free": "offset"]}
 parse:   product: {name: "2", properties: ["2": "number"]}
 parse: instruction: get
-parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "deref": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "lookup": ]}
 parse:   ingredient: {name: "first-free", properties: ["first-free": "offset"]}
 parse:   product: {name: "3", properties: ["3": "number"]}
 parse: instruction: write
@@ -47,7 +47,7 @@ parse:   ingredient: {name: "1", properties: ["1": "address":"channel"]}
 parse:   ingredient: {name: "34", properties: ["34": "literal"]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 parse: instruction: get
-parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "deref": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "lookup": ]}
 parse:   ingredient: {name: "first-free", properties: ["first-free": "offset"]}
 parse:   product: {name: "4", properties: ["4": "number"]}
 parse: instruction: read
@@ -55,7 +55,7 @@ parse:   ingredient: {name: "1", properties: ["1": "address":"channel"]}
 parse:   product: {name: "_", properties: ["_": "dummy"]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 parse: instruction: get
-parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "deref": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "lookup": ]}
 parse:   ingredient: {name: "first-full", properties: ["first-full": "offset"]}
 parse:   product: {name: "5", properties: ["5": "number"]}
 name: element first-free of type channel is at offset 1
@@ -79,7 +79,7 @@ after-brace: get ...
  102 run: result:address:channel <- new channel:type
 9999 mem: new alloc: 1007
 9999 mem: storing 1007 in location 1002
- 102 run: full:address:number <- get-address result:address:channel/deref, first-full:offset
+ 102 run: full:address:number <- get-address result:address:channel/lookup, first-full:offset
 9999 mem: location 1002 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -87,10 +87,10 @@ after-brace: get ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1007
 9999 mem: storing 1007 in location 1003
- 102 run: full:address:number/deref <- copy 0
+ 102 run: full:address:number/lookup <- copy 0
 9999 mem: location 1003 is 1007
 9999 mem: storing 0 in location 1007
- 102 run: free:address:number <- get-address result:address:channel/deref, first-free:offset
+ 102 run: free:address:number <- get-address result:address:channel/lookup, first-free:offset
 9999 mem: location 1002 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -98,7 +98,7 @@ after-brace: get ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1008
 9999 mem: storing 1008 in location 1004
- 102 run: free:address:number/deref <- copy 0
+ 102 run: free:address:number/lookup <- copy 0
 9999 mem: location 1004 is 1008
 9999 mem: storing 0 in location 1008
  102 run: capacity:number <- next-ingredient 
@@ -106,7 +106,7 @@ after-brace: get ...
  102 run: capacity:number <- add capacity:number, 1
 9999 mem: location 1005 is 1
 9999 mem: storing 2 in location 1005
- 102 run: dest:address:address:array:location <- get-address result:address:channel/deref, data:offset
+ 102 run: dest:address:address:array:location <- get-address result:address:channel/lookup, data:offset
 9999 mem: location 1002 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -114,7 +114,7 @@ after-brace: get ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1009
 9999 mem: storing 1009 in location 1006
- 102 run: dest:address:address:array:location/deref <- new location:type, capacity:number
+ 102 run: dest:address:address:array:location/lookup <- new location:type, capacity:number
 9999 mem: location 1005 is 2
 9999 mem: array size is 2
 9999 mem: new alloc: 1010
@@ -140,7 +140,7 @@ after-brace: get ...
 9999 mem: new alloc: 1024
  103 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1026
- 103 run: tmp:number <- get chan:address:channel/deref, first-free:offset
+ 103 run: tmp:number <- get chan:address:channel/lookup, first-free:offset
 9999 mem: location 1026 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -160,7 +160,7 @@ after-brace: get ...
 9999 mem: new alloc: 1032
  104 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1034
- 104 run: q:address:array:location <- get chan:address:channel/deref, data:offset
+ 104 run: q:address:array:location <- get chan:address:channel/lookup, data:offset
 9999 mem: location 1034 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -170,7 +170,7 @@ after-brace: get ...
 9999 run: its type is address
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1035
- 104 run: result:number <- length q:address:array:location/deref
+ 104 run: result:number <- length q:address:array:location/lookup
 9999 mem: location 1035 is 1010
 9999 mem: location 1010 is 2
 9999 mem: location 1011 is 0
@@ -188,7 +188,7 @@ after-brace: get ...
  103 run: break-unless at-end?:boolean, 
 9999 mem: location 1029 is 0
 9999 run: jumping to instruction 9
- 103 run: full:number <- get chan:address:channel/deref, first-full:offset
+ 103 run: full:number <- get chan:address:channel/lookup, first-full:offset
 9999 mem: location 1026 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -209,7 +209,7 @@ after-brace: get ...
  102 run: break-unless full:boolean, 
 9999 mem: location 1017 is 0
 9999 run: jumping to instruction 8
- 102 run: circular-buffer:address:array:location <- get chan:address:channel/deref, data:offset
+ 102 run: circular-buffer:address:array:location <- get chan:address:channel/lookup, data:offset
 9999 mem: location 1015 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -219,7 +219,7 @@ after-brace: get ...
 9999 run: its type is address
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1019
- 102 run: free:address:number <- get-address chan:address:channel/deref, first-free:offset
+ 102 run: free:address:number <- get-address chan:address:channel/lookup, first-free:offset
 9999 mem: location 1015 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -227,7 +227,7 @@ after-brace: get ...
 9999 mem: location 1015 is 1007
 9999 run: address to copy is 1008
 9999 mem: storing 1008 in location 1020
- 102 run: dest:address:location <- index-address circular-buffer:address:array:location/deref, free:address:number/deref
+ 102 run: dest:address:location <- index-address circular-buffer:address:array:location/lookup, free:address:number/lookup
 9999 mem: location 1019 is 1010
 9999 mem: location 1010 is 2
 9999 mem: location 1011 is 0
@@ -238,23 +238,23 @@ after-brace: get ...
 9999 mem: location 1020 is 1008
 9999 mem: location 1008 is 0
 9999 mem: storing 1011 in location 1021
- 102 run: dest:address:location/deref <- copy val:location
+ 102 run: dest:address:location/lookup <- copy val:location
 9999 mem: location 1016 is 34
 9999 mem: location 1021 is 1011
 9999 mem: storing 34 in location 1011
- 102 run: free:address:number/deref <- add free:address:number/deref, 1
+ 102 run: free:address:number/lookup <- add free:address:number/lookup, 1
 9999 mem: location 1020 is 1008
 9999 mem: location 1008 is 0
 9999 mem: location 1020 is 1008
 9999 mem: storing 1 in location 1008
- 102 run: len:number <- length circular-buffer:address:array:location/deref
+ 102 run: len:number <- length circular-buffer:address:array:location/lookup
 9999 mem: location 1019 is 1010
 9999 mem: location 1010 is 2
 9999 mem: location 1011 is 34
 9999 mem: location 1012 is 0
 9999 mem: location 1019 is 1010
 9999 mem: storing 2 in location 1022
- 102 run: at-end?:boolean <- greater-or-equal free:address:number/deref, len:number
+ 102 run: at-end?:boolean <- greater-or-equal free:address:number/lookup, len:number
 9999 mem: location 1020 is 1008
 9999 mem: location 1008 is 1
 9999 mem: location 1022 is 2
@@ -280,7 +280,7 @@ after-brace: get ...
 9999 mem: new alloc: 1047
  103 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1049
- 103 run: full:number <- get chan:address:channel/deref, first-full:offset
+ 103 run: full:number <- get chan:address:channel/lookup, first-full:offset
 9999 mem: location 1049 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 1
@@ -290,7 +290,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1007 is 0
 9999 mem: storing 0 in location 1050
- 103 run: free:number <- get chan:address:channel/deref, first-free:offset
+ 103 run: free:number <- get chan:address:channel/lookup, first-free:offset
 9999 mem: location 1049 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 1
@@ -311,7 +311,7 @@ after-brace: get ...
  102 run: break-unless empty:boolean, 
 9999 mem: location 1040 is 0
 9999 run: jumping to instruction 7
- 102 run: full:address:number <- get-address chan:address:channel/deref, first-full:offset
+ 102 run: full:address:number <- get-address chan:address:channel/lookup, first-full:offset
 9999 mem: location 1039 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 1
@@ -319,7 +319,7 @@ after-brace: get ...
 9999 mem: location 1039 is 1007
 9999 run: address to copy is 1007
 9999 mem: storing 1007 in location 1042
- 102 run: circular-buffer:address:array:location <- get chan:address:channel/deref, data:offset
+ 102 run: circular-buffer:address:array:location <- get chan:address:channel/lookup, data:offset
 9999 mem: location 1039 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 1
@@ -329,7 +329,7 @@ after-brace: get ...
 9999 run: its type is address
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1043
- 102 run: result:location <- index circular-buffer:address:array:location/deref, full:address:number/deref
+ 102 run: result:location <- index circular-buffer:address:array:location/lookup, full:address:number/lookup
 9999 mem: location 1043 is 1010
 9999 mem: location 1010 is 2
 9999 mem: location 1011 is 34
@@ -343,19 +343,19 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1011 is 34
 9999 mem: storing 34 in location 1044
- 102 run: full:address:number/deref <- add full:address:number/deref, 1
+ 102 run: full:address:number/lookup <- add full:address:number/lookup, 1
 9999 mem: location 1042 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1042 is 1007
 9999 mem: storing 1 in location 1007
- 102 run: len:number <- length circular-buffer:address:array:location/deref
+ 102 run: len:number <- length circular-buffer:address:array:location/lookup
 9999 mem: location 1043 is 1010
 9999 mem: location 1010 is 2
 9999 mem: location 1011 is 34
 9999 mem: location 1012 is 0
 9999 mem: location 1043 is 1010
 9999 mem: storing 2 in location 1045
- 102 run: at-end?:boolean <- greater-or-equal full:address:number/deref, len:number
+ 102 run: at-end?:boolean <- greater-or-equal full:address:number/lookup, len:number
 9999 mem: location 1042 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1045 is 2
@@ -369,7 +369,7 @@ after-brace: get ...
 9999 run: result 0 is 34
 9999 run: result 1 is 1007
 9999 mem: storing 1007 in location 1
- 101 run: 2:number <- get 1:address:channel/deref, first-free:offset
+ 101 run: 2:number <- get 1:address:channel/lookup, first-free:offset
 9999 mem: location 1 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 1
@@ -379,7 +379,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1008 is 1
 9999 mem: storing 1 in location 2
- 101 run: 3:number <- get 1:address:channel/deref, first-free:offset
+ 101 run: 3:number <- get 1:address:channel/lookup, first-free:offset
 9999 mem: location 1 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 1
@@ -403,7 +403,7 @@ after-brace: get ...
 9999 mem: array size is 7
  103 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1026
- 103 run: tmp:number <- get chan:address:channel/deref, first-free:offset
+ 103 run: tmp:number <- get chan:address:channel/lookup, first-free:offset
 9999 mem: location 1026 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 1
@@ -422,7 +422,7 @@ after-brace: get ...
 9999 mem: array size is 4
  104 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1034
- 104 run: q:address:array:location <- get chan:address:channel/deref, data:offset
+ 104 run: q:address:array:location <- get chan:address:channel/lookup, data:offset
 9999 mem: location 1034 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 1
@@ -432,7 +432,7 @@ after-brace: get ...
 9999 run: its type is address
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1035
- 104 run: result:number <- length q:address:array:location/deref
+ 104 run: result:number <- length q:address:array:location/lookup
 9999 mem: location 1035 is 1010
 9999 mem: location 1010 is 2
 9999 mem: location 1011 is 34
@@ -452,7 +452,7 @@ after-brace: get ...
 9999 run: jump-unless fell through
  103 run: tmp:number <- copy 0
 9999 mem: storing 0 in location 1027
- 103 run: full:number <- get chan:address:channel/deref, first-full:offset
+ 103 run: full:number <- get chan:address:channel/lookup, first-full:offset
 9999 mem: location 1026 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 1
@@ -473,7 +473,7 @@ after-brace: get ...
  102 run: break-unless full:boolean, 
 9999 mem: location 1017 is 0
 9999 run: jumping to instruction 8
- 102 run: circular-buffer:address:array:location <- get chan:address:channel/deref, data:offset
+ 102 run: circular-buffer:address:array:location <- get chan:address:channel/lookup, data:offset
 9999 mem: location 1015 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 1
@@ -483,7 +483,7 @@ after-brace: get ...
 9999 run: its type is address
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1019
- 102 run: free:address:number <- get-address chan:address:channel/deref, first-free:offset
+ 102 run: free:address:number <- get-address chan:address:channel/lookup, first-free:offset
 9999 mem: location 1015 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 1
@@ -491,7 +491,7 @@ after-brace: get ...
 9999 mem: location 1015 is 1007
 9999 run: address to copy is 1008
 9999 mem: storing 1008 in location 1020
- 102 run: dest:address:location <- index-address circular-buffer:address:array:location/deref, free:address:number/deref
+ 102 run: dest:address:location <- index-address circular-buffer:address:array:location/lookup, free:address:number/lookup
 9999 mem: location 1019 is 1010
 9999 mem: location 1010 is 2
 9999 mem: location 1011 is 34
@@ -502,23 +502,23 @@ after-brace: get ...
 9999 mem: location 1020 is 1008
 9999 mem: location 1008 is 1
 9999 mem: storing 1012 in location 1021
- 102 run: dest:address:location/deref <- copy val:location
+ 102 run: dest:address:location/lookup <- copy val:location
 9999 mem: location 1016 is 34
 9999 mem: location 1021 is 1012
 9999 mem: storing 34 in location 1012
- 102 run: free:address:number/deref <- add free:address:number/deref, 1
+ 102 run: free:address:number/lookup <- add free:address:number/lookup, 1
 9999 mem: location 1020 is 1008
 9999 mem: location 1008 is 1
 9999 mem: location 1020 is 1008
 9999 mem: storing 2 in location 1008
- 102 run: len:number <- length circular-buffer:address:array:location/deref
+ 102 run: len:number <- length circular-buffer:address:array:location/lookup
 9999 mem: location 1019 is 1010
 9999 mem: location 1010 is 2
 9999 mem: location 1011 is 34
 9999 mem: location 1012 is 34
 9999 mem: location 1019 is 1010
 9999 mem: storing 2 in location 1022
- 102 run: at-end?:boolean <- greater-or-equal free:address:number/deref, len:number
+ 102 run: at-end?:boolean <- greater-or-equal free:address:number/lookup, len:number
 9999 mem: location 1020 is 1008
 9999 mem: location 1008 is 2
 9999 mem: location 1022 is 2
@@ -526,14 +526,14 @@ after-brace: get ...
  102 run: break-unless at-end?:boolean, 
 9999 mem: location 1023 is 1
 9999 run: jump-unless fell through
- 102 run: free:address:number/deref <- copy 0
+ 102 run: free:address:number/lookup <- copy 0
 9999 mem: location 1020 is 1008
 9999 mem: storing 0 in location 1008
  102 run: reply chan:address:channel/same-as-ingredient:0
 9999 mem: location 1015 is 1007
 9999 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
- 101 run: 4:number <- get 1:address:channel/deref, first-free:offset
+ 101 run: 4:number <- get 1:address:channel/lookup, first-free:offset
 9999 mem: location 1 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 0
@@ -555,7 +555,7 @@ after-brace: get ...
 9999 mem: array size is 5
  103 run: chan:address:channel <- next-ingredient 
 9999 mem: storing 1007 in location 1049
- 103 run: full:number <- get chan:address:channel/deref, first-full:offset
+ 103 run: full:number <- get chan:address:channel/lookup, first-full:offset
 9999 mem: location 1049 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 0
@@ -565,7 +565,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1007 is 1
 9999 mem: storing 1 in location 1050
- 103 run: free:number <- get chan:address:channel/deref, first-free:offset
+ 103 run: free:number <- get chan:address:channel/lookup, first-free:offset
 9999 mem: location 1049 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 0
@@ -586,7 +586,7 @@ after-brace: get ...
  102 run: break-unless empty:boolean, 
 9999 mem: location 1040 is 0
 9999 run: jumping to instruction 7
- 102 run: full:address:number <- get-address chan:address:channel/deref, first-full:offset
+ 102 run: full:address:number <- get-address chan:address:channel/lookup, first-full:offset
 9999 mem: location 1039 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 0
@@ -594,7 +594,7 @@ after-brace: get ...
 9999 mem: location 1039 is 1007
 9999 run: address to copy is 1007
 9999 mem: storing 1007 in location 1042
- 102 run: circular-buffer:address:array:location <- get chan:address:channel/deref, data:offset
+ 102 run: circular-buffer:address:array:location <- get chan:address:channel/lookup, data:offset
 9999 mem: location 1039 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1008 is 0
@@ -604,7 +604,7 @@ after-brace: get ...
 9999 run: its type is address
 9999 mem: location 1009 is 1010
 9999 mem: storing 1010 in location 1043
- 102 run: result:location <- index circular-buffer:address:array:location/deref, full:address:number/deref
+ 102 run: result:location <- index circular-buffer:address:array:location/lookup, full:address:number/lookup
 9999 mem: location 1043 is 1010
 9999 mem: location 1010 is 2
 9999 mem: location 1011 is 34
@@ -618,19 +618,19 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1012 is 34
 9999 mem: storing 34 in location 1044
- 102 run: full:address:number/deref <- add full:address:number/deref, 1
+ 102 run: full:address:number/lookup <- add full:address:number/lookup, 1
 9999 mem: location 1042 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1042 is 1007
 9999 mem: storing 2 in location 1007
- 102 run: len:number <- length circular-buffer:address:array:location/deref
+ 102 run: len:number <- length circular-buffer:address:array:location/lookup
 9999 mem: location 1043 is 1010
 9999 mem: location 1010 is 2
 9999 mem: location 1011 is 34
 9999 mem: location 1012 is 34
 9999 mem: location 1043 is 1010
 9999 mem: storing 2 in location 1045
- 102 run: at-end?:boolean <- greater-or-equal full:address:number/deref, len:number
+ 102 run: at-end?:boolean <- greater-or-equal full:address:number/lookup, len:number
 9999 mem: location 1042 is 1007
 9999 mem: location 1007 is 2
 9999 mem: location 1045 is 2
@@ -638,7 +638,7 @@ after-brace: get ...
  102 run: break-unless at-end?:boolean, 
 9999 mem: location 1046 is 1
 9999 run: jump-unless fell through
- 102 run: full:address:number/deref <- copy 0
+ 102 run: full:address:number/lookup <- copy 0
 9999 mem: location 1042 is 1007
 9999 mem: storing 0 in location 1007
  102 run: reply result:location, chan:address:channel/same-as-ingredient:0
@@ -647,7 +647,7 @@ after-brace: get ...
 9999 run: result 0 is 34
 9999 run: result 1 is 1007
 9999 mem: storing 1007 in location 1
- 101 run: 5:number <- get 1:address:channel/deref, first-full:offset
+ 101 run: 5:number <- get 1:address:channel/lookup, first-full:offset
 9999 mem: location 1 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0

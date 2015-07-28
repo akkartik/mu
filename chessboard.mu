@@ -118,7 +118,7 @@ recipe new-board [
   local-scope
   initial-position:address:array:number <- next-ingredient
   # assert(length(initial-position) == 64)
-  len:number <- length initial-position:address:array:number/deref
+  len:number <- length initial-position:address:array:number/lookup
   correct-length?:boolean <- equal len:number, 64
   assert correct-length?:boolean, [chessboard had incorrect size]
   # board is an array of pointers to files; file is an array of characters
@@ -127,8 +127,8 @@ recipe new-board [
   {
     done?:boolean <- equal col:number, 8
     break-if done?:boolean
-    file:address:address:array:character <- index-address board:address:array:address:array:character/deref, col:number
-    file:address:address:array:character/deref <- new-file initial-position:address:array:number, col:number
+    file:address:address:array:character <- index-address board:address:array:address:array:character/lookup, col:number
+    file:address:address:array:character/lookup <- new-file initial-position:address:array:number, col:number
     col:number <- add col:number, 1
     loop
   }
@@ -145,8 +145,8 @@ recipe new-file [
   {
     done?:boolean <- equal row:number, 8
     break-if done?:boolean
-    dest:address:character <- index-address result:address:array:character/deref, row:number
-    dest:address:character/deref <- index position:address:array:number/deref, index:number
+    dest:address:character <- index-address result:address:array:character/lookup, row:number
+    dest:address:character/lookup <- index position:address:array:number/lookup, index:number
     row:number <- add row:number, 1
     index:number <- add index:number, 1
     loop
@@ -175,8 +175,8 @@ recipe print-board [
     {
       done?:boolean <- equal col:number, 8
       break-if done?:boolean
-      f:address:array:character <- index board:address:array:address:array:character/deref, col:number
-      c:character <- index f:address:array:character/deref, row:number
+      f:address:array:character <- index board:address:array:address:array:character/lookup, col:number
+      c:character <- index f:address:array:character/lookup, row:number
       print-character screen:address, c:character
       print-character screen:address, 32/space
       col:number <- add col:number, 1
@@ -272,20 +272,20 @@ recipe read-move [
 #?   close-console #? 1
   # construct the move object
   result:address:move <- new move:type
-  x:address:number <- get-address result:address:move/deref, from-file:offset
-  x:address:number/deref <- copy from-file:number
-  x:address:number <- get-address result:address:move/deref, from-rank:offset
-  x:address:number/deref, quit?:boolean, error?:boolean <- read-rank stdin:address:channel, screen:address
+  x:address:number <- get-address result:address:move/lookup, from-file:offset
+  x:address:number/lookup <- copy from-file:number
+  x:address:number <- get-address result:address:move/lookup, from-rank:offset
+  x:address:number/lookup, quit?:boolean, error?:boolean <- read-rank stdin:address:channel, screen:address
   reply-if quit?:boolean, 0/dummy, quit?:boolean, error?:boolean
   reply-if error?:boolean, 0/dummy, quit?:boolean, error?:boolean
   error?:boolean <- expect-from-channel stdin:address:channel, 45/dash, screen:address
   reply-if error?:boolean, 0/dummy, 0/quit, error?:boolean
-  x:address:number <- get-address result:address:move/deref, to-file:offset
-  x:address:number/deref, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
+  x:address:number <- get-address result:address:move/lookup, to-file:offset
+  x:address:number/lookup, quit?:boolean, error?:boolean <- read-file stdin:address:channel, screen:address
   reply-if quit?:boolean, 0/dummy, quit?:boolean, error?:boolean
   reply-if error?:boolean, 0/dummy, quit?:boolean, error?:boolean
-  x:address:number <- get-address result:address:move/deref, to-rank:offset
-  x:address:number/deref, quit?:boolean, error?:boolean <- read-rank stdin:address:channel, screen:address
+  x:address:number <- get-address result:address:move/lookup, to-rank:offset
+  x:address:number/lookup, quit?:boolean, error?:boolean <- read-rank stdin:address:channel, screen:address
   reply-if quit?:boolean, 0/dummy, quit?:boolean, error?:boolean
   reply-if error?:boolean, 0/dummy, quit?:boolean, error?:boolean
 #?   $exit #? 1
@@ -590,21 +590,21 @@ recipe make-move [
   local-scope
   b:address:array:address:array:character <- next-ingredient
   m:address:move <- next-ingredient
-  from-file:number <- get m:address:move/deref, from-file:offset
+  from-file:number <- get m:address:move/lookup, from-file:offset
 #?   $print from-file:number, 10/newline
-  from-rank:number <- get m:address:move/deref, from-rank:offset
+  from-rank:number <- get m:address:move/lookup, from-rank:offset
 #?   $print from-rank:number, 10/newline
-  to-file:number <- get m:address:move/deref, to-file:offset
+  to-file:number <- get m:address:move/lookup, to-file:offset
 #?   $print to-file:number, 10/newline
-  to-rank:number <- get m:address:move/deref, to-rank:offset
+  to-rank:number <- get m:address:move/lookup, to-rank:offset
 #?   $print to-rank:number, 10/newline
-  f:address:array:character <- index b:address:array:address:array:character/deref, from-file:number
-  src:address:character/square <- index-address f:address:array:character/deref, from-rank:number
-  f:address:array:character <- index b:address:array:address:array:character/deref, to-file:number
-  dest:address:character/square <- index-address f:address:array:character/deref, to-rank:number
-#?   $print src:address:character/deref, 10/newline
-  dest:address:character/deref/square <- copy src:address:character/deref/square
-  src:address:character/deref/square <- copy 32/space
+  f:address:array:character <- index b:address:array:address:array:character/lookup, from-file:number
+  src:address:character/square <- index-address f:address:array:character/lookup, from-rank:number
+  f:address:array:character <- index b:address:array:address:array:character/lookup, to-file:number
+  dest:address:character/square <- index-address f:address:array:character/lookup, to-rank:number
+#?   $print src:address:character/lookup, 10/newline
+  dest:address:character/lookup/square <- copy src:address:character/lookup/square
+  src:address:character/lookup/square <- copy 32/space
   reply b:address:array:address:array:character/same-as-ingredient:0
 ]
 
@@ -613,14 +613,14 @@ scenario making-a-move [
   run [
     2:address:array:address:array:character/board <- initial-position
     3:address:move <- new move:type
-    4:address:number <- get-address 3:address:move/deref, from-file:offset
-    4:address:number/deref <- copy 6/g
-    5:address:number <- get-address 3:address:move/deref, from-rank:offset
-    5:address:number/deref <- copy 1/'2'
-    6:address:number <- get-address 3:address:move/deref, to-file:offset
-    6:address:number/deref <- copy 6/g
-    7:address:number <- get-address 3:address:move/deref, to-rank:offset
-    7:address:number/deref <- copy 3/'4'
+    4:address:number <- get-address 3:address:move/lookup, from-file:offset
+    4:address:number/lookup <- copy 6/g
+    5:address:number <- get-address 3:address:move/lookup, from-rank:offset
+    5:address:number/lookup <- copy 1/'2'
+    6:address:number <- get-address 3:address:move/lookup, to-file:offset
+    6:address:number/lookup <- copy 6/g
+    7:address:number <- get-address 3:address:move/lookup, to-rank:offset
+    7:address:number/lookup <- copy 3/'4'
     2:address:array:address:array:character/board <- make-move 2:address:array:address:array:character/board, 3:address:move
     screen:address <- print-board screen:address, 2:address:array:address:array:character/board
   ]

@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:channel <- new-channel 3/capacity\n    2:number <- get 1:address:channel/deref, first-full:offset\n    3:number <- get 1:address:channel/deref, first-free:offset\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:channel <- new-channel 3/capacity\n    2:number <- get 1:address:channel/lookup, first-full:offset\n    3:number <- get 1:address:channel/lookup, first-free:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 0  # first-full\n    3 <- 0  # first-free\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-channel-initialization
@@ -9,18 +9,18 @@ after-brace: memory-should-contain ...
 schedule: scenario-channel-initialization
  101 run: run [
     1:address:channel <- new-channel 3/capacity
-    2:number <- get 1:address:channel/deref, first-full:offset
-    3:number <- get 1:address:channel/deref, first-free:offset
+    2:number <- get 1:address:channel/lookup, first-full:offset
+    3:number <- get 1:address:channel/lookup, first-free:offset
   ]
 parse: instruction: new-channel
 parse:   ingredient: {name: "3", properties: ["3": "literal", "capacity": ]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 parse: instruction: get
-parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "deref": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "lookup": ]}
 parse:   ingredient: {name: "first-full", properties: ["first-full": "offset"]}
 parse:   product: {name: "2", properties: ["2": "number"]}
 parse: instruction: get
-parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "deref": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"channel", "lookup": ]}
 parse:   ingredient: {name: "first-free", properties: ["first-free": "offset"]}
 parse:   product: {name: "3", properties: ["3": "number"]}
 name: element first-full of type channel is at offset 0
@@ -36,7 +36,7 @@ after-brace: get ...
  102 run: result:address:channel <- new channel:type
 9999 mem: new alloc: 1007
 9999 mem: storing 1007 in location 1002
- 102 run: full:address:number <- get-address result:address:channel/deref, first-full:offset
+ 102 run: full:address:number <- get-address result:address:channel/lookup, first-full:offset
 9999 mem: location 1002 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -44,10 +44,10 @@ after-brace: get ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1007
 9999 mem: storing 1007 in location 1003
- 102 run: full:address:number/deref <- copy 0
+ 102 run: full:address:number/lookup <- copy 0
 9999 mem: location 1003 is 1007
 9999 mem: storing 0 in location 1007
- 102 run: free:address:number <- get-address result:address:channel/deref, first-free:offset
+ 102 run: free:address:number <- get-address result:address:channel/lookup, first-free:offset
 9999 mem: location 1002 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -55,7 +55,7 @@ after-brace: get ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1008
 9999 mem: storing 1008 in location 1004
- 102 run: free:address:number/deref <- copy 0
+ 102 run: free:address:number/lookup <- copy 0
 9999 mem: location 1004 is 1008
 9999 mem: storing 0 in location 1008
  102 run: capacity:number <- next-ingredient 
@@ -63,7 +63,7 @@ after-brace: get ...
  102 run: capacity:number <- add capacity:number, 1
 9999 mem: location 1005 is 3
 9999 mem: storing 4 in location 1005
- 102 run: dest:address:address:array:location <- get-address result:address:channel/deref, data:offset
+ 102 run: dest:address:address:array:location <- get-address result:address:channel/lookup, data:offset
 9999 mem: location 1002 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -71,7 +71,7 @@ after-brace: get ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1009
 9999 mem: storing 1009 in location 1006
- 102 run: dest:address:address:array:location/deref <- new location:type, capacity:number
+ 102 run: dest:address:address:array:location/lookup <- new location:type, capacity:number
 9999 mem: location 1005 is 4
 9999 mem: array size is 4
 9999 mem: new alloc: 1010
@@ -81,7 +81,7 @@ after-brace: get ...
 9999 mem: location 1002 is 1007
 9999 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
- 101 run: 2:number <- get 1:address:channel/deref, first-full:offset
+ 101 run: 2:number <- get 1:address:channel/lookup, first-full:offset
 9999 mem: location 1 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0
@@ -91,7 +91,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1007 is 0
 9999 mem: storing 0 in location 2
- 101 run: 3:number <- get 1:address:channel/deref, first-free:offset
+ 101 run: 3:number <- get 1:address:channel/lookup, first-free:offset
 9999 mem: location 1 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1008 is 0

@@ -1,12 +1,9 @@
 parse: instruction: copy
-parse:   ingredient: {name: "2", properties: ["2": "literal"]}
+parse:   ingredient: {name: "34", properties: ["34": "literal"]}
 parse:   product: {name: "12", properties: ["12": "number"]}
 parse: instruction: copy
-parse:   ingredient: {name: "34", properties: ["34": "literal"]}
-parse:   product: {name: "13", properties: ["13": "number"]}
-parse: instruction: copy
 parse:   ingredient: {name: "35", properties: ["35": "literal"]}
-parse:   product: {name: "14", properties: ["14": "number"]}
+parse:   product: {name: "13", properties: ["13": "number"]}
 parse: instruction: copy
 parse:   ingredient: {name: "5", properties: ["5": "literal"]}
 parse:   product: {name: "1000", properties: ["1000": "number"]}
@@ -15,10 +12,10 @@ parse:   ingredient: {name: "1000", properties: ["1000": "literal"]}
 parse:   product: {name: "default-space", properties: ["default-space": "address":"array":"location"]}
 parse: instruction: copy
 parse:   ingredient: {name: "12", properties: ["12": "literal"]}
-parse:   product: {name: "1", properties: ["1": "address":"array":"number"]}
-parse: instruction: index
-parse:   ingredient: {name: "1", properties: ["1": "address":"array":"number", "deref": ]}
-parse:   ingredient: {name: "1", properties: ["1": "literal"]}
+parse:   product: {name: "1", properties: ["1": "address":"point"]}
+parse: instruction: get
+parse:   ingredient: {name: "1", properties: ["1": "address":"point", "lookup": ]}
+parse:   ingredient: {name: "1", properties: ["1": "offset"]}
 parse:   product: {name: "9", properties: ["9": "number", "raw": ]}
 after-brace: recipe main
 after-brace: copy ...
@@ -26,28 +23,24 @@ after-brace: copy ...
 after-brace: copy ...
 after-brace: copy ...
 after-brace: copy ...
-after-brace: copy ...
-after-brace: index ...
+after-brace: get ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: main
- 101 run: 12:number <- copy 2
-9999 mem: storing 2 in location 12
- 101 run: 13:number <- copy 34
-9999 mem: storing 34 in location 13
- 101 run: 14:number <- copy 35
-9999 mem: storing 35 in location 14
+ 101 run: 12:number <- copy 34
+9999 mem: storing 34 in location 12
+ 101 run: 13:number <- copy 35
+9999 mem: storing 35 in location 13
  101 run: 1000:number <- copy 5
 9999 mem: storing 5 in location 1000
  101 run: default-space:address:array:location <- copy 1000
- 101 run: 1:address:array:number <- copy 12
+ 101 run: 1:address:point <- copy 12
 9999 mem: storing 12 in location 1002
- 101 run: 9:number/raw <- index 1:address:array:number/deref, 1
+ 101 run: 9:number/raw <- get 1:address:point/lookup, 1:offset
 9999 mem: location 1002 is 12
-9999 mem: location 12 is 2
-9999 mem: location 13 is 34
-9999 mem: location 14 is 35
+9999 mem: location 12 is 34
+9999 mem: location 13 is 35
 9999 mem: location 1002 is 12
-9999 run: address to copy is 14
+9999 run: address to copy is 13
 9999 run: its type is number
-9999 mem: location 14 is 35
+9999 mem: location 13 is 35
 9999 mem: storing 35 in location 9

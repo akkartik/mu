@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0  # 1 points to singleton list\n    1:address:duplex-list <- push-duplex 3, 1:address:duplex-list\n    2:address:duplex-list <- remove-duplex 1:address:duplex-list\n    3:address:duplex-list <- get 1:address:duplex-list/deref, next:offset\n    4:address:duplex-list <- get 1:address:duplex-list/deref, prev:offset\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0  # 1 points to singleton list\n    1:address:duplex-list <- push-duplex 3, 1:address:duplex-list\n    2:address:duplex-list <- remove-duplex 1:address:duplex-list\n    3:address:duplex-list <- get 1:address:duplex-list/lookup, next:offset\n    4:address:duplex-list <- get 1:address:duplex-list/lookup, prev:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 0  # remove returned null\n    3 <- 0  # removed node is also detached\n    4 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-removing-from-singleton-list
@@ -11,8 +11,8 @@ schedule: scenario-removing-from-singleton-list
     1:address:duplex-list <- copy 0  # 1 points to singleton list
     1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
     2:address:duplex-list <- remove-duplex 1:address:duplex-list
-    3:address:duplex-list <- get 1:address:duplex-list/deref, next:offset
-    4:address:duplex-list <- get 1:address:duplex-list/deref, prev:offset
+    3:address:duplex-list <- get 1:address:duplex-list/lookup, next:offset
+    4:address:duplex-list <- get 1:address:duplex-list/lookup, prev:offset
   ]
 parse: instruction: copy
 parse:   ingredient: {name: "0", properties: ["0": "literal"]}
@@ -25,11 +25,11 @@ parse: instruction: remove-duplex
 parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list"]}
 parse:   product: {name: "2", properties: ["2": "address":"duplex-list"]}
 parse: instruction: get
-parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list", "deref": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list", "lookup": ]}
 parse:   ingredient: {name: "next", properties: ["next": "offset"]}
 parse:   product: {name: "3", properties: ["3": "address":"duplex-list"]}
 parse: instruction: get
-parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list", "deref": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"duplex-list", "lookup": ]}
 parse:   ingredient: {name: "prev", properties: ["prev": "offset"]}
 parse:   product: {name: "4", properties: ["4": "address":"duplex-list"]}
 name: element next of type duplex-list is at offset 1
@@ -54,7 +54,7 @@ after-brace: get ...
  102 run: result:address:duplex-list <- new duplex-list:type
 9999 mem: new alloc: 1008
 9999 mem: storing 1008 in location 1004
- 102 run: val:address:location <- get-address result:address:duplex-list/deref, value:offset
+ 102 run: val:address:location <- get-address result:address:duplex-list/lookup, value:offset
 9999 mem: location 1004 is 1008
 9999 mem: location 1008 is 0
 9999 mem: location 1009 is 0
@@ -62,11 +62,11 @@ after-brace: get ...
 9999 mem: location 1004 is 1008
 9999 run: address to copy is 1008
 9999 mem: storing 1008 in location 1005
- 102 run: val:address:location/deref <- copy x:location
+ 102 run: val:address:location/lookup <- copy x:location
 9999 mem: location 1002 is 3
 9999 mem: location 1005 is 1008
 9999 mem: storing 3 in location 1008
- 102 run: next:address:address:duplex-list <- get-address result:address:duplex-list/deref, next:offset
+ 102 run: next:address:address:duplex-list <- get-address result:address:duplex-list/lookup, next:offset
 9999 mem: location 1004 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -74,7 +74,7 @@ after-brace: get ...
 9999 mem: location 1004 is 1008
 9999 run: address to copy is 1009
 9999 mem: storing 1009 in location 1006
- 102 run: next:address:address:duplex-list/deref <- copy in:address:duplex-list
+ 102 run: next:address:address:duplex-list/lookup <- copy in:address:duplex-list
 9999 mem: location 1003 is 0
 9999 mem: location 1006 is 1009
 9999 mem: storing 0 in location 1009
@@ -95,7 +95,7 @@ after-brace: get ...
  102 run: jump-if in:address:duplex-list, 1:offset
 9999 mem: location 1013 is 1008
 9999 run: jumping to instruction 4
- 102 run: next-node:address:duplex-list <- get in:address:duplex-list/deref, next:offset
+ 102 run: next-node:address:duplex-list <- get in:address:duplex-list/lookup, next:offset
 9999 mem: location 1013 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -105,7 +105,7 @@ after-brace: get ...
 9999 run: its type is address
 9999 mem: location 1009 is 0
 9999 mem: storing 0 in location 1014
- 102 run: prev-node:address:duplex-list <- get in:address:duplex-list/deref, prev:offset
+ 102 run: prev-node:address:duplex-list <- get in:address:duplex-list/lookup, prev:offset
 9999 mem: location 1013 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -115,7 +115,7 @@ after-brace: get ...
 9999 run: its type is address
 9999 mem: location 1010 is 0
 9999 mem: storing 0 in location 1015
- 102 run: x:address:address:duplex-list <- get-address in:address:duplex-list/deref, next:offset
+ 102 run: x:address:address:duplex-list <- get-address in:address:duplex-list/lookup, next:offset
 9999 mem: location 1013 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -123,10 +123,10 @@ after-brace: get ...
 9999 mem: location 1013 is 1008
 9999 run: address to copy is 1009
 9999 mem: storing 1009 in location 1016
- 102 run: x:address:address:duplex-list/deref <- copy 0
+ 102 run: x:address:address:duplex-list/lookup <- copy 0
 9999 mem: location 1016 is 1009
 9999 mem: storing 0 in location 1009
- 102 run: x:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
+ 102 run: x:address:address:duplex-list <- get-address in:address:duplex-list/lookup, prev:offset
 9999 mem: location 1013 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -134,7 +134,7 @@ after-brace: get ...
 9999 mem: location 1013 is 1008
 9999 run: address to copy is 1010
 9999 mem: storing 1010 in location 1016
- 102 run: x:address:address:duplex-list/deref <- copy 0
+ 102 run: x:address:address:duplex-list/lookup <- copy 0
 9999 mem: location 1016 is 1010
 9999 mem: storing 0 in location 1010
  102 run: break-unless next-node:address:duplex-list, 
@@ -147,7 +147,7 @@ after-brace: get ...
 9999 mem: location 1014 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 2
- 101 run: 3:address:duplex-list <- get 1:address:duplex-list/deref, next:offset
+ 101 run: 3:address:duplex-list <- get 1:address:duplex-list/lookup, next:offset
 9999 mem: location 1 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0
@@ -157,7 +157,7 @@ after-brace: get ...
 9999 run: its type is address
 9999 mem: location 1009 is 0
 9999 mem: storing 0 in location 3
- 101 run: 4:address:duplex-list <- get 1:address:duplex-list/deref, prev:offset
+ 101 run: 4:address:duplex-list <- get 1:address:duplex-list/lookup, prev:offset
 9999 mem: location 1 is 1008
 9999 mem: location 1008 is 3
 9999 mem: location 1009 is 0

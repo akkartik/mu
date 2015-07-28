@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character/raw <- integer-to-decimal-string 0\n    2:array:character/raw <- copy 1:address:array:character/deref/raw\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character/raw <- integer-to-decimal-string 0\n    2:array:character/raw <- copy 1:address:array:character/lookup/raw\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2:string <- [0]\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-integer-to-decimal-digit-zero
@@ -9,13 +9,13 @@ after-brace: memory-should-contain ...
 schedule: scenario-integer-to-decimal-digit-zero
  101 run: run [
     1:address:array:character/raw <- integer-to-decimal-string 0
-    2:array:character/raw <- copy 1:address:array:character/deref/raw
+    2:array:character/raw <- copy 1:address:array:character/lookup/raw
   ]
 parse: instruction: integer-to-decimal-string
 parse:   ingredient: {name: "0", properties: ["0": "literal"]}
 parse:   product: {name: "1", properties: ["1": "address":"array":"character", "raw": ]}
 parse: instruction: copy
-parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character", "deref": , "raw": ]}
+parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character", "lookup": , "raw": ]}
 parse:   product: {name: "2", properties: ["2": "array":"character", "raw": ]}
 after-brace: recipe run1001
 after-brace: integer-to-decimal-string ...
@@ -35,7 +35,7 @@ after-brace: copy ...
 9999 mem: location 1003 is 1017
 9999 run: result 0 is 1017
 9999 mem: storing 1017 in location 1
- 101 run: 2:array:character/raw <- copy 1:address:array:character/deref/raw
+ 101 run: 2:array:character/raw <- copy 1:address:array:character/lookup/raw
 9999 mem: location 1 is 1017
 9999 mem: location 1017 is 1
 9999 mem: location 1018 is 48

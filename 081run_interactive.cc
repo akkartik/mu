@@ -102,7 +102,7 @@ recipe main [
   # try to interactively add 2 and 2
   1:address:array:character <- new [add 2, 2]
   2:address:array:character <- run-interactive 1:address:array:character
-  10:array:character <- copy 2:address:array:character/deref
+  10:array:character <- copy 2:address:array:character/lookup
 ]
 # first letter in the output should be '4' in unicode
 +mem: storing 52 in location 11
@@ -116,7 +116,7 @@ recipe main [
     102:address:array:character <- string-append 100:address:array:character, 101:address:array:character
   ]
   2:address:array:character <- run-interactive 1:address:array:character
-  10:array:character <- copy 2:address:array:character/deref
+  10:array:character <- copy 2:address:array:character/lookup
 ]
 # output contains "ab"
 +mem: storing 97 in location 11
@@ -127,7 +127,7 @@ recipe main [
   # run a command that generates a warning
   1:address:array:character <- new [get 1234:number, foo:offset]
   2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
-  10:array:character <- copy 3:address:array:character/deref
+  10:array:character <- copy 3:address:array:character/lookup
 ]
 # warning should be "unknown element foo in container number"
 +mem: storing 117 in location 11
