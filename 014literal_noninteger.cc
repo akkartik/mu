@@ -7,15 +7,15 @@ recipe main [
 ]
 +parse:   ingredient: {name: "3.14159", properties: ["3.14159": "literal-number"]}
 
-:(after "reagent::reagent(string s)")
-  if (is_noninteger(s)) {
-    name = s;
-    types.push_back(0);
-    properties.push_back(pair<string, vector<string> >(name, vector<string>()));
-    properties.back().second.push_back("literal-number");
-    set_value(to_double(s));
-    return;
-  }
+:(after "Parsing reagent(string s)")
+if (is_noninteger(s)) {
+  name = s;
+  types.push_back(0);
+  properties.push_back(pair<string, vector<string> >(name, vector<string>()));
+  properties.back().second.push_back("literal-number");
+  set_value(to_double(s));
+  return;
+}
 
 :(code)
 bool is_noninteger(const string& s) {
