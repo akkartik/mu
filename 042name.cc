@@ -2,14 +2,14 @@
 //: locations. In mu, a transform called 'transform_names' provides this
 //: convenience.
 
-:(scenario convert_names)
+:(scenario transform_names)
 recipe main [
   x:number <- copy 0
 ]
 +name: assign x 1
 +mem: storing 0 in location 1
 
-:(scenario convert_names_warns)
+:(scenario transform_names_warns)
 % Hide_warnings = true;
 recipe main [
   x:number <- copy y:number
@@ -132,7 +132,7 @@ bool is_special_name(const string& s) {
   return false;
 }
 
-:(scenario convert_names_passes_dummy)
+:(scenario transform_names_passes_dummy)
 # _ is just a dummy result that never gets consumed
 recipe main [
   _, x:number <- copy 0, 1
@@ -141,20 +141,20 @@ recipe main [
 -name: assign _ 1
 
 //: an escape hatch to suppress name conversion that we'll use later
-:(scenario convert_names_passes_raw)
+:(scenario transform_names_passes_raw)
 recipe main [
   x:number/raw <- copy 0
 ]
 -name: assign x 1
 
-:(scenario convert_names_warns_when_mixing_names_and_numeric_locations)
+:(scenario transform_names_warns_when_mixing_names_and_numeric_locations)
 % Hide_warnings = true;
 recipe main [
   x:number <- copy 1:number
 ]
 +warn: mixing variable names and numeric addresses in main
 
-:(scenario convert_names_warns_when_mixing_names_and_numeric_locations2)
+:(scenario transform_names_warns_when_mixing_names_and_numeric_locations2)
 % Hide_warnings = true;
 recipe main [
   x:number <- copy 1
@@ -162,7 +162,7 @@ recipe main [
 ]
 +warn: mixing variable names and numeric addresses in main
 
-:(scenario convert_names_does_not_warn_when_mixing_names_and_raw_locations)
+:(scenario transform_names_does_not_warn_when_mixing_names_and_raw_locations)
 % Hide_warnings = true;
 recipe main [
   x:number <- copy 1:number/raw
@@ -170,7 +170,7 @@ recipe main [
 -warn: mixing variable names and numeric addresses in main
 $warn: 0
 
-:(scenario convert_names_does_not_warn_when_mixing_names_and_literals)
+:(scenario transform_names_does_not_warn_when_mixing_names_and_literals)
 % Hide_warnings = true;
 recipe main [
   x:number <- copy 1
@@ -184,7 +184,7 @@ $warn: 0
 :(before "End Mu Types Initialization")
 Type[point].element_names.push_back("x");
 Type[point].element_names.push_back("y");
-:(scenario convert_names_transforms_container_elements)
+:(scenario transform_names_transforms_container_elements)
 recipe main [
   p:address:point <- copy 0  # unsafe
   a:number <- get p:address:point/lookup, y:offset
@@ -213,7 +213,7 @@ if (inst.operation == Recipe_ordinal["get"]
 
 //: this test is actually illegal so can't call run
 :(scenarios transform)
-:(scenario convert_names_handles_containers)
+:(scenario transform_names_handles_containers)
 recipe main [
   a:point <- copy 0
   b:number <- copy 0
@@ -224,7 +224,7 @@ recipe main [
 //:: Support variant names for exclusive containers in 'maybe-convert'.
 
 :(scenarios run)
-:(scenario maybe_convert_named)
+:(scenario transform_names_handles_exclusive_containers)
 recipe main [
   12:number <- copy 1
   13:number <- copy 35
