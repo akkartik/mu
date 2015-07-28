@@ -104,7 +104,7 @@ recipe main [
 :(after "reagent base = " following "case GET_ADDRESS:")
 base = canonize(base);
 
-//:: helper for debugging
+//:: helper for debugging memory corruption (writing to an out-of-bounds address)
 
 //: grab an address, and then dump its value at intervals
 :(before "End Globals")
