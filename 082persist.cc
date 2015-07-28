@@ -15,6 +15,7 @@ case RESTORE: {
   if (!scalar(ingredients.at(0)))
     raise << current_recipe_name() << ": first ingredient of 'restore' should be a literal string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
   products.resize(1);
+  if (Current_scenario) break;  // do nothing in tests
   string filename = current_instruction().ingredients.at(0).name;
   if (!is_literal(current_instruction().ingredients.at(0)))
     filename = to_string(ingredients.at(0).at(0));
@@ -57,12 +58,13 @@ case SAVE: {
   }
   if (!scalar(ingredients.at(0)))
     raise << current_recipe_name() << ": first ingredient of 'save' should be a literal string, but got " << current_instruction().ingredients.at(0).to_string() << '\n' << end();
+  if (!scalar(ingredients.at(1)))
+    raise << current_recipe_name() << ": second ingredient of 'save' should be an address:array:character, but got " << current_instruction().ingredients.at(1).to_string() << '\n' << end();
+  if (Current_scenario) break;  // do nothing in tests
   string filename = current_instruction().ingredients.at(0).name;
   if (!is_literal(current_instruction().ingredients.at(0)))
     filename = to_string(ingredients.at(0).at(0));
   ofstream fout(("lesson/"+filename).c_str());
-  if (!scalar(ingredients.at(1)))
-    raise << current_recipe_name() << ": second ingredient of 'save' should be an address:array:character, but got " << current_instruction().ingredients.at(1).to_string() << '\n' << end();
   string contents = read_mu_string(ingredients.at(1).at(0));
   fout << contents;
   fout.close();
