@@ -2,14 +2,14 @@
 
 recipe main [
   open-console
-  print-character-to-display 97:literal, 1:literal/red, 2:literal/green
+  print-character-to-display 97, 1/red, 2/green
   1:number/raw, 2:number/raw <- cursor-position-on-display
   wait-for-some-interaction
   clear-display
-  move-cursor-on-display 0:literal, 4:literal
-  print-character-to-display 98:literal
+  move-cursor-on-display 0, 4
+  print-character-to-display 98
   wait-for-some-interaction
-  move-cursor-on-display 0:literal, 0:literal
+  move-cursor-on-display 0, 0
   clear-line-on-display
   wait-for-some-interaction
   move-cursor-down-on-display

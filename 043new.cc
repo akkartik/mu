@@ -139,22 +139,22 @@ recipe main [
 
 :(scenario new_array)
 recipe main [
-  1:address:array:number/raw <- new number:type, 5:literal
+  1:address:array:number/raw <- new number:type, 5
   2:address:number/raw <- new number:type
   3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
 ]
-+run: 1:address:array:number/raw <- new number:type, 5:literal
++run: 1:address:array:number/raw <- new number:type, 5
 +mem: array size is 5
 # don't forget the extra location for array size
 +mem: storing 6 in location 3
 
 :(scenario new_empty_array)
 recipe main [
-  1:address:array:number/raw <- new number:type, 0:literal
+  1:address:array:number/raw <- new number:type, 0
   2:address:number/raw <- new number:type
   3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
 ]
-+run: 1:address:array:number/raw <- new number:type, 0:literal
++run: 1:address:array:number/raw <- new number:type, 0
 +mem: array size is 0
 +mem: storing 1 in location 3
 
@@ -173,7 +173,7 @@ recipe f2 [
   # hack: assumes scheduler implementation
   3:boolean/raw <- equal 1:address:number/raw, 2:address:number/raw
   # signal f2 complete
-  4:number/raw <- copy 1:literal
+  4:number/raw <- copy 1
 ]
 +mem: storing 0 in location 3
 
@@ -266,7 +266,7 @@ if (Free_list[size]) {
 recipe main [
   1:address:number <- new number:type
   abandon 1:address:number
-  2:address:number <- new number:type, 2:literal  # different size
+  2:address:number <- new number:type, 2  # different size
   3:boolean <- equal 1:address:number, 2:address:number
 ]
 # no reuse
@@ -274,9 +274,9 @@ recipe main [
 
 :(scenario new_reclaim_array)
 recipe main [
-  1:address:array:number <- new number:type, 2:literal
+  1:address:array:number <- new number:type, 2
   abandon 1:address:array:number
-  2:address:array:number <- new number:type, 2:literal
+  2:address:array:number <- new number:type, 2
   3:boolean <- equal 1:address:array:number, 2:address:array:number
 ]
 # reuse
@@ -287,7 +287,7 @@ recipe main [
 :(scenario new_string)
 recipe main [
   1:address:array:character <- new [abc def]
-  2:character <- index 1:address:array:character/deref, 5:literal
+  2:character <- index 1:address:array:character/deref, 5
 ]
 # number code for 'e'
 +mem: storing 101 in location 2
@@ -296,7 +296,7 @@ recipe main [
 recipe main [
   1:address:array:character <- new [a«c]
   2:number <- length 1:address:array:character/deref
-  3:character <- index 1:address:array:character/deref, 1:literal
+  3:character <- index 1:address:array:character/deref, 1
 ]
 +mem: storing 3 in location 2
 # unicode for '«'

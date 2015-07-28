@@ -3,7 +3,7 @@
 :(scenarios load)  // use 'load' instead of 'run' in all scenarios in this layer
 :(scenario first_recipe)
 recipe main [
-  1:number <- copy 23:literal
+  1:number <- copy 23
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", properties: ["23": "literal"]}
@@ -245,7 +245,7 @@ recently_added_recipes.clear();
 recipe f1 [ ]
 # this comment will go through to 'load'
 recipe main [
-  1:number <- copy 23:literal
+  1:number <- copy 23
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", properties: ["23": "literal"]}
@@ -254,7 +254,7 @@ recipe main [
 :(scenario parse_comment_amongst_instruction)
 recipe main [
   # comment
-  1:number <- copy 23:literal
+  1:number <- copy 23
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", properties: ["23": "literal"]}
@@ -263,7 +263,7 @@ recipe main [
 :(scenario parse_comment_amongst_instruction2)
 recipe main [
   # comment
-  1:number <- copy 23:literal
+  1:number <- copy 23
   # comment
 ]
 +parse: instruction: copy
@@ -272,9 +272,9 @@ recipe main [
 
 :(scenario parse_comment_amongst_instruction3)
 recipe main [
-  1:number <- copy 23:literal
+  1:number <- copy 23
   # comment
-  2:number <- copy 23:literal
+  2:number <- copy 23
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", properties: ["23": "literal"]}
@@ -285,7 +285,7 @@ recipe main [
 
 :(scenario parse_comment_after_instruction)
 recipe main [
-  1:number <- copy 23:literal  # comment
+  1:number <- copy 23  # comment
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", properties: ["23": "literal"]}
@@ -305,7 +305,7 @@ recipe main [
 
 :(scenario parse_multiple_properties)
 recipe main [
-  1:number <- copy 23:literal/foo:bar:baz
+  1:number <- copy 23/foo:bar:baz
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", properties: ["23": "literal", "foo": "bar":"baz"]}
@@ -313,7 +313,7 @@ recipe main [
 
 :(scenario parse_multiple_products)
 recipe main [
-  1:number, 2:number <- copy 23:literal
+  1:number, 2:number <- copy 23
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", properties: ["23": "literal"]}
@@ -322,7 +322,7 @@ recipe main [
 
 :(scenario parse_multiple_ingredients)
 recipe main [
-  1:number, 2:number <- copy 23:literal, 4:number
+  1:number, 2:number <- copy 23, 4:number
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", properties: ["23": "literal"]}
@@ -332,7 +332,7 @@ recipe main [
 
 :(scenario parse_multiple_types)
 recipe main [
-  1:number, 2:address:number <- copy 23:literal, 4:number
+  1:number, 2:address:number <- copy 23, 4:number
 ]
 +parse: instruction: copy
 +parse:   ingredient: {name: "23", properties: ["23": "literal"]}
@@ -342,6 +342,6 @@ recipe main [
 
 :(scenario parse_properties)
 recipe main [
-  1:number:address/deref <- copy 23:literal
+  1:number:address/deref <- copy 23
 ]
 +parse:   product: {name: "1", properties: ["1": "number":"address", "deref": ]}

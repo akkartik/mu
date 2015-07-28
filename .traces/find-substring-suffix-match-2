@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character <- new [abcd]\n    2:address:array:character <- new [cde]\n    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character <- new [abcd]\n    2:address:array:character <- new [cde]\n    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3 <- 4  # not found\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-find-substring-suffix-match-2
@@ -10,7 +10,7 @@ schedule: scenario-find-substring-suffix-match-2
  101 run: run [
     1:address:array:character <- new [abcd]
     2:address:array:character <- new [cde]
-    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0
   ]
 parse: instruction: new
 parse:   ingredient: {name: "abcd", properties: [_: "literal-string"]}
@@ -31,7 +31,7 @@ after-brace: find-substring ...
 9999 mem: storing 1000 in location 1
  101 run: 2:address:array:character <- new [cde]
 9999 mem: storing 1005 in location 2
- 101 run: 3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal
+ 101 run: 3:number <- find-substring 1:address:array:character, 2:address:array:character, 0
 9999 mem: location 1 is 1000
 9999 mem: location 2 is 1005
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -43,7 +43,7 @@ after-brace: find-substring ...
 9999 mem: storing 1005 in location 1012
  102 run: idx:number <- next-ingredient 
 9999 mem: storing 0 in location 1013
- 102 run: first:character <- index pattern:address:array:character/deref, 0:literal
+ 102 run: first:character <- index pattern:address:array:character/deref, 0
 9999 mem: location 1012 is 1005
 9999 mem: location 1005 is 3
 9999 mem: location 1006 is 99
@@ -111,7 +111,7 @@ after-brace: find-substring ...
  103 run: break-if enough-room?:boolean, 
 9999 mem: location 1025 is 1
 9999 run: jumping to instruction 11
- 103 run: pattern-idx:number <- copy 0:literal
+ 103 run: pattern-idx:number <- copy 0
 9999 mem: storing 0 in location 1026
  103 run: done?:boolean <- greater-or-equal pattern-idx:number, pattern-len:number
 9999 mem: location 1026 is 0
@@ -154,13 +154,13 @@ after-brace: find-substring ...
  103 run: break-if match?:boolean, 
 9999 mem: location 1030 is 0
 9999 run: jump-if fell through
- 103 run: reply 0:literal/not-found
+ 103 run: reply 0/not-found
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1017
  102 run: break-if found?:boolean, 
 9999 mem: location 1017 is 0
 9999 run: jump-if fell through
- 102 run: idx:number <- add idx:number, 1:literal
+ 102 run: idx:number <- add idx:number, 1
 9999 mem: location 1013 is 0
 9999 mem: storing 1 in location 1013
  102 run: idx:number <- find-next text:address:array:character, first:character, idx:number
@@ -213,7 +213,7 @@ after-brace: find-substring ...
  103 run: break-if found?:boolean, 
 9999 mem: location 1039 is 0
 9999 run: jump-if fell through
- 103 run: idx:number <- add idx:number, 1:literal
+ 103 run: idx:number <- add idx:number, 1
 9999 mem: location 1035 is 1
 9999 mem: storing 2 in location 1035
  103 run: loop 
@@ -299,13 +299,13 @@ after-brace: find-substring ...
  103 run: break-if enough-room?:boolean, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
- 103 run: reply 0:literal/not-found
+ 103 run: reply 0/not-found
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1017
  102 run: break-if found?:boolean, 
 9999 mem: location 1017 is 0
 9999 run: jump-if fell through
- 102 run: idx:number <- add idx:number, 1:literal
+ 102 run: idx:number <- add idx:number, 1
 9999 mem: location 1013 is 2
 9999 mem: storing 3 in location 1013
  102 run: idx:number <- find-next text:address:array:character, first:character, idx:number
@@ -357,7 +357,7 @@ after-brace: find-substring ...
  103 run: break-if found?:boolean, 
 9999 mem: location 1039 is 0
 9999 run: jump-if fell through
- 103 run: idx:number <- add idx:number, 1:literal
+ 103 run: idx:number <- add idx:number, 1
 9999 mem: location 1035 is 3
 9999 mem: storing 4 in location 1035
  103 run: loop 

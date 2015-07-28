@@ -2,7 +2,7 @@ parse: instruction: assume-screen
 parse:   ingredient: {name: "20", properties: ["20": "literal", "width": ]}
 parse:   ingredient: {name: "2", properties: ["2": "literal", "height": ]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:channel <- new-channel 2:literal\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting\n    assert 4:boolean/waiting?, [\nF read-move-file: routine failed to pause after coming up (before any keys were pressed)]\n    1:address:channel <- write 1:address:channel, 10:literal/newline\n    1:address:channel <- write 1:address:channel, 97:literal  # 'a'\n    restart 2:number/routine\n    wait-for-routine 2:number\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:channel <- new-channel 2\n    2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address\n    # 'read-move' is waiting for input\n    wait-for-routine 2:number\n    3:number <- routine-state 2:number/id\n    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting\n    assert 4:boolean/waiting?, [\nF read-move-file: routine failed to pause after coming up (before any keys were pressed)]\n    1:address:channel <- write 1:address:channel, 10/newline\n    1:address:channel <- write 1:address:channel, 97/a\n    restart 2:number/routine\n    wait-for-routine 2:number\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
 parse:   ingredient: {name: "\n    .that's not enough   .\n    .                    .\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-read-move-empty
@@ -11,7 +11,7 @@ after-brace: run ...
 after-brace: screen-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: scenario-read-move-empty
- 101 run: screen:address <- new-fake-screen 20:literal/width, 2:literal/height
+ 101 run: screen:address <- new-fake-screen 20/width, 2/height
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
 9999 mem: new alloc: 1000
@@ -54,7 +54,7 @@ schedule: scenario-read-move-empty
 9999 mem: location 1002 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1005
- 102 run: row:address:number/deref <- copy 0:literal
+ 102 run: row:address:number/deref <- copy 0
 9999 mem: location 1005 is 1011
 9999 mem: storing 0 in location 1011
  102 run: column:address:number <- get-address result:address:screen/deref, cursor-column:offset
@@ -67,7 +67,7 @@ schedule: scenario-read-move-empty
 9999 mem: location 1002 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1006
- 102 run: column:address:number/deref <- copy 0:literal
+ 102 run: column:address:number/deref <- copy 0
 9999 mem: location 1006 is 1012
 9999 mem: storing 0 in location 1012
  102 run: bufsize:number <- multiply width:address:number/deref, height:address:number/deref
@@ -199,7 +199,7 @@ schedule: scenario-read-move-empty
 9999 mem: location 1094 is 0
 9999 mem: location 1098 is 1014
 9999 mem: storing 40 in location 1099
- 103 run: i:number <- copy 0:literal
+ 103 run: i:number <- copy 0
 9999 mem: storing 0 in location 1100
  103 run: done?:boolean <- greater-or-equal i:number, max:number
 9999 mem: location 1100 is 0
@@ -312,10 +312,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1015
 9999 run: address to copy is 1016
 9999 mem: storing 1016 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1016
 9999 mem: storing 7 in location 1016
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 0
 9999 mem: storing 1 in location 1100
  103 run: loop 
@@ -431,10 +431,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1017
 9999 run: address to copy is 1018
 9999 mem: storing 1018 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1018
 9999 mem: storing 7 in location 1018
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 1
 9999 mem: storing 2 in location 1100
  103 run: loop 
@@ -550,10 +550,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1019
 9999 run: address to copy is 1020
 9999 mem: storing 1020 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1020
 9999 mem: storing 7 in location 1020
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 2
 9999 mem: storing 3 in location 1100
  103 run: loop 
@@ -669,10 +669,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1021
 9999 run: address to copy is 1022
 9999 mem: storing 1022 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1022
 9999 mem: storing 7 in location 1022
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 3
 9999 mem: storing 4 in location 1100
  103 run: loop 
@@ -788,10 +788,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1023
 9999 run: address to copy is 1024
 9999 mem: storing 1024 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1024
 9999 mem: storing 7 in location 1024
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 4
 9999 mem: storing 5 in location 1100
  103 run: loop 
@@ -907,10 +907,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1025
 9999 run: address to copy is 1026
 9999 mem: storing 1026 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1026
 9999 mem: storing 7 in location 1026
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 5
 9999 mem: storing 6 in location 1100
  103 run: loop 
@@ -1026,10 +1026,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1027
 9999 run: address to copy is 1028
 9999 mem: storing 1028 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1028
 9999 mem: storing 7 in location 1028
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 6
 9999 mem: storing 7 in location 1100
  103 run: loop 
@@ -1145,10 +1145,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1029
 9999 run: address to copy is 1030
 9999 mem: storing 1030 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1030
 9999 mem: storing 7 in location 1030
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 7
 9999 mem: storing 8 in location 1100
  103 run: loop 
@@ -1264,10 +1264,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1031
 9999 run: address to copy is 1032
 9999 mem: storing 1032 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1032
 9999 mem: storing 7 in location 1032
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 8
 9999 mem: storing 9 in location 1100
  103 run: loop 
@@ -1383,10 +1383,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1033
 9999 run: address to copy is 1034
 9999 mem: storing 1034 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1034
 9999 mem: storing 7 in location 1034
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 9
 9999 mem: storing 10 in location 1100
  103 run: loop 
@@ -1502,10 +1502,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1035
 9999 run: address to copy is 1036
 9999 mem: storing 1036 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1036
 9999 mem: storing 7 in location 1036
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 10
 9999 mem: storing 11 in location 1100
  103 run: loop 
@@ -1621,10 +1621,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1037
 9999 run: address to copy is 1038
 9999 mem: storing 1038 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1038
 9999 mem: storing 7 in location 1038
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 11
 9999 mem: storing 12 in location 1100
  103 run: loop 
@@ -1740,10 +1740,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1039
 9999 run: address to copy is 1040
 9999 mem: storing 1040 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1040
 9999 mem: storing 7 in location 1040
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 12
 9999 mem: storing 13 in location 1100
  103 run: loop 
@@ -1859,10 +1859,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1041
 9999 run: address to copy is 1042
 9999 mem: storing 1042 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1042
 9999 mem: storing 7 in location 1042
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 13
 9999 mem: storing 14 in location 1100
  103 run: loop 
@@ -1978,10 +1978,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1043
 9999 run: address to copy is 1044
 9999 mem: storing 1044 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1044
 9999 mem: storing 7 in location 1044
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 14
 9999 mem: storing 15 in location 1100
  103 run: loop 
@@ -2097,10 +2097,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1045
 9999 run: address to copy is 1046
 9999 mem: storing 1046 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1046
 9999 mem: storing 7 in location 1046
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 15
 9999 mem: storing 16 in location 1100
  103 run: loop 
@@ -2216,10 +2216,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1047
 9999 run: address to copy is 1048
 9999 mem: storing 1048 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1048
 9999 mem: storing 7 in location 1048
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 16
 9999 mem: storing 17 in location 1100
  103 run: loop 
@@ -2335,10 +2335,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1049
 9999 run: address to copy is 1050
 9999 mem: storing 1050 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1050
 9999 mem: storing 7 in location 1050
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 17
 9999 mem: storing 18 in location 1100
  103 run: loop 
@@ -2454,10 +2454,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1051
 9999 run: address to copy is 1052
 9999 mem: storing 1052 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1052
 9999 mem: storing 7 in location 1052
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 18
 9999 mem: storing 19 in location 1100
  103 run: loop 
@@ -2573,10 +2573,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1053
 9999 run: address to copy is 1054
 9999 mem: storing 1054 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1054
 9999 mem: storing 7 in location 1054
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 19
 9999 mem: storing 20 in location 1100
  103 run: loop 
@@ -2692,10 +2692,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1055
 9999 run: address to copy is 1056
 9999 mem: storing 1056 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1056
 9999 mem: storing 7 in location 1056
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 20
 9999 mem: storing 21 in location 1100
  103 run: loop 
@@ -2811,10 +2811,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1057
 9999 run: address to copy is 1058
 9999 mem: storing 1058 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1058
 9999 mem: storing 7 in location 1058
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 21
 9999 mem: storing 22 in location 1100
  103 run: loop 
@@ -2930,10 +2930,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1059
 9999 run: address to copy is 1060
 9999 mem: storing 1060 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1060
 9999 mem: storing 7 in location 1060
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 22
 9999 mem: storing 23 in location 1100
  103 run: loop 
@@ -3049,10 +3049,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1061
 9999 run: address to copy is 1062
 9999 mem: storing 1062 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1062
 9999 mem: storing 7 in location 1062
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 23
 9999 mem: storing 24 in location 1100
  103 run: loop 
@@ -3168,10 +3168,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1063
 9999 run: address to copy is 1064
 9999 mem: storing 1064 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1064
 9999 mem: storing 7 in location 1064
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 24
 9999 mem: storing 25 in location 1100
  103 run: loop 
@@ -3287,10 +3287,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1065
 9999 run: address to copy is 1066
 9999 mem: storing 1066 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1066
 9999 mem: storing 7 in location 1066
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 25
 9999 mem: storing 26 in location 1100
  103 run: loop 
@@ -3406,10 +3406,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1067
 9999 run: address to copy is 1068
 9999 mem: storing 1068 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1068
 9999 mem: storing 7 in location 1068
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 26
 9999 mem: storing 27 in location 1100
  103 run: loop 
@@ -3525,10 +3525,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1069
 9999 run: address to copy is 1070
 9999 mem: storing 1070 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1070
 9999 mem: storing 7 in location 1070
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 27
 9999 mem: storing 28 in location 1100
  103 run: loop 
@@ -3644,10 +3644,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1071
 9999 run: address to copy is 1072
 9999 mem: storing 1072 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1072
 9999 mem: storing 7 in location 1072
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 28
 9999 mem: storing 29 in location 1100
  103 run: loop 
@@ -3763,10 +3763,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1073
 9999 run: address to copy is 1074
 9999 mem: storing 1074 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1074
 9999 mem: storing 7 in location 1074
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 29
 9999 mem: storing 30 in location 1100
  103 run: loop 
@@ -3882,10 +3882,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1075
 9999 run: address to copy is 1076
 9999 mem: storing 1076 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1076
 9999 mem: storing 7 in location 1076
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 30
 9999 mem: storing 31 in location 1100
  103 run: loop 
@@ -4001,10 +4001,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1077
 9999 run: address to copy is 1078
 9999 mem: storing 1078 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1078
 9999 mem: storing 7 in location 1078
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 31
 9999 mem: storing 32 in location 1100
  103 run: loop 
@@ -4120,10 +4120,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1079
 9999 run: address to copy is 1080
 9999 mem: storing 1080 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1080
 9999 mem: storing 7 in location 1080
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 32
 9999 mem: storing 33 in location 1100
  103 run: loop 
@@ -4239,10 +4239,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1081
 9999 run: address to copy is 1082
 9999 mem: storing 1082 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1082
 9999 mem: storing 7 in location 1082
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 33
 9999 mem: storing 34 in location 1100
  103 run: loop 
@@ -4358,10 +4358,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1083
 9999 run: address to copy is 1084
 9999 mem: storing 1084 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1084
 9999 mem: storing 7 in location 1084
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 34
 9999 mem: storing 35 in location 1100
  103 run: loop 
@@ -4477,10 +4477,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1085
 9999 run: address to copy is 1086
 9999 mem: storing 1086 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1086
 9999 mem: storing 7 in location 1086
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 35
 9999 mem: storing 36 in location 1100
  103 run: loop 
@@ -4596,10 +4596,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1087
 9999 run: address to copy is 1088
 9999 mem: storing 1088 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1088
 9999 mem: storing 7 in location 1088
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 36
 9999 mem: storing 37 in location 1100
  103 run: loop 
@@ -4715,10 +4715,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1089
 9999 run: address to copy is 1090
 9999 mem: storing 1090 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1090
 9999 mem: storing 7 in location 1090
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 37
 9999 mem: storing 38 in location 1100
  103 run: loop 
@@ -4834,10 +4834,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1091
 9999 run: address to copy is 1092
 9999 mem: storing 1092 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1092
 9999 mem: storing 7 in location 1092
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 38
 9999 mem: storing 39 in location 1100
  103 run: loop 
@@ -4953,10 +4953,10 @@ schedule: scenario-read-move-empty
 9999 mem: location 1102 is 1093
 9999 run: address to copy is 1094
 9999 mem: storing 1094 in location 1104
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1104 is 1094
 9999 mem: storing 7 in location 1094
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1100 is 39
 9999 mem: storing 40 in location 1100
  103 run: loop 
@@ -4978,7 +4978,7 @@ schedule: scenario-read-move-empty
 9999 mem: location 1097 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1105
- 103 run: cur:address:number/deref <- copy 0:literal
+ 103 run: cur:address:number/deref <- copy 0
 9999 mem: location 1105 is 1011
 9999 mem: storing 0 in location 1011
  103 run: cur:address:number <- get-address x:address:screen/deref, cursor-column:offset
@@ -4991,7 +4991,7 @@ schedule: scenario-read-move-empty
 9999 mem: location 1097 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1105
- 103 run: cur:address:number/deref <- copy 0:literal
+ 103 run: cur:address:number/deref <- copy 0
 9999 mem: location 1105 is 1012
 9999 mem: storing 0 in location 1012
  103 run: reply x:address:screen/same-as-ingredient:0
@@ -5001,16 +5001,16 @@ schedule: scenario-read-move-empty
 9999 run: result 0 is 1009
 9999 mem: storing 1009 in location 900
  101 run: run [
-    1:address:channel <- new-channel 2:literal
+    1:address:channel <- new-channel 2
     2:number/routine <- start-running read-move:recipe, 1:address:channel, screen:address
     # 'read-move' is waiting for input
     wait-for-routine 2:number
     3:number <- routine-state 2:number/id
-    4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
+    4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
     assert 4:boolean/waiting?, [
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
-    1:address:channel <- write 1:address:channel, 10:literal/newline
-    1:address:channel <- write 1:address:channel, 97:literal  # 'a'
+    1:address:channel <- write 1:address:channel, 10/newline
+    1:address:channel <- write 1:address:channel, 97/a
     restart 2:number/routine
     wait-for-routine 2:number
   ]
@@ -5040,7 +5040,7 @@ parse:   ingredient: {name: "10", properties: ["10": "literal", "newline": ]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 parse: instruction: write
 parse:   ingredient: {name: "1", properties: ["1": "address":"channel"]}
-parse:   ingredient: {name: "97", properties: ["97": "literal"]}
+parse:   ingredient: {name: "97", properties: ["97": "literal", "a": ]}
 parse:   product: {name: "1", properties: ["1": "address":"channel"]}
 parse: instruction: restart
 parse:   ingredient: {name: "2", properties: ["2": "number", "routine": ]}
@@ -5057,7 +5057,7 @@ after-brace: write ...
 after-brace: write ...
 after-brace: restart ...
 after-brace: wait-for-routine ...
- 101 run: 1:address:channel <- new-channel 2:literal
+ 101 run: 1:address:channel <- new-channel 2
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1106
@@ -5072,7 +5072,7 @@ after-brace: wait-for-routine ...
 9999 mem: location 1108 is 1113
 9999 run: address to copy is 1113
 9999 mem: storing 1113 in location 1109
- 102 run: full:address:number/deref <- copy 0:literal
+ 102 run: full:address:number/deref <- copy 0
 9999 mem: location 1109 is 1113
 9999 mem: storing 0 in location 1113
  102 run: free:address:number <- get-address result:address:channel/deref, first-free:offset
@@ -5083,12 +5083,12 @@ after-brace: wait-for-routine ...
 9999 mem: location 1108 is 1113
 9999 run: address to copy is 1114
 9999 mem: storing 1114 in location 1110
- 102 run: free:address:number/deref <- copy 0:literal
+ 102 run: free:address:number/deref <- copy 0
 9999 mem: location 1110 is 1114
 9999 mem: storing 0 in location 1114
  102 run: capacity:number <- next-ingredient 
 9999 mem: storing 2 in location 1111
- 102 run: capacity:number <- add capacity:number, 1:literal
+ 102 run: capacity:number <- add capacity:number, 1
 9999 mem: location 1111 is 2
 9999 mem: storing 3 in location 1111
  102 run: dest:address:address:array:location <- get-address result:address:channel/deref, data:offset
@@ -5197,13 +5197,13 @@ schedule: run1001/scenario-read-move-empty
  103 run: 3:number <- routine-state 2:number/id
 9999 mem: location 2 is 2
 9999 mem: storing 2 in location 3
- 103 run: 4:boolean/waiting? <- equal 3:number/routine-state, 2:literal/waiting
+ 103 run: 4:boolean/waiting? <- equal 3:number/routine-state, 2/waiting
 9999 mem: location 3 is 2
 9999 mem: storing 1 in location 4
  103 run: assert 4:boolean/waiting?, [
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
 9999 mem: location 4 is 1
- 103 run: 1:address:channel <- write 1:address:channel, 10:literal/newline
+ 103 run: 1:address:channel <- write 1:address:channel, 10/newline
 9999 mem: location 1 is 1113
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
@@ -5228,7 +5228,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 run: its type is number
 9999 mem: location 1114 is 0
 9999 mem: storing 0 in location 1123
- 105 run: tmp:number <- add tmp:number, 1:literal
+ 105 run: tmp:number <- add tmp:number, 1
 9999 mem: location 1123 is 0
 9999 mem: storing 1 in location 1123
  105 run: len:number <- channel-capacity chan:address:channel
@@ -5322,7 +5322,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1098 is 10
 9999 mem: location 1103 is 1117
 9999 mem: storing 10 in location 1117
- 104 run: free:address:number/deref <- add free:address:number/deref, 1:literal
+ 104 run: free:address:number/deref <- add free:address:number/deref, 1
 9999 mem: location 1102 is 1114
 9999 mem: location 1114 is 0
 9999 mem: location 1102 is 1114
@@ -5347,7 +5347,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1097 is 1113
 9999 run: result 0 is 1113
 9999 mem: storing 1113 in location 1
- 103 run: 1:address:channel <- write 1:address:channel, 97:literal
+ 103 run: 1:address:channel <- write 1:address:channel, 97/a
 9999 mem: location 1 is 1113
  104 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
@@ -5371,7 +5371,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 run: its type is number
 9999 mem: location 1114 is 1
 9999 mem: storing 1 in location 1123
- 105 run: tmp:number <- add tmp:number, 1:literal
+ 105 run: tmp:number <- add tmp:number, 1
 9999 mem: location 1123 is 1
 9999 mem: storing 2 in location 1123
  105 run: len:number <- channel-capacity chan:address:channel
@@ -5464,7 +5464,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
 9999 mem: location 1098 is 97
 9999 mem: location 1103 is 1118
 9999 mem: storing 97 in location 1118
- 104 run: free:address:number/deref <- add free:address:number/deref, 1:literal
+ 104 run: free:address:number/deref <- add free:address:number/deref, 1
 9999 mem: location 1102 is 1114
 9999 mem: location 1114 is 1
 9999 mem: location 1102 is 1114
@@ -5528,7 +5528,7 @@ schedule: read/read-file/read-move
 9999 run: its type is number
 9999 mem: location 1117 is 10
 9999 mem: storing 10 in location 101019
- 103 run: full:address:number/deref <- add full:address:number/deref, 1:literal
+ 103 run: full:address:number/deref <- add full:address:number/deref, 1
 9999 mem: location 101017 is 1113
 9999 mem: location 1113 is 0
 9999 mem: location 101017 is 1113
@@ -5556,25 +5556,25 @@ schedule: read/read-file/read-move
 9999 run: result 1 is 1113
 9999 mem: storing 10 in location 101004
 9999 mem: storing 1113 in location 101002
- 102 run: q-pressed?:boolean <- equal c:character, 81:literal
+ 102 run: q-pressed?:boolean <- equal c:character, 81/Q
 9999 mem: location 101004 is 10
 9999 mem: storing 0 in location 101005
  102 run: break-unless q-pressed?:boolean, 
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 8
- 102 run: q-pressed?:boolean <- equal c:character, 113:literal
+ 102 run: q-pressed?:boolean <- equal c:character, 113/q
 9999 mem: location 101004 is 10
 9999 mem: storing 0 in location 101005
  102 run: break-unless q-pressed?:boolean, 
 9999 mem: location 101005 is 0
 9999 run: jumping to instruction 13
- 102 run: empty-fake-keyboard?:boolean <- equal c:character, 0:literal/eof
+ 102 run: empty-fake-keyboard?:boolean <- equal c:character, 0/eof
 9999 mem: location 101004 is 10
 9999 mem: storing 0 in location 101006
  102 run: break-unless empty-fake-keyboard?:boolean, 
 9999 mem: location 101006 is 0
 9999 run: jumping to instruction 18
- 102 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 102 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101004 is 10
 9999 mem: storing 1 in location 101007
  102 run: break-unless newline?:boolean, 
@@ -5598,7 +5598,7 @@ schedule: read/read-file/read-move
  103 run: break-if color-found?:boolean, 
 9999 mem: location 101051 is 0
 9999 run: jump-if fell through
- 103 run: color:number <- copy 7:literal/white
+ 103 run: color:number <- copy 7/white
 9999 mem: storing 7 in location 101050
  103 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 101052
@@ -5606,7 +5606,7 @@ schedule: read/read-file/read-move
  103 run: break-if bg-color-found?:boolean, 
 9999 mem: location 101053 is 0
 9999 run: jump-if fell through
- 103 run: bg-color:number <- copy 0:literal/black
+ 103 run: bg-color:number <- copy 0/black
 9999 mem: storing 0 in location 101052
  103 run: len:number <- length s:address:array:character/deref
 9999 mem: location 101049 is 101028
@@ -5630,7 +5630,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101045 is 104
 9999 mem: location 101049 is 101028
 9999 mem: storing 17 in location 101054
- 103 run: i:number <- copy 0:literal
+ 103 run: i:number <- copy 0
 9999 mem: storing 0 in location 101055
  103 run: done?:boolean <- greater-or-equal i:number, len:number
 9999 mem: location 101055 is 0
@@ -5727,7 +5727,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -5752,7 +5752,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 0
 9999 mem: storing 1 in location 101069
@@ -5767,7 +5767,7 @@ schedule: read/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 116
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -5880,7 +5880,7 @@ schedule: read/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 116
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -5995,7 +5995,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1016
 9999 mem: storing 7 in location 1016
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -6006,14 +6006,14 @@ schedule: read/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 0
 9999 mem: location 101070 is 1012
 9999 mem: storing 1 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 0
 9999 mem: storing 1 in location 101055
  103 run: loop 
@@ -6112,7 +6112,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -6137,7 +6137,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 1
 9999 mem: storing 1 in location 101069
@@ -6152,7 +6152,7 @@ schedule: read/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 104
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -6265,7 +6265,7 @@ schedule: read/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 104
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -6380,7 +6380,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1018
 9999 mem: storing 7 in location 1018
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -6391,14 +6391,14 @@ schedule: read/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 1
 9999 mem: location 101070 is 1012
 9999 mem: storing 2 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 1
 9999 mem: storing 2 in location 101055
  103 run: loop 
@@ -6497,7 +6497,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -6522,7 +6522,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 2
 9999 mem: storing 1 in location 101069
@@ -6537,7 +6537,7 @@ schedule: read/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 97
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -6650,7 +6650,7 @@ schedule: read/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 97
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -6765,7 +6765,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1020
 9999 mem: storing 7 in location 1020
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -6776,14 +6776,14 @@ schedule: read/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 2
 9999 mem: location 101070 is 1012
 9999 mem: storing 3 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 2
 9999 mem: storing 3 in location 101055
  103 run: loop 
@@ -6882,7 +6882,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -6907,7 +6907,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 3
 9999 mem: storing 1 in location 101069
@@ -6922,7 +6922,7 @@ schedule: read/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 116
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -7035,7 +7035,7 @@ schedule: read/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 116
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -7150,7 +7150,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1022
 9999 mem: storing 7 in location 1022
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -7161,14 +7161,14 @@ schedule: read/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 3
 9999 mem: location 101070 is 1012
 9999 mem: storing 4 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 3
 9999 mem: storing 4 in location 101055
  103 run: loop 
@@ -7267,7 +7267,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -7292,7 +7292,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 4
 9999 mem: storing 1 in location 101069
@@ -7307,7 +7307,7 @@ schedule: read/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 39
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -7420,7 +7420,7 @@ schedule: read/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 39
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -7535,7 +7535,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1024
 9999 mem: storing 7 in location 1024
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -7546,14 +7546,14 @@ schedule: read/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 4
 9999 mem: location 101070 is 1012
 9999 mem: storing 5 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 4
 9999 mem: storing 5 in location 101055
  103 run: loop 
@@ -7652,7 +7652,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -7677,7 +7677,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 5
 9999 mem: storing 1 in location 101069
@@ -7692,7 +7692,7 @@ schedule: read/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 115
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -7805,7 +7805,7 @@ schedule: read/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 115
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -7920,7 +7920,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1026
 9999 mem: storing 7 in location 1026
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -7931,14 +7931,14 @@ schedule: read/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 5
 9999 mem: location 101070 is 1012
 9999 mem: storing 6 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 5
 9999 mem: storing 6 in location 101055
  103 run: loop 
@@ -8037,7 +8037,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -8062,7 +8062,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 6
 9999 mem: storing 1 in location 101069
@@ -8077,7 +8077,7 @@ schedule: read/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 32
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -8190,7 +8190,7 @@ schedule: read/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 32
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -8305,7 +8305,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1028
 9999 mem: storing 7 in location 1028
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -8316,14 +8316,14 @@ schedule: read/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 6
 9999 mem: location 101070 is 1012
 9999 mem: storing 7 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 6
 9999 mem: storing 7 in location 101055
  103 run: loop 
@@ -8422,7 +8422,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -8447,7 +8447,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 7
 9999 mem: storing 1 in location 101069
@@ -8462,7 +8462,7 @@ schedule: read/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 110
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -8575,7 +8575,7 @@ schedule: read/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 110
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -8690,7 +8690,7 @@ schedule: read/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1030
 9999 mem: storing 7 in location 1030
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -8701,14 +8701,14 @@ schedule: read/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 7
 9999 mem: location 101070 is 1012
 9999 mem: storing 8 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 7
 9999 mem: storing 8 in location 101055
  103 run: loop 
@@ -8808,7 +8808,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -8833,7 +8833,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 8
 9999 mem: storing 1 in location 101069
@@ -8848,7 +8848,7 @@ schedule: print-character/print-string/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 111
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -8961,7 +8961,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 111
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -9076,7 +9076,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1032
 9999 mem: storing 7 in location 1032
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -9087,14 +9087,14 @@ schedule: print-character/print-string/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 8
 9999 mem: location 101070 is 1012
 9999 mem: storing 9 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 8
 9999 mem: storing 9 in location 101055
  103 run: loop 
@@ -9193,7 +9193,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -9218,7 +9218,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 9
 9999 mem: storing 1 in location 101069
@@ -9233,7 +9233,7 @@ schedule: print-character/print-string/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 116
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -9346,7 +9346,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 116
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -9461,7 +9461,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1034
 9999 mem: storing 7 in location 1034
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -9472,14 +9472,14 @@ schedule: print-character/print-string/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 9
 9999 mem: location 101070 is 1012
 9999 mem: storing 10 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 9
 9999 mem: storing 10 in location 101055
  103 run: loop 
@@ -9578,7 +9578,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -9603,7 +9603,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 10
 9999 mem: storing 1 in location 101069
@@ -9618,7 +9618,7 @@ schedule: print-character/print-string/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 32
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -9731,7 +9731,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 32
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -9846,7 +9846,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1036
 9999 mem: storing 7 in location 1036
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -9857,14 +9857,14 @@ schedule: print-character/print-string/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 10
 9999 mem: location 101070 is 1012
 9999 mem: storing 11 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 10
 9999 mem: storing 11 in location 101055
  103 run: loop 
@@ -9963,7 +9963,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -9988,7 +9988,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 11
 9999 mem: storing 1 in location 101069
@@ -10003,7 +10003,7 @@ schedule: print-character/print-string/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 101
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -10116,7 +10116,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 101
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -10231,7 +10231,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1038
 9999 mem: storing 7 in location 1038
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -10242,14 +10242,14 @@ schedule: print-character/print-string/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 11
 9999 mem: location 101070 is 1012
 9999 mem: storing 12 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 11
 9999 mem: storing 12 in location 101055
  103 run: loop 
@@ -10348,7 +10348,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -10373,7 +10373,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 12
 9999 mem: storing 1 in location 101069
@@ -10388,7 +10388,7 @@ schedule: print-character/print-string/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 110
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -10501,7 +10501,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 110
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -10616,7 +10616,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1040
 9999 mem: storing 7 in location 1040
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -10627,14 +10627,14 @@ schedule: print-character/print-string/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 12
 9999 mem: location 101070 is 1012
 9999 mem: storing 13 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 12
 9999 mem: storing 13 in location 101055
  103 run: loop 
@@ -10733,7 +10733,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -10758,7 +10758,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 13
 9999 mem: storing 1 in location 101069
@@ -10773,7 +10773,7 @@ schedule: print-character/print-string/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 111
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -10886,7 +10886,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 111
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -11001,7 +11001,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1042
 9999 mem: storing 7 in location 1042
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -11012,14 +11012,14 @@ schedule: print-character/print-string/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 13
 9999 mem: location 101070 is 1012
 9999 mem: storing 14 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 13
 9999 mem: storing 14 in location 101055
  103 run: loop 
@@ -11118,7 +11118,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -11143,7 +11143,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 14
 9999 mem: storing 1 in location 101069
@@ -11158,7 +11158,7 @@ schedule: print-character/print-string/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 117
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -11271,7 +11271,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 117
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -11386,7 +11386,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1044
 9999 mem: storing 7 in location 1044
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -11397,14 +11397,14 @@ schedule: print-character/print-string/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 14
 9999 mem: location 101070 is 1012
 9999 mem: storing 15 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 14
 9999 mem: storing 15 in location 101055
  103 run: loop 
@@ -11503,7 +11503,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -11528,7 +11528,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 15
 9999 mem: storing 1 in location 101069
@@ -11543,7 +11543,7 @@ schedule: print-character/print-string/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 103
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -11656,7 +11656,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 103
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -11771,7 +11771,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1046
 9999 mem: storing 7 in location 1046
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -11782,14 +11782,14 @@ schedule: print-character/print-string/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 15
 9999 mem: location 101070 is 1012
 9999 mem: storing 16 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 15
 9999 mem: storing 16 in location 101055
  103 run: loop 
@@ -11888,7 +11888,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 101068
- 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal row:address:number/deref, 0
 9999 mem: location 101068 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 101069
@@ -11913,7 +11913,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101060 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 101070
- 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+ 104 run: legal?:boolean <- greater-or-equal column:address:number/deref, 0
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 16
 9999 mem: storing 1 in location 101069
@@ -11928,7 +11928,7 @@ schedule: print-character/print-string/read-file/read-move
  104 run: jump-if legal?:boolean, 1:offset
 9999 mem: location 101069 is 1
 9999 run: jumping to instruction 31
- 104 run: newline?:boolean <- equal c:character, 10:literal/newline
+ 104 run: newline?:boolean <- equal c:character, 10/newline
 9999 mem: location 101061 is 104
 9999 mem: storing 0 in location 101071
  104 run: break-unless newline?:boolean, 
@@ -12041,7 +12041,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 1094 is 7
 9999 mem: location 101075 is 1014
 9999 mem: storing 40 in location 101076
- 104 run: backspace?:boolean <- equal c:character, 8:literal
+ 104 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101061 is 104
 9999 mem: storing 0 in location 101077
  104 run: break-unless backspace?:boolean, 
@@ -12156,7 +12156,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 mem: location 101062 is 7
 9999 mem: location 101081 is 1048
 9999 mem: storing 7 in location 1048
- 104 run: right:number <- subtract width:number, 1:literal
+ 104 run: right:number <- subtract width:number, 1
 9999 mem: location 101066 is 20
 9999 mem: storing 19 in location 101082
  104 run: at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
@@ -12167,14 +12167,14 @@ schedule: print-character/print-string/read-file/read-move
  104 run: break-if at-right?:boolean, 
 9999 mem: location 101083 is 0
 9999 run: jump-if fell through
- 104 run: column:address:number/deref <- add column:address:number/deref, 1:literal
+ 104 run: column:address:number/deref <- add column:address:number/deref, 1
 9999 mem: location 101070 is 1012
 9999 mem: location 1012 is 16
 9999 mem: location 101070 is 1012
 9999 mem: storing 17 in location 1012
  104 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101060 is 1009
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 101055 is 16
 9999 mem: storing 17 in location 101055
  103 run: loop 
@@ -12188,7 +12188,7 @@ schedule: print-character/print-string/read-file/read-move
 9999 run: jumping to instruction 22
  103 run: reply x:address:screen/same-as-ingredient:0
 9999 mem: location 101048 is 1009
- 102 run: reply 0:literal/dummy, 0:literal/quit, 1:literal/error
+ 102 run: reply 0/dummy, 0/quit, 1/error
 9999 run: result 0 is 0
 9999 run: result 1 is 0
 9999 run: result 2 is 1
@@ -12201,7 +12201,7 @@ schedule: print-character/print-string/read-file/read-move
  101 run: jump-unless error?:boolean, 1:offset
 9999 mem: location 1006 is 1
 9999 run: jump-unless fell through
- 101 run: reply 0:literal/dummy, quit?:boolean, error?:boolean
+ 101 run: reply 0/dummy, quit?:boolean, error?:boolean
 9999 mem: location 1005 is 0
 9999 mem: location 1006 is 1
 schedule: waking up routine 1

@@ -4,7 +4,7 @@
 
 :(scenario call_literal_recipe)
 recipe main [
-  1:number <- call f:recipe, 34:literal
+  1:number <- call f:recipe, 34
 ]
 recipe f [
   2:number <- next-ingredient
@@ -15,7 +15,7 @@ recipe f [
 :(scenario call_variable)
 recipe main [
   1:recipe-ordinal <- copy f:recipe
-  2:number <- call 1:recipe-ordinal, 34:literal
+  2:number <- call 1:recipe-ordinal, 34
 ]
 recipe f [
   3:number <- next-ingredient

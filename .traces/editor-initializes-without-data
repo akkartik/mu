@@ -2,7 +2,7 @@ parse: instruction: assume-screen
 parse:   ingredient: {name: "5", properties: ["5": "literal", "width": ]}
 parse:   ingredient: {name: "3", properties: ["3": "literal", "height": ]}
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:editor-data <- new-editor 0:literal/data, screen:address, 2:literal/left, 5:literal/right\n    2:editor-data <- copy 1:address:editor-data/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:editor-data <- new-editor 0/data, screen:address, 2/left, 5/right\n    2:editor-data <- copy 1:address:editor-data/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    # 2 (data) <- just the § sentinel\n    # 3 (before cursor) <- the § sentinel\n    4 <- 2  # left\n    5 <- 4  # right  (inclusive)\n    6 <- 1  # cursor row\n    7 <- 2  # cursor column\n  ", properties: [_: "literal-string"]}
 parse: instruction: screen-should-contain
@@ -14,7 +14,7 @@ after-brace: memory-should-contain ...
 after-brace: screen-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: scenario-editor-initializes-without-data
- 101 run: screen:address <- new-fake-screen 5:literal/width, 3:literal/height
+ 101 run: screen:address <- new-fake-screen 5/width, 3/height
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 8
 9999 mem: new alloc: 1000
@@ -57,7 +57,7 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1002 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1005
- 102 run: row:address:number/deref <- copy 0:literal
+ 102 run: row:address:number/deref <- copy 0
 9999 mem: location 1005 is 1011
 9999 mem: storing 0 in location 1011
  102 run: column:address:number <- get-address result:address:screen/deref, cursor-column:offset
@@ -70,7 +70,7 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1002 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1006
- 102 run: column:address:number/deref <- copy 0:literal
+ 102 run: column:address:number/deref <- copy 0
 9999 mem: location 1006 is 1012
 9999 mem: storing 0 in location 1012
  102 run: bufsize:number <- multiply width:address:number/deref, height:address:number/deref
@@ -152,7 +152,7 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1044 is 0
 9999 mem: location 1048 is 1014
 9999 mem: storing 15 in location 1049
- 103 run: i:number <- copy 0:literal
+ 103 run: i:number <- copy 0
 9999 mem: storing 0 in location 1050
  103 run: done?:boolean <- greater-or-equal i:number, max:number
 9999 mem: location 1050 is 0
@@ -215,10 +215,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1015
 9999 run: address to copy is 1016
 9999 mem: storing 1016 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1016
 9999 mem: storing 7 in location 1016
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 0
 9999 mem: storing 1 in location 1050
  103 run: loop 
@@ -284,10 +284,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1017
 9999 run: address to copy is 1018
 9999 mem: storing 1018 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1018
 9999 mem: storing 7 in location 1018
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 1
 9999 mem: storing 2 in location 1050
  103 run: loop 
@@ -353,10 +353,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1019
 9999 run: address to copy is 1020
 9999 mem: storing 1020 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1020
 9999 mem: storing 7 in location 1020
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 2
 9999 mem: storing 3 in location 1050
  103 run: loop 
@@ -422,10 +422,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1021
 9999 run: address to copy is 1022
 9999 mem: storing 1022 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1022
 9999 mem: storing 7 in location 1022
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 3
 9999 mem: storing 4 in location 1050
  103 run: loop 
@@ -491,10 +491,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1023
 9999 run: address to copy is 1024
 9999 mem: storing 1024 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1024
 9999 mem: storing 7 in location 1024
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 4
 9999 mem: storing 5 in location 1050
  103 run: loop 
@@ -560,10 +560,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1025
 9999 run: address to copy is 1026
 9999 mem: storing 1026 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1026
 9999 mem: storing 7 in location 1026
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 5
 9999 mem: storing 6 in location 1050
  103 run: loop 
@@ -629,10 +629,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1027
 9999 run: address to copy is 1028
 9999 mem: storing 1028 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1028
 9999 mem: storing 7 in location 1028
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 6
 9999 mem: storing 7 in location 1050
  103 run: loop 
@@ -698,10 +698,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1029
 9999 run: address to copy is 1030
 9999 mem: storing 1030 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1030
 9999 mem: storing 7 in location 1030
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 7
 9999 mem: storing 8 in location 1050
  103 run: loop 
@@ -767,10 +767,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1031
 9999 run: address to copy is 1032
 9999 mem: storing 1032 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1032
 9999 mem: storing 7 in location 1032
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 8
 9999 mem: storing 9 in location 1050
  103 run: loop 
@@ -836,10 +836,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1033
 9999 run: address to copy is 1034
 9999 mem: storing 1034 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1034
 9999 mem: storing 7 in location 1034
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 9
 9999 mem: storing 10 in location 1050
  103 run: loop 
@@ -905,10 +905,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1035
 9999 run: address to copy is 1036
 9999 mem: storing 1036 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1036
 9999 mem: storing 7 in location 1036
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 10
 9999 mem: storing 11 in location 1050
  103 run: loop 
@@ -974,10 +974,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1037
 9999 run: address to copy is 1038
 9999 mem: storing 1038 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1038
 9999 mem: storing 7 in location 1038
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 11
 9999 mem: storing 12 in location 1050
  103 run: loop 
@@ -1043,10 +1043,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1039
 9999 run: address to copy is 1040
 9999 mem: storing 1040 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1040
 9999 mem: storing 7 in location 1040
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 12
 9999 mem: storing 13 in location 1050
  103 run: loop 
@@ -1112,10 +1112,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1041
 9999 run: address to copy is 1042
 9999 mem: storing 1042 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1042
 9999 mem: storing 7 in location 1042
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 13
 9999 mem: storing 14 in location 1050
  103 run: loop 
@@ -1181,10 +1181,10 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1052 is 1043
 9999 run: address to copy is 1044
 9999 mem: storing 1044 in location 1054
- 103 run: curr-color:address:character/deref <- copy 7:literal/white
+ 103 run: curr-color:address:character/deref <- copy 7/white
 9999 mem: location 1054 is 1044
 9999 mem: storing 7 in location 1044
- 103 run: i:number <- add i:number, 1:literal
+ 103 run: i:number <- add i:number, 1
 9999 mem: location 1050 is 14
 9999 mem: storing 15 in location 1050
  103 run: loop 
@@ -1206,7 +1206,7 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1047 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1055
- 103 run: cur:address:number/deref <- copy 0:literal
+ 103 run: cur:address:number/deref <- copy 0
 9999 mem: location 1055 is 1011
 9999 mem: storing 0 in location 1011
  103 run: cur:address:number <- get-address x:address:screen/deref, cursor-column:offset
@@ -1219,7 +1219,7 @@ schedule: scenario-editor-initializes-without-data
 9999 mem: location 1047 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1055
- 103 run: cur:address:number/deref <- copy 0:literal
+ 103 run: cur:address:number/deref <- copy 0
 9999 mem: location 1055 is 1012
 9999 mem: storing 0 in location 1012
  103 run: reply x:address:screen/same-as-ingredient:0
@@ -1229,7 +1229,7 @@ schedule: scenario-editor-initializes-without-data
 9999 run: result 0 is 1009
 9999 mem: storing 1009 in location 900
  101 run: run [
-    1:address:editor-data <- new-editor 0:literal/data, screen:address, 2:literal/left, 5:literal/right
+    1:address:editor-data <- new-editor 0/data, screen:address, 2/left, 5/right
     2:editor-data <- copy 1:address:editor-data/deref
   ]
 parse: instruction: new-editor
@@ -1244,7 +1244,7 @@ parse:   product: {name: "2", properties: ["2": "editor-data"]}
 after-brace: recipe run1001
 after-brace: new-editor ...
 after-brace: copy ...
- 101 run: 1:address:editor-data <- new-editor 0:literal/data, screen:address, 2:literal/left, 5:literal/right
+ 101 run: 1:address:editor-data <- new-editor 0/data, screen:address, 2/left, 5/right
 9999 mem: location 900 is 1009
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 14
@@ -1257,7 +1257,7 @@ after-brace: copy ...
 9999 mem: storing 2 in location 1060
  102 run: right:number <- next-ingredient 
 9999 mem: storing 5 in location 1061
- 102 run: right:number <- subtract right:number, 1:literal
+ 102 run: right:number <- subtract right:number, 1
 9999 mem: location 1061 is 5
 9999 mem: storing 4 in location 1061
  102 run: result:address:editor-data <- new editor-data:type
@@ -1304,7 +1304,7 @@ after-brace: copy ...
 9999 mem: location 1062 is 1071
 9999 run: address to copy is 1075
 9999 mem: storing 1075 in location 1063
- 102 run: x:address:number/deref <- copy 1:literal/top
+ 102 run: x:address:number/deref <- copy 1/top
 9999 mem: location 1063 is 1075
 9999 mem: storing 1 in location 1075
  102 run: x:address:number <- get-address result:address:editor-data/deref, cursor-column:offset
@@ -1333,7 +1333,7 @@ after-brace: copy ...
 9999 mem: location 1062 is 1071
 9999 run: address to copy is 1071
 9999 mem: storing 1071 in location 1064
- 102 run: init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
+ 102 run: init:address:address:duplex-list/deref <- push-duplex 167/§, 0/tail
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
 9999 mem: new alloc: 1077

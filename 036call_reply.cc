@@ -2,11 +2,11 @@
 
 :(scenario reply)
 recipe main [
-  1:number, 2:number <- f 34:literal
+  1:number, 2:number <- f 34
 ]
 recipe f [
   12:number <- next-ingredient
-  13:number <- add 1:literal, 12:number
+  13:number <- add 1, 12:number
   reply 12:number, 13:number
 ]
 +mem: storing 34 in location 1
@@ -55,11 +55,11 @@ case REPLY: {
 //: Products can include containers and exclusive containers, addresses and arrays.
 :(scenario reply_container)
 recipe main [
-  3:point <- f 2:literal
+  3:point <- f 2
 ]
 recipe f [
   12:number <- next-ingredient
-  13:number <- copy 35:literal
+  13:number <- copy 35
   reply 12:point/raw  # unsafe
 ]
 +run: result 0 is [2, 35]
@@ -74,7 +74,7 @@ recipe f [
 :(scenario reply_same_as_ingredient)
 % Hide_warnings = true;
 recipe main [
-  1:number <- copy 0:literal
+  1:number <- copy 0
   2:number <- test1 1:number  # call with different ingredient and product
 ]
 recipe test1 [
@@ -86,7 +86,7 @@ recipe test1 [
 :(scenario reply_same_as_ingredient_dummy)
 % Hide_warnings = true;
 recipe main [
-  1:number <- copy 0:literal
+  1:number <- copy 0
   _ <- test1 1:number  # call with different ingredient and product
 ]
 recipe test1 [
@@ -119,8 +119,8 @@ recipe main [
   1:number <- test1
 ]
 recipe test1 [
-  reply-if 0:literal, 34:literal
-  reply 35:literal
+  reply-if 0, 34
+  reply 35
 ]
 +mem: storing 35 in location 1
 
@@ -129,8 +129,8 @@ recipe main [
   1:number <- test1
 ]
 recipe test1 [
-  reply-if 1:literal, 34:literal
-  reply 35:literal
+  reply-if 1, 34
+  reply 35
 ]
 +mem: storing 34 in location 1
 

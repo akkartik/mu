@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:channel/stdin <- new-channel 10:literal/capacity\n    2:address:channel/buffered-stdin <- new-channel 10:literal/capacity\n    3:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 3:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after init]\n    # buffer stdin into buffered-stdin, try to read from buffered-stdin\n    4:number/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin\n    wait-for-routine 4:number/buffer-routine\n    5:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 5:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]\n    # write 'a'\n    1:address:channel <- write 1:address:channel, 97:literal/a\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    6:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 6:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a']\n    # write 'b'\n    1:address:channel <- write 1:address:channel, 98:literal/b\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    7:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 7:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b']\n    # write newline\n    1:address:channel <- write 1:address:channel, 10:literal/newline\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    8:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    9:boolean/completed? <- not 8:boolean\n    assert 9:boolean/completed?, [\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline]\n    trace [test], [reached end]\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:channel/stdin <- new-channel 10/capacity\n    2:address:channel/buffered-stdin <- new-channel 10/capacity\n    3:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 3:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after init]\n    # buffer stdin into buffered-stdin, try to read from buffered-stdin\n    4:number/buffer-routine <- start-running buffer-lines:recipe, 1:address:channel/stdin, 2:address:channel/buffered-stdin\n    wait-for-routine 4:number/buffer-routine\n    5:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 5:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]\n    # write 'a'\n    1:address:channel <- write 1:address:channel, 97/a\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    6:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 6:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'a']\n    # write 'b'\n    1:address:channel <- write 1:address:channel, 98/b\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    7:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    assert 7:boolean, [\nF buffer-lines-blocks-until-newline: channel should be empty after writing 'b']\n    # write newline\n    1:address:channel <- write 1:address:channel, 10/newline\n    restart 4:number/buffer-routine\n    wait-for-routine 4:number/buffer-routine\n    8:boolean <- channel-empty? 2:address:channel/buffered-stdin\n    9:boolean/completed? <- not 8:boolean\n    assert 9:boolean/completed?, [\nF buffer-lines-blocks-until-newline: channel should contain data after writing newline]\n    trace [test], [reached end]\n  ", properties: [_: "literal-string"]}
 parse: instruction: trace-should-contain
 parse:   ingredient: {name: "\n    test: reached end\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-buffer-lines-blocks-until-newline
@@ -8,8 +8,8 @@ after-brace: trace-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: scenario-buffer-lines-blocks-until-newline
  101 run: run [
-    1:address:channel/stdin <- new-channel 10:literal/capacity
-    2:address:channel/buffered-stdin <- new-channel 10:literal/capacity
+    1:address:channel/stdin <- new-channel 10/capacity
+    2:address:channel/buffered-stdin <- new-channel 10/capacity
     3:boolean <- channel-empty? 2:address:channel/buffered-stdin
     assert 3:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after init]
@@ -20,21 +20,21 @@ F buffer-lines-blocks-until-newline: channel should be empty after init]
     assert 5:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
     # write 'a'
-    1:address:channel <- write 1:address:channel, 97:literal/a
+    1:address:channel <- write 1:address:channel, 97/a
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
     6:boolean <- channel-empty? 2:address:channel/buffered-stdin
     assert 6:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     # write 'b'
-    1:address:channel <- write 1:address:channel, 98:literal/b
+    1:address:channel <- write 1:address:channel, 98/b
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
     7:boolean <- channel-empty? 2:address:channel/buffered-stdin
     assert 7:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
-    1:address:channel <- write 1:address:channel, 10:literal/newline
+    1:address:channel <- write 1:address:channel, 10/newline
     restart 4:number/buffer-routine
     wait-for-routine 4:number/buffer-routine
     8:boolean <- channel-empty? 2:address:channel/buffered-stdin
@@ -142,7 +142,7 @@ after-brace: channel-empty? ...
 after-brace: not ...
 after-brace: assert ...
 after-brace: trace ...
- 101 run: 1:address:channel/stdin <- new-channel 10:literal/capacity
+ 101 run: 1:address:channel/stdin <- new-channel 10/capacity
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
@@ -157,7 +157,7 @@ after-brace: trace ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1007
 9999 mem: storing 1007 in location 1003
- 102 run: full:address:number/deref <- copy 0:literal
+ 102 run: full:address:number/deref <- copy 0
 9999 mem: location 1003 is 1007
 9999 mem: storing 0 in location 1007
  102 run: free:address:number <- get-address result:address:channel/deref, first-free:offset
@@ -168,12 +168,12 @@ after-brace: trace ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1008
 9999 mem: storing 1008 in location 1004
- 102 run: free:address:number/deref <- copy 0:literal
+ 102 run: free:address:number/deref <- copy 0
 9999 mem: location 1004 is 1008
 9999 mem: storing 0 in location 1008
  102 run: capacity:number <- next-ingredient 
 9999 mem: storing 10 in location 1005
- 102 run: capacity:number <- add capacity:number, 1:literal
+ 102 run: capacity:number <- add capacity:number, 1
 9999 mem: location 1005 is 10
 9999 mem: storing 11 in location 1005
  102 run: dest:address:address:array:location <- get-address result:address:channel/deref, data:offset
@@ -194,7 +194,7 @@ after-brace: trace ...
 9999 mem: location 1002 is 1007
 9999 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
- 101 run: 2:address:channel/buffered-stdin <- new-channel 10:literal/capacity
+ 101 run: 2:address:channel/buffered-stdin <- new-channel 10/capacity
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
  102 run: result:address:channel <- new channel:type
@@ -208,7 +208,7 @@ after-brace: trace ...
 9999 mem: location 1002 is 1022
 9999 run: address to copy is 1022
 9999 mem: storing 1022 in location 1003
- 102 run: full:address:number/deref <- copy 0:literal
+ 102 run: full:address:number/deref <- copy 0
 9999 mem: location 1003 is 1022
 9999 mem: storing 0 in location 1022
  102 run: free:address:number <- get-address result:address:channel/deref, first-free:offset
@@ -219,12 +219,12 @@ after-brace: trace ...
 9999 mem: location 1002 is 1022
 9999 run: address to copy is 1023
 9999 mem: storing 1023 in location 1004
- 102 run: free:address:number/deref <- copy 0:literal
+ 102 run: free:address:number/deref <- copy 0
 9999 mem: location 1004 is 1023
 9999 mem: storing 0 in location 1023
  102 run: capacity:number <- next-ingredient 
 9999 mem: storing 10 in location 1005
- 102 run: capacity:number <- add capacity:number, 1:literal
+ 102 run: capacity:number <- add capacity:number, 1
 9999 mem: location 1005 is 10
 9999 mem: storing 11 in location 1005
  102 run: dest:address:address:array:location <- get-address result:address:channel/deref, data:offset
@@ -299,7 +299,7 @@ schedule: buffer-lines
 9999 mem: storing 1007 in location 101002
  101 run: out:address:channel <- next-ingredient 
 9999 mem: storing 1022 in location 101003
- 101 run: line:address:buffer <- new-buffer 30:literal
+ 101 run: line:address:buffer <- new-buffer 30
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
  102 run: result:address:buffer <- new buffer:type
@@ -312,7 +312,7 @@ schedule: buffer-lines
 9999 mem: location 1002 is 101015
 9999 run: address to copy is 101015
 9999 mem: storing 101015 in location 1003
- 102 run: len:address:number/deref <- copy 0:literal
+ 102 run: len:address:number/deref <- copy 0
 9999 mem: location 1003 is 101015
 9999 mem: storing 0 in location 101015
  102 run: s:address:address:array:character <- get-address result:address:buffer/deref, data:offset
@@ -433,7 +433,7 @@ schedule: run1001/scenario-buffer-lines-blocks-until-newline
  102 run: assert 5:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
 9999 mem: location 5 is 1
- 102 run: 1:address:channel <- write 1:address:channel, 97:literal/a
+ 102 run: 1:address:channel <- write 1:address:channel, 97/a
 9999 mem: location 1 is 1007
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
@@ -459,7 +459,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9999 run: its type is number
 9999 mem: location 1008 is 0
 9999 mem: storing 0 in location 1057
- 104 run: tmp:number <- add tmp:number, 1:literal
+ 104 run: tmp:number <- add tmp:number, 1
 9999 mem: location 1057 is 0
 9999 mem: storing 1 in location 1057
  104 run: len:number <- channel-capacity chan:address:channel
@@ -569,7 +569,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines 
 9999 mem: location 1046 is 97
 9999 mem: location 1051 is 1011
 9999 mem: storing 97 in location 1011
- 103 run: free:address:number/deref <- add free:address:number/deref, 1:literal
+ 103 run: free:address:number/deref <- add free:address:number/deref, 1
 9999 mem: location 1050 is 1008
 9999 mem: location 1008 is 0
 9999 mem: location 1050 is 1008
@@ -649,7 +649,7 @@ schedule: read/buffer-lines
 9999 run: its type is number
 9999 mem: location 1011 is 97
 9999 mem: storing 97 in location 101055
- 102 run: full:address:number/deref <- add full:address:number/deref, 1:literal
+ 102 run: full:address:number/deref <- add full:address:number/deref, 1
 9999 mem: location 101053 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 101053 is 1007
@@ -685,7 +685,7 @@ schedule: read/buffer-lines
 9999 run: result 1 is 1007
 9999 mem: storing 97 in location 101005
 9999 mem: storing 1007 in location 101002
- 101 run: backspace?:boolean <- equal c:character, 8:literal
+ 101 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101005 is 97
 9999 mem: storing 0 in location 101006
  101 run: break-unless backspace?:boolean, 
@@ -707,7 +707,7 @@ schedule: read/buffer-lines
 9999 mem: location 101050 is 101015
 9999 run: address to copy is 101015
 9999 mem: storing 101015 in location 101052
- 102 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 102 run: backspace?:boolean <- equal c:character, 8/backspace
 9999 mem: location 101051 is 97
 9999 mem: storing 0 in location 101053
  102 run: break-unless backspace?:boolean, 
@@ -835,7 +835,7 @@ schedule: read/buffer-lines
 9999 mem: location 101051 is 97
 9999 mem: location 101057 is 101018
 9999 mem: storing 97 in location 101018
- 102 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 102 run: len:address:number/deref <- add len:address:number/deref, 1
 9999 mem: location 101052 is 101015
 9999 mem: location 101015 is 0
 9999 mem: location 101052 is 101015
@@ -844,13 +844,13 @@ schedule: read/buffer-lines
 9999 mem: location 101050 is 101015
 9999 run: result 0 is 101015
 9999 mem: storing 101015 in location 101004
- 101 run: line-done?:boolean <- equal c:character, 10:literal/newline
+ 101 run: line-done?:boolean <- equal c:character, 10/newline
 9999 mem: location 101005 is 97
 9999 mem: storing 0 in location 101009
  101 run: break-if line-done?:boolean, 
 9999 mem: location 101009 is 0
 9999 run: jump-if fell through
- 101 run: eof?:boolean <- equal c:character, 0:literal/eof
+ 101 run: eof?:boolean <- equal c:character, 0/eof
 9999 mem: location 101005 is 97
 9999 mem: storing 0 in location 101010
  101 run: break-if eof?:boolean, 
@@ -953,7 +953,7 @@ schedule: run1001/scenario-buffer-lines-blocks-until-newline
  102 run: assert 6:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 mem: location 6 is 1
- 102 run: 1:address:channel <- write 1:address:channel, 98:literal/b
+ 102 run: 1:address:channel <- write 1:address:channel, 98/b
 9999 mem: location 1 is 1007
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
@@ -977,7 +977,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 run: its type is number
 9999 mem: location 1008 is 1
 9999 mem: storing 1 in location 1057
- 104 run: tmp:number <- add tmp:number, 1:literal
+ 104 run: tmp:number <- add tmp:number, 1
 9999 mem: location 1057 is 1
 9999 mem: storing 2 in location 1057
  104 run: len:number <- channel-capacity chan:address:channel
@@ -1086,7 +1086,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
 9999 mem: location 1046 is 98
 9999 mem: location 1051 is 1012
 9999 mem: storing 98 in location 1012
- 103 run: free:address:number/deref <- add free:address:number/deref, 1:literal
+ 103 run: free:address:number/deref <- add free:address:number/deref, 1
 9999 mem: location 1050 is 1008
 9999 mem: location 1008 is 1
 9999 mem: location 1050 is 1008
@@ -1166,7 +1166,7 @@ schedule: read/buffer-lines
 9999 run: its type is number
 9999 mem: location 1012 is 98
 9999 mem: storing 98 in location 101055
- 102 run: full:address:number/deref <- add full:address:number/deref, 1:literal
+ 102 run: full:address:number/deref <- add full:address:number/deref, 1
 9999 mem: location 101053 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 101053 is 1007
@@ -1202,7 +1202,7 @@ schedule: read/buffer-lines
 9999 run: result 1 is 1007
 9999 mem: storing 98 in location 101005
 9999 mem: storing 1007 in location 101002
- 101 run: backspace?:boolean <- equal c:character, 8:literal
+ 101 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101005 is 98
 9999 mem: storing 0 in location 101006
  101 run: break-unless backspace?:boolean, 
@@ -1224,7 +1224,7 @@ schedule: read/buffer-lines
 9999 mem: location 101050 is 101015
 9999 run: address to copy is 101015
 9999 mem: storing 101015 in location 101052
- 102 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 102 run: backspace?:boolean <- equal c:character, 8/backspace
 9999 mem: location 101051 is 98
 9999 mem: storing 0 in location 101053
  102 run: break-unless backspace?:boolean, 
@@ -1352,7 +1352,7 @@ schedule: read/buffer-lines
 9999 mem: location 101051 is 98
 9999 mem: location 101057 is 101019
 9999 mem: storing 98 in location 101019
- 102 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 102 run: len:address:number/deref <- add len:address:number/deref, 1
 9999 mem: location 101052 is 101015
 9999 mem: location 101015 is 1
 9999 mem: location 101052 is 101015
@@ -1361,13 +1361,13 @@ schedule: read/buffer-lines
 9999 mem: location 101050 is 101015
 9999 run: result 0 is 101015
 9999 mem: storing 101015 in location 101004
- 101 run: line-done?:boolean <- equal c:character, 10:literal/newline
+ 101 run: line-done?:boolean <- equal c:character, 10/newline
 9999 mem: location 101005 is 98
 9999 mem: storing 0 in location 101009
  101 run: break-if line-done?:boolean, 
 9999 mem: location 101009 is 0
 9999 run: jump-if fell through
- 101 run: eof?:boolean <- equal c:character, 0:literal/eof
+ 101 run: eof?:boolean <- equal c:character, 0/eof
 9999 mem: location 101005 is 98
 9999 mem: storing 0 in location 101010
  101 run: break-if eof?:boolean, 
@@ -1470,7 +1470,7 @@ schedule: run1001/scenario-buffer-lines-blocks-until-newline
  102 run: assert 7:boolean, [
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 mem: location 7 is 1
- 102 run: 1:address:channel <- write 1:address:channel, 10:literal/newline
+ 102 run: 1:address:channel <- write 1:address:channel, 10/newline
 9999 mem: location 1 is 1007
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
@@ -1494,7 +1494,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 run: its type is number
 9999 mem: location 1008 is 2
 9999 mem: storing 2 in location 1057
- 104 run: tmp:number <- add tmp:number, 1:literal
+ 104 run: tmp:number <- add tmp:number, 1
 9999 mem: location 1057 is 2
 9999 mem: storing 3 in location 1057
  104 run: len:number <- channel-capacity chan:address:channel
@@ -1603,7 +1603,7 @@ F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
 9999 mem: location 1046 is 10
 9999 mem: location 1051 is 1013
 9999 mem: storing 10 in location 1013
- 103 run: free:address:number/deref <- add free:address:number/deref, 1:literal
+ 103 run: free:address:number/deref <- add free:address:number/deref, 1
 9999 mem: location 1050 is 1008
 9999 mem: location 1008 is 2
 9999 mem: location 1050 is 1008
@@ -1683,7 +1683,7 @@ schedule: read/buffer-lines
 9999 run: its type is number
 9999 mem: location 1013 is 10
 9999 mem: storing 10 in location 101055
- 102 run: full:address:number/deref <- add full:address:number/deref, 1:literal
+ 102 run: full:address:number/deref <- add full:address:number/deref, 1
 9999 mem: location 101053 is 1007
 9999 mem: location 1007 is 2
 9999 mem: location 101053 is 1007
@@ -1719,7 +1719,7 @@ schedule: read/buffer-lines
 9999 run: result 1 is 1007
 9999 mem: storing 10 in location 101005
 9999 mem: storing 1007 in location 101002
- 101 run: backspace?:boolean <- equal c:character, 8:literal
+ 101 run: backspace?:boolean <- equal c:character, 8
 9999 mem: location 101005 is 10
 9999 mem: storing 0 in location 101006
  101 run: break-unless backspace?:boolean, 
@@ -1741,7 +1741,7 @@ schedule: read/buffer-lines
 9999 mem: location 101050 is 101015
 9999 run: address to copy is 101015
 9999 mem: storing 101015 in location 101052
- 102 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 102 run: backspace?:boolean <- equal c:character, 8/backspace
 9999 mem: location 101051 is 10
 9999 mem: storing 0 in location 101053
  102 run: break-unless backspace?:boolean, 
@@ -1869,7 +1869,7 @@ schedule: read/buffer-lines
 9999 mem: location 101051 is 10
 9999 mem: location 101057 is 101020
 9999 mem: storing 10 in location 101020
- 102 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 102 run: len:address:number/deref <- add len:address:number/deref, 1
 9999 mem: location 101052 is 101015
 9999 mem: location 101015 is 2
 9999 mem: location 101052 is 101015
@@ -1878,13 +1878,13 @@ schedule: read/buffer-lines
 9999 mem: location 101050 is 101015
 9999 run: result 0 is 101015
 9999 mem: storing 101015 in location 101004
- 101 run: line-done?:boolean <- equal c:character, 10:literal/newline
+ 101 run: line-done?:boolean <- equal c:character, 10/newline
 9999 mem: location 101005 is 10
 9999 mem: storing 1 in location 101009
  101 run: break-if line-done?:boolean, 
 9999 mem: location 101009 is 1
 9999 run: jumping to instruction 25
- 101 run: i:number <- copy 0:literal
+ 101 run: i:number <- copy 0
 9999 mem: storing 0 in location 101011
  101 run: line-contents:address:array:character <- get line:address:buffer/deref, data:offset
 9999 mem: location 101004 is 101015
@@ -1976,7 +1976,7 @@ schedule: read/buffer-lines
 9999 run: its type is number
 9999 mem: location 1023 is 0
 9999 mem: storing 0 in location 1057
- 103 run: tmp:number <- add tmp:number, 1:literal
+ 103 run: tmp:number <- add tmp:number, 1
 9999 mem: location 1057 is 0
 9999 mem: storing 1 in location 1057
  103 run: len:number <- channel-capacity chan:address:channel
@@ -2085,7 +2085,7 @@ schedule: read/buffer-lines
 9999 mem: location 1046 is 97
 9999 mem: location 1051 is 1026
 9999 mem: storing 97 in location 1026
- 102 run: free:address:number/deref <- add free:address:number/deref, 1:literal
+ 102 run: free:address:number/deref <- add free:address:number/deref, 1
 9999 mem: location 1050 is 1023
 9999 mem: location 1023 is 0
 9999 mem: location 1050 is 1023
@@ -2118,7 +2118,7 @@ schedule: read/buffer-lines
 9999 mem: location 1045 is 1022
 9999 run: result 0 is 1022
 9999 mem: storing 1022 in location 101003
- 101 run: i:number <- add i:number, 1:literal
+ 101 run: i:number <- add i:number, 1
 9999 mem: location 101011 is 0
 9999 mem: storing 1 in location 101011
  101 run: loop 
@@ -2195,7 +2195,7 @@ schedule: read/buffer-lines
 9999 run: its type is number
 9999 mem: location 1023 is 1
 9999 mem: storing 1 in location 1057
- 103 run: tmp:number <- add tmp:number, 1:literal
+ 103 run: tmp:number <- add tmp:number, 1
 9999 mem: location 1057 is 1
 9999 mem: storing 2 in location 1057
  103 run: len:number <- channel-capacity chan:address:channel
@@ -2304,7 +2304,7 @@ schedule: read/buffer-lines
 9999 mem: location 1046 is 98
 9999 mem: location 1051 is 1027
 9999 mem: storing 98 in location 1027
- 102 run: free:address:number/deref <- add free:address:number/deref, 1:literal
+ 102 run: free:address:number/deref <- add free:address:number/deref, 1
 9999 mem: location 1050 is 1023
 9999 mem: location 1023 is 1
 9999 mem: location 1050 is 1023
@@ -2337,7 +2337,7 @@ schedule: read/buffer-lines
 9999 mem: location 1045 is 1022
 9999 run: result 0 is 1022
 9999 mem: storing 1022 in location 101003
- 101 run: i:number <- add i:number, 1:literal
+ 101 run: i:number <- add i:number, 1
 9999 mem: location 101011 is 1
 9999 mem: storing 2 in location 101011
  101 run: loop 
@@ -2414,7 +2414,7 @@ schedule: read/buffer-lines
 9999 run: its type is number
 9999 mem: location 1023 is 2
 9999 mem: storing 2 in location 1057
- 103 run: tmp:number <- add tmp:number, 1:literal
+ 103 run: tmp:number <- add tmp:number, 1
 9999 mem: location 1057 is 2
 9999 mem: storing 3 in location 1057
  103 run: len:number <- channel-capacity chan:address:channel
@@ -2523,7 +2523,7 @@ schedule: read/buffer-lines
 9999 mem: location 1046 is 10
 9999 mem: location 1051 is 1028
 9999 mem: storing 10 in location 1028
- 102 run: free:address:number/deref <- add free:address:number/deref, 1:literal
+ 102 run: free:address:number/deref <- add free:address:number/deref, 1
 9999 mem: location 1050 is 1023
 9999 mem: location 1023 is 2
 9999 mem: location 1050 is 1023
@@ -2556,7 +2556,7 @@ schedule: read/buffer-lines
 9999 mem: location 1045 is 1022
 9999 run: result 0 is 1022
 9999 mem: storing 1022 in location 101003
- 101 run: i:number <- add i:number, 1:literal
+ 101 run: i:number <- add i:number, 1
 9999 mem: location 101011 is 2
 9999 mem: storing 3 in location 101011
  101 run: loop 
@@ -2570,7 +2570,7 @@ schedule: read/buffer-lines
 9999 run: jumping to instruction 36
  101 run: loop 
 9999 run: jumping to instruction 4
- 101 run: line:address:buffer <- new-buffer 30:literal
+ 101 run: line:address:buffer <- new-buffer 30
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
  102 run: result:address:buffer <- new buffer:type
@@ -2583,7 +2583,7 @@ schedule: read/buffer-lines
 9999 mem: location 1002 is 101058
 9999 run: address to copy is 101058
 9999 mem: storing 101058 in location 1003
- 102 run: len:address:number/deref <- copy 0:literal
+ 102 run: len:address:number/deref <- copy 0
 9999 mem: location 1003 is 101058
 9999 mem: storing 0 in location 101058
  102 run: s:address:address:array:character <- get-address result:address:buffer/deref, data:offset

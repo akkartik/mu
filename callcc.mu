@@ -12,6 +12,6 @@ recipe f [
 
 recipe g [
   c:continuation <- current-continuation  # <-- loop back to here
-  $print 1:literal
+  $print 1
   reply c:continuation  # threaded through unmodified after first iteration
 ]

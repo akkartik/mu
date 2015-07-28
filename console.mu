@@ -7,7 +7,7 @@ recipe main [
   {
     _, found?:boolean <- check-for-interaction
     break-if found?:boolean
-    print-character-to-display 97:literal, 7:literal/white
+    print-character-to-display 97, 7/white
     loop
   }
   close-console

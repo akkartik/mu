@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    # channel with just 1 slot\n    1:address:channel <- new-channel 1:literal/capacity\n    # write and read a value\n    1:address:channel <- write 1:address:channel, 34:literal\n    _, 1:address:channel <- read 1:address:channel\n    # first-free will now be 1\n    2:number <- get 1:address:channel/deref, first-free:offset\n    3:number <- get 1:address:channel/deref, first-free:offset\n    # write second value, verify that first-free wraps\n    1:address:channel <- write 1:address:channel, 34:literal\n    4:number <- get 1:address:channel/deref, first-free:offset\n    # read second value, verify that first-full wraps\n    _, 1:address:channel <- read 1:address:channel\n    5:number <- get 1:address:channel/deref, first-full:offset\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    # channel with just 1 slot\n    1:address:channel <- new-channel 1/capacity\n    # write and read a value\n    1:address:channel <- write 1:address:channel, 34\n    _, 1:address:channel <- read 1:address:channel\n    # first-free will now be 1\n    2:number <- get 1:address:channel/deref, first-free:offset\n    3:number <- get 1:address:channel/deref, first-free:offset\n    # write second value, verify that first-free wraps\n    1:address:channel <- write 1:address:channel, 34\n    4:number <- get 1:address:channel/deref, first-free:offset\n    # read second value, verify that first-full wraps\n    _, 1:address:channel <- read 1:address:channel\n    5:number <- get 1:address:channel/deref, first-full:offset\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    2 <- 1  # first-free after first write\n    3 <- 1  # first-full after first read\n    4 <- 0  # first-free after second write, wrapped\n    5 <- 0  # first-full after second read, wrapped\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-channel-wrap
@@ -9,15 +9,15 @@ after-brace: memory-should-contain ...
 schedule: scenario-channel-wrap
  101 run: run [
     # channel with just 1 slot
-    1:address:channel <- new-channel 1:literal/capacity
+    1:address:channel <- new-channel 1/capacity
     # write and read a value
-    1:address:channel <- write 1:address:channel, 34:literal
+    1:address:channel <- write 1:address:channel, 34
     _, 1:address:channel <- read 1:address:channel
     # first-free will now be 1
     2:number <- get 1:address:channel/deref, first-free:offset
     3:number <- get 1:address:channel/deref, first-free:offset
     # write second value, verify that first-free wraps
-    1:address:channel <- write 1:address:channel, 34:literal
+    1:address:channel <- write 1:address:channel, 34
     4:number <- get 1:address:channel/deref, first-free:offset
     # read second value, verify that first-full wraps
     _, 1:address:channel <- read 1:address:channel
@@ -72,7 +72,7 @@ after-brace: write ...
 after-brace: get ...
 after-brace: read ...
 after-brace: get ...
- 101 run: 1:address:channel <- new-channel 1:literal/capacity
+ 101 run: 1:address:channel <- new-channel 1/capacity
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1000
@@ -87,7 +87,7 @@ after-brace: get ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1007
 9999 mem: storing 1007 in location 1003
- 102 run: full:address:number/deref <- copy 0:literal
+ 102 run: full:address:number/deref <- copy 0
 9999 mem: location 1003 is 1007
 9999 mem: storing 0 in location 1007
  102 run: free:address:number <- get-address result:address:channel/deref, first-free:offset
@@ -98,12 +98,12 @@ after-brace: get ...
 9999 mem: location 1002 is 1007
 9999 run: address to copy is 1008
 9999 mem: storing 1008 in location 1004
- 102 run: free:address:number/deref <- copy 0:literal
+ 102 run: free:address:number/deref <- copy 0
 9999 mem: location 1004 is 1008
 9999 mem: storing 0 in location 1008
  102 run: capacity:number <- next-ingredient 
 9999 mem: storing 1 in location 1005
- 102 run: capacity:number <- add capacity:number, 1:literal
+ 102 run: capacity:number <- add capacity:number, 1
 9999 mem: location 1005 is 1
 9999 mem: storing 2 in location 1005
  102 run: dest:address:address:array:location <- get-address result:address:channel/deref, data:offset
@@ -124,7 +124,7 @@ after-brace: get ...
 9999 mem: location 1002 is 1007
 9999 run: result 0 is 1007
 9999 mem: storing 1007 in location 1
- 101 run: 1:address:channel <- write 1:address:channel, 34:literal
+ 101 run: 1:address:channel <- write 1:address:channel, 34
 9999 mem: location 1 is 1007
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
@@ -150,7 +150,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1008 is 0
 9999 mem: storing 0 in location 1027
- 103 run: tmp:number <- add tmp:number, 1:literal
+ 103 run: tmp:number <- add tmp:number, 1
 9999 mem: location 1027 is 0
 9999 mem: storing 1 in location 1027
  103 run: len:number <- channel-capacity chan:address:channel
@@ -242,7 +242,7 @@ after-brace: get ...
 9999 mem: location 1016 is 34
 9999 mem: location 1021 is 1011
 9999 mem: storing 34 in location 1011
- 102 run: free:address:number/deref <- add free:address:number/deref, 1:literal
+ 102 run: free:address:number/deref <- add free:address:number/deref, 1
 9999 mem: location 1020 is 1008
 9999 mem: location 1008 is 0
 9999 mem: location 1020 is 1008
@@ -343,7 +343,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1011 is 34
 9999 mem: storing 34 in location 1044
- 102 run: full:address:number/deref <- add full:address:number/deref, 1:literal
+ 102 run: full:address:number/deref <- add full:address:number/deref, 1
 9999 mem: location 1042 is 1007
 9999 mem: location 1007 is 0
 9999 mem: location 1042 is 1007
@@ -389,7 +389,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1008 is 1
 9999 mem: storing 1 in location 3
- 101 run: 1:address:channel <- write 1:address:channel, 34:literal
+ 101 run: 1:address:channel <- write 1:address:channel, 34
 9999 mem: location 1 is 1007
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
@@ -413,7 +413,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1008 is 1
 9999 mem: storing 1 in location 1027
- 103 run: tmp:number <- add tmp:number, 1:literal
+ 103 run: tmp:number <- add tmp:number, 1
 9999 mem: location 1027 is 1
 9999 mem: storing 2 in location 1027
  103 run: len:number <- channel-capacity chan:address:channel
@@ -450,7 +450,7 @@ after-brace: get ...
  103 run: break-unless at-end?:boolean, 
 9999 mem: location 1029 is 1
 9999 run: jump-unless fell through
- 103 run: tmp:number <- copy 0:literal
+ 103 run: tmp:number <- copy 0
 9999 mem: storing 0 in location 1027
  103 run: full:number <- get chan:address:channel/deref, first-full:offset
 9999 mem: location 1026 is 1007
@@ -506,7 +506,7 @@ after-brace: get ...
 9999 mem: location 1016 is 34
 9999 mem: location 1021 is 1012
 9999 mem: storing 34 in location 1012
- 102 run: free:address:number/deref <- add free:address:number/deref, 1:literal
+ 102 run: free:address:number/deref <- add free:address:number/deref, 1
 9999 mem: location 1020 is 1008
 9999 mem: location 1008 is 1
 9999 mem: location 1020 is 1008
@@ -526,7 +526,7 @@ after-brace: get ...
  102 run: break-unless at-end?:boolean, 
 9999 mem: location 1023 is 1
 9999 run: jump-unless fell through
- 102 run: free:address:number/deref <- copy 0:literal
+ 102 run: free:address:number/deref <- copy 0
 9999 mem: location 1020 is 1008
 9999 mem: storing 0 in location 1008
  102 run: reply chan:address:channel/same-as-ingredient:0
@@ -618,7 +618,7 @@ after-brace: get ...
 9999 run: its type is number
 9999 mem: location 1012 is 34
 9999 mem: storing 34 in location 1044
- 102 run: full:address:number/deref <- add full:address:number/deref, 1:literal
+ 102 run: full:address:number/deref <- add full:address:number/deref, 1
 9999 mem: location 1042 is 1007
 9999 mem: location 1007 is 1
 9999 mem: location 1042 is 1007
@@ -638,7 +638,7 @@ after-brace: get ...
  102 run: break-unless at-end?:boolean, 
 9999 mem: location 1046 is 1
 9999 run: jump-unless fell through
- 102 run: full:address:number/deref <- copy 0:literal
+ 102 run: full:address:number/deref <- copy 0
 9999 mem: location 1042 is 1007
 9999 mem: storing 0 in location 1007
  102 run: reply result:location, chan:address:channel/same-as-ingredient:0

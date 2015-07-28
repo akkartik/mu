@@ -21,11 +21,11 @@ recipe new-fake-screen [
   width:address:number/deref <- next-ingredient
   height:address:number <- get-address result:address:screen/deref, num-rows:offset
   height:address:number/deref <- next-ingredient
-#?   $print height:address:number/deref, 10:literal/newline
+#?   $print height:address:number/deref, 10/newline
   row:address:number <- get-address result:address:screen/deref, cursor-row:offset
-  row:address:number/deref <- copy 0:literal
+  row:address:number/deref <- copy 0
   column:address:number <- get-address result:address:screen/deref, cursor-column:offset
-  column:address:number/deref <- copy 0:literal
+  column:address:number/deref <- copy 0
   bufsize:number <- multiply width:address:number/deref, height:address:number/deref
   buf:address:address:array:screen-cell <- get-address result:address:screen/deref, data:offset
   buf:address:address:array:screen-cell/deref <- new screen-cell:type, bufsize:number
@@ -44,7 +44,7 @@ recipe clear-screen [
     # clear fake screen
     buf:address:array:screen-cell <- get x:address:screen/deref, data:offset
     max:number <- length buf:address:array:screen-cell/deref
-    i:number <- copy 0:literal
+    i:number <- copy 0
     {
       done?:boolean <- greater-or-equal i:number, max:number
       break-if done?:boolean
@@ -52,15 +52,15 @@ recipe clear-screen [
       curr-content:address:character <- get-address curr:address:screen-cell/deref, contents:offset
       curr-content:address:character/deref <- copy [ ]
       curr-color:address:character <- get-address curr:address:screen-cell/deref, color:offset
-      curr-color:address:character/deref <- copy 7:literal/white
-      i:number <- add i:number, 1:literal
+      curr-color:address:character/deref <- copy 7/white
+      i:number <- add i:number, 1
       loop
     }
     # reset cursor
     cur:address:number <- get-address x:address:screen/deref, cursor-row:offset
-    cur:address:number/deref <- copy 0:literal
+    cur:address:number/deref <- copy 0
     cur:address:number <- get-address x:address:screen/deref, cursor-column:offset
-    cur:address:number/deref <- copy 0:literal
+    cur:address:number/deref <- copy 0
     reply x:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
@@ -71,21 +71,21 @@ recipe clear-screen [
 recipe fake-screen-is-clear? [
   local-scope
   screen:address:screen <- next-ingredient
-  reply-unless screen:address:screen, 1:literal/true
+  reply-unless screen:address:screen, 1/true
   buf:address:array:screen-cell <- get screen:address:screen/deref, data:offset
-  i:number <- copy 0:literal
+  i:number <- copy 0
   len:number <- length buf:address:array:screen-cell/deref
   {
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
     curr:screen-cell <- index buf:address:array:screen-cell/deref, i:number
     curr-contents:character <- get curr:screen-cell, contents:offset
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     loop-unless curr-contents:character
     # not 0
-    reply 0:literal/false
+    reply 0/false
   }
-  reply 1:literal/true
+  reply 1/true
 ]
 
 recipe print-character [
@@ -96,13 +96,13 @@ recipe print-character [
   {
     # default color to white
     break-if color-found?:boolean
-    color:number <- copy 7:literal/white
+    color:number <- copy 7/white
   }
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
     # default bg-color to black
     break-if bg-color-found?:boolean
-    bg-color:number <- copy 0:literal/black
+    bg-color:number <- copy 0/black
   }
 #?   trace [app], [print character] #? 1
   {
@@ -113,28 +113,28 @@ recipe print-character [
     height:number <- get x:address:screen/deref, num-rows:offset
     # if cursor is out of bounds, silently exit
     row:address:number <- get-address x:address:screen/deref, cursor-row:offset
-    legal?:boolean <- greater-or-equal row:address:number/deref, 0:literal
+    legal?:boolean <- greater-or-equal row:address:number/deref, 0
     reply-unless legal?:boolean, x:address:screen
     legal?:boolean <- lesser-than row:address:number/deref, height:number
     reply-unless legal?:boolean, x:address:screen
     column:address:number <- get-address x:address:screen/deref, cursor-column:offset
-    legal?:boolean <- greater-or-equal column:address:number/deref, 0:literal
+    legal?:boolean <- greater-or-equal column:address:number/deref, 0
     reply-unless legal?:boolean, x:address:screen
     legal?:boolean <- lesser-than column:address:number/deref, width:number
     reply-unless legal?:boolean, x:address:screen
     # special-case: newline
     {
-      newline?:boolean <- equal c:character, 10:literal/newline
-#?       $print c:character, [ ], newline?:boolean, 10:literal/newline
+      newline?:boolean <- equal c:character, 10/newline
+#?       $print c:character, [ ], newline?:boolean, 10/newline
       break-unless newline?:boolean
       {
         # unless cursor is already at bottom
-        bottom:number <- subtract height:number, 1:literal
+        bottom:number <- subtract height:number, 1
         at-bottom?:boolean <- greater-or-equal row:address:number/deref, bottom:number
         break-if at-bottom?:boolean
         # move it to the next row
-        column:address:number/deref <- copy 0:literal
-        row:address:number/deref <- add row:address:number/deref, 1:literal
+        column:address:number/deref <- copy 0
+        row:address:number/deref <- add row:address:number/deref, 1
       }
       reply x:address:screen/same-as-ingredient:0
     }
@@ -145,24 +145,24 @@ recipe print-character [
     len:number <- length buf:address:array:screen-cell/deref
     # special-case: backspace
     {
-      backspace?:boolean <- equal c:character, 8:literal
+      backspace?:boolean <- equal c:character, 8
       break-unless backspace?:boolean
       {
         # unless cursor is already at left margin
-        at-left?:boolean <- lesser-or-equal column:address:number/deref, 0:literal
+        at-left?:boolean <- lesser-or-equal column:address:number/deref, 0
         break-if at-left?:boolean
         # clear previous location
-        column:address:number/deref <- subtract column:address:number/deref, 1:literal
-        index:number <- subtract index:number, 1:literal
+        column:address:number/deref <- subtract column:address:number/deref, 1
+        index:number <- subtract index:number, 1
         cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
         cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
         cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
-        cursor-contents:address:character/deref <- copy 32:literal/space
-        cursor-color:address:number/deref <- copy 7:literal/white
+        cursor-contents:address:character/deref <- copy 32/space
+        cursor-color:address:number/deref <- copy 7/white
       }
       reply x:address:screen/same-as-ingredient:0
     }
-#?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, 10:literal/newline
+#?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, 10/newline
     cursor:address:screen-cell <- index-address buf:address:array:screen-cell/deref, index:number
     cursor-contents:address:character <- get-address cursor:address:screen-cell/deref, contents:offset
     cursor-color:address:number <- get-address cursor:address:screen-cell/deref, color:offset
@@ -170,10 +170,10 @@ recipe print-character [
     cursor-color:address:number/deref <- copy color:number
     # increment column unless it's already all the way to the right
     {
-      right:number <- subtract width:number, 1:literal
+      right:number <- subtract width:number, 1
       at-right?:boolean <- greater-or-equal column:address:number/deref, right:number
       break-if at-right?:boolean
-      column:address:number/deref <- add column:address:number/deref, 1:literal
+      column:address:number/deref <- add column:address:number/deref, 1
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -185,8 +185,8 @@ recipe print-character [
 scenario print-character-at-top-left [
   run [
 #?     $start-tracing #? 3
-    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
-    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:screen <- print-character 1:address:screen, 97  # 'a'
     2:address:array:screen-cell <- get 1:address:screen/deref, data:offset
     3:array:screen-cell <- copy 2:address:array:screen-cell/deref
   ]
@@ -200,8 +200,8 @@ scenario print-character-at-top-left [
 
 scenario print-character-color [
   run [
-    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
-    1:address:screen <- print-character 1:address:screen, 97:literal/a, 1:literal/red
+    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:screen <- print-character 1:address:screen, 97/a, 1/red
     2:address:array:screen-cell <- get 1:address:screen/deref, data:offset
     3:array:screen-cell <- copy 2:address:array:screen-cell/deref
   ]
@@ -216,9 +216,9 @@ scenario print-character-color [
 scenario print-backspace-character [
   run [
 #?     $start-tracing #? 3
-    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
-    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
-    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace
+    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:screen <- print-character 1:address:screen, 97  # 'a'
+    1:address:screen <- print-character 1:address:screen, 8  # backspace
     2:number <- get 1:address:screen/deref, cursor-column:offset
     3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
     4:array:screen-cell <- copy 3:address:array:screen-cell/deref
@@ -234,10 +234,10 @@ scenario print-backspace-character [
 
 scenario print-extra-backspace-character [
   run [
-    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
-    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
-    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace
-    1:address:screen <- print-character 1:address:screen, 8:literal  # backspace
+    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:screen <- print-character 1:address:screen, 97  # 'a'
+    1:address:screen <- print-character 1:address:screen, 8  # backspace
+    1:address:screen <- print-character 1:address:screen, 8  # backspace
     2:number <- get 1:address:screen/deref, cursor-column:offset
     3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
     4:array:screen-cell <- copy 3:address:array:screen-cell/deref
@@ -253,10 +253,10 @@ scenario print-extra-backspace-character [
 
 scenario print-at-right-margin [
   run [
-    1:address:screen <- new-fake-screen 2:literal/width, 2:literal/height
-    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
-    1:address:screen <- print-character 1:address:screen, 98:literal  # 'b'
-    1:address:screen <- print-character 1:address:screen, 99:literal  # 'c'
+    1:address:screen <- new-fake-screen 2/width, 2/height
+    1:address:screen <- print-character 1:address:screen, 97  # 'a'
+    1:address:screen <- print-character 1:address:screen, 98  # 'b'
+    1:address:screen <- print-character 1:address:screen, 99  # 'c'
     2:number <- get 1:address:screen/deref, cursor-column:offset
     3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
     4:array:screen-cell <- copy 3:address:array:screen-cell/deref
@@ -275,9 +275,9 @@ scenario print-at-right-margin [
 scenario print-newline-character [
   run [
 #?     $start-tracing #? 3
-    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
-    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
-    1:address:screen <- print-character 1:address:screen, 10:literal/newline
+    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:screen <- print-character 1:address:screen, 97  # 'a'
+    1:address:screen <- print-character 1:address:screen, 10/newline
     2:number <- get 1:address:screen/deref, cursor-row:offset
     3:number <- get 1:address:screen/deref, cursor-column:offset
     4:address:array:screen-cell <- get 1:address:screen/deref, data:offset
@@ -295,10 +295,10 @@ scenario print-newline-character [
 
 scenario print-newline-at-bottom-line [
   run [
-    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
-    1:address:screen <- print-character 1:address:screen, 10:literal/newline
-    1:address:screen <- print-character 1:address:screen, 10:literal/newline
-    1:address:screen <- print-character 1:address:screen, 10:literal/newline
+    1:address:screen <- new-fake-screen 3/width, 2/height
+    1:address:screen <- print-character 1:address:screen, 10/newline
+    1:address:screen <- print-character 1:address:screen, 10/newline
+    1:address:screen <- print-character 1:address:screen, 10/newline
     2:number <- get 1:address:screen/deref, cursor-row:offset
     3:number <- get 1:address:screen/deref, cursor-column:offset
   ]
@@ -310,13 +310,13 @@ scenario print-newline-at-bottom-line [
 
 scenario print-at-bottom-right [
   run [
-    1:address:screen <- new-fake-screen 2:literal/width, 2:literal/height
-    1:address:screen <- print-character 1:address:screen, 10:literal/newline
-    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
-    1:address:screen <- print-character 1:address:screen, 98:literal  # 'b'
-    1:address:screen <- print-character 1:address:screen, 99:literal  # 'c'
-    1:address:screen <- print-character 1:address:screen, 10:literal/newline
-    1:address:screen <- print-character 1:address:screen, 100:literal  # 'd'
+    1:address:screen <- new-fake-screen 2/width, 2/height
+    1:address:screen <- print-character 1:address:screen, 10/newline
+    1:address:screen <- print-character 1:address:screen, 97  # 'a'
+    1:address:screen <- print-character 1:address:screen, 98  # 'b'
+    1:address:screen <- print-character 1:address:screen, 99  # 'c'
+    1:address:screen <- print-character 1:address:screen, 10/newline
+    1:address:screen <- print-character 1:address:screen, 100  # 'd'
     2:number <- get 1:address:screen/deref, cursor-row:offset
     3:number <- get 1:address:screen/deref, cursor-column:offset
     4:address:array:screen-cell <- get 1:address:screen/deref, data:offset
@@ -350,8 +350,8 @@ recipe clear-line [
     # space over the entire line
 #?     $start-tracing #? 1
     {
-#?       $print column:address:number/deref, 10:literal/newline
-      right:number <- subtract width:number, 1:literal
+#?       $print column:address:number/deref, 10/newline
+      right:number <- subtract width:number, 1
       done?:boolean <- greater-or-equal column:address:number/deref, right:number
       break-if done?:boolean
       print-character x:address:screen, [ ]  # implicitly updates 'column'
@@ -402,11 +402,11 @@ recipe move-cursor [
 scenario clear-line-erases-printed-characters [
   run [
 #?     $start-tracing #? 4
-    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3/width, 2/height
     # print a character
-    1:address:screen <- print-character 1:address:screen, 97:literal  # 'a'
+    1:address:screen <- print-character 1:address:screen, 97  # 'a'
     # move cursor to start of line
-    1:address:screen <- move-cursor 1:address:screen, 0:literal/row, 0:literal/column
+    1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column
     # clear line
     1:address:screen <- clear-line 1:address:screen
     2:address:array:screen-cell <- get 1:address:screen/deref, data:offset
@@ -440,13 +440,13 @@ recipe cursor-down [
       # if row < height-1
       height:number <- get x:address:screen/deref, num-rows:offset
       row:address:number <- get-address x:address:screen/deref, cursor-row:offset
-      max:number <- subtract height:number, 1:literal
+      max:number <- subtract height:number, 1
       at-bottom?:boolean <- greater-or-equal row:address:number/deref, max:number
       break-if at-bottom?:boolean
       # row = row+1
-#?       $print [AAA: ], row:address:number, [ -> ], row:address:number/deref, 10:literal/newline
-      row:address:number/deref <- add row:address:number/deref, 1:literal
-#?       $print [BBB: ], row:address:number, [ -> ], row:address:number/deref, 10:literal/newline
+#?       $print [AAA: ], row:address:number, [ -> ], row:address:number/deref, 10/newline
+      row:address:number/deref <- add row:address:number/deref, 1
+#?       $print [BBB: ], row:address:number, [ -> ], row:address:number/deref, 10/newline
 #?       $start-tracing #? 1
     }
     reply x:address:screen/same-as-ingredient:0
@@ -465,10 +465,10 @@ recipe cursor-up [
     {
       # if row > 0
       row:address:number <- get-address x:address:screen/deref, cursor-row:offset
-      at-top?:boolean <- lesser-or-equal row:address:number/deref, 0:literal
+      at-top?:boolean <- lesser-or-equal row:address:number/deref, 0
       break-if at-top?:boolean
       # row = row-1
-      row:address:number/deref <- subtract row:address:number/deref, 1:literal
+      row:address:number/deref <- subtract row:address:number/deref, 1
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -487,11 +487,11 @@ recipe cursor-right [
       # if column < width-1
       width:number <- get x:address:screen/deref, num-columns:offset
       column:address:number <- get-address x:address:screen/deref, cursor-column:offset
-      max:number <- subtract width:number, 1:literal
+      max:number <- subtract width:number, 1
       at-bottom?:boolean <- greater-or-equal column:address:number/deref, max:number
       break-if at-bottom?:boolean
       # column = column+1
-      column:address:number/deref <- add column:address:number/deref, 1:literal
+      column:address:number/deref <- add column:address:number/deref, 1
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -509,10 +509,10 @@ recipe cursor-left [
     {
       # if column > 0
       column:address:number <- get-address x:address:screen/deref, cursor-column:offset
-      at-top?:boolean <- lesser-or-equal column:address:number/deref, 0:literal
+      at-top?:boolean <- lesser-or-equal column:address:number/deref, 0
       break-if at-top?:boolean
       # column = column-1
-      column:address:number/deref <- subtract column:address:number/deref, 1:literal
+      column:address:number/deref <- subtract column:address:number/deref, 1
     }
     reply x:address:screen/same-as-ingredient:0
   }
@@ -525,7 +525,7 @@ recipe cursor-to-start-of-line [
   local-scope
   x:address:screen <- next-ingredient
   row:number, _, x:address:screen <- cursor-position x:address:screen
-  column:number <- copy 0:literal
+  column:number <- copy 0
   x:address:screen <- move-cursor x:address:screen, row:number, column:number
   reply x:address:screen/same-as-ingredient:0
 ]
@@ -626,22 +626,22 @@ recipe print-string [
   {
     # default color to white
     break-if color-found?:boolean
-    color:number <- copy 7:literal/white
+    color:number <- copy 7/white
   }
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
     # default bg-color to black
     break-if bg-color-found?:boolean
-    bg-color:number <- copy 0:literal/black
+    bg-color:number <- copy 0/black
   }
   len:number <- length s:address:array:character/deref
-  i:number <- copy 0:literal
+  i:number <- copy 0
   {
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
     c:character <- index s:address:array:character/deref, i:number
     print-character x:address:screen, c:character, color:number, bg-color:number
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     loop
   }
   reply x:address:screen/same-as-ingredient:0
@@ -649,7 +649,7 @@ recipe print-string [
 
 scenario print-string-stops-at-right-margin [
   run [
-    1:address:screen <- new-fake-screen 3:literal/width, 2:literal/height
+    1:address:screen <- new-fake-screen 3/width, 2/height
     2:address:array:character <- new [abcd]
     1:address:screen <- print-string 1:address:screen, 2:address:array:character
     3:address:array:screen-cell <- get 1:address:screen/deref, data:offset
@@ -675,13 +675,13 @@ recipe print-integer [
   {
     # default color to white
     break-if color-found?:boolean
-    color:number <- copy 7:literal/white
+    color:number <- copy 7/white
   }
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
     # default bg-color to black
     break-if bg-color-found?:boolean
-    bg-color:number <- copy 0:literal/black
+    bg-color:number <- copy 0/black
   }
   # todo: other bases besides decimal
   s:address:array:character <- integer-to-decimal-string n:number

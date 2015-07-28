@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:array:character <- new [bc]\n    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:array:character <- new [bc]\n    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3 <- 0  # no match\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-match-at-inside-bounds-2
@@ -10,7 +10,7 @@ schedule: scenario-match-at-inside-bounds-2
  101 run: run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [bc]
-    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
   ]
 parse: instruction: new
 parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
@@ -31,7 +31,7 @@ after-brace: match-at ...
 9999 mem: storing 1000 in location 1
  101 run: 2:address:array:character <- new [bc]
 9999 mem: storing 1004 in location 2
- 101 run: 3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+ 101 run: 3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
 9999 mem: location 1 is 1000
 9999 mem: location 2 is 1004
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -69,7 +69,7 @@ after-brace: match-at ...
  102 run: break-if enough-room?:boolean, 
 9999 mem: location 1014 is 1
 9999 run: jumping to instruction 11
- 102 run: pattern-idx:number <- copy 0:literal
+ 102 run: pattern-idx:number <- copy 0
 9999 mem: storing 0 in location 1015
  102 run: done?:boolean <- greater-or-equal pattern-idx:number, pattern-len:number
 9999 mem: location 1015 is 0
@@ -110,7 +110,7 @@ after-brace: match-at ...
  102 run: break-if match?:boolean, 
 9999 mem: location 1019 is 0
 9999 run: jump-if fell through
- 102 run: reply 0:literal/not-found
+ 102 run: reply 0/not-found
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 3
  100 run: memory-should-contain [

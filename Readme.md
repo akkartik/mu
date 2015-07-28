@@ -93,7 +93,7 @@ number of them. In particular you can have any number of products. For example,
 you can perform integer division as follows:
 
 ```
-  quotient:number, remainder:number <- divide-with-remainder 11:literal, 3:literal
+  quotient:number, remainder:number <- divide-with-remainder 11, 3
 ```
 
 Each reagent provides its name as well as its type separated by a colon. Types
@@ -255,14 +255,14 @@ inserting code at them.
 
   after +base-case [
     # if n=0 return 1
-    zero?:boolean <- equal n:number, 0:literal
+    zero?:boolean <- equal n:number, 0
     break-unless zero?:boolean
-    reply 1:literal
+    reply 1
   ]
 
   after +recursive-case [
     # return n * factorial(n-1)
-    x:number <- subtract n:number, 1:literal
+    x:number <- subtract n:number, 1
     subresult:number <- factorial x:number
     result:number <- multiply subresult:number, n:number
     reply result:number
@@ -289,14 +289,14 @@ Another example, this time with concurrency.
   recipe main [
     start-running thread2:recipe
     {
-      $print 34:literal
+      $print 34
       loop
     }
   ]
 
   recipe thread2 [
     {
-      $print 35:literal
+      $print 35
       loop
     }
   ]

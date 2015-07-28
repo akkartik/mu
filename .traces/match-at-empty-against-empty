@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character <- new []\n    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0:literal\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character <- new []\n    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3 <- 1  # matches because pattern is also empty\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-match-at-empty-against-empty
@@ -9,7 +9,7 @@ after-brace: memory-should-contain ...
 schedule: scenario-match-at-empty-against-empty
  101 run: run [
     1:address:array:character <- new []
-    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0:literal
+    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
   ]
 parse: instruction: new
 parse:   ingredient: {name: "", properties: [_: "literal-string"]}
@@ -24,7 +24,7 @@ after-brace: new ...
 after-brace: match-at ...
  101 run: 1:address:array:character <- new []
 9999 mem: storing 1000 in location 1
- 101 run: 3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0:literal
+ 101 run: 3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
 9999 mem: location 1 is 1000
 9999 mem: location 1 is 1000
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -57,7 +57,7 @@ after-brace: match-at ...
  102 run: break-if enough-room?:boolean, 
 9999 mem: location 1008 is 1
 9999 run: jumping to instruction 11
- 102 run: pattern-idx:number <- copy 0:literal
+ 102 run: pattern-idx:number <- copy 0
 9999 mem: storing 0 in location 1009
  102 run: done?:boolean <- greater-or-equal pattern-idx:number, pattern-len:number
 9999 mem: location 1009 is 0
@@ -66,7 +66,7 @@ after-brace: match-at ...
  102 run: break-if done?:boolean, 
 9999 mem: location 1010 is 1
 9999 run: jumping to instruction 26
- 102 run: reply 1:literal/found
+ 102 run: reply 1/found
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 3
  100 run: memory-should-contain [

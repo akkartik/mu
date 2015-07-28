@@ -52,13 +52,13 @@ case CONTINUE_FROM: {
 :(scenario continuation)
 # simulate a loop using continuations
 recipe main [
-  1:number <- copy 0:literal
+  1:number <- copy 0
   2:continuation <- current-continuation
   {
 #?     $print 1:number
-    3:boolean <- greater-or-equal 1:number, 3:literal
+    3:boolean <- greater-or-equal 1:number, 3
     break-if 3:boolean
-    1:number <- add 1:number, 1:literal
+    1:number <- add 1:number, 1
     continue-from 2:continuation  # loop
   }
 ]
@@ -72,10 +72,10 @@ $current-continuation: 1
 :(scenario continuation_inside_caller)
 #? % Trace_stream->dump_layer = "all"; #? 1
 recipe main [
-  1:number <- copy 0:literal
+  1:number <- copy 0
   2:continuation <- loop-body
   {
-    3:boolean <- greater-or-equal 1:number, 3:literal
+    3:boolean <- greater-or-equal 1:number, 3
     break-if 3:boolean
     continue-from 2:continuation  # loop
   }
@@ -83,7 +83,7 @@ recipe main [
 
 recipe loop-body [
   4:continuation <- current-continuation
-  1:number <- add 1:number, 1:literal
+  1:number <- add 1:number, 1
 ]
 +mem: storing 1 in location 1
 +mem: storing 2 in location 1
@@ -106,11 +106,11 @@ recipe loop-body [
 
 :(scenario delimited_continuation)
 recipe main [
-  1:continuation <- create-delimited-continuation f:recipe 12:literal  # 12 is an argument to f
-  2:number <- copy 5:literal
+  1:continuation <- create-delimited-continuation f:recipe 12  # 12 is an argument to f
+  2:number <- copy 5
   {
     2:number <- call 1:continuation, 2:number  # 2 is an argument to g, the 'top' of the continuation
-    3:boolean <- greater-or-equal 2:number, 8:literal
+    3:boolean <- greater-or-equal 2:number, 8
     break-if 3:boolean
     loop
   }
@@ -128,13 +128,13 @@ recipe g [
   reply-delimited-continuation
   # calls of the continuation start from here
   22:number <- next-ingredient
-  23:number <- add 22:number, 1:literal
+  23:number <- add 22:number, 1
   reply 23:number
 ]
 #? ?
 # first call of 'g' executes the part before reply-delimited-continuation
 +mem: storing 12 in location 21
-+run: 2:number <- copy 5:literal
++run: 2:number <- copy 5
 +mem: storing 5 in location 2
 # calls of the continuation execute the part after reply-delimited-continuation
 +run: 2:number <- call 1:continuation, 2:number

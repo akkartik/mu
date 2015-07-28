@@ -1,5 +1,4 @@
 //: Support literal non-integers.
-//: '3.14159:literal' is ugly, so we'll just say '3.14159' for non-integers.
 
 :(scenarios load)
 :(scenario noninteger_literal)

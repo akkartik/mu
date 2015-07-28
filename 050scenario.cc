@@ -8,7 +8,7 @@
 :(scenario scenario_block)
 scenario foo [
   run [
-    1:number <- copy 13:literal
+    1:number <- copy 13
   ]
   memory-should-contain [
     1 <- 13
@@ -19,13 +19,13 @@ scenario foo [
 :(scenario scenario_multiple_blocks)
 scenario foo [
   run [
-    1:number <- copy 13:literal
+    1:number <- copy 13
   ]
   memory-should-contain [
     1 <- 13
   ]
   run [
-    2:number <- copy 13:literal
+    2:number <- copy 13
   ]
   memory-should-contain [
     1 <- 13
@@ -36,7 +36,7 @@ scenario foo [
 :(scenario scenario_check_memory_and_trace)
 scenario foo [
   run [
-    1:number <- copy 13:literal
+    1:number <- copy 13
     trace [a], [a b c]
   ]
   memory-should-contain [
@@ -92,9 +92,9 @@ scenario parse_scenario(istream& in) {
 :(scenario read_scenario_with_bracket_in_comment)
 scenario foo [
   # ']' in comment
-  1:number <- copy 0:literal
+  1:number <- copy 0
 ]
-+run: 1:number <- copy 0:literal
++run: 1:number <- copy 0
 
 :(scenario read_scenario_with_bracket_in_comment_in_nested_string)
 scenario foo [
@@ -161,11 +161,11 @@ void run_mu_scenario(const scenario& s) {
 % Hide_warnings = true;
 % Disable_redefine_warnings = true;
 recipe scenario-foo [
-  1:number <- copy 34:literal
+  1:number <- copy 34
 ]
 
 recipe scenario-foo [
-  1:number <- copy 35:literal
+  1:number <- copy 35
 ]
 +warn: redefining recipe scenario-foo
 
@@ -181,7 +181,7 @@ if (recipe_name.find("scenario-") == 0) return true;
 #? % Trace_stream->dump_layer = "all";
 recipe main [
   run [
-    1:number <- copy 13:literal
+    1:number <- copy 13
   ]
 ]
 +mem: storing 13 in location 1
@@ -215,10 +215,10 @@ void bind_special_scenario_names(recipe_ordinal r) {
 :(scenario run_multiple)
 recipe main [
   run [
-    1:number <- copy 13:literal
+    1:number <- copy 13
   ]
   run [
-    2:number <- copy 13:literal
+    2:number <- copy 13
   ]
 ]
 +mem: storing 13 in location 1
@@ -363,10 +363,10 @@ recipe main [
 % Scenario_testing_scenario = true;
 % Hide_warnings = true;
 recipe main [
-  1:number <- copy 3:literal
-  2:number <- copy 97:literal  # 'a'
-  3:number <- copy 98:literal  # 'b'
-  4:number <- copy 99:literal  # 'c'
+  1:number <- copy 3
+  2:number <- copy 97  # 'a'
+  3:number <- copy 98  # 'b'
+  4:number <- copy 99  # 'c'
   memory-should-contain [
     1:string <- [ab]
   ]
@@ -375,10 +375,10 @@ recipe main [
 
 :(scenario memory_check_string)
 recipe main [
-  1:number <- copy 3:literal
-  2:number <- copy 97:literal  # 'a'
-  3:number <- copy 98:literal  # 'b'
-  4:number <- copy 99:literal  # 'c'
+  1:number <- copy 3
+  2:number <- copy 97  # 'a'
+  3:number <- copy 98  # 'b'
+  4:number <- copy 99  # 'c'
   memory-should-contain [
     1:string <- [abc]
   ]

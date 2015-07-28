@@ -6,21 +6,21 @@
 # if default-space is 10, and if an array of 5 locals lies from location 11 to 15 (inclusive),
 # then location 0 is really location 11, location 1 is really location 12, and so on.
 recipe main [
-  10:number <- copy 5:literal  # pretend array; in practice we'll use new
-  default-space:address:array:location <- copy 10:literal
-  1:number <- copy 23:literal
+  10:number <- copy 5  # pretend array; in practice we'll use new
+  default-space:address:array:location <- copy 10
+  1:number <- copy 23
 ]
 +mem: storing 23 in location 12
 
 :(scenario deref_sidesteps_default_space)
 recipe main [
   # pretend pointer from outside
-  3:number <- copy 34:literal
+  3:number <- copy 34
   # pretend array
-  1000:number <- copy 5:literal
+  1000:number <- copy 5
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000:literal
-  1:address:number <- copy 3:literal
+  default-space:address:array:location <- copy 1000
+  1:address:number <- copy 3
   8:number/raw <- copy 1:address:number/deref
 ]
 +mem: storing 34 in location 8
@@ -28,7 +28,7 @@ recipe main [
 //:: first disable name conversion for 'default-space'
 :(scenario convert_names_passes_default_space)
 recipe main [
-  default-space:number, x:number <- copy 0:literal, 1:literal
+  default-space:number, x:number <- copy 0, 1
 ]
 +name: assign x 1
 -name: assign default-space 1
@@ -69,13 +69,13 @@ result.properties.push_back(pair<string, vector<string> >("raw", vector<string>(
 :(scenario deref_sidesteps_default_space_in_get)
 recipe main [
   # pretend pointer to container from outside
-  12:number <- copy 34:literal
-  13:number <- copy 35:literal
+  12:number <- copy 34
+  13:number <- copy 35
   # pretend array
-  1000:number <- copy 5:literal
+  1000:number <- copy 5
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000:literal
-  1:address:point <- copy 12:literal
+  default-space:address:array:location <- copy 1000
+  1:address:point <- copy 12
   9:number/raw <- get 1:address:point/deref, 1:offset
 ]
 +mem: storing 35 in location 9
@@ -88,15 +88,15 @@ tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()))
 :(scenario deref_sidesteps_default_space_in_index)
 recipe main [
   # pretend pointer to array from outside
-  12:number <- copy 2:literal
-  13:number <- copy 34:literal
-  14:number <- copy 35:literal
+  12:number <- copy 2
+  13:number <- copy 34
+  14:number <- copy 35
   # pretend array
-  1000:number <- copy 5:literal
+  1000:number <- copy 5
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000:literal
-  1:address:array:number <- copy 12:literal
-  9:number/raw <- index 1:address:array:number/deref, 1:literal
+  default-space:address:array:location <- copy 1000
+  1:address:array:number <- copy 12
+  9:number/raw <- index 1:address:array:number/deref, 1
 ]
 +mem: storing 35 in location 9
 
@@ -109,8 +109,8 @@ tmp.properties.push_back(pair<string, vector<string> >("raw", vector<string>()))
 :(scenario new_default_space)
 recipe main [
   new-default-space
-  x:number <- copy 0:literal
-  y:number <- copy 3:literal
+  x:number <- copy 0
+  y:number <- copy 3
 ]
 # allocate space for x and y, as well as the chaining slot at 0
 +mem: array size is 3
@@ -153,7 +153,7 @@ recipe main [
 ]
 recipe foo [
   local-scope
-  x:number <- copy 34:literal
+  x:number <- copy 34
   reply default-space:address:array:location
 ]
 # both calls to foo should have received the same default-space
@@ -220,7 +220,7 @@ long long int address(long long int offset, long long int base) {
 
 :(scenario get_default_space)
 recipe main [
-  default-space:address:array:location <- copy 10:literal
+  default-space:address:array:location <- copy 10
   1:number/raw <- copy default-space:address:array:location
 ]
 +mem: storing 10 in location 1

@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0:literal  # 1 points to head of list\n    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list\n    # removing from head? return value matters.\n    1:address:duplex-list <- remove-duplex 1:address:duplex-list\n    # check structure like before\n    2:address:duplex-list <- copy 1:address:duplex-list\n    3:number <- first 2:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    4:number <- first 2:address:duplex-list\n    5:address:duplex-list <- next-duplex 2:address:duplex-list\n    2:address:duplex-list <- prev-duplex 2:address:duplex-list\n    6:number <- first 2:address:duplex-list\n    7:boolean <- equal 1:address:duplex-list, 2:address:duplex-list\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0  # 1 points to head of list\n    1:address:duplex-list <- push-duplex 3, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 4, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 5, 1:address:duplex-list\n    # removing from head? return value matters.\n    1:address:duplex-list <- remove-duplex 1:address:duplex-list\n    # check structure like before\n    2:address:duplex-list <- copy 1:address:duplex-list\n    3:number <- first 2:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    4:number <- first 2:address:duplex-list\n    5:address:duplex-list <- next-duplex 2:address:duplex-list\n    2:address:duplex-list <- prev-duplex 2:address:duplex-list\n    6:number <- first 2:address:duplex-list\n    7:boolean <- equal 1:address:duplex-list, 2:address:duplex-list\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3 <- 4  # scanning next, skipping deleted element\n    4 <- 3\n    5 <- 0  # no more elements\n    6 <- 4  # prev of final element\n    7 <- 1  # list back at start\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-removing-from-start-of-duplex-list
@@ -8,10 +8,10 @@ after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: scenario-removing-from-start-of-duplex-list
  101 run: run [
-    1:address:duplex-list <- copy 0:literal  # 1 points to head of list
-    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
-    1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list
-    1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list
+    1:address:duplex-list <- copy 0  # 1 points to head of list
+    1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
+    1:address:duplex-list <- push-duplex 4, 1:address:duplex-list
+    1:address:duplex-list <- push-duplex 5, 1:address:duplex-list
     # removing from head? return value matters.
     1:address:duplex-list <- remove-duplex 1:address:duplex-list
     # check structure like before
@@ -81,9 +81,9 @@ after-brace: next-duplex ...
 after-brace: prev-duplex ...
 after-brace: first ...
 after-brace: equal ...
- 101 run: 1:address:duplex-list <- copy 0:literal
+ 101 run: 1:address:duplex-list <- copy 0
 9999 mem: storing 0 in location 1
- 101 run: 1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
+ 101 run: 1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
 9999 mem: location 1 is 0
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
@@ -126,7 +126,7 @@ after-brace: equal ...
 9999 mem: location 1004 is 1008
 9999 run: result 0 is 1008
 9999 mem: storing 1008 in location 1
- 101 run: 1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list
+ 101 run: 1:address:duplex-list <- push-duplex 4, 1:address:duplex-list
 9999 mem: location 1 is 1008
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
@@ -180,7 +180,7 @@ after-brace: equal ...
 9999 mem: location 1004 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1
- 101 run: 1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list
+ 101 run: 1:address:duplex-list <- push-duplex 5, 1:address:duplex-list
 9999 mem: location 1 is 1011
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
@@ -272,7 +272,7 @@ after-brace: equal ...
 9999 mem: location 1019 is 1014
 9999 run: address to copy is 1015
 9999 mem: storing 1015 in location 1022
- 102 run: x:address:address:duplex-list/deref <- copy 0:literal
+ 102 run: x:address:address:duplex-list/deref <- copy 0
 9999 mem: location 1022 is 1015
 9999 mem: storing 0 in location 1015
  102 run: x:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
@@ -283,7 +283,7 @@ after-brace: equal ...
 9999 mem: location 1019 is 1014
 9999 run: address to copy is 1016
 9999 mem: storing 1016 in location 1022
- 102 run: x:address:address:duplex-list/deref <- copy 0:literal
+ 102 run: x:address:address:duplex-list/deref <- copy 0
 9999 mem: location 1022 is 1016
 9999 mem: storing 0 in location 1016
  102 run: break-unless next-node:address:duplex-list, 

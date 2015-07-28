@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0:literal  # 1 points to head of list\n    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list\n    2:address:duplex-list <- next-duplex 1:address:duplex-list  # 2 points at second element\n    2:address:duplex-list <- remove-duplex 2:address:duplex-list\n    3:boolean <- equal 2:address:duplex-list, 0:literal\n    # check structure like before\n    2:address:duplex-list <- copy 1:address:duplex-list\n    4:number <- first 2:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    5:number <- first 2:address:duplex-list\n    6:address:duplex-list <- next-duplex 2:address:duplex-list\n    2:address:duplex-list <- prev-duplex 2:address:duplex-list\n    7:number <- first 2:address:duplex-list\n    8:boolean <- equal 1:address:duplex-list, 2:address:duplex-list\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:duplex-list <- copy 0  # 1 points to head of list\n    1:address:duplex-list <- push-duplex 3, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 4, 1:address:duplex-list\n    1:address:duplex-list <- push-duplex 5, 1:address:duplex-list\n    2:address:duplex-list <- next-duplex 1:address:duplex-list  # 2 points at second element\n    2:address:duplex-list <- remove-duplex 2:address:duplex-list\n    3:boolean <- equal 2:address:duplex-list, 0\n    # check structure like before\n    2:address:duplex-list <- copy 1:address:duplex-list\n    4:number <- first 2:address:duplex-list\n    2:address:duplex-list <- next-duplex 2:address:duplex-list\n    5:number <- first 2:address:duplex-list\n    6:address:duplex-list <- next-duplex 2:address:duplex-list\n    2:address:duplex-list <- prev-duplex 2:address:duplex-list\n    7:number <- first 2:address:duplex-list\n    8:boolean <- equal 1:address:duplex-list, 2:address:duplex-list\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3 <- 0  # remove returned non-null\n    4 <- 5  # scanning next, skipping deleted element\n    5 <- 3\n    6 <- 0  # no more elements\n    7 <- 5  # prev of final element\n    8 <- 1  # list back at start\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-removing-from-duplex-list
@@ -8,13 +8,13 @@ after-brace: memory-should-contain ...
 9999 new: routine allocated memory from 1000 to 101000
 schedule: scenario-removing-from-duplex-list
  101 run: run [
-    1:address:duplex-list <- copy 0:literal  # 1 points to head of list
-    1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
-    1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list
-    1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list
+    1:address:duplex-list <- copy 0  # 1 points to head of list
+    1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
+    1:address:duplex-list <- push-duplex 4, 1:address:duplex-list
+    1:address:duplex-list <- push-duplex 5, 1:address:duplex-list
     2:address:duplex-list <- next-duplex 1:address:duplex-list  # 2 points at second element
     2:address:duplex-list <- remove-duplex 2:address:duplex-list
-    3:boolean <- equal 2:address:duplex-list, 0:literal
+    3:boolean <- equal 2:address:duplex-list, 0
     # check structure like before
     2:address:duplex-list <- copy 1:address:duplex-list
     4:number <- first 2:address:duplex-list
@@ -91,9 +91,9 @@ after-brace: next-duplex ...
 after-brace: prev-duplex ...
 after-brace: first ...
 after-brace: equal ...
- 101 run: 1:address:duplex-list <- copy 0:literal
+ 101 run: 1:address:duplex-list <- copy 0
 9999 mem: storing 0 in location 1
- 101 run: 1:address:duplex-list <- push-duplex 3:literal, 1:address:duplex-list
+ 101 run: 1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
 9999 mem: location 1 is 0
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
@@ -136,7 +136,7 @@ after-brace: equal ...
 9999 mem: location 1004 is 1008
 9999 run: result 0 is 1008
 9999 mem: storing 1008 in location 1
- 101 run: 1:address:duplex-list <- push-duplex 4:literal, 1:address:duplex-list
+ 101 run: 1:address:duplex-list <- push-duplex 4, 1:address:duplex-list
 9999 mem: location 1 is 1008
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
@@ -190,7 +190,7 @@ after-brace: equal ...
 9999 mem: location 1004 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1
- 101 run: 1:address:duplex-list <- push-duplex 5:literal, 1:address:duplex-list
+ 101 run: 1:address:duplex-list <- push-duplex 5, 1:address:duplex-list
 9999 mem: location 1 is 1011
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 7
@@ -306,7 +306,7 @@ after-brace: equal ...
 9999 mem: location 1023 is 1011
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1026
- 102 run: x:address:address:duplex-list/deref <- copy 0:literal
+ 102 run: x:address:address:duplex-list/deref <- copy 0
 9999 mem: location 1026 is 1012
 9999 mem: storing 0 in location 1012
  102 run: x:address:address:duplex-list <- get-address in:address:duplex-list/deref, prev:offset
@@ -317,7 +317,7 @@ after-brace: equal ...
 9999 mem: location 1023 is 1011
 9999 run: address to copy is 1013
 9999 mem: storing 1013 in location 1026
- 102 run: x:address:address:duplex-list/deref <- copy 0:literal
+ 102 run: x:address:address:duplex-list/deref <- copy 0
 9999 mem: location 1026 is 1013
 9999 mem: storing 0 in location 1013
  102 run: break-unless next-node:address:duplex-list, 
@@ -354,7 +354,7 @@ after-brace: equal ...
 9999 mem: location 1025 is 1014
 9999 run: result 0 is 1014
 9999 mem: storing 1014 in location 2
- 101 run: 3:boolean <- equal 2:address:duplex-list, 0:literal
+ 101 run: 3:boolean <- equal 2:address:duplex-list, 0
 9999 mem: location 2 is 1014
 9999 mem: storing 0 in location 3
  101 run: 2:address:duplex-list <- copy 1:address:duplex-list

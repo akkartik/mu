@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:array:character <- string-copy 1:address:array:character, 3:literal, 3:literal\n    3:array:character <- copy 2:address:array:character/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:array:character <- string-copy 1:address:array:character, 3, 3\n    3:array:character <- copy 2:address:array:character/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3:string <- []\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-string-copy-out-of-bounds-2
@@ -9,7 +9,7 @@ after-brace: memory-should-contain ...
 schedule: scenario-string-copy-out-of-bounds-2
  101 run: run [
     1:address:array:character <- new [abc]
-    2:address:array:character <- string-copy 1:address:array:character, 3:literal, 3:literal
+    2:address:array:character <- string-copy 1:address:array:character, 3, 3
     3:array:character <- copy 2:address:array:character/deref
   ]
 parse: instruction: new
@@ -29,7 +29,7 @@ after-brace: string-copy ...
 after-brace: copy ...
  101 run: 1:address:array:character <- new [abc]
 9999 mem: storing 1000 in location 1
- 101 run: 2:address:array:character <- string-copy 1:address:array:character, 3:literal, 3:literal
+ 101 run: 2:address:array:character <- string-copy 1:address:array:character, 3, 3
 9999 mem: location 1 is 1000
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 11
@@ -81,7 +81,7 @@ after-brace: copy ...
  102 run: src-idx:number <- copy start:number
 9999 mem: location 1007 is 3
 9999 mem: storing 3 in location 1011
- 102 run: dest-idx:number <- copy 0:literal
+ 102 run: dest-idx:number <- copy 0
 9999 mem: storing 0 in location 1012
  102 run: done?:boolean <- greater-or-equal src-idx:number, end:number
 9999 mem: location 1011 is 3

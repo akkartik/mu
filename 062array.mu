@@ -1,6 +1,6 @@
 scenario array-from-args [
   run [
-    1:address:array:location <- new-array 0:literal, 1:literal, 2:literal
+    1:address:array:location <- new-array 0, 1, 2
     2:array:location <- copy 1:address:array:location/deref
   ]
   memory-should-contain [
@@ -14,17 +14,17 @@ scenario array-from-args [
 # create an array out of a list of scalar args
 recipe new-array [
   local-scope
-  capacity:number <- copy 0:literal
+  capacity:number <- copy 0
   {
     # while read curr-value
     curr-value:location, exists?:boolean <- next-ingredient
     break-unless exists?:boolean
-    capacity:number <- add capacity:number, 1:literal
+    capacity:number <- add capacity:number, 1
     loop
   }
   result:address:array:location <- new location:type, capacity:number
   rewind-ingredients
-  i:number <- copy 0:literal
+  i:number <- copy 0
   {
     # while read curr-value
     done?:boolean <- greater-or-equal i:number, capacity:number
@@ -33,7 +33,7 @@ recipe new-array [
     assert exists?:boolean, [error in rewinding ingredients to new-array]
     tmp:address:location <- index-address result:address:array:location/deref, i:number
     tmp:address:location/deref <- copy curr-value:location
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     loop
   }
   reply result:address:array:location

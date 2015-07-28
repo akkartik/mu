@@ -5,29 +5,29 @@ recipe main [
   f
 ]
 recipe f [
-  3:number <- add 2:literal, 2:literal
+  3:number <- add 2, 2
 ]
 +mem: storing 4 in location 3
 
 :(scenario return_on_fallthrough)
 recipe main [
   f
-  1:number <- copy 0:literal
-  2:number <- copy 0:literal
-  3:number <- copy 0:literal
+  1:number <- copy 0
+  2:number <- copy 0
+  3:number <- copy 0
 ]
 recipe f [
-  4:number <- copy 0:literal
-  5:number <- copy 0:literal
+  4:number <- copy 0
+  5:number <- copy 0
 ]
 +run: f
 # running f
-+run: 4:number <- copy 0:literal
-+run: 5:number <- copy 0:literal
++run: 4:number <- copy 0
++run: 5:number <- copy 0
 # back out to main
-+run: 1:number <- copy 0:literal
-+run: 2:number <- copy 0:literal
-+run: 3:number <- copy 0:literal
++run: 1:number <- copy 0
++run: 2:number <- copy 0
++run: 3:number <- copy 0
 
 :(before "struct routine {")
 // Everytime a recipe runs another, we interrupt it and start running the new

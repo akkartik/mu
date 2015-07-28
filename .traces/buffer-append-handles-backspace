@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    local-scope\n    x:address:buffer <- new-buffer 3:literal\n    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'\n    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'\n    x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace\n    s:address:array:character <- buffer-to-array x:address:buffer\n    1:array:character/raw <- copy s:address:array:character/deref\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    local-scope\n    x:address:buffer <- new-buffer 3\n    x:address:buffer <- buffer-append x:address:buffer, 97  # 'a'\n    x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'\n    x:address:buffer <- buffer-append x:address:buffer, 8/backspace\n    s:address:array:character <- buffer-to-array x:address:buffer\n    1:array:character/raw <- copy s:address:array:character/deref\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    1 <- 1   # length\n    2 <- 97  # contents\n    3 <- 0\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-buffer-append-handles-backspace
@@ -9,10 +9,10 @@ after-brace: memory-should-contain ...
 schedule: scenario-buffer-append-handles-backspace
  101 run: run [
     local-scope
-    x:address:buffer <- new-buffer 3:literal
-    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
-    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
-    x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace
+    x:address:buffer <- new-buffer 3
+    x:address:buffer <- buffer-append x:address:buffer, 97  # 'a'
+    x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'
+    x:address:buffer <- buffer-append x:address:buffer, 8/backspace
     s:address:array:character <- buffer-to-array x:address:buffer
     1:array:character/raw <- copy s:address:array:character/deref
   ]
@@ -52,7 +52,7 @@ after-brace: copy ...
  101 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1000
- 101 run: x:address:buffer <- new-buffer 3:literal
+ 101 run: x:address:buffer <- new-buffer 3
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 6
 9999 mem: new alloc: 1004
@@ -66,7 +66,7 @@ after-brace: copy ...
 9999 mem: location 1006 is 1011
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1007
- 102 run: len:address:number/deref <- copy 0:literal
+ 102 run: len:address:number/deref <- copy 0
 9999 mem: location 1007 is 1011
 9999 mem: storing 0 in location 1011
  102 run: s:address:address:array:character <- get-address result:address:buffer/deref, data:offset
@@ -91,7 +91,7 @@ after-brace: copy ...
 9999 mem: location 1006 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: x:address:buffer <- buffer-append x:address:buffer, 97:literal
+ 101 run: x:address:buffer <- buffer-append x:address:buffer, 97
 9999 mem: location 1002 is 1011
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -107,7 +107,7 @@ after-brace: copy ...
 9999 mem: location 1019 is 1011
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1021
- 102 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 102 run: backspace?:boolean <- equal c:character, 8/backspace
 9999 mem: location 1020 is 97
 9999 mem: storing 0 in location 1022
  102 run: break-unless backspace?:boolean, 
@@ -181,7 +181,7 @@ after-brace: copy ...
 9999 mem: location 1020 is 97
 9999 mem: location 1026 is 1014
 9999 mem: storing 97 in location 1014
- 102 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 102 run: len:address:number/deref <- add len:address:number/deref, 1
 9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1021 is 1011
@@ -190,7 +190,7 @@ after-brace: copy ...
 9999 mem: location 1019 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: x:address:buffer <- buffer-append x:address:buffer, 98:literal
+ 101 run: x:address:buffer <- buffer-append x:address:buffer, 98
 9999 mem: location 1002 is 1011
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -205,7 +205,7 @@ after-brace: copy ...
 9999 mem: location 1019 is 1011
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1021
- 102 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 102 run: backspace?:boolean <- equal c:character, 8/backspace
 9999 mem: location 1020 is 98
 9999 mem: storing 0 in location 1022
  102 run: break-unless backspace?:boolean, 
@@ -279,7 +279,7 @@ after-brace: copy ...
 9999 mem: location 1020 is 98
 9999 mem: location 1026 is 1015
 9999 mem: storing 98 in location 1015
- 102 run: len:address:number/deref <- add len:address:number/deref, 1:literal
+ 102 run: len:address:number/deref <- add len:address:number/deref, 1
 9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 1
 9999 mem: location 1021 is 1011
@@ -288,7 +288,7 @@ after-brace: copy ...
 9999 mem: location 1019 is 1011
 9999 run: result 0 is 1011
 9999 mem: storing 1011 in location 1002
- 101 run: x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace
+ 101 run: x:address:buffer <- buffer-append x:address:buffer, 8/backspace
 9999 mem: location 1002 is 1011
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 9
@@ -303,20 +303,20 @@ after-brace: copy ...
 9999 mem: location 1019 is 1011
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1021
- 102 run: backspace?:boolean <- equal c:character, 8:literal/backspace
+ 102 run: backspace?:boolean <- equal c:character, 8/backspace
 9999 mem: location 1020 is 8
 9999 mem: storing 1 in location 1022
  102 run: break-unless backspace?:boolean, 
 9999 mem: location 1022 is 1
 9999 run: jump-unless fell through
- 102 run: empty?:boolean <- lesser-or-equal len:address:number/deref, 0:literal
+ 102 run: empty?:boolean <- lesser-or-equal len:address:number/deref, 0
 9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 2
 9999 mem: storing 0 in location 1023
  102 run: jump-unless empty?:boolean, 1:offset
 9999 mem: location 1023 is 0
 9999 run: jumping to instruction 10
- 102 run: len:address:number/deref <- subtract len:address:number/deref, 1:literal
+ 102 run: len:address:number/deref <- subtract len:address:number/deref, 1
 9999 mem: location 1021 is 1011
 9999 mem: location 1011 is 2
 9999 mem: location 1021 is 1011
@@ -357,7 +357,7 @@ after-brace: copy ...
 9999 mem: array size is 1
 9999 mem: new alloc: 1027
 9999 mem: storing 1027 in location 1022
- 102 run: i:number <- copy 0:literal
+ 102 run: i:number <- copy 0
 9999 mem: storing 0 in location 1023
  102 run: done?:boolean <- greater-or-equal i:number, len:number
 9999 mem: location 1023 is 0
@@ -391,7 +391,7 @@ after-brace: copy ...
 9999 mem: location 1025 is 97
 9999 mem: location 1026 is 1028
 9999 mem: storing 97 in location 1028
- 102 run: i:number <- add i:number, 1:literal
+ 102 run: i:number <- add i:number, 1
 9999 mem: location 1023 is 0
 9999 mem: storing 1 in location 1023
  102 run: loop 

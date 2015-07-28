@@ -6,13 +6,13 @@
 :(scenario global_space)
 recipe main [
   # pretend arrays; in practice we'll use new
-  10:number <- copy 5:literal
-  20:number <- copy 5:literal
+  10:number <- copy 5
+  20:number <- copy 5
   # actual start of this recipe
-  global-space:address:array:location <- copy 20:literal
-  default-space:address:array:location <- copy 10:literal
-  1:number <- copy 23:literal
-  1:number/space:global <- copy 24:literal
+  global-space:address:array:location <- copy 20
+  default-space:address:array:location <- copy 10
+  1:number <- copy 23
+  1:number/space:global <- copy 24
 ]
 +mem: storing 23 in location 12
 +mem: storing 24 in location 22
@@ -53,9 +53,9 @@ global_space = 0;
 :(scenario global_space_with_names)
 % Hide_warnings = true;
 recipe main [
-  global-space:address:array:location <- new location:type, 10:literal
-  x:number <- copy 23:literal
-  1:number/space:global <- copy 24:literal
+  global-space:address:array:location <- new location:type, 10
+  x:number <- copy 23
+  1:number/space:global <- copy 24
 ]
 # don't warn that we're mixing numeric addresses and names
 $warn: 0
