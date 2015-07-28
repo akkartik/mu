@@ -35,7 +35,7 @@ recipe new-programming-environment [
   button-on-screen?:boolean <- greater-or-equal button-start:number, 0:literal
   assert button-on-screen?:boolean, [screen too narrow for menu]
   move-cursor screen:address, 0:literal/row, button-start:number/column
-  run-button:address:array:character <- new [ run (F10)  ]
+  run-button:address:array:character <- new [ run (F4) ]
   print-string screen:address, run-button:address:array:character, 255:literal/white, 161:literal/reddish
   # dotted line down the middle
   divider:number, _ <- divide-with-remainder width:number, 2:literal
@@ -650,12 +650,12 @@ recipe event-loop [
     {
       k:address:number <- maybe-convert e:event, keycode:variant
       break-unless k:address:number
-      # F10? load all code and run all sandboxes.
+      # F4? load all code and run all sandboxes.
       {
-        do-run?:boolean <- equal k:address:number/deref, 65526:literal/F10
+        do-run?:boolean <- equal k:address:number/deref, 65532:literal/F4
         break-unless do-run?:boolean
         run-sandboxes env:address:programming-environment-data
-        # F10 might update warnings and results on both sides
+        # F4 might update warnings and results on both sides
         screen:address <- render-all screen:address, env:address:programming-environment-data
         update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
         show-screen screen:address
@@ -2643,7 +2643,7 @@ scenario edit-multiple-editors [
     7:number <- get 6:address:editor-data/deref, cursor-column:offset
   ]
   screen-should-contain [
-    .           run (F10)          .  # this line has a different background, but we don't test that yet
+    .           run (F4)           .  # this line has a different background, but we don't test that yet
     .a0bc           ┊d1ef          .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
@@ -2657,7 +2657,7 @@ scenario edit-multiple-editors [
     screen:address <- print-character screen:address, 9251:literal/␣
   ]
   screen-should-contain [
-    .           run (F10)          .
+    .           run (F4)           .
     .a0bc           ┊d1␣f          .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
@@ -2674,7 +2674,7 @@ scenario multiple-editors-cover-only-their-own-areas [
   ]
   # divider isn't messed up
   screen-should-contain [
-    .                                         run (F10)          .
+    .                                         run (F4)           .
     .abc                           ┊def                          .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                              ┊                             .
@@ -2696,7 +2696,7 @@ scenario editor-in-focus-keeps-cursor [
   ]
   # is cursor at the right place?
   screen-should-contain [
-    .           run (F10)          .
+    .           run (F4)           .
     .␣bc            ┊def           .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
@@ -2712,7 +2712,7 @@ scenario editor-in-focus-keeps-cursor [
   ]
   # cursor should still be right
   screen-should-contain [
-    .           run (F10)          .
+    .           run (F4)           .
     .z␣bc           ┊def           .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
     .               ┊              .
@@ -2740,14 +2740,14 @@ scenario run-and-show-results [
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editors
   assume-console [
-    press 65526  # F10
+    press 65532  # F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   # check that screen prints the results
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
@@ -2783,14 +2783,14 @@ scenario run-and-show-results [
   assume-console [
     left-click 1, 80
     type [add 2:literal, 2:literal]
-    press 65526  # F10
+    press 65532  # F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   # check that screen prints the results
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
@@ -3024,14 +3024,14 @@ z:number <- add 2:literal, 2:literal
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editors
   assume-console [
-    press 65526  # F10
+    press 65532  # F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   # check that screen prints the results
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .z:number <- add 2:literal, 2:literal              ┊                                                x.
@@ -3044,7 +3044,7 @@ z:number <- add 2:literal, 2:literal
   assume-console [
     left-click 3, 28  # one past the value of the second arg
     type [«3]  # replace
-    press 65526  # F10
+    press 65532  # F4
   ]
   4:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
   replace-in-console 171:literal/«, 4:event/backspace
@@ -3053,7 +3053,7 @@ z:number <- add 2:literal, 2:literal
   ]
   # check that screen updates the result on the right
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .z:number <- add 2:literal, 3:literal              ┊                                                x.
@@ -3074,14 +3074,14 @@ scenario run-instruction-and-print-warnings [
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editors
   assume-console [
-    press 65526  # F10
+    press 65532  # F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   # check that screen prints error message in red
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
@@ -3131,15 +3131,15 @@ scenario run-instruction-and-print-warnings-only-once [
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editors multiple times
   assume-console [
-    press 65526  # F10
-    press 65526  # F10
+    press 65532  # F4
+    press 65532  # F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   # check that screen prints error message just once
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
@@ -3160,15 +3160,15 @@ scenario deleting-sandboxes [
   assume-console [
     left-click 1, 80
     type [divide-with-remainder 11:literal, 3:literal]
-    press 65526  # F10
+    press 65532  # F4
     type [add 2:literal, 2:literal]
-    press 65526  # F10
+    press 65532  # F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
@@ -3190,7 +3190,7 @@ scenario deleting-sandboxes [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
@@ -3208,7 +3208,7 @@ scenario deleting-sandboxes [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
@@ -3226,7 +3226,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editor
   assume-console [
-    press 65526  # F10
+    press 65532  # F4
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
@@ -3234,7 +3234,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   # check that it prints a little 5x5 toy screen
   # hack: screen address is brittle
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
@@ -3294,7 +3294,7 @@ scenario run-shows-warnings-in-get [
   $close-trace
   assume-screen 100:literal/width, 15:literal/height
   assume-console [
-    press 65526  # F10
+    press 65532  # F4
   ]
   run [
     x:address:array:character <- new [ 
@@ -3306,7 +3306,7 @@ recipe foo [
     event-loop screen:address, console:address, env:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  get 123:number, foo:offset                      ┊                                                 .
@@ -3330,7 +3330,7 @@ scenario run-shows-missing-type-warnings [
   $close-trace
   assume-screen 100:literal/width, 15:literal/height
   assume-console [
-    press 65526  # F10
+    press 65532  # F4
   ]
   run [
     x:address:array:character <- new [ 
@@ -3343,7 +3343,7 @@ recipe foo [
     event-loop screen:address, console:address, env:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x:number <- copy 0                              ┊                                                 .
@@ -3359,7 +3359,7 @@ scenario run-shows-get-on-non-container-warnings [
   $close-trace
   assume-screen 100:literal/width, 15:literal/height
   assume-console [
-    press 65526  # F10
+    press 65532  # F4
   ]
   run [
     x:address:array:character <- new [ 
@@ -3372,7 +3372,7 @@ recipe foo [
     event-loop screen:address, console:address, env:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x:address:point <- new point:type               ┊                                                x.
@@ -3388,7 +3388,7 @@ scenario run-shows-non-literal-get-argument-warnings [
   $close-trace
   assume-screen 100:literal/width, 15:literal/height
   assume-console [
-    press 65526  # F10
+    press 65532  # F4
   ]
   run [
     x:address:array:character <- new [ 
@@ -3402,7 +3402,7 @@ recipe foo [
     event-loop screen:address, console:address, env:address:programming-environment-data
   ]
   screen-should-contain [
-    .                                                                                 run (F10)          .
+    .                                                                                 run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x:number <- copy 0                              ┊                                                 .
