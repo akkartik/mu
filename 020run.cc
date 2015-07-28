@@ -131,16 +131,26 @@ if (argc > 1) {
 :(before "End Main")
 if (!Run_tests) {
   setup();
-//?   Trace_file = "interactive"; //? 1
-//?   START_TRACING_UNTIL_END_OF_SCOPE;
-//?   Trace_stream->dump_layer = "all"; //? 2
+//?   Trace_file = "interactive"; //? 2
+//?   START_TRACING_UNTIL_END_OF_SCOPE; //? 2
+//?   Trace_stream->collect_layer = "app"; //? 1
   transform_all();
   recipe_ordinal r = Recipe_ordinal[string("main")];
-//?   Trace_stream->dump_layer = "all"; //? 1
   if (r) run(r);
 //?   dump_memory(); //? 1
   teardown();
 }
+
+:(code)
+void cleanup_main() {
+  if (!Trace_file.empty()) {
+    ofstream fout(Trace_file.c_str());
+    fout << Trace_stream->readable_contents("");
+    fout.close();
+  }
+}
+:(before "End One-time Setup")
+atexit(cleanup_main);
 
 :(code)
 void load_permanently(string filename) {

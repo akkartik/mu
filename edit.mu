@@ -666,12 +666,19 @@ recipe event-loop [
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t:address:touch-event
+      # ignore 'release' events for now
+      # todo: test this
+      touch-type:number <- get t:address:touch-event/deref, type:offset
+      is-release?:boolean <- equal touch-type:number, 65510:literal/mouse-release
+      loop-if is-release?:boolean, +next-event:label
       # on a sandbox delete icon? process delete
       {
         was-delete?:boolean <- delete-sandbox t:address:touch-event/deref, env:address:programming-environment-data
         break-unless was-delete?:boolean
+#?         trace [app], [delete clicked] #? 1
         screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data, 1:literal/clear
         update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
+        show-screen screen:address
         loop +next-event:label
       }
       # if not, send to both editors
@@ -2869,6 +2876,7 @@ recipe render-sandbox-side [
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   clear:boolean <- next-ingredient
+#?   trace [app], [render sandbox side] #? 1
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   left:number <- get current-sandbox:address:editor-data/deref, left:offset
   right:number <- get current-sandbox:address:editor-data/deref, right:offset
