@@ -679,11 +679,11 @@ recipe event-loop [
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
       break-unless t:address:touch-event
-      # ignore 'release' events for now
+      # ignore all but 'left-click' events for now
       # todo: test this
       touch-type:number <- get t:address:touch-event/deref, type:offset
-      is-release?:boolean <- equal touch-type:number, 65510:literal/mouse-release
-      loop-if is-release?:boolean, +next-event:label
+      is-left-click?:boolean <- equal touch-type:number, 65513:literal/mouse-left
+      loop-unless is-left-click?:boolean, +next-event:label
       # on a sandbox delete icon? process delete
       {
         was-delete?:boolean <- delete-sandbox t:address:touch-event/deref, env:address:programming-environment-data
