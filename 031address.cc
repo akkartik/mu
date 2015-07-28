@@ -104,6 +104,26 @@ recipe main [
 :(after "reagent base = " following "case GET_ADDRESS:")
 base = canonize(base);
 
+//:: abbreviation for '/lookup': a prefix '*'
+
+:(scenario lookup_abbreviation)
+recipe main [
+  1:address:number <- copy 2
+  2:number <- copy 34
+  3:number <- copy *1:address:number
+]
++mem: storing 34 in location 3
+
+:(before "End Parsing reagent")
+{
+  while (!name.empty() && name.at(0) == '*') {
+    name.erase(0, 1);
+    properties.push_back(pair<string, vector<string> >("lookup", vector<string>()));
+  }
+  if (name.empty())
+    raise << "illegal name " << original_string << '\n' << end();
+}
+
 //:: helpers for debugging
 
 :(before "End Primitive Recipe Declarations")
