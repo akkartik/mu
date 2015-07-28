@@ -552,6 +552,11 @@ recipe main [
 ]
 +warn: unexpected [d] in trace layer a
 
+//: Minor detail: ignore 'system' calls in scenarios, since anything we do
+//: with them is by definition impossible to test through mu.
+:(after "case _SYSTEM:")
+  if (Current_scenario) break;
+
 //:: Helpers
 
 :(code)
