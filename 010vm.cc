@@ -176,6 +176,7 @@ void instruction::clear() { is_label=false; label.clear(); operation=IDLE; ingre
 
 // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
 reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
+  // Parsing reagent(string s)
   istringstream in(s);
   in >> std::noskipws;
   // properties
@@ -206,6 +207,7 @@ reagent::reagent(string s) :original_string(s), value(0), initialized(false) {
     types.push_back(0);
     properties.at(0).second.push_back("dummy");
   }
+  // End Parsing reagent
 }
 
 reagent::reagent() :value(0), initialized(false) {

@@ -113,19 +113,18 @@ void slurp_quoted_comment_aware(istream& in, ostringstream& out) {
   out.clear();
 }
 
-:(after "reagent::reagent(string s)")
-//?   cout << s.at(0) << '\n'; //? 1
-  if (s.at(0) == '[') {
-    assert(*s.rbegin() == ']');
-    // delete [] delimiters
-    s.erase(0, 1);
-    s.erase(SIZE(s)-1);
-    name = s;
-    types.push_back(0);
-    properties.push_back(pair<string, vector<string> >(name, vector<string>()));
-    properties.back().second.push_back("literal-string");
-    return;
-  }
+:(after "Parsing reagent(string s)")
+if (s.at(0) == '[') {
+  assert(*s.rbegin() == ']');
+  // delete [] delimiters
+  s.erase(0, 1);
+  s.erase(SIZE(s)-1);
+  name = s;
+  types.push_back(0);
+  properties.push_back(pair<string, vector<string> >(name, vector<string>()));
+  properties.back().second.push_back("literal-string");
+  return;
+}
 
 //: Two tweaks to printing literal strings compared to other reagents:
 //:   a) Don't print the string twice in the representation, just put '_' in
