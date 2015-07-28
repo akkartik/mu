@@ -187,9 +187,6 @@ case _SYSTEM: {
     break;
   }
   products.resize(1);
-  // ignore 'system' calls in tests since anything we do with them is by
-  // definition impossible to test through mu.
-  if (Current_scenario) break;
   int status = system(current_instruction().ingredients.at(0).name.c_str());
   products.at(0).push_back(status);
   break;
