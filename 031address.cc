@@ -104,53 +104,7 @@ recipe main [
 :(after "reagent base = " following "case GET_ADDRESS:")
 base = canonize(base);
 
-//:: Helpers for debugging
-
-:(before "End Primitive Recipe Declarations")
-_DUMP_TRACE,
-:(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$dump-trace"] = _DUMP_TRACE;
-:(before "End Primitive Recipe Implementations")
-case _DUMP_TRACE: {
-  if (ingredients.empty()) {
-    DUMP("");
-  }
-  else {
-    DUMP(current_instruction().ingredients.at(0).name);
-  }
-  break;
-}
-
-:(before "End Primitive Recipe Declarations")
-_CLEAR_TRACE,
-:(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$clear-trace"] = _CLEAR_TRACE;
-:(before "End Primitive Recipe Implementations")
-case _CLEAR_TRACE: {
-  CLEAR_TRACE;
-  break;
-}
-
-:(before "End Primitive Recipe Declarations")
-_DUMP_MEMORY,
-:(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$dump-memory"] = _DUMP_MEMORY;
-:(before "End Primitive Recipe Implementations")
-case _DUMP_MEMORY: {
-  dump_memory();
-  break;
-}
-
-:(before "End Primitive Recipe Declarations")
-_DUMP,
-:(before "End Primitive Recipe Numbers")
-Recipe_ordinal["$dump"] = _DUMP;
-:(before "End Primitive Recipe Implementations")
-case _DUMP: {
-  reagent after_canonize = canonize(current_instruction().ingredients.at(0));
-  cerr << current_recipe_name() << ": " << current_instruction().ingredients.at(0).name << ' ' << current_instruction().ingredients.at(0).value << " => " << after_canonize.value << " => " << Memory[after_canonize.value] << '\n';
-  break;
-}
+//:: helper for debugging
 
 //: grab an address, and then dump its value at intervals
 :(before "End Globals")
