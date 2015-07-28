@@ -4,7 +4,7 @@
 
 :(scenario convert_names)
 recipe main [
-  x:number <- copy 0:literal
+  x:number <- copy 0
 ]
 +name: assign x 1
 +mem: storing 0 in location 1
@@ -149,7 +149,7 @@ bool is_special_name(const string& s) {
 :(scenario convert_names_passes_dummy)
 # _ is just a dummy result that never gets consumed
 recipe main [
-  _, x:number <- copy 0:literal, 1:literal
+  _, x:number <- copy 0, 1
 ]
 +name: assign x 1
 -name: assign _ 1
@@ -157,7 +157,7 @@ recipe main [
 //: an escape hatch to suppress name conversion that we'll use later
 :(scenario convert_names_passes_raw)
 recipe main [
-  x:number/raw <- copy 0:literal
+  x:number/raw <- copy 0
 ]
 -name: assign x 1
 
@@ -171,7 +171,7 @@ recipe main [
 :(scenario convert_names_warns_when_mixing_names_and_numeric_locations2)
 % Hide_warnings = true;
 recipe main [
-  x:number <- copy 1:literal
+  x:number <- copy 1
   1:number <- copy x:number
 ]
 +warn: mixing variable names and numeric addresses in main
@@ -187,7 +187,7 @@ $warn: 0
 :(scenario convert_names_does_not_warn_when_mixing_names_and_literals)
 % Hide_warnings = true;
 recipe main [
-  x:number <- copy 1:literal
+  x:number <- copy 1
 ]
 -warn: mixing variable names and numeric addresses in main
 $warn: 0
@@ -195,8 +195,8 @@ $warn: 0
 :(scenario convert_names_warns_on_reusing_name_with_different_type)
 % Hide_warnings = true;
 recipe main [
-  x:number <- copy 1:literal
-  x:boolean <- copy 1:literal
+  x:number <- copy 1
+  x:boolean <- copy 1
 ]
 +warn: x used with multiple types in main
 
@@ -208,7 +208,7 @@ Type[point].element_names.push_back("x");
 Type[point].element_names.push_back("y");
 :(scenario convert_names_transforms_container_elements)
 recipe main [
-  p:address:point <- copy 0:literal  # unsafe
+  p:address:point <- copy 0  # unsafe
   a:number <- get p:address:point/deref, y:offset
   b:number <- get p:address:point/deref, x:offset
 ]
@@ -237,8 +237,8 @@ if (inst.operation == Recipe_ordinal["get"]
 :(scenarios transform)
 :(scenario convert_names_handles_containers)
 recipe main [
-  a:point <- copy 0:literal
-  b:number <- copy 0:literal
+  a:point <- copy 0
+  b:number <- copy 0
 ]
 +name: assign a 1
 +name: assign b 3
@@ -248,9 +248,9 @@ recipe main [
 :(scenarios run)
 :(scenario maybe_convert_named)
 recipe main [
-  12:number <- copy 1:literal
-  13:number <- copy 35:literal
-  14:number <- copy 36:literal
+  12:number <- copy 1
+  13:number <- copy 35
+  14:number <- copy 36
   20:address:point <- maybe-convert 12:number-or-point/raw, p:variant  # unsafe
 ]
 +name: variant p of type number-or-point has tag 1

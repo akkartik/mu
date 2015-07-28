@@ -11,11 +11,11 @@ recipe string-equal [
     trace [string-equal], [comparing lengths]
     length-equal?:boolean <- equal a-len:number, b-len:number
     break-if length-equal?:boolean
-    reply 0:literal
+    reply 0
   }
   # compare each corresponding character
   trace [string-equal], [comparing characters]
-  i:number <- copy 0:literal
+  i:number <- copy 0
   {
     done?:boolean <- greater-or-equal i:number, a-len:number
     break-if done?:boolean
@@ -24,17 +24,17 @@ recipe string-equal [
     {
       chars-match?:boolean <- equal a2:character, b2:character
       break-if chars-match?:boolean
-      reply 0:literal
+      reply 0
     }
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     loop
   }
-  reply 1:literal
+  reply 1
 ]
 
 scenario string-equal-reflexive [
   run [
-    default-space:address:array:location <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     3:boolean/raw <- string-equal x:address:array:character, x:address:array:character
   ]
@@ -45,7 +45,7 @@ scenario string-equal-reflexive [
 
 scenario string-equal-identical [
   run [
-    default-space:address:array:location <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abc]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
@@ -57,7 +57,7 @@ scenario string-equal-identical [
 
 scenario string-equal-distinct-lengths [
   run [
-    default-space:address:array:location <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abcd]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
@@ -75,7 +75,7 @@ scenario string-equal-distinct-lengths [
 
 scenario string-equal-with-empty [
   run [
-    default-space:address:array:location <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new []
     y:address:array:character <- new [abcd]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
@@ -87,7 +87,7 @@ scenario string-equal-with-empty [
 
 scenario string-equal-common-lengths-but-distinct [
   run [
-    default-space:address:array:location <- new location:type, 30:literal
+    default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abd]
     3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
@@ -105,15 +105,15 @@ container buffer [
 
 recipe new-buffer [
   local-scope
-#?   $print default-space:address:array:location, 10:literal/newline
+#?   $print default-space:address:array:location, 10/newline
   result:address:buffer <- new buffer:type
   len:address:number <- get-address result:address:buffer/deref, length:offset
-  len:address:number/deref <- copy 0:literal
+  len:address:number/deref <- copy 0
   s:address:address:array:character <- get-address result:address:buffer/deref, data:offset
   capacity:number, found?:boolean <- next-ingredient
   assert found?:boolean, [new-buffer must get a capacity argument]
   s:address:address:array:character/deref <- new character:type, capacity:number
-#?   $print s:address:address:array:character/deref, 10:literal/newline
+#?   $print s:address:address:array:character/deref, 10/newline
   reply result:address:buffer
 ]
 
@@ -123,18 +123,18 @@ recipe grow-buffer [
   # double buffer size
   x:address:address:array:character <- get-address in:address:buffer/deref, data:offset
   oldlen:number <- length x:address:address:array:character/deref/deref
-  newlen:number <- multiply oldlen:number, 2:literal
+  newlen:number <- multiply oldlen:number, 2
   olddata:address:array:character <- copy x:address:address:array:character/deref
   x:address:address:array:character/deref <- new character:type, newlen:number
   # copy old contents
-  i:number <- copy 0:literal
+  i:number <- copy 0
   {
     done?:boolean <- greater-or-equal i:number, oldlen:number
     break-if done?:boolean
     src:character <- index olddata:address:array:character/deref, i:number
     dest:address:character <- index-address x:address:address:array:character/deref/deref, i:number
     dest:address:character/deref <- copy src:character
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     loop
   }
   reply in:address:buffer
@@ -158,11 +158,11 @@ recipe buffer-append [
   len:address:number <- get-address in:address:buffer/deref, length:offset
   {
     # backspace? just drop last character if it exists and return
-    backspace?:boolean <- equal c:character, 8:literal/backspace
+    backspace?:boolean <- equal c:character, 8/backspace
     break-unless backspace?:boolean
-    empty?:boolean <- lesser-or-equal len:address:number/deref, 0:literal
+    empty?:boolean <- lesser-or-equal len:address:number/deref, 0
     reply-if empty?:boolean, in:address:buffer/same-as-ingredient:0
-    len:address:number/deref <- subtract len:address:number/deref, 1:literal
+    len:address:number/deref <- subtract len:address:number/deref, 1
     reply in:address:buffer/same-as-ingredient:0
   }
   {
@@ -172,28 +172,28 @@ recipe buffer-append [
     in:address:buffer <- grow-buffer in:address:buffer
   }
   s:address:array:character <- get in:address:buffer/deref, data:offset
-#?   $print [array underlying buf: ], s:address:array:character, 10:literal/newline
-#?   $print [index: ], len:address:number/deref, 10:literal/newline
+#?   $print [array underlying buf: ], s:address:array:character, 10/newline
+#?   $print [index: ], len:address:number/deref, 10/newline
   dest:address:character <- index-address s:address:array:character/deref, len:address:number/deref
-#?   $print [storing ], c:character, [ in ], dest:address:character, 10:literal/newline
+#?   $print [storing ], c:character, [ in ], dest:address:character, 10/newline
   dest:address:character/deref <- copy c:character
-  len:address:number/deref <- add len:address:number/deref, 1:literal
+  len:address:number/deref <- add len:address:number/deref, 1
   reply in:address:buffer/same-as-ingredient:0
 ]
 
 scenario buffer-append-works [
   run [
     local-scope
-    x:address:buffer <- new-buffer 3:literal
+    x:address:buffer <- new-buffer 3
     s1:address:array:character <- get x:address:buffer/deref, data:offset
-    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
-    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
-    x:address:buffer <- buffer-append x:address:buffer, 99:literal  # 'c'
+    x:address:buffer <- buffer-append x:address:buffer, 97  # 'a'
+    x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'
+    x:address:buffer <- buffer-append x:address:buffer, 99  # 'c'
     s2:address:array:character <- get x:address:buffer/deref, data:offset
     1:boolean/raw <- equal s1:address:array:character, s2:address:array:character
     2:array:character/raw <- copy s2:address:array:character/deref
     +buffer-filled
-    x:address:buffer <- buffer-append x:address:buffer, 100:literal  # 'd'
+    x:address:buffer <- buffer-append x:address:buffer, 100  # 'd'
     s3:address:array:character <- get x:address:buffer/deref, data:offset
     10:boolean/raw <- equal s1:address:array:character, s3:address:array:character
     11:number/raw <- get x:address:buffer/deref, length:offset
@@ -222,10 +222,10 @@ scenario buffer-append-works [
 scenario buffer-append-handles-backspace [
   run [
     local-scope
-    x:address:buffer <- new-buffer 3:literal
-    x:address:buffer <- buffer-append x:address:buffer, 97:literal  # 'a'
-    x:address:buffer <- buffer-append x:address:buffer, 98:literal  # 'b'
-    x:address:buffer <- buffer-append x:address:buffer, 8:literal/backspace
+    x:address:buffer <- new-buffer 3
+    x:address:buffer <- buffer-append x:address:buffer, 97  # 'a'
+    x:address:buffer <- buffer-append x:address:buffer, 98  # 'b'
+    x:address:buffer <- buffer-append x:address:buffer, 8/backspace
     s:address:array:character <- buffer-to-array x:address:buffer
     1:array:character/raw <- copy s:address:array:character/deref
   ]
@@ -247,20 +247,20 @@ recipe integer-to-decimal-string [
     reply result:address:array:character
   }
   # save sign
-  negate-result:boolean <- copy 0:literal
+  negate-result:boolean <- copy 0
   {
-    negative?:boolean <- lesser-than n:number, 0:literal
+    negative?:boolean <- lesser-than n:number, 0
     break-unless negative?:boolean
-    negate-result:boolean <- copy 1:literal
-    n:number <- multiply n:number, -1:literal
+    negate-result:boolean <- copy 1
+    n:number <- multiply n:number, -1
   }
   # add digits from right to left into intermediate buffer
-  tmp:address:buffer <- new-buffer 30:literal
-  digit-base:number <- copy 48:literal  # '0'
+  tmp:address:buffer <- new-buffer 30
+  digit-base:number <- copy 48  # '0'
   {
-    done?:boolean <- equal n:number, 0:literal
+    done?:boolean <- equal n:number, 0
     break-if done?:boolean
-    n:number, digit:number <- divide-with-remainder n:number, 10:literal
+    n:number, digit:number <- divide-with-remainder n:number, 10
     c:character <- add digit-base:number, digit:number
     tmp:address:buffer <- buffer-append tmp:address:buffer, c:character
     loop
@@ -268,26 +268,26 @@ recipe integer-to-decimal-string [
   # add sign
   {
     break-unless negate-result:boolean
-    tmp:address:buffer <- buffer-append tmp:address:buffer, 45:literal  # '-'
+    tmp:address:buffer <- buffer-append tmp:address:buffer, 45  # '-'
   }
   # reverse buffer into string result
   len:number <- get tmp:address:buffer/deref, length:offset
   buf:address:array:character <- get tmp:address:buffer/deref, data:offset
   result:address:array:character <- new character:type, len:number
-  i:number <- subtract len:number, 1:literal
-  j:number <- copy 0:literal
+  i:number <- subtract len:number, 1
+  j:number <- copy 0
   {
     # while i >= 0
-    done?:boolean <- lesser-than i:number, 0:literal
+    done?:boolean <- lesser-than i:number, 0
     break-if done?:boolean
     # result[j] = tmp[i]
     src:character <- index buf:address:array:character/deref, i:number
     dest:address:character <- index-address result:address:array:character/deref, j:number
     dest:address:character/deref <- copy src:character
     # ++i
-    i:number <- subtract i:number, 1:literal
+    i:number <- subtract i:number, 1
     # --j
-    j:number <- add j:number, 1:literal
+    j:number <- add j:number, 1
     loop
   }
   reply result:address:array:character
@@ -299,14 +299,14 @@ recipe buffer-to-array [
   {
     # propagate null buffer
     break-if in:address:buffer
-    reply 0:literal
+    reply 0
   }
   len:number <- get in:address:buffer/deref, length:offset
-#?   $print [size ], len:number, 10:literal/newline
+#?   $print [size ], len:number, 10/newline
   s:address:array:character <- get in:address:buffer/deref, data:offset
   # we can't just return s because it is usually the wrong length
   result:address:array:character <- new character:type, len:number
-  i:number <- copy 0:literal
+  i:number <- copy 0
   {
 #?     $print i:number #? 1
     done?:boolean <- greater-or-equal i:number, len:number
@@ -314,7 +314,7 @@ recipe buffer-to-array [
     src:character <- index s:address:array:character/deref, i:number
     dest:address:character <- index-address result:address:array:character/deref, i:number
     dest:address:character/deref <- copy src:character
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     loop
   }
   reply result:address:array:character
@@ -322,7 +322,7 @@ recipe buffer-to-array [
 
 scenario integer-to-decimal-digit-zero [
   run [
-    1:address:array:character/raw <- integer-to-decimal-string 0:literal
+    1:address:array:character/raw <- integer-to-decimal-string 0
     2:array:character/raw <- copy 1:address:array:character/deref/raw
   ]
   memory-should-contain [
@@ -332,7 +332,7 @@ scenario integer-to-decimal-digit-zero [
 
 scenario integer-to-decimal-digit-positive [
   run [
-    1:address:array:character/raw <- integer-to-decimal-string 234:literal
+    1:address:array:character/raw <- integer-to-decimal-string 234
     2:array:character/raw <- copy 1:address:array:character/deref/raw
   ]
   memory-should-contain [
@@ -342,7 +342,7 @@ scenario integer-to-decimal-digit-positive [
 
 scenario integer-to-decimal-digit-negative [
   run [
-    1:address:array:character/raw <- integer-to-decimal-string -1:literal
+    1:address:array:character/raw <- integer-to-decimal-string -1
     2:array:character/raw <- copy 1:address:array:character/deref/raw
   ]
   memory-should-contain [
@@ -363,8 +363,8 @@ recipe string-append [
   result-len:number <- add a-len:number, b-len:number
   result:address:array:character <- new character:type, result-len:number
   # copy a into result
-  result-idx:number <- copy 0:literal
-  i:number <- copy 0:literal
+  result-idx:number <- copy 0
+  i:number <- copy 0
   {
     # while i < a.length
     a-done?:boolean <- greater-or-equal i:number, a-len:number
@@ -374,13 +374,13 @@ recipe string-append [
     in:character <- index a:address:array:character/deref, i:number
     out:address:character/deref <- copy in:character
     # ++i
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     # ++result-idx
-    result-idx:number <- add result-idx:number, 1:literal
+    result-idx:number <- add result-idx:number, 1
     loop
   }
   # copy b into result
-  i:number <- copy 0:literal
+  i:number <- copy 0
   {
     # while i < b.length
     b-done?:boolean <- greater-or-equal i:number, b-len:number
@@ -390,9 +390,9 @@ recipe string-append [
     in:character <- index b:address:array:character/deref, i:number
     out:address:character/deref <- copy in:character
     # ++i
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     # ++result-idx
-    result-idx:number <- add result-idx:number, 1:literal
+    result-idx:number <- add result-idx:number, 1
     loop
   }
   reply result:address:array:character
@@ -425,17 +425,17 @@ recipe interpolate [
     # result-len = result-len + arg.length - 1 for the 'underscore' being replaced
     a-len:number <- length a:address:array:character/deref
     result-len:number <- add result-len:number, a-len:number
-    result-len:number <- subtract result-len:number, 1:literal
+    result-len:number <- subtract result-len:number, 1
     loop
   }
-#?   $print tem-len:number, [ ], $result-len:number, 10:literal/newline
+#?   $print tem-len:number, [ ], $result-len:number, 10/newline
   rewind-ingredients
   _ <- next-ingredient  # skip template
   # result = new array:character[result-len]
   result:address:array:character <- new character:type, result-len:number
   # repeatedly copy sections of template and 'holes' into result
-  result-idx:number <- copy 0:literal
-  i:number <- copy 0:literal
+  result-idx:number <- copy 0
+  i:number <- copy 0
   {
     # while arg received
     a:address:array:character, arg-received?:boolean <- next-ingredient
@@ -447,19 +447,19 @@ recipe interpolate [
       break-if tem-done?:boolean, +done:label
       # while template[i] != '_'
       in:character <- index template:address:array:character/deref, i:number
-      underscore?:boolean <- equal in:character, 95:literal  # '_'
+      underscore?:boolean <- equal in:character, 95  # '_'
       break-if underscore?:boolean
       # result[result-idx] = template[i]
       out:address:character <- index-address result:address:array:character/deref, result-idx:number
       out:address:character/deref <- copy in:character
       # ++i
-      i:number <- add i:number, 1:literal
+      i:number <- add i:number, 1
       # ++result-idx
-      result-idx:number <- add result-idx:number, 1:literal
+      result-idx:number <- add result-idx:number, 1
       loop
     }
     # copy 'a' into result
-    j:number <- copy 0:literal
+    j:number <- copy 0
     {
       # while j < a.length
       arg-done?:boolean <- greater-or-equal j:number, a-len:number
@@ -469,13 +469,13 @@ recipe interpolate [
       out:address:character <- index-address result:address:array:character/deref, result-idx:number
       out:address:character/deref <- copy in:character
       # ++j
-      j:number <- add j:number, 1:literal
+      j:number <- add j:number, 1
       # ++result-idx
-      result-idx:number <- add result-idx:number, 1:literal
+      result-idx:number <- add result-idx:number, 1
       loop
     }
     # skip '_' in template
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     loop  # interpolate next arg
   }
   +done
@@ -489,9 +489,9 @@ recipe interpolate [
     out:address:character <- index-address result:address:array:character/deref, result-idx:number
     out:address:character/deref <- copy in:character
     # ++i
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     # ++result-idx
-    result-idx:number <- add result-idx:number, 1:literal
+    result-idx:number <- add result-idx:number, 1
     loop
   }
   reply result:address:array:character
@@ -540,61 +540,61 @@ recipe space? [
   local-scope
   c:character <- next-ingredient
   # most common case first
-  result:boolean <- equal c:character, 32:literal/space
+  result:boolean <- equal c:character, 32/space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 10:literal/newline
+  result:boolean <- equal c:character, 10/newline
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 9:literal/tab
+  result:boolean <- equal c:character, 9/tab
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 13:literal/carriage-return
+  result:boolean <- equal c:character, 13/carriage-return
   # remaining uncommon cases in sorted order
   # http://unicode.org code-points in unicode-set Z and Pattern_White_Space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 11:literal/ctrl-k
+  result:boolean <- equal c:character, 11/ctrl-k
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 12:literal/ctrl-l
+  result:boolean <- equal c:character, 12/ctrl-l
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 133:literal/ctrl-0085
+  result:boolean <- equal c:character, 133/ctrl-0085
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 160:literal/no-break-space
+  result:boolean <- equal c:character, 160/no-break-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 5760:literal/ogham-space-mark
+  result:boolean <- equal c:character, 5760/ogham-space-mark
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8192:literal/en-quad
+  result:boolean <- equal c:character, 8192/en-quad
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8193:literal/em-quad
+  result:boolean <- equal c:character, 8193/em-quad
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8194:literal/en-space
+  result:boolean <- equal c:character, 8194/en-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8195:literal/em-space
+  result:boolean <- equal c:character, 8195/em-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8196:literal/three-per-em-space
+  result:boolean <- equal c:character, 8196/three-per-em-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8197:literal/four-per-em-space
+  result:boolean <- equal c:character, 8197/four-per-em-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8198:literal/six-per-em-space
+  result:boolean <- equal c:character, 8198/six-per-em-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8199:literal/figure-space
+  result:boolean <- equal c:character, 8199/figure-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8200:literal/punctuation-space
+  result:boolean <- equal c:character, 8200/punctuation-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8201:literal/thin-space
+  result:boolean <- equal c:character, 8201/thin-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8202:literal/hair-space
+  result:boolean <- equal c:character, 8202/hair-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8206:literal/left-to-right
+  result:boolean <- equal c:character, 8206/left-to-right
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8207:literal/right-to-left
+  result:boolean <- equal c:character, 8207/right-to-left
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8232:literal/line-separator
+  result:boolean <- equal c:character, 8232/line-separator
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8233:literal/paragraph-separator
+  result:boolean <- equal c:character, 8233/paragraph-separator
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8239:literal/narrow-no-break-space
+  result:boolean <- equal c:character, 8239/narrow-no-break-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 8287:literal/medium-mathematical-space
+  result:boolean <- equal c:character, 8287/medium-mathematical-space
   jump-if result:boolean, +reply:label
-  result:boolean <- equal c:character, 12288:literal/ideographic-space
+  result:boolean <- equal c:character, 12288/ideographic-space
   jump-if result:boolean, +reply:label
   +reply
   reply result:boolean
@@ -606,37 +606,37 @@ recipe trim [
   s:address:array:character <- next-ingredient
   len:number <- length s:address:array:character/deref
   # left trim: compute start
-  start:number <- copy 0:literal
+  start:number <- copy 0
   {
     {
       at-end?:boolean <- greater-or-equal start:number, len:number
       break-unless at-end?:boolean
-      result:address:array:character <- new character:type, 0:literal
+      result:address:array:character <- new character:type, 0
       reply result:address:array:character
     }
     curr:character <- index s:address:array:character/deref, start:number
     whitespace?:boolean <- space? curr:character
     break-unless whitespace?:boolean
-    start:number <- add start:number, 1:literal
+    start:number <- add start:number, 1
     loop
   }
   # right trim: compute end
-  end:number <- subtract len:number, 1:literal
+  end:number <- subtract len:number, 1
   {
     not-at-start?:boolean <- greater-than end:number, start:number
     assert not-at-start?:boolean [end ran up against start]
     curr:character <- index s:address:array:character/deref, end:number
     whitespace?:boolean <- space? curr:character
     break-unless whitespace?:boolean
-    end:number <- subtract end:number, 1:literal
+    end:number <- subtract end:number, 1
     loop
   }
   # result = new character[end+1 - start]
-  new-len:number <- subtract end:number, start:number, -1:literal
+  new-len:number <- subtract end:number, start:number, -1
   result:address:array:character <- new character:type, new-len:number
   # i = start, j = 0
   i:number <- copy start:number
-  j:number <- copy 0:literal
+  j:number <- copy 0
   {
     # while i <= end
     done?:boolean <- greater-than i:number, end:number
@@ -646,8 +646,8 @@ recipe trim [
     dest:address:character <- index-address result:address:array:character/deref, j:number
     dest:address:character/deref <- copy src:character
     # ++i, ++j
-    i:number <- add i:number, 1:literal
-    j:number <- add j:number, 1:literal
+    i:number <- add i:number, 1
+    j:number <- add j:number, 1
     loop
   }
   reply result:address:array:character
@@ -722,7 +722,7 @@ recipe find-next [
     curr:character <- index text:address:array:character/deref, idx:number
     found?:boolean <- equal curr:character, pattern:character
     break-if found?:boolean
-    idx:number <- add idx:number, 1:literal
+    idx:number <- add idx:number, 1
     loop
   }
   reply idx:number
@@ -731,7 +731,7 @@ recipe find-next [
 scenario string-find-next [
   run [
     1:address:array:character <- new [a/b]
-    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+    2:number <- find-next 1:address:array:character, 47/slash, 0/start-index
   ]
   memory-should-contain [
     2 <- 1
@@ -741,7 +741,7 @@ scenario string-find-next [
 scenario string-find-next-empty [
   run [
     1:address:array:character <- new []
-    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+    2:number <- find-next 1:address:array:character, 47/slash, 0/start-index
   ]
   memory-should-contain [
     2 <- 0
@@ -751,7 +751,7 @@ scenario string-find-next-empty [
 scenario string-find-next-initial [
   run [
     1:address:array:character <- new [/abc]
-    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+    2:number <- find-next 1:address:array:character, 47/slash, 0/start-index
   ]
   memory-should-contain [
     2 <- 0  # prefix match
@@ -761,7 +761,7 @@ scenario string-find-next-initial [
 scenario string-find-next-final [
   run [
     1:address:array:character <- new [abc/]
-    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+    2:number <- find-next 1:address:array:character, 47/slash, 0/start-index
   ]
   memory-should-contain [
     2 <- 3  # suffix match
@@ -771,7 +771,7 @@ scenario string-find-next-final [
 scenario string-find-next-missing [
   run [
     1:address:array:character <- new [abc]
-    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+    2:number <- find-next 1:address:array:character, 47/slash, 0/start-index
   ]
   memory-should-contain [
     2 <- 3  # no match
@@ -781,7 +781,7 @@ scenario string-find-next-missing [
 scenario string-find-next-invalid-index [
   run [
     1:address:array:character <- new [abc]
-    2:number <- find-next 1:address:array:character, 47:literal/slash, 4:literal/start-index
+    2:number <- find-next 1:address:array:character, 47/slash, 4/start-index
   ]
   memory-should-contain [
     2 <- 4  # no change
@@ -791,7 +791,7 @@ scenario string-find-next-invalid-index [
 scenario string-find-next-first [
   run [
     1:address:array:character <- new [ab/c/]
-    2:number <- find-next 1:address:array:character, 47:literal/slash, 0:literal/start-index
+    2:number <- find-next 1:address:array:character, 47/slash, 0/start-index
   ]
   memory-should-contain [
     2 <- 2  # first '/' of multiple
@@ -801,7 +801,7 @@ scenario string-find-next-first [
 scenario string-find-next-second [
   run [
     1:address:array:character <- new [ab/c/]
-    2:number <- find-next 1:address:array:character, 47:literal/slash, 3:literal/start-index
+    2:number <- find-next 1:address:array:character, 47/slash, 3/start-index
   ]
   memory-should-contain [
     2 <- 4  # second '/' of multiple
@@ -815,7 +815,7 @@ recipe find-substring [
   text:address:array:character <- next-ingredient
   pattern:address:array:character <- next-ingredient
   idx:number <- next-ingredient
-  first:character <- index pattern:address:array:character/deref, 0:literal
+  first:character <- index pattern:address:array:character/deref, 0
   # repeatedly check for match at current idx
   len:number <- length text:address:array:character/deref
   {
@@ -824,7 +824,7 @@ recipe find-substring [
     break-if done?:boolean
     found?:boolean <- match-at text:address:array:character pattern:address:array:character, idx:number
     break-if found?:boolean
-    idx:number <- add idx:number, 1:literal
+    idx:number <- add idx:number, 1
     # optimization: skip past indices that definitely won't match
     idx:number <- find-next text:address:array:character, first:character, idx:number
     loop
@@ -836,7 +836,7 @@ scenario find-substring-1 [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [bc]
-    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0
   ]
   memory-should-contain [
     3 <- 1
@@ -847,7 +847,7 @@ scenario find-substring-2 [
   run [
     1:address:array:character <- new [abcd]
     2:address:array:character <- new [bc]
-    3:number <- find-substring 1:address:array:character, 2:address:array:character, 1:literal
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 1
   ]
   memory-should-contain [
     3 <- 1
@@ -858,7 +858,7 @@ scenario find-substring-no-match [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [bd]
-    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0
   ]
   memory-should-contain [
     3 <- 3  # not found
@@ -869,7 +869,7 @@ scenario find-substring-suffix-match [
   run [
     1:address:array:character <- new [abcd]
     2:address:array:character <- new [cd]
-    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0
   ]
   memory-should-contain [
     3 <- 2
@@ -880,7 +880,7 @@ scenario find-substring-suffix-match-2 [
   run [
     1:address:array:character <- new [abcd]
     2:address:array:character <- new [cde]
-    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0:literal
+    3:number <- find-substring 1:address:array:character, 2:address:array:character, 0
   ]
   memory-should-contain [
     3 <- 4  # not found
@@ -901,10 +901,10 @@ recipe match-at [
     x:number <- subtract x:number, pattern-len:number
     enough-room?:boolean <- lesser-or-equal idx:number, x:number
     break-if enough-room?:boolean
-    reply 0:literal/not-found
+    reply 0/not-found
   }
   # check each character of pattern
-  pattern-idx:number <- copy 0:literal
+  pattern-idx:number <- copy 0
   {
     done?:boolean <- greater-or-equal pattern-idx:number, pattern-len:number
     break-if done?:boolean
@@ -913,20 +913,20 @@ recipe match-at [
     {
       match?:boolean <- equal c:character, exp:character
       break-if match?:boolean
-      reply 0:literal/not-found
+      reply 0/not-found
     }
-    idx:number <- add idx:number, 1:literal
-    pattern-idx:number <- add pattern-idx:number, 1:literal
+    idx:number <- add idx:number, 1
+    pattern-idx:number <- add pattern-idx:number, 1
     loop
   }
-  reply 1:literal/found
+  reply 1/found
 ]
 
 scenario match-at-checks-substring-at-index [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [ab]
-    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
   ]
   memory-should-contain [
     3 <- 1  # match found
@@ -936,7 +936,7 @@ scenario match-at-checks-substring-at-index [
 scenario match-at-reflexive [
   run [
     1:address:array:character <- new [abc]
-    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0:literal
+    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
   ]
   memory-should-contain [
     3 <- 1  # match found
@@ -947,7 +947,7 @@ scenario match-at-outside-bounds [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [a]
-    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 4:literal
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 4
   ]
   memory-should-contain [
     3 <- 0  # never matches
@@ -958,7 +958,7 @@ scenario match-at-empty-pattern [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new []
-    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
   ]
   memory-should-contain [
     3 <- 1  # always matches empty pattern given a valid index
@@ -969,7 +969,7 @@ scenario match-at-empty-pattern-outside-bound [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new []
-    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 4:literal
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 4
   ]
   memory-should-contain [
     3 <- 0  # no match
@@ -980,7 +980,7 @@ scenario match-at-empty-text [
   run [
     1:address:array:character <- new []
     2:address:array:character <- new [abc]
-    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
   ]
   memory-should-contain [
     3 <- 0  # no match
@@ -990,7 +990,7 @@ scenario match-at-empty-text [
 scenario match-at-empty-against-empty [
   run [
     1:address:array:character <- new []
-    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0:literal
+    3:boolean <- match-at 1:address:array:character, 1:address:array:character, 0
   ]
   memory-should-contain [
     3 <- 1  # matches because pattern is also empty
@@ -1001,7 +1001,7 @@ scenario match-at-inside-bounds [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [bc]
-    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 1:literal
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 1
   ]
   memory-should-contain [
     3 <- 1  # matches inner substring
@@ -1012,7 +1012,7 @@ scenario match-at-inside-bounds-2 [
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [bc]
-    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0:literal
+    3:boolean <- match-at 1:address:array:character, 2:address:array:character, 0
   ]
   memory-should-contain [
     3 <- 0  # no match
@@ -1027,27 +1027,27 @@ recipe split [
   # empty string? return empty array
   len:number <- length s:address:array:character/deref
   {
-    empty?:boolean <- equal len:number, 0:literal
+    empty?:boolean <- equal len:number, 0
     break-unless empty?:boolean
-    result:address:array:address:array:character <- new location:type, 0:literal
+    result:address:array:address:array:character <- new location:type, 0
     reply result:address:array:address:array:character
   }
   # count #pieces we need room for
-  count:number <- copy 1:literal  # n delimiters = n+1 pieces
-  idx:number <- copy 0:literal
+  count:number <- copy 1  # n delimiters = n+1 pieces
+  idx:number <- copy 0
   {
     idx:number <- find-next s:address:array:character, delim:character, idx:number
     done?:boolean <- greater-or-equal idx:number, len:number
     break-if done?:boolean
-    idx:number <- add idx:number, 1:literal
-    count:number <- add count:number, 1:literal
+    idx:number <- add idx:number, 1
+    count:number <- add count:number, 1
     loop
   }
   # allocate space
   result:address:array:address:array:character <- new location:type, count:number
   # repeatedly copy slices start..end until delimiter into result[curr-result]
-  curr-result:number <- copy 0:literal
-  start:number <- copy 0:literal
+  curr-result:number <- copy 0
+  start:number <- copy 0
   {
     # while next delim exists
     done?:boolean <- greater-or-equal start:number, len:number
@@ -1057,8 +1057,8 @@ recipe split [
     dest:address:address:array:character <- index-address result:address:array:address:array:character/deref, curr-result:number
     dest:address:address:array:character/deref <- string-copy s:address:array:character, start:number, end:number
     # slide over to next slice
-    start:number <- add end:number, 1:literal
-    curr-result:number <- add curr-result:number, 1:literal
+    start:number <- add end:number, 1
+    curr-result:number <- add curr-result:number, 1
     loop
   }
   reply result:address:array:address:array:character
@@ -1067,10 +1067,10 @@ recipe split [
 scenario string-split-1 [
   run [
     1:address:array:character <- new [a/b]
-    2:address:array:address:array:character <- split 1:address:array:character, 47:literal/slash
+    2:address:array:address:array:character <- split 1:address:array:character, 47/slash
     3:number <- length 2:address:array:address:array:character/deref
-    4:address:array:character <- index 2:address:array:address:array:character/deref, 0:literal
-    5:address:array:character <- index 2:address:array:address:array:character/deref, 1:literal
+    4:address:array:character <- index 2:address:array:address:array:character/deref, 0
+    5:address:array:character <- index 2:address:array:address:array:character/deref, 1
     10:array:character <- copy 4:address:array:character/deref
     20:array:character <- copy 5:address:array:character/deref
   ]
@@ -1084,11 +1084,11 @@ scenario string-split-1 [
 scenario string-split-2 [
   run [
     1:address:array:character <- new [a/b/c]
-    2:address:array:address:array:character <- split 1:address:array:character, 47:literal/slash
+    2:address:array:address:array:character <- split 1:address:array:character, 47/slash
     3:number <- length 2:address:array:address:array:character/deref
-    4:address:array:character <- index 2:address:array:address:array:character/deref, 0:literal
-    5:address:array:character <- index 2:address:array:address:array:character/deref, 1:literal
-    6:address:array:character <- index 2:address:array:address:array:character/deref, 2:literal
+    4:address:array:character <- index 2:address:array:address:array:character/deref, 0
+    5:address:array:character <- index 2:address:array:address:array:character/deref, 1
+    6:address:array:character <- index 2:address:array:address:array:character/deref, 2
     10:array:character <- copy 4:address:array:character/deref
     20:array:character <- copy 5:address:array:character/deref
     30:array:character <- copy 6:address:array:character/deref
@@ -1104,9 +1104,9 @@ scenario string-split-2 [
 scenario string-split-missing [
   run [
     1:address:array:character <- new [abc]
-    2:address:array:address:array:character <- split 1:address:array:character, 47:literal/slash
+    2:address:array:address:array:character <- split 1:address:array:character, 47/slash
     3:number <- length 2:address:array:address:array:character/deref
-    4:address:array:character <- index 2:address:array:address:array:character/deref, 0:literal
+    4:address:array:character <- index 2:address:array:address:array:character/deref, 0
     10:array:character <- copy 4:address:array:character/deref
   ]
   memory-should-contain [
@@ -1118,7 +1118,7 @@ scenario string-split-missing [
 scenario string-split-empty [
   run [
     1:address:array:character <- new []
-    2:address:array:address:array:character <- split 1:address:array:character, 47:literal/slash
+    2:address:array:address:array:character <- split 1:address:array:character, 47/slash
     3:number <- length 2:address:array:address:array:character/deref
   ]
   memory-should-contain [
@@ -1129,12 +1129,12 @@ scenario string-split-empty [
 scenario string-split-empty-piece [
   run [
     1:address:array:character <- new [a/b//c]
-    2:address:array:address:array:character <- split 1:address:array:character, 47:literal/slash
+    2:address:array:address:array:character <- split 1:address:array:character, 47/slash
     3:number <- length 2:address:array:address:array:character/deref
-    4:address:array:character <- index 2:address:array:address:array:character/deref, 0:literal
-    5:address:array:character <- index 2:address:array:address:array:character/deref, 1:literal
-    6:address:array:character <- index 2:address:array:address:array:character/deref, 2:literal
-    7:address:array:character <- index 2:address:array:address:array:character/deref, 3:literal
+    4:address:array:character <- index 2:address:array:address:array:character/deref, 0
+    5:address:array:character <- index 2:address:array:address:array:character/deref, 1
+    6:address:array:character <- index 2:address:array:address:array:character/deref, 2
+    7:address:array:character <- index 2:address:array:address:array:character/deref, 3
     10:array:character <- copy 4:address:array:character/deref
     20:array:character <- copy 5:address:array:character/deref
     30:array:character <- copy 6:address:array:character/deref
@@ -1157,15 +1157,15 @@ recipe split-first [
   # empty string? return empty strings
   len:number <- length text:address:array:character/deref
   {
-    empty?:boolean <- equal len:number, 0:literal
+    empty?:boolean <- equal len:number, 0
     break-unless empty?:boolean
     x:address:array:character <- new []
     y:address:array:character <- new []
     reply x:address:array:character, y:address:array:character
   }
-  idx:number <- find-next text:address:array:character, delim:character, 0:literal
-  x:address:array:character <- string-copy text:address:array:character, 0:literal, idx:number
-  idx:number <- add idx:number, 1:literal
+  idx:number <- find-next text:address:array:character, delim:character, 0
+  x:address:array:character <- string-copy text:address:array:character, 0, idx:number
+  idx:number <- add idx:number, 1
   y:address:array:character <- string-copy text:address:array:character, idx:number, len:number
   reply x:address:array:character, y:address:array:character
 ]
@@ -1173,7 +1173,7 @@ recipe split-first [
 scenario string-split-first [
   run [
     1:address:array:character <- new [a/b]
-    2:address:array:character, 3:address:array:character <- split-first 1:address:array:character, 47:literal/slash
+    2:address:array:character, 3:address:array:character <- split-first 1:address:array:character, 47/slash
     10:array:character <- copy 2:address:array:character/deref
     20:array:character <- copy 3:address:array:character/deref
   ]
@@ -1198,15 +1198,15 @@ recipe string-copy [
   result:address:array:character <- new character:type, len:number
   # copy start..end into result[curr-result]
   src-idx:number <- copy start:number
-  dest-idx:number <- copy 0:literal
+  dest-idx:number <- copy 0
   {
     done?:boolean <- greater-or-equal src-idx:number, end:number
     break-if done?:boolean
     src:character <- index buf:address:array:character/deref, src-idx:number
     dest:address:character <- index-address result:address:array:character/deref, dest-idx:number
     dest:address:character/deref <- copy src:character
-    src-idx:number <- add src-idx:number, 1:literal
-    dest-idx:number <- add dest-idx:number, 1:literal
+    src-idx:number <- add src-idx:number, 1
+    dest-idx:number <- add dest-idx:number, 1
     loop
   }
   reply result:address:array:character
@@ -1215,7 +1215,7 @@ recipe string-copy [
 scenario string-copy-copies-substring [
   run [
     1:address:array:character <- new [abc]
-    2:address:array:character <- string-copy 1:address:array:character, 1:literal, 3:literal
+    2:address:array:character <- string-copy 1:address:array:character, 1, 3
     3:array:character <- copy 2:address:array:character/deref
   ]
   memory-should-contain [
@@ -1226,7 +1226,7 @@ scenario string-copy-copies-substring [
 scenario string-copy-out-of-bounds [
   run [
     1:address:array:character <- new [abc]
-    2:address:array:character <- string-copy 1:address:array:character, 2:literal, 4:literal
+    2:address:array:character <- string-copy 1:address:array:character, 2, 4
     3:array:character <- copy 2:address:array:character/deref
   ]
   memory-should-contain [
@@ -1237,7 +1237,7 @@ scenario string-copy-out-of-bounds [
 scenario string-copy-out-of-bounds-2 [
   run [
     1:address:array:character <- new [abc]
-    2:address:array:character <- string-copy 1:address:array:character, 3:literal, 3:literal
+    2:address:array:character <- string-copy 1:address:array:character, 3, 3
     3:array:character <- copy 2:address:array:character/deref
   ]
   memory-should-contain [

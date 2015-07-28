@@ -27,7 +27,7 @@ recipe new-fake-console [
   buf:address:address:array:character/deref <- next-ingredient
 #?   $stop-tracing #? 1
   idx:address:number <- get-address result:address:console/deref, index:offset
-  idx:address:number/deref <- copy 0:literal
+  idx:address:number/deref <- copy 0
   reply result:address:console
 ]
 
@@ -43,16 +43,16 @@ recipe read-event [
       done?:boolean <- greater-or-equal idx:address:number/deref, max:number
       break-unless done?:boolean
       dummy:address:event <- new event:type
-      reply dummy:address:event/deref, x:address:console/same-as-ingredient:0, 1:literal/found, 1:literal/quit
+      reply dummy:address:event/deref, x:address:console/same-as-ingredient:0, 1/found, 1/quit
     }
     result:event <- index buf:address:array:event/deref, idx:address:number/deref
-    idx:address:number/deref <- add idx:address:number/deref, 1:literal
-    reply result:event, x:address:console/same-as-ingredient:0, 1:literal/found, 0:literal/quit
+    idx:address:number/deref <- add idx:address:number/deref, 1
+    reply result:event, x:address:console/same-as-ingredient:0, 1/found, 0/quit
   }
   # real event source is infrequent; avoid polling it too much
   switch
   result:event, found?:boolean <- check-for-interaction
-  reply result:event, x:address:console/same-as-ingredient:0, found?:boolean, 0:literal/quit
+  reply result:event, x:address:console/same-as-ingredient:0, found?:boolean, 0/quit
 ]
 
 # variant of read-event for just keyboard events. Discards everything that
@@ -66,14 +66,14 @@ recipe read-key [
   console:address <- next-ingredient
   x:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
 #?   $print [aaa 1] #? 1
-  reply-if quit?:boolean, 0:literal, console:address/same-as-ingredient:0, found?:boolean, quit?:boolean
+  reply-if quit?:boolean, 0, console:address/same-as-ingredient:0, found?:boolean, quit?:boolean
 #?   $print [aaa 2] #? 1
-  reply-unless found?:boolean, 0:literal, console:address/same-as-ingredient:0, found?:boolean, quit?:boolean
+  reply-unless found?:boolean, 0, console:address/same-as-ingredient:0, found?:boolean, quit?:boolean
 #?   $print [aaa 3] #? 1
   c:address:character <- maybe-convert x:event, text:variant
-  reply-unless c:address:character, 0:literal, console:address/same-as-ingredient:0, 0:literal/found, 0:literal/quit
+  reply-unless c:address:character, 0, console:address/same-as-ingredient:0, 0/found, 0/quit
 #?   $print [aaa 4] #? 1
-  reply c:address:character/deref, console:address/same-as-ingredient:0, 1:literal/found, 0:literal/quit
+  reply c:address:character/deref, console:address/same-as-ingredient:0, 1/found, 0/quit
 ]
 
 recipe send-keys-to-channel [
@@ -108,7 +108,7 @@ recipe has-more-events? [
   {
     break-unless console:address
     # fake consoles should be plenty fast; never skip
-    reply 0:literal/false
+    reply 0/false
   }
   result:boolean <- interactions-left?
   reply result:boolean

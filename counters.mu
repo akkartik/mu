@@ -2,7 +2,7 @@
 # (spaces)
 
 recipe new-counter [
-  default-space:address:array:location <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30
   n:number <- next-ingredient
   reply default-space:address:array:location
 ]
@@ -18,13 +18,13 @@ recipe increment-counter [
 recipe main [
   local-scope
   # counter A
-  a:address:array:location <- new-counter 34:literal
+  a:address:array:location <- new-counter 34
   # counter B
-  b:address:array:location <- new-counter 23:literal
+  b:address:array:location <- new-counter 23
   # increment both by 2 but in different ways
-  increment-counter a:address:array:location, 1:literal
-  b-value:number <- increment-counter b:address:array:location, 2:literal
-  a-value:number <- increment-counter a:address:array:location, 1:literal
+  increment-counter a:address:array:location, 1
+  b-value:number <- increment-counter b:address:array:location, 2
+  a-value:number <- increment-counter a:address:array:location, 1
   # check results
   $print [Contents of counters
 ]

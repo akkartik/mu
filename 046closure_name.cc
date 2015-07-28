@@ -5,24 +5,24 @@
 
 :(scenario closure)
 recipe main [
-  default-space:address:array:location <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30
   1:address:array:location/names:new-counter <- new-counter
   2:number/raw <- increment-counter 1:address:array:location/names:new-counter
   3:number/raw <- increment-counter 1:address:array:location/names:new-counter
 ]
 
 recipe new-counter [
-  default-space:address:array:location <- new location:type, 30:literal
-  x:number <- copy 23:literal
-  y:number <- copy 3:literal  # variable that will be incremented
+  default-space:address:array:location <- new location:type, 30
+  x:number <- copy 23
+  y:number <- copy 3  # variable that will be incremented
   reply default-space:address:array:location
 ]
 
 recipe increment-counter [
-  default-space:address:array:location <- new location:type, 30:literal
+  default-space:address:array:location <- new location:type, 30
   0:address:array:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
-  y:number/space:1 <- add y:number/space:1, 1:literal  # increment
-  y:number <- copy 234:literal  # dummy
+  y:number/space:1 <- add y:number/space:1, 1  # increment
+  y:number <- copy 234  # dummy
   reply y:number/space:1
 ]
 

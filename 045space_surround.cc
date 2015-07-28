@@ -7,12 +7,12 @@
 :(scenario surrounding_space)
 # location 1 in space 1 refers to the space surrounding the default space, here 20.
 recipe main [
-  10:number <- copy 5:literal  # pretend array
-  20:number <- copy 5:literal  # pretend array
-  default-space:address:array:location <- copy 10:literal
-  0:address:array:location/names:dummy <- copy 20:literal  # later layers will explain the /names: property
-  1:number <- copy 32:literal
-  1:number/space:1 <- copy 33:literal
+  10:number <- copy 5  # pretend array
+  20:number <- copy 5  # pretend array
+  default-space:address:array:location <- copy 10
+  0:address:array:location/names:dummy <- copy 20  # later layers will explain the /names: property
+  1:number <- copy 32
+  1:number/space:1 <- copy 33
 ]
 # chain space
 +mem: storing 20 in location 11
@@ -51,5 +51,5 @@ long long int space_index(const reagent& x) {
 
 :(scenario permit_space_as_variable_name)
 recipe main [
-  space:number <- copy 0:literal
+  space:number <- copy 0
 ]

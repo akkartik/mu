@@ -19,21 +19,21 @@ case ADD: {
 
 :(scenario add_literal)
 recipe main [
-  1:number <- add 23:literal, 34:literal
+  1:number <- add 23, 34
 ]
 +mem: storing 57 in location 1
 
 :(scenario add)
 recipe main [
-  1:number <- copy 23:literal
-  2:number <- copy 34:literal
+  1:number <- copy 23
+  2:number <- copy 34
   3:number <- add 1:number, 2:number
 ]
 +mem: storing 57 in location 3
 
 :(scenario add_multiple)
 recipe main [
-  1:number <- add 3:literal, 4:literal, 5:literal
+  1:number <- add 3, 4, 5
 ]
 +mem: storing 12 in location 1
 
@@ -60,21 +60,21 @@ case SUBTRACT: {
 
 :(scenario subtract_literal)
 recipe main [
-  1:number <- subtract 5:literal, 2:literal
+  1:number <- subtract 5, 2
 ]
 +mem: storing 3 in location 1
 
 :(scenario subtract)
 recipe main [
-  1:number <- copy 23:literal
-  2:number <- copy 34:literal
+  1:number <- copy 23
+  2:number <- copy 34
   3:number <- subtract 1:number, 2:number
 ]
 +mem: storing -11 in location 3
 
 :(scenario subtract_multiple)
 recipe main [
-  1:number <- subtract 6:literal, 3:literal, 2:literal
+  1:number <- subtract 6, 3, 2
 ]
 +mem: storing 1 in location 1
 
@@ -96,21 +96,21 @@ case MULTIPLY: {
 
 :(scenario multiply_literal)
 recipe main [
-  1:number <- multiply 2:literal, 3:literal
+  1:number <- multiply 2, 3
 ]
 +mem: storing 6 in location 1
 
 :(scenario multiply)
 recipe main [
-  1:number <- copy 4:literal
-  2:number <- copy 6:literal
+  1:number <- copy 4
+  2:number <- copy 6
   3:number <- multiply 1:number, 2:number
 ]
 +mem: storing 24 in location 3
 
 :(scenario multiply_multiple)
 recipe main [
-  1:number <- multiply 2:literal, 3:literal, 4:literal
+  1:number <- multiply 2, 3, 4
 ]
 +mem: storing 24 in location 1
 
@@ -137,21 +137,21 @@ case DIVIDE: {
 
 :(scenario divide_literal)
 recipe main [
-  1:number <- divide 8:literal, 2:literal
+  1:number <- divide 8, 2
 ]
 +mem: storing 4 in location 1
 
 :(scenario divide)
 recipe main [
-  1:number <- copy 27:literal
-  2:number <- copy 3:literal
+  1:number <- copy 27
+  2:number <- copy 3
   3:number <- divide 1:number, 2:number
 ]
 +mem: storing 9 in location 3
 
 :(scenario divide_multiple)
 recipe main [
-  1:number <- divide 12:literal, 3:literal, 2:literal
+  1:number <- divide 12, 3, 2
 ]
 +mem: storing 2 in location 1
 
@@ -178,15 +178,15 @@ case DIVIDE_WITH_REMAINDER: {
 
 :(scenario divide_with_remainder_literal)
 recipe main [
-  1:number, 2:number <- divide-with-remainder 9:literal, 2:literal
+  1:number, 2:number <- divide-with-remainder 9, 2
 ]
 +mem: storing 4 in location 1
 +mem: storing 1 in location 2
 
 :(scenario divide_with_remainder)
 recipe main [
-  1:number <- copy 27:literal
-  2:number <- copy 11:literal
+  1:number <- copy 27
+  2:number <- copy 11
   3:number, 4:number <- divide-with-remainder 1:number, 2:number
 ]
 +mem: storing 2 in location 3
@@ -195,7 +195,7 @@ recipe main [
 :(scenario divide_with_decimal_point)
 recipe main [
   # todo: literal floats?
-  1:number <- divide 5:literal, 2:literal
+  1:number <- divide 5, 2
 ]
 +mem: storing 2.5 in location 1
 

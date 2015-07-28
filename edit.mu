@@ -5,11 +5,11 @@ recipe main [
   open-console
   initial-recipe:address:array:character <- restore [recipes.mu]
   initial-sandbox:address:array:character <- new []
-  env:address:programming-environment-data <- new-programming-environment 0:literal/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
+  env:address:programming-environment-data <- new-programming-environment 0/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
   env:address:programming-environment-data <- restore-sandboxes env:address:programming-environment-data
-  render-all 0:literal/screen, env:address:programming-environment-data
-  show-screen 0:literal/screen
-  event-loop 0:literal/screen, 0:literal/console, env:address:programming-environment-data
+  render-all 0/screen, env:address:programming-environment-data
+  show-screen 0/screen
+  event-loop 0/screen, 0/console, env:address:programming-environment-data
   # never gets here
 ]
 
@@ -30,22 +30,22 @@ recipe new-programming-environment [
   height:number <- screen-height screen:address
   # top menu
   result:address:programming-environment-data <- new programming-environment-data:type
-  draw-horizontal screen:address, 0:literal, 0:literal/left, width:number, 32:literal/space, 0:literal/black, 238:literal/grey
-  button-start:number <- subtract width:number, 20:literal
-  button-on-screen?:boolean <- greater-or-equal button-start:number, 0:literal
+  draw-horizontal screen:address, 0, 0/left, width:number, 32/space, 0/black, 238/grey
+  button-start:number <- subtract width:number, 20
+  button-on-screen?:boolean <- greater-or-equal button-start:number, 0
   assert button-on-screen?:boolean, [screen too narrow for menu]
-  move-cursor screen:address, 0:literal/row, button-start:number/column
+  move-cursor screen:address, 0/row, button-start:number/column
   run-button:address:array:character <- new [ run (F4) ]
-  print-string screen:address, run-button:address:array:character, 255:literal/white, 161:literal/reddish
+  print-string screen:address, run-button:address:array:character, 255/white, 161/reddish
   # dotted line down the middle
-  divider:number, _ <- divide-with-remainder width:number, 2:literal
-  draw-vertical screen:address, divider:number, 1:literal/top, height:number, 9482:literal/vertical-dotted
+  divider:number, _ <- divide-with-remainder width:number, 2
+  draw-vertical screen:address, divider:number, 1/top, height:number, 9482/vertical-dotted
   # recipe editor on the left
   recipes:address:address:editor-data <- get-address result:address:programming-environment-data/deref, recipes:offset
-  recipes:address:address:editor-data/deref <- new-editor initial-recipe-contents:address:array:character, screen:address, 0:literal/left, divider:number/right
+  recipes:address:address:editor-data/deref <- new-editor initial-recipe-contents:address:array:character, screen:address, 0/left, divider:number/right
   # sandbox editor on the right
-  new-left:number <- add divider:number, 1:literal
-  new-right:number <- add new-left:number, 5:literal
+  new-left:number <- add divider:number, 1
+  new-right:number <- add new-left:number, 5
   current-sandbox:address:address:editor-data <- get-address result:address:programming-environment-data/deref, current-sandbox:offset
   current-sandbox:address:address:editor-data/deref <- new-editor initial-sandbox-contents:address:array:character, screen:address, new-left:number, width:number
   screen:address <- render-all screen:address, result:address:programming-environment-data
@@ -53,10 +53,10 @@ recipe new-programming-environment [
 ]
 
 scenario editor-initially-prints-string-to-screen [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   run [
     1:address:array:character <- new [abc]
-    new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+    new-editor 1:address:array:character, screen:address, 0/left, 10/right
   ]
   screen-should-contain [
     .          .
@@ -94,7 +94,7 @@ recipe new-editor [
   # no clipping of bounds
   left:number <- next-ingredient
   right:number <- next-ingredient
-  right:number <- subtract right:number, 1:literal
+  right:number <- subtract right:number, 1
   result:address:editor-data <- new editor-data:type
   # initialize screen-related fields
   x:address:number <- get-address result:address:editor-data/deref, left:offset
@@ -103,18 +103,18 @@ recipe new-editor [
   x:address:number/deref <- copy right:number
   # initialize cursor
   x:address:number <- get-address result:address:editor-data/deref, cursor-row:offset
-  x:address:number/deref <- copy 1:literal/top
+  x:address:number/deref <- copy 1/top
   x:address:number <- get-address result:address:editor-data/deref, cursor-column:offset
   x:address:number/deref <- copy left:number
   init:address:address:duplex-list <- get-address result:address:editor-data/deref, data:offset
-  init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
+  init:address:address:duplex-list/deref <- push-duplex 167/§, 0/tail
   y:address:address:duplex-list <- get-address result:address:editor-data/deref, before-cursor:offset
   y:address:address:duplex-list/deref <- copy init:address:address:duplex-list/deref
   # early exit if s is empty
   reply-unless s:address:array:character, result:address:editor-data
   len:number <- length s:address:array:character/deref
   reply-unless len:number, result:address:editor-data
-  idx:number <- copy 0:literal
+  idx:number <- copy 0
   # now we can start appending the rest, character by character
   curr:address:duplex-list <- copy init:address:address:duplex-list/deref
   {
@@ -124,7 +124,7 @@ recipe new-editor [
     insert-duplex c:character, curr:address:duplex-list
     # next iter
     curr:address:duplex-list <- next-duplex curr:address:duplex-list
-    idx:number <- add idx:number, 1:literal
+    idx:number <- add idx:number, 1
     loop
   }
   # initialize cursor to top of screen
@@ -136,9 +136,9 @@ recipe new-editor [
 ]
 
 scenario editor-initializes-without-data [
-  assume-screen 5:literal/width, 3:literal/height
+  assume-screen 5/width, 3/height
   run [
-    1:address:editor-data <- new-editor 0:literal/data, screen:address, 2:literal/left, 5:literal/right
+    1:address:editor-data <- new-editor 0/data, screen:address, 2/left, 5/right
     2:editor-data <- copy 1:address:editor-data/deref
   ]
   memory-should-contain [
@@ -161,20 +161,20 @@ recipe render [
   local-scope
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
-  reply-unless editor:address:editor-data, 1:literal/top, screen:address/same-as-ingredient:0
+  reply-unless editor:address:editor-data, 1/top, screen:address/same-as-ingredient:0
   left:number <- get editor:address:editor-data/deref, left:offset
   screen-height:number <- screen-height screen:address
   right:number <- get editor:address:editor-data/deref, right:offset
   hide-screen screen:address
   # highlight mu code with color
-  color:number <- copy 7:literal/white
-  highlighting-state:number <- copy 0:literal/normal
+  color:number <- copy 7/white
+  highlighting-state:number <- copy 0/normal
   # traversing editor
   curr:address:duplex-list <- get editor:address:editor-data/deref, data:offset
   prev:address:duplex-list <- copy curr:address:duplex-list
   curr:address:duplex-list <- next-duplex curr:address:duplex-list
   # traversing screen
-  row:number <- copy 1:literal/top
+  row:number <- copy 1/top
   column:number <- copy left:number
   cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
@@ -199,7 +199,7 @@ recipe render [
     color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
     {
       # newline? move to left rather than 0
-      newline?:boolean <- equal c:character, 10:literal/newline
+      newline?:boolean <- equal c:character, 10/newline
       break-unless newline?:boolean
       # adjust cursor if necessary
       {
@@ -213,7 +213,7 @@ recipe render [
       # clear rest of line in this window
       clear-line-delimited screen:address, column:number, right:number
       # skip to next line
-      row:number <- add row:number, 1:literal
+      row:number <- add row:number, 1
       column:number <- copy left:number
       move-cursor screen:address, row:number, column:number
       curr:address:duplex-list <- next-duplex curr:address:duplex-list
@@ -226,9 +226,9 @@ recipe render [
       at-right?:boolean <- equal column:number, right:number
       break-unless at-right?:boolean
       # print wrap icon
-      print-character screen:address, 8617:literal/loop-back-to-left, 245:literal/grey
+      print-character screen:address, 8617/loop-back-to-left, 245/grey
       column:number <- copy left:number
-      row:number <- add row:number, 1:literal
+      row:number <- add row:number, 1
       move-cursor screen:address, row:number, column:number
       # don't increment curr
       loop +next-character:label
@@ -236,7 +236,7 @@ recipe render [
     print-character screen:address, c:character, color:number
     curr:address:duplex-list <- next-duplex curr:address:duplex-list
     prev:address:duplex-list <- next-duplex prev:address:duplex-list
-    column:number <- add column:number, 1:literal
+    column:number <- add column:number, 1
     loop
   }
   # is cursor to the right of the last line? move to end
@@ -254,7 +254,7 @@ recipe render [
       too-far-right?:boolean <- greater-than cursor-column:address:number/deref, right:number
       break-unless too-far-right?:boolean
       cursor-column:address:number/deref <- copy left:number
-      cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+      cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1
       above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
       assert above-screen-bottom?:boolean, [unimplemented: wrapping cursor past bottom of screen]
     }
@@ -277,12 +277,12 @@ recipe render-string [
   right:number <- next-ingredient
   color:number <- next-ingredient
   row:number <- next-ingredient
-  row:number <- add row:number, 1:literal
+  row:number <- add row:number, 1
   reply-unless s:address:array:character, row:number/same-as-ingredient:5, screen:address/same-as-ingredient:0
   column:number <- copy left:number
   move-cursor screen:address, row:number, column:number
   screen-height:number <- screen-height screen:address
-  i:number <- copy 0:literal
+  i:number <- copy 0
   len:number <- length s:address:array:character/deref
   {
     +next-character
@@ -296,40 +296,40 @@ recipe render-string [
       at-right?:boolean <- equal column:number, right:number
       break-unless at-right?:boolean
       # print wrap icon
-      print-character screen:address, 8617:literal/loop-back-to-left, 245:literal/grey
+      print-character screen:address, 8617/loop-back-to-left, 245/grey
       column:number <- copy left:number
-      row:number <- add row:number, 1:literal
+      row:number <- add row:number, 1
       move-cursor screen:address, row:number, column:number
       loop +next-character:label  # retry i
     }
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     {
       # newline? move to left rather than 0
-      newline?:boolean <- equal c:character, 10:literal/newline
+      newline?:boolean <- equal c:character, 10/newline
       break-unless newline?:boolean
       # clear rest of line in this window
       {
         done?:boolean <- greater-than column:number, right:number
         break-if done?:boolean
-        print-character screen:address, 32:literal/space
-        column:number <- add column:number, 1:literal
+        print-character screen:address, 32/space
+        column:number <- add column:number, 1
         loop
       }
-      row:number <- add row:number, 1:literal
+      row:number <- add row:number, 1
       column:number <- copy left:number
       move-cursor screen:address, row:number, column:number
       loop +next-character:label
     }
     print-character screen:address, c:character, color:number
-    column:number <- add column:number, 1:literal
+    column:number <- add column:number, 1
     loop
   }
   {
     # clear rest of current line
     line-done?:boolean <- greater-than column:number, right:number
     break-if line-done?:boolean
-    print-character screen:address, 32:literal/space
-    column:number <- add column:number, 1:literal
+    print-character screen:address, 32/space
+    column:number <- add column:number, 1
     loop
   }
   reply row:number/same-as-ingredient:5, screen:address/same-as-ingredient:0
@@ -345,23 +345,23 @@ recipe render-screen [
   left:number <- next-ingredient
   right:number <- next-ingredient
   row:number <- next-ingredient
-  row:number <- add row:number, 1:literal
+  row:number <- add row:number, 1
   reply-unless s:address:screen, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
   # print 'screen:'
   header:address:array:character <- new [screen:]
-  row:number <- subtract row:number, 1:literal  # compensate for render-string below
-  row:number <- render-string screen:address, header:address:array:character, left:number, right:number, 245:literal/grey, row:number
+  row:number <- subtract row:number, 1  # compensate for render-string below
+  row:number <- render-string screen:address, header:address:array:character, left:number, right:number, 245/grey, row:number
   # newline
-  row:number <- add row:number, 1:literal
+  row:number <- add row:number, 1
   move-cursor screen:address, row:number, left:number
   # start printing s
   column:number <- copy left:number
   s-width:number <- screen-width s:address:screen
   s-height:number <- screen-height s:address:screen
   buf:address:array:screen-cell <- get s:address:screen/deref, data:offset
-  stop-printing:number <- add left:number, s-width:number, 3:literal
+  stop-printing:number <- add left:number, s-width:number, 3
   max-column:number <- min stop-printing:number, right:number
-  i:number <- copy 0:literal
+  i:number <- copy 0
   len:number <- length buf:address:array:screen-cell/deref
   screen-height:number <- screen-height screen:address
   {
@@ -372,33 +372,33 @@ recipe render-screen [
     column:number <- copy left:number
     move-cursor screen:address, row:number, column:number
     # initial leader for each row: two spaces and a '.'
-    print-character screen:address, 32:literal/space, 245:literal/grey
-    print-character screen:address, 32:literal/space, 245:literal/grey
-    print-character screen:address, 46:literal/full-stop, 245:literal/grey
-    column:number <- add left:number, 3:literal
+    print-character screen:address, 32/space, 245/grey
+    print-character screen:address, 32/space, 245/grey
+    print-character screen:address, 46/full-stop, 245/grey
+    column:number <- add left:number, 3
     {
       # print row
       row-done?:boolean <- greater-or-equal column:number, max-column:number
       break-if row-done?:boolean
       curr:screen-cell <- index buf:address:array:screen-cell/deref, i:number
       c:character <- get curr:screen-cell, contents:offset
-      print-character screen:address, c:character, 245:literal/grey
-      column:number <- add column:number, 1:literal
-      i:number <- add i:number, 1:literal
+      print-character screen:address, c:character, 245/grey
+      column:number <- add column:number, 1
+      i:number <- add i:number, 1
       loop
     }
     # print final '.'
-    print-character screen:address, 46:literal/full-stop, 245:literal/grey
-    column:number <- add column:number, 1:literal
+    print-character screen:address, 46/full-stop, 245/grey
+    column:number <- add column:number, 1
     {
       # clear rest of current line
       line-done?:boolean <- greater-than column:number, right:number
       break-if line-done?:boolean
-      print-character screen:address, 32:literal/space
-      column:number <- add column:number, 1:literal
+      print-character screen:address, 32/space
+      column:number <- add column:number, 1
       loop
     }
-    row:number <- add row:number, 1:literal
+    row:number <- add row:number, 1
     loop
   }
   reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
@@ -413,18 +413,18 @@ recipe clear-line-delimited [
   {
     done?:boolean <- greater-than column:number, right:number
     break-if done?:boolean
-    print-character screen:address, 32:literal/space
-    column:number <- add column:number, 1:literal
+    print-character screen:address, 32/space
+    column:number <- add column:number, 1
     loop
   }
 ]
 
 scenario editor-initially-prints-multiple-lines [
-  assume-screen 5:literal/width, 5:literal/height
+  assume-screen 5/width, 5/height
   run [
     s:address:array:character <- new [abc
 def]
-    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -435,10 +435,10 @@ def]
 ]
 
 scenario editor-initially-handles-offsets [
-  assume-screen 5:literal/width, 5:literal/height
+  assume-screen 5/width, 5/height
   run [
     s:address:array:character <- new [abc]
-    new-editor s:address:array:character, screen:address, 1:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -448,11 +448,11 @@ scenario editor-initially-handles-offsets [
 ]
 
 scenario editor-initially-prints-multiple-lines-at-offset [
-  assume-screen 5:literal/width, 5:literal/height
+  assume-screen 5/width, 5/height
   run [
     s:address:array:character <- new [abc
 def]
-    new-editor s:address:array:character, screen:address, 1:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -463,10 +463,10 @@ def]
 ]
 
 scenario editor-initially-wraps-long-lines [
-  assume-screen 5:literal/width, 5:literal/height
+  assume-screen 5/width, 5/height
   run [
     s:address:array:character <- new [abc def]
-    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -474,7 +474,7 @@ scenario editor-initially-wraps-long-lines [
     .def  .
     .     .
   ]
-  screen-should-contain-in-color 245:literal/grey [
+  screen-should-contain-in-color 245/grey [
     .     .
     .    ↩.
     .     .
@@ -483,10 +483,10 @@ scenario editor-initially-wraps-long-lines [
 ]
 
 scenario editor-initially-wraps-barely-long-lines [
-  assume-screen 5:literal/width, 5:literal/height
+  assume-screen 5/width, 5/height
   run [
     s:address:array:character <- new [abcde]
-    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 0/left, 5/right
   ]
   # still wrap, even though the line would fit. We need room to click on the
   # end of the line
@@ -496,7 +496,7 @@ scenario editor-initially-wraps-barely-long-lines [
     .e    .
     .     .
   ]
-  screen-should-contain-in-color 245:literal/grey [
+  screen-should-contain-in-color 245/grey [
     .     .
     .    ↩.
     .     .
@@ -505,10 +505,10 @@ scenario editor-initially-wraps-barely-long-lines [
 ]
 
 scenario editor-initializes-empty-text [
-  assume-screen 5:literal/width, 5:literal/height
+  assume-screen 5/width, 5/height
   run [
     1:address:array:character <- new []
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+    2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
     3:number <- get 2:address:editor-data/deref, cursor-row:offset
     4:number <- get 2:address:editor-data/deref, cursor-column:offset
   ]
@@ -526,12 +526,12 @@ scenario editor-initializes-empty-text [
 ## highlighting mu code
 
 scenario render-colors-comments [
-  assume-screen 5:literal/width, 5:literal/height
+  assume-screen 5/width, 5/height
   run [
     s:address:array:character <- new [abc
 # de
 f]
-    new-editor s:address:array:character, screen:address, 0:literal/left, 5:literal/right
+    new-editor s:address:array:character, screen:address, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -540,14 +540,14 @@ f]
     .f    .
     .     .
   ]
-  screen-should-contain-in-color 12:literal/lightblue, [
+  screen-should-contain-in-color 12/lightblue, [
     .     .
     .     .
     .# de .
     .     .
     .     .
   ]
-  screen-should-contain-in-color 7:literal/white, [
+  screen-should-contain-in-color 7/white, [
     .     .
     .abc  .
     .     .
@@ -562,42 +562,42 @@ recipe get-color [
   color:number <- next-ingredient
   highlighting-state:number <- next-ingredient
   c:character <- next-ingredient
-  color-is-white?:boolean <- equal color:number, 7:literal/white
-#?   $print [character: ], c:character, 10:literal/newline #? 1
+  color-is-white?:boolean <- equal color:number, 7/white
+#?   $print [character: ], c:character, 10/newline #? 1
   # if color is white and next character is '#', switch color to blue
   {
     break-unless color-is-white?:boolean
-    starting-comment?:boolean <- equal c:character, 35:literal/#
+    starting-comment?:boolean <- equal c:character, 35/#
     break-unless starting-comment?:boolean
-#?     $print [switch color back to blue], 10:literal/newline #? 1
-    color:number <- copy 12:literal/lightblue
+#?     $print [switch color back to blue], 10/newline #? 1
+    color:number <- copy 12/lightblue
     jump +exit:label
   }
   # if color is blue and next character is newline, switch color to white
   {
-    color-is-blue?:boolean <- equal color:number, 12:literal/lightblue
+    color-is-blue?:boolean <- equal color:number, 12/lightblue
     break-unless color-is-blue?:boolean
-    ending-comment?:boolean <- equal c:character, 10:literal/newline
+    ending-comment?:boolean <- equal c:character, 10/newline
     break-unless ending-comment?:boolean
-#?     $print [switch color back to white], 10:literal/newline #? 1
-    color:number <- copy 7:literal/white
+#?     $print [switch color back to white], 10/newline #? 1
+    color:number <- copy 7/white
     jump +exit:label
   }
   # if color is white (no comments) and next character is '<', switch color to red
   {
     break-unless color-is-white?:boolean
-    starting-assignment?:boolean <- equal c:character, 60:literal/<
+    starting-assignment?:boolean <- equal c:character, 60/<
     break-unless starting-assignment?:boolean
-    color:number <- copy 1:literal/red
+    color:number <- copy 1/red
     jump +exit:label
   }
   # if color is red and next character is space, switch color to white
   {
-    color-is-red?:boolean <- equal color:number, 1:literal/red
+    color-is-red?:boolean <- equal color:number, 1/red
     break-unless color-is-red?:boolean
-    ending-assignment?:boolean <- equal c:character, 32:literal/space
+    ending-assignment?:boolean <- equal c:character, 32/space
     break-unless ending-assignment?:boolean
-    color:number <- copy 7:literal/white
+    color:number <- copy 7/white
     jump +exit:label
   }
   # otherwise no change
@@ -606,12 +606,12 @@ recipe get-color [
 ]
 
 scenario render-colors-assignment [
-  assume-screen 8:literal/width, 5:literal/height
+  assume-screen 8/width, 5/height
   run [
     s:address:array:character <- new [abc
 d <- e
 f]
-    new-editor s:address:array:character, screen:address, 0:literal/left, 8:literal/right
+    new-editor s:address:array:character, screen:address, 0/left, 8/right
   ]
   screen-should-contain [
     .        .
@@ -620,7 +620,7 @@ f]
     .f       .
     .        .
   ]
-  screen-should-contain-in-color 1:literal/red, [
+  screen-should-contain-in-color 1/red, [
     .        .
     .        .
     .  <-    .
@@ -652,7 +652,7 @@ recipe event-loop [
       break-unless k:address:number
       # F4? load all code and run all sandboxes.
       {
-        do-run?:boolean <- equal k:address:number/deref, 65532:literal/F4
+        do-run?:boolean <- equal k:address:number/deref, 65532/F4
         break-unless do-run?:boolean
         run-sandboxes env:address:programming-environment-data
         # F4 might update warnings and results on both sides
@@ -667,7 +667,7 @@ recipe event-loop [
       break-unless c:address:character
       # ctrl-n? - switch focus
       {
-        ctrl-n?:boolean <- equal c:address:character/deref, 14:literal/ctrl-n
+        ctrl-n?:boolean <- equal c:address:character/deref, 14/ctrl-n
         break-unless ctrl-n?:boolean
         sandbox-in-focus?:address:boolean/deref <- not sandbox-in-focus?:address:boolean/deref
         update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
@@ -682,14 +682,14 @@ recipe event-loop [
       # ignore all but 'left-click' events for now
       # todo: test this
       touch-type:number <- get t:address:touch-event/deref, type:offset
-      is-left-click?:boolean <- equal touch-type:number, 65513:literal/mouse-left
+      is-left-click?:boolean <- equal touch-type:number, 65513/mouse-left
       loop-unless is-left-click?:boolean, +next-event:label
       # on a sandbox delete icon? process delete
       {
         was-delete?:boolean <- delete-sandbox t:address:touch-event/deref, env:address:programming-environment-data
         break-unless was-delete?:boolean
 #?         trace [app], [delete clicked] #? 1
-        screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data, 1:literal/clear
+        screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data, 1/clear
         update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/deref
         show-screen screen:address
         loop +next-event:label
@@ -751,7 +751,7 @@ recipe editor-event-loop [
     # clear next line, in case we just processed a backspace
     left:number <- get editor:address:editor-data/deref, left:offset
     right:number <- get editor:address:editor-data/deref, right:offset
-    row:number <- add row:number, 1:literal
+    row:number <- add row:number, 1
     move-cursor screen:address, row:number, left:number
     clear-line-delimited screen:address, left:number, right:number
     loop
@@ -772,45 +772,45 @@ recipe handle-event [
     ## check for special characters
     # backspace - delete character before cursor
     {
-      backspace?:boolean <- equal c:address:character/deref, 8:literal/backspace
+      backspace?:boolean <- equal c:address:character/deref, 8/backspace
       break-unless backspace?:boolean
       delete-before-cursor editor:address:editor-data
       reply
     }
     # ctrl-a - move cursor to start of line
     {
-      ctrl-a?:boolean <- equal c:address:character/deref, 1:literal/ctrl-a
+      ctrl-a?:boolean <- equal c:address:character/deref, 1/ctrl-a
       break-unless ctrl-a?:boolean
       move-to-start-of-line editor:address:editor-data
       reply
     }
     # ctrl-e - move cursor to end of line
     {
-      ctrl-e?:boolean <- equal c:address:character/deref, 5:literal/ctrl-e
+      ctrl-e?:boolean <- equal c:address:character/deref, 5/ctrl-e
       break-unless ctrl-e?:boolean
       move-to-end-of-line editor:address:editor-data
       reply
     }
     # ctrl-u - delete until start of line (excluding cursor)
     {
-      ctrl-u?:boolean <- equal c:address:character/deref, 21:literal/ctrl-u
+      ctrl-u?:boolean <- equal c:address:character/deref, 21/ctrl-u
       break-unless ctrl-u?:boolean
       delete-to-start-of-line editor:address:editor-data
       reply
     }
     # ctrl-k - delete until end of line (including cursor)
     {
-      ctrl-k?:boolean <- equal c:address:character/deref, 11:literal/ctrl-k
+      ctrl-k?:boolean <- equal c:address:character/deref, 11/ctrl-k
       break-unless ctrl-k?:boolean
       delete-to-end-of-line editor:address:editor-data
       reply
     }
     # tab - insert two spaces
     {
-      tab?:boolean <- equal c:address:character/deref, 9:literal/tab
+      tab?:boolean <- equal c:address:character/deref, 9/tab
       break-unless tab?:boolean
-      insert-at-cursor editor:address:editor-data, 32:literal/space, screen:address
-      insert-at-cursor editor:address:editor-data, 32:literal/space, screen:address
+      insert-at-cursor editor:address:editor-data, 32/space, screen:address
+      insert-at-cursor editor:address:editor-data, 32/space, screen:address
       reply
     }
     # otherwise type it in
@@ -830,7 +830,7 @@ recipe handle-event [
   # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'.
   # right arrow
   {
-    move-to-next-character?:boolean <- equal k:address:number/deref, 65514:literal/right-arrow
+    move-to-next-character?:boolean <- equal k:address:number/deref, 65514/right-arrow
     break-unless move-to-next-character?:boolean
     # if not at end of text
     old-cursor:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
@@ -840,9 +840,9 @@ recipe handle-event [
     # if crossed a newline, move cursor to start of next row
     {
       old-cursor-character:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
-      was-at-newline?:boolean <- equal old-cursor-character:character, 10:literal/newline
+      was-at-newline?:boolean <- equal old-cursor-character:character, 10/newline
       break-unless was-at-newline?:boolean
-      cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+      cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1
       cursor-column:address:number/deref <- copy left:number
       # todo: what happens when cursor is too far down?
       screen-height:number <- screen-height screen:address
@@ -853,16 +853,16 @@ recipe handle-event [
     # if the line wraps, move cursor to start of next row
     {
       # if we're at the column just before the wrap indicator
-      wrap-column:number <- subtract right:number, 1:literal
+      wrap-column:number <- subtract right:number, 1
       at-wrap?:boolean <- equal cursor-column:address:number/deref, wrap-column:number
       break-unless at-wrap?:boolean
       # and if next character isn't newline
       new-cursor:address:duplex-list <- next-duplex old-cursor:address:duplex-list
       break-unless new-cursor:address:duplex-list
       next-character:character <- get new-cursor:address:duplex-list/deref, value:offset
-      newline?:boolean <- equal next-character:character, 10:literal/newline
+      newline?:boolean <- equal next-character:character, 10/newline
       break-if newline?:boolean
-      cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+      cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1
       cursor-column:address:number/deref <- copy left:number
       # todo: what happens when cursor is too far down?
       above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
@@ -870,11 +870,11 @@ recipe handle-event [
       reply
     }
     # otherwise move cursor one character right
-    cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+    cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1
   }
   # left arrow
   {
-    move-to-previous-character?:boolean <- equal k:address:number/deref, 65515:literal/left-arrow
+    move-to-previous-character?:boolean <- equal k:address:number/deref, 65515/left-arrow
     break-unless move-to-previous-character?:boolean
 #?     trace [app], [left arrow] #? 1
     # if not at start of text (before-cursor at § sentinel)
@@ -882,10 +882,10 @@ recipe handle-event [
     break-unless prev:address:duplex-list
     # if cursor not at left margin, move one character left
     {
-      at-left-margin?:boolean <- equal cursor-column:address:number/deref, 0:literal
+      at-left-margin?:boolean <- equal cursor-column:address:number/deref, 0
       break-if at-left-margin?:boolean
 #?       trace [app], [decrementing] #? 1
-      cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
+      cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1
       reply
     }
     # if at left margin, there's guaranteed to be a previous line, since we're
@@ -893,54 +893,54 @@ recipe handle-event [
     {
       # if before-cursor is at newline, figure out how long the previous line is
       prevc:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
-      previous-character-is-newline?:boolean <- equal prevc:character, 10:literal/newline
+      previous-character-is-newline?:boolean <- equal prevc:character, 10/newline
       break-unless previous-character-is-newline?:boolean
 #?       trace [app], [previous line] #? 1
       # compute length of previous line
       end-of-line:number <- previous-line-length before-cursor:address:address:duplex-list/deref, d:address:duplex-list
-      cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
+      cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1
       cursor-column:address:number/deref <- copy end-of-line:number
       reply
     }
     # if before-cursor is not at newline, we're just at a wrapped line
     assert cursor-row:address:number/deref, [unimplemented: moving cursor above top of screen]
-    cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
-    cursor-column:address:number/deref <- subtract right:number, 1:literal  # leave room for wrap icon
+    cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1
+    cursor-column:address:number/deref <- subtract right:number, 1  # leave room for wrap icon
   }
   # down arrow
   {
-    move-to-next-line?:boolean <- equal k:address:number/deref, 65516:literal/down-arrow
+    move-to-next-line?:boolean <- equal k:address:number/deref, 65516/down-arrow
     break-unless move-to-next-line?:boolean
     # todo: support scrolling
     already-at-bottom?:boolean <- greater-or-equal cursor-row:address:number/deref, screen-height:number
     break-if already-at-bottom?:boolean
 #?     $print [moving down
 #? ] #? 1
-    cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+    cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1
     # that's it; render will adjust cursor-column as necessary
   }
   # up arrow
   {
-    move-to-previous-line?:boolean <- equal k:address:number/deref, 65517:literal/up-arrow
+    move-to-previous-line?:boolean <- equal k:address:number/deref, 65517/up-arrow
     break-unless move-to-previous-line?:boolean
     # todo: support scrolling
-    already-at-top?:boolean <- lesser-or-equal cursor-row:address:number/deref, 1:literal/top
+    already-at-top?:boolean <- lesser-or-equal cursor-row:address:number/deref, 1/top
     break-if already-at-top?:boolean
 #?     $print [moving up
 #? ] #? 1
-    cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1:literal
+    cursor-row:address:number/deref <- subtract cursor-row:address:number/deref, 1
     # that's it; render will adjust cursor-column as necessary
   }
   # home
   {
-    home?:boolean <- equal k:address:number/deref, 65521:literal/home
+    home?:boolean <- equal k:address:number/deref, 65521/home
     break-unless home?:boolean
     move-to-start-of-line editor:address:editor-data
     reply
   }
   # end
   {
-    end?:boolean <- equal k:address:number/deref, 65520:literal/end
+    end?:boolean <- equal k:address:number/deref, 65520/end
     break-unless end?:boolean
     move-to-end-of-line editor:address:editor-data
     reply
@@ -954,21 +954,21 @@ recipe move-cursor-in-editor [
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   t:touch-event <- next-ingredient
-  reply-unless editor:address:editor-data, 0:literal/false
+  reply-unless editor:address:editor-data, 0/false
   click-column:number <- get t:touch-event, column:offset
   left:number <- get editor:address:editor-data/deref, left:offset
   too-far-left?:boolean <- lesser-than click-column:number, left:number
-  reply-if too-far-left?:boolean, 0:literal/false
+  reply-if too-far-left?:boolean, 0/false
   right:number <- get editor:address:editor-data/deref, right:offset
   too-far-right?:boolean <- greater-than click-column:number, right:number
-  reply-if too-far-right?:boolean, 0:literal/false
+  reply-if too-far-right?:boolean, 0/false
   # update cursor
   cursor-row:address:number <- get-address editor:address:editor-data/deref, cursor-row:offset
   cursor-row:address:number/deref <- get t:touch-event, row:offset
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
   cursor-column:address:number/deref <- get t:touch-event, column:offset
   # gain focus
-  reply 1:literal/true
+  reply 1/true
 ]
 
 recipe insert-at-cursor [
@@ -976,7 +976,7 @@ recipe insert-at-cursor [
   editor:address:editor-data <- next-ingredient
   c:character <- next-ingredient
   screen:address <- next-ingredient
-#?   $print [insert ], c:character, 10:literal/newline #? 1
+#?   $print [insert ], c:character, 10/newline #? 1
   before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/deref, before-cursor:offset
   insert-duplex c:character, before-cursor:address:address:duplex-list/deref
   before-cursor:address:address:duplex-list/deref <- next-duplex before-cursor:address:address:duplex-list/deref
@@ -987,22 +987,22 @@ recipe insert-at-cursor [
   # update cursor: if newline, move cursor to start of next line
   # todo: bottom of screen
   {
-    newline?:boolean <- equal c:character, 10:literal/newline
+    newline?:boolean <- equal c:character, 10/newline
     break-unless newline?:boolean
-    cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+    cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1
     cursor-column:address:number/deref <- copy left:number
     # indent if necessary
-#?     $print [computing indent], 10:literal/newline #? 1
+#?     $print [computing indent], 10/newline #? 1
     d:address:duplex-list <- get editor:address:editor-data/deref, data:offset
     end-of-previous-line:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/deref
     indent:number <- line-indent end-of-previous-line:address:duplex-list, d:address:duplex-list
-#?     $print indent:number, 10:literal/newline #? 1
-    i:number <- copy 0:literal
+#?     $print indent:number, 10/newline #? 1
+    i:number <- copy 0
     {
       indent-done?:boolean <- greater-or-equal i:number, indent:number
       break-if indent-done?:boolean
-      insert-at-cursor editor:address:editor-data, 32:literal/space, screen:address
-      i:number <- add i:number, 1:literal
+      insert-at-cursor editor:address:editor-data, 32/space, screen:address
+      i:number <- add i:number, 1
       loop
     }
     reply
@@ -1010,14 +1010,14 @@ recipe insert-at-cursor [
   # if the line wraps at the cursor, move cursor to start of next row
   {
     # if we're at the column just before the wrap indicator
-    wrap-column:number <- subtract right:number, 1:literal
-#?     $print [wrap? ], cursor-column:address:number/deref, [ vs ], wrap-column:number, 10:literal/newline
+    wrap-column:number <- subtract right:number, 1
+#?     $print [wrap? ], cursor-column:address:number/deref, [ vs ], wrap-column:number, 10/newline
     at-wrap?:boolean <- greater-or-equal cursor-column:address:number/deref, wrap-column:number
     break-unless at-wrap?:boolean
 #?     $print [wrap!
 #? ] #? 1
     cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, wrap-column:number
-    cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1:literal
+    cursor-row:address:number/deref <- add cursor-row:address:number/deref, 1
     # todo: what happens when cursor is too far down?
     screen-height:number <- screen-height screen:address
     above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/deref, screen-height:number
@@ -1027,7 +1027,7 @@ recipe insert-at-cursor [
     reply
   }
   # otherwise move cursor right
-  cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+  cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1
 ]
 
 recipe delete-before-cursor [
@@ -1044,8 +1044,8 @@ recipe delete-before-cursor [
   # update cursor
   before-cursor:address:address:duplex-list/deref <- copy prev:address:duplex-list
   cursor-column:address:number <- get-address editor:address:editor-data/deref, cursor-column:offset
-  cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1:literal
-#?   $print [delete-before-cursor: ], cursor-column:address:number/deref, 10:literal/newline
+  cursor-column:address:number/deref <- subtract cursor-column:address:number/deref, 1
+#?   $print [delete-before-cursor: ], cursor-column:address:number/deref, 10/newline
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -1054,7 +1054,7 @@ recipe previous-line-length [
   local-scope
   curr:address:duplex-list <- next-ingredient
   start:address:duplex-list <- next-ingredient
-  result:number <- copy 0:literal
+  result:number <- copy 0
   reply-unless curr:address:duplex-list, result:number
   at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
   reply-if at-start?:boolean, result:number
@@ -1064,9 +1064,9 @@ recipe previous-line-length [
     at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
     break-if at-start?:boolean
     c:character <- get curr:address:duplex-list/deref, value:offset
-    at-newline?:boolean <- equal c:character 10:literal/newline
+    at-newline?:boolean <- equal c:character 10/newline
     break-if at-newline?:boolean
-    result:number <- add result:number, 1:literal
+    result:number <- add result:number, 1
     loop
   }
   reply result:number
@@ -1078,33 +1078,33 @@ recipe line-indent [
   local-scope
   curr:address:duplex-list <- next-ingredient
   start:address:duplex-list <- next-ingredient
-  result:number <- copy 0:literal
+  result:number <- copy 0
   reply-unless curr:address:duplex-list, result:number
-#?   $print [a0], 10:literal/newline #? 1
+#?   $print [a0], 10/newline #? 1
   at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
   reply-if at-start?:boolean, result:number
-#?   $print [a1], 10:literal/newline #? 1
+#?   $print [a1], 10/newline #? 1
   {
     curr:address:duplex-list <- prev-duplex curr:address:duplex-list
     break-unless curr:address:duplex-list
-#?   $print [a2], 10:literal/newline #? 1
+#?   $print [a2], 10/newline #? 1
     at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
     break-if at-start?:boolean
-#?   $print [a3], 10:literal/newline #? 1
+#?   $print [a3], 10/newline #? 1
     c:character <- get curr:address:duplex-list/deref, value:offset
-    at-newline?:boolean <- equal c:character, 10:literal/newline
+    at-newline?:boolean <- equal c:character, 10/newline
     break-if at-newline?:boolean
-#?   $print [a4], 10:literal/newline #? 1
+#?   $print [a4], 10/newline #? 1
     # if c is a space, increment result
-    is-space?:boolean <- equal c:character, 32:literal/space
+    is-space?:boolean <- equal c:character, 32/space
     {
       break-unless is-space?:boolean
-      result:number <- add result:number, 1:literal
+      result:number <- add result:number, 1
     }
     # if c is not a space, reset result
     {
       break-if is-space?:boolean
-      result:number <- copy 0:literal
+      result:number <- copy 0
     }
     loop
   }
@@ -1126,7 +1126,7 @@ recipe move-to-start-of-line [
     at-start-of-text?:boolean <- equal before-cursor:address:address:duplex-list/deref, init:address:duplex-list
     break-if at-start-of-text?:boolean
     prev:character <- get before-cursor:address:address:duplex-list/deref/deref, value:offset
-    at-start-of-line?:boolean <- equal prev:character, 10:literal/newline
+    at-start-of-line?:boolean <- equal prev:character, 10/newline
     break-if at-start-of-line?:boolean
     before-cursor:address:address:duplex-list/deref <- prev-duplex before-cursor:address:address:duplex-list/deref
     assert before-cursor:address:address:duplex-list/deref, [move-to-start-of-line tried to move before start of text]
@@ -1144,14 +1144,14 @@ recipe move-to-end-of-line [
     next:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/deref
     break-unless next:address:duplex-list  # end of text
     nextc:character <- get next:address:duplex-list/deref, value:offset
-    at-end-of-line?:boolean <- equal nextc:character, 10:literal/newline
+    at-end-of-line?:boolean <- equal nextc:character, 10/newline
     break-if at-end-of-line?:boolean
     before-cursor:address:address:duplex-list/deref <- copy next:address:duplex-list
-    cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+    cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1
     loop
   }
   # move one past end of line
-  cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1:literal
+  cursor-column:address:number/deref <- add cursor-column:address:number/deref, 1
 ]
 
 recipe delete-to-start-of-line [
@@ -1166,7 +1166,7 @@ recipe delete-to-start-of-line [
     at-start-of-text?:boolean <- equal start:address:duplex-list, init:address:duplex-list
     break-if at-start-of-text?:boolean
     curr:character <- get start:address:duplex-list/deref, value:offset
-    at-start-of-line?:boolean <- equal curr:character, 10:literal/newline
+    at-start-of-line?:boolean <- equal curr:character, 10/newline
     break-if at-start-of-line?:boolean
     start:address:duplex-list <- prev-duplex start:address:duplex-list
     assert start:address:duplex-list, [delete-to-start-of-line tried to move before start of text]
@@ -1191,10 +1191,10 @@ recipe delete-to-end-of-line [
   start:address:duplex-list <- get editor:address:editor-data/deref, before-cursor:offset
   end:address:duplex-list <- next-duplex start:address:duplex-list
   {
-    at-end-of-text?:boolean <- equal end:address:duplex-list, 0:literal/null
+    at-end-of-text?:boolean <- equal end:address:duplex-list, 0/null
     break-if at-end-of-text?:boolean
     curr:character <- get end:address:duplex-list/deref, value:offset
-    at-end-of-line?:boolean <- equal curr:character, 10:literal/newline
+    at-end-of-line?:boolean <- equal curr:character, 10/newline
     break-if at-end-of-line?:boolean
     end:address:duplex-list <- next-duplex end:address:duplex-list
     loop
@@ -1213,8 +1213,8 @@ recipe render-all [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-  screen:address <- render-recipes screen:address, env:address:programming-environment-data, 1:literal/clear-below
-  screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data, 1:literal/clear-below
+  screen:address <- render-recipes screen:address, env:address:programming-environment-data, 1/clear-below
+  screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data, 1/clear-below
   recipes:address:editor-data <- get env:address:programming-environment-data/deref, recipes:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   sandbox-in-focus?:boolean <- get env:address:programming-environment-data/deref, sandbox-in-focus?:offset
@@ -1261,17 +1261,17 @@ recipe render-recipes [
   {
     # print any warnings
     break-unless recipe-warnings:address:array:character
-    row:number, screen:address <- render-string screen:address, recipe-warnings:address:array:character, left:number, right:number, 1:literal/red, row:number
+    row:number, screen:address <- render-string screen:address, recipe-warnings:address:array:character, left:number, right:number, 1/red, row:number
   }
   {
     # no warnings? move to next line
     break-if recipe-warnings:address:array:character
-    row:number <- add row:number, 1:literal
+    row:number <- add row:number, 1
   }
   # draw dotted line after recipes
-  draw-horizontal screen:address, row:number, left:number, right:number, 9480:literal/horizontal-dotted
+  draw-horizontal screen:address, row:number, left:number, right:number, 9480/horizontal-dotted
   # clear next line, in case we just processed a backspace
-  row:number <- add row:number, 1:literal
+  row:number <- add row:number, 1
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
   # clear rest of screen in this column, if requested
@@ -1282,7 +1282,7 @@ recipe render-recipes [
     break-if at-bottom-of-screen?:boolean
     move-cursor screen:address, row:number, left:number
     clear-line-delimited screen:address, left:number, right:number
-    row:number <- add row:number, 1:literal
+    row:number <- add row:number, 1
     loop
   }
   reply screen:address/same-as-ingredient:0
@@ -1312,9 +1312,9 @@ recipe update-cursor [
 ]
 
 scenario editor-handles-empty-event-queue [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console []
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
@@ -1327,9 +1327,9 @@ scenario editor-handles-empty-event-queue [
 ]
 
 scenario editor-handles-mouse-clicks [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 1, 1  # on the 'b'
   ]
@@ -1350,9 +1350,9 @@ scenario editor-handles-mouse-clicks [
 ]
 
 scenario editor-handles-mouse-clicks-outside-text [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 1, 7  # last line, to the right of text
   ]
@@ -1368,10 +1368,10 @@ scenario editor-handles-mouse-clicks-outside-text [
 ]
 
 scenario editor-handles-mouse-clicks-outside-text-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 1, 7  # interior line, to the right of text
   ]
@@ -1387,10 +1387,10 @@ def]
 ]
 
 scenario editor-handles-mouse-clicks-outside-text-3 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 3, 7  # below text
   ]
@@ -1406,10 +1406,10 @@ def]
 ]
 
 scenario editor-handles-mouse-clicks-outside-column [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
   # editor occupies only left half of screen
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
     # click on right half of screen
     left-click 3, 8
@@ -1431,9 +1431,9 @@ scenario editor-handles-mouse-clicks-outside-column [
 ]
 
 scenario editor-inserts-characters-into-empty-editor [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
     type [abc]
   ]
@@ -1448,9 +1448,9 @@ scenario editor-inserts-characters-into-empty-editor [
 ]
 
 scenario editor-inserts-characters-at-cursor [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     type [0]
     left-click 1, 2
@@ -1467,9 +1467,9 @@ scenario editor-inserts-characters-at-cursor [
 ]
 
 scenario editor-inserts-characters-at-cursor-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 1, 5  # right of last line
     type [d]  # should append
@@ -1485,9 +1485,9 @@ scenario editor-inserts-characters-at-cursor-2 [
 ]
 
 scenario editor-inserts-characters-at-cursor-3 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 3, 5  # below all text
     type [d]  # should append
@@ -1503,10 +1503,10 @@ scenario editor-inserts-characters-at-cursor-3 [
 ]
 
 scenario editor-inserts-characters-at-cursor-4 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 3, 5  # below all text
     type [e]  # should append
@@ -1523,10 +1523,10 @@ d]
 ]
 
 scenario editor-inserts-characters-at-cursor-5 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 3, 5  # below all text
     type [ef]  # should append multiple characters in order
@@ -1543,9 +1543,9 @@ d]
 ]
 
 scenario editor-wraps-line-on-insert [
-  assume-screen 5:literal/width, 5:literal/height
+  assume-screen 5/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   # type a letter
   assume-console [
     type [e]
@@ -1577,9 +1577,9 @@ scenario editor-wraps-line-on-insert [
 ]
 
 scenario editor-moves-cursor-after-inserting-characters [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [ab]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
     type [01]
   ]
@@ -1594,9 +1594,9 @@ scenario editor-moves-cursor-after-inserting-characters [
 ]
 
 scenario editor-wraps-cursor-after-inserting-characters [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abcde]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
     left-click 1, 4  # line is full; no wrap icon yet
     type [f]
@@ -1619,9 +1619,9 @@ scenario editor-wraps-cursor-after-inserting-characters [
 ]
 
 scenario editor-wraps-cursor-after-inserting-characters-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abcde]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
     left-click 1, 3  # right before the wrap icon
     type [f]
@@ -1644,9 +1644,9 @@ scenario editor-wraps-cursor-after-inserting-characters-2 [
 ]
 
 scenario editor-moves-cursor-down-after-inserting-newline [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     type [0
 1]
@@ -1663,9 +1663,9 @@ scenario editor-moves-cursor-down-after-inserting-newline [
 ]
 
 scenario editor-moves-cursor-down-after-inserting-newline-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 1:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 1/left, 10/right
   assume-console [
     type [0
 1]
@@ -1682,9 +1682,9 @@ scenario editor-moves-cursor-down-after-inserting-newline-2 [
 ]
 
 scenario editor-clears-previous-line-completely-after-inserting-newline [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abcde]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   # press just a 'newline'
   assume-console [
     type [
@@ -1711,11 +1711,11 @@ scenario editor-clears-previous-line-completely-after-inserting-newline [
 ]
 
 scenario editor-inserts-indent-after-newline [
-  assume-screen 10:literal/width, 10:literal/height
+  assume-screen 10/width, 10/height
   1:address:array:character <- new [ab
   cd
 ef]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # position cursor after 'cd' and hit 'newline'
   assume-console [
     left-click 2, 8
@@ -1735,15 +1735,15 @@ ef]
 ]
 
 scenario editor-handles-backspace-key [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 1, 1
     type [«]
   ]
-  3:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 171:literal/«, 3:event/backspace
+  3:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
+  replace-in-console 171/«, 3:event/backspace
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get 2:address:editor-data/deref, cursor-row:offset
@@ -1761,17 +1761,17 @@ scenario editor-handles-backspace-key [
 ]
 
 scenario editor-clears-last-line-on-backspace [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   # just one character in final line
   1:address:array:character <- new [ab
 cd]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
     left-click 2, 0  # cursor at only character in final line
     type [«]
   ]
-  3:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 171:literal/«, 3:event/backspace
+  3:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
+  replace-in-console 171/«, 3:event/backspace
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -1783,16 +1783,16 @@ cd]
 ]
 
 scenario editor-inserts-two-spaces-on-tab [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   # just one character in final line
   1:address:array:character <- new [ab
 cd]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
     type [»]
   ]
-  3:event/tab <- merge 0:literal/text, 9:literal/tab, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 187:literal/», 3:event/tab
+  3:event/tab <- merge 0/text, 9/tab, 0/dummy, 0/dummy
+  replace-in-console 187/», 3:event/tab
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -1804,9 +1804,9 @@ cd]
 ]
 
 scenario editor-moves-cursor-right-with-key [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     press 65514  # right arrow
     type [0]
@@ -1822,10 +1822,10 @@ scenario editor-moves-cursor-right-with-key [
 ]
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     press 65514  # right arrow
     press 65514  # right arrow
@@ -1845,10 +1845,10 @@ d]
 ]
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 1:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 1/left, 10/right
   assume-console [
     press 65514  # right arrow
     press 65514  # right arrow
@@ -1868,9 +1868,9 @@ d]
 ]
 
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abcdef]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   assume-console [
     left-click 1, 3
     press 65514  # right arrow
@@ -1893,10 +1893,10 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
 ]
 
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   # line just barely wrapping
   1:address:array:character <- new [abcde]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   # position cursor at last character before wrap and hit right-arrow
   assume-console [
     left-click 1, 3
@@ -1927,9 +1927,9 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
 ]
 
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abcdef]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 1:literal/left, 6:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 1/left, 6/right
   assume-console [
     left-click 1, 4
     press 65514  # right arrow
@@ -1952,10 +1952,10 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
 ]
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow-at-end-of-line [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 1, 3
     press 65514  # right arrow - next line
@@ -1973,9 +1973,9 @@ d]
 ]
 
 scenario editor-moves-cursor-left-with-key [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 1, 2
     press 65515  # left arrow
@@ -1992,11 +1992,11 @@ scenario editor-moves-cursor-left-with-key [
 ]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   # initialize editor with two lines
   1:address:array:character <- new [abc
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # position cursor at start of second line (so there's no previous newline)
   assume-console [
     left-click 2, 0
@@ -2014,12 +2014,12 @@ d]
 ]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   # initialize editor with three lines
   1:address:array:character <- new [abc
 def
 g]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # position cursor further down (so there's a newline before the character at
   # the cursor)
   assume-console [
@@ -2040,11 +2040,11 @@ g]
 ]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-3 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 def
 g]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # position cursor at start of text
   assume-console [
     left-click 1, 0
@@ -2064,12 +2064,12 @@ g]
 ]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   # initialize editor with text containing an empty line
   1:address:array:character <- new [abc
 
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # position cursor right after empty line
   assume-console [
     left-click 3, 0
@@ -2089,10 +2089,10 @@ d]
 ]
 
 scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   # initialize editor with text containing an empty line
   1:address:array:character <- new [abcdef]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 5:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
   screen-should-contain [
     .          .
     .abcd↩     .
@@ -2116,10 +2116,10 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
 ]
 
 scenario editor-moves-to-previous-line-with-up-arrow [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 2, 1
     press 65517  # up arrow
@@ -2136,10 +2136,10 @@ def]
 ]
 
 scenario editor-moves-to-next-line-with-down-arrow [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # cursor starts out at (1, 0)
   assume-console [
     press 65516  # down arrow
@@ -2157,10 +2157,10 @@ def]
 ]
 
 scenario editor-adjusts-column-at-previous-line [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [ab
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 2, 3
     press 65517  # up arrow
@@ -2177,10 +2177,10 @@ def]
 ]
 
 scenario editor-adjusts-column-at-next-line [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc
 de]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 1, 3
     press 65516  # down arrow
@@ -2197,17 +2197,17 @@ de]
 ]
 
 scenario editor-moves-to-start-of-line-with-ctrl-a [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on second line, press ctrl-a
   assume-console [
     left-click 2, 3
     type [a]  # ctrl-a
   ]
-  3:event/ctrl-a <- merge 0:literal/text, 1:literal/ctrl-a, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 97:literal/a, 3:event/ctrl-a
+  3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
+  replace-in-console 97/a, 3:event/ctrl-a
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get 2:address:editor-data/deref, cursor-row:offset
@@ -2221,17 +2221,17 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
 ]
 
 scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on first line (no newline before), press ctrl-a
   assume-console [
     left-click 1, 3
     type [a]  # ctrl-a
   ]
-  3:event/ctrl-a <- merge 0:literal/text, 1:literal/ctrl-a, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 97:literal/a, 3:event/ctrl-a
+  3:event/ctrl-a <- merge 0/text, 1/ctrl-a, 0/dummy, 0/dummy
+  replace-in-console 97/a, 3:event/ctrl-a
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get 2:address:editor-data/deref, cursor-row:offset
@@ -2245,10 +2245,10 @@ scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
 ]
 
 scenario editor-moves-to-start-of-line-with-home [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on second line, press 'home'
   assume-console [
     left-click 2, 3
@@ -2267,10 +2267,10 @@ scenario editor-moves-to-start-of-line-with-home [
 ]
 
 scenario editor-moves-to-start-of-line-with-home-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on first line (no newline before), press 'home'
   assume-console [
     left-click 1, 3
@@ -2289,17 +2289,17 @@ scenario editor-moves-to-start-of-line-with-home-2 [
 ]
 
 scenario editor-moves-to-start-of-line-with-ctrl-e [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on first line, press ctrl-e
   assume-console [
     left-click 1, 1
     type [e]  # ctrl-e
   ]
-  3:event/ctrl-e <- merge 0:literal/text, 5:literal/ctrl-e, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 101:literal/e, 3:event/ctrl-e
+  3:event/ctrl-e <- merge 0/text, 5/ctrl-e, 0/dummy, 0/dummy
+  replace-in-console 101/e, 3:event/ctrl-e
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get 2:address:editor-data/deref, cursor-row:offset
@@ -2332,17 +2332,17 @@ scenario editor-moves-to-start-of-line-with-ctrl-e [
 ]
 
 scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on second line (no newline after), press ctrl-e
   assume-console [
     left-click 2, 1
     type [e]  # ctrl-e
   ]
-  3:event/ctrl-e <- merge 0:literal/text, 5:literal/ctrl-e, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 101:literal/e, 3:event/ctrl-e
+  3:event/ctrl-e <- merge 0/text, 5/ctrl-e, 0/dummy, 0/dummy
+  replace-in-console 101/e, 3:event/ctrl-e
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     4:number <- get 2:address:editor-data/deref, cursor-row:offset
@@ -2356,10 +2356,10 @@ scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
 ]
 
 scenario editor-moves-to-end-of-line-with-end [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on first line, press 'end'
   assume-console [
     left-click 1, 1
@@ -2378,10 +2378,10 @@ scenario editor-moves-to-end-of-line-with-end [
 ]
 
 scenario editor-moves-to-end-of-line-with-end-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on second line (no newline after), press 'end'
   assume-console [
     left-click 2, 1
@@ -2400,17 +2400,17 @@ scenario editor-moves-to-end-of-line-with-end-2 [
 ]
 
 scenario editor-deletes-to-start-of-line-with-ctrl-u [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on second line, press ctrl-u
   assume-console [
     left-click 2, 2
     type [u]  # ctrl-u
   ]
-  3:event/ctrl-a <- merge 0:literal/text, 21:literal/ctrl-u, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 117:literal/u, 3:event/ctrl-u
+  3:event/ctrl-a <- merge 0/text, 21/ctrl-u, 0/dummy, 0/dummy
+  replace-in-console 117/u, 3:event/ctrl-u
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2424,17 +2424,17 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
 ]
 
 scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on first line (no newline before), press ctrl-u
   assume-console [
     left-click 1, 2
     type [u]  # ctrl-u
   ]
-  3:event/ctrl-u <- merge 0:literal/text, 21:literal/ctrl-a, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 117:literal/a, 3:event/ctrl-u
+  3:event/ctrl-u <- merge 0/text, 21/ctrl-a, 0/dummy, 0/dummy
+  replace-in-console 117/a, 3:event/ctrl-u
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2448,17 +2448,17 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
 ]
 
 scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start past end of line, press ctrl-u
   assume-console [
     left-click 1, 3
     type [u]  # ctrl-u
   ]
-  3:event/ctrl-u <- merge 0:literal/text, 21:literal/ctrl-a, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 117:literal/a, 3:event/ctrl-u
+  3:event/ctrl-u <- merge 0/text, 21/ctrl-a, 0/dummy, 0/dummy
+  replace-in-console 117/a, 3:event/ctrl-u
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2472,17 +2472,17 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on first line, press ctrl-k
   assume-console [
     left-click 1, 1
     type [k]  # ctrl-k
   ]
-  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 107:literal/k, 3:event/ctrl-k
+  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
+  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2496,17 +2496,17 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start on second line (no newline after), press ctrl-k
   assume-console [
     left-click 2, 1
     type [k]  # ctrl-k
   ]
-  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 107:literal/k, 3:event/ctrl-k
+  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
+  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2520,17 +2520,17 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start at end of line
   assume-console [
     left-click 1, 2
     type [k]  # ctrl-k
   ]
-  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 107:literal/k, 3:event/ctrl-k
+  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
+  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2544,17 +2544,17 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start past end of line
   assume-console [
     left-click 1, 3
     type [k]  # ctrl-k
   ]
-  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 107:literal/k, 3:event/ctrl-k
+  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
+  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2568,17 +2568,17 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start at end of text
   assume-console [
     left-click 2, 2
     type [k]  # ctrl-k
   ]
-  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 107:literal/k, 3:event/ctrl-k
+  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
+  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2592,17 +2592,17 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   # start past end of text
   assume-console [
     left-click 2, 3
     type [k]  # ctrl-k
   ]
-  3:event/ctrl-k <- merge 0:literal/text, 11:literal/ctrl-k, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 107:literal/k, 3:event/ctrl-k
+  3:event/ctrl-k <- merge 0/text, 11/ctrl-k, 0/dummy, 0/dummy
+  replace-in-console 107/k, 3:event/ctrl-k
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
   ]
@@ -2617,7 +2617,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
 
 scenario point-at-multiple-editors [
   $close-trace
-  assume-screen 30:literal/width, 5:literal/height
+  assume-screen 30/width, 5/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
@@ -2643,7 +2643,7 @@ scenario point-at-multiple-editors [
 
 scenario edit-multiple-editors [
   $close-trace
-  assume-screen 30:literal/width, 5:literal/height
+  assume-screen 30/width, 5/height
   # initialize both halves of screen
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
@@ -2674,7 +2674,7 @@ scenario edit-multiple-editors [
   ]
   # show the cursor at the right window
   run [
-    screen:address <- print-character screen:address, 9251:literal/␣
+    screen:address <- print-character screen:address, 9251/␣
   ]
   screen-should-contain [
     .           run (F4)           .
@@ -2686,7 +2686,7 @@ scenario edit-multiple-editors [
 
 scenario multiple-editors-cover-only-their-own-areas [
   $close-trace
-  assume-screen 60:literal/width, 10:literal/height
+  assume-screen 60/width, 10/height
   run [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [def]
@@ -2704,7 +2704,7 @@ scenario multiple-editors-cover-only-their-own-areas [
 
 scenario editor-in-focus-keeps-cursor [
   $close-trace
-  assume-screen 30:literal/width, 5:literal/height
+  assume-screen 30/width, 5/height
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
   # initialize programming environment and highlight cursor
@@ -2712,7 +2712,7 @@ scenario editor-in-focus-keeps-cursor [
   run [
     3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    screen:address <- print-character screen:address, 9251:literal/␣
+    screen:address <- print-character screen:address, 9251/␣
   ]
   # is cursor at the right place?
   screen-should-contain [
@@ -2728,7 +2728,7 @@ scenario editor-in-focus-keeps-cursor [
   run [
     3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    screen:address <- print-character screen:address, 9251:literal/␣
+    screen:address <- print-character screen:address, 9251/␣
   ]
   # cursor should still be right
   screen-should-contain [
@@ -2752,11 +2752,11 @@ container sandbox-data [
 
 scenario run-and-show-results [
   $close-trace  # trace too long for github
-  assume-screen 100:literal/width, 15:literal/height
+  assume-screen 100/width, 15/height
   # recipe editor is empty
   1:address:array:character <- new []
   # sandbox editor contains an instruction without storing outputs
-  2:address:array:character <- new [divide-with-remainder 11:literal, 3:literal]
+  2:address:array:character <- new [divide-with-remainder 11, 3]
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run the code in the editors
   assume-console [
@@ -2771,24 +2771,24 @@ scenario run-and-show-results [
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
-    .                                                  ┊divide-with-remainder 11:literal, 3:literal      .
+    .                                                  ┊divide-with-remainder 11, 3                      .
     .                                                  ┊3                                                .
     .                                                  ┊2                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
-  screen-should-contain-in-color 7:literal/white, [
+  screen-should-contain-in-color 7/white, [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
-    .                                                   divide-with-remainder 11:literal, 3:literal      .
+    .                                                   divide-with-remainder 11, 3                      .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
   ]
-  screen-should-contain-in-color 245:literal/grey, [
+  screen-should-contain-in-color 245/grey, [
     .                                                                                                    .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -2802,7 +2802,7 @@ scenario run-and-show-results [
   # run another command
   assume-console [
     left-click 1, 80
-    type [add 2:literal, 2:literal]
+    type [add 2, 2]
     press 65532  # F4
   ]
   run [
@@ -2814,11 +2814,11 @@ scenario run-and-show-results [
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
-    .                                                  ┊add 2:literal, 2:literal                         .
+    .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
-    .                                                  ┊divide-with-remainder 11:literal, 3:literal      .
+    .                                                  ┊divide-with-remainder 11, 3                      .
     .                                                  ┊3                                                .
     .                                                  ┊2                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -2854,18 +2854,18 @@ recipe run-sandboxes [
     dest:address:address:sandbox-data/deref <- copy new-sandbox:address:sandbox-data
     # clear sandbox editor
     init:address:address:duplex-list <- get-address current-sandbox:address:editor-data/deref, data:offset
-    init:address:address:duplex-list/deref <- push-duplex 167:literal/§, 0:literal/tail
+    init:address:address:duplex-list/deref <- push-duplex 167/§, 0/tail
   }
   # save all sandboxes before running, just in case we die when running
   # first clear previous versions, in case we deleted some sandbox
   $system [rm lesson/[0-9]*]
   curr:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
-  filename:number <- copy 0:literal
+  filename:number <- copy 0
   {
     break-unless curr:address:sandbox-data
     data:address:address:array:character <- get-address curr:address:sandbox-data/deref, data:offset
     save filename:number, data:address:address:array:character/deref
-    filename:number <- add filename:number, 1:literal
+    filename:number <- add filename:number, 1
     curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
     loop
   }
@@ -2878,7 +2878,7 @@ recipe run-sandboxes [
     warnings:address:address:array:character <- get-address curr:address:sandbox-data/deref, warnings:offset
     fake-screen:address:address:screen <- get-address curr:address:sandbox-data/deref, screen:offset
     response:address:address:array:character/deref, warnings:address:address:array:character/deref, fake-screen:address:address:screen/deref <- run-interactive data:address:address:array:character/deref
-#?     $print warnings:address:address:array:character/deref, [ ], warnings:address:address:array:character/deref/deref, 10:literal/newline
+#?     $print warnings:address:address:array:character/deref, [ ], warnings:address:address:array:character/deref/deref, 10/newline
     curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
     loop
   }
@@ -2894,12 +2894,12 @@ recipe render-sandbox-side [
   left:number <- get current-sandbox:address:editor-data/deref, left:offset
   right:number <- get current-sandbox:address:editor-data/deref, right:offset
   row:number, screen:address <- render screen:address, current-sandbox:address:editor-data
-  row:number <- add row:number, 1:literal
-  draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
+  row:number <- add row:number, 1
+  draw-horizontal screen:address, row:number, left:number, right:number, 9473/horizontal-double
   sandbox:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
   row:number, screen:address <- render-sandboxes screen:address, sandbox:address:sandbox-data, left:number, right:number, row:number
   # clear next line, in case we just processed a backspace
-  row:number <- add row:number, 1:literal
+  row:number <- add row:number, 1
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
   reply-unless clear:boolean, screen:address/same-as-ingredient:0
@@ -2909,7 +2909,7 @@ recipe render-sandbox-side [
     break-if at-bottom-of-screen?:boolean
     move-cursor screen:address, row:number, left:number
     clear-line-delimited screen:address, left:number, right:number
-    row:number <- add row:number, 1:literal
+    row:number <- add row:number, 1
     loop
   }
   reply screen:address/same-as-ingredient:0
@@ -2926,25 +2926,25 @@ recipe render-sandboxes [
   screen-height:number <- screen-height screen:address
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-#?   $print [rendering sandbox ], sandbox:address:sandbox-data, 10:literal/newline
+#?   $print [rendering sandbox ], sandbox:address:sandbox-data, 10/newline
   # render sandbox menu
-  row:number <- add row:number, 1:literal
+  row:number <- add row:number, 1
   move-cursor screen:address, row:number, left:number
   clear-line-delimited screen:address, left:number, right:number
-  print-character screen:address, 120:literal/x, 245:literal/grey
+  print-character screen:address, 120/x, 245/grey
   # save menu row so we can detect clicks to it later
   starting-row:address:number <- get-address sandbox:address:sandbox-data/deref, starting-row-on-screen:offset
   starting-row:address:number/deref <- copy row:number
   # render sandbox contents
   sandbox-data:address:array:character <- get sandbox:address:sandbox-data/deref, data:offset
-  row:number, screen:address <- render-string screen:address, sandbox-data:address:array:character, left:number, right:number, 7:literal/white, row:number
+  row:number, screen:address <- render-string screen:address, sandbox-data:address:array:character, left:number, right:number, 7/white, row:number
   # render sandbox warnings, screen or response, in that order
   sandbox-response:address:array:character <- get sandbox:address:sandbox-data/deref, response:offset
   sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/deref, warnings:offset
   sandbox-screen:address <- get sandbox:address:sandbox-data/deref, screen:offset
   {
     break-unless sandbox-warnings:address:array:character
-    row:number, screen:address <- render-string screen:address, sandbox-warnings:address:array:character, left:number, right:number, 1:literal/red, row:number
+    row:number, screen:address <- render-string screen:address, sandbox-warnings:address:array:character, left:number, right:number, 1/red, row:number
   }
   {
     break-if sandbox-warnings:address:array:character
@@ -2955,12 +2955,12 @@ recipe render-sandboxes [
   {
     break-if sandbox-warnings:address:array:character
     break-unless empty-screen?:boolean
-    row:number, screen:address <- render-string screen:address, sandbox-response:address:array:character, left:number, right:number, 245:literal/grey, row:number
+    row:number, screen:address <- render-string screen:address, sandbox-response:address:array:character, left:number, right:number, 245/grey, row:number
   }
   at-bottom?:boolean <- greater-or-equal row:number screen-height:number
   reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
   # draw solid line after sandbox
-  draw-horizontal screen:address, row:number, left:number, right:number, 9473:literal/horizontal-double
+  draw-horizontal screen:address, row:number, left:number, right:number, 9473/horizontal-double
   # draw next sandbox
   next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/deref, next-sandbox:offset
   row:number, screen:address <- render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
@@ -2972,18 +2972,18 @@ recipe restore-sandboxes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
   # read all scenarios, pushing them to end of a list of scenarios
-  filename:number <- copy 0:literal
+  filename:number <- copy 0
   curr:address:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
   {
     contents:address:array:character <- restore filename:number
     break-unless contents:address:array:character  # stop at first error; assuming file didn't exist
-#?     $print contents:address:array:character, 10:literal/newline
+#?     $print contents:address:array:character, 10/newline
     # create new sandbox for file
     curr:address:address:sandbox-data/deref <- new sandbox-data:type
     data:address:address:array:character <- get-address curr:address:address:sandbox-data/deref/deref, data:offset
     data:address:address:array:character/deref <- copy contents:address:array:character
     # increment loop variables
-    filename:number <- add filename:number, 1:literal
+    filename:number <- add filename:number, 1
     curr:address:address:sandbox-data <- get-address curr:address:address:sandbox-data/deref/deref, next-sandbox:offset
     loop
   }
@@ -2998,14 +2998,14 @@ recipe delete-sandbox [
   click-column:number <- get t:touch-event, column:offset
   current-sandbox:address:editor-data <- get env:address:programming-environment-data/deref, current-sandbox:offset
   right:number <- get current-sandbox:address:editor-data/deref, right:offset
-#?   $print [comparing column ], click-column:number, [ vs ], right:number, 10:literal/newline
+#?   $print [comparing column ], click-column:number, [ vs ], right:number, 10/newline
   at-right?:boolean <- equal click-column:number, right:number
-  reply-unless at-right?:boolean, 0:literal/false
+  reply-unless at-right?:boolean, 0/false
 #?   $print [trying to delete
 #? ] #? 1
   click-row:number <- get t:touch-event, row:offset
   prev:address:address:sandbox-data <- get-address env:address:programming-environment-data/deref, sandbox:offset
-#?   $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, 10:literal/newline
+#?   $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, 10/newline
   curr:address:sandbox-data <- get env:address:programming-environment-data/deref, sandbox:offset
   {
 #?     $print [next sandbox
@@ -3016,31 +3016,31 @@ recipe delete-sandbox [
 #?       $print [checking
 #? ] #? 1
       target-row:number <- get curr:address:sandbox-data/deref, starting-row-on-screen:offset
-#?       $print [comparing row ], target-row:number, [ vs ], click-row:number, 10:literal/newline
+#?       $print [comparing row ], target-row:number, [ vs ], click-row:number, 10/newline
       delete-curr?:boolean <- equal target-row:number, click-row:number
       break-unless delete-curr?:boolean
 #?       $print [found!
 #? ] #? 1
       # delete this sandbox, rerender and stop
       prev:address:address:sandbox-data/deref <- get curr:address:sandbox-data/deref, next-sandbox:offset
-#?       $print [setting prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, 10:literal/newline
-      reply 1:literal/true
+#?       $print [setting prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, 10/newline
+      reply 1/true
     }
     prev:address:address:sandbox-data <- get-address curr:address:sandbox-data/deref, next-sandbox:offset
-#?     $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, 10:literal/newline
+#?     $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/deref, 10/newline
     curr:address:sandbox-data <- get curr:address:sandbox-data/deref, next-sandbox:offset
     loop
   }
-  reply 0:literal/false
+  reply 0/false
 ]
 
 scenario run-updates-results [
   $close-trace  # trace too long for github
-  assume-screen 100:literal/width, 12:literal/height
+  assume-screen 100/width, 12/height
   # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
   1:address:array:character <- new [ 
 recipe foo [
-z:number <- add 2:literal, 2:literal
+z:number <- add 2, 2
 ]]
   # sandbox editor contains an instruction without storing outputs
   2:address:array:character <- new [foo]
@@ -3057,7 +3057,7 @@ z:number <- add 2:literal, 2:literal
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .z:number <- add 2:literal, 2:literal              ┊                                                x.
+    .z:number <- add 2, 2                              ┊                                                x.
     .]                                                 ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -3069,8 +3069,8 @@ z:number <- add 2:literal, 2:literal
     type [«3]  # replace
     press 65532  # F4
   ]
-  4:event/backspace <- merge 0:literal/text, 8:literal/backspace, 0:literal/dummy, 0:literal/dummy
-  replace-in-console 171:literal/«, 4:event/backspace
+  4:event/backspace <- merge 0/text, 8/backspace, 0/dummy, 0/dummy
+  replace-in-console 171/«, 4:event/backspace
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
   ]
@@ -3079,7 +3079,7 @@ z:number <- add 2:literal, 2:literal
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .z:number <- add 2:literal, 3:literal              ┊                                                x.
+    .z:number <- add 2, 3                              ┊                                                x.
     .]                                                 ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊5                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -3089,7 +3089,7 @@ z:number <- add 2:literal, 2:literal
 
 scenario run-instruction-and-print-warnings [
   $close-trace  # trace too long for github
-  assume-screen 100:literal/width, 10:literal/height
+  assume-screen 100/width, 10/height
   # left editor is empty
   1:address:array:character <- new []
   # right editor contains an illegal instruction
@@ -3113,7 +3113,7 @@ scenario run-instruction-and-print-warnings [
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
-  screen-should-contain-in-color 7:literal/white, [
+  screen-should-contain-in-color 7/white, [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -3123,7 +3123,7 @@ scenario run-instruction-and-print-warnings [
     .                                                                                                    .
     .                                                                                                    .
   ]
-  screen-should-contain-in-color 1:literal/red, [
+  screen-should-contain-in-color 1/red, [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -3132,7 +3132,7 @@ scenario run-instruction-and-print-warnings [
     .                                                   unknown element foo in container number          .
     .                                                                                                    .
   ]
-  screen-should-contain-in-color 245:literal/grey, [
+  screen-should-contain-in-color 245/grey, [
     .                                                                                                    .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -3146,7 +3146,7 @@ scenario run-instruction-and-print-warnings [
 
 scenario run-instruction-and-print-warnings-only-once [
   $close-trace  # trace too long for github
-  assume-screen 100:literal/width, 10:literal/height
+  assume-screen 100/width, 10/height
   # left editor is empty
   1:address:array:character <- new []
   # right editor contains an illegal instruction
@@ -3175,16 +3175,16 @@ scenario run-instruction-and-print-warnings-only-once [
 
 scenario deleting-sandboxes [
   $close-trace  # trace too long for github
-  assume-screen 100:literal/width, 15:literal/height
+  assume-screen 100/width, 15/height
   1:address:array:character <- new []
   2:address:array:character <- new []
   3:address:programming-environment-data <- new-programming-environment screen:address, 1:address:array:character, 2:address:array:character
   # run a few commands
   assume-console [
     left-click 1, 80
-    type [divide-with-remainder 11:literal, 3:literal]
+    type [divide-with-remainder 11, 3]
     press 65532  # F4
-    type [add 2:literal, 2:literal]
+    type [add 2, 2]
     press 65532  # F4
   ]
   run [
@@ -3195,11 +3195,11 @@ scenario deleting-sandboxes [
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
-    .                                                  ┊add 2:literal, 2:literal                         .
+    .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
-    .                                                  ┊divide-with-remainder 11:literal, 3:literal      .
+    .                                                  ┊divide-with-remainder 11, 3                      .
     .                                                  ┊3                                                .
     .                                                  ┊2                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -3217,7 +3217,7 @@ scenario deleting-sandboxes [
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                x.
-    .                                                  ┊add 2:literal, 2:literal                         .
+    .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
@@ -3241,7 +3241,7 @@ scenario deleting-sandboxes [
 
 scenario run-instruction-manages-screen-per-sandbox [
   $close-trace  # trace too long for github #? 1
-  assume-screen 100:literal/width, 20:literal/height
+  assume-screen 100/width, 20/height
   # left editor is empty
   1:address:array:character <- new []
   # right editor contains an illegal instruction
@@ -3276,12 +3276,12 @@ scenario run-instruction-manages-screen-per-sandbox [
 recipe editor-contents [
   local-scope
   editor:address:editor-data <- next-ingredient
-  buf:address:buffer <- new-buffer 80:literal
+  buf:address:buffer <- new-buffer 80
   curr:address:duplex-list <- get editor:address:editor-data/deref, data:offset
   # skip § sentinel
   assert curr:address:duplex-list, [editor without data is illegal; must have at least a sentinel]
   curr:address:duplex-list <- next-duplex curr:address:duplex-list
-  reply-unless curr:address:duplex-list, 0:literal
+  reply-unless curr:address:duplex-list, 0
   {
     break-unless curr:address:duplex-list
     c:character <- get curr:address:duplex-list/deref, value:offset
@@ -3294,9 +3294,9 @@ recipe editor-contents [
 ]
 
 scenario editor-provides-edited-contents [
-  assume-screen 10:literal/width, 5:literal/height
+  assume-screen 10/width, 5/height
   1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0:literal/left, 10:literal/right
+  2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 10/right
   assume-console [
     left-click 1, 2
     type [def]
@@ -3315,7 +3315,7 @@ scenario editor-provides-edited-contents [
 
 scenario run-shows-warnings-in-get [
   $close-trace
-  assume-screen 100:literal/width, 15:literal/height
+  assume-screen 100/width, 15/height
   assume-console [
     press 65532  # F4
   ]
@@ -3338,7 +3338,7 @@ recipe foo [
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
-  screen-should-contain-in-color 1:literal/red, [
+  screen-should-contain-in-color 1/red, [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
@@ -3351,7 +3351,7 @@ recipe foo [
 
 scenario run-shows-missing-type-warnings [
   $close-trace
-  assume-screen 100:literal/width, 15:literal/height
+  assume-screen 100/width, 15/height
   assume-console [
     press 65532  # F4
   ]
@@ -3380,7 +3380,7 @@ recipe foo [
 
 scenario run-shows-get-on-non-container-warnings [
   $close-trace
-  assume-screen 100:literal/width, 15:literal/height
+  assume-screen 100/width, 15/height
   assume-console [
     press 65532  # F4
   ]
@@ -3409,7 +3409,7 @@ recipe foo [
 
 scenario run-shows-non-literal-get-argument-warnings [
   $close-trace
-  assume-screen 100:literal/width, 15:literal/height
+  assume-screen 100/width, 15/height
   assume-console [
     press 65532  # F4
   ]
@@ -3452,7 +3452,7 @@ recipe draw-box [
   {
     # default color to white
     break-if color-found?:boolean
-    color:number <- copy 245:literal/grey
+    color:number <- copy 245/grey
   }
   # top border
   draw-horizontal screen:address, top:number, left:number, right:number, color:number
@@ -3478,25 +3478,25 @@ recipe draw-horizontal [
   style:character, style-found?:boolean <- next-ingredient
   {
     break-if style-found?:boolean
-    style:character <- copy 9472:literal/horizontal
+    style:character <- copy 9472/horizontal
   }
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
     break-if color-found?:boolean
-    color:number <- copy 245:literal/grey
+    color:number <- copy 245/grey
   }
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
     break-if bg-color-found?:boolean
-    bg-color:number <- copy 0:literal/black
+    bg-color:number <- copy 0/black
   }
   move-cursor screen:address, row:number, x:number
   {
     continue?:boolean <- lesser-or-equal x:number, right:number  # right is inclusive, to match editor-data semantics
     break-unless continue?:boolean
     print-character screen:address, style:character, color:number, bg-color:number
-    x:number <- add x:number, 1:literal
+    x:number <- add x:number, 1
     loop
   }
 ]
@@ -3510,20 +3510,20 @@ recipe draw-vertical [
   style:character, style-found?:boolean <- next-ingredient
   {
     break-if style-found?:boolean
-    style:character <- copy 9474:literal/vertical
+    style:character <- copy 9474/vertical
   }
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
     break-if color-found?:boolean
-    color:number <- copy 245:literal/grey
+    color:number <- copy 245/grey
   }
   {
     continue?:boolean <- lesser-than x:number, bottom:number
     break-unless continue?:boolean
     move-cursor screen:address, x:number, col:number
     print-character screen:address, style:character, color:number
-    x:number <- add x:number, 1:literal
+    x:number <- add x:number, 1
     loop
   }
 ]
@@ -3537,10 +3537,10 @@ recipe draw-top-left [
   {
     # default color to white
     break-if color-found?:boolean
-    color:number <- copy 245:literal/grey
+    color:number <- copy 245/grey
   }
   move-cursor screen:address, top:number, left:number
-  print-character screen:address, 9484:literal/down-right, color:number
+  print-character screen:address, 9484/down-right, color:number
 ]
 
 recipe draw-top-right [
@@ -3552,10 +3552,10 @@ recipe draw-top-right [
   {
     # default color to white
     break-if color-found?:boolean
-    color:number <- copy 245:literal/grey
+    color:number <- copy 245/grey
   }
   move-cursor screen:address, top:number, right:number
-  print-character screen:address, 9488:literal/down-left, color:number
+  print-character screen:address, 9488/down-left, color:number
 ]
 
 recipe draw-bottom-left [
@@ -3567,10 +3567,10 @@ recipe draw-bottom-left [
   {
     # default color to white
     break-if color-found?:boolean
-    color:number <- copy 245:literal/grey
+    color:number <- copy 245/grey
   }
   move-cursor screen:address, bottom:number, left:number
-  print-character screen:address, 9492:literal/up-right, color:number
+  print-character screen:address, 9492/up-right, color:number
 ]
 
 recipe draw-bottom-right [
@@ -3582,10 +3582,10 @@ recipe draw-bottom-right [
   {
     # default color to white
     break-if color-found?:boolean
-    color:number <- copy 245:literal/grey
+    color:number <- copy 245/grey
   }
   move-cursor screen:address, bottom:number, right:number
-  print-character screen:address, 9496:literal/up-left, color:number
+  print-character screen:address, 9496/up-left, color:number
 ]
 
 recipe print-string-with-gradient-background [
@@ -3599,18 +3599,18 @@ recipe print-string-with-gradient-background [
   color-range:number <- subtract bg-color2:number, bg-color1:number
   color-quantum:number <- divide color-range:number, len:number
 #?   close-console #? 2
-#?   $print len:number, [, ], color-range:number, [, ], color-quantum:number, 10:literal/newline
+#?   $print len:number, [, ], color-range:number, [, ], color-quantum:number, 10/newline
 #? #?   $exit #? 3
   bg-color:number <- copy bg-color1:number
-  i:number <- copy 0:literal
+  i:number <- copy 0
   {
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
     c:character <- index s:address:array:character/deref, i:number
     print-character x:address:screen, c:character, color:number, bg-color:number
-    i:number <- add i:number, 1:literal
+    i:number <- add i:number, 1
     bg-color:number <- add bg-color:number, color-quantum:number
-#?     $print [=> ], bg-color:number, 10:literal/newline
+#?     $print [=> ], bg-color:number, 10/newline
     loop
   }
 #?   $exit #? 1

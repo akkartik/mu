@@ -7,9 +7,9 @@
 :(scenarios run_mu_scenario)
 :(scenario screen_in_scenario)
 scenario screen-in-scenario [
-  assume-screen 5:literal/width, 3:literal/height
+  assume-screen 5/width, 3/height
   run [
-    screen:address <- print-character screen:address, 97:literal  # 'a'
+    screen:address <- print-character screen:address, 97  # 'a'
   ]
   screen-should-contain [
   #  01234
@@ -21,10 +21,10 @@ scenario screen-in-scenario [
 
 :(scenario screen_in_scenario_unicode)
 scenario screen-in-scenario-unicode-color [
-  assume-screen 5:literal/width, 3:literal/height
+  assume-screen 5/width, 3/height
   run [
-    screen:address <- print-character screen:address, 955:literal/greek-small-lambda, 1:literal/red
-    screen:address <- print-character screen:address, 97:literal/a
+    screen:address <- print-character screen:address, 955/greek-small-lambda, 1/red
+    screen:address <- print-character screen:address, 97/a
   ]
   screen-should-contain [
   #  01234
@@ -37,10 +37,10 @@ scenario screen-in-scenario-unicode-color [
 :(scenario screen_in_scenario_color)
 # screen-should-contain can check unicode characters in the fake screen
 scenario screen-in-scenario-color [
-  assume-screen 5:literal/width, 3:literal/height
+  assume-screen 5/width, 3/height
   run [
-    screen:address <- print-character screen:address, 955:literal/greek-small-lambda, 1:literal/red
-    screen:address <- print-character screen:address, 97:literal/a, 7:literal/white
+    screen:address <- print-character screen:address, 955/greek-small-lambda, 1/red
+    screen:address <- print-character screen:address, 97/a, 7/white
   ]
   # screen-should-contain shows everything
   screen-should-contain [
@@ -51,14 +51,14 @@ scenario screen-in-scenario-color [
   ]
   # screen-should-contain-in-color filters out everything except the given
   # color, all you see is the 'a' in white.
-  screen-should-contain-in-color 7:literal/white, [
+  screen-should-contain-in-color 7/white, [
   #  01234
     . a   .
     .     .
     .     .
   ]
   # ..and the λ in red.
-  screen-should-contain-in-color 1:literal/red, [
+  screen-should-contain-in-color 1/red, [
   #  01234
     .λ    .
     .     .
@@ -70,9 +70,9 @@ scenario screen-in-scenario-color [
 % Scenario_testing_scenario = true;
 % Hide_warnings = true;
 scenario screen-in-scenario-error [
-  assume-screen 5:literal/width, 3:literal/height
+  assume-screen 5/width, 3/height
   run [
-    screen:address <- print-character screen:address, 97:literal  # 'a'
+    screen:address <- print-character screen:address, 97  # 'a'
   ]
   screen-should-contain [
   #  01234
@@ -88,11 +88,11 @@ scenario screen-in-scenario-error [
 % Hide_warnings = true;
 # screen-should-contain can check unicode characters in the fake screen
 scenario screen-in-scenario-color [
-  assume-screen 5:literal/width, 3:literal/height
+  assume-screen 5/width, 3/height
   run [
-    screen:address <- print-character screen:address, 97:literal/a, 1:literal/red
+    screen:address <- print-character screen:address, 97/a, 1/red
   ]
-  screen-should-contain-in-color 2:literal/green, [
+  screen-should-contain-in-color 2/green, [
   #  01234
     .a    .
     .     .

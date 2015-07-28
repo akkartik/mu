@@ -5,15 +5,15 @@ recipe producer [
   local-scope
   chan:address:channel <- next-ingredient
   # n = 0
-  n:number <- copy 0:literal
+  n:number <- copy 0
   {
-    done?:boolean <- lesser-than n:number, 5:literal
+    done?:boolean <- lesser-than n:number, 5
     break-unless done?:boolean
     # other threads might get between these prints
     $print [produce: ], n:number, [ 
 ]
     chan:address:channel <- write chan:address:channel, n:number
-    n:number <- add n:number, 1:literal
+    n:number <- add n:number, 1
     loop
   }
 ]
@@ -34,7 +34,7 @@ recipe consumer [
 
 recipe main [
   local-scope
-  chan:address:channel <- new-channel 3:literal
+  chan:address:channel <- new-channel 3
   # create two background 'routines' that communicate by a channel
   routine1:number <- start-running producer:recipe, chan:address:channel
   routine2:number <- start-running consumer:recipe, chan:address:channel

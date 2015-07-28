@@ -5,14 +5,14 @@
 
 :(scenario wait_for_location)
 recipe f1 [
-  1:number <- copy 0:literal
+  1:number <- copy 0
   start-running f2:recipe
   wait-for-location 1:number
   # now wait for f2 to run and modify location 1 before using its value
   2:number <- copy 1:number
 ]
 recipe f2 [
-  1:number <- copy 34:literal
+  1:number <- copy 34
 ]
 # if we got the synchronization wrong we'd be storing 0 in location 2
 +mem: storing 34 in location 2
@@ -61,14 +61,14 @@ for (long long int i = 0; i < SIZE(Routines); ++i) {
 
 :(scenario wait_for_routine)
 recipe f1 [
-  1:number <- copy 0:literal
+  1:number <- copy 0
   12:number/routine <- start-running f2:recipe
   wait-for-routine 12:number/routine
   # now wait for f2 to run and modify location 1 before using its value
   3:number <- copy 1:number
 ]
 recipe f2 [
-  1:number <- copy 34:literal
+  1:number <- copy 34
 ]
 +schedule: f1
 +run: waiting for routine 2

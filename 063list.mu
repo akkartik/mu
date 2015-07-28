@@ -40,10 +40,10 @@ recipe rest [
 scenario list-handling [
   run [
 #?     $start-tracing #? 1
-    1:address:list <- copy 0:literal
-    1:address:list <- push 3:literal, 1:address:list
-    1:address:list <- push 4:literal, 1:address:list
-    1:address:list <- push 5:literal, 1:address:list
+    1:address:list <- copy 0
+    1:address:list <- push 3, 1:address:list
+    1:address:list <- push 4, 1:address:list
+    1:address:list <- push 5, 1:address:list
     2:number <- first 1:address:list
     1:address:list <- rest 1:address:list
     3:number <- first 1:address:list

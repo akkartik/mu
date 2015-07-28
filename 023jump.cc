@@ -4,10 +4,10 @@
 #? % Trace_stream->dump_layer = "all"; #? 1
 recipe main [
   jump 1:offset
-  1:number <- copy 1:literal
+  1:number <- copy 1
 ]
 +run: jump 1:offset
--run: 1:number <- copy 1:literal
+-run: 1:number <- copy 1
 -mem: storing 1 in location 1
 
 :(before "End Primitive Recipe Declarations")
@@ -75,22 +75,22 @@ case JUMP_IF: {
 
 :(scenario jump_if)
 recipe main [
-  jump-if 999:literal, 1:offset
-  123:number <- copy 1:literal
+  jump-if 999, 1:offset
+  123:number <- copy 1
 ]
-+run: jump-if 999:literal, 1:offset
++run: jump-if 999, 1:offset
 +run: jumping to instruction 2
--run: 1:number <- copy 1:literal
+-run: 1:number <- copy 1
 -mem: storing 1 in location 123
 
 :(scenario jump_if_fallthrough)
 recipe main [
-  jump-if 0:literal, 1:offset
-  123:number <- copy 1:literal
+  jump-if 0, 1:offset
+  123:number <- copy 1
 ]
-+run: jump-if 0:literal, 1:offset
++run: jump-if 0, 1:offset
 +run: jump-if fell through
-+run: 123:number <- copy 1:literal
++run: 123:number <- copy 1
 +mem: storing 1 in location 123
 
 :(before "End Primitive Recipe Declarations")
@@ -123,20 +123,20 @@ case JUMP_UNLESS: {
 
 :(scenario jump_unless)
 recipe main [
-  jump-unless 0:literal, 1:offset
-  123:number <- copy 1:literal
+  jump-unless 0, 1:offset
+  123:number <- copy 1
 ]
-+run: jump-unless 0:literal, 1:offset
++run: jump-unless 0, 1:offset
 +run: jumping to instruction 2
--run: 123:number <- copy 1:literal
+-run: 123:number <- copy 1
 -mem: storing 1 in location 123
 
 :(scenario jump_unless_fallthrough)
 recipe main [
-  jump-unless 999:literal, 1:offset
-  123:number <- copy 1:literal
+  jump-unless 999, 1:offset
+  123:number <- copy 1
 ]
-+run: jump-unless 999:literal, 1:offset
++run: jump-unless 999, 1:offset
 +run: jump-unless fell through
-+run: 123:number <- copy 1:literal
++run: 123:number <- copy 1
 +mem: storing 1 in location 123

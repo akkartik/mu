@@ -5,23 +5,23 @@
 
 recipe main [
   open-console
-  print-character 0:literal/screen, 97:literal, 2:literal/red
-  1:number/raw, 2:number/raw <- cursor-position 0:literal/screen
-  wait-for-event 0:literal/console
-  clear-screen 0:literal/screen
-  move-cursor 0:literal/screen, 0:literal/row, 4:literal/column
-  print-character 0:literal/screen, 98:literal
-  wait-for-event 0:literal/console
-  move-cursor 0:literal/screen, 0:literal/row, 0:literal/column
-  clear-line 0:literal/screen
-  wait-for-event 0:literal/console
-  cursor-down 0:literal/screen
-  wait-for-event 0:literal/console
-  cursor-right 0:literal/screen
-  wait-for-event 0:literal/console
-  cursor-left 0:literal/screen
-  wait-for-event 0:literal/console
-  cursor-up 0:literal/screen
-  wait-for-event 0:literal/console
+  print-character 0/screen, 97/a, 2/red
+  1:number/raw, 2:number/raw <- cursor-position 0/screen
+  wait-for-event 0/console
+  clear-screen 0/screen
+  move-cursor 0/screen, 0/row, 4/column
+  print-character 0/screen, 98/b
+  wait-for-event 0/console
+  move-cursor 0/screen, 0/row, 0/column
+  clear-line 0/screen
+  wait-for-event 0/console
+  cursor-down 0/screen
+  wait-for-event 0/console
+  cursor-right 0/screen
+  wait-for-event 0/console
+  cursor-left 0/screen
+  wait-for-event 0/console
+  cursor-up 0/screen
+  wait-for-event 0/console
   close-console
 ]

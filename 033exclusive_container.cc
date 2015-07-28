@@ -27,9 +27,9 @@ Type[tmp].element_names.push_back("p");
 :(scenario copy_exclusive_container)
 # Copying exclusive containers copies all their contents and an extra location for the tag.
 recipe main [
-  1:number <- copy 1:literal  # 'point' variant
-  2:number <- copy 34:literal
-  3:number <- copy 35:literal
+  1:number <- copy 1  # 'point' variant
+  2:number <- copy 34
+  3:number <- copy 35
   4:number-or-point <- copy 1:number-or-point/raw  # unsafe
 ]
 +mem: storing 1 in location 4
@@ -61,18 +61,18 @@ Type_ordinal["variant"] = 0;
 
 :(scenario maybe_convert)
 recipe main [
-  12:number <- copy 1:literal
-  13:number <- copy 35:literal
-  14:number <- copy 36:literal
+  12:number <- copy 1
+  13:number <- copy 35
+  14:number <- copy 36
   20:address:point <- maybe-convert 12:number-or-point/raw, 1:variant  # unsafe
 ]
 +mem: storing 13 in location 20
 
 :(scenario maybe_convert_fail)
 recipe main [
-  12:number <- copy 1:literal
-  13:number <- copy 35:literal
-  14:number <- copy 36:literal
+  12:number <- copy 1
+  13:number <- copy 35
+  14:number <- copy 36
   20:address:point <- maybe-convert 12:number-or-point/raw, 0:variant  # unsafe
 ]
 +mem: storing 0 in location 20
@@ -137,9 +137,9 @@ exclusive-container foo [
 ]
 
 recipe main [
-  1:number <- copy 34:literal
-  2:foo <- merge 0:literal/x, 1:number
-  4:foo <- merge 1:literal/x, 1:number
+  1:number <- copy 34
+  2:foo <- merge 0/x, 1:number
+  4:foo <- merge 1/x, 1:number
 ]
 +mem: storing 0 in location 2
 +mem: storing 34 in location 3

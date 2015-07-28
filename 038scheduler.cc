@@ -6,11 +6,11 @@ recipe f1 [
   start-running f2:recipe
   # wait for f2 to run
   {
-    jump-unless 1:number, -1:literal
+    jump-unless 1:number, -1
   }
 ]
 recipe f2 [
-  1:number <- copy 1:literal
+  1:number <- copy 1
 ]
 +schedule: f1
 +schedule: f2
@@ -144,47 +144,47 @@ case START_RUNNING: {
 :(scenario scheduler_runs_single_routine)
 % Scheduling_interval = 1;
 recipe f1 [
-  1:number <- copy 0:literal
-  2:number <- copy 0:literal
+  1:number <- copy 0
+  2:number <- copy 0
 ]
 +schedule: f1
-+run: 1:number <- copy 0:literal
++run: 1:number <- copy 0
 +schedule: f1
-+run: 2:number <- copy 0:literal
++run: 2:number <- copy 0
 
 :(scenario scheduler_interleaves_routines)
 % Scheduling_interval = 1;
 recipe f1 [
   start-running f2:recipe
-  1:number <- copy 0:literal
-  2:number <- copy 0:literal
+  1:number <- copy 0
+  2:number <- copy 0
 ]
 recipe f2 [
-  3:number <- copy 0:literal
-  4:number <- copy 0:literal
+  3:number <- copy 0
+  4:number <- copy 0
 ]
 +schedule: f1
 +run: start-running f2:recipe
 +schedule: f2
-+run: 3:number <- copy 0:literal
++run: 3:number <- copy 0
 +schedule: f1
-+run: 1:number <- copy 0:literal
++run: 1:number <- copy 0
 +schedule: f2
-+run: 4:number <- copy 0:literal
++run: 4:number <- copy 0
 +schedule: f1
-+run: 2:number <- copy 0:literal
++run: 2:number <- copy 0
 
 :(scenario start_running_takes_args)
 recipe f1 [
-  start-running f2:recipe, 3:literal
+  start-running f2:recipe, 3
   # wait for f2 to run
   {
-    jump-unless 1:number, -1:literal
+    jump-unless 1:number, -1
   }
 ]
 recipe f2 [
   1:number <- next-ingredient
-  2:number <- add 1:number, 1:literal
+  2:number <- add 1:number, 1
 ]
 +mem: storing 4 in location 2
 
@@ -193,22 +193,22 @@ recipe f1 [
   1:number <- start-running f2:recipe
 ]
 recipe f2 [
-  12:number <- copy 44:literal
+  12:number <- copy 44
 ]
 +mem: storing 2 in location 1
 
 //: this scenario will require some careful setup in escaped C++
 //: (straining our tangle capabilities to near-breaking point)
 :(scenario scheduler_skips_completed_routines)
-% recipe_ordinal f1 = load("recipe f1 [\n1:number <- copy 0:literal\n]").front();
-% recipe_ordinal f2 = load("recipe f2 [\n2:number <- copy 0:literal\n]").front();
+% recipe_ordinal f1 = load("recipe f1 [\n1:number <- copy 0\n]").front();
+% recipe_ordinal f2 = load("recipe f2 [\n2:number <- copy 0\n]").front();
 % Routines.push_back(new routine(f1));  // f1 meant to run
 % Routines.push_back(new routine(f2));
 % Routines.back()->state = COMPLETED;  // f2 not meant to run
 #? % Trace_stream->dump_layer = "all";
 # must have at least one routine without escaping
 recipe f3 [
-  3:number <- copy 0:literal
+  3:number <- copy 0
 ]
 # by interleaving '+' lines with '-' lines, we allow f1 and f3 to run in any order
 +schedule: f1
@@ -222,8 +222,8 @@ recipe f3 [
 % Routines.push_back(new routine(COPY));
 % Routines.back()->state = COMPLETED;
 recipe f1 [
-  1:number <- copy 0:literal
-  2:number <- copy 0:literal
+  1:number <- copy 0
+  2:number <- copy 0
 ]
 +schedule: f1
 -run: idle
@@ -236,7 +236,7 @@ recipe main [
   # f1 never actually runs because its parent completes without waiting for it
 ]
 recipe f1 [
-  1:number <- copy 0:literal
+  1:number <- copy 0
 ]
 -schedule: f1
 
@@ -264,12 +264,12 @@ bool has_completed_parent(long long int routine_index) {
 % Scheduling_interval = 2;
 recipe f1 [
   1:number/child-id <- start-running f2:recipe
-  12:number <- copy 0:literal  # race condition since we don't care about location 12
+  12:number <- copy 0  # race condition since we don't care about location 12
   # thanks to Scheduling_interval, f2's one instruction runs in between here and completes
   2:number/state <- routine-state 1:number/child-id
 ]
 recipe f2 [
-  12:number <- copy 0:literal
+  12:number <- copy 0
   # trying to run a second instruction marks routine as completed
 ]
 # recipe f2 should be in state COMPLETED

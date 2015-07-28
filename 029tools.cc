@@ -111,7 +111,7 @@ case _CLEAR_TRACE: {
 :(scenario assert)
 % Hide_warnings = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.
 recipe main [
-  assert 0:literal, [this is an assert in mu]
+  assert 0, [this is an assert in mu]
 ]
 +warn: this is an assert in mu
 

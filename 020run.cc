@@ -11,14 +11,14 @@
 
 :(scenario copy_literal)
 recipe main [
-  1:number <- copy 23:literal
+  1:number <- copy 23
 ]
-+run: 1:number <- copy 23:literal
++run: 1:number <- copy 23
 +mem: storing 23 in location 1
 
 :(scenario copy)
 recipe main [
-  1:number <- copy 23:literal
+  1:number <- copy 23
   2:number <- copy 1:number
 ]
 +run: 2:number <- copy 1:number
@@ -27,7 +27,7 @@ recipe main [
 
 :(scenario copy_multiple)
 recipe main [
-  1:number, 2:number <- copy 23:literal, 24:literal
+  1:number, 2:number <- copy 23, 24
 ]
 +mem: storing 23 in location 1
 +mem: storing 24 in location 2
@@ -249,21 +249,21 @@ bool is_literal(const reagent& r) {
 :(scenario run_label)
 recipe main [
   +foo
-  1:number <- copy 23:literal
+  1:number <- copy 23
   2:number <- copy 1:number
 ]
-+run: 1:number <- copy 23:literal
++run: 1:number <- copy 23
 +run: 2:number <- copy 1:number
 -run: +foo
 
 :(scenario run_dummy)
 recipe main [
-  _ <- copy 0:literal
+  _ <- copy 0
 ]
-+run: _ <- copy 0:literal
++run: _ <- copy 0
 
-:(scenario run_literal)
+:(scenario write_to_0_disallowed)
 recipe main [
-  0:literal/screen <- copy 0:literal
+  0 <- copy 34
 ]
--mem: storing 0 in location 0
+-mem: storing 34 in location 0

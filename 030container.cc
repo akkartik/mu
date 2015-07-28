@@ -19,8 +19,8 @@ Type[point].elements.push_back(i);
 //: avoid warnings.
 :(scenario copy_multiple_locations)
 recipe main [
-  1:number <- copy 34:literal
-  2:number <- copy 35:literal
+  1:number <- copy 34
+  2:number <- copy 35
   3:point <- copy 1:point/raw  # unsafe
 ]
 +mem: storing 34 in location 3
@@ -42,9 +42,9 @@ Type[point_number].elements.push_back(i2);
 
 :(scenario copy_handles_nested_container_elements)
 recipe main [
-  12:number <- copy 34:literal
-  13:number <- copy 35:literal
-  14:number <- copy 36:literal
+  12:number <- copy 34
+  13:number <- copy 35
+  14:number <- copy 36
   15:point-number <- copy 12:point-number/raw  # unsafe
 ]
 +mem: storing 36 in location 17
@@ -54,24 +54,24 @@ recipe main [
 
 :(scenario compare_multiple_locations)
 recipe main [
-  1:number <- copy 34:literal  # first
-  2:number <- copy 35:literal
-  3:number <- copy 36:literal
-  4:number <- copy 34:literal  # second
-  5:number <- copy 35:literal
-  6:number <- copy 36:literal
+  1:number <- copy 34  # first
+  2:number <- copy 35
+  3:number <- copy 36
+  4:number <- copy 34  # second
+  5:number <- copy 35
+  6:number <- copy 36
   7:boolean <- equal 1:point-number/raw, 4:point-number/raw  # unsafe
 ]
 +mem: storing 1 in location 7
 
 :(scenario compare_multiple_locations2)
 recipe main [
-  1:number <- copy 34:literal  # first
-  2:number <- copy 35:literal
-  3:number <- copy 36:literal
-  4:number <- copy 34:literal  # second
-  5:number <- copy 35:literal
-  6:number <- copy 37:literal  # different
+  1:number <- copy 34  # first
+  2:number <- copy 35
+  3:number <- copy 36
+  4:number <- copy 34  # second
+  5:number <- copy 35
+  6:number <- copy 37  # different
   7:boolean <- equal 1:point-number/raw, 4:point-number/raw  # unsafe
 ]
 +mem: storing 0 in location 7
@@ -95,8 +95,8 @@ if (t.kind == container) {
 //:: To access elements of a container, use 'get'
 :(scenario get)
 recipe main [
-  12:number <- copy 34:literal
-  13:number <- copy 35:literal
+  12:number <- copy 34
+  13:number <- copy 35
   15:number <- get 12:point/raw, 1:offset  # unsafe
 ]
 +mem: storing 35 in location 15
@@ -145,9 +145,9 @@ case GET: {
 
 :(scenario get_handles_nested_container_elements)
 recipe main [
-  12:number <- copy 34:literal
-  13:number <- copy 35:literal
-  14:number <- copy 36:literal
+  12:number <- copy 34
+  13:number <- copy 35
+  14:number <- copy 36
   15:number <- get 12:point-number/raw, 1:offset  # unsafe
 ]
 +mem: storing 36 in location 15
@@ -156,8 +156,8 @@ recipe main [
 
 :(scenario get_address)
 recipe main [
-  12:number <- copy 34:literal
-  13:number <- copy 35:literal
+  12:number <- copy 34
+  13:number <- copy 35
   15:address:number <- get-address 12:point/raw, 1:offset  # unsafe
 ]
 +mem: storing 13 in location 15
@@ -165,9 +165,9 @@ recipe main [
 :(scenario get_out_of_bounds)
 % Hide_warnings = true;
 recipe main [
-  12:number <- copy 34:literal
-  13:number <- copy 35:literal
-  14:number <- copy 36:literal
+  12:number <- copy 34
+  13:number <- copy 35
+  14:number <- copy 36
   get 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
 ]
 +warn: main: invalid offset 2 for point-number
@@ -175,9 +175,9 @@ recipe main [
 :(scenario get_out_of_bounds2)
 % Hide_warnings = true;
 recipe main [
-  12:number <- copy 34:literal
-  13:number <- copy 35:literal
-  14:number <- copy 36:literal
+  12:number <- copy 34
+  13:number <- copy 35
+  14:number <- copy 36
   get 12:point-number/raw, -1:offset
 ]
 +warn: main: invalid offset -1 for point-number
@@ -219,9 +219,9 @@ case GET_ADDRESS: {
 :(scenario get_address_out_of_bounds)
 % Hide_warnings = true;
 recipe main [
-  12:number <- copy 34:literal
-  13:number <- copy 35:literal
-  14:number <- copy 36:literal
+  12:number <- copy 34
+  13:number <- copy 35
+  14:number <- copy 36
   get-address 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
 ]
 +warn: invalid offset 2 for point-number
@@ -229,9 +229,9 @@ recipe main [
 :(scenario get_address_out_of_bounds2)
 % Hide_warnings = true;
 recipe main [
-  12:number <- copy 34:literal
-  13:number <- copy 35:literal
-  14:number <- copy 36:literal
+  12:number <- copy 34
+  13:number <- copy 35
+  14:number <- copy 36
   get-address 12:point-number/raw, -1:offset
 ]
 +warn: invalid offset -1 for point-number
@@ -359,14 +359,14 @@ Next_type_ordinal = 1000;
 #? % Trace_stream->dump_layer = "run";
 recipe main [
   # integer is not a type
-  1:integer <- copy 0:literal
+  1:integer <- copy 0
 ]
 +warn: unknown type: integer
 
 :(scenario run_allows_type_definition_after_use)
 % Hide_warnings = true;
 recipe main [
-  1:bar <- copy 0:literal
+  1:bar <- copy 0
 ]
 
 container bar [
@@ -459,7 +459,7 @@ container foo [
 ]
 
 recipe main [
-  1:foo <- merge 3:literal, 4:literal
+  1:foo <- merge 3, 4
 ]
 +mem: storing 3 in location 1
 +mem: storing 4 in location 2

@@ -5,7 +5,7 @@
 :(scenario jump_to_label)
 recipe main [
   jump +target:label
-  1:number <- copy 0:literal
+  1:number <- copy 0
   +target
 ]
 -mem: storing 0 in location 1
@@ -62,7 +62,7 @@ recipe main [
   {
     {
       break +target:label
-      1:number <- copy 0:literal
+      1:number <- copy 0
     }
   }
   +target
@@ -73,8 +73,8 @@ recipe main [
 recipe main [
   {
     {
-      jump-if 1:literal, +target:label
-      1:number <- copy 0:literal
+      jump-if 1, +target:label
+      1:number <- copy 0
     }
   }
   +target
@@ -85,8 +85,8 @@ recipe main [
 recipe main [
   {
     {
-      loop-unless 0:literal, +target:label  # loop/break with a label don't care about braces
-      1:number <- copy 0:literal
+      loop-unless 0, +target:label  # loop/break with a label don't care about braces
+      1:number <- copy 0
     }
   }
   +target
@@ -96,13 +96,13 @@ recipe main [
 :(scenario jump_runs_code_after_label)
 recipe main [
   # first a few lines of padding to exercise the offset computation
-  1:number <- copy 0:literal
-  2:number <- copy 0:literal
-  3:number <- copy 0:literal
+  1:number <- copy 0
+  2:number <- copy 0
+  3:number <- copy 0
   jump +target:label
-  4:number <- copy 0:literal
+  4:number <- copy 0
   +target
-  5:number <- copy 0:literal
+  5:number <- copy 0
 ]
 +mem: storing 0 in location 5
 -mem: storing 0 in location 4

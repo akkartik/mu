@@ -12,10 +12,10 @@
 # Arrays can be copied around with a single instruction just like numbers,
 # no matter how large they are.
 recipe main [
-  1:number <- copy 3:literal  # length
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
+  1:number <- copy 3  # length
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
   5:array:number <- copy 1:array:number/raw  # unsafe
 ]
 +mem: storing 3 in location 5
@@ -25,11 +25,11 @@ recipe main [
 
 :(scenario copy_array_indirect)
 recipe main [
-  1:number <- copy 3:literal  # length
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
-  5:address:array:number <- copy 1:literal
+  1:number <- copy 3  # length
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:address:array:number <- copy 1
   6:array:number <- copy 5:address:array:number/deref
 ]
 +mem: storing 3 in location 6
@@ -54,21 +54,21 @@ if (x.types.at(0) == Type_ordinal["array"]) return false;
 
 :(scenario index)
 recipe main [
-  1:number <- copy 3:literal  # length
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
-  5:number <- index 1:array:number/raw, 0:literal  # unsafe
+  1:number <- copy 3  # length
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:number <- index 1:array:number/raw, 0  # unsafe
 ]
 +mem: storing 14 in location 5
 
 :(scenario index_direct_offset)
 recipe main [
-  1:number <- copy 3:literal  # length
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
-  5:number <- copy 0:literal
+  1:number <- copy 3  # length
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:number <- copy 0
   6:number <- index 1:array:number/raw, 5:number  # unsafe
 ]
 +mem: storing 14 in location 6
@@ -114,42 +114,42 @@ vector<type_ordinal> array_element(const vector<type_ordinal>& types) {
 
 :(scenario index_indirect)
 recipe main [
-  1:number <- copy 3:literal  # length
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
-  5:address:array:number <- copy 1:literal
-  6:number <- index 5:address:array:number/deref, 1:literal
+  1:number <- copy 3  # length
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:address:array:number <- copy 1
+  6:number <- index 5:address:array:number/deref, 1
 ]
 +mem: storing 15 in location 6
 
 :(scenario index_out_of_bounds)
 % Hide_warnings = true;
 recipe main [
-  1:number <- copy 3:literal  # 3 points
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
-  5:number <- copy 14:literal
-  6:number <- copy 15:literal
-  7:number <- copy 16:literal
-  8:address:array:point <- copy 1:literal
-  index 8:address:array:point/deref, 4:literal  # less than size of array in locations, but larger than its length in elements
+  1:number <- copy 3  # 3 points
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:number <- copy 14
+  6:number <- copy 15
+  7:number <- copy 16
+  8:address:array:point <- copy 1
+  index 8:address:array:point/deref, 4  # less than size of array in locations, but larger than its length in elements
 ]
 +warn: main: invalid index 4
 
 :(scenario index_out_of_bounds2)
 % Hide_warnings = true;
 recipe main [
-  1:number <- copy 3:literal  # 3 points
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
-  5:number <- copy 14:literal
-  6:number <- copy 15:literal
-  7:number <- copy 16:literal
-  8:address:array:point <- copy 1:literal
-  index 8:address:array:point/deref, -1:literal
+  1:number <- copy 3  # 3 points
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:number <- copy 14
+  6:number <- copy 15
+  7:number <- copy 16
+  8:address:array:point <- copy 1
+  index 8:address:array:point/deref, -1
 ]
 +warn: main: invalid index -1
 
@@ -157,11 +157,11 @@ recipe main [
 
 :(scenario index_address)
 recipe main [
-  1:number <- copy 3:literal  # length
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
-  5:number <- index-address 1:array:number/raw, 0:literal  # unsafe
+  1:number <- copy 3  # length
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:number <- index-address 1:array:number/raw, 0  # unsafe
 ]
 +mem: storing 2 in location 5
 
@@ -198,30 +198,30 @@ case INDEX_ADDRESS: {
 :(scenario index_address_out_of_bounds)
 % Hide_warnings = true;
 recipe main [
-  1:number <- copy 3:literal  # 3 points
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
-  5:number <- copy 14:literal
-  6:number <- copy 15:literal
-  7:number <- copy 16:literal
-  8:address:array:point <- copy 1:literal
-  index-address 8:address:array:point/deref, 4:literal  # less than size of array in locations, but larger than its length in elements
+  1:number <- copy 3  # 3 points
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:number <- copy 14
+  6:number <- copy 15
+  7:number <- copy 16
+  8:address:array:point <- copy 1
+  index-address 8:address:array:point/deref, 4  # less than size of array in locations, but larger than its length in elements
 ]
 +warn: main: invalid index 4
 
 :(scenario index_address_out_of_bounds2)
 % Hide_warnings = true;
 recipe main [
-  1:number <- copy 3:literal  # 3 points
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
-  5:number <- copy 14:literal
-  6:number <- copy 15:literal
-  7:number <- copy 16:literal
-  8:address:array:point <- copy 1:literal
-  index-address 8:address:array:point/deref, -1:literal
+  1:number <- copy 3  # 3 points
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:number <- copy 14
+  6:number <- copy 15
+  7:number <- copy 16
+  8:address:array:point <- copy 1
+  index-address 8:address:array:point/deref, -1
 ]
 +warn: main: invalid index -1
 
@@ -229,10 +229,10 @@ recipe main [
 
 :(scenario array_length)
 recipe main [
-  1:number <- copy 3:literal  # length
-  2:number <- copy 14:literal
-  3:number <- copy 15:literal
-  4:number <- copy 16:literal
+  1:number <- copy 3  # length
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
   5:number <- length 1:array:number/raw  # unsafe
 ]
 +mem: storing 3 in location 5

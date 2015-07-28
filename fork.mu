@@ -3,14 +3,14 @@
 recipe main [
   start-running thread2:recipe
   {
-    $print 34:literal
+    $print 34
     loop
   }
 ]
 
 recipe thread2 [
   {
-    $print 35:literal
+    $print 35
     loop
   }
 ]

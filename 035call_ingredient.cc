@@ -3,11 +3,11 @@
 
 :(scenario next_ingredient)
 recipe main [
-  f 2:literal
+  f 2
 ]
 recipe f [
   12:number <- next-ingredient
-  13:number <- add 1:literal, 12:number
+  13:number <- add 1, 12:number
 ]
 +mem: storing 3 in location 13
 
@@ -59,7 +59,7 @@ case NEXT_INGREDIENT: {
 
 :(scenario rewind_ingredients)
 recipe main [
-  f 2:literal
+  f 2
 ]
 recipe f [
   12:number <- next-ingredient  # consume ingredient
@@ -84,10 +84,10 @@ case REWIND_INGREDIENTS: {
 
 :(scenario ingredient)
 recipe main [
-  f 1:literal, 2:literal
+  f 1, 2
 ]
 recipe f [
-  12:number <- ingredient 1:literal  # consume second ingredient first
+  12:number <- ingredient 1  # consume second ingredient first
   13:number, 1:boolean <- next-ingredient  # next-ingredient tries to scan past that
 ]
 +mem: storing 2 in location 12
