@@ -18,9 +18,11 @@ void transform_types(const recipe_ordinal r) {
   for (long long int i = 0; i < SIZE(Recipe[r].steps); ++i) {
     instruction& inst = Recipe[r].steps.at(i);
     for (long long int in = 0; in < SIZE(inst.ingredients); ++in) {
+      deduce_missing_type(metadata, inst.ingredients.at(in));
       check_metadata(metadata, inst.ingredients.at(in), r);
     }
     for (long long int out = 0; out < SIZE(inst.products); ++out) {
+      deduce_missing_type(metadata, inst.products.at(out));
       check_metadata(metadata, inst.products.at(out), r);
     }
   }
@@ -37,3 +39,31 @@ void check_metadata(map<string, vector<type_ordinal> >& metadata, const reagent&
   if (metadata[x.name] != x.types)
     raise << x.name << " used with multiple types in " << Recipe[r].name << '\n' << end();
 }
+
+:(scenario transform_types_fills_in_missing_types)
+recipe main [
+  x:number <- copy 1
+  y:number <- add x, 1
+]
+
+:(code)
+void deduce_missing_type(map<string, vector<type_ordinal> >& metadata, reagent& x) {
+  if (!x.types.empty()) return;
+  if (metadata.find(x.name) == metadata.end()) return;
+  copy(metadata[x.name].begin(), metadata[x.name].end(), inserter(x.types, x.types.begin()));
+  assert(x.properties.at(0).second.empty());
+  x.properties.at(0).second.push_back("as-before");
+}
+
+:(scenario transform_types_fills_in_missing_types_in_product)
+recipe main [
+  x:number <- copy 1
+  x <- copy 2
+]
+
+:(scenario transform_types_fills_in_missing_types_in_product_and_ingredient)
+recipe main [
+  x:number <- copy 1
+  x <- add x, 1
+]
++mem: storing 2 in location 1
