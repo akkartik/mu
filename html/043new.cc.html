@@ -13,16 +13,15 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.SalientComment { color: #00ffff; }
 .Constant { color: #00a0a0; }
-.CommentedCode { color: #6c6c6c; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
-.traceContains { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -40,21 +39,21 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Delimiter">:(scenario new)</span>
 <span class="Comment"># call new two times with identical arguments; you should get back different results</span>
 recipe main [
-  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span>new number:type
+  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span>new number:type
   <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:number/<span class="Special">raw</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 3</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
+long long int Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
+long long int Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
+long long int Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
 Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> alloc<span class="Delimiter">,</span> alloc_max<span class="Delimiter">;</span>
+long long int alloc<span class="Delimiter">,</span> alloc_max<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 alloc = Memory_allocated_until<span class="Delimiter">;</span>
 Memory_allocated_until += Initial_memory_per_routine<span class="Delimiter">;</span>
@@ -67,20 +66,20 @@ trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimite
 Type_ordinal[<span class="Constant">&quot;type&quot;</span>] = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(after &quot;Per-recipe Transforms&quot;)</span>
 <span class="Comment">// replace type names with type_ordinals</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;new&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == Recipe_ordinal[<span class="Constant">&quot;new&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// End NEW Transform Special-cases</span>
   <span class="Comment">// first arg must be of type 'type'</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+  if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
     raise &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: 'new' expects one or two ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
+  if <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
       || inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
       || inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">&quot;type&quot;</span><span class="Delimiter">)</span>
     raise &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: first ingredient of 'new' should be a type, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">)</span> == Type_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+  if <span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">)</span> == Type_ordinal<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
     raise &lt;&lt; Recipe[r]<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: unknown type &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>Type_ordinal[inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name]<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; -&gt; &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Normal">end_new_transform</span>:<span class="Delimiter">;</span>
+  end_new_transform:<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: Now implement the primitive recipe.</span>
@@ -91,27 +90,27 @@ NEW<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;new&quot;</span>] = NEW<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> NEW: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case NEW: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'new' requires one or two ingredients, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'new' should be a type, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// compute the space we need</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> array_length = <span class="Constant">0</span><span class="Delimiter">;</span>
+  long long int size = <span class="Constant">0</span><span class="Delimiter">;</span>
+  long long int array_length = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Delimiter">{</span>
     vector&lt;type_ordinal&gt; type<span class="Delimiter">;</span>
     type<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value<span class="Delimiter">);</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// array</span>
       array_length = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
       trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;array size is &quot;</span> &lt;&lt; array_length &lt;&lt; end<span class="Delimiter">();</span>
       size = array_length*size_of<span class="Delimiter">(</span>type<span class="Delimiter">)</span> + <span class="Comment">/*</span><span class="Comment">space for length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">else</span> <span class="Delimiter">{</span>
+    else <span class="Delimiter">{</span>
       <span class="Comment">// scalar</span>
       size = size_of<span class="Delimiter">(</span>type<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
@@ -121,16 +120,16 @@ Recipe_ordinal[<span class="Constant">&quot;new&quot;</span>] = NEW<span class="
   <span class="Comment">// compute the region of memory to return</span>
   <span class="Comment">// really crappy at the moment</span>
   ensure_space<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
-  <span class="Normal">const</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
+  const long long int result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new alloc: &quot;</span> &lt;&lt; result &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Comment">// save result</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Comment">// initialize allocated space</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address = result<span class="Delimiter">;</span> address &lt; result+size<span class="Delimiter">;</span> ++address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int address = result<span class="Delimiter">;</span> address &lt; result+size<span class="Delimiter">;</span> ++address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Memory[address] = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     Memory[result] = array_length<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// bump</span>
@@ -153,9 +152,9 @@ Recipe_ordinal[<span class="Constant">&quot;new&quot;</span>] = NEW<span class="
 <span class="CommentedCode">//? cerr &lt;&lt; SIZE(Memory) &lt;&lt; '\n'; //? 1</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> ensure_space<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void ensure_space<span class="Delimiter">(</span>long long int size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>size &lt;= Initial_memory_per_routine<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc + size &gt; Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc + size &gt; Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// waste the remaining space and create a new chunk</span>
     Current_routine<span class="Delimiter">-&gt;</span>alloc = Memory_allocated_until<span class="Delimiter">;</span>
     Memory_allocated_until += Initial_memory_per_routine<span class="Delimiter">;</span>
@@ -168,29 +167,29 @@ Recipe_ordinal[<span class="Constant">&quot;new&quot;</span>] = NEW<span class="
 <span class="Special">% Memory_allocated_until = 10;</span>
 <span class="Special">% Memory[Memory_allocated_until] = 1;</span>
 recipe main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number/deref
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>new number:type
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:number
 ]
 <span class="traceContains">+mem: storing 0 in location 2</span>
 
 <span class="Delimiter">:(scenario new_array)</span>
 recipe main [
-  <span class="Constant">1</span>:address:array:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">5</span>:literal
-  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:array:number/<span class="Special">raw &lt;- </span>new number:type<span class="Delimiter">,</span> <span class="Constant">5</span>
+  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span>new number:type
   <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:number/<span class="Special">raw</span>
 ]
-<span class="traceContains">+run: 1:address:array:number/raw &lt;- new number:type, 5:literal</span>
+<span class="traceContains">+run: 1:address:array:number/raw &lt;- new number:type, 5</span>
 <span class="traceContains">+mem: array size is 5</span>
 <span class="Comment"># don't forget the extra location for array size</span>
 <span class="traceContains">+mem: storing 6 in location 3</span>
 
 <span class="Delimiter">:(scenario new_empty_array)</span>
 recipe main [
-  <span class="Constant">1</span>:address:array:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
-  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:array:number/<span class="Special">raw &lt;- </span>new number:type<span class="Delimiter">,</span> <span class="Constant">0</span>
+  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span>new number:type
   <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:number/<span class="Special">raw</span>
 ]
-<span class="traceContains">+run: 1:address:array:number/raw &lt;- new number:type, 0:literal</span>
+<span class="traceContains">+run: 1:address:array:number/raw &lt;- new number:type, 0</span>
 <span class="traceContains">+mem: array size is 0</span>
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
@@ -198,18 +197,18 @@ recipe main [
 <span class="Delimiter">:(scenario new_concurrent)</span>
 recipe f1 [
   start-running f2:recipe
-  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span>new number:type
   <span class="Comment"># wait for f2 to complete</span>
   <span class="Delimiter">{</span>
     loop-unless <span class="Constant">4</span>:number/<span class="Special">raw</span>
   <span class="Delimiter">}</span>
 ]
 recipe f2 [
-  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span>new number:type
   <span class="Comment"># hack: assumes scheduler implementation</span>
   <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:number/<span class="Special">raw</span>
   <span class="Comment"># signal f2 complete</span>
-  <span class="Constant">4</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>:literal
+  <span class="Constant">4</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 3</span>
 
@@ -217,8 +216,8 @@ recipe f2 [
 <span class="Delimiter">:(scenario new_overflow)</span>
 <span class="Special">% Initial_memory_per_routine = 2;</span>
 recipe main [
-  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:address:point/<span class="Special">raw &lt;- </span><span class="Normal">new</span> point:type  <span class="Comment"># not enough room in initial page</span>
+  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span>new number:type
+  <span class="Constant">2</span>:address:point/<span class="Special">raw &lt;- </span>new point:type  <span class="Comment"># not enough room in initial page</span>
 ]
 <span class="traceContains">+new: routine allocated memory from 1000 to 1002</span>
 <span class="traceContains">+new: routine allocated memory from 1002 to 1004</span>
@@ -228,16 +227,16 @@ recipe main [
 
 <span class="Delimiter">:(scenario new_reclaim)</span>
 recipe main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>new number:type
   abandon <span class="Constant">1</span>:address:number
-  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type  <span class="Comment"># must be same size as abandoned memory to reuse</span>
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>new number:type  <span class="Comment"># must be same size as abandoned memory to reuse</span>
   <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:number
 ]
 <span class="Comment"># both allocations should have returned the same address</span>
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-map&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt; Free_list<span class="Delimiter">;</span>
+map&lt;long long int<span class="Delimiter">,</span> long long int&gt; Free_list<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Free_list<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 
@@ -246,33 +245,33 @@ ABANDON<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;abandon&quot;</span>] = ABANDON<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> ABANDON: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case ABANDON: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'abandon' requires one ingredient, but got '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'abandon' should be an address, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  long long int address = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   reagent types = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>types<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_ordinal[<span class="Constant">&quot;address&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>types<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_ordinal[<span class="Constant">&quot;address&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: first ingredient of 'abandon' should be an address, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  reagent target_type = deref<span class="Delimiter">(</span>types<span class="Delimiter">);</span>
+  reagent target_type = lookup_memory<span class="Delimiter">(</span>types<span class="Delimiter">);</span>
   abandon<span class="Delimiter">(</span>address<span class="Delimiter">,</span> size_of<span class="Delimiter">(</span>target_type<span class="Delimiter">));</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> abandon<span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> address<span class="Delimiter">,</span> <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+void abandon<span class="Delimiter">(</span>long long int address<span class="Delimiter">,</span> long long int size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   Total_free += size; //? 1</span>
 <span class="CommentedCode">//?   Num_free++; //? 1</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;abandon: &quot; &lt;&lt; size &lt;&lt; '\n'; //? 2</span>
   <span class="Comment">// clear memory</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> curr = address<span class="Delimiter">;</span> curr &lt; address+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span>
+  for <span class="Delimiter">(</span>long long int curr = address<span class="Delimiter">;</span> curr &lt; address+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span>
     Memory[curr] = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Comment">// append existing free list to address</span>
   Memory[address] = Free_list[size]<span class="Delimiter">;</span>
@@ -280,18 +279,18 @@ Recipe_ordinal[<span class="Constant">&quot;abandon&quot;</span>] = ABANDON<span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;ensure_space(size)&quot; following &quot;case NEW&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>Free_list[size]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = Free_list[size]<span class="Delimiter">;</span>
+if <span class="Delimiter">(</span>Free_list[size]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  long long int result = Free_list[size]<span class="Delimiter">;</span>
   Free_list[size] = Memory[result]<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> curr = result+<span class="Constant">1</span><span class="Delimiter">;</span> curr &lt; result+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Memory[curr] != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int curr = result+<span class="Constant">1</span><span class="Delimiter">;</span> curr &lt; result+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>Memory[curr] != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: memory in free list was not zeroed out: &quot;</span> &lt;&lt; curr &lt;&lt; <span class="Constant">'/'</span> &lt;&lt; result &lt;&lt; <span class="Constant">&quot;; somebody wrote to us after free!!!</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// always fatal</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span>
     Memory[result] = array_length<span class="Delimiter">;</span>
-  <span class="Normal">else</span>
+  else
     Memory[result] = <span class="Constant">0</span><span class="Delimiter">;</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
@@ -300,9 +299,9 @@ Recipe_ordinal[<span class="Constant">&quot;abandon&quot;</span>] = ABANDON<span
 
 <span class="Delimiter">:(scenario new_differing_size_no_reclaim)</span>
 recipe main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>new number:type
   abandon <span class="Constant">1</span>:address:number
-  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>:literal  <span class="Comment"># different size</span>
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>new number:type<span class="Delimiter">,</span> <span class="Constant">2</span>  <span class="Comment"># different size</span>
   <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:number
 ]
 <span class="Comment"># no reuse</span>
@@ -310,9 +309,9 @@ recipe main [
 
 <span class="Delimiter">:(scenario new_reclaim_array)</span>
 recipe main [
-  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>new number:type<span class="Delimiter">,</span> <span class="Constant">2</span>
   abandon <span class="Constant">1</span>:address:array:number
-  <span class="Constant">2</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  <span class="Constant">2</span>:address:array:number<span class="Special"> &lt;- </span>new number:type<span class="Delimiter">,</span> <span class="Constant">2</span>
   <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:array:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:array:number
 ]
 <span class="Comment"># reuse</span>
@@ -322,24 +321,24 @@ recipe main [
 
 <span class="Delimiter">:(scenario new_string)</span>
 recipe main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc def]
-  <span class="Constant">2</span>:character<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:address:array:character/deref<span class="Delimiter">,</span> <span class="Constant">5</span>:literal
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [abc def]
+  <span class="Constant">2</span>:character<span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
 <span class="Comment"># number code for 'e'</span>
 <span class="traceContains">+mem: storing 101 in location 2</span>
 
 <span class="Delimiter">:(scenario new_string_handles_unicode)</span>
 recipe main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [a«c]
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>length <span class="Constant">1</span>:address:array:character/deref
-  <span class="Constant">3</span>:character<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:address:array:character/deref<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new [a«c]
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">1</span>:address:array:character
+  <span class="Constant">3</span>:character<span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 3 in location 2</span>
 <span class="Comment"># unicode for '«'</span>
 <span class="traceContains">+mem: storing 171 in location 3</span>
 
 <span class="Delimiter">:(before &quot;End NEW Transform Special-cases&quot;)</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
+  if <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
       &amp;&amp; !inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
       &amp;&amp; !inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>empty<span class="Delimiter">()</span>
       &amp;&amp; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -349,7 +348,7 @@ recipe main [
   <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(after &quot;case NEW&quot; following &quot;Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span>
+if <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span>
     &amp;&amp; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
@@ -357,20 +356,20 @@ recipe main [
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> new_mu_string<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+long long int new_mu_string<span class="Delimiter">(</span>const string&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// allocate an array just large enough for it</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> string_length = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
+  long long int string_length = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
 <span class="CommentedCode">//?   cout &lt;&lt; &quot;string_length is &quot; &lt;&lt; string_length &lt;&lt; '\n'; //? 1</span>
 <span class="CommentedCode">//?   Total_alloc += string_length+1; //? 1</span>
 <span class="CommentedCode">//?   Num_alloc++; //? 1</span>
   ensure_space<span class="Delimiter">(</span>string_length+<span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// don't forget the extra location for array size</span>
   <span class="Comment">// initialize string</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
+  long long int result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
   Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc++] = string_length<span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">const</span> <span class="Normal">char</span>* raw_contents = contents<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; string_length<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">uint32_t</span> curr_character<span class="Delimiter">;</span>
+  long long int curr = <span class="Constant">0</span><span class="Delimiter">;</span>
+  const char* raw_contents = contents<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; string_length<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    uint32_t curr_character<span class="Delimiter">;</span>
     assert<span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
     tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;curr_character<span class="Delimiter">,</span> &amp;raw_contents[curr]<span class="Delimiter">);</span>
     Memory[Current_routine<span class="Delimiter">-&gt;</span>alloc] = curr_character<span class="Delimiter">;</span>
@@ -385,19 +384,19 @@ recipe main [
 <span class="Delimiter">:(scenario new_string_overflow)</span>
 <span class="Special">% Initial_memory_per_routine = 2;</span>
 recipe main [
-  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:address:array:character/<span class="Special">raw &lt;- </span><span class="Normal">new</span> [a]  <span class="Comment"># not enough room in initial page, if you take the array size into account</span>
+  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span>new number:type
+  <span class="Constant">2</span>:address:array:character/<span class="Special">raw &lt;- </span>new [a]  <span class="Comment"># not enough room in initial page, if you take the array size into account</span>
 ]
 <span class="traceContains">+new: routine allocated memory from 1000 to 1002</span>
 <span class="traceContains">+new: routine allocated memory from 1002 to 1004</span>
 
 <span class="Comment">//: helpers</span>
 <span class="Delimiter">:(code)</span>
-<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> unicode_length<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">const</span> <span class="Normal">char</span>* in = s<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>s<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// carefully bounds-check on the string</span>
+long long int unicode_length<span class="Delimiter">(</span>const string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  const char* in = s<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
+  long long int result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  long long int curr = <span class="Constant">0</span><span class="Delimiter">;</span>
+  while <span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>s<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// carefully bounds-check on the string</span>
     <span class="Comment">// before accessing its raw pointer</span>
     ++result<span class="Delimiter">;</span>
     curr += tb_utf8_char_length<span class="Delimiter">(</span>in[curr]<span class="Delimiter">);</span>

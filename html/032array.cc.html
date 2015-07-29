@@ -13,15 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
-.SalientComment { color: #00ffff; }
 .Constant { color: #00a0a0; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
-.traceContains { color: #008000; }
 -->
 </style>
 
@@ -47,10 +46,10 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 <span class="Comment"># Arrays can be copied around with a single instruction just like numbers,</span>
 <span class="Comment"># no matter how large they are.</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># length</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># length</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
   <span class="Constant">5</span>:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:array:number/<span class="Special">raw</span>  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 3 in location 5</span>
@@ -60,12 +59,12 @@ recipe main [
 
 <span class="Delimiter">:(scenario copy_array_indirect)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># length</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  <span class="Constant">6</span>:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>:address:array:number/deref
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># length</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">6</span>:array:number<span class="Special"> &lt;- </span>copy *<span class="Constant">5</span>:address:array:number
 ]
 <span class="traceContains">+mem: storing 3 in location 6</span>
 <span class="traceContains">+mem: storing 14 in location 7</span>
@@ -73,11 +72,11 @@ recipe main [
 <span class="traceContains">+mem: storing 16 in location 9</span>
 
 <span class="Comment">//: disable the size mismatch check since the destination array need not be initialized</span>
-<span class="Delimiter">:(after &quot;bool size_mismatch(const reagent&amp; x, const vector&lt;double&gt;&amp; data)&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End size_mismatch(x) Cases&quot;)</span>
+if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End size_of(reagent) Cases&quot;)</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>types<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>r<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>types<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: '&quot;</span> &lt;&lt; r<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' is an array of what?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -89,21 +88,21 @@ recipe main [
 
 <span class="Delimiter">:(scenario index)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># length</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">0</span>:literal  <span class="Comment"># unsafe</span>
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># length</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">0</span>  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 14 in location 5</span>
 
 <span class="Delimiter">:(scenario index_direct_offset)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># length</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># length</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">5</span>:number  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 14 in location 6</span>
@@ -113,26 +112,26 @@ INDEX<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;index&quot;</span>] = INDEX<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> INDEX: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case INDEX: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'index' expects exactly 2 ingredients in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent base = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  long long int base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name <span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'index' on a non-array &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent offset = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
-  vector&lt;<span class="Normal">double</span>&gt; offset_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>offset<span class="Delimiter">));</span>
+  vector&lt;double&gt; offset_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>offset<span class="Delimiter">));</span>
   vector&lt;type_ordinal&gt; element_type = array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>types<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span> || offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= Memory[base_address]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span> || offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= Memory[base_address]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: invalid index &quot;</span> &lt;&lt; offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> src = base_address + <span class="Constant">1</span> + offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
+  long long int src = base_address + <span class="Constant">1</span> + offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy is &quot;</span> &lt;&lt; src &lt;&lt; end<span class="Delimiter">();</span>
   trace<span class="Delimiter">(</span>Primitive_recipe_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;its type is &quot;</span> &lt;&lt; Type[element_type<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>]<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
   reagent tmp<span class="Delimiter">;</span>
@@ -143,48 +142,48 @@ Recipe_ordinal[<span class="Constant">&quot;index&quot;</span>] = INDEX<span cla
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-vector&lt;type_ordinal&gt; array_element<span class="Delimiter">(</span><span class="Normal">const</span> vector&lt;type_ordinal&gt;&amp; types<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+vector&lt;type_ordinal&gt; array_element<span class="Delimiter">(</span>const vector&lt;type_ordinal&gt;&amp; types<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> vector&lt;type_ordinal&gt;<span class="Delimiter">(</span>++types<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> types<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario index_indirect)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># length</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">5</span>:address:array:number/deref<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># length</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>index *<span class="Constant">5</span>:address:array:number<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 15 in location 6</span>
 
 <span class="Delimiter">:(scenario index_out_of_bounds)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># 3 points</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  index <span class="Constant">8</span>:address:array:point/deref<span class="Delimiter">,</span> <span class="Constant">4</span>:literal  <span class="Comment"># less than size of array in locations, but larger than its length in elements</span>
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># 3 points</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  index *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> <span class="Constant">4</span>  <span class="Comment"># less than size of array in locations, but larger than its length in elements</span>
 ]
 <span class="traceContains">+warn: main: invalid index 4</span>
 
 <span class="Delimiter">:(scenario index_out_of_bounds2)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># 3 points</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  index <span class="Constant">8</span>:address:array:point/deref<span class="Delimiter">,</span> -<span class="Constant">1</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># 3 points</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  index *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> -<span class="Constant">1</span>
 ]
 <span class="traceContains">+warn: main: invalid index -1</span>
 
@@ -192,11 +191,11 @@ recipe main [
 
 <span class="Delimiter">:(scenario index_address)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># length</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index-address <span class="Constant">1</span>:array:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">0</span>:literal  <span class="Comment"># unsafe</span>
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># length</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index-address <span class="Constant">1</span>:array:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">0</span>  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 5</span>
 
@@ -205,26 +204,26 @@ INDEX_ADDRESS<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;index-address&quot;</span>] = INDEX_ADDRESS<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> INDEX_ADDRESS: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case INDEX_ADDRESS: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'index-address' expects exactly 2 ingredients in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent base = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  long long int base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  if <span class="Delimiter">(</span>base<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name <span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'index-address' on a non-array &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent offset = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
-  vector&lt;<span class="Normal">double</span>&gt; offset_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>offset<span class="Delimiter">));</span>
+  vector&lt;double&gt; offset_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>offset<span class="Delimiter">));</span>
   vector&lt;type_ordinal&gt; element_type = array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>types<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span> || offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= Memory[base_address]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span> || offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= Memory[base_address]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: invalid index &quot;</span> &lt;&lt; offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = base_address + <span class="Constant">1</span> + offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
+  long long int result = base_address + <span class="Constant">1</span> + offset_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -233,30 +232,30 @@ Recipe_ordinal[<span class="Constant">&quot;index-address&quot;</span>] = INDEX_
 <span class="Delimiter">:(scenario index_address_out_of_bounds)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># 3 points</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  index-address <span class="Constant">8</span>:address:array:point/deref<span class="Delimiter">,</span> <span class="Constant">4</span>:literal  <span class="Comment"># less than size of array in locations, but larger than its length in elements</span>
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># 3 points</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  index-address *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> <span class="Constant">4</span>  <span class="Comment"># less than size of array in locations, but larger than its length in elements</span>
 ]
 <span class="traceContains">+warn: main: invalid index 4</span>
 
 <span class="Delimiter">:(scenario index_address_out_of_bounds2)</span>
 <span class="Special">% Hide_warnings = true;</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># 3 points</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
-  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  index-address <span class="Constant">8</span>:address:array:point/deref<span class="Delimiter">,</span> -<span class="Constant">1</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># 3 points</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">8</span>:address:array:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  index-address *<span class="Constant">8</span>:address:array:point<span class="Delimiter">,</span> -<span class="Constant">1</span>
 ]
 <span class="traceContains">+warn: main: invalid index -1</span>
 
@@ -264,10 +263,10 @@ recipe main [
 
 <span class="Delimiter">:(scenario array_length)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal  <span class="Comment"># length</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>:literal
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>:literal
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># length</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>length <span class="Constant">1</span>:array:number/<span class="Special">raw</span>  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 3 in location 5</span>
@@ -277,13 +276,13 @@ LENGTH<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;length&quot;</span>] = LENGTH<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> LENGTH: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case LENGTH: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'length' expects exactly 2 ingredients in '&quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent x = canonize<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>x<span class="Delimiter">.</span>types<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != Type_ordinal[<span class="Constant">&quot;array&quot;</span>]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;tried to calculate length of non-array &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>

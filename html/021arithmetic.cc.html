@@ -13,15 +13,14 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.traceContains { color: #008000; }
 .cSpecial { color: #008000; }
 .Constant { color: #00a0a0; }
-.Special { color: #ff6060; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
+.Special { color: #ff6060; }
 .CommentedCode { color: #6c6c6c; }
 .Identifier { color: #804000; }
-.traceContains { color: #008000; }
 -->
 </style>
 
@@ -40,10 +39,10 @@ ADD<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;add&quot;</span>] = ADD<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> ADD: <span class="Delimiter">{</span>
-  <span class="Normal">double</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+case ADD: <span class="Delimiter">{</span>
+  double result = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="CommentedCode">//?   if (!tb_is_active()) cerr &lt;&lt; ingredients.at(1).at(0) &lt;&lt; '\n'; //? 1</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     result += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -54,21 +53,21 @@ Recipe_ordinal[<span class="Constant">&quot;add&quot;</span>] = ADD<span class="
 
 <span class="Delimiter">:(scenario add_literal)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">23</span>:literal<span class="Delimiter">,</span> <span class="Constant">34</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 <span class="traceContains">+mem: storing 57 in location 1</span>
 
 <span class="Delimiter">:(scenario add)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing 57 in location 3</span>
 
 <span class="Delimiter">:(scenario add_multiple)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">3</span>:literal<span class="Delimiter">,</span> <span class="Constant">4</span>:literal<span class="Delimiter">,</span> <span class="Constant">5</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
 <span class="traceContains">+mem: storing 12 in location 1</span>
 
@@ -77,14 +76,14 @@ SUBTRACT<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;subtract&quot;</span>] = SUBTRACT<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> SUBTRACT: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+case SUBTRACT: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'subtract' has no ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
-  <span class="Normal">double</span> result = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  double result = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     result -= ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -95,21 +94,21 @@ Recipe_ordinal[<span class="Constant">&quot;subtract&quot;</span>] = SUBTRACT<sp
 
 <span class="Delimiter">:(scenario subtract_literal)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>subtract <span class="Constant">5</span>:literal<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>subtract <span class="Constant">5</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 3 in location 1</span>
 
 <span class="Delimiter">:(scenario subtract)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>:literal
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>subtract <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing -11 in location 3</span>
 
 <span class="Delimiter">:(scenario subtract_multiple)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>subtract <span class="Constant">6</span>:literal<span class="Delimiter">,</span> <span class="Constant">3</span>:literal<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>subtract <span class="Constant">6</span><span class="Delimiter">,</span> <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 1 in location 1</span>
 
@@ -118,9 +117,9 @@ MULTIPLY<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;multiply&quot;</span>] = MULTIPLY<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> MULTIPLY: <span class="Delimiter">{</span>
-  <span class="Normal">double</span> result = <span class="Constant">1</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case MULTIPLY: <span class="Delimiter">{</span>
+  double result = <span class="Constant">1</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     result *= ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -131,21 +130,21 @@ Recipe_ordinal[<span class="Constant">&quot;multiply&quot;</span>] = MULTIPLY<sp
 
 <span class="Delimiter">:(scenario multiply_literal)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>multiply <span class="Constant">2</span>:literal<span class="Delimiter">,</span> <span class="Constant">3</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>multiply <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">3</span>
 ]
 <span class="traceContains">+mem: storing 6 in location 1</span>
 
 <span class="Delimiter">:(scenario multiply)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">4</span>:literal
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">6</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">4</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">6</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>multiply <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing 24 in location 3</span>
 
 <span class="Delimiter">:(scenario multiply_multiple)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>multiply <span class="Constant">2</span>:literal<span class="Delimiter">,</span> <span class="Constant">3</span>:literal<span class="Delimiter">,</span> <span class="Constant">4</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>multiply <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
 ]
 <span class="traceContains">+mem: storing 24 in location 1</span>
 
@@ -154,14 +153,14 @@ DIVIDE<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;divide&quot;</span>] = DIVIDE<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> DIVIDE: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+case DIVIDE: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'divide' has no ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
-  <span class="Normal">double</span> result = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  double result = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     result /= ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -172,21 +171,21 @@ Recipe_ordinal[<span class="Constant">&quot;divide&quot;</span>] = DIVIDE<span c
 
 <span class="Delimiter">:(scenario divide_literal)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>divide <span class="Constant">8</span>:literal<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>divide <span class="Constant">8</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 4 in location 1</span>
 
 <span class="Delimiter">:(scenario divide)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">27</span>:literal
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">27</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>divide <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing 9 in location 3</span>
 
 <span class="Delimiter">:(scenario divide_multiple)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>divide <span class="Constant">12</span>:literal<span class="Delimiter">,</span> <span class="Constant">3</span>:literal<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>divide <span class="Constant">12</span><span class="Delimiter">,</span> <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 1</span>
 
@@ -197,13 +196,13 @@ DIVIDE_WITH_REMAINDER<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;divide-with-remainder&quot;</span>] = DIVIDE_WITH_REMAINDER<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> DIVIDE_WITH_REMAINDER: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case DIVIDE_WITH_REMAINDER: <span class="Delimiter">{</span>
+  if <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;: 'divide-with-remainder' requires exactly two ingredients, but got &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>to_string<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> quotient = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> / ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> remainder = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> % <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  long long int quotient = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> / ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  long long int remainder = static_cast&lt;long long int&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> % static_cast&lt;long long int&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
   <span class="Comment">// very large integers will lose precision</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>quotient<span class="Delimiter">);</span>
@@ -213,15 +212,15 @@ Recipe_ordinal[<span class="Constant">&quot;divide-with-remainder&quot;</span>] 
 
 <span class="Delimiter">:(scenario divide_with_remainder_literal)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>divide-with-remainder <span class="Constant">9</span>:literal<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>divide-with-remainder <span class="Constant">9</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 4 in location 1</span>
 <span class="traceContains">+mem: storing 1 in location 2</span>
 
 <span class="Delimiter">:(scenario divide_with_remainder)</span>
 recipe main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">27</span>:literal
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">11</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">27</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">11</span>
   <span class="Constant">3</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>divide-with-remainder <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
 ]
 <span class="traceContains">+mem: storing 2 in location 3</span>
@@ -230,15 +229,15 @@ recipe main [
 <span class="Delimiter">:(scenario divide_with_decimal_point)</span>
 recipe main [
   <span class="Comment"># todo: literal floats?</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>divide <span class="Constant">5</span>:literal<span class="Delimiter">,</span> <span class="Constant">2</span>:literal
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>divide <span class="Constant">5</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 2.5 in location 1</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">inline</span> <span class="Normal">bool</span> scalar<span class="Delimiter">(</span><span class="Normal">const</span> vector&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+inline bool scalar<span class="Delimiter">(</span>const vector&lt;long long int&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>x<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-<span class="Normal">inline</span> <span class="Normal">bool</span> scalar<span class="Delimiter">(</span><span class="Normal">const</span> vector&lt;<span class="Normal">double</span>&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+inline bool scalar<span class="Delimiter">(</span>const vector&lt;double&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>x<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>

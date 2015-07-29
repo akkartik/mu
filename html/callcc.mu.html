@@ -13,11 +13,11 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -33,18 +33,18 @@ body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 
 <span class="muRecipe">recipe</span> main [
   c:continuation<span class="Special"> &lt;- </span>f
-  <span class="muControl">continue-from</span> c:continuation            <span class="Comment"># &lt;-- ..when you hit this</span>
+  <span class="muControl">continue-from</span> c                         <span class="Comment"># &lt;-- ..when you hit this</span>
 ]
 
 <span class="muRecipe">recipe</span> f [
   c:continuation<span class="Special"> &lt;- </span>g
-  <span class="muControl">reply</span> c:continuation
+  <span class="muControl">reply</span> c
 ]
 
 <span class="muRecipe">recipe</span> g [
   c:continuation<span class="Special"> &lt;- </span><span class="muControl">current-continuation</span>  <span class="Comment"># &lt;-- loop back to here</span>
-  $print <span class="Constant">1:literal</span>
-  <span class="muControl">reply</span> c:continuation  <span class="Comment"># threaded through unmodified after first iteration</span>
+  $print <span class="Constant">1</span>
+  <span class="muControl">reply</span> c  <span class="Comment"># threaded through unmodified after first iteration</span>
 ]
 </pre>
 </body>

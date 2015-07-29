@@ -13,13 +13,12 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.traceContains { color: #008000; }
 .Constant { color: #00a0a0; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #a04060; }
 .Special { color: #ff6060; }
 .Identifier { color: #804000; }
-.traceContains { color: #008000; }
 -->
 </style>
 
@@ -38,9 +37,9 @@ AND<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;and&quot;</span>] = AND<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> AND: <span class="Delimiter">{</span>
-  <span class="Normal">bool</span> result = <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case AND: <span class="Delimiter">{</span>
+  bool result = <span class="Constant">true</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     result = result &amp;&amp; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -51,27 +50,27 @@ Recipe_ordinal[<span class="Constant">&quot;and&quot;</span>] = AND<span class="
 
 <span class="Delimiter">:(scenario and)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
-  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span><span class="Normal">and</span> <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean
 ]
 <span class="traceContains">+mem: storing 0 in location 3</span>
 
 <span class="Delimiter">:(scenario and2)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span><span class="Normal">and</span> <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 1 in location 1</span>
 
 <span class="Delimiter">:(scenario and_multiple)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span><span class="Normal">and</span> <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">0</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 
 <span class="Delimiter">:(scenario and_multiple2)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span><span class="Normal">and</span> <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 1 in location 1</span>
 
@@ -80,9 +79,9 @@ OR<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;or&quot;</span>] = OR<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> OR: <span class="Delimiter">{</span>
-  <span class="Normal">bool</span> result = <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+case OR: <span class="Delimiter">{</span>
+  bool result = <span class="Constant">false</span><span class="Delimiter">;</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     result = result || ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -93,27 +92,27 @@ Recipe_ordinal[<span class="Constant">&quot;or&quot;</span>] = OR<span class="De
 
 <span class="Delimiter">:(scenario or)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>:literal
-  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span><span class="Normal">or</span> <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>or <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean
 ]
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
 <span class="Delimiter">:(scenario or2)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span><span class="Normal">or</span> <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>or <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">0</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 
 <span class="Delimiter">:(scenario or_multiple)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span><span class="Normal">and</span> <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>and <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">0</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 
 <span class="Delimiter">:(scenario or_multiple2)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span><span class="Normal">or</span> <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>or <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 1 in location 1</span>
 
@@ -122,9 +121,9 @@ NOT<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
 Recipe_ordinal[<span class="Constant">&quot;not&quot;</span>] = NOT<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> NOT: <span class="Delimiter">{</span>
+case NOT: <span class="Delimiter">{</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">));</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  for <span class="Delimiter">(</span>long long int i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>!ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
@@ -133,14 +132,14 @@ Recipe_ordinal[<span class="Constant">&quot;not&quot;</span>] = NOT<span class="
 
 <span class="Delimiter">:(scenario not)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:literal
-  <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span><span class="Normal">not</span> <span class="Constant">1</span>:boolean
+  <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>not <span class="Constant">1</span>:boolean
 ]
 <span class="traceContains">+mem: storing 0 in location 2</span>
 
 <span class="Delimiter">:(scenario not_multiple)</span>
 recipe main [
-  <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean<span class="Delimiter">,</span> <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span><span class="Normal">not</span> <span class="Constant">1</span>:literal<span class="Delimiter">,</span> <span class="Constant">0</span>:literal<span class="Delimiter">,</span> <span class="Constant">1</span>:literal
+  <span class="Constant">1</span>:boolean<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean<span class="Delimiter">,</span> <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>not <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
 <span class="traceContains">+mem: storing 1 in location 2</span>

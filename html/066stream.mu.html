@@ -13,11 +13,11 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 1.05em; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #ff6060; }
 .muControl { color: #c0a020; }
-.muRecipe { color: #ff8700; }
 -->
 </style>
 
@@ -38,40 +38,40 @@ container stream [
 <span class="muRecipe">recipe</span> new-stream [
   <span class="Constant">local-scope</span>
   result:address:stream<span class="Special"> &lt;- </span>new stream:type
-  i:address:number<span class="Special"> &lt;- </span>get-address result:address:stream/deref, index:offset
-  i:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-  d:address:address:array:character<span class="Special"> &lt;- </span>get-address result:address:stream/deref, data:offset
-  d:address:address:array:character/deref<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="muControl">reply</span> result:address:stream
+  i:address:number<span class="Special"> &lt;- </span>get-address *result, index:offset
+  *i<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  d:address:address:array:character<span class="Special"> &lt;- </span>get-address *result, data:offset
+  *d<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="muControl">reply</span> result
 ]
 
 <span class="muRecipe">recipe</span> rewind-stream [
   <span class="Constant">local-scope</span>
   in:address:stream<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  x:address:number<span class="Special"> &lt;- </span>get-address in:address:stream/deref, index:offset
-  x:address:number/deref<span class="Special"> &lt;- </span>copy <span class="Constant">0:literal</span>
-  <span class="muControl">reply</span> in:address:stream/same-as-arg:0
+  x:address:number<span class="Special"> &lt;- </span>get-address *in, index:offset
+  *x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="muControl">reply</span> in/same-as-arg:<span class="Constant">0</span>
 ]
 
 <span class="muRecipe">recipe</span> read-line [
   <span class="Constant">local-scope</span>
   in:address:stream<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  idx:address:number<span class="Special"> &lt;- </span>get-address in:address:stream/deref, index:offset
-  s:address:array:character<span class="Special"> &lt;- </span>get in:address:stream/deref, data:offset
-  next-idx:number<span class="Special"> &lt;- </span>find-next s:address:array:character, <span class="Constant">10:literal/newline</span>, idx:address:number/deref
-  result:address:array:character<span class="Special"> &lt;- </span>string-copy s:address:array:character, idx:address:number/deref, next-idx:number
-  idx:address:number/deref<span class="Special"> &lt;- </span>add next-idx:number, <span class="Constant">1:literal</span>  <span class="Comment"># skip newline</span>
-  <span class="muControl">reply</span> result:address:array:character
+  idx:address:number<span class="Special"> &lt;- </span>get-address *in, index:offset
+  s:address:array:character<span class="Special"> &lt;- </span>get *in, data:offset
+  next-idx:number<span class="Special"> &lt;- </span>find-next s, <span class="Constant">10/newline</span>, *idx
+  result:address:array:character<span class="Special"> &lt;- </span>string-copy s, *idx, next-idx
+  *idx<span class="Special"> &lt;- </span>add next-idx, <span class="Constant">1</span>  <span class="Comment"># skip newline</span>
+  <span class="muControl">reply</span> result
 ]
 
 <span class="muRecipe">recipe</span> end-of-stream? [
   <span class="Constant">local-scope</span>
   in:address:stream<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  idx:number<span class="Special"> &lt;- </span>get in:address:stream/deref, index:offset
-  s:address:array:character<span class="Special"> &lt;- </span>get in:address:stream/deref, data:offset
-  len:number<span class="Special"> &lt;- </span>length s:address:array:character/deref
-  result:boolean<span class="Special"> &lt;- </span>greater-or-equal idx:number, len:number
-  <span class="muControl">reply</span> result:boolean
+  idx:address:number<span class="Special"> &lt;- </span>get *in, index:offset
+  s:address:array:character<span class="Special"> &lt;- </span>get *in, data:offset
+  len:number<span class="Special"> &lt;- </span>length *s
+  result:boolean<span class="Special"> &lt;- </span>greater-or-equal idx, len
+  <span class="muControl">reply</span> result
 ]
 </pre>
 </body>

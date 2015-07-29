@@ -96,8 +96,9 @@ you can perform integer division as follows:
   quotient:number, remainder:number <- divide-with-remainder 11, 3
 ```
 
-Each reagent provides its name as well as its type separated by a colon. Types
-can be multiple words, like:
+Each reagent can provide a name as well as its type separated by a colon. You
+only have to specify the type the first time you mention a name, but you can
+be more explicit if you choose. Types can be multiple words, like:
 
 ```nim
   x:array:number:3  # x is an array of 3 numbers

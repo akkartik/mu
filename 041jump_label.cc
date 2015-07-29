@@ -1,6 +1,8 @@
 //: Support jumps to labels.
-//: We'll also treat 'break' and 'continue' as jumps. The choice of name is
-//: just documentation about intent.
+//: We'll also treat 'break' and 'loop' as jumps. The choice of name is
+//: just documentation about intent; use 'break' to indicate you're exiting
+//: one or more loop nests, and 'loop' to indicate you're skipping to the next
+//: iteration of some containing loop nest.
 
 :(scenario jump_to_label)
 recipe main [
