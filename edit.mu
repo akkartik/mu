@@ -3588,7 +3588,7 @@ recipe draw-bottom-right [
 
 recipe print-string-with-gradient-background [
   local-scope
-  x:address:screen <- next-ingredient
+  screen:address <- next-ingredient
   s:address:array:character <- next-ingredient
   color:number <- next-ingredient
   bg-color1:number <- next-ingredient
@@ -3605,12 +3605,12 @@ recipe print-string-with-gradient-background [
     done?:boolean <- greater-or-equal i, len
     break-if done?
     c:character <- index *s, i
-    print-character x, c, color, bg-color
+    print-character screen, c, color, bg-color
     i <- add i, 1
     bg-color <- add bg-color, color-quantum
 #?     $print [=> ], bg-color, 10/newline
     loop
   }
 #?   $exit #? 1
-  reply x/same-as-ingredient:0
+  reply screen/same-as-ingredient:0
 ]
