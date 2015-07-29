@@ -14,27 +14,27 @@ recipe push [
   x:location <- next-ingredient
   in:address:list <- next-ingredient
   result:address:list <- new list:type
-  val:address:location <- get-address result:address:list/lookup, value:offset
-  val:address:location/lookup <- copy x:location
-  next:address:address:list <- get-address result:address:list/lookup, next:offset
-  next:address:address:list/lookup <- copy in:address:list
-  reply result:address:list
+  val:address:location <- get-address *result, value:offset
+  *val <- copy x
+  next:address:address:list <- get-address *result, next:offset
+  *next <- copy in
+  reply result
 ]
 
 # result:location <- first in:address:list
 recipe first [
   local-scope
   in:address:list <- next-ingredient
-  result:location <- get in:address:list/lookup, value:offset
-  reply result:location
+  result:location <- get *in, value:offset
+  reply result
 ]
 
 # result:address:list <- rest in:address:list
 recipe rest [
   local-scope
   in:address:list <- next-ingredient
-  result:address:list <- get in:address:list/lookup, next:offset
-  reply result:address:list
+  result:address:list <- get *in, next:offset
+  reply result
 ]
 
 scenario list-handling [

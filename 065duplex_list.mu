@@ -12,41 +12,41 @@ recipe push-duplex [
   x:location <- next-ingredient
   in:address:duplex-list <- next-ingredient
   result:address:duplex-list <- new duplex-list:type
-  val:address:location <- get-address result:address:duplex-list/lookup, value:offset
-  val:address:location/lookup <- copy x:location
-  next:address:address:duplex-list <- get-address result:address:duplex-list/lookup, next:offset
-  next:address:address:duplex-list/lookup <- copy in:address:duplex-list
-  reply-unless in:address:duplex-list, result:address:duplex-list
-  prev:address:address:duplex-list <- get-address in:address:duplex-list/lookup, prev:offset
-  prev:address:address:duplex-list/lookup <- copy result:address:duplex-list
-  reply result:address:duplex-list
+  val:address:location <- get-address *result, value:offset
+  *val <- copy x
+  next:address:address:duplex-list <- get-address *result, next:offset
+  *next <- copy in
+  reply-unless in, result
+  prev:address:address:duplex-list <- get-address *in, prev:offset
+  *prev <- copy result
+  reply result
 ]
 
 # result:location <- first-duplex in:address:duplex-list
 recipe first-duplex [
   local-scope
   in:address:duplex-list <- next-ingredient
-  reply-unless in:address:duplex-list, 0
-  result:location <- get in:address:duplex-list/lookup, value:offset
-  reply result:location
+  reply-unless in, 0
+  result:location <- get *in, value:offset
+  reply result
 ]
 
 # result:address:duplex-list <- next-duplex in:address:duplex-list
 recipe next-duplex [
   local-scope
   in:address:duplex-list <- next-ingredient
-  reply-unless in:address:duplex-list, 0
-  result:address:duplex-list <- get in:address:duplex-list/lookup, next:offset
-  reply result:address:duplex-list
+  reply-unless in, 0
+  result:address:duplex-list <- get *in, next:offset
+  reply result
 ]
 
 # result:address:duplex-list <- prev-duplex in:address:duplex-list
 recipe prev-duplex [
   local-scope
   in:address:duplex-list <- next-ingredient
-  reply-unless in:address:duplex-list, 0
-  result:address:duplex-list <- get in:address:duplex-list/lookup, prev:offset
-  reply result:address:duplex-list
+  reply-unless in, 0
+  result:address:duplex-list <- get *in, prev:offset
+  reply result
 ]
 
 scenario duplex-list-handling [
@@ -99,24 +99,24 @@ recipe insert-duplex [
   x:location <- next-ingredient
   in:address:duplex-list <- next-ingredient
   new-node:address:duplex-list <- new duplex-list:type
-  val:address:location <- get-address new-node:address:duplex-list/lookup, value:offset
-  val:address:location/lookup <- copy x:location
-  next-node:address:duplex-list <- get in:address:duplex-list/lookup, next:offset
+  val:address:location <- get-address *new-node, value:offset
+  *val <- copy x
+  next-node:address:duplex-list <- get *in, next:offset
   # in.next = new-node
-  y:address:address:duplex-list <- get-address in:address:duplex-list/lookup, next:offset
-  y:address:address:duplex-list/lookup <- copy new-node:address:duplex-list
+  y:address:address:duplex-list <- get-address *in, next:offset
+  *y <- copy new-node
   # new-node.prev = in
-  y:address:address:duplex-list <- get-address new-node:address:duplex-list/lookup, prev:offset
-  y:address:address:duplex-list/lookup <- copy in:address:duplex-list
+  y <- get-address *new-node, prev:offset
+  *y <- copy in
   # new-node.next = next-node
-  y:address:address:duplex-list <- get-address new-node:address:duplex-list/lookup, next:offset
-  y:address:address:duplex-list/lookup <- copy next-node:address:duplex-list
+  y <- get-address *new-node, next:offset
+  *y <- copy next-node
   # if next-node is not null
-  reply-unless next-node:address:duplex-list, new-node:address:duplex-list
+  reply-unless next-node, new-node
   # next-node.prev = new-node
-  y:address:address:duplex-list <- get-address next-node:address:duplex-list/lookup, prev:offset
-  y:address:address:duplex-list/lookup <- copy new-node:address:duplex-list
-  reply new-node:address:duplex-list  # just signalling something changed; don't rely on the result
+  y <- get-address *next-node, prev:offset
+  *y <- copy new-node
+  reply new-node  # just signalling something changed; don't rely on the result
 ]
 
 scenario inserting-into-duplex-list [
@@ -240,30 +240,30 @@ recipe remove-duplex [
   local-scope
   in:address:duplex-list <- next-ingredient
   # if 'in' is null, return
-  reply-unless in:address:duplex-list, in:address:duplex-list
-  next-node:address:duplex-list <- get in:address:duplex-list/lookup, next:offset
-  prev-node:address:duplex-list <- get in:address:duplex-list/lookup, prev:offset
+  reply-unless in, in
+  next-node:address:duplex-list <- get *in, next:offset
+  prev-node:address:duplex-list <- get *in, prev:offset
   # null in's pointers
-  x:address:address:duplex-list <- get-address in:address:duplex-list/lookup, next:offset
-  x:address:address:duplex-list/lookup <- copy 0
-  x:address:address:duplex-list <- get-address in:address:duplex-list/lookup, prev:offset
-  x:address:address:duplex-list/lookup <- copy 0
+  x:address:address:duplex-list <- get-address *in, next:offset
+  *x <- copy 0
+  x <- get-address *in, prev:offset
+  *x <- copy 0
   {
     # if next-node is not null
-    break-unless next-node:address:duplex-list
+    break-unless next-node
     # next-node.prev = prev-node
-    x:address:address:duplex-list <- get-address next-node:address:duplex-list/lookup, prev:offset
-    x:address:address:duplex-list/lookup <- copy prev-node:address:duplex-list
+    x <- get-address *next-node, prev:offset
+    *x <- copy prev-node
   }
   {
     # if prev-node is not null
-    break-unless prev-node:address:duplex-list
+    break-unless prev-node
     # prev-node.next = next-node
-    x:address:address:duplex-list <- get-address prev-node:address:duplex-list/lookup, next:offset
-    x:address:address:duplex-list/lookup <- copy next-node:address:duplex-list
-    reply prev-node:address:duplex-list
+    x <- get-address *prev-node, next:offset
+    *x <- copy next-node
+    reply prev-node
   }
-  reply next-node:address:duplex-list
+  reply next-node
 ]
 
 scenario removing-from-duplex-list [
@@ -358,8 +358,8 @@ scenario removing-from-singleton-list [
     1:address:duplex-list <- copy 0  # 1 points to singleton list
     1:address:duplex-list <- push-duplex 3, 1:address:duplex-list
     2:address:duplex-list <- remove-duplex 1:address:duplex-list
-    3:address:duplex-list <- get 1:address:duplex-list/lookup, next:offset
-    4:address:duplex-list <- get 1:address:duplex-list/lookup, prev:offset
+    3:address:duplex-list <- get *1:address:duplex-list, next:offset
+    4:address:duplex-list <- get *1:address:duplex-list, prev:offset
   ]
   memory-should-contain [
     2 <- 0  # remove returned null

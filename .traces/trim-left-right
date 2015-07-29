@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character <- new [  abc   ]\n    2:address:array:character <- trim 1:address:array:character\n    3:array:character <- copy 2:address:array:character/lookup\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character <- new [  abc   ]\n    2:address:array:character <- trim 1:address:array:character\n    3:array:character <- copy *2:address:array:character\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3:string <- [abc]\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-trim-left-right
@@ -10,7 +10,7 @@ schedule: scenario-trim-left-right
  101 run: run [
     1:address:array:character <- new [  abc   ]
     2:address:array:character <- trim 1:address:array:character
-    3:array:character <- copy 2:address:array:character/lookup
+    3:array:character <- copy *2:address:array:character
   ]
 parse: instruction: new
 parse:   ingredient: {name: "  abc   ", properties: [_: "literal-string"]}
@@ -19,7 +19,7 @@ parse: instruction: trim
 parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"]}
 parse:   product: {name: "2", properties: ["2": "address":"array":"character"]}
 parse: instruction: copy
-parse:   ingredient: {name: "2", properties: ["2": "address":"array":"character", "lookup": ]}
+parse:   ingredient: {name: "2", properties: ["*2": "address":"array":"character", "lookup": ]}
 parse:   product: {name: "3", properties: ["3": "array":"character"]}
 after-brace: recipe run1001
 after-brace: new ...
@@ -34,7 +34,7 @@ after-brace: copy ...
 9999 mem: new alloc: 1009
  102 run: s:address:array:character <- next-ingredient 
 9999 mem: storing 1000 in location 1011
- 102 run: len:number <- length s:address:array:character/lookup
+ 102 run: len:number <- length *s
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -49,14 +49,14 @@ after-brace: copy ...
 9999 mem: storing 8 in location 1012
  102 run: start:number <- copy 0
 9999 mem: storing 0 in location 1013
- 102 run: at-end?:boolean <- greater-or-equal start:number, len:number
+ 102 run: at-end?:boolean <- greater-or-equal start, len
 9999 mem: location 1013 is 0
 9999 mem: location 1012 is 8
 9999 mem: storing 0 in location 1014
- 102 run: break-unless at-end?:boolean, 
+ 102 run: break-unless at-end?, 
 9999 mem: location 1014 is 0
 9999 run: jumping to instruction 10
- 102 run: curr:character <- index s:address:array:character/lookup, start:number
+ 102 run: curr:character <- index *s, start
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -74,39 +74,39 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1001 is 32
 9999 mem: storing 32 in location 1016
- 102 run: whitespace?:boolean <- space? curr:character
+ 102 run: whitespace?:boolean <- space? curr
 9999 mem: location 1016 is 32
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
 9999 mem: new alloc: 1026
  103 run: c:character <- next-ingredient 
 9999 mem: storing 32 in location 1028
- 103 run: result:boolean <- equal c:character, 32/space
+ 103 run: result:boolean <- equal c, 32/space
 9999 mem: location 1028 is 32
 9999 mem: storing 1 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 1
 9999 run: jumping to instruction 57
- 103 run: reply result:boolean
+ 103 run: reply result
 9999 mem: location 1029 is 1
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 1017
- 102 run: break-unless whitespace?:boolean, 
+ 102 run: break-unless whitespace?, 
 9999 mem: location 1017 is 1
 9999 run: jump-unless fell through
- 102 run: start:number <- add start:number, 1
+ 102 run: start <- add start, 1
 9999 mem: location 1013 is 0
 9999 mem: storing 1 in location 1013
  102 run: loop 
 9999 run: jumping to instruction 5
- 102 run: at-end?:boolean <- greater-or-equal start:number, len:number
+ 102 run: at-end?:boolean <- greater-or-equal start, len
 9999 mem: location 1013 is 1
 9999 mem: location 1012 is 8
 9999 mem: storing 0 in location 1014
- 102 run: break-unless at-end?:boolean, 
+ 102 run: break-unless at-end?, 
 9999 mem: location 1014 is 0
 9999 run: jumping to instruction 10
- 102 run: curr:character <- index s:address:array:character/lookup, start:number
+ 102 run: curr:character <- index *s, start
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -124,38 +124,38 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1002 is 32
 9999 mem: storing 32 in location 1016
- 102 run: whitespace?:boolean <- space? curr:character
+ 102 run: whitespace?:boolean <- space? curr
 9999 mem: location 1016 is 32
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
  103 run: c:character <- next-ingredient 
 9999 mem: storing 32 in location 1028
- 103 run: result:boolean <- equal c:character, 32/space
+ 103 run: result:boolean <- equal c, 32/space
 9999 mem: location 1028 is 32
 9999 mem: storing 1 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 1
 9999 run: jumping to instruction 57
- 103 run: reply result:boolean
+ 103 run: reply result
 9999 mem: location 1029 is 1
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 1017
- 102 run: break-unless whitespace?:boolean, 
+ 102 run: break-unless whitespace?, 
 9999 mem: location 1017 is 1
 9999 run: jump-unless fell through
- 102 run: start:number <- add start:number, 1
+ 102 run: start <- add start, 1
 9999 mem: location 1013 is 1
 9999 mem: storing 2 in location 1013
  102 run: loop 
 9999 run: jumping to instruction 5
- 102 run: at-end?:boolean <- greater-or-equal start:number, len:number
+ 102 run: at-end?:boolean <- greater-or-equal start, len
 9999 mem: location 1013 is 2
 9999 mem: location 1012 is 8
 9999 mem: storing 0 in location 1014
- 102 run: break-unless at-end?:boolean, 
+ 102 run: break-unless at-end?, 
 9999 mem: location 1014 is 0
 9999 run: jumping to instruction 10
- 102 run: curr:character <- index s:address:array:character/lookup, start:number
+ 102 run: curr:character <- index *s, start
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -173,191 +173,191 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1003 is 97
 9999 mem: storing 97 in location 1016
- 102 run: whitespace?:boolean <- space? curr:character
+ 102 run: whitespace?:boolean <- space? curr
 9999 mem: location 1016 is 97
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
  103 run: c:character <- next-ingredient 
 9999 mem: storing 97 in location 1028
- 103 run: result:boolean <- equal c:character, 32/space
+ 103 run: result:boolean <- equal c, 32/space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 10/newline
+ 103 run: result <- equal c, 10/newline
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 9/tab
+ 103 run: result <- equal c, 9/tab
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 13/carriage-return
+ 103 run: result <- equal c, 13/carriage-return
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 11/ctrl-k
+ 103 run: result <- equal c, 11/ctrl-k
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 12/ctrl-l
+ 103 run: result <- equal c, 12/ctrl-l
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 133/ctrl-0085
+ 103 run: result <- equal c, 133/ctrl-0085
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 160/no-break-space
+ 103 run: result <- equal c, 160/no-break-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 5760/ogham-space-mark
+ 103 run: result <- equal c, 5760/ogham-space-mark
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8192/en-quad
+ 103 run: result <- equal c, 8192/en-quad
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8193/em-quad
+ 103 run: result <- equal c, 8193/em-quad
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8194/en-space
+ 103 run: result <- equal c, 8194/en-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8195/em-space
+ 103 run: result <- equal c, 8195/em-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8196/three-per-em-space
+ 103 run: result <- equal c, 8196/three-per-em-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8197/four-per-em-space
+ 103 run: result <- equal c, 8197/four-per-em-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8198/six-per-em-space
+ 103 run: result <- equal c, 8198/six-per-em-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8199/figure-space
+ 103 run: result <- equal c, 8199/figure-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8200/punctuation-space
+ 103 run: result <- equal c, 8200/punctuation-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8201/thin-space
+ 103 run: result <- equal c, 8201/thin-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8202/hair-space
+ 103 run: result <- equal c, 8202/hair-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8206/left-to-right
+ 103 run: result <- equal c, 8206/left-to-right
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8207/right-to-left
+ 103 run: result <- equal c, 8207/right-to-left
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8232/line-separator
+ 103 run: result <- equal c, 8232/line-separator
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8233/paragraph-separator
+ 103 run: result <- equal c, 8233/paragraph-separator
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8239/narrow-no-break-space
+ 103 run: result <- equal c, 8239/narrow-no-break-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8287/medium-mathematical-space
+ 103 run: result <- equal c, 8287/medium-mathematical-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 12288/ideographic-space
+ 103 run: result <- equal c, 12288/ideographic-space
 9999 mem: location 1028 is 97
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: reply result:boolean
+ 103 run: reply result
 9999 mem: location 1029 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1017
- 102 run: break-unless whitespace?:boolean, 
+ 102 run: break-unless whitespace?, 
 9999 mem: location 1017 is 0
 9999 run: jumping to instruction 16
- 102 run: end:number <- subtract len:number, 1
+ 102 run: end:number <- subtract len, 1
 9999 mem: location 1012 is 8
 9999 mem: storing 7 in location 1018
- 102 run: not-at-start?:boolean <- greater-than end:number, start:number
+ 102 run: not-at-start?:boolean <- greater-than end, start
 9999 mem: location 1018 is 7
 9999 mem: location 1013 is 2
 9999 mem: storing 1 in location 1019
- 102 run: assert not-at-start?:boolean, [end ran up against start]
+ 102 run: assert not-at-start?, [end ran up against start]
 9999 mem: location 1019 is 1
- 102 run: curr:character <- index s:address:array:character/lookup, end:number
+ 102 run: curr:character <- index *s, end
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -375,37 +375,37 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1008 is 32
 9999 mem: storing 32 in location 1016
- 102 run: whitespace?:boolean <- space? curr:character
+ 102 run: whitespace?:boolean <- space? curr
 9999 mem: location 1016 is 32
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
  103 run: c:character <- next-ingredient 
 9999 mem: storing 32 in location 1028
- 103 run: result:boolean <- equal c:character, 32/space
+ 103 run: result:boolean <- equal c, 32/space
 9999 mem: location 1028 is 32
 9999 mem: storing 1 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 1
 9999 run: jumping to instruction 57
- 103 run: reply result:boolean
+ 103 run: reply result
 9999 mem: location 1029 is 1
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 1017
- 102 run: break-unless whitespace?:boolean, 
+ 102 run: break-unless whitespace?, 
 9999 mem: location 1017 is 1
 9999 run: jump-unless fell through
- 102 run: end:number <- subtract end:number, 1
+ 102 run: end <- subtract end, 1
 9999 mem: location 1018 is 7
 9999 mem: storing 6 in location 1018
  102 run: loop 
 9999 run: jumping to instruction 19
- 102 run: not-at-start?:boolean <- greater-than end:number, start:number
+ 102 run: not-at-start?:boolean <- greater-than end, start
 9999 mem: location 1018 is 6
 9999 mem: location 1013 is 2
 9999 mem: storing 1 in location 1019
- 102 run: assert not-at-start?:boolean, [end ran up against start]
+ 102 run: assert not-at-start?, [end ran up against start]
 9999 mem: location 1019 is 1
- 102 run: curr:character <- index s:address:array:character/lookup, end:number
+ 102 run: curr:character <- index *s, end
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -423,37 +423,37 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1007 is 32
 9999 mem: storing 32 in location 1016
- 102 run: whitespace?:boolean <- space? curr:character
+ 102 run: whitespace?:boolean <- space? curr
 9999 mem: location 1016 is 32
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
  103 run: c:character <- next-ingredient 
 9999 mem: storing 32 in location 1028
- 103 run: result:boolean <- equal c:character, 32/space
+ 103 run: result:boolean <- equal c, 32/space
 9999 mem: location 1028 is 32
 9999 mem: storing 1 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 1
 9999 run: jumping to instruction 57
- 103 run: reply result:boolean
+ 103 run: reply result
 9999 mem: location 1029 is 1
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 1017
- 102 run: break-unless whitespace?:boolean, 
+ 102 run: break-unless whitespace?, 
 9999 mem: location 1017 is 1
 9999 run: jump-unless fell through
- 102 run: end:number <- subtract end:number, 1
+ 102 run: end <- subtract end, 1
 9999 mem: location 1018 is 6
 9999 mem: storing 5 in location 1018
  102 run: loop 
 9999 run: jumping to instruction 19
- 102 run: not-at-start?:boolean <- greater-than end:number, start:number
+ 102 run: not-at-start?:boolean <- greater-than end, start
 9999 mem: location 1018 is 5
 9999 mem: location 1013 is 2
 9999 mem: storing 1 in location 1019
- 102 run: assert not-at-start?:boolean, [end ran up against start]
+ 102 run: assert not-at-start?, [end ran up against start]
 9999 mem: location 1019 is 1
- 102 run: curr:character <- index s:address:array:character/lookup, end:number
+ 102 run: curr:character <- index *s, end
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -471,37 +471,37 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1006 is 32
 9999 mem: storing 32 in location 1016
- 102 run: whitespace?:boolean <- space? curr:character
+ 102 run: whitespace?:boolean <- space? curr
 9999 mem: location 1016 is 32
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
  103 run: c:character <- next-ingredient 
 9999 mem: storing 32 in location 1028
- 103 run: result:boolean <- equal c:character, 32/space
+ 103 run: result:boolean <- equal c, 32/space
 9999 mem: location 1028 is 32
 9999 mem: storing 1 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 1
 9999 run: jumping to instruction 57
- 103 run: reply result:boolean
+ 103 run: reply result
 9999 mem: location 1029 is 1
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 1017
- 102 run: break-unless whitespace?:boolean, 
+ 102 run: break-unless whitespace?, 
 9999 mem: location 1017 is 1
 9999 run: jump-unless fell through
- 102 run: end:number <- subtract end:number, 1
+ 102 run: end <- subtract end, 1
 9999 mem: location 1018 is 5
 9999 mem: storing 4 in location 1018
  102 run: loop 
 9999 run: jumping to instruction 19
- 102 run: not-at-start?:boolean <- greater-than end:number, start:number
+ 102 run: not-at-start?:boolean <- greater-than end, start
 9999 mem: location 1018 is 4
 9999 mem: location 1013 is 2
 9999 mem: storing 1 in location 1019
- 102 run: assert not-at-start?:boolean, [end ran up against start]
+ 102 run: assert not-at-start?, [end ran up against start]
 9999 mem: location 1019 is 1
- 102 run: curr:character <- index s:address:array:character/lookup, end:number
+ 102 run: curr:character <- index *s, end
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -519,202 +519,202 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1005 is 99
 9999 mem: storing 99 in location 1016
- 102 run: whitespace?:boolean <- space? curr:character
+ 102 run: whitespace?:boolean <- space? curr
 9999 mem: location 1016 is 99
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 3
  103 run: c:character <- next-ingredient 
 9999 mem: storing 99 in location 1028
- 103 run: result:boolean <- equal c:character, 32/space
+ 103 run: result:boolean <- equal c, 32/space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 10/newline
+ 103 run: result <- equal c, 10/newline
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 9/tab
+ 103 run: result <- equal c, 9/tab
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 13/carriage-return
+ 103 run: result <- equal c, 13/carriage-return
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 11/ctrl-k
+ 103 run: result <- equal c, 11/ctrl-k
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 12/ctrl-l
+ 103 run: result <- equal c, 12/ctrl-l
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 133/ctrl-0085
+ 103 run: result <- equal c, 133/ctrl-0085
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 160/no-break-space
+ 103 run: result <- equal c, 160/no-break-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 5760/ogham-space-mark
+ 103 run: result <- equal c, 5760/ogham-space-mark
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8192/en-quad
+ 103 run: result <- equal c, 8192/en-quad
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8193/em-quad
+ 103 run: result <- equal c, 8193/em-quad
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8194/en-space
+ 103 run: result <- equal c, 8194/en-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8195/em-space
+ 103 run: result <- equal c, 8195/em-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8196/three-per-em-space
+ 103 run: result <- equal c, 8196/three-per-em-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8197/four-per-em-space
+ 103 run: result <- equal c, 8197/four-per-em-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8198/six-per-em-space
+ 103 run: result <- equal c, 8198/six-per-em-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8199/figure-space
+ 103 run: result <- equal c, 8199/figure-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8200/punctuation-space
+ 103 run: result <- equal c, 8200/punctuation-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8201/thin-space
+ 103 run: result <- equal c, 8201/thin-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8202/hair-space
+ 103 run: result <- equal c, 8202/hair-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8206/left-to-right
+ 103 run: result <- equal c, 8206/left-to-right
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8207/right-to-left
+ 103 run: result <- equal c, 8207/right-to-left
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8232/line-separator
+ 103 run: result <- equal c, 8232/line-separator
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8233/paragraph-separator
+ 103 run: result <- equal c, 8233/paragraph-separator
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8239/narrow-no-break-space
+ 103 run: result <- equal c, 8239/narrow-no-break-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 8287/medium-mathematical-space
+ 103 run: result <- equal c, 8287/medium-mathematical-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: result:boolean <- equal c:character, 12288/ideographic-space
+ 103 run: result <- equal c, 12288/ideographic-space
 9999 mem: location 1028 is 99
 9999 mem: storing 0 in location 1029
- 103 run: jump-if result:boolean, +reply:label
+ 103 run: jump-if result, +reply:label
 9999 mem: location 1029 is 0
 9999 run: jump-if fell through
- 103 run: reply result:boolean
+ 103 run: reply result
 9999 mem: location 1029 is 0
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1017
- 102 run: break-unless whitespace?:boolean, 
+ 102 run: break-unless whitespace?, 
 9999 mem: location 1017 is 0
 9999 run: jumping to instruction 26
- 102 run: new-len:number <- subtract end:number, start:number, -1
+ 102 run: new-len:number <- subtract end, start, -1
 9999 mem: location 1018 is 4
 9999 mem: location 1013 is 2
 9999 mem: storing 3 in location 1020
- 102 run: result:address:array:character <- new character:type, new-len:number
+ 102 run: result:address:array:character <- new character:type, new-len
 9999 mem: location 1020 is 3
 9999 mem: array size is 3
 9999 mem: storing 1026 in location 1015
- 102 run: i:number <- copy start:number
+ 102 run: i:number <- copy start
 9999 mem: location 1013 is 2
 9999 mem: storing 2 in location 1021
  102 run: j:number <- copy 0
 9999 mem: storing 0 in location 1022
- 102 run: done?:boolean <- greater-than i:number, end:number
+ 102 run: done?:boolean <- greater-than i, end
 9999 mem: location 1021 is 2
 9999 mem: location 1018 is 4
 9999 mem: storing 0 in location 1023
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1023 is 0
 9999 run: jump-if fell through
- 102 run: src:character <- index s:address:array:character/lookup, i:number
+ 102 run: src:character <- index *s, i
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -732,7 +732,7 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1003 is 97
 9999 mem: storing 97 in location 1024
- 102 run: dest:address:character <- index-address result:address:array:character/lookup, j:number
+ 102 run: dest:address:character <- index-address *result, j
 9999 mem: location 1015 is 1026
 9999 mem: location 1026 is 3
 9999 mem: location 1027 is 0
@@ -742,26 +742,26 @@ after-brace: copy ...
 9999 mem: location 1015 is 1026
 9999 mem: location 1022 is 0
 9999 mem: storing 1027 in location 1025
- 102 run: dest:address:character/lookup <- copy src:character
+ 102 run: *dest <- copy src
 9999 mem: location 1024 is 97
 9999 mem: location 1025 is 1027
 9999 mem: storing 97 in location 1027
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1021 is 2
 9999 mem: storing 3 in location 1021
- 102 run: j:number <- add j:number, 1
+ 102 run: j <- add j, 1
 9999 mem: location 1022 is 0
 9999 mem: storing 1 in location 1022
  102 run: loop 
 9999 run: jumping to instruction 32
- 102 run: done?:boolean <- greater-than i:number, end:number
+ 102 run: done?:boolean <- greater-than i, end
 9999 mem: location 1021 is 3
 9999 mem: location 1018 is 4
 9999 mem: storing 0 in location 1023
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1023 is 0
 9999 run: jump-if fell through
- 102 run: src:character <- index s:address:array:character/lookup, i:number
+ 102 run: src:character <- index *s, i
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -779,7 +779,7 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1004 is 98
 9999 mem: storing 98 in location 1024
- 102 run: dest:address:character <- index-address result:address:array:character/lookup, j:number
+ 102 run: dest:address:character <- index-address *result, j
 9999 mem: location 1015 is 1026
 9999 mem: location 1026 is 3
 9999 mem: location 1027 is 97
@@ -789,26 +789,26 @@ after-brace: copy ...
 9999 mem: location 1015 is 1026
 9999 mem: location 1022 is 1
 9999 mem: storing 1028 in location 1025
- 102 run: dest:address:character/lookup <- copy src:character
+ 102 run: *dest <- copy src
 9999 mem: location 1024 is 98
 9999 mem: location 1025 is 1028
 9999 mem: storing 98 in location 1028
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1021 is 3
 9999 mem: storing 4 in location 1021
- 102 run: j:number <- add j:number, 1
+ 102 run: j <- add j, 1
 9999 mem: location 1022 is 1
 9999 mem: storing 2 in location 1022
  102 run: loop 
 9999 run: jumping to instruction 32
- 102 run: done?:boolean <- greater-than i:number, end:number
+ 102 run: done?:boolean <- greater-than i, end
 9999 mem: location 1021 is 4
 9999 mem: location 1018 is 4
 9999 mem: storing 0 in location 1023
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1023 is 0
 9999 run: jump-if fell through
- 102 run: src:character <- index s:address:array:character/lookup, i:number
+ 102 run: src:character <- index *s, i
 9999 mem: location 1011 is 1000
 9999 mem: location 1000 is 8
 9999 mem: location 1001 is 32
@@ -826,7 +826,7 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1005 is 99
 9999 mem: storing 99 in location 1024
- 102 run: dest:address:character <- index-address result:address:array:character/lookup, j:number
+ 102 run: dest:address:character <- index-address *result, j
 9999 mem: location 1015 is 1026
 9999 mem: location 1026 is 3
 9999 mem: location 1027 is 97
@@ -836,30 +836,30 @@ after-brace: copy ...
 9999 mem: location 1015 is 1026
 9999 mem: location 1022 is 2
 9999 mem: storing 1029 in location 1025
- 102 run: dest:address:character/lookup <- copy src:character
+ 102 run: *dest <- copy src
 9999 mem: location 1024 is 99
 9999 mem: location 1025 is 1029
 9999 mem: storing 99 in location 1029
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1021 is 4
 9999 mem: storing 5 in location 1021
- 102 run: j:number <- add j:number, 1
+ 102 run: j <- add j, 1
 9999 mem: location 1022 is 2
 9999 mem: storing 3 in location 1022
  102 run: loop 
 9999 run: jumping to instruction 32
- 102 run: done?:boolean <- greater-than i:number, end:number
+ 102 run: done?:boolean <- greater-than i, end
 9999 mem: location 1021 is 5
 9999 mem: location 1018 is 4
 9999 mem: storing 1 in location 1023
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1023 is 1
 9999 run: jumping to instruction 40
- 102 run: reply result:address:array:character
+ 102 run: reply result
 9999 mem: location 1015 is 1026
 9999 run: result 0 is 1026
 9999 mem: storing 1026 in location 2
- 101 run: 3:array:character <- copy 2:address:array:character/lookup
+ 101 run: 3:array:character <- copy *2:address:array:character
 9999 mem: location 2 is 1026
 9999 mem: location 1026 is 3
 9999 mem: location 1027 is 97

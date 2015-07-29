@@ -53,24 +53,24 @@ after-brace: read-key ...
 9999 mem: new alloc: 1015
  102 run: console:address <- next-ingredient 
 9999 mem: storing 1013 in location 1017
- 102 run: x:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
+ 102 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1017 is 1013
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
 9999 mem: new alloc: 1025
  103 run: x:address:console <- next-ingredient 
 9999 mem: storing 1013 in location 1027
- 103 run: break-unless x:address:console, 
+ 103 run: break-unless x, 
 9999 mem: location 1027 is 1013
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address x:address:console/lookup, index:offset
+ 103 run: idx:address:number <- get-address *x, index:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 0
 9999 mem: location 1014 is 1000
 9999 mem: location 1027 is 1013
 9999 run: address to copy is 1013
 9999 mem: storing 1013 in location 1028
- 103 run: buf:address:array:event <- get x:address:console/lookup, data:offset
+ 103 run: buf:address:array:event <- get *x, data:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 0
 9999 mem: location 1014 is 1000
@@ -79,7 +79,7 @@ after-brace: read-key ...
 9999 run: its type is address
 9999 mem: location 1014 is 1000
 9999 mem: storing 1000 in location 1029
- 103 run: max:number <- length buf:address:array:event/lookup
+ 103 run: max:number <- length *buf
 9999 mem: location 1029 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 0
@@ -96,15 +96,15 @@ after-brace: read-key ...
 9999 mem: location 1012 is 0
 9999 mem: location 1029 is 1000
 9999 mem: storing 3 in location 1030
- 103 run: done?:boolean <- greater-or-equal idx:address:number/lookup, max:number
+ 103 run: done?:boolean <- greater-or-equal *idx, max
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 0
 9999 mem: location 1030 is 3
 9999 mem: storing 0 in location 1031
- 103 run: break-unless done?:boolean, 
+ 103 run: break-unless done?, 
 9999 mem: location 1031 is 0
 9999 run: jumping to instruction 12
- 103 run: result:event <- index buf:address:array:event/lookup, idx:address:number/lookup
+ 103 run: result:event <- index *buf, *idx
 9999 mem: location 1029 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 0
@@ -134,12 +134,12 @@ after-brace: read-key ...
 9999 mem: storing 97 in location 1034
 9999 mem: storing 0 in location 1035
 9999 mem: storing 0 in location 1036
- 103 run: idx:address:number/lookup <- add idx:address:number/lookup, 1
+ 103 run: *idx <- add *idx, 1
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 0
 9999 mem: location 1028 is 1013
 9999 mem: storing 1 in location 1013
- 103 run: reply result:event, x:address:console/same-as-ingredient:0, 1/found, 0/quit
+ 103 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1033 is 0
 9999 mem: location 1034 is 97
 9999 mem: location 1035 is 0
@@ -156,22 +156,22 @@ after-brace: read-key ...
 9999 mem: storing 1013 in location 1017
 9999 mem: storing 1 in location 1022
 9999 mem: storing 0 in location 1023
- 102 run: jump-unless quit?:boolean, 1:offset
+ 102 run: jump-unless quit?, 1:offset
 9999 mem: location 1023 is 0
 9999 run: jumping to instruction 5
- 102 run: jump-if found?:boolean, 1:offset
+ 102 run: jump-if found?, 1:offset
 9999 mem: location 1022 is 1
 9999 run: jumping to instruction 7
- 102 run: c:address:character <- maybe-convert x:event, text:variant
+ 102 run: c:address:character <- maybe-convert x, text:variant
 9999 mem: location 1018 is 0
 9999 mem: location 1019 is 97
 9999 mem: location 1020 is 0
 9999 mem: location 1021 is 0
 9999 mem: storing 1019 in location 1024
- 102 run: jump-if c:address:character, 1:offset
+ 102 run: jump-if c, 1:offset
 9999 mem: location 1024 is 1019
 9999 run: jumping to instruction 10
- 102 run: reply c:address:character/lookup, console:address/same-as-ingredient:0, 1/found, 0/quit
+ 102 run: reply *c, console/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1024 is 1019
 9999 mem: location 1019 is 97
 9999 mem: location 1017 is 1013
@@ -187,23 +187,23 @@ after-brace: read-key ...
 9999 mem: array size is 9
  102 run: console:address <- next-ingredient 
 9999 mem: storing 1013 in location 1017
- 102 run: x:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
+ 102 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1017 is 1013
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
  103 run: x:address:console <- next-ingredient 
 9999 mem: storing 1013 in location 1027
- 103 run: break-unless x:address:console, 
+ 103 run: break-unless x, 
 9999 mem: location 1027 is 1013
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address x:address:console/lookup, index:offset
+ 103 run: idx:address:number <- get-address *x, index:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 1
 9999 mem: location 1014 is 1000
 9999 mem: location 1027 is 1013
 9999 run: address to copy is 1013
 9999 mem: storing 1013 in location 1028
- 103 run: buf:address:array:event <- get x:address:console/lookup, data:offset
+ 103 run: buf:address:array:event <- get *x, data:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 1
 9999 mem: location 1014 is 1000
@@ -212,7 +212,7 @@ after-brace: read-key ...
 9999 run: its type is address
 9999 mem: location 1014 is 1000
 9999 mem: storing 1000 in location 1029
- 103 run: max:number <- length buf:address:array:event/lookup
+ 103 run: max:number <- length *buf
 9999 mem: location 1029 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 0
@@ -229,15 +229,15 @@ after-brace: read-key ...
 9999 mem: location 1012 is 0
 9999 mem: location 1029 is 1000
 9999 mem: storing 3 in location 1030
- 103 run: done?:boolean <- greater-or-equal idx:address:number/lookup, max:number
+ 103 run: done?:boolean <- greater-or-equal *idx, max
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 1
 9999 mem: location 1030 is 3
 9999 mem: storing 0 in location 1031
- 103 run: break-unless done?:boolean, 
+ 103 run: break-unless done?, 
 9999 mem: location 1031 is 0
 9999 run: jumping to instruction 12
- 103 run: result:event <- index buf:address:array:event/lookup, idx:address:number/lookup
+ 103 run: result:event <- index *buf, *idx
 9999 mem: location 1029 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 0
@@ -267,12 +267,12 @@ after-brace: read-key ...
 9999 mem: storing 98 in location 1034
 9999 mem: storing 0 in location 1035
 9999 mem: storing 0 in location 1036
- 103 run: idx:address:number/lookup <- add idx:address:number/lookup, 1
+ 103 run: *idx <- add *idx, 1
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 1
 9999 mem: location 1028 is 1013
 9999 mem: storing 2 in location 1013
- 103 run: reply result:event, x:address:console/same-as-ingredient:0, 1/found, 0/quit
+ 103 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1033 is 0
 9999 mem: location 1034 is 98
 9999 mem: location 1035 is 0
@@ -289,22 +289,22 @@ after-brace: read-key ...
 9999 mem: storing 1013 in location 1017
 9999 mem: storing 1 in location 1022
 9999 mem: storing 0 in location 1023
- 102 run: jump-unless quit?:boolean, 1:offset
+ 102 run: jump-unless quit?, 1:offset
 9999 mem: location 1023 is 0
 9999 run: jumping to instruction 5
- 102 run: jump-if found?:boolean, 1:offset
+ 102 run: jump-if found?, 1:offset
 9999 mem: location 1022 is 1
 9999 run: jumping to instruction 7
- 102 run: c:address:character <- maybe-convert x:event, text:variant
+ 102 run: c:address:character <- maybe-convert x, text:variant
 9999 mem: location 1018 is 0
 9999 mem: location 1019 is 98
 9999 mem: location 1020 is 0
 9999 mem: location 1021 is 0
 9999 mem: storing 1019 in location 1024
- 102 run: jump-if c:address:character, 1:offset
+ 102 run: jump-if c, 1:offset
 9999 mem: location 1024 is 1019
 9999 run: jumping to instruction 10
- 102 run: reply c:address:character/lookup, console:address/same-as-ingredient:0, 1/found, 0/quit
+ 102 run: reply *c, console/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1024 is 1019
 9999 mem: location 1019 is 98
 9999 mem: location 1017 is 1013
@@ -320,23 +320,23 @@ after-brace: read-key ...
 9999 mem: array size is 9
  102 run: console:address <- next-ingredient 
 9999 mem: storing 1013 in location 1017
- 102 run: x:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
+ 102 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1017 is 1013
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
  103 run: x:address:console <- next-ingredient 
 9999 mem: storing 1013 in location 1027
- 103 run: break-unless x:address:console, 
+ 103 run: break-unless x, 
 9999 mem: location 1027 is 1013
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address x:address:console/lookup, index:offset
+ 103 run: idx:address:number <- get-address *x, index:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 2
 9999 mem: location 1014 is 1000
 9999 mem: location 1027 is 1013
 9999 run: address to copy is 1013
 9999 mem: storing 1013 in location 1028
- 103 run: buf:address:array:event <- get x:address:console/lookup, data:offset
+ 103 run: buf:address:array:event <- get *x, data:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 2
 9999 mem: location 1014 is 1000
@@ -345,7 +345,7 @@ after-brace: read-key ...
 9999 run: its type is address
 9999 mem: location 1014 is 1000
 9999 mem: storing 1000 in location 1029
- 103 run: max:number <- length buf:address:array:event/lookup
+ 103 run: max:number <- length *buf
 9999 mem: location 1029 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 0
@@ -362,15 +362,15 @@ after-brace: read-key ...
 9999 mem: location 1012 is 0
 9999 mem: location 1029 is 1000
 9999 mem: storing 3 in location 1030
- 103 run: done?:boolean <- greater-or-equal idx:address:number/lookup, max:number
+ 103 run: done?:boolean <- greater-or-equal *idx, max
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 2
 9999 mem: location 1030 is 3
 9999 mem: storing 0 in location 1031
- 103 run: break-unless done?:boolean, 
+ 103 run: break-unless done?, 
 9999 mem: location 1031 is 0
 9999 run: jumping to instruction 12
- 103 run: result:event <- index buf:address:array:event/lookup, idx:address:number/lookup
+ 103 run: result:event <- index *buf, *idx
 9999 mem: location 1029 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 0
@@ -400,12 +400,12 @@ after-brace: read-key ...
 9999 mem: storing 99 in location 1034
 9999 mem: storing 0 in location 1035
 9999 mem: storing 0 in location 1036
- 103 run: idx:address:number/lookup <- add idx:address:number/lookup, 1
+ 103 run: *idx <- add *idx, 1
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 2
 9999 mem: location 1028 is 1013
 9999 mem: storing 3 in location 1013
- 103 run: reply result:event, x:address:console/same-as-ingredient:0, 1/found, 0/quit
+ 103 run: reply result, x/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1033 is 0
 9999 mem: location 1034 is 99
 9999 mem: location 1035 is 0
@@ -422,22 +422,22 @@ after-brace: read-key ...
 9999 mem: storing 1013 in location 1017
 9999 mem: storing 1 in location 1022
 9999 mem: storing 0 in location 1023
- 102 run: jump-unless quit?:boolean, 1:offset
+ 102 run: jump-unless quit?, 1:offset
 9999 mem: location 1023 is 0
 9999 run: jumping to instruction 5
- 102 run: jump-if found?:boolean, 1:offset
+ 102 run: jump-if found?, 1:offset
 9999 mem: location 1022 is 1
 9999 run: jumping to instruction 7
- 102 run: c:address:character <- maybe-convert x:event, text:variant
+ 102 run: c:address:character <- maybe-convert x, text:variant
 9999 mem: location 1018 is 0
 9999 mem: location 1019 is 99
 9999 mem: location 1020 is 0
 9999 mem: location 1021 is 0
 9999 mem: storing 1019 in location 1024
- 102 run: jump-if c:address:character, 1:offset
+ 102 run: jump-if c, 1:offset
 9999 mem: location 1024 is 1019
 9999 run: jumping to instruction 10
- 102 run: reply c:address:character/lookup, console:address/same-as-ingredient:0, 1/found, 0/quit
+ 102 run: reply *c, console/same-as-ingredient:0, 1/found, 0/quit
 9999 mem: location 1024 is 1019
 9999 mem: location 1019 is 99
 9999 mem: location 1017 is 1013
@@ -453,23 +453,23 @@ after-brace: read-key ...
 9999 mem: array size is 9
  102 run: console:address <- next-ingredient 
 9999 mem: storing 1013 in location 1017
- 102 run: x:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
+ 102 run: x:event, console, found?:boolean, quit?:boolean <- read-event console
 9999 mem: location 1017 is 1013
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 12
  103 run: x:address:console <- next-ingredient 
 9999 mem: storing 1013 in location 1027
- 103 run: break-unless x:address:console, 
+ 103 run: break-unless x, 
 9999 mem: location 1027 is 1013
 9999 run: jump-unless fell through
- 103 run: idx:address:number <- get-address x:address:console/lookup, index:offset
+ 103 run: idx:address:number <- get-address *x, index:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1014 is 1000
 9999 mem: location 1027 is 1013
 9999 run: address to copy is 1013
 9999 mem: storing 1013 in location 1028
- 103 run: buf:address:array:event <- get x:address:console/lookup, data:offset
+ 103 run: buf:address:array:event <- get *x, data:offset
 9999 mem: location 1027 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1014 is 1000
@@ -478,7 +478,7 @@ after-brace: read-key ...
 9999 run: its type is address
 9999 mem: location 1014 is 1000
 9999 mem: storing 1000 in location 1029
- 103 run: max:number <- length buf:address:array:event/lookup
+ 103 run: max:number <- length *buf
 9999 mem: location 1029 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 0
@@ -495,18 +495,18 @@ after-brace: read-key ...
 9999 mem: location 1012 is 0
 9999 mem: location 1029 is 1000
 9999 mem: storing 3 in location 1030
- 103 run: done?:boolean <- greater-or-equal idx:address:number/lookup, max:number
+ 103 run: done?:boolean <- greater-or-equal *idx, max
 9999 mem: location 1028 is 1013
 9999 mem: location 1013 is 3
 9999 mem: location 1030 is 3
 9999 mem: storing 1 in location 1031
- 103 run: break-unless done?:boolean, 
+ 103 run: break-unless done?, 
 9999 mem: location 1031 is 1
 9999 run: jump-unless fell through
  103 run: dummy:address:event <- new event:type
 9999 mem: new alloc: 1038
 9999 mem: storing 1038 in location 1032
- 103 run: reply dummy:address:event/lookup, x:address:console/same-as-ingredient:0, 1/found, 1/quit
+ 103 run: reply *dummy, x/same-as-ingredient:0, 1/found, 1/quit
 9999 mem: location 1032 is 1038
 9999 mem: location 1038 is 0
 9999 mem: location 1039 is 0
@@ -524,10 +524,10 @@ after-brace: read-key ...
 9999 mem: storing 1013 in location 1017
 9999 mem: storing 1 in location 1022
 9999 mem: storing 1 in location 1023
- 102 run: jump-unless quit?:boolean, 1:offset
+ 102 run: jump-unless quit?, 1:offset
 9999 mem: location 1023 is 1
 9999 run: jump-unless fell through
- 102 run: reply 0, console:address/same-as-ingredient:0, found?:boolean, quit?:boolean
+ 102 run: reply 0, console/same-as-ingredient:0, found?, quit?
 9999 mem: location 1017 is 1013
 9999 mem: location 1022 is 1
 9999 mem: location 1023 is 1

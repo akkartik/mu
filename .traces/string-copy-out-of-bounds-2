@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:array:character <- string-copy 1:address:array:character, 3, 3\n    3:array:character <- copy 2:address:array:character/lookup\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character <- new [abc]\n    2:address:array:character <- string-copy 1:address:array:character, 3, 3\n    3:array:character <- copy *2:address:array:character\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3:string <- []\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-string-copy-out-of-bounds-2
@@ -10,7 +10,7 @@ schedule: scenario-string-copy-out-of-bounds-2
  101 run: run [
     1:address:array:character <- new [abc]
     2:address:array:character <- string-copy 1:address:array:character, 3, 3
-    3:array:character <- copy 2:address:array:character/lookup
+    3:array:character <- copy *2:address:array:character
   ]
 parse: instruction: new
 parse:   ingredient: {name: "abc", properties: [_: "literal-string"]}
@@ -21,7 +21,7 @@ parse:   ingredient: {name: "3", properties: ["3": "literal"]}
 parse:   ingredient: {name: "3", properties: ["3": "literal"]}
 parse:   product: {name: "2", properties: ["2": "address":"array":"character"]}
 parse: instruction: copy
-parse:   ingredient: {name: "2", properties: ["2": "address":"array":"character", "lookup": ]}
+parse:   ingredient: {name: "2", properties: ["*2": "address":"array":"character", "lookup": ]}
 parse:   product: {name: "3", properties: ["3": "array":"character"]}
 after-brace: recipe run1001
 after-brace: new ...
@@ -40,7 +40,7 @@ after-brace: copy ...
 9999 mem: storing 3 in location 1007
  102 run: end:number <- next-ingredient 
 9999 mem: storing 3 in location 1008
- 102 run: len:number <- length buf:address:array:character/lookup
+ 102 run: len:number <- length *buf
 9999 mem: location 1006 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 97
@@ -48,7 +48,7 @@ after-brace: copy ...
 9999 mem: location 1003 is 99
 9999 mem: location 1006 is 1000
 9999 mem: storing 3 in location 1009
- 102 run: end:number <- min len:number, end:number
+ 102 run: end:number <- min len, end
 9999 mem: location 1009 is 3
 9999 mem: location 1008 is 3
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -58,43 +58,43 @@ after-brace: copy ...
 9999 mem: storing 3 in location 1018
  103 run: y:number <- next-ingredient 
 9999 mem: storing 3 in location 1019
- 103 run: return-x?:boolean <- lesser-than x:number, y:number
+ 103 run: return-x?:boolean <- lesser-than x, y
 9999 mem: location 1018 is 3
 9999 mem: location 1019 is 3
 9999 mem: storing 0 in location 1020
- 103 run: break-if return-x?:boolean, 
+ 103 run: break-if return-x?, 
 9999 mem: location 1020 is 0
 9999 run: jump-if fell through
- 103 run: reply y:number
+ 103 run: reply y
 9999 mem: location 1019 is 3
 9999 run: result 0 is 3
 9999 mem: storing 3 in location 1008
- 102 run: len:number <- subtract end:number, start:number
+ 102 run: len <- subtract end, start
 9999 mem: location 1008 is 3
 9999 mem: location 1007 is 3
 9999 mem: storing 0 in location 1009
- 102 run: result:address:array:character <- new character:type, len:number
+ 102 run: result:address:array:character <- new character:type, len
 9999 mem: location 1009 is 0
 9999 mem: array size is 0
 9999 mem: new alloc: 1021
 9999 mem: storing 1021 in location 1010
- 102 run: src-idx:number <- copy start:number
+ 102 run: src-idx:number <- copy start
 9999 mem: location 1007 is 3
 9999 mem: storing 3 in location 1011
  102 run: dest-idx:number <- copy 0
 9999 mem: storing 0 in location 1012
- 102 run: done?:boolean <- greater-or-equal src-idx:number, end:number
+ 102 run: done?:boolean <- greater-or-equal src-idx, end
 9999 mem: location 1011 is 3
 9999 mem: location 1008 is 3
 9999 mem: storing 1 in location 1013
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1013 is 1
 9999 run: jumping to instruction 19
- 102 run: reply result:address:array:character
+ 102 run: reply result
 9999 mem: location 1010 is 1021
 9999 run: result 0 is 1021
 9999 mem: storing 1021 in location 2
- 101 run: 3:array:character <- copy 2:address:array:character/lookup
+ 101 run: 3:array:character <- copy *2:address:array:character
 9999 mem: location 2 is 1021
 9999 mem: location 1021 is 0
 9999 mem: storing 0 in location 3

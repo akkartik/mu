@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    default-space:address:array:location <- new location:type, 30\n    x:address:array:character <- new [abc]\n    y:address:array:character <- new [abcd]\n    3:boolean/raw <- string-equal x:address:array:character, y:address:array:character\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    default-space:address:array:location <- new location:type, 30\n    x:address:array:character <- new [abc]\n    y:address:array:character <- new [abcd]\n    3:boolean/raw <- string-equal x, y\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    3 <- 0  # abc != abcd\n  ", properties: [_: "literal-string"]}
 parse: instruction: trace-should-contain
@@ -17,7 +17,7 @@ schedule: scenario-string-equal-distinct-lengths
     default-space:address:array:location <- new location:type, 30
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abcd]
-    3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
+    3:boolean/raw <- string-equal x, y
   ]
 parse: instruction: new
 parse:   ingredient: {name: "location", properties: ["location": "type"]}
@@ -30,8 +30,8 @@ parse: instruction: new
 parse:   ingredient: {name: "abcd", properties: [_: "literal-string"]}
 parse:   product: {name: "y", properties: ["y": "address":"array":"character"]}
 parse: instruction: string-equal
-parse:   ingredient: {name: "x", properties: ["x": "address":"array":"character"]}
-parse:   ingredient: {name: "y", properties: ["y": "address":"array":"character"]}
+parse:   ingredient: {name: "x", properties: ["x": ]}
+parse:   ingredient: {name: "y", properties: ["y": ]}
 parse:   product: {name: "3", properties: ["3": "boolean", "raw": ]}
 9999 new: location -> location
 name: assign x 1
@@ -48,7 +48,7 @@ after-brace: string-equal ...
 9999 mem: storing 1031 in location 1002
  101 run: y:address:array:character <- new [abcd]
 9999 mem: storing 1035 in location 1003
- 101 run: 3:boolean/raw <- string-equal x:address:array:character, y:address:array:character
+ 101 run: 3:boolean/raw <- string-equal x, y
 9999 mem: location 1002 is 1031
 9999 mem: location 1003 is 1035
  102 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
@@ -56,7 +56,7 @@ after-brace: string-equal ...
 9999 mem: new alloc: 1040
  102 run: a:address:array:character <- next-ingredient 
 9999 mem: storing 1031 in location 1042
- 102 run: a-len:number <- length a:address:array:character/lookup
+ 102 run: a-len:number <- length *a
 9999 mem: location 1042 is 1031
 9999 mem: location 1031 is 3
 9999 mem: location 1032 is 97
@@ -66,7 +66,7 @@ after-brace: string-equal ...
 9999 mem: storing 3 in location 1043
  102 run: b:address:array:character <- next-ingredient 
 9999 mem: storing 1035 in location 1044
- 102 run: b-len:number <- length b:address:array:character/lookup
+ 102 run: b-len:number <- length *b
 9999 mem: location 1044 is 1035
 9999 mem: location 1035 is 4
 9999 mem: location 1036 is 97
@@ -77,11 +77,11 @@ after-brace: string-equal ...
 9999 mem: storing 4 in location 1045
  102 run: trace [string-equal], [comparing lengths]
    1 string-equal: comparing lengths
- 102 run: length-equal?:boolean <- equal a-len:number, b-len:number
+ 102 run: length-equal?:boolean <- equal a-len, b-len
 9999 mem: location 1043 is 3
 9999 mem: location 1045 is 4
 9999 mem: storing 0 in location 1046
- 102 run: break-if length-equal?:boolean, 
+ 102 run: break-if length-equal?, 
 9999 mem: location 1046 is 0
 9999 run: jump-if fell through
  102 run: reply 0

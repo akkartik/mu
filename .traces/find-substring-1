@@ -43,7 +43,7 @@ after-brace: find-substring ...
 9999 mem: storing 1004 in location 1010
  102 run: idx:number <- next-ingredient 
 9999 mem: storing 0 in location 1011
- 102 run: first:character <- index pattern:address:array:character/lookup, 0
+ 102 run: first:character <- index *pattern, 0
 9999 mem: location 1010 is 1004
 9999 mem: location 1004 is 2
 9999 mem: location 1005 is 98
@@ -53,7 +53,7 @@ after-brace: find-substring ...
 9999 run: its type is character
 9999 mem: location 1005 is 98
 9999 mem: storing 98 in location 1012
- 102 run: len:number <- length text:address:array:character/lookup
+ 102 run: len:number <- length *text
 9999 mem: location 1009 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 97
@@ -61,14 +61,14 @@ after-brace: find-substring ...
 9999 mem: location 1003 is 99
 9999 mem: location 1009 is 1000
 9999 mem: storing 3 in location 1013
- 102 run: done?:boolean <- greater-or-equal idx:number, len:number
+ 102 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1011 is 0
 9999 mem: location 1013 is 3
 9999 mem: storing 0 in location 1014
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1014 is 0
 9999 run: jump-if fell through
- 102 run: found?:boolean <- match-at text:address:array:character, pattern:address:array:character, idx:number
+ 102 run: found?:boolean <- match-at text, pattern, idx
 9999 mem: location 1009 is 1000
 9999 mem: location 1010 is 1004
 9999 mem: location 1011 is 0
@@ -81,14 +81,14 @@ after-brace: find-substring ...
 9999 mem: storing 1004 in location 1019
  103 run: idx:number <- next-ingredient 
 9999 mem: storing 0 in location 1020
- 103 run: pattern-len:number <- length pattern:address:array:character/lookup
+ 103 run: pattern-len:number <- length *pattern
 9999 mem: location 1019 is 1004
 9999 mem: location 1004 is 2
 9999 mem: location 1005 is 98
 9999 mem: location 1006 is 99
 9999 mem: location 1019 is 1004
 9999 mem: storing 2 in location 1021
- 103 run: x:number <- length text:address:array:character/lookup
+ 103 run: x:number <- length *text
 9999 mem: location 1018 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 97
@@ -96,27 +96,27 @@ after-brace: find-substring ...
 9999 mem: location 1003 is 99
 9999 mem: location 1018 is 1000
 9999 mem: storing 3 in location 1022
- 103 run: x:number <- subtract x:number, pattern-len:number
+ 103 run: x <- subtract x, pattern-len
 9999 mem: location 1022 is 3
 9999 mem: location 1021 is 2
 9999 mem: storing 1 in location 1022
- 103 run: enough-room?:boolean <- lesser-or-equal idx:number, x:number
+ 103 run: enough-room?:boolean <- lesser-or-equal idx, x
 9999 mem: location 1020 is 0
 9999 mem: location 1022 is 1
 9999 mem: storing 1 in location 1023
- 103 run: break-if enough-room?:boolean, 
+ 103 run: break-if enough-room?, 
 9999 mem: location 1023 is 1
 9999 run: jumping to instruction 11
  103 run: pattern-idx:number <- copy 0
 9999 mem: storing 0 in location 1024
- 103 run: done?:boolean <- greater-or-equal pattern-idx:number, pattern-len:number
+ 103 run: done?:boolean <- greater-or-equal pattern-idx, pattern-len
 9999 mem: location 1024 is 0
 9999 mem: location 1021 is 2
 9999 mem: storing 0 in location 1025
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
- 103 run: c:character <- index text:address:array:character/lookup, idx:number
+ 103 run: c:character <- index *text, idx
 9999 mem: location 1018 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 97
@@ -129,7 +129,7 @@ after-brace: find-substring ...
 9999 run: its type is character
 9999 mem: location 1001 is 97
 9999 mem: storing 97 in location 1026
- 103 run: exp:character <- index pattern:address:array:character/lookup, pattern-idx:number
+ 103 run: exp:character <- index *pattern, pattern-idx
 9999 mem: location 1019 is 1004
 9999 mem: location 1004 is 2
 9999 mem: location 1005 is 98
@@ -141,23 +141,23 @@ after-brace: find-substring ...
 9999 run: its type is character
 9999 mem: location 1005 is 98
 9999 mem: storing 98 in location 1027
- 103 run: match?:boolean <- equal c:character, exp:character
+ 103 run: match?:boolean <- equal c, exp
 9999 mem: location 1026 is 97
 9999 mem: location 1027 is 98
 9999 mem: storing 0 in location 1028
- 103 run: break-if match?:boolean, 
+ 103 run: break-if match?, 
 9999 mem: location 1028 is 0
 9999 run: jump-if fell through
  103 run: reply 0/not-found
 9999 run: result 0 is 0
 9999 mem: storing 0 in location 1015
- 102 run: break-if found?:boolean, 
+ 102 run: break-if found?, 
 9999 mem: location 1015 is 0
 9999 run: jump-if fell through
- 102 run: idx:number <- add idx:number, 1
+ 102 run: idx <- add idx, 1
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 1011
- 102 run: idx:number <- find-next text:address:array:character, first:character, idx:number
+ 102 run: idx <- find-next text, first, idx
 9999 mem: location 1009 is 1000
 9999 mem: location 1012 is 98
 9999 mem: location 1011 is 1
@@ -170,7 +170,7 @@ after-brace: find-substring ...
 9999 mem: storing 98 in location 1032
  103 run: idx:number <- next-ingredient 
 9999 mem: storing 1 in location 1033
- 103 run: len:number <- length text:address:array:character/lookup
+ 103 run: len:number <- length *text
 9999 mem: location 1031 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 97
@@ -178,14 +178,14 @@ after-brace: find-substring ...
 9999 mem: location 1003 is 99
 9999 mem: location 1031 is 1000
 9999 mem: storing 3 in location 1034
- 103 run: eof?:boolean <- greater-or-equal idx:number, len:number
+ 103 run: eof?:boolean <- greater-or-equal idx, len
 9999 mem: location 1033 is 1
 9999 mem: location 1034 is 3
 9999 mem: storing 0 in location 1035
- 103 run: break-if eof?:boolean, 
+ 103 run: break-if eof?, 
 9999 mem: location 1035 is 0
 9999 run: jump-if fell through
- 103 run: curr:character <- index text:address:array:character/lookup, idx:number
+ 103 run: curr:character <- index *text, idx
 9999 mem: location 1031 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 97
@@ -198,27 +198,27 @@ after-brace: find-substring ...
 9999 run: its type is character
 9999 mem: location 1002 is 98
 9999 mem: storing 98 in location 1036
- 103 run: found?:boolean <- equal curr:character, pattern:character
+ 103 run: found?:boolean <- equal curr, pattern
 9999 mem: location 1036 is 98
 9999 mem: location 1032 is 98
 9999 mem: storing 1 in location 1037
- 103 run: break-if found?:boolean, 
+ 103 run: break-if found?, 
 9999 mem: location 1037 is 1
 9999 run: jumping to instruction 13
- 103 run: reply idx:number
+ 103 run: reply idx
 9999 mem: location 1033 is 1
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 1011
  102 run: loop 
 9999 run: jumping to instruction 7
- 102 run: done?:boolean <- greater-or-equal idx:number, len:number
+ 102 run: done?:boolean <- greater-or-equal idx, len
 9999 mem: location 1011 is 1
 9999 mem: location 1013 is 3
 9999 mem: storing 0 in location 1014
- 102 run: break-if done?:boolean, 
+ 102 run: break-if done?, 
 9999 mem: location 1014 is 0
 9999 run: jump-if fell through
- 102 run: found?:boolean <- match-at text:address:array:character, pattern:address:array:character, idx:number
+ 102 run: found?:boolean <- match-at text, pattern, idx
 9999 mem: location 1009 is 1000
 9999 mem: location 1010 is 1004
 9999 mem: location 1011 is 1
@@ -230,14 +230,14 @@ after-brace: find-substring ...
 9999 mem: storing 1004 in location 1019
  103 run: idx:number <- next-ingredient 
 9999 mem: storing 1 in location 1020
- 103 run: pattern-len:number <- length pattern:address:array:character/lookup
+ 103 run: pattern-len:number <- length *pattern
 9999 mem: location 1019 is 1004
 9999 mem: location 1004 is 2
 9999 mem: location 1005 is 98
 9999 mem: location 1006 is 99
 9999 mem: location 1019 is 1004
 9999 mem: storing 2 in location 1021
- 103 run: x:number <- length text:address:array:character/lookup
+ 103 run: x:number <- length *text
 9999 mem: location 1018 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 97
@@ -245,27 +245,27 @@ after-brace: find-substring ...
 9999 mem: location 1003 is 99
 9999 mem: location 1018 is 1000
 9999 mem: storing 3 in location 1022
- 103 run: x:number <- subtract x:number, pattern-len:number
+ 103 run: x <- subtract x, pattern-len
 9999 mem: location 1022 is 3
 9999 mem: location 1021 is 2
 9999 mem: storing 1 in location 1022
- 103 run: enough-room?:boolean <- lesser-or-equal idx:number, x:number
+ 103 run: enough-room?:boolean <- lesser-or-equal idx, x
 9999 mem: location 1020 is 1
 9999 mem: location 1022 is 1
 9999 mem: storing 1 in location 1023
- 103 run: break-if enough-room?:boolean, 
+ 103 run: break-if enough-room?, 
 9999 mem: location 1023 is 1
 9999 run: jumping to instruction 11
  103 run: pattern-idx:number <- copy 0
 9999 mem: storing 0 in location 1024
- 103 run: done?:boolean <- greater-or-equal pattern-idx:number, pattern-len:number
+ 103 run: done?:boolean <- greater-or-equal pattern-idx, pattern-len
 9999 mem: location 1024 is 0
 9999 mem: location 1021 is 2
 9999 mem: storing 0 in location 1025
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
- 103 run: c:character <- index text:address:array:character/lookup, idx:number
+ 103 run: c:character <- index *text, idx
 9999 mem: location 1018 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 97
@@ -278,7 +278,7 @@ after-brace: find-substring ...
 9999 run: its type is character
 9999 mem: location 1002 is 98
 9999 mem: storing 98 in location 1026
- 103 run: exp:character <- index pattern:address:array:character/lookup, pattern-idx:number
+ 103 run: exp:character <- index *pattern, pattern-idx
 9999 mem: location 1019 is 1004
 9999 mem: location 1004 is 2
 9999 mem: location 1005 is 98
@@ -290,29 +290,29 @@ after-brace: find-substring ...
 9999 run: its type is character
 9999 mem: location 1005 is 98
 9999 mem: storing 98 in location 1027
- 103 run: match?:boolean <- equal c:character, exp:character
+ 103 run: match?:boolean <- equal c, exp
 9999 mem: location 1026 is 98
 9999 mem: location 1027 is 98
 9999 mem: storing 1 in location 1028
- 103 run: break-if match?:boolean, 
+ 103 run: break-if match?, 
 9999 mem: location 1028 is 1
 9999 run: jumping to instruction 22
- 103 run: idx:number <- add idx:number, 1
+ 103 run: idx <- add idx, 1
 9999 mem: location 1020 is 1
 9999 mem: storing 2 in location 1020
- 103 run: pattern-idx:number <- add pattern-idx:number, 1
+ 103 run: pattern-idx <- add pattern-idx, 1
 9999 mem: location 1024 is 0
 9999 mem: storing 1 in location 1024
  103 run: loop 
 9999 run: jumping to instruction 14
- 103 run: done?:boolean <- greater-or-equal pattern-idx:number, pattern-len:number
+ 103 run: done?:boolean <- greater-or-equal pattern-idx, pattern-len
 9999 mem: location 1024 is 1
 9999 mem: location 1021 is 2
 9999 mem: storing 0 in location 1025
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
- 103 run: c:character <- index text:address:array:character/lookup, idx:number
+ 103 run: c:character <- index *text, idx
 9999 mem: location 1018 is 1000
 9999 mem: location 1000 is 3
 9999 mem: location 1001 is 97
@@ -325,7 +325,7 @@ after-brace: find-substring ...
 9999 run: its type is character
 9999 mem: location 1003 is 99
 9999 mem: storing 99 in location 1026
- 103 run: exp:character <- index pattern:address:array:character/lookup, pattern-idx:number
+ 103 run: exp:character <- index *pattern, pattern-idx
 9999 mem: location 1019 is 1004
 9999 mem: location 1004 is 2
 9999 mem: location 1005 is 98
@@ -337,35 +337,35 @@ after-brace: find-substring ...
 9999 run: its type is character
 9999 mem: location 1006 is 99
 9999 mem: storing 99 in location 1027
- 103 run: match?:boolean <- equal c:character, exp:character
+ 103 run: match?:boolean <- equal c, exp
 9999 mem: location 1026 is 99
 9999 mem: location 1027 is 99
 9999 mem: storing 1 in location 1028
- 103 run: break-if match?:boolean, 
+ 103 run: break-if match?, 
 9999 mem: location 1028 is 1
 9999 run: jumping to instruction 22
- 103 run: idx:number <- add idx:number, 1
+ 103 run: idx <- add idx, 1
 9999 mem: location 1020 is 2
 9999 mem: storing 3 in location 1020
- 103 run: pattern-idx:number <- add pattern-idx:number, 1
+ 103 run: pattern-idx <- add pattern-idx, 1
 9999 mem: location 1024 is 1
 9999 mem: storing 2 in location 1024
  103 run: loop 
 9999 run: jumping to instruction 14
- 103 run: done?:boolean <- greater-or-equal pattern-idx:number, pattern-len:number
+ 103 run: done?:boolean <- greater-or-equal pattern-idx, pattern-len
 9999 mem: location 1024 is 2
 9999 mem: location 1021 is 2
 9999 mem: storing 1 in location 1025
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1025 is 1
 9999 run: jumping to instruction 26
  103 run: reply 1/found
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 1015
- 102 run: break-if found?:boolean, 
+ 102 run: break-if found?, 
 9999 mem: location 1015 is 1
 9999 run: jumping to instruction 14
- 102 run: reply idx:number
+ 102 run: reply idx
 9999 mem: location 1011 is 1
 9999 run: result 0 is 1
 9999 mem: storing 1 in location 3

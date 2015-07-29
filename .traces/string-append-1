@@ -1,5 +1,5 @@
 parse: instruction: run
-parse:   ingredient: {name: "\n    1:address:array:character/raw <- new [hello,]\n    2:address:array:character/raw <- new [ world!]\n    3:address:array:character/raw <- string-append 1:address:array:character/raw, 2:address:array:character/raw\n    4:array:character/raw <- copy 3:address:array:character/raw/lookup\n  ", properties: [_: "literal-string"]}
+parse:   ingredient: {name: "\n    1:address:array:character/raw <- new [hello,]\n    2:address:array:character/raw <- new [ world!]\n    3:address:array:character/raw <- string-append 1:address:array:character/raw, 2:address:array:character/raw\n    4:array:character/raw <- copy *3:address:array:character/raw\n  ", properties: [_: "literal-string"]}
 parse: instruction: memory-should-contain
 parse:   ingredient: {name: "\n    4:string <- [hello, world!]\n  ", properties: [_: "literal-string"]}
 after-brace: recipe scenario-string-append-1
@@ -11,7 +11,7 @@ schedule: scenario-string-append-1
     1:address:array:character/raw <- new [hello,]
     2:address:array:character/raw <- new [ world!]
     3:address:array:character/raw <- string-append 1:address:array:character/raw, 2:address:array:character/raw
-    4:array:character/raw <- copy 3:address:array:character/raw/lookup
+    4:array:character/raw <- copy *3:address:array:character/raw
   ]
 parse: instruction: new
 parse:   ingredient: {name: "hello,", properties: [_: "literal-string"]}
@@ -24,7 +24,7 @@ parse:   ingredient: {name: "1", properties: ["1": "address":"array":"character"
 parse:   ingredient: {name: "2", properties: ["2": "address":"array":"character", "raw": ]}
 parse:   product: {name: "3", properties: ["3": "address":"array":"character", "raw": ]}
 parse: instruction: copy
-parse:   ingredient: {name: "3", properties: ["3": "address":"array":"character", "raw": , "lookup": ]}
+parse:   ingredient: {name: "3", properties: ["*3": "address":"array":"character", "raw": , "lookup": ]}
 parse:   product: {name: "4", properties: ["4": "array":"character", "raw": ]}
 after-brace: recipe run1001
 after-brace: new ...
@@ -43,7 +43,7 @@ after-brace: copy ...
 9999 mem: new alloc: 1015
  102 run: a:address:array:character <- next-ingredient 
 9999 mem: storing 1000 in location 1017
- 102 run: a-len:number <- length a:address:array:character/lookup
+ 102 run: a-len:number <- length *a
 9999 mem: location 1017 is 1000
 9999 mem: location 1000 is 6
 9999 mem: location 1001 is 104
@@ -56,7 +56,7 @@ after-brace: copy ...
 9999 mem: storing 6 in location 1018
  102 run: b:address:array:character <- next-ingredient 
 9999 mem: storing 1007 in location 1019
- 102 run: b-len:number <- length b:address:array:character/lookup
+ 102 run: b-len:number <- length *b
 9999 mem: location 1019 is 1007
 9999 mem: location 1007 is 7
 9999 mem: location 1008 is 32
@@ -68,11 +68,11 @@ after-brace: copy ...
 9999 mem: location 1014 is 33
 9999 mem: location 1019 is 1007
 9999 mem: storing 7 in location 1020
- 102 run: result-len:number <- add a-len:number, b-len:number
+ 102 run: result-len:number <- add a-len, b-len
 9999 mem: location 1018 is 6
 9999 mem: location 1020 is 7
 9999 mem: storing 13 in location 1021
- 102 run: result:address:array:character <- new character:type, result-len:number
+ 102 run: result:address:array:character <- new character:type, result-len
 9999 mem: location 1021 is 13
 9999 mem: array size is 13
 9999 mem: new alloc: 1029
@@ -81,14 +81,14 @@ after-brace: copy ...
 9999 mem: storing 0 in location 1023
  102 run: i:number <- copy 0
 9999 mem: storing 0 in location 1024
- 102 run: a-done?:boolean <- greater-or-equal i:number, a-len:number
+ 102 run: a-done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1024 is 0
 9999 mem: location 1018 is 6
 9999 mem: storing 0 in location 1025
- 102 run: break-if a-done?:boolean, 
+ 102 run: break-if a-done?, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 0
@@ -108,7 +108,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 0
 9999 mem: storing 1030 in location 1026
- 102 run: in:character <- index a:address:array:character/lookup, i:number
+ 102 run: in:character <- index *a, i
 9999 mem: location 1017 is 1000
 9999 mem: location 1000 is 6
 9999 mem: location 1001 is 104
@@ -124,26 +124,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1001 is 104
 9999 mem: storing 104 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 104
 9999 mem: location 1026 is 1030
 9999 mem: storing 104 in location 1030
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 0
 9999 mem: storing 1 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 0
 9999 mem: storing 1 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 10
- 102 run: a-done?:boolean <- greater-or-equal i:number, a-len:number
+ 102 run: a-done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1024 is 1
 9999 mem: location 1018 is 6
 9999 mem: storing 0 in location 1025
- 102 run: break-if a-done?:boolean, 
+ 102 run: break-if a-done?, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -163,7 +163,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 1
 9999 mem: storing 1031 in location 1026
- 102 run: in:character <- index a:address:array:character/lookup, i:number
+ 102 run: in:character <- index *a, i
 9999 mem: location 1017 is 1000
 9999 mem: location 1000 is 6
 9999 mem: location 1001 is 104
@@ -179,26 +179,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1002 is 101
 9999 mem: storing 101 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 101
 9999 mem: location 1026 is 1031
 9999 mem: storing 101 in location 1031
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 1
 9999 mem: storing 2 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 1
 9999 mem: storing 2 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 10
- 102 run: a-done?:boolean <- greater-or-equal i:number, a-len:number
+ 102 run: a-done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1024 is 2
 9999 mem: location 1018 is 6
 9999 mem: storing 0 in location 1025
- 102 run: break-if a-done?:boolean, 
+ 102 run: break-if a-done?, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -218,7 +218,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 2
 9999 mem: storing 1032 in location 1026
- 102 run: in:character <- index a:address:array:character/lookup, i:number
+ 102 run: in:character <- index *a, i
 9999 mem: location 1017 is 1000
 9999 mem: location 1000 is 6
 9999 mem: location 1001 is 104
@@ -234,26 +234,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1003 is 108
 9999 mem: storing 108 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 108
 9999 mem: location 1026 is 1032
 9999 mem: storing 108 in location 1032
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 2
 9999 mem: storing 3 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 2
 9999 mem: storing 3 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 10
- 102 run: a-done?:boolean <- greater-or-equal i:number, a-len:number
+ 102 run: a-done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1024 is 3
 9999 mem: location 1018 is 6
 9999 mem: storing 0 in location 1025
- 102 run: break-if a-done?:boolean, 
+ 102 run: break-if a-done?, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -273,7 +273,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 3
 9999 mem: storing 1033 in location 1026
- 102 run: in:character <- index a:address:array:character/lookup, i:number
+ 102 run: in:character <- index *a, i
 9999 mem: location 1017 is 1000
 9999 mem: location 1000 is 6
 9999 mem: location 1001 is 104
@@ -289,26 +289,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1004 is 108
 9999 mem: storing 108 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 108
 9999 mem: location 1026 is 1033
 9999 mem: storing 108 in location 1033
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 3
 9999 mem: storing 4 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 3
 9999 mem: storing 4 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 10
- 102 run: a-done?:boolean <- greater-or-equal i:number, a-len:number
+ 102 run: a-done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1024 is 4
 9999 mem: location 1018 is 6
 9999 mem: storing 0 in location 1025
- 102 run: break-if a-done?:boolean, 
+ 102 run: break-if a-done?, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -328,7 +328,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 4
 9999 mem: storing 1034 in location 1026
- 102 run: in:character <- index a:address:array:character/lookup, i:number
+ 102 run: in:character <- index *a, i
 9999 mem: location 1017 is 1000
 9999 mem: location 1000 is 6
 9999 mem: location 1001 is 104
@@ -344,26 +344,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1005 is 111
 9999 mem: storing 111 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 111
 9999 mem: location 1026 is 1034
 9999 mem: storing 111 in location 1034
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 4
 9999 mem: storing 5 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 4
 9999 mem: storing 5 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 10
- 102 run: a-done?:boolean <- greater-or-equal i:number, a-len:number
+ 102 run: a-done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1024 is 5
 9999 mem: location 1018 is 6
 9999 mem: storing 0 in location 1025
- 102 run: break-if a-done?:boolean, 
+ 102 run: break-if a-done?, 
 9999 mem: location 1025 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -383,7 +383,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 5
 9999 mem: storing 1035 in location 1026
- 102 run: in:character <- index a:address:array:character/lookup, i:number
+ 102 run: in:character <- index *a, i
 9999 mem: location 1017 is 1000
 9999 mem: location 1000 is 6
 9999 mem: location 1001 is 104
@@ -399,35 +399,35 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1006 is 44
 9999 mem: storing 44 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 44
 9999 mem: location 1026 is 1035
 9999 mem: storing 44 in location 1035
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 5
 9999 mem: storing 6 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 5
 9999 mem: storing 6 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 10
- 102 run: a-done?:boolean <- greater-or-equal i:number, a-len:number
+ 102 run: a-done?:boolean <- greater-or-equal i, a-len
 9999 mem: location 1024 is 6
 9999 mem: location 1018 is 6
 9999 mem: storing 1 in location 1025
- 102 run: break-if a-done?:boolean, 
+ 102 run: break-if a-done?, 
 9999 mem: location 1025 is 1
 9999 run: jumping to instruction 18
- 102 run: i:number <- copy 0
+ 102 run: i <- copy 0
 9999 mem: storing 0 in location 1024
- 102 run: b-done?:boolean <- greater-or-equal i:number, b-len:number
+ 102 run: b-done?:boolean <- greater-or-equal i, b-len
 9999 mem: location 1024 is 0
 9999 mem: location 1020 is 7
 9999 mem: storing 0 in location 1028
- 102 run: break-if b-done?:boolean, 
+ 102 run: break-if b-done?, 
 9999 mem: location 1028 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -447,7 +447,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 6
 9999 mem: storing 1036 in location 1026
- 102 run: in:character <- index b:address:array:character/lookup, i:number
+ 102 run: in:character <- index *b, i
 9999 mem: location 1019 is 1007
 9999 mem: location 1007 is 7
 9999 mem: location 1008 is 32
@@ -464,26 +464,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1008 is 32
 9999 mem: storing 32 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 32
 9999 mem: location 1026 is 1036
 9999 mem: storing 32 in location 1036
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 0
 9999 mem: storing 1 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 6
 9999 mem: storing 7 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 21
- 102 run: b-done?:boolean <- greater-or-equal i:number, b-len:number
+ 102 run: b-done?:boolean <- greater-or-equal i, b-len
 9999 mem: location 1024 is 1
 9999 mem: location 1020 is 7
 9999 mem: storing 0 in location 1028
- 102 run: break-if b-done?:boolean, 
+ 102 run: break-if b-done?, 
 9999 mem: location 1028 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -503,7 +503,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 7
 9999 mem: storing 1037 in location 1026
- 102 run: in:character <- index b:address:array:character/lookup, i:number
+ 102 run: in:character <- index *b, i
 9999 mem: location 1019 is 1007
 9999 mem: location 1007 is 7
 9999 mem: location 1008 is 32
@@ -520,26 +520,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1009 is 119
 9999 mem: storing 119 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 119
 9999 mem: location 1026 is 1037
 9999 mem: storing 119 in location 1037
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 1
 9999 mem: storing 2 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 7
 9999 mem: storing 8 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 21
- 102 run: b-done?:boolean <- greater-or-equal i:number, b-len:number
+ 102 run: b-done?:boolean <- greater-or-equal i, b-len
 9999 mem: location 1024 is 2
 9999 mem: location 1020 is 7
 9999 mem: storing 0 in location 1028
- 102 run: break-if b-done?:boolean, 
+ 102 run: break-if b-done?, 
 9999 mem: location 1028 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -559,7 +559,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 8
 9999 mem: storing 1038 in location 1026
- 102 run: in:character <- index b:address:array:character/lookup, i:number
+ 102 run: in:character <- index *b, i
 9999 mem: location 1019 is 1007
 9999 mem: location 1007 is 7
 9999 mem: location 1008 is 32
@@ -576,26 +576,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1010 is 111
 9999 mem: storing 111 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 111
 9999 mem: location 1026 is 1038
 9999 mem: storing 111 in location 1038
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 2
 9999 mem: storing 3 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 8
 9999 mem: storing 9 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 21
- 102 run: b-done?:boolean <- greater-or-equal i:number, b-len:number
+ 102 run: b-done?:boolean <- greater-or-equal i, b-len
 9999 mem: location 1024 is 3
 9999 mem: location 1020 is 7
 9999 mem: storing 0 in location 1028
- 102 run: break-if b-done?:boolean, 
+ 102 run: break-if b-done?, 
 9999 mem: location 1028 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -615,7 +615,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 9
 9999 mem: storing 1039 in location 1026
- 102 run: in:character <- index b:address:array:character/lookup, i:number
+ 102 run: in:character <- index *b, i
 9999 mem: location 1019 is 1007
 9999 mem: location 1007 is 7
 9999 mem: location 1008 is 32
@@ -632,26 +632,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1011 is 114
 9999 mem: storing 114 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 114
 9999 mem: location 1026 is 1039
 9999 mem: storing 114 in location 1039
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 3
 9999 mem: storing 4 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 9
 9999 mem: storing 10 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 21
- 102 run: b-done?:boolean <- greater-or-equal i:number, b-len:number
+ 102 run: b-done?:boolean <- greater-or-equal i, b-len
 9999 mem: location 1024 is 4
 9999 mem: location 1020 is 7
 9999 mem: storing 0 in location 1028
- 102 run: break-if b-done?:boolean, 
+ 102 run: break-if b-done?, 
 9999 mem: location 1028 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -671,7 +671,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 10
 9999 mem: storing 1040 in location 1026
- 102 run: in:character <- index b:address:array:character/lookup, i:number
+ 102 run: in:character <- index *b, i
 9999 mem: location 1019 is 1007
 9999 mem: location 1007 is 7
 9999 mem: location 1008 is 32
@@ -688,26 +688,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1012 is 108
 9999 mem: storing 108 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 108
 9999 mem: location 1026 is 1040
 9999 mem: storing 108 in location 1040
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 4
 9999 mem: storing 5 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 10
 9999 mem: storing 11 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 21
- 102 run: b-done?:boolean <- greater-or-equal i:number, b-len:number
+ 102 run: b-done?:boolean <- greater-or-equal i, b-len
 9999 mem: location 1024 is 5
 9999 mem: location 1020 is 7
 9999 mem: storing 0 in location 1028
- 102 run: break-if b-done?:boolean, 
+ 102 run: break-if b-done?, 
 9999 mem: location 1028 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -727,7 +727,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 11
 9999 mem: storing 1041 in location 1026
- 102 run: in:character <- index b:address:array:character/lookup, i:number
+ 102 run: in:character <- index *b, i
 9999 mem: location 1019 is 1007
 9999 mem: location 1007 is 7
 9999 mem: location 1008 is 32
@@ -744,26 +744,26 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1013 is 100
 9999 mem: storing 100 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 100
 9999 mem: location 1026 is 1041
 9999 mem: storing 100 in location 1041
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 5
 9999 mem: storing 6 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 11
 9999 mem: storing 12 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 21
- 102 run: b-done?:boolean <- greater-or-equal i:number, b-len:number
+ 102 run: b-done?:boolean <- greater-or-equal i, b-len
 9999 mem: location 1024 is 6
 9999 mem: location 1020 is 7
 9999 mem: storing 0 in location 1028
- 102 run: break-if b-done?:boolean, 
+ 102 run: break-if b-done?, 
 9999 mem: location 1028 is 0
 9999 run: jump-if fell through
- 102 run: out:address:character <- index-address result:address:array:character/lookup, result-idx:number
+ 102 run: out:address:character <- index-address *result, result-idx
 9999 mem: location 1022 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104
@@ -783,7 +783,7 @@ after-brace: copy ...
 9999 mem: location 1022 is 1029
 9999 mem: location 1023 is 12
 9999 mem: storing 1042 in location 1026
- 102 run: in:character <- index b:address:array:character/lookup, i:number
+ 102 run: in:character <- index *b, i
 9999 mem: location 1019 is 1007
 9999 mem: location 1007 is 7
 9999 mem: location 1008 is 32
@@ -800,30 +800,30 @@ after-brace: copy ...
 9999 run: its type is character
 9999 mem: location 1014 is 33
 9999 mem: storing 33 in location 1027
- 102 run: out:address:character/lookup <- copy in:character
+ 102 run: *out <- copy in
 9999 mem: location 1027 is 33
 9999 mem: location 1026 is 1042
 9999 mem: storing 33 in location 1042
- 102 run: i:number <- add i:number, 1
+ 102 run: i <- add i, 1
 9999 mem: location 1024 is 6
 9999 mem: storing 7 in location 1024
- 102 run: result-idx:number <- add result-idx:number, 1
+ 102 run: result-idx <- add result-idx, 1
 9999 mem: location 1023 is 12
 9999 mem: storing 13 in location 1023
  102 run: loop 
 9999 run: jumping to instruction 21
- 102 run: b-done?:boolean <- greater-or-equal i:number, b-len:number
+ 102 run: b-done?:boolean <- greater-or-equal i, b-len
 9999 mem: location 1024 is 7
 9999 mem: location 1020 is 7
 9999 mem: storing 1 in location 1028
- 102 run: break-if b-done?:boolean, 
+ 102 run: break-if b-done?, 
 9999 mem: location 1028 is 1
 9999 run: jumping to instruction 29
- 102 run: reply result:address:array:character
+ 102 run: reply result
 9999 mem: location 1022 is 1029
 9999 run: result 0 is 1029
 9999 mem: storing 1029 in location 3
- 101 run: 4:array:character/raw <- copy 3:address:array:character/raw/lookup
+ 101 run: 4:array:character/raw <- copy *3:address:array:character/raw
 9999 mem: location 3 is 1029
 9999 mem: location 1029 is 13
 9999 mem: location 1030 is 104

@@ -18,7 +18,7 @@ schedule: scenario-screen-in-scenario-unicode-color
  102 run: result:address:screen <- new screen:type
 9999 mem: new alloc: 1009
 9999 mem: storing 1009 in location 1002
- 102 run: width:address:number <- get-address result:address:screen/lookup, num-columns:offset
+ 102 run: width:address:number <- get-address *result, num-columns:offset
 9999 mem: location 1002 is 1009
 9999 mem: location 1009 is 0
 9999 mem: location 1010 is 0
@@ -28,10 +28,10 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1002 is 1009
 9999 run: address to copy is 1010
 9999 mem: storing 1010 in location 1003
- 102 run: width:address:number/lookup <- next-ingredient 
+ 102 run: *width <- next-ingredient 
 9999 mem: location 1003 is 1010
 9999 mem: storing 5 in location 1010
- 102 run: height:address:number <- get-address result:address:screen/lookup, num-rows:offset
+ 102 run: height:address:number <- get-address *result, num-rows:offset
 9999 mem: location 1002 is 1009
 9999 mem: location 1009 is 0
 9999 mem: location 1010 is 5
@@ -41,10 +41,10 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1002 is 1009
 9999 run: address to copy is 1009
 9999 mem: storing 1009 in location 1004
- 102 run: height:address:number/lookup <- next-ingredient 
+ 102 run: *height <- next-ingredient 
 9999 mem: location 1004 is 1009
 9999 mem: storing 3 in location 1009
- 102 run: row:address:number <- get-address result:address:screen/lookup, cursor-row:offset
+ 102 run: row:address:number <- get-address *result, cursor-row:offset
 9999 mem: location 1002 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -54,10 +54,10 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1002 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1005
- 102 run: row:address:number/lookup <- copy 0
+ 102 run: *row <- copy 0
 9999 mem: location 1005 is 1011
 9999 mem: storing 0 in location 1011
- 102 run: column:address:number <- get-address result:address:screen/lookup, cursor-column:offset
+ 102 run: column:address:number <- get-address *result, cursor-column:offset
 9999 mem: location 1002 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -67,16 +67,16 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1002 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1006
- 102 run: column:address:number/lookup <- copy 0
+ 102 run: *column <- copy 0
 9999 mem: location 1006 is 1012
 9999 mem: storing 0 in location 1012
- 102 run: bufsize:number <- multiply width:address:number/lookup, height:address:number/lookup
+ 102 run: bufsize:number <- multiply *width, *height
 9999 mem: location 1003 is 1010
 9999 mem: location 1010 is 5
 9999 mem: location 1004 is 1009
 9999 mem: location 1009 is 3
 9999 mem: storing 15 in location 1007
- 102 run: buf:address:address:array:screen-cell <- get-address result:address:screen/lookup, data:offset
+ 102 run: buf:address:address:array:screen-cell <- get-address *result, data:offset
 9999 mem: location 1002 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -86,23 +86,23 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1002 is 1009
 9999 run: address to copy is 1013
 9999 mem: storing 1013 in location 1008
- 102 run: buf:address:address:array:screen-cell/lookup <- new screen-cell:type, bufsize:number
+ 102 run: *buf <- new screen-cell:type, bufsize
 9999 mem: location 1007 is 15
 9999 mem: array size is 15
 9999 mem: new alloc: 1014
 9999 mem: location 1008 is 1013
 9999 mem: storing 1014 in location 1013
- 102 run: clear-screen result:address:screen
+ 102 run: clear-screen result
 9999 mem: location 1002 is 1009
  103 run: default-space:address:array:location <- local-scope location:type, number-of-locals:literal
 9999 mem: array size is 10
 9999 mem: new alloc: 1045
  103 run: sc:address:screen <- next-ingredient 
 9999 mem: storing 1009 in location 1047
- 103 run: break-unless sc:address:screen, 
+ 103 run: break-unless sc, 
 9999 mem: location 1047 is 1009
 9999 run: jump-unless fell through
- 103 run: buf:address:array:screen-cell <- get sc:address:screen/lookup, data:offset
+ 103 run: buf:address:array:screen-cell <- get *sc, data:offset
 9999 mem: location 1047 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -114,7 +114,7 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 run: its type is address
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 1048
- 103 run: max:number <- length buf:address:array:screen-cell/lookup
+ 103 run: max:number <- length *buf
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -151,14 +151,14 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: storing 15 in location 1049
  103 run: i:number <- copy 0
 9999 mem: storing 0 in location 1050
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 0
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -195,39 +195,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 0
 9999 mem: storing 1015 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1015
 9999 mem: location 1015 is 0
 9999 mem: location 1016 is 0
 9999 mem: location 1052 is 1015
 9999 run: address to copy is 1015
 9999 mem: storing 1015 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1015
 9999 mem: storing 0 in location 1015
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1015
 9999 mem: location 1015 is 0
 9999 mem: location 1016 is 0
 9999 mem: location 1052 is 1015
 9999 run: address to copy is 1016
 9999 mem: storing 1016 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1016
 9999 mem: storing 7 in location 1016
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 0
 9999 mem: storing 1 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 1
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -264,39 +264,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 1
 9999 mem: storing 1017 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1017
 9999 mem: location 1017 is 0
 9999 mem: location 1018 is 0
 9999 mem: location 1052 is 1017
 9999 run: address to copy is 1017
 9999 mem: storing 1017 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1017
 9999 mem: storing 0 in location 1017
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1017
 9999 mem: location 1017 is 0
 9999 mem: location 1018 is 0
 9999 mem: location 1052 is 1017
 9999 run: address to copy is 1018
 9999 mem: storing 1018 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1018
 9999 mem: storing 7 in location 1018
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 1
 9999 mem: storing 2 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 2
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -333,39 +333,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 2
 9999 mem: storing 1019 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1019
 9999 mem: location 1019 is 0
 9999 mem: location 1020 is 0
 9999 mem: location 1052 is 1019
 9999 run: address to copy is 1019
 9999 mem: storing 1019 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1019
 9999 mem: storing 0 in location 1019
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1019
 9999 mem: location 1019 is 0
 9999 mem: location 1020 is 0
 9999 mem: location 1052 is 1019
 9999 run: address to copy is 1020
 9999 mem: storing 1020 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1020
 9999 mem: storing 7 in location 1020
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 2
 9999 mem: storing 3 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 3
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -402,39 +402,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 3
 9999 mem: storing 1021 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1021
 9999 mem: location 1021 is 0
 9999 mem: location 1022 is 0
 9999 mem: location 1052 is 1021
 9999 run: address to copy is 1021
 9999 mem: storing 1021 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1021
 9999 mem: storing 0 in location 1021
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1021
 9999 mem: location 1021 is 0
 9999 mem: location 1022 is 0
 9999 mem: location 1052 is 1021
 9999 run: address to copy is 1022
 9999 mem: storing 1022 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1022
 9999 mem: storing 7 in location 1022
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 3
 9999 mem: storing 4 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 4
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -471,39 +471,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 4
 9999 mem: storing 1023 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1023
 9999 mem: location 1023 is 0
 9999 mem: location 1024 is 0
 9999 mem: location 1052 is 1023
 9999 run: address to copy is 1023
 9999 mem: storing 1023 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1023
 9999 mem: storing 0 in location 1023
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1023
 9999 mem: location 1023 is 0
 9999 mem: location 1024 is 0
 9999 mem: location 1052 is 1023
 9999 run: address to copy is 1024
 9999 mem: storing 1024 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1024
 9999 mem: storing 7 in location 1024
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 4
 9999 mem: storing 5 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 5
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -540,39 +540,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 5
 9999 mem: storing 1025 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1025
 9999 mem: location 1025 is 0
 9999 mem: location 1026 is 0
 9999 mem: location 1052 is 1025
 9999 run: address to copy is 1025
 9999 mem: storing 1025 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1025
 9999 mem: storing 0 in location 1025
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1025
 9999 mem: location 1025 is 0
 9999 mem: location 1026 is 0
 9999 mem: location 1052 is 1025
 9999 run: address to copy is 1026
 9999 mem: storing 1026 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1026
 9999 mem: storing 7 in location 1026
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 5
 9999 mem: storing 6 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 6
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -609,39 +609,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 6
 9999 mem: storing 1027 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1027
 9999 mem: location 1027 is 0
 9999 mem: location 1028 is 0
 9999 mem: location 1052 is 1027
 9999 run: address to copy is 1027
 9999 mem: storing 1027 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1027
 9999 mem: storing 0 in location 1027
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1027
 9999 mem: location 1027 is 0
 9999 mem: location 1028 is 0
 9999 mem: location 1052 is 1027
 9999 run: address to copy is 1028
 9999 mem: storing 1028 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1028
 9999 mem: storing 7 in location 1028
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 6
 9999 mem: storing 7 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 7
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -678,39 +678,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 7
 9999 mem: storing 1029 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1029
 9999 mem: location 1029 is 0
 9999 mem: location 1030 is 0
 9999 mem: location 1052 is 1029
 9999 run: address to copy is 1029
 9999 mem: storing 1029 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1029
 9999 mem: storing 0 in location 1029
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1029
 9999 mem: location 1029 is 0
 9999 mem: location 1030 is 0
 9999 mem: location 1052 is 1029
 9999 run: address to copy is 1030
 9999 mem: storing 1030 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1030
 9999 mem: storing 7 in location 1030
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 7
 9999 mem: storing 8 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 8
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -747,39 +747,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 8
 9999 mem: storing 1031 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1031
 9999 mem: location 1031 is 0
 9999 mem: location 1032 is 0
 9999 mem: location 1052 is 1031
 9999 run: address to copy is 1031
 9999 mem: storing 1031 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1031
 9999 mem: storing 0 in location 1031
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1031
 9999 mem: location 1031 is 0
 9999 mem: location 1032 is 0
 9999 mem: location 1052 is 1031
 9999 run: address to copy is 1032
 9999 mem: storing 1032 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1032
 9999 mem: storing 7 in location 1032
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 8
 9999 mem: storing 9 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 9
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -816,39 +816,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 9
 9999 mem: storing 1033 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1033
 9999 mem: location 1033 is 0
 9999 mem: location 1034 is 0
 9999 mem: location 1052 is 1033
 9999 run: address to copy is 1033
 9999 mem: storing 1033 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1033
 9999 mem: storing 0 in location 1033
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1033
 9999 mem: location 1033 is 0
 9999 mem: location 1034 is 0
 9999 mem: location 1052 is 1033
 9999 run: address to copy is 1034
 9999 mem: storing 1034 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1034
 9999 mem: storing 7 in location 1034
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 9
 9999 mem: storing 10 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 10
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -885,39 +885,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 10
 9999 mem: storing 1035 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1035
 9999 mem: location 1035 is 0
 9999 mem: location 1036 is 0
 9999 mem: location 1052 is 1035
 9999 run: address to copy is 1035
 9999 mem: storing 1035 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1035
 9999 mem: storing 0 in location 1035
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1035
 9999 mem: location 1035 is 0
 9999 mem: location 1036 is 0
 9999 mem: location 1052 is 1035
 9999 run: address to copy is 1036
 9999 mem: storing 1036 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1036
 9999 mem: storing 7 in location 1036
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 10
 9999 mem: storing 11 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 11
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -954,39 +954,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 11
 9999 mem: storing 1037 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1037
 9999 mem: location 1037 is 0
 9999 mem: location 1038 is 0
 9999 mem: location 1052 is 1037
 9999 run: address to copy is 1037
 9999 mem: storing 1037 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1037
 9999 mem: storing 0 in location 1037
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1037
 9999 mem: location 1037 is 0
 9999 mem: location 1038 is 0
 9999 mem: location 1052 is 1037
 9999 run: address to copy is 1038
 9999 mem: storing 1038 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1038
 9999 mem: storing 7 in location 1038
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 11
 9999 mem: storing 12 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 12
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -1023,39 +1023,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 12
 9999 mem: storing 1039 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1039
 9999 mem: location 1039 is 0
 9999 mem: location 1040 is 0
 9999 mem: location 1052 is 1039
 9999 run: address to copy is 1039
 9999 mem: storing 1039 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1039
 9999 mem: storing 0 in location 1039
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1039
 9999 mem: location 1039 is 0
 9999 mem: location 1040 is 0
 9999 mem: location 1052 is 1039
 9999 run: address to copy is 1040
 9999 mem: storing 1040 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1040
 9999 mem: storing 7 in location 1040
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 12
 9999 mem: storing 13 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 13
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -1092,39 +1092,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 13
 9999 mem: storing 1041 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1041
 9999 mem: location 1041 is 0
 9999 mem: location 1042 is 0
 9999 mem: location 1052 is 1041
 9999 run: address to copy is 1041
 9999 mem: storing 1041 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1041
 9999 mem: storing 0 in location 1041
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1041
 9999 mem: location 1041 is 0
 9999 mem: location 1042 is 0
 9999 mem: location 1052 is 1041
 9999 run: address to copy is 1042
 9999 mem: storing 1042 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1042
 9999 mem: storing 7 in location 1042
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 13
 9999 mem: storing 14 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 14
 9999 mem: location 1049 is 15
 9999 mem: storing 0 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 0
 9999 run: jump-if fell through
- 103 run: curr:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, i:number
+ 103 run: curr:address:screen-cell <- index-address *buf, i
 9999 mem: location 1048 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -1161,39 +1161,39 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1048 is 1014
 9999 mem: location 1050 is 14
 9999 mem: storing 1043 in location 1052
- 103 run: curr-content:address:character <- get-address curr:address:screen-cell/lookup, contents:offset
+ 103 run: curr-content:address:character <- get-address *curr, contents:offset
 9999 mem: location 1052 is 1043
 9999 mem: location 1043 is 0
 9999 mem: location 1044 is 0
 9999 mem: location 1052 is 1043
 9999 run: address to copy is 1043
 9999 mem: storing 1043 in location 1053
- 103 run: curr-content:address:character/lookup <- copy [ ]
+ 103 run: *curr-content <- copy [ ]
 9999 mem: location 1053 is 1043
 9999 mem: storing 0 in location 1043
- 103 run: curr-color:address:character <- get-address curr:address:screen-cell/lookup, color:offset
+ 103 run: curr-color:address:character <- get-address *curr, color:offset
 9999 mem: location 1052 is 1043
 9999 mem: location 1043 is 0
 9999 mem: location 1044 is 0
 9999 mem: location 1052 is 1043
 9999 run: address to copy is 1044
 9999 mem: storing 1044 in location 1054
- 103 run: curr-color:address:character/lookup <- copy 7/white
+ 103 run: *curr-color <- copy 7/white
 9999 mem: location 1054 is 1044
 9999 mem: storing 7 in location 1044
- 103 run: i:number <- add i:number, 1
+ 103 run: i <- add i, 1
 9999 mem: location 1050 is 14
 9999 mem: storing 15 in location 1050
  103 run: loop 
 9999 run: jumping to instruction 8
- 103 run: done?:boolean <- greater-or-equal i:number, max:number
+ 103 run: done?:boolean <- greater-or-equal i, max
 9999 mem: location 1050 is 15
 9999 mem: location 1049 is 15
 9999 mem: storing 1 in location 1051
- 103 run: break-if done?:boolean, 
+ 103 run: break-if done?, 
 9999 mem: location 1051 is 1
 9999 run: jumping to instruction 17
- 103 run: cur:address:number <- get-address sc:address:screen/lookup, cursor-row:offset
+ 103 run: x:address:number <- get-address *sc, cursor-row:offset
 9999 mem: location 1047 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1203,10 +1203,10 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1047 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1055
- 103 run: cur:address:number/lookup <- copy 0
+ 103 run: *x <- copy 0
 9999 mem: location 1055 is 1011
 9999 mem: storing 0 in location 1011
- 103 run: cur:address:number <- get-address sc:address:screen/lookup, cursor-column:offset
+ 103 run: x <- get-address *sc, cursor-column:offset
 9999 mem: location 1047 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1216,12 +1216,12 @@ schedule: scenario-screen-in-scenario-unicode-color
 9999 mem: location 1047 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1055
- 103 run: cur:address:number/lookup <- copy 0
+ 103 run: *x <- copy 0
 9999 mem: location 1055 is 1012
 9999 mem: storing 0 in location 1012
- 103 run: reply sc:address:screen/same-as-ingredient:0
+ 103 run: reply sc/same-as-ingredient:0
 9999 mem: location 1047 is 1009
- 102 run: reply result:address:screen
+ 102 run: reply result
 9999 mem: location 1002 is 1009
 9999 run: result 0 is 1009
 9999 mem: storing 1009 in location 900
@@ -1253,21 +1253,21 @@ after-brace: print-character ...
  102 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 1 in location 1060
 9999 mem: storing 1 in location 1061
- 102 run: break-if color-found?:boolean, 
+ 102 run: break-if color-found?, 
 9999 mem: location 1061 is 1
 9999 run: jumping to instruction 7
  102 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1062
 9999 mem: storing 0 in location 1063
- 102 run: break-if bg-color-found?:boolean, 
+ 102 run: break-if bg-color-found?, 
 9999 mem: location 1063 is 0
 9999 run: jump-if fell through
- 102 run: bg-color:number <- copy 0/black
+ 102 run: bg-color <- copy 0/black
 9999 mem: storing 0 in location 1062
- 102 run: break-unless sc:address:screen, 
+ 102 run: break-unless sc, 
 9999 mem: location 1058 is 1009
 9999 run: jump-unless fell through
- 102 run: width:number <- get sc:address:screen/lookup, num-columns:offset
+ 102 run: width:number <- get *sc, num-columns:offset
 9999 mem: location 1058 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1279,7 +1279,7 @@ after-brace: print-character ...
 9999 run: its type is number
 9999 mem: location 1010 is 5
 9999 mem: storing 5 in location 1064
- 102 run: height:number <- get sc:address:screen/lookup, num-rows:offset
+ 102 run: height:number <- get *sc, num-rows:offset
 9999 mem: location 1058 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1291,7 +1291,7 @@ after-brace: print-character ...
 9999 run: its type is number
 9999 mem: location 1009 is 3
 9999 mem: storing 3 in location 1065
- 102 run: row:address:number <- get-address sc:address:screen/lookup, cursor-row:offset
+ 102 run: row:address:number <- get-address *sc, cursor-row:offset
 9999 mem: location 1058 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1301,22 +1301,22 @@ after-brace: print-character ...
 9999 mem: location 1058 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1066
- 102 run: legal?:boolean <- greater-or-equal row:address:number/lookup, 0
+ 102 run: legal?:boolean <- greater-or-equal *row, 0
 9999 mem: location 1066 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 1067
- 102 run: jump-if legal?:boolean, 1:offset
+ 102 run: jump-if legal?, 1:offset
 9999 mem: location 1067 is 1
 9999 run: jumping to instruction 21
- 102 run: legal?:boolean <- lesser-than row:address:number/lookup, height:number
+ 102 run: legal? <- lesser-than *row, height
 9999 mem: location 1066 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1065 is 3
 9999 mem: storing 1 in location 1067
- 102 run: jump-if legal?:boolean, 1:offset
+ 102 run: jump-if legal?, 1:offset
 9999 mem: location 1067 is 1
 9999 run: jumping to instruction 24
- 102 run: column:address:number <- get-address sc:address:screen/lookup, cursor-column:offset
+ 102 run: column:address:number <- get-address *sc, cursor-column:offset
 9999 mem: location 1058 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1326,38 +1326,38 @@ after-brace: print-character ...
 9999 mem: location 1058 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1068
- 102 run: legal?:boolean <- greater-or-equal column:address:number/lookup, 0
+ 102 run: legal? <- greater-or-equal *column, 0
 9999 mem: location 1068 is 1012
 9999 mem: location 1012 is 0
 9999 mem: storing 1 in location 1067
- 102 run: jump-if legal?:boolean, 1:offset
+ 102 run: jump-if legal?, 1:offset
 9999 mem: location 1067 is 1
 9999 run: jumping to instruction 28
- 102 run: legal?:boolean <- lesser-than column:address:number/lookup, width:number
+ 102 run: legal? <- lesser-than *column, width
 9999 mem: location 1068 is 1012
 9999 mem: location 1012 is 0
 9999 mem: location 1064 is 5
 9999 mem: storing 1 in location 1067
- 102 run: jump-if legal?:boolean, 1:offset
+ 102 run: jump-if legal?, 1:offset
 9999 mem: location 1067 is 1
 9999 run: jumping to instruction 31
- 102 run: newline?:boolean <- equal c:character, 10/newline
+ 102 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1059 is 955
 9999 mem: storing 0 in location 1069
- 102 run: break-unless newline?:boolean, 
+ 102 run: break-unless newline?, 
 9999 mem: location 1069 is 0
 9999 run: jumping to instruction 42
- 102 run: index:number <- multiply row:address:number/lookup, width:number
+ 102 run: index:number <- multiply *row, width
 9999 mem: location 1066 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1064 is 5
 9999 mem: storing 0 in location 1072
- 102 run: index:number <- add index:number, column:address:number/lookup
+ 102 run: index <- add index, *column
 9999 mem: location 1072 is 0
 9999 mem: location 1068 is 1012
 9999 mem: location 1012 is 0
 9999 mem: storing 0 in location 1072
- 102 run: buf:address:array:screen-cell <- get sc:address:screen/lookup, data:offset
+ 102 run: buf:address:array:screen-cell <- get *sc, data:offset
 9999 mem: location 1058 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1369,7 +1369,7 @@ after-brace: print-character ...
 9999 run: its type is address
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 1073
- 102 run: len:number <- length buf:address:array:screen-cell/lookup
+ 102 run: len:number <- length *buf
 9999 mem: location 1073 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -1404,13 +1404,13 @@ after-brace: print-character ...
 9999 mem: location 1044 is 7
 9999 mem: location 1073 is 1014
 9999 mem: storing 15 in location 1074
- 102 run: backspace?:boolean <- equal c:character, 8
+ 102 run: backspace?:boolean <- equal c, 8
 9999 mem: location 1059 is 955
 9999 mem: storing 0 in location 1075
- 102 run: break-unless backspace?:boolean, 
+ 102 run: break-unless backspace?, 
 9999 mem: location 1075 is 0
 9999 run: jumping to instruction 62
- 102 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, index:number
+ 102 run: cursor:address:screen-cell <- index-address *buf, index
 9999 mem: location 1073 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 0
@@ -1447,45 +1447,45 @@ after-brace: print-character ...
 9999 mem: location 1073 is 1014
 9999 mem: location 1072 is 0
 9999 mem: storing 1015 in location 1077
- 102 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/lookup, contents:offset
+ 102 run: cursor-contents:address:character <- get-address *cursor, contents:offset
 9999 mem: location 1077 is 1015
 9999 mem: location 1015 is 0
 9999 mem: location 1016 is 7
 9999 mem: location 1077 is 1015
 9999 run: address to copy is 1015
 9999 mem: storing 1015 in location 1078
- 102 run: cursor-color:address:number <- get-address cursor:address:screen-cell/lookup, color:offset
+ 102 run: *cursor-contents <- copy c
+9999 mem: location 1059 is 955
+9999 mem: location 1078 is 1015
+9999 mem: storing 955 in location 1015
+ 102 run: cursor-color:address:number <- get-address *cursor, color:offset
 9999 mem: location 1077 is 1015
-9999 mem: location 1015 is 0
+9999 mem: location 1015 is 955
 9999 mem: location 1016 is 7
 9999 mem: location 1077 is 1015
 9999 run: address to copy is 1016
 9999 mem: storing 1016 in location 1079
- 102 run: cursor-contents:address:character/lookup <- copy c:character
-9999 mem: location 1059 is 955
-9999 mem: location 1078 is 1015
-9999 mem: storing 955 in location 1015
- 102 run: cursor-color:address:number/lookup <- copy color:number
+ 102 run: *cursor-color <- copy color
 9999 mem: location 1060 is 1
 9999 mem: location 1079 is 1016
 9999 mem: storing 1 in location 1016
- 102 run: right:number <- subtract width:number, 1
+ 102 run: right:number <- subtract width, 1
 9999 mem: location 1064 is 5
 9999 mem: storing 4 in location 1080
- 102 run: at-right?:boolean <- greater-or-equal column:address:number/lookup, right:number
+ 102 run: at-right?:boolean <- greater-or-equal *column, right
 9999 mem: location 1068 is 1012
 9999 mem: location 1012 is 0
 9999 mem: location 1080 is 4
 9999 mem: storing 0 in location 1081
- 102 run: break-if at-right?:boolean, 
+ 102 run: break-if at-right?, 
 9999 mem: location 1081 is 0
 9999 run: jump-if fell through
- 102 run: column:address:number/lookup <- add column:address:number/lookup, 1
+ 102 run: *column <- add *column, 1
 9999 mem: location 1068 is 1012
 9999 mem: location 1012 is 0
 9999 mem: location 1068 is 1012
 9999 mem: storing 1 in location 1012
- 102 run: reply sc:address:screen/same-as-ingredient:0
+ 102 run: reply sc/same-as-ingredient:0
 9999 mem: location 1058 is 1009
 9999 run: result 0 is 1009
 9999 mem: storing 1009 in location 900
@@ -1500,23 +1500,23 @@ after-brace: print-character ...
  102 run: color:number, color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1060
 9999 mem: storing 0 in location 1061
- 102 run: break-if color-found?:boolean, 
+ 102 run: break-if color-found?, 
 9999 mem: location 1061 is 0
 9999 run: jump-if fell through
- 102 run: color:number <- copy 7/white
+ 102 run: color <- copy 7/white
 9999 mem: storing 7 in location 1060
  102 run: bg-color:number, bg-color-found?:boolean <- next-ingredient 
 9999 mem: storing 0 in location 1062
 9999 mem: storing 0 in location 1063
- 102 run: break-if bg-color-found?:boolean, 
+ 102 run: break-if bg-color-found?, 
 9999 mem: location 1063 is 0
 9999 run: jump-if fell through
- 102 run: bg-color:number <- copy 0/black
+ 102 run: bg-color <- copy 0/black
 9999 mem: storing 0 in location 1062
- 102 run: break-unless sc:address:screen, 
+ 102 run: break-unless sc, 
 9999 mem: location 1058 is 1009
 9999 run: jump-unless fell through
- 102 run: width:number <- get sc:address:screen/lookup, num-columns:offset
+ 102 run: width:number <- get *sc, num-columns:offset
 9999 mem: location 1058 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1528,7 +1528,7 @@ after-brace: print-character ...
 9999 run: its type is number
 9999 mem: location 1010 is 5
 9999 mem: storing 5 in location 1064
- 102 run: height:number <- get sc:address:screen/lookup, num-rows:offset
+ 102 run: height:number <- get *sc, num-rows:offset
 9999 mem: location 1058 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1540,7 +1540,7 @@ after-brace: print-character ...
 9999 run: its type is number
 9999 mem: location 1009 is 3
 9999 mem: storing 3 in location 1065
- 102 run: row:address:number <- get-address sc:address:screen/lookup, cursor-row:offset
+ 102 run: row:address:number <- get-address *sc, cursor-row:offset
 9999 mem: location 1058 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1550,22 +1550,22 @@ after-brace: print-character ...
 9999 mem: location 1058 is 1009
 9999 run: address to copy is 1011
 9999 mem: storing 1011 in location 1066
- 102 run: legal?:boolean <- greater-or-equal row:address:number/lookup, 0
+ 102 run: legal?:boolean <- greater-or-equal *row, 0
 9999 mem: location 1066 is 1011
 9999 mem: location 1011 is 0
 9999 mem: storing 1 in location 1067
- 102 run: jump-if legal?:boolean, 1:offset
+ 102 run: jump-if legal?, 1:offset
 9999 mem: location 1067 is 1
 9999 run: jumping to instruction 21
- 102 run: legal?:boolean <- lesser-than row:address:number/lookup, height:number
+ 102 run: legal? <- lesser-than *row, height
 9999 mem: location 1066 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1065 is 3
 9999 mem: storing 1 in location 1067
- 102 run: jump-if legal?:boolean, 1:offset
+ 102 run: jump-if legal?, 1:offset
 9999 mem: location 1067 is 1
 9999 run: jumping to instruction 24
- 102 run: column:address:number <- get-address sc:address:screen/lookup, cursor-column:offset
+ 102 run: column:address:number <- get-address *sc, cursor-column:offset
 9999 mem: location 1058 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1575,38 +1575,38 @@ after-brace: print-character ...
 9999 mem: location 1058 is 1009
 9999 run: address to copy is 1012
 9999 mem: storing 1012 in location 1068
- 102 run: legal?:boolean <- greater-or-equal column:address:number/lookup, 0
+ 102 run: legal? <- greater-or-equal *column, 0
 9999 mem: location 1068 is 1012
 9999 mem: location 1012 is 1
 9999 mem: storing 1 in location 1067
- 102 run: jump-if legal?:boolean, 1:offset
+ 102 run: jump-if legal?, 1:offset
 9999 mem: location 1067 is 1
 9999 run: jumping to instruction 28
- 102 run: legal?:boolean <- lesser-than column:address:number/lookup, width:number
+ 102 run: legal? <- lesser-than *column, width
 9999 mem: location 1068 is 1012
 9999 mem: location 1012 is 1
 9999 mem: location 1064 is 5
 9999 mem: storing 1 in location 1067
- 102 run: jump-if legal?:boolean, 1:offset
+ 102 run: jump-if legal?, 1:offset
 9999 mem: location 1067 is 1
 9999 run: jumping to instruction 31
- 102 run: newline?:boolean <- equal c:character, 10/newline
+ 102 run: newline?:boolean <- equal c, 10/newline
 9999 mem: location 1059 is 97
 9999 mem: storing 0 in location 1069
- 102 run: break-unless newline?:boolean, 
+ 102 run: break-unless newline?, 
 9999 mem: location 1069 is 0
 9999 run: jumping to instruction 42
- 102 run: index:number <- multiply row:address:number/lookup, width:number
+ 102 run: index:number <- multiply *row, width
 9999 mem: location 1066 is 1011
 9999 mem: location 1011 is 0
 9999 mem: location 1064 is 5
 9999 mem: storing 0 in location 1072
- 102 run: index:number <- add index:number, column:address:number/lookup
+ 102 run: index <- add index, *column
 9999 mem: location 1072 is 0
 9999 mem: location 1068 is 1012
 9999 mem: location 1012 is 1
 9999 mem: storing 1 in location 1072
- 102 run: buf:address:array:screen-cell <- get sc:address:screen/lookup, data:offset
+ 102 run: buf:address:array:screen-cell <- get *sc, data:offset
 9999 mem: location 1058 is 1009
 9999 mem: location 1009 is 3
 9999 mem: location 1010 is 5
@@ -1618,7 +1618,7 @@ after-brace: print-character ...
 9999 run: its type is address
 9999 mem: location 1013 is 1014
 9999 mem: storing 1014 in location 1073
- 102 run: len:number <- length buf:address:array:screen-cell/lookup
+ 102 run: len:number <- length *buf
 9999 mem: location 1073 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 955
@@ -1653,13 +1653,13 @@ after-brace: print-character ...
 9999 mem: location 1044 is 7
 9999 mem: location 1073 is 1014
 9999 mem: storing 15 in location 1074
- 102 run: backspace?:boolean <- equal c:character, 8
+ 102 run: backspace?:boolean <- equal c, 8
 9999 mem: location 1059 is 97
 9999 mem: storing 0 in location 1075
- 102 run: break-unless backspace?:boolean, 
+ 102 run: break-unless backspace?, 
 9999 mem: location 1075 is 0
 9999 run: jumping to instruction 62
- 102 run: cursor:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, index:number
+ 102 run: cursor:address:screen-cell <- index-address *buf, index
 9999 mem: location 1073 is 1014
 9999 mem: location 1014 is 15
 9999 mem: location 1015 is 955
@@ -1696,45 +1696,45 @@ after-brace: print-character ...
 9999 mem: location 1073 is 1014
 9999 mem: location 1072 is 1
 9999 mem: storing 1017 in location 1077
- 102 run: cursor-contents:address:character <- get-address cursor:address:screen-cell/lookup, contents:offset
+ 102 run: cursor-contents:address:character <- get-address *cursor, contents:offset
 9999 mem: location 1077 is 1017
 9999 mem: location 1017 is 0
 9999 mem: location 1018 is 7
 9999 mem: location 1077 is 1017
 9999 run: address to copy is 1017
 9999 mem: storing 1017 in location 1078
- 102 run: cursor-color:address:number <- get-address cursor:address:screen-cell/lookup, color:offset
+ 102 run: *cursor-contents <- copy c
+9999 mem: location 1059 is 97
+9999 mem: location 1078 is 1017
+9999 mem: storing 97 in location 1017
+ 102 run: cursor-color:address:number <- get-address *cursor, color:offset
 9999 mem: location 1077 is 1017
-9999 mem: location 1017 is 0
+9999 mem: location 1017 is 97
 9999 mem: location 1018 is 7
 9999 mem: location 1077 is 1017
 9999 run: address to copy is 1018
 9999 mem: storing 1018 in location 1079
- 102 run: cursor-contents:address:character/lookup <- copy c:character
-9999 mem: location 1059 is 97
-9999 mem: location 1078 is 1017
-9999 mem: storing 97 in location 1017
- 102 run: cursor-color:address:number/lookup <- copy color:number
+ 102 run: *cursor-color <- copy color
 9999 mem: location 1060 is 7
 9999 mem: location 1079 is 1018
 9999 mem: storing 7 in location 1018
- 102 run: right:number <- subtract width:number, 1
+ 102 run: right:number <- subtract width, 1
 9999 mem: location 1064 is 5
 9999 mem: storing 4 in location 1080
- 102 run: at-right?:boolean <- greater-or-equal column:address:number/lookup, right:number
+ 102 run: at-right?:boolean <- greater-or-equal *column, right
 9999 mem: location 1068 is 1012
 9999 mem: location 1012 is 1
 9999 mem: location 1080 is 4
 9999 mem: storing 0 in location 1081
- 102 run: break-if at-right?:boolean, 
+ 102 run: break-if at-right?, 
 9999 mem: location 1081 is 0
 9999 run: jump-if fell through
- 102 run: column:address:number/lookup <- add column:address:number/lookup, 1
+ 102 run: *column <- add *column, 1
 9999 mem: location 1068 is 1012
 9999 mem: location 1012 is 1
 9999 mem: location 1068 is 1012
 9999 mem: storing 2 in location 1012
- 102 run: reply sc:address:screen/same-as-ingredient:0
+ 102 run: reply sc/same-as-ingredient:0
 9999 mem: location 1058 is 1009
 9999 run: result 0 is 1009
 9999 mem: storing 1009 in location 900
