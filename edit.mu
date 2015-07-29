@@ -2948,7 +2948,7 @@ recipe render-sandboxes [
   }
   {
     break-if sandbox-warnings
-    empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen
+    empty-screen?:boolean <- fake-screen-is-empty? sandbox-screen
     break-if empty-screen?
     row, screen <- render-screen screen, sandbox-screen, left, right, row
   }
