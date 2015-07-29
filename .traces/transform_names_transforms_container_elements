@@ -2,11 +2,11 @@ parse: instruction: copy
 parse:   ingredient: {name: "0", properties: ["0": "literal"]}
 parse:   product: {name: "p", properties: ["p": "address":"point"]}
 parse: instruction: get
-parse:   ingredient: {name: "p", properties: ["p": "address":"point", "lookup": ]}
+parse:   ingredient: {name: "p", properties: ["*p": "address":"point", "lookup": ]}
 parse:   ingredient: {name: "y", properties: ["y": "offset"]}
 parse:   product: {name: "a", properties: ["a": "number"]}
 parse: instruction: get
-parse:   ingredient: {name: "p", properties: ["p": "address":"point", "lookup": ]}
+parse:   ingredient: {name: "p", properties: ["*p": "address":"point", "lookup": ]}
 parse:   ingredient: {name: "x", properties: ["x": "offset"]}
 parse:   product: {name: "b", properties: ["b": "number"]}
 name: assign p 1
@@ -22,7 +22,7 @@ after-brace: get ...
 schedule: main
  101 run: p:address:point <- copy 0
 9999 mem: storing 0 in location 1
- 101 run: a:number <- get p:address:point/lookup, y:offset
+ 101 run: a:number <- get *p:address:point, y:offset
 9999 mem: location 1 is 0
 9999 mem: location 0 is 0
 9999 mem: location 1 is 0
@@ -31,7 +31,7 @@ schedule: main
 9999 run: its type is number
 9999 mem: location 1 is 0
 9999 mem: storing 0 in location 2
- 101 run: b:number <- get p:address:point/lookup, x:offset
+ 101 run: b:number <- get *p:address:point, x:offset
 9999 mem: location 1 is 0
 9999 mem: location 0 is 0
 9999 mem: location 1 is 0

@@ -30,7 +30,7 @@ recipe main [
   3:number <- copy 15
   4:number <- copy 16
   5:address:array:number <- copy 1
-  6:array:number <- copy 5:address:array:number/lookup
+  6:array:number <- copy *5:address:array:number
 ]
 +mem: storing 3 in location 6
 +mem: storing 14 in location 7
@@ -119,7 +119,7 @@ recipe main [
   3:number <- copy 15
   4:number <- copy 16
   5:address:array:number <- copy 1
-  6:number <- index 5:address:array:number/lookup, 1
+  6:number <- index *5:address:array:number, 1
 ]
 +mem: storing 15 in location 6
 
@@ -134,7 +134,7 @@ recipe main [
   6:number <- copy 15
   7:number <- copy 16
   8:address:array:point <- copy 1
-  index 8:address:array:point/lookup, 4  # less than size of array in locations, but larger than its length in elements
+  index *8:address:array:point, 4  # less than size of array in locations, but larger than its length in elements
 ]
 +warn: main: invalid index 4
 
@@ -149,7 +149,7 @@ recipe main [
   6:number <- copy 15
   7:number <- copy 16
   8:address:array:point <- copy 1
-  index 8:address:array:point/lookup, -1
+  index *8:address:array:point, -1
 ]
 +warn: main: invalid index -1
 
@@ -206,7 +206,7 @@ recipe main [
   6:number <- copy 15
   7:number <- copy 16
   8:address:array:point <- copy 1
-  index-address 8:address:array:point/lookup, 4  # less than size of array in locations, but larger than its length in elements
+  index-address *8:address:array:point, 4  # less than size of array in locations, but larger than its length in elements
 ]
 +warn: main: invalid index 4
 
@@ -221,7 +221,7 @@ recipe main [
   6:number <- copy 15
   7:number <- copy 16
   8:address:array:point <- copy 1
-  index-address 8:address:array:point/lookup, -1
+  index-address *8:address:array:point, -1
 ]
 +warn: main: invalid index -1
 

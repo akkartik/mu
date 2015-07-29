@@ -133,7 +133,7 @@ void ensure_space(long long int size) {
 % Memory[Memory_allocated_until] = 1;
 recipe main [
   1:address:number <- new number:type
-  2:number <- copy 1:address:number/lookup
+  2:number <- copy *1:address:number
 ]
 +mem: storing 0 in location 2
 
@@ -287,7 +287,7 @@ recipe main [
 :(scenario new_string)
 recipe main [
   1:address:array:character <- new [abc def]
-  2:character <- index 1:address:array:character/lookup, 5
+  2:character <- index *1:address:array:character, 5
 ]
 # number code for 'e'
 +mem: storing 101 in location 2
@@ -295,8 +295,8 @@ recipe main [
 :(scenario new_string_handles_unicode)
 recipe main [
   1:address:array:character <- new [a«c]
-  2:number <- length 1:address:array:character/lookup
-  3:character <- index 1:address:array:character/lookup, 1
+  2:number <- length *1:address:array:character
+  3:character <- index *1:address:array:character, 1
 ]
 +mem: storing 3 in location 2
 # unicode for '«'
