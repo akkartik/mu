@@ -38,7 +38,7 @@ recipe main [
 +mem: storing 16 in location 9
 
 //: disable the size mismatch check since the destination array need not be initialized
-:(after "bool size_mismatch(const reagent& x, const vector<double>& data)")
+:(before "End size_mismatch(x) Cases")
 if (x.types.at(0) == Type_ordinal["array"]) return false;
 :(before "End size_of(reagent) Cases")
   if (r.types.at(0) == Type_ordinal["array"]) {

@@ -67,3 +67,13 @@ recipe main [
   x <- add x, 1
 ]
 +mem: storing 2 in location 1
+
+:(scenario transform_warns_on_missing_types_in_first_mention)
+% Hide_warnings = true;
+recipe main [
+  x <- copy 1
+  x:number <- copy 2
+]
++warn: missing type in 'x <- copy 1'
++warn: x <- copy 1: reagent not initialized: x
++warn: main: size mismatch in storing to x at 'x <- copy 1'

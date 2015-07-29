@@ -212,7 +212,7 @@ void write_memory(reagent x, vector<double> data) {
   if (is_literal(x)) return;
   long long int base = x.value;
   if (size_mismatch(x, data)) {
-    raise << current_recipe_name() << ": size mismatch in storing to " << x.to_string() << " at " << current_instruction().to_string() << '\n' << end();
+    raise << current_recipe_name() << ": size mismatch in storing to " << x.original_string << " at '" << current_instruction().to_string() << "'\n" << end();
     return;
   }
   for (long long int offset = 0; offset < SIZE(data); ++offset) {
@@ -234,6 +234,8 @@ long long int size_of(const vector<type_ordinal>& types) {
 }
 
 bool size_mismatch(const reagent& x, const vector<double>& data) {
+  if (x.types.empty()) return true;
+  // End size_mismatch(x) Cases
 //?   if (size_of(x) != SIZE(data)) cerr << size_of(x) << " vs " << SIZE(data) << '\n'; //? 2
   return size_of(x) != SIZE(data);
 }
