@@ -21,7 +21,7 @@ recipe main [
   # actual start of this recipe
   default-space:address:array:location <- copy 1000
   1:address:number <- copy 3
-  8:number/raw <- copy 1:address:number/lookup
+  8:number/raw <- copy *1:address:number
 ]
 +mem: storing 34 in location 8
 
@@ -76,7 +76,7 @@ recipe main [
   # actual start of this recipe
   default-space:address:array:location <- copy 1000
   1:address:point <- copy 12
-  9:number/raw <- get 1:address:point/lookup, 1:offset
+  9:number/raw <- get *1:address:point, 1:offset
 ]
 +mem: storing 35 in location 9
 
@@ -96,7 +96,7 @@ recipe main [
   # actual start of this recipe
   default-space:address:array:location <- copy 1000
   1:address:array:number <- copy 12
-  9:number/raw <- index 1:address:array:number/lookup, 1
+  9:number/raw <- index *1:address:array:number, 1
 ]
 +mem: storing 35 in location 9
 

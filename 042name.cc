@@ -186,8 +186,8 @@ Type[point].element_names.push_back("y");
 :(scenario transform_names_transforms_container_elements)
 recipe main [
   p:address:point <- copy 0  # unsafe
-  a:number <- get p:address:point/lookup, y:offset
-  b:number <- get p:address:point/lookup, x:offset
+  a:number <- get *p:address:point, y:offset
+  b:number <- get *p:address:point, x:offset
 ]
 +name: element y of type point is at offset 1
 +name: element x of type point is at offset 0
