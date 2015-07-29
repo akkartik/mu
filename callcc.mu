@@ -2,16 +2,16 @@
 
 recipe main [
   c:continuation <- f
-  continue-from c:continuation            # <-- ..when you hit this
+  continue-from c                         # <-- ..when you hit this
 ]
 
 recipe f [
   c:continuation <- g
-  reply c:continuation
+  reply c
 ]
 
 recipe g [
   c:continuation <- current-continuation  # <-- loop back to here
   $print 1
-  reply c:continuation  # threaded through unmodified after first iteration
+  reply c  # threaded through unmodified after first iteration
 ]

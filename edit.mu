@@ -5,11 +5,11 @@ recipe main [
   open-console
   initial-recipe:address:array:character <- restore [recipes.mu]
   initial-sandbox:address:array:character <- new []
-  env:address:programming-environment-data <- new-programming-environment 0/screen, initial-recipe:address:array:character, initial-sandbox:address:array:character
-  env:address:programming-environment-data <- restore-sandboxes env:address:programming-environment-data
-  render-all 0/screen, env:address:programming-environment-data
+  env:address:programming-environment-data <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
+  env <- restore-sandboxes env
+  render-all 0/screen, env
   show-screen 0/screen
-  event-loop 0/screen, 0/console, env:address:programming-environment-data
+  event-loop 0/screen, 0/console, env
   # never gets here
 ]
 
@@ -26,30 +26,30 @@ recipe new-programming-environment [
   screen:address <- next-ingredient
   initial-recipe-contents:address:array:character <- next-ingredient
   initial-sandbox-contents:address:array:character <- next-ingredient
-  width:number <- screen-width screen:address
-  height:number <- screen-height screen:address
+  width:number <- screen-width screen
+  height:number <- screen-height screen
   # top menu
   result:address:programming-environment-data <- new programming-environment-data:type
-  draw-horizontal screen:address, 0, 0/left, width:number, 32/space, 0/black, 238/grey
-  button-start:number <- subtract width:number, 20
-  button-on-screen?:boolean <- greater-or-equal button-start:number, 0
-  assert button-on-screen?:boolean, [screen too narrow for menu]
-  move-cursor screen:address, 0/row, button-start:number/column
+  draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
+  button-start:number <- subtract width, 20
+  button-on-screen?:boolean <- greater-or-equal button-start, 0
+  assert button-on-screen?, [screen too narrow for menu]
+  move-cursor screen, 0/row, button-start
   run-button:address:array:character <- new [ run (F4) ]
-  print-string screen:address, run-button:address:array:character, 255/white, 161/reddish
+  print-string screen, run-button, 255/white, 161/reddish
   # dotted line down the middle
-  divider:number, _ <- divide-with-remainder width:number, 2
-  draw-vertical screen:address, divider:number, 1/top, height:number, 9482/vertical-dotted
+  divider:number, _ <- divide-with-remainder width, 2
+  draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
   # recipe editor on the left
-  recipes:address:address:editor-data <- get-address result:address:programming-environment-data/lookup, recipes:offset
-  recipes:address:address:editor-data/lookup <- new-editor initial-recipe-contents:address:array:character, screen:address, 0/left, divider:number/right
+  recipes:address:address:editor-data <- get-address *result, recipes:offset
+  *recipes <- new-editor initial-recipe-contents, screen, 0/left, divider/right
   # sandbox editor on the right
-  new-left:number <- add divider:number, 1
-  new-right:number <- add new-left:number, 5
-  current-sandbox:address:address:editor-data <- get-address result:address:programming-environment-data/lookup, current-sandbox:offset
-  current-sandbox:address:address:editor-data/lookup <- new-editor initial-sandbox-contents:address:array:character, screen:address, new-left:number, width:number
-  screen:address <- render-all screen:address, result:address:programming-environment-data
-  reply result:address:programming-environment-data
+  new-left:number <- add divider, 1
+  new-right:number <- add new-left, 5
+  current-sandbox:address:address:editor-data <- get-address *result, current-sandbox:offset
+  *current-sandbox <- new-editor initial-sandbox-contents, screen, new-left, width/right
+  screen <- render-all screen, result
+  reply result
 ]
 
 scenario editor-initially-prints-string-to-screen [
@@ -94,52 +94,52 @@ recipe new-editor [
   # no clipping of bounds
   left:number <- next-ingredient
   right:number <- next-ingredient
-  right:number <- subtract right:number, 1
+  right <- subtract right, 1
   result:address:editor-data <- new editor-data:type
   # initialize screen-related fields
-  x:address:number <- get-address result:address:editor-data/lookup, left:offset
-  x:address:number/lookup <- copy left:number
-  x:address:number <- get-address result:address:editor-data/lookup, right:offset
-  x:address:number/lookup <- copy right:number
+  x:address:number <- get-address *result, left:offset
+  *x <- copy left
+  x <- get-address *result, right:offset
+  *x <- copy right
   # initialize cursor
-  x:address:number <- get-address result:address:editor-data/lookup, cursor-row:offset
-  x:address:number/lookup <- copy 1/top
-  x:address:number <- get-address result:address:editor-data/lookup, cursor-column:offset
-  x:address:number/lookup <- copy left:number
-  init:address:address:duplex-list <- get-address result:address:editor-data/lookup, data:offset
-  init:address:address:duplex-list/lookup <- push-duplex 167/§, 0/tail
-  y:address:address:duplex-list <- get-address result:address:editor-data/lookup, before-cursor:offset
-  y:address:address:duplex-list/lookup <- copy init:address:address:duplex-list/lookup
+  x <- get-address *result, cursor-row:offset
+  *x <- copy 1/top
+  x <- get-address *result, cursor-column:offset
+  *x <- copy left
+  init:address:address:duplex-list <- get-address *result, data:offset
+  *init <- push-duplex 167/§, 0/tail
+  y:address:address:duplex-list <- get-address *result, before-cursor:offset
+  *y <- copy *init
   # early exit if s is empty
-  reply-unless s:address:array:character, result:address:editor-data
-  len:number <- length s:address:array:character/lookup
-  reply-unless len:number, result:address:editor-data
+  reply-unless s, result
+  len:number <- length *s
+  reply-unless len, result
   idx:number <- copy 0
   # now we can start appending the rest, character by character
-  curr:address:duplex-list <- copy init:address:address:duplex-list/lookup
+  curr:address:duplex-list <- copy *init
   {
-    done?:boolean <- greater-or-equal idx:number, len:number
-    break-if done?:boolean
-    c:character <- index s:address:array:character/lookup, idx:number
-    insert-duplex c:character, curr:address:duplex-list
+    done?:boolean <- greater-or-equal idx, len
+    break-if done?
+    c:character <- index *s, idx
+    insert-duplex c, curr
     # next iter
-    curr:address:duplex-list <- next-duplex curr:address:duplex-list
-    idx:number <- add idx:number, 1
+    curr <- next-duplex curr
+    idx <- add idx, 1
     loop
   }
   # initialize cursor to top of screen
-  y:address:address:duplex-list <- get-address result:address:editor-data/lookup, before-cursor:offset
-  y:address:address:duplex-list/lookup <- copy init:address:address:duplex-list/lookup
+  y <- get-address *result, before-cursor:offset
+  *y <- copy *init
   # initial render to screen, just for some old tests
-  _, screen:address <- render screen:address, result:address:editor-data
-  reply result:address:editor-data
+  _, screen <- render screen, result
+  reply result
 ]
 
 scenario editor-initializes-without-data [
   assume-screen 5/width, 3/height
   run [
     1:address:editor-data <- new-editor 0/data, screen:address, 2/left, 5/right
-    2:editor-data <- copy 1:address:editor-data/lookup
+    2:editor-data <- copy *1:address:editor-data
   ]
   memory-should-contain [
     # 2 (data) <- just the § sentinel
@@ -161,108 +161,108 @@ recipe render [
   local-scope
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
-  reply-unless editor:address:editor-data, 1/top, screen:address/same-as-ingredient:0
-  left:number <- get editor:address:editor-data/lookup, left:offset
-  screen-height:number <- screen-height screen:address
-  right:number <- get editor:address:editor-data/lookup, right:offset
-  hide-screen screen:address
+  reply-unless editor, 1/top, screen/same-as-ingredient:0
+  left:number <- get *editor, left:offset
+  screen-height:number <- screen-height screen
+  right:number <- get *editor, right:offset
+  hide-screen screen
   # highlight mu code with color
   color:number <- copy 7/white
   highlighting-state:number <- copy 0/normal
   # traversing editor
-  curr:address:duplex-list <- get editor:address:editor-data/lookup, data:offset
-  prev:address:duplex-list <- copy curr:address:duplex-list
-  curr:address:duplex-list <- next-duplex curr:address:duplex-list
+  curr:address:duplex-list <- get *editor, data:offset
+  prev:address:duplex-list <- copy curr
+  curr <- next-duplex curr
   # traversing screen
   row:number <- copy 1/top
-  column:number <- copy left:number
-  cursor-row:address:number <- get-address editor:address:editor-data/lookup, cursor-row:offset
-  cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
-  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/lookup, before-cursor:offset
-  move-cursor screen:address, row:number, column:number
+  column:number <- copy left
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  move-cursor screen, row, column
   {
     +next-character
-    break-unless curr:address:duplex-list
-    off-screen?:boolean <- greater-or-equal row:number, screen-height:number
-    break-if off-screen?:boolean
+    break-unless curr
+    off-screen?:boolean <- greater-or-equal row, screen-height
+    break-if off-screen?
     # update editor-data.before-cursor
     # Doing so at the start of each iteration ensures it stays one step behind
     # the current character.
     {
-      at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
-      break-unless at-cursor-row?:boolean
-      at-cursor?:boolean <- equal column:number, cursor-column:address:number/lookup
-      break-unless at-cursor?:boolean
-      before-cursor:address:address:duplex-list/lookup <- prev-duplex curr:address:duplex-list
+      at-cursor-row?:boolean <- equal row, *cursor-row
+      break-unless at-cursor-row?
+      at-cursor?:boolean <- equal column, *cursor-column
+      break-unless at-cursor?
+      *before-cursor <- prev-duplex curr
     }
-    c:character <- get curr:address:duplex-list/lookup, value:offset
-    color:number, highlighting-state:number <- get-color color:number, highlighting-state:number, c:character
+    c:character <- get *curr, value:offset
+    color, highlighting-state <- get-color color, highlighting-state, c
     {
       # newline? move to left rather than 0
-      newline?:boolean <- equal c:character, 10/newline
-      break-unless newline?:boolean
+      newline?:boolean <- equal c, 10/newline
+      break-unless newline?
       # adjust cursor if necessary
       {
-        at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
-        break-unless at-cursor-row?:boolean
-        left-of-cursor?:boolean <- lesser-than column:number, cursor-column:address:number/lookup
-        break-unless left-of-cursor?:boolean
-        cursor-column:address:number/lookup <- copy column:number
-        before-cursor:address:address:duplex-list/lookup <- prev-duplex curr:address:duplex-list
+        at-cursor-row? <- equal row, *cursor-row
+        break-unless at-cursor-row?
+        left-of-cursor?:boolean <- lesser-than column, *cursor-column
+        break-unless left-of-cursor?
+        *cursor-column <- copy column
+        *before-cursor <- prev-duplex curr
       }
       # clear rest of line in this window
-      clear-line-delimited screen:address, column:number, right:number
+      clear-line-delimited screen, column, right
       # skip to next line
-      row:number <- add row:number, 1
-      column:number <- copy left:number
-      move-cursor screen:address, row:number, column:number
-      curr:address:duplex-list <- next-duplex curr:address:duplex-list
-      prev:address:duplex-list <- next-duplex prev:address:duplex-list
+      row <- add row, 1
+      column <- copy left
+      move-cursor screen, row, column
+      curr <- next-duplex curr
+      prev <- next-duplex prev
       loop +next-character:label
     }
     {
       # at right? wrap. even if there's only one more letter left; we need
       # room for clicking on the cursor after it.
-      at-right?:boolean <- equal column:number, right:number
-      break-unless at-right?:boolean
+      at-right?:boolean <- equal column, right
+      break-unless at-right?
       # print wrap icon
-      print-character screen:address, 8617/loop-back-to-left, 245/grey
-      column:number <- copy left:number
-      row:number <- add row:number, 1
-      move-cursor screen:address, row:number, column:number
+      print-character screen, 8617/loop-back-to-left, 245/grey
+      column <- copy left
+      row <- add row, 1
+      move-cursor screen, row, column
       # don't increment curr
       loop +next-character:label
     }
-    print-character screen:address, c:character, color:number
-    curr:address:duplex-list <- next-duplex curr:address:duplex-list
-    prev:address:duplex-list <- next-duplex prev:address:duplex-list
-    column:number <- add column:number, 1
+    print-character screen, c, color
+    curr <- next-duplex curr
+    prev <- next-duplex prev
+    column <- add column, 1
     loop
   }
   # is cursor to the right of the last line? move to end
   {
-    at-cursor-row?:boolean <- equal row:number, cursor-row:address:number/lookup
-    cursor-outside-line?:boolean <- lesser-or-equal column:number, cursor-column:address:number/lookup
-    before-cursor-on-same-line?:boolean <- and at-cursor-row?:boolean, cursor-outside-line?:boolean
-    above-cursor-row?:boolean <- lesser-than row:number, cursor-row:address:number/lookup
-    before-cursor?:boolean <- or before-cursor-on-same-line?:boolean, above-cursor-row?:boolean
-    break-unless before-cursor?:boolean
-    cursor-row:address:number/lookup <- copy row:number
-    cursor-column:address:number/lookup <- copy column:number
+    at-cursor-row? <- equal row, *cursor-row
+    cursor-outside-line?:boolean <- lesser-or-equal column, *cursor-column
+    before-cursor-on-same-line?:boolean <- and at-cursor-row?, cursor-outside-line?
+    above-cursor-row?:boolean <- lesser-than row, *cursor-row
+    before-cursor?:boolean <- or before-cursor-on-same-line?, above-cursor-row?
+    break-unless before-cursor?
+    *cursor-row <- copy row
+    *cursor-column <- copy column
     # line not wrapped but cursor outside bounds? wrap cursor
     {
-      too-far-right?:boolean <- greater-than cursor-column:address:number/lookup, right:number
-      break-unless too-far-right?:boolean
-      cursor-column:address:number/lookup <- copy left:number
-      cursor-row:address:number/lookup <- add cursor-row:address:number/lookup, 1
-      above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/lookup, screen-height:number
-      assert above-screen-bottom?:boolean, [unimplemented: wrapping cursor past bottom of screen]
+      too-far-right?:boolean <- greater-than *cursor-column, right
+      break-unless too-far-right?
+      *cursor-column <- copy left
+      *cursor-row <- add *cursor-row, 1
+      above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
+      assert above-screen-bottom?, [unimplemented: wrapping cursor past bottom of screen]
     }
-    before-cursor:address:address:duplex-list/lookup <- copy prev:address:duplex-list
+    *before-cursor <- copy prev
   }
   # clear rest of current line
-  clear-line-delimited screen:address, column:number, right:number
-  reply row:number, screen:address/same-as-ingredient:0
+  clear-line-delimited screen, column, right
+  reply row, screen/same-as-ingredient:0
 ]
 
 # row:number, screen:address <- render-string screen:address, s:address:array:character, left:number, right:number, color:number, row:number
@@ -277,62 +277,62 @@ recipe render-string [
   right:number <- next-ingredient
   color:number <- next-ingredient
   row:number <- next-ingredient
-  row:number <- add row:number, 1
-  reply-unless s:address:array:character, row:number/same-as-ingredient:5, screen:address/same-as-ingredient:0
-  column:number <- copy left:number
-  move-cursor screen:address, row:number, column:number
-  screen-height:number <- screen-height screen:address
+  row <- add row, 1
+  reply-unless s, row/same-as-ingredient:5, screen/same-as-ingredient:0
+  column:number <- copy left
+  move-cursor screen, row, column
+  screen-height:number <- screen-height screen
   i:number <- copy 0
-  len:number <- length s:address:array:character/lookup
+  len:number <- length *s
   {
     +next-character
-    done?:boolean <- greater-or-equal i:number, len:number
-    break-if done?:boolean
-    done?:boolean <- greater-or-equal row:number, screen-height:number
-    break-if done?:boolean
-    c:character <- index s:address:array:character/lookup, i:number
+    done?:boolean <- greater-or-equal i, len
+    break-if done?
+    done? <- greater-or-equal row, screen-height
+    break-if done?
+    c:character <- index *s, i
     {
       # at right? wrap.
-      at-right?:boolean <- equal column:number, right:number
-      break-unless at-right?:boolean
+      at-right?:boolean <- equal column, right
+      break-unless at-right?
       # print wrap icon
-      print-character screen:address, 8617/loop-back-to-left, 245/grey
-      column:number <- copy left:number
-      row:number <- add row:number, 1
-      move-cursor screen:address, row:number, column:number
+      print-character screen, 8617/loop-back-to-left, 245/grey
+      column <- copy left
+      row <- add row, 1
+      move-cursor screen, row, column
       loop +next-character:label  # retry i
     }
-    i:number <- add i:number, 1
+    i <- add i, 1
     {
       # newline? move to left rather than 0
-      newline?:boolean <- equal c:character, 10/newline
-      break-unless newline?:boolean
+      newline?:boolean <- equal c, 10/newline
+      break-unless newline?
       # clear rest of line in this window
       {
-        done?:boolean <- greater-than column:number, right:number
-        break-if done?:boolean
-        print-character screen:address, 32/space
-        column:number <- add column:number, 1
+        done? <- greater-than column, right
+        break-if done?
+        print-character screen, 32/space
+        column <- add column, 1
         loop
       }
-      row:number <- add row:number, 1
-      column:number <- copy left:number
-      move-cursor screen:address, row:number, column:number
+      row <- add row, 1
+      column <- copy left
+      move-cursor screen, row, column
       loop +next-character:label
     }
-    print-character screen:address, c:character, color:number
-    column:number <- add column:number, 1
+    print-character screen, c, color
+    column <- add column, 1
     loop
   }
   {
     # clear rest of current line
-    line-done?:boolean <- greater-than column:number, right:number
-    break-if line-done?:boolean
-    print-character screen:address, 32/space
-    column:number <- add column:number, 1
+    line-done?:boolean <- greater-than column, right
+    break-if line-done?
+    print-character screen, 32/space
+    column <- add column, 1
     loop
   }
-  reply row:number/same-as-ingredient:5, screen:address/same-as-ingredient:0
+  reply row/same-as-ingredient:5, screen/same-as-ingredient:0
 ]
 
 # row:number, screen:address <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
@@ -345,63 +345,63 @@ recipe render-screen [
   left:number <- next-ingredient
   right:number <- next-ingredient
   row:number <- next-ingredient
-  row:number <- add row:number, 1
-  reply-unless s:address:screen, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  row <- add row, 1
+  reply-unless s, row/same-as-ingredient:4, screen/same-as-ingredient:0
   # print 'screen:'
   header:address:array:character <- new [screen:]
-  row:number <- subtract row:number, 1  # compensate for render-string below
-  row:number <- render-string screen:address, header:address:array:character, left:number, right:number, 245/grey, row:number
+  row <- subtract row, 1  # compensate for render-string below
+  row <- render-string screen, header, left, right, 245/grey, row
   # newline
-  row:number <- add row:number, 1
-  move-cursor screen:address, row:number, left:number
+  row <- add row, 1
+  move-cursor screen, row, left
   # start printing s
-  column:number <- copy left:number
-  s-width:number <- screen-width s:address:screen
-  s-height:number <- screen-height s:address:screen
-  buf:address:array:screen-cell <- get s:address:screen/lookup, data:offset
-  stop-printing:number <- add left:number, s-width:number, 3
-  max-column:number <- min stop-printing:number, right:number
+  column:number <- copy left
+  s-width:number <- screen-width s
+  s-height:number <- screen-height s
+  buf:address:array:screen-cell <- get *s, data:offset
+  stop-printing:number <- add left, s-width, 3
+  max-column:number <- min stop-printing, right
   i:number <- copy 0
-  len:number <- length buf:address:array:screen-cell/lookup
-  screen-height:number <- screen-height screen:address
+  len:number <- length *buf
+  screen-height:number <- screen-height screen
   {
-    done?:boolean <- greater-or-equal i:number, len:number
-    break-if done?:boolean
-    done?:boolean <- greater-or-equal row:number, screen-height:number
-    break-if done?:boolean
-    column:number <- copy left:number
-    move-cursor screen:address, row:number, column:number
+    done?:boolean <- greater-or-equal i, len
+    break-if done?
+    done? <- greater-or-equal row, screen-height
+    break-if done?
+    column <- copy left
+    move-cursor screen, row, column
     # initial leader for each row: two spaces and a '.'
-    print-character screen:address, 32/space, 245/grey
-    print-character screen:address, 32/space, 245/grey
-    print-character screen:address, 46/full-stop, 245/grey
-    column:number <- add left:number, 3
+    print-character screen, 32/space, 245/grey
+    print-character screen, 32/space, 245/grey
+    print-character screen, 46/full-stop, 245/grey
+    column <- add left, 3
     {
       # print row
-      row-done?:boolean <- greater-or-equal column:number, max-column:number
-      break-if row-done?:boolean
-      curr:screen-cell <- index buf:address:array:screen-cell/lookup, i:number
-      c:character <- get curr:screen-cell, contents:offset
-      print-character screen:address, c:character, 245/grey
-      column:number <- add column:number, 1
-      i:number <- add i:number, 1
+      row-done?:boolean <- greater-or-equal column, max-column
+      break-if row-done?
+      curr:screen-cell <- index *buf, i
+      c:character <- get curr, contents:offset
+      print-character screen, c, 245/grey
+      column <- add column, 1
+      i <- add i, 1
       loop
     }
     # print final '.'
-    print-character screen:address, 46/full-stop, 245/grey
-    column:number <- add column:number, 1
+    print-character screen, 46/full-stop, 245/grey
+    column <- add column, 1
     {
       # clear rest of current line
-      line-done?:boolean <- greater-than column:number, right:number
-      break-if line-done?:boolean
-      print-character screen:address, 32/space
-      column:number <- add column:number, 1
+      line-done?:boolean <- greater-than column, right
+      break-if line-done?
+      print-character screen, 32/space
+      column <- add column, 1
       loop
     }
-    row:number <- add row:number, 1
+    row <- add row, 1
     loop
   }
-  reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
 recipe clear-line-delimited [
@@ -409,12 +409,12 @@ recipe clear-line-delimited [
   screen:address <- next-ingredient
   left:number <- next-ingredient
   right:number <- next-ingredient
-  column:number <- copy left:number
+  column:number <- copy left
   {
-    done?:boolean <- greater-than column:number, right:number
-    break-if done?:boolean
-    print-character screen:address, 32/space
-    column:number <- add column:number, 1
+    done?:boolean <- greater-than column, right
+    break-if done?
+    print-character screen, 32/space
+    column <- add column, 1
     loop
   }
 ]
@@ -509,8 +509,8 @@ scenario editor-initializes-empty-text [
   run [
     1:address:array:character <- new []
     2:address:editor-data <- new-editor 1:address:array:character, screen:address, 0/left, 5/right
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .     .
@@ -562,47 +562,47 @@ recipe get-color [
   color:number <- next-ingredient
   highlighting-state:number <- next-ingredient
   c:character <- next-ingredient
-  color-is-white?:boolean <- equal color:number, 7/white
-#?   $print [character: ], c:character, 10/newline #? 1
+  color-is-white?:boolean <- equal color, 7/white
+#?   $print [character: ], c, 10/newline #? 1
   # if color is white and next character is '#', switch color to blue
   {
-    break-unless color-is-white?:boolean
-    starting-comment?:boolean <- equal c:character, 35/#
-    break-unless starting-comment?:boolean
+    break-unless color-is-white?
+    starting-comment?:boolean <- equal c, 35/#
+    break-unless starting-comment?
 #?     $print [switch color back to blue], 10/newline #? 1
-    color:number <- copy 12/lightblue
+    color <- copy 12/lightblue
     jump +exit:label
   }
   # if color is blue and next character is newline, switch color to white
   {
-    color-is-blue?:boolean <- equal color:number, 12/lightblue
-    break-unless color-is-blue?:boolean
-    ending-comment?:boolean <- equal c:character, 10/newline
-    break-unless ending-comment?:boolean
+    color-is-blue?:boolean <- equal color, 12/lightblue
+    break-unless color-is-blue?
+    ending-comment?:boolean <- equal c, 10/newline
+    break-unless ending-comment?
 #?     $print [switch color back to white], 10/newline #? 1
-    color:number <- copy 7/white
+    color <- copy 7/white
     jump +exit:label
   }
   # if color is white (no comments) and next character is '<', switch color to red
   {
-    break-unless color-is-white?:boolean
-    starting-assignment?:boolean <- equal c:character, 60/<
-    break-unless starting-assignment?:boolean
-    color:number <- copy 1/red
+    break-unless color-is-white?
+    starting-assignment?:boolean <- equal c, 60/<
+    break-unless starting-assignment?
+    color <- copy 1/red
     jump +exit:label
   }
   # if color is red and next character is space, switch color to white
   {
-    color-is-red?:boolean <- equal color:number, 1/red
-    break-unless color-is-red?:boolean
-    ending-assignment?:boolean <- equal c:character, 32/space
-    break-unless ending-assignment?:boolean
-    color:number <- copy 7/white
+    color-is-red?:boolean <- equal color, 1/red
+    break-unless color-is-red?
+    ending-assignment?:boolean <- equal c, 32/space
+    break-unless ending-assignment?
+    color <- copy 7/white
     jump +exit:label
   }
   # otherwise no change
   +exit
-  reply color:number, highlighting-state:number
+  reply color, highlighting-state
 ]
 
 scenario render-colors-assignment [
@@ -636,78 +636,78 @@ recipe event-loop [
   screen:address <- next-ingredient
   console:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-  recipes:address:editor-data <- get env:address:programming-environment-data/lookup, recipes:offset
-  current-sandbox:address:editor-data <- get env:address:programming-environment-data/lookup, current-sandbox:offset
-  sandbox-in-focus?:address:boolean <- get-address env:address:programming-environment-data/lookup, sandbox-in-focus?:offset
+  recipes:address:editor-data <- get *env, recipes:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  sandbox-in-focus?:address:boolean <- get-address *env, sandbox-in-focus?:offset
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
-    e:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
-    loop-unless found?:boolean
-    break-if quit?:boolean  # only in tests
+    e:event, console, found?:boolean, quit?:boolean <- read-event console
+    loop-unless found?
+    break-if quit?  # only in tests
     trace [app], [next-event]
     # check for global events that will trigger regardless of which editor has focus
     {
       k:address:number <- maybe-convert e:event, keycode:variant
-      break-unless k:address:number
+      break-unless k
       # F4? load all code and run all sandboxes.
       {
-        do-run?:boolean <- equal k:address:number/lookup, 65532/F4
-        break-unless do-run?:boolean
-        run-sandboxes env:address:programming-environment-data
+        do-run?:boolean <- equal *k, 65532/F4
+        break-unless do-run?
+        run-sandboxes env
         # F4 might update warnings and results on both sides
-        screen:address <- render-all screen:address, env:address:programming-environment-data
-        update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/lookup
-        show-screen screen:address
+        screen <- render-all screen, env
+        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+        show-screen screen
         loop +next-event:label
       }
     }
     {
       c:address:character <- maybe-convert e:event, text:variant
-      break-unless c:address:character
+      break-unless c
       # ctrl-n? - switch focus
       {
-        ctrl-n?:boolean <- equal c:address:character/lookup, 14/ctrl-n
-        break-unless ctrl-n?:boolean
-        sandbox-in-focus?:address:boolean/lookup <- not sandbox-in-focus?:address:boolean/lookup
-        update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/lookup
-        show-screen screen:address
+        ctrl-n?:boolean <- equal *c, 14/ctrl-n
+        break-unless ctrl-n?
+        *sandbox-in-focus? <- not *sandbox-in-focus?
+        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+        show-screen screen
         loop +next-event:label
       }
     }
     # 'touch' event
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
-      break-unless t:address:touch-event
+      break-unless t
       # ignore all but 'left-click' events for now
       # todo: test this
-      touch-type:number <- get t:address:touch-event/lookup, type:offset
-      is-left-click?:boolean <- equal touch-type:number, 65513/mouse-left
-      loop-unless is-left-click?:boolean, +next-event:label
+      touch-type:number <- get *t, type:offset
+      is-left-click?:boolean <- equal touch-type, 65513/mouse-left
+      loop-unless is-left-click?, +next-event:label
       # on a sandbox delete icon? process delete
       {
-        was-delete?:boolean <- delete-sandbox t:address:touch-event/lookup, env:address:programming-environment-data
-        break-unless was-delete?:boolean
+        was-delete?:boolean <- delete-sandbox *t, env
+        break-unless was-delete?
 #?         trace [app], [delete clicked] #? 1
-        screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data, 1/clear
-        update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:address:boolean/lookup
-        show-screen screen:address
+        screen <- render-sandbox-side screen, env, 1/clear
+        update-cursor screen, recipes, current-sandbox, *sandbox-in-focus?
+        show-screen screen
         loop +next-event:label
       }
       # if not, send to both editors
-      _ <- move-cursor-in-editor screen:address, recipes:address:editor-data, t:address:touch-event/lookup
-      sandbox-in-focus?:address:boolean/lookup <- move-cursor-in-editor screen:address, current-sandbox:address:editor-data, t:address:touch-event/lookup
+      _ <- move-cursor-in-editor screen, recipes, *t
+      *sandbox-in-focus? <- move-cursor-in-editor screen, current-sandbox, *t
       jump +continue:label
     }
     # if it's not global, send to appropriate editor
     {
       {
-        break-if sandbox-in-focus?:address:boolean/lookup
-        handle-event screen:address, console:address, recipes:address:editor-data, e:event
+        break-if *sandbox-in-focus?
+        handle-event screen, console, recipes, e:event
       }
       {
-        break-unless sandbox-in-focus?:address:boolean/lookup
-        handle-event screen:address, console:address, current-sandbox:address:editor-data, e:event
+        break-unless *sandbox-in-focus?
+        handle-event screen, console, current-sandbox, e:event
       }
     }
     +continue
@@ -716,9 +716,9 @@ recipe event-loop [
     # they won't usually come fast enough to trigger this.
     # todo: test this
     {
-      more-events?:boolean <- has-more-events? console:address
-      break-if more-events?:boolean
-      render-minimal screen:address, env:address:programming-environment-data
+      more-events?:boolean <- has-more-events? console
+      break-if more-events?
+      render-minimal screen, env
     }
     loop
   }
@@ -733,27 +733,27 @@ recipe editor-event-loop [
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
-    e:event, console:address, found?:boolean, quit?:boolean <- read-event console:address
-    loop-unless found?:boolean
-    break-if quit?:boolean  # only in tests
+    e:event, console:address, found?:boolean, quit?:boolean <- read-event console
+    loop-unless found?
+    break-if quit?  # only in tests
     trace [app], [next-event]
     # 'touch' event - send to both editors
     {
       t:address:touch-event <- maybe-convert e:event, touch:variant
-      break-unless t:address:touch-event
-      move-cursor-in-editor screen:address, editor:address:editor-data, t:address:touch-event/lookup
+      break-unless t
+      move-cursor-in-editor screen, editor, *t
       jump +continue:label
     }
     # other events - send to appropriate editor
-    handle-event screen:address, console:address, editor:address:editor-data, e:event
+    handle-event screen, console, editor, e:event
     +continue
-    row:number, screen:address <- render screen:address, editor:address:editor-data
+    row:number, screen <- render screen, editor
     # clear next line, in case we just processed a backspace
-    left:number <- get editor:address:editor-data/lookup, left:offset
-    right:number <- get editor:address:editor-data/lookup, right:offset
-    row:number <- add row:number, 1
-    move-cursor screen:address, row:number, left:number
-    clear-line-delimited screen:address, left:number, right:number
+    left:number <- get *editor, left:offset
+    right:number <- get *editor, right:offset
+    row <- add row, 1
+    move-cursor screen, row, left
+    clear-line-delimited screen, left, right
     loop
   }
 ]
@@ -764,185 +764,185 @@ recipe handle-event [
   console:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   e:event <- next-ingredient
-  reply-unless editor:address:editor-data
+  reply-unless editor
   # character
   {
     c:address:character <- maybe-convert e:event, text:variant
-    break-unless c:address:character
+    break-unless c
     ## check for special characters
     # backspace - delete character before cursor
     {
-      backspace?:boolean <- equal c:address:character/lookup, 8/backspace
-      break-unless backspace?:boolean
-      delete-before-cursor editor:address:editor-data
+      backspace?:boolean <- equal *c, 8/backspace
+      break-unless backspace?
+      delete-before-cursor editor
       reply
     }
     # ctrl-a - move cursor to start of line
     {
-      ctrl-a?:boolean <- equal c:address:character/lookup, 1/ctrl-a
-      break-unless ctrl-a?:boolean
-      move-to-start-of-line editor:address:editor-data
+      ctrl-a?:boolean <- equal *c, 1/ctrl-a
+      break-unless ctrl-a?
+      move-to-start-of-line editor
       reply
     }
     # ctrl-e - move cursor to end of line
     {
-      ctrl-e?:boolean <- equal c:address:character/lookup, 5/ctrl-e
-      break-unless ctrl-e?:boolean
-      move-to-end-of-line editor:address:editor-data
+      ctrl-e?:boolean <- equal *c, 5/ctrl-e
+      break-unless ctrl-e?
+      move-to-end-of-line editor
       reply
     }
     # ctrl-u - delete until start of line (excluding cursor)
     {
-      ctrl-u?:boolean <- equal c:address:character/lookup, 21/ctrl-u
-      break-unless ctrl-u?:boolean
-      delete-to-start-of-line editor:address:editor-data
+      ctrl-u?:boolean <- equal *c, 21/ctrl-u
+      break-unless ctrl-u?
+      delete-to-start-of-line editor
       reply
     }
     # ctrl-k - delete until end of line (including cursor)
     {
-      ctrl-k?:boolean <- equal c:address:character/lookup, 11/ctrl-k
-      break-unless ctrl-k?:boolean
-      delete-to-end-of-line editor:address:editor-data
+      ctrl-k?:boolean <- equal *c, 11/ctrl-k
+      break-unless ctrl-k?
+      delete-to-end-of-line editor
       reply
     }
     # tab - insert two spaces
     {
-      tab?:boolean <- equal c:address:character/lookup, 9/tab
+      tab?:boolean <- equal *c, 9/tab
       break-unless tab?:boolean
-      insert-at-cursor editor:address:editor-data, 32/space, screen:address
-      insert-at-cursor editor:address:editor-data, 32/space, screen:address
+      insert-at-cursor editor, 32/space, screen
+      insert-at-cursor editor, 32/space, screen
       reply
     }
     # otherwise type it in
-    insert-at-cursor editor:address:editor-data, c:address:character/lookup, screen:address
+    insert-at-cursor editor, *c, screen
     reply
   }
   # otherwise it's a special key
   k:address:number <- maybe-convert e:event, keycode:variant
-  assert k:address:number, [event was of unknown type; neither keyboard nor mouse]
-  d:address:duplex-list <- get editor:address:editor-data/lookup, data:offset
-  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/lookup, before-cursor:offset
-  cursor-row:address:number <- get-address editor:address:editor-data/lookup, cursor-row:offset
-  cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
-  screen-height:number <- screen-height screen:address
-  left:number <- get editor:address:editor-data/lookup, left:offset
-  right:number <- get editor:address:editor-data/lookup, right:offset
+  assert k, [event was of unknown type; neither keyboard nor mouse]
+  d:address:duplex-list <- get *editor, data:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  screen-height:number <- screen-height screen
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
   # arrows; update cursor-row and cursor-column, leave before-cursor to 'render'.
   # right arrow
   {
-    move-to-next-character?:boolean <- equal k:address:number/lookup, 65514/right-arrow
-    break-unless move-to-next-character?:boolean
+    move-to-next-character?:boolean <- equal *k, 65514/right-arrow
+    break-unless move-to-next-character?
     # if not at end of text
-    old-cursor:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/lookup
-    break-unless old-cursor:address:duplex-list
+    old-cursor:address:duplex-list <- next-duplex *before-cursor
+    break-unless old-cursor
     # scan to next character
-    before-cursor:address:address:duplex-list/lookup <- copy old-cursor:address:duplex-list
+    *before-cursor <- copy old-cursor
     # if crossed a newline, move cursor to start of next row
     {
-      old-cursor-character:character <- get before-cursor:address:address:duplex-list/lookup/lookup, value:offset
-      was-at-newline?:boolean <- equal old-cursor-character:character, 10/newline
-      break-unless was-at-newline?:boolean
-      cursor-row:address:number/lookup <- add cursor-row:address:number/lookup, 1
-      cursor-column:address:number/lookup <- copy left:number
+      old-cursor-character:character <- get **before-cursor, value:offset
+      was-at-newline?:boolean <- equal old-cursor-character, 10/newline
+      break-unless was-at-newline?
+      *cursor-row <- add *cursor-row, 1
+      *cursor-column <- copy left
       # todo: what happens when cursor is too far down?
-      screen-height:number <- screen-height screen:address
-      above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/lookup, screen-height:number
-      assert above-screen-bottom?:boolean, [unimplemented: moving past bottom of screen]
+      screen-height <- screen-height screen
+      above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
+      assert above-screen-bottom?, [unimplemented: moving past bottom of screen]
       reply
     }
     # if the line wraps, move cursor to start of next row
     {
       # if we're at the column just before the wrap indicator
-      wrap-column:number <- subtract right:number, 1
-      at-wrap?:boolean <- equal cursor-column:address:number/lookup, wrap-column:number
-      break-unless at-wrap?:boolean
+      wrap-column:number <- subtract right, 1
+      at-wrap?:boolean <- equal *cursor-column, wrap-column
+      break-unless at-wrap?
       # and if next character isn't newline
-      new-cursor:address:duplex-list <- next-duplex old-cursor:address:duplex-list
-      break-unless new-cursor:address:duplex-list
-      next-character:character <- get new-cursor:address:duplex-list/lookup, value:offset
-      newline?:boolean <- equal next-character:character, 10/newline
-      break-if newline?:boolean
-      cursor-row:address:number/lookup <- add cursor-row:address:number/lookup, 1
-      cursor-column:address:number/lookup <- copy left:number
+      new-cursor:address:duplex-list <- next-duplex old-cursor
+      break-unless new-cursor
+      next-character:character <- get *new-cursor, value:offset
+      newline?:boolean <- equal next-character, 10/newline
+      break-if newline?
+      *cursor-row <- add *cursor-row, 1
+      *cursor-column <- copy left
       # todo: what happens when cursor is too far down?
-      above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/lookup, screen-height:number
-      assert above-screen-bottom?:boolean, [unimplemented: moving past bottom of screen]
+      above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
+      assert above-screen-bottom?, [unimplemented: moving past bottom of screen]
       reply
     }
     # otherwise move cursor one character right
-    cursor-column:address:number/lookup <- add cursor-column:address:number/lookup, 1
+    *cursor-column <- add *cursor-column, 1
   }
   # left arrow
   {
-    move-to-previous-character?:boolean <- equal k:address:number/lookup, 65515/left-arrow
-    break-unless move-to-previous-character?:boolean
+    move-to-previous-character?:boolean <- equal *k, 65515/left-arrow
+    break-unless move-to-previous-character?
 #?     trace [app], [left arrow] #? 1
     # if not at start of text (before-cursor at § sentinel)
-    prev:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/lookup
-    break-unless prev:address:duplex-list
+    prev:address:duplex-list <- prev-duplex *before-cursor
+    break-unless prev
     # if cursor not at left margin, move one character left
     {
-      at-left-margin?:boolean <- equal cursor-column:address:number/lookup, 0
-      break-if at-left-margin?:boolean
+      at-left-margin?:boolean <- equal *cursor-column, 0
+      break-if at-left-margin?
 #?       trace [app], [decrementing] #? 1
-      cursor-column:address:number/lookup <- subtract cursor-column:address:number/lookup, 1
+      *cursor-column <- subtract *cursor-column, 1
       reply
     }
     # if at left margin, there's guaranteed to be a previous line, since we're
     # not at start of text
     {
       # if before-cursor is at newline, figure out how long the previous line is
-      prevc:character <- get before-cursor:address:address:duplex-list/lookup/lookup, value:offset
-      previous-character-is-newline?:boolean <- equal prevc:character, 10/newline
-      break-unless previous-character-is-newline?:boolean
+      prevc:character <- get **before-cursor, value:offset
+      previous-character-is-newline?:boolean <- equal prevc, 10/newline
+      break-unless previous-character-is-newline?
 #?       trace [app], [previous line] #? 1
       # compute length of previous line
-      end-of-line:number <- previous-line-length before-cursor:address:address:duplex-list/lookup, d:address:duplex-list
-      cursor-row:address:number/lookup <- subtract cursor-row:address:number/lookup, 1
-      cursor-column:address:number/lookup <- copy end-of-line:number
+      end-of-line:number <- previous-line-length *before-cursor, d
+      *cursor-row <- subtract *cursor-row, 1
+      *cursor-column <- copy end-of-line
       reply
     }
     # if before-cursor is not at newline, we're just at a wrapped line
-    assert cursor-row:address:number/lookup, [unimplemented: moving cursor above top of screen]
-    cursor-row:address:number/lookup <- subtract cursor-row:address:number/lookup, 1
-    cursor-column:address:number/lookup <- subtract right:number, 1  # leave room for wrap icon
+    assert *cursor-row, [unimplemented: moving cursor above top of screen]
+    *cursor-row <- subtract *cursor-row, 1
+    *cursor-column <- subtract right, 1  # leave room for wrap icon
   }
   # down arrow
   {
-    move-to-next-line?:boolean <- equal k:address:number/lookup, 65516/down-arrow
-    break-unless move-to-next-line?:boolean
+    move-to-next-line?:boolean <- equal *k, 65516/down-arrow
+    break-unless move-to-next-line?
     # todo: support scrolling
-    already-at-bottom?:boolean <- greater-or-equal cursor-row:address:number/lookup, screen-height:number
-    break-if already-at-bottom?:boolean
+    already-at-bottom?:boolean <- greater-or-equal *cursor-row, screen-height
+    break-if already-at-bottom?
 #?     $print [moving down
 #? ] #? 1
-    cursor-row:address:number/lookup <- add cursor-row:address:number/lookup, 1
+    *cursor-row <- add *cursor-row, 1
     # that's it; render will adjust cursor-column as necessary
   }
   # up arrow
   {
-    move-to-previous-line?:boolean <- equal k:address:number/lookup, 65517/up-arrow
-    break-unless move-to-previous-line?:boolean
+    move-to-previous-line?:boolean <- equal *k, 65517/up-arrow
+    break-unless move-to-previous-line?
     # todo: support scrolling
-    already-at-top?:boolean <- lesser-or-equal cursor-row:address:number/lookup, 1/top
-    break-if already-at-top?:boolean
+    already-at-top?:boolean <- lesser-or-equal *cursor-row, 1/top
+    break-if already-at-top?
 #?     $print [moving up
 #? ] #? 1
-    cursor-row:address:number/lookup <- subtract cursor-row:address:number/lookup, 1
+    *cursor-row <- subtract *cursor-row, 1
     # that's it; render will adjust cursor-column as necessary
   }
   # home
   {
-    home?:boolean <- equal k:address:number/lookup, 65521/home
-    break-unless home?:boolean
-    move-to-start-of-line editor:address:editor-data
+    home?:boolean <- equal *k, 65521/home
+    break-unless home?
+    move-to-start-of-line editor
     reply
   }
   # end
   {
-    end?:boolean <- equal k:address:number/lookup, 65520/end
-    break-unless end?:boolean
-    move-to-end-of-line editor:address:editor-data
+    end?:boolean <- equal *k, 65520/end
+    break-unless end?
+    move-to-end-of-line editor
     reply
   }
 ]
@@ -954,19 +954,19 @@ recipe move-cursor-in-editor [
   screen:address <- next-ingredient
   editor:address:editor-data <- next-ingredient
   t:touch-event <- next-ingredient
-  reply-unless editor:address:editor-data, 0/false
-  click-column:number <- get t:touch-event, column:offset
-  left:number <- get editor:address:editor-data/lookup, left:offset
-  too-far-left?:boolean <- lesser-than click-column:number, left:number
-  reply-if too-far-left?:boolean, 0/false
-  right:number <- get editor:address:editor-data/lookup, right:offset
-  too-far-right?:boolean <- greater-than click-column:number, right:number
-  reply-if too-far-right?:boolean, 0/false
+  reply-unless editor, 0/false
+  click-column:number <- get t, column:offset
+  left:number <- get *editor, left:offset
+  too-far-left?:boolean <- lesser-than click-column, left
+  reply-if too-far-left?, 0/false
+  right:number <- get *editor, right:offset
+  too-far-right?:boolean <- greater-than click-column, right
+  reply-if too-far-right?, 0/false
   # update cursor
-  cursor-row:address:number <- get-address editor:address:editor-data/lookup, cursor-row:offset
-  cursor-row:address:number/lookup <- get t:touch-event, row:offset
-  cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
-  cursor-column:address:number/lookup <- get t:touch-event, column:offset
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  *cursor-row <- get t, row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  *cursor-column <- get t, column:offset
   # gain focus
   reply 1/true
 ]
@@ -976,33 +976,33 @@ recipe insert-at-cursor [
   editor:address:editor-data <- next-ingredient
   c:character <- next-ingredient
   screen:address <- next-ingredient
-#?   $print [insert ], c:character, 10/newline #? 1
-  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/lookup, before-cursor:offset
-  insert-duplex c:character, before-cursor:address:address:duplex-list/lookup
-  before-cursor:address:address:duplex-list/lookup <- next-duplex before-cursor:address:address:duplex-list/lookup
-  cursor-row:address:number <- get-address editor:address:editor-data/lookup, cursor-row:offset
-  cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
-  left:number <- get editor:address:editor-data/lookup, left:offset
-  right:number <- get editor:address:editor-data/lookup, right:offset
+#?   $print [insert ], c, 10/newline #? 1
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  insert-duplex c, *before-cursor
+  *before-cursor <- next-duplex *before-cursor
+  cursor-row:address:number <- get-address *editor, cursor-row:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  left:number <- get *editor, left:offset
+  right:number <- get *editor, right:offset
   # update cursor: if newline, move cursor to start of next line
   # todo: bottom of screen
   {
-    newline?:boolean <- equal c:character, 10/newline
-    break-unless newline?:boolean
-    cursor-row:address:number/lookup <- add cursor-row:address:number/lookup, 1
-    cursor-column:address:number/lookup <- copy left:number
+    newline?:boolean <- equal c, 10/newline
+    break-unless newline?
+    *cursor-row <- add *cursor-row, 1
+    *cursor-column <- copy left
     # indent if necessary
 #?     $print [computing indent], 10/newline #? 1
-    d:address:duplex-list <- get editor:address:editor-data/lookup, data:offset
-    end-of-previous-line:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/lookup
-    indent:number <- line-indent end-of-previous-line:address:duplex-list, d:address:duplex-list
-#?     $print indent:number, 10/newline #? 1
+    d:address:duplex-list <- get *editor, data:offset
+    end-of-previous-line:address:duplex-list <- prev-duplex *before-cursor
+    indent:number <- line-indent end-of-previous-line, d
+#?     $print indent, 10/newline #? 1
     i:number <- copy 0
     {
-      indent-done?:boolean <- greater-or-equal i:number, indent:number
-      break-if indent-done?:boolean
-      insert-at-cursor editor:address:editor-data, 32/space, screen:address
-      i:number <- add i:number, 1
+      indent-done?:boolean <- greater-or-equal i, indent
+      break-if indent-done?
+      insert-at-cursor editor, 32/space, screen
+      i <- add i, 1
       loop
     }
     reply
@@ -1010,42 +1010,42 @@ recipe insert-at-cursor [
   # if the line wraps at the cursor, move cursor to start of next row
   {
     # if we're at the column just before the wrap indicator
-    wrap-column:number <- subtract right:number, 1
-#?     $print [wrap? ], cursor-column:address:number/lookup, [ vs ], wrap-column:number, 10/newline
-    at-wrap?:boolean <- greater-or-equal cursor-column:address:number/lookup, wrap-column:number
-    break-unless at-wrap?:boolean
+    wrap-column:number <- subtract right, 1
+#?     $print [wrap? ], *cursor-column, [ vs ], wrap-column, 10/newline
+    at-wrap?:boolean <- greater-or-equal *cursor-column, wrap-column
+    break-unless at-wrap?
 #?     $print [wrap!
 #? ] #? 1
-    cursor-column:address:number/lookup <- subtract cursor-column:address:number/lookup, wrap-column:number
-    cursor-row:address:number/lookup <- add cursor-row:address:number/lookup, 1
+    *cursor-column <- subtract *cursor-column, wrap-column
+    *cursor-row <- add *cursor-row, 1
     # todo: what happens when cursor is too far down?
-    screen-height:number <- screen-height screen:address
-    above-screen-bottom?:boolean <- lesser-than cursor-row:address:number/lookup, screen-height:number
-    assert above-screen-bottom?:boolean, [unimplemented: typing past bottom of screen]
+    screen-height:number <- screen-height screen
+    above-screen-bottom?:boolean <- lesser-than *cursor-row, screen-height
+    assert above-screen-bottom?, [unimplemented: typing past bottom of screen]
 #?     $print [return
 #? ] #? 1
     reply
   }
   # otherwise move cursor right
-  cursor-column:address:number/lookup <- add cursor-column:address:number/lookup, 1
+  *cursor-column <- add *cursor-column, 1
 ]
 
 recipe delete-before-cursor [
   local-scope
   editor:address:editor-data <- next-ingredient
-  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/lookup, before-cursor:offset
-  d:address:duplex-list <- get editor:address:editor-data/lookup, data:offset
+  before-cursor:address:address:duplex-list <- get-address *editor:address:editor-data, before-cursor:offset
+  d:address:duplex-list <- get *editor:address:editor-data, data:offset
   # unless already at start
-  at-start?:boolean <- equal before-cursor:address:address:duplex-list/lookup, d:address:duplex-list
+  at-start?:boolean <- equal *before-cursor:address:address:duplex-list, d:address:duplex-list
   reply-if at-start?:boolean
   # delete character
-  prev:address:duplex-list <- prev-duplex before-cursor:address:address:duplex-list/lookup
-  remove-duplex before-cursor:address:address:duplex-list/lookup
+  prev:address:duplex-list <- prev-duplex *before-cursor:address:address:duplex-list
+  remove-duplex *before-cursor:address:address:duplex-list
   # update cursor
-  before-cursor:address:address:duplex-list/lookup <- copy prev:address:duplex-list
-  cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
-  cursor-column:address:number/lookup <- subtract cursor-column:address:number/lookup, 1
-#?   $print [delete-before-cursor: ], cursor-column:address:number/lookup, 10/newline
+  *before-cursor:address:address:duplex-list <- copy prev:address:duplex-list
+  cursor-column:address:number <- get-address *editor:address:editor-data, cursor-column:offset
+  *cursor-column:address:number <- subtract *cursor-column:address:number, 1
+#?   $print [delete-before-cursor: ], *cursor-column:address:number, 10/newline
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -1055,21 +1055,21 @@ recipe previous-line-length [
   curr:address:duplex-list <- next-ingredient
   start:address:duplex-list <- next-ingredient
   result:number <- copy 0
-  reply-unless curr:address:duplex-list, result:number
-  at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
-  reply-if at-start?:boolean, result:number
+  reply-unless curr, result
+  at-start?:boolean <- equal curr, start
+  reply-if at-start?, result
   {
-    curr:address:duplex-list <- prev-duplex curr:address:duplex-list
-    break-unless curr:address:duplex-list
-    at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
-    break-if at-start?:boolean
-    c:character <- get curr:address:duplex-list/lookup, value:offset
-    at-newline?:boolean <- equal c:character 10/newline
-    break-if at-newline?:boolean
-    result:number <- add result:number, 1
+    curr <- prev-duplex curr
+    break-unless curr
+    at-start?:boolean <- equal curr, start
+    break-if at-start?
+    c:character <- get *curr, value:offset
+    at-newline?:boolean <- equal c, 10/newline
+    break-if at-newline?
+    result <- add result, 1
     loop
   }
-  reply result:number
+  reply result
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -1079,57 +1079,57 @@ recipe line-indent [
   curr:address:duplex-list <- next-ingredient
   start:address:duplex-list <- next-ingredient
   result:number <- copy 0
-  reply-unless curr:address:duplex-list, result:number
+  reply-unless curr, result
 #?   $print [a0], 10/newline #? 1
-  at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
-  reply-if at-start?:boolean, result:number
+  at-start?:boolean <- equal curr, start
+  reply-if at-start?, result
 #?   $print [a1], 10/newline #? 1
   {
-    curr:address:duplex-list <- prev-duplex curr:address:duplex-list
-    break-unless curr:address:duplex-list
+    curr <- prev-duplex curr
+    break-unless curr
 #?   $print [a2], 10/newline #? 1
-    at-start?:boolean <- equal curr:address:duplex-list, start:address:duplex-list
-    break-if at-start?:boolean
+    at-start?:boolean <- equal curr, start
+    break-if at-start?
 #?   $print [a3], 10/newline #? 1
-    c:character <- get curr:address:duplex-list/lookup, value:offset
-    at-newline?:boolean <- equal c:character, 10/newline
-    break-if at-newline?:boolean
+    c:character <- get *curr, value:offset
+    at-newline?:boolean <- equal c, 10/newline
+    break-if at-newline?
 #?   $print [a4], 10/newline #? 1
     # if c is a space, increment result
-    is-space?:boolean <- equal c:character, 32/space
+    is-space?:boolean <- equal c, 32/space
     {
-      break-unless is-space?:boolean
-      result:number <- add result:number, 1
+      break-unless is-space?
+      result <- add result, 1
     }
     # if c is not a space, reset result
     {
-      break-if is-space?:boolean
-      result:number <- copy 0
+      break-if is-space?
+      result <- copy 0
     }
     loop
   }
-  reply result:number
+  reply result
 ]
 
 recipe move-to-start-of-line [
   local-scope
   editor:address:editor-data <- next-ingredient
   # update cursor column
-  left:number <- get editor:address:editor-data/lookup, left:offset
-  cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
-  cursor-column:address:number/lookup <- copy left:number
+  left:number <- get *editor, left:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  *cursor-column <- copy left
   # update before-cursor
-  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/lookup, before-cursor:offset
-  init:address:duplex-list <- get editor:address:editor-data/lookup, data:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  init:address:duplex-list <- get *editor, data:offset
   # while not at start of line, move 
   {
-    at-start-of-text?:boolean <- equal before-cursor:address:address:duplex-list/lookup, init:address:duplex-list
-    break-if at-start-of-text?:boolean
-    prev:character <- get before-cursor:address:address:duplex-list/lookup/lookup, value:offset
-    at-start-of-line?:boolean <- equal prev:character, 10/newline
-    break-if at-start-of-line?:boolean
-    before-cursor:address:address:duplex-list/lookup <- prev-duplex before-cursor:address:address:duplex-list/lookup
-    assert before-cursor:address:address:duplex-list/lookup, [move-to-start-of-line tried to move before start of text]
+    at-start-of-text?:boolean <- equal *before-cursor, init
+    break-if at-start-of-text?
+    prev:character <- get **before-cursor, value:offset
+    at-start-of-line?:boolean <- equal prev, 10/newline
+    break-if at-start-of-line?
+    *before-cursor <- prev-duplex *before-cursor
+    assert *before-cursor, [move-to-start-of-line tried to move before start of text]
     loop
   }
 ]
@@ -1137,75 +1137,75 @@ recipe move-to-start-of-line [
 recipe move-to-end-of-line [
   local-scope
   editor:address:editor-data <- next-ingredient
-  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/lookup, before-cursor:offset
-  cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
   # while not at start of line, move 
   {
-    next:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/lookup
-    break-unless next:address:duplex-list  # end of text
-    nextc:character <- get next:address:duplex-list/lookup, value:offset
-    at-end-of-line?:boolean <- equal nextc:character, 10/newline
-    break-if at-end-of-line?:boolean
-    before-cursor:address:address:duplex-list/lookup <- copy next:address:duplex-list
-    cursor-column:address:number/lookup <- add cursor-column:address:number/lookup, 1
+    next:address:duplex-list <- next-duplex *before-cursor
+    break-unless next  # end of text
+    nextc:character <- get *next, value:offset
+    at-end-of-line?:boolean <- equal nextc, 10/newline
+    break-if at-end-of-line?
+    *before-cursor <- copy next
+    *cursor-column <- add *cursor-column, 1
     loop
   }
-  # move one past end of line
-  cursor-column:address:number/lookup <- add cursor-column:address:number/lookup, 1
+  # move one past final character
+  *cursor-column <- add *cursor-column, 1
 ]
 
 recipe delete-to-start-of-line [
   local-scope
   editor:address:editor-data <- next-ingredient
   # compute range to delete
-  init:address:duplex-list <- get editor:address:editor-data/lookup, data:offset
-  before-cursor:address:address:duplex-list <- get-address editor:address:editor-data/lookup, before-cursor:offset
-  start:address:duplex-list <- copy before-cursor:address:address:duplex-list/lookup
-  end:address:duplex-list <- next-duplex before-cursor:address:address:duplex-list/lookup
+  init:address:duplex-list <- get *editor, data:offset
+  before-cursor:address:address:duplex-list <- get-address *editor, before-cursor:offset
+  start:address:duplex-list <- copy *before-cursor
+  end:address:duplex-list <- next-duplex *before-cursor
   {
-    at-start-of-text?:boolean <- equal start:address:duplex-list, init:address:duplex-list
-    break-if at-start-of-text?:boolean
-    curr:character <- get start:address:duplex-list/lookup, value:offset
-    at-start-of-line?:boolean <- equal curr:character, 10/newline
-    break-if at-start-of-line?:boolean
-    start:address:duplex-list <- prev-duplex start:address:duplex-list
-    assert start:address:duplex-list, [delete-to-start-of-line tried to move before start of text]
+    at-start-of-text?:boolean <- equal start, init
+    break-if at-start-of-text?
+    curr:character <- get *start, value:offset
+    at-start-of-line?:boolean <- equal curr, 10/newline
+    break-if at-start-of-line?
+    start <- prev-duplex start
+    assert start, [delete-to-start-of-line tried to move before start of text]
     loop
   }
   # snip it out
-  start-next:address:address:duplex-list <- get-address start:address:duplex-list/lookup, next:offset
-  start-next:address:address:duplex-list/lookup <- copy end:address:duplex-list
-  end-prev:address:address:duplex-list <- get-address end:address:duplex-list/lookup, prev:offset
-  end-prev:address:address:duplex-list/lookup <- copy start:address:duplex-list
+  start-next:address:address:duplex-list <- get-address *start, next:offset
+  *start-next <- copy end
+  end-prev:address:address:duplex-list <- get-address *end, prev:offset
+  *end-prev <- copy start
   # adjust cursor
-  before-cursor:address:address:duplex-list/lookup <- prev-duplex end:address:duplex-list
-  left:number <- get editor:address:editor-data/lookup, left:offset
-  cursor-column:address:number <- get-address editor:address:editor-data/lookup, cursor-column:offset
-  cursor-column:address:number/lookup <- copy left:number
+  *before-cursor <- prev-duplex end
+  left:number <- get *editor, left:offset
+  cursor-column:address:number <- get-address *editor, cursor-column:offset
+  *cursor-column <- copy left
 ]
 
 recipe delete-to-end-of-line [
   local-scope
   editor:address:editor-data <- next-ingredient
   # compute range to delete
-  start:address:duplex-list <- get editor:address:editor-data/lookup, before-cursor:offset
-  end:address:duplex-list <- next-duplex start:address:duplex-list
+  start:address:duplex-list <- get *editor, before-cursor:offset
+  end:address:duplex-list <- next-duplex start
   {
-    at-end-of-text?:boolean <- equal end:address:duplex-list, 0/null
-    break-if at-end-of-text?:boolean
-    curr:character <- get end:address:duplex-list/lookup, value:offset
-    at-end-of-line?:boolean <- equal curr:character, 10/newline
-    break-if at-end-of-line?:boolean
-    end:address:duplex-list <- next-duplex end:address:duplex-list
+    at-end-of-text?:boolean <- equal end, 0/null
+    break-if at-end-of-text?
+    curr:character <- get *end, value:offset
+    at-end-of-line?:boolean <- equal curr, 10/newline
+    break-if at-end-of-line?
+    end <- next-duplex end
     loop
   }
   # snip it out
-  start-next:address:address:duplex-list <- get-address start:address:duplex-list/lookup, next:offset
-  start-next:address:address:duplex-list/lookup <- copy end:address:duplex-list
+  start-next:address:address:duplex-list <- get-address *start, next:offset
+  *start-next <- copy end
   {
-    break-unless end:address:duplex-list
-    end-prev:address:address:duplex-list <- get-address end:address:duplex-list/lookup, prev:offset
-    end-prev:address:address:duplex-list/lookup <- copy start:address:duplex-list
+    break-unless end
+    end-prev:address:address:duplex-list <- get-address *end, prev:offset
+    *end-prev <- copy start
   }
 ]
 
@@ -1213,38 +1213,38 @@ recipe render-all [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-  screen:address <- render-recipes screen:address, env:address:programming-environment-data, 1/clear-below
-  screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data, 1/clear-below
-  recipes:address:editor-data <- get env:address:programming-environment-data/lookup, recipes:offset
-  current-sandbox:address:editor-data <- get env:address:programming-environment-data/lookup, current-sandbox:offset
-  sandbox-in-focus?:boolean <- get env:address:programming-environment-data/lookup, sandbox-in-focus?:offset
-  update-cursor screen:address, recipes:address:editor-data, current-sandbox:address:editor-data, sandbox-in-focus?:boolean
-  show-screen screen:address
-  reply screen:address/same-as-ingredient:0
+  screen <- render-recipes screen, env, 1/clear-below
+  screen <- render-sandbox-side screen, env, 1/clear-below
+  recipes:address:editor-data <- get *env, recipes:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
+  update-cursor screen, recipes, current-sandbox, sandbox-in-focus?
+  show-screen screen
+  reply screen/same-as-ingredient:0
 ]
 
 recipe render-minimal [
   local-scope
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-  recipes:address:editor-data <- get env:address:programming-environment-data/lookup, recipes:offset
-  current-sandbox:address:editor-data <- get env:address:programming-environment-data/lookup, current-sandbox:offset
-  sandbox-in-focus?:boolean <- get env:address:programming-environment-data/lookup, sandbox-in-focus?:offset
+  recipes:address:editor-data <- get *env, recipes:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  sandbox-in-focus?:boolean <- get *env, sandbox-in-focus?:offset
   {
-    break-if sandbox-in-focus?:boolean
-    screen:address <- render-recipes screen:address, env:address:programming-environment-data
-    cursor-row:number <- get recipes:address:editor-data/lookup, cursor-row:offset
-    cursor-column:number <- get recipes:address:editor-data/lookup, cursor-column:offset
+    break-if sandbox-in-focus?
+    screen <- render-recipes screen, env
+    cursor-row:number <- get *recipes, cursor-row:offset
+    cursor-column:number <- get *recipes, cursor-column:offset
   }
   {
-    break-unless sandbox-in-focus?:boolean
-    screen:address <- render-sandbox-side screen:address, env:address:programming-environment-data
-    cursor-row:number <- get current-sandbox:address:editor-data/lookup, cursor-row:offset
-    cursor-column:number <- get current-sandbox:address:editor-data/lookup, cursor-column:offset
+    break-unless sandbox-in-focus?
+    screen <- render-sandbox-side screen, env
+    cursor-row:number <- get *current-sandbox, cursor-row:offset
+    cursor-column:number <- get *current-sandbox, cursor-column:offset
   }
-  move-cursor screen:address, cursor-row:number, cursor-column:number
-  show-screen screen:address
-  reply screen:address/same-as-ingredient:0
+  move-cursor screen, cursor-row, cursor-column
+  show-screen screen
+  reply screen/same-as-ingredient:0
 ]
 
 recipe render-recipes [
@@ -1252,40 +1252,40 @@ recipe render-recipes [
   screen:address <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
   clear:boolean <- next-ingredient
-  recipes:address:editor-data <- get env:address:programming-environment-data/lookup, recipes:offset
+  recipes:address:editor-data <- get *env, recipes:offset
   # render recipes
-  left:number <- get recipes:address:editor-data/lookup, left:offset
-  right:number <- get recipes:address:editor-data/lookup, right:offset
-  row:number, screen:address <- render screen:address, recipes:address:editor-data
-  recipe-warnings:address:array:character <- get env:address:programming-environment-data/lookup, recipe-warnings:offset
+  left:number <- get *recipes, left:offset
+  right:number <- get *recipes, right:offset
+  row:number, screen <- render screen, recipes
+  recipe-warnings:address:array:character <- get *env, recipe-warnings:offset
   {
     # print any warnings
-    break-unless recipe-warnings:address:array:character
-    row:number, screen:address <- render-string screen:address, recipe-warnings:address:array:character, left:number, right:number, 1/red, row:number
+    break-unless recipe-warnings
+    row, screen <- render-string screen, recipe-warnings, left, right, 1/red, row
   }
   {
     # no warnings? move to next line
-    break-if recipe-warnings:address:array:character
-    row:number <- add row:number, 1
+    break-if recipe-warnings
+    row <- add row, 1
   }
   # draw dotted line after recipes
-  draw-horizontal screen:address, row:number, left:number, right:number, 9480/horizontal-dotted
+  draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   # clear next line, in case we just processed a backspace
-  row:number <- add row:number, 1
-  move-cursor screen:address, row:number, left:number
-  clear-line-delimited screen:address, left:number, right:number
+  row <- add row, 1
+  move-cursor screen, row, left
+  clear-line-delimited screen, left, right
   # clear rest of screen in this column, if requested
-  reply-unless clear:boolean, screen:address/same-as-ingredient:0
-  screen-height:number <- screen-height screen:address
+  reply-unless clear, screen/same-as-ingredient:0
+  screen-height:number <- screen-height screen
   {
-    at-bottom-of-screen?:boolean <- greater-or-equal row:number, screen-height:number
-    break-if at-bottom-of-screen?:boolean
-    move-cursor screen:address, row:number, left:number
-    clear-line-delimited screen:address, left:number, right:number
-    row:number <- add row:number, 1
+    at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
+    break-if at-bottom-of-screen?
+    move-cursor screen, row, left
+    clear-line-delimited screen, left, right
+    row <- add row, 1
     loop
   }
-  reply screen:address/same-as-ingredient:0
+  reply screen/same-as-ingredient:0
 ]
 
 recipe update-cursor [
@@ -1295,20 +1295,20 @@ recipe update-cursor [
   current-sandbox:address:editor-data <- next-ingredient
   sandbox-in-focus?:boolean <- next-ingredient
   {
-    break-if sandbox-in-focus?:boolean
+    break-if sandbox-in-focus?
 #?     $print [recipes in focus
 #? ] #? 1
-    cursor-row:number <- get recipes:address:editor-data/lookup, cursor-row:offset
-    cursor-column:number <- get recipes:address:editor-data/lookup, cursor-column:offset
+    cursor-row:number <- get *recipes, cursor-row:offset
+    cursor-column:number <- get *recipes, cursor-column:offset
   }
   {
-    break-unless sandbox-in-focus?:boolean
+    break-unless sandbox-in-focus?
 #?     $print [sandboxes in focus
 #? ] #? 1
-    cursor-row:number <- get current-sandbox:address:editor-data/lookup, cursor-row:offset
-    cursor-column:number <- get current-sandbox:address:editor-data/lookup, cursor-column:offset
+    cursor-row:number <- get *current-sandbox, cursor-row:offset
+    cursor-column:number <- get *current-sandbox, cursor-column:offset
   }
-  move-cursor screen:address, cursor-row:number, cursor-column:number
+  move-cursor screen, cursor-row, cursor-column
 ]
 
 scenario editor-handles-empty-event-queue [
@@ -1335,8 +1335,8 @@ scenario editor-handles-mouse-clicks [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .          .
@@ -1358,8 +1358,8 @@ scenario editor-handles-mouse-clicks-outside-text [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     3 <- 1  # cursor row
@@ -1377,8 +1377,8 @@ def]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     3 <- 1  # cursor row
@@ -1396,8 +1396,8 @@ def]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     3 <- 2  # cursor row
@@ -1416,8 +1416,8 @@ scenario editor-handles-mouse-clicks-outside-column [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .          .
@@ -1603,8 +1603,8 @@ scenario editor-wraps-cursor-after-inserting-characters [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .          .
@@ -1628,8 +1628,8 @@ scenario editor-wraps-cursor-after-inserting-characters-2 [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .          .
@@ -1724,8 +1724,8 @@ ef]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   # cursor should be below start of previous line
   memory-should-contain [
@@ -1746,8 +1746,8 @@ scenario editor-handles-backspace-key [
   replace-in-console 171/«, 3:event/backspace
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    4:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    5:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    4:number <- get *2:address:editor-data, cursor-row:offset
+    5:number <- get *2:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .          .
@@ -1877,8 +1877,8 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .          .
@@ -1904,8 +1904,8 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     3 <- 2
@@ -1917,8 +1917,8 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     3 <- 2
@@ -1936,8 +1936,8 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .          .
@@ -2004,8 +2004,8 @@ d]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     3 <- 1
@@ -2106,8 +2106,8 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     3 <- 1  # previous row
@@ -2126,8 +2126,8 @@ def]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     3 <- 1
@@ -2146,8 +2146,8 @@ def]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   # ..and ends at (2, 0)
   memory-should-contain [
@@ -2167,8 +2167,8 @@ def]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     3 <- 1
@@ -2187,8 +2187,8 @@ de]
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     3 <- 2
@@ -2210,8 +2210,8 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
   replace-in-console 97/a, 3:event/ctrl-a
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    4:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    5:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    4:number <- get *2:address:editor-data, cursor-row:offset
+    5:number <- get *2:address:editor-data, cursor-column:offset
   ]
   # cursor moves to start of line
   memory-should-contain [
@@ -2234,8 +2234,8 @@ scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
   replace-in-console 97/a, 3:event/ctrl-a
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    4:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    5:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    4:number <- get *2:address:editor-data, cursor-row:offset
+    5:number <- get *2:address:editor-data, cursor-column:offset
   ]
   # cursor moves to start of line
   memory-should-contain [
@@ -2256,8 +2256,8 @@ scenario editor-moves-to-start-of-line-with-home [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   # cursor moves to start of line
   memory-should-contain [
@@ -2278,8 +2278,8 @@ scenario editor-moves-to-start-of-line-with-home-2 [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   # cursor moves to start of line
   memory-should-contain [
@@ -2302,8 +2302,8 @@ scenario editor-moves-to-start-of-line-with-ctrl-e [
   replace-in-console 101/e, 3:event/ctrl-e
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    4:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    5:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    4:number <- get *2:address:editor-data, cursor-row:offset
+    5:number <- get *2:address:editor-data, cursor-column:offset
   ]
   # cursor moves to end of line
   memory-should-contain [
@@ -2316,8 +2316,8 @@ scenario editor-moves-to-start-of-line-with-ctrl-e [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    4:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    5:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    4:number <- get *2:address:editor-data, cursor-row:offset
+    5:number <- get *2:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     4 <- 1
@@ -2345,8 +2345,8 @@ scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
   replace-in-console 101/e, 3:event/ctrl-e
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    4:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    5:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    4:number <- get *2:address:editor-data, cursor-row:offset
+    5:number <- get *2:address:editor-data, cursor-column:offset
   ]
   # cursor moves to end of line
   memory-should-contain [
@@ -2367,8 +2367,8 @@ scenario editor-moves-to-end-of-line-with-end [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   # cursor moves to end of line
   memory-should-contain [
@@ -2389,8 +2389,8 @@ scenario editor-moves-to-end-of-line-with-end-2 [
   ]
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
-    3:number <- get 2:address:editor-data/lookup, cursor-row:offset
-    4:number <- get 2:address:editor-data/lookup, cursor-column:offset
+    3:number <- get *2:address:editor-data, cursor-row:offset
+    4:number <- get *2:address:editor-data, cursor-column:offset
   ]
   # cursor moves to end of line
   memory-should-contain [
@@ -2630,10 +2630,10 @@ scenario point-at-multiple-editors [
   # check cursor column in each
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    4:address:editor-data <- get 3:address:programming-environment-data/lookup, recipes:offset
-    5:number <- get 4:address:editor-data/lookup, cursor-column:offset
-    6:address:editor-data <- get 3:address:programming-environment-data/lookup, current-sandbox:offset
-    7:number <- get 6:address:editor-data/lookup, cursor-column:offset
+    4:address:editor-data <- get *3:address:programming-environment-data, recipes:offset
+    5:number <- get *4:address:editor-data, cursor-column:offset
+    6:address:editor-data <- get *3:address:programming-environment-data, current-sandbox:offset
+    7:number <- get *6:address:editor-data, cursor-column:offset
   ]
   memory-should-contain [
     5 <- 1
@@ -2657,10 +2657,10 @@ scenario edit-multiple-editors [
   ]
   run [
     event-loop screen:address, console:address, 3:address:programming-environment-data
-    4:address:editor-data <- get 3:address:programming-environment-data/lookup, recipes:offset
-    5:number <- get 4:address:editor-data/lookup, cursor-column:offset
-    6:address:editor-data <- get 3:address:programming-environment-data/lookup, current-sandbox:offset
-    7:number <- get 6:address:editor-data/lookup, cursor-column:offset
+    4:address:editor-data <- get *3:address:programming-environment-data, recipes:offset
+    5:number <- get *4:address:editor-data, cursor-column:offset
+    6:address:editor-data <- get *3:address:programming-environment-data, current-sandbox:offset
+    7:number <- get *6:address:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .           run (F4)           .  # this line has a different background, but we don't test that yet
@@ -2829,57 +2829,57 @@ scenario run-and-show-results [
 recipe run-sandboxes [
   local-scope
   env:address:programming-environment-data <- next-ingredient
-  recipes:address:editor-data <- get env:address:programming-environment-data/lookup, recipes:offset
-  current-sandbox:address:editor-data <- get env:address:programming-environment-data/lookup, current-sandbox:offset
+  recipes:address:editor-data <- get *env, recipes:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   # copy code from recipe editor, persist, load into mu, save any warnings
-  in:address:array:character <- editor-contents recipes:address:editor-data
-  save [recipes.mu], in:address:array:character
-  recipe-warnings:address:address:array:character <- get-address env:address:programming-environment-data/lookup, recipe-warnings:offset
-  recipe-warnings:address:address:array:character/lookup <- reload in:address:array:character
+  in:address:array:character <- editor-contents recipes
+  save [recipes.mu], in
+  recipe-warnings:address:address:array:character <- get-address *env, recipe-warnings:offset
+  *recipe-warnings <- reload in
   # if recipe editor has errors, stop
-  reply-if recipe-warnings:address:address:array:character/lookup
+  reply-if *recipe-warnings
   # check contents of right editor (sandbox)
   {
-    sandbox-contents:address:array:character <- editor-contents current-sandbox:address:editor-data
-    break-unless sandbox-contents:address:array:character
+    sandbox-contents:address:array:character <- editor-contents current-sandbox
+    break-unless sandbox-contents
     # if contents exist, first save them
     # run them and turn them into a new sandbox-data
     new-sandbox:address:sandbox-data <- new sandbox-data:type
-    data:address:address:array:character <- get-address new-sandbox:address:sandbox-data/lookup, data:offset
-    data:address:address:array:character/lookup <- copy sandbox-contents:address:array:character
+    data:address:address:array:character <- get-address *new-sandbox, data:offset
+    *data <- copy sandbox-contents
     # push to head of sandbox list
-    dest:address:address:sandbox-data <- get-address env:address:programming-environment-data/lookup, sandbox:offset
-    next:address:address:sandbox-data <- get-address new-sandbox:address:sandbox-data/lookup, next-sandbox:offset
-    next:address:address:sandbox-data/lookup <- copy dest:address:address:sandbox-data/lookup
-    dest:address:address:sandbox-data/lookup <- copy new-sandbox:address:sandbox-data
+    dest:address:address:sandbox-data <- get-address *env, sandbox:offset
+    next:address:address:sandbox-data <- get-address *new-sandbox, next-sandbox:offset
+    *next <- copy *dest
+    *dest <- copy new-sandbox
     # clear sandbox editor
-    init:address:address:duplex-list <- get-address current-sandbox:address:editor-data/lookup, data:offset
-    init:address:address:duplex-list/lookup <- push-duplex 167/§, 0/tail
+    init:address:address:duplex-list <- get-address *current-sandbox, data:offset
+    *init <- push-duplex 167/§, 0/tail
   }
   # save all sandboxes before running, just in case we die when running
   # first clear previous versions, in case we deleted some sandbox
   $system [rm lesson/[0-9]*]
-  curr:address:sandbox-data <- get env:address:programming-environment-data/lookup, sandbox:offset
+  curr:address:sandbox-data <- get *env, sandbox:offset
   filename:number <- copy 0
   {
-    break-unless curr:address:sandbox-data
-    data:address:address:array:character <- get-address curr:address:sandbox-data/lookup, data:offset
-    save filename:number, data:address:address:array:character/lookup
-    filename:number <- add filename:number, 1
-    curr:address:sandbox-data <- get curr:address:sandbox-data/lookup, next-sandbox:offset
+    break-unless curr
+    data:address:address:array:character <- get-address *curr, data:offset
+    save filename, *data
+    filename <- add filename, 1
+    curr <- get *curr, next-sandbox:offset
     loop
   }
   # run all sandboxes
-  curr:address:sandbox-data <- get env:address:programming-environment-data/lookup, sandbox:offset
+  curr <- get *env, sandbox:offset
   {
-    break-unless curr:address:sandbox-data
-    data:address:address:array:character <- get-address curr:address:sandbox-data/lookup, data:offset
-    response:address:address:array:character <- get-address curr:address:sandbox-data/lookup, response:offset
-    warnings:address:address:array:character <- get-address curr:address:sandbox-data/lookup, warnings:offset
-    fake-screen:address:address:screen <- get-address curr:address:sandbox-data/lookup, screen:offset
-    response:address:address:array:character/lookup, warnings:address:address:array:character/lookup, fake-screen:address:address:screen/lookup <- run-interactive data:address:address:array:character/lookup
-#?     $print warnings:address:address:array:character/lookup, [ ], warnings:address:address:array:character/lookup/lookup, 10/newline
-    curr:address:sandbox-data <- get curr:address:sandbox-data/lookup, next-sandbox:offset
+    break-unless curr
+    data <- get-address *curr, data:offset
+    response:address:address:array:character <- get-address *curr, response:offset
+    warnings:address:address:array:character <- get-address *curr, warnings:offset
+    fake-screen:address:address:screen <- get-address *curr, screen:offset
+    *response, *warnings, *fake-screen <- run-interactive *data
+#?     $print *warnings, [ ], **warnings, 10/newline
+    curr <- get *curr, next-sandbox:offset
     loop
   }
 ]
@@ -2890,29 +2890,29 @@ recipe render-sandbox-side [
   env:address:programming-environment-data <- next-ingredient
   clear:boolean <- next-ingredient
 #?   trace [app], [render sandbox side] #? 1
-  current-sandbox:address:editor-data <- get env:address:programming-environment-data/lookup, current-sandbox:offset
-  left:number <- get current-sandbox:address:editor-data/lookup, left:offset
-  right:number <- get current-sandbox:address:editor-data/lookup, right:offset
-  row:number, screen:address <- render screen:address, current-sandbox:address:editor-data
-  row:number <- add row:number, 1
-  draw-horizontal screen:address, row:number, left:number, right:number, 9473/horizontal-double
-  sandbox:address:sandbox-data <- get env:address:programming-environment-data/lookup, sandbox:offset
-  row:number, screen:address <- render-sandboxes screen:address, sandbox:address:sandbox-data, left:number, right:number, row:number
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  left:number <- get *current-sandbox, left:offset
+  right:number <- get *current-sandbox, right:offset
+  row:number, screen <- render screen, current-sandbox
+  row <- add row, 1
+  draw-horizontal screen, row, left, right, 9473/horizontal-double
+  sandbox:address:sandbox-data <- get *env, sandbox:offset
+  row, screen <- render-sandboxes screen, sandbox, left, right, row
   # clear next line, in case we just processed a backspace
-  row:number <- add row:number, 1
-  move-cursor screen:address, row:number, left:number
-  clear-line-delimited screen:address, left:number, right:number
-  reply-unless clear:boolean, screen:address/same-as-ingredient:0
-  screen-height:number <- screen-height screen:address
+  row <- add row, 1
+  move-cursor screen, row, left
+  clear-line-delimited screen, left, right
+  reply-unless clear, screen/same-as-ingredient:0
+  screen-height:number <- screen-height screen
   {
-    at-bottom-of-screen?:boolean <- greater-or-equal row:number, screen-height:number
-    break-if at-bottom-of-screen?:boolean
-    move-cursor screen:address, row:number, left:number
-    clear-line-delimited screen:address, left:number, right:number
-    row:number <- add row:number, 1
+    at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
+    break-if at-bottom-of-screen?
+    move-cursor screen, row, left
+    clear-line-delimited screen, left, right
+    row <- add row, 1
     loop
   }
-  reply screen:address/same-as-ingredient:0
+  reply screen/same-as-ingredient:0
 ]
 
 recipe render-sandboxes [
@@ -2922,49 +2922,49 @@ recipe render-sandboxes [
   left:number <- next-ingredient
   right:number <- next-ingredient
   row:number <- next-ingredient
-  reply-unless sandbox:address:sandbox-data, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-  screen-height:number <- screen-height screen:address
-  at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
-#?   $print [rendering sandbox ], sandbox:address:sandbox-data, 10/newline
+  reply-unless sandbox, row/same-as-ingredient:4, screen/same-as-ingredient:0
+  screen-height:number <- screen-height screen
+  at-bottom?:boolean <- greater-or-equal row, screen-height
+  reply-if at-bottom?:boolean, row/same-as-ingredient:4, screen/same-as-ingredient:0
+#?   $print [rendering sandbox ], sandbox, 10/newline
   # render sandbox menu
-  row:number <- add row:number, 1
-  move-cursor screen:address, row:number, left:number
-  clear-line-delimited screen:address, left:number, right:number
-  print-character screen:address, 120/x, 245/grey
+  row <- add row, 1
+  move-cursor screen, row, left
+  clear-line-delimited screen, left, right
+  print-character screen, 120/x, 245/grey
   # save menu row so we can detect clicks to it later
-  starting-row:address:number <- get-address sandbox:address:sandbox-data/lookup, starting-row-on-screen:offset
-  starting-row:address:number/lookup <- copy row:number
+  starting-row:address:number <- get-address *sandbox, starting-row-on-screen:offset
+  *starting-row <- copy row
   # render sandbox contents
-  sandbox-data:address:array:character <- get sandbox:address:sandbox-data/lookup, data:offset
-  row:number, screen:address <- render-string screen:address, sandbox-data:address:array:character, left:number, right:number, 7/white, row:number
+  sandbox-data:address:array:character <- get *sandbox, data:offset
+  row, screen <- render-string screen, sandbox-data, left, right, 7/white, row
   # render sandbox warnings, screen or response, in that order
-  sandbox-response:address:array:character <- get sandbox:address:sandbox-data/lookup, response:offset
-  sandbox-warnings:address:array:character <- get sandbox:address:sandbox-data/lookup, warnings:offset
-  sandbox-screen:address <- get sandbox:address:sandbox-data/lookup, screen:offset
+  sandbox-response:address:array:character <- get *sandbox, response:offset
+  sandbox-warnings:address:array:character <- get *sandbox, warnings:offset
+  sandbox-screen:address <- get *sandbox, screen:offset
   {
-    break-unless sandbox-warnings:address:array:character
-    row:number, screen:address <- render-string screen:address, sandbox-warnings:address:array:character, left:number, right:number, 1/red, row:number
+    break-unless sandbox-warnings
+    row, screen <- render-string screen, sandbox-warnings, left, right, 1/red, row
   }
   {
-    break-if sandbox-warnings:address:array:character
-    empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen:address
-    break-if empty-screen?:boolean
-    row:number, screen:address <- render-screen screen:address, sandbox-screen:address, left:number, right:number, row:number
+    break-if sandbox-warnings
+    empty-screen?:boolean <- fake-screen-is-clear? sandbox-screen
+    break-if empty-screen?
+    row, screen <- render-screen screen, sandbox-screen, left, right, row
   }
   {
-    break-if sandbox-warnings:address:array:character
-    break-unless empty-screen?:boolean
-    row:number, screen:address <- render-string screen:address, sandbox-response:address:array:character, left:number, right:number, 245/grey, row:number
+    break-if sandbox-warnings
+    break-unless empty-screen?
+    row, screen <- render-string screen, sandbox-response, left, right, 245/grey, row
   }
-  at-bottom?:boolean <- greater-or-equal row:number screen-height:number
-  reply-if at-bottom?:boolean, row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  at-bottom?:boolean <- greater-or-equal row, screen-height
+  reply-if at-bottom?, row/same-as-ingredient:4, screen/same-as-ingredient:0
   # draw solid line after sandbox
-  draw-horizontal screen:address, row:number, left:number, right:number, 9473/horizontal-double
+  draw-horizontal screen, row, left, right, 9473/horizontal-double
   # draw next sandbox
-  next-sandbox:address:sandbox-data <- get sandbox:address:sandbox-data/lookup, next-sandbox:offset
-  row:number, screen:address <- render-sandboxes screen:address, next-sandbox:address:sandbox-data, left:number, right:number, row:number
-  reply row:number/same-as-ingredient:4, screen:address/same-as-ingredient:0
+  next-sandbox:address:sandbox-data <- get *sandbox, next-sandbox:offset
+  row, screen <- render-sandboxes screen, next-sandbox, left, right, row
+  reply row/same-as-ingredient:4, screen/same-as-ingredient:0
 ]
 
 # assumes programming environment has no sandboxes; restores them from previous session
@@ -2973,21 +2973,21 @@ recipe restore-sandboxes [
   env:address:programming-environment-data <- next-ingredient
   # read all scenarios, pushing them to end of a list of scenarios
   filename:number <- copy 0
-  curr:address:address:sandbox-data <- get-address env:address:programming-environment-data/lookup, sandbox:offset
+  curr:address:address:sandbox-data <- get-address *env, sandbox:offset
   {
-    contents:address:array:character <- restore filename:number
-    break-unless contents:address:array:character  # stop at first error; assuming file didn't exist
-#?     $print contents:address:array:character, 10/newline
+    contents:address:array:character <- restore filename
+    break-unless contents  # stop at first error; assuming file didn't exist
+#?     $print contents, 10/newline
     # create new sandbox for file
-    curr:address:address:sandbox-data/lookup <- new sandbox-data:type
-    data:address:address:array:character <- get-address curr:address:address:sandbox-data/lookup/lookup, data:offset
-    data:address:address:array:character/lookup <- copy contents:address:array:character
+    *curr <- new sandbox-data:type
+    data:address:address:array:character <- get-address **curr, data:offset
+    *data <- copy contents
     # increment loop variables
-    filename:number <- add filename:number, 1
-    curr:address:address:sandbox-data <- get-address curr:address:address:sandbox-data/lookup/lookup, next-sandbox:offset
+    filename <- add filename, 1
+    curr <- get-address **curr, next-sandbox:offset
     loop
   }
-  reply env:address:programming-environment-data/same-as-ingredient:0
+  reply env/same-as-ingredient:0
 ]
 
 # was-deleted?:boolean <- delete-sandbox t:touch-event, env:address:programming-environment-data
@@ -2995,40 +2995,40 @@ recipe delete-sandbox [
   local-scope
   t:touch-event <- next-ingredient
   env:address:programming-environment-data <- next-ingredient
-  click-column:number <- get t:touch-event, column:offset
-  current-sandbox:address:editor-data <- get env:address:programming-environment-data/lookup, current-sandbox:offset
-  right:number <- get current-sandbox:address:editor-data/lookup, right:offset
-#?   $print [comparing column ], click-column:number, [ vs ], right:number, 10/newline
-  at-right?:boolean <- equal click-column:number, right:number
-  reply-unless at-right?:boolean, 0/false
+  click-column:number <- get t, column:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  right:number <- get *current-sandbox, right:offset
+#?   $print [comparing column ], click-column, [ vs ], right, 10/newline
+  at-right?:boolean <- equal click-column, right
+  reply-unless at-right?, 0/false
 #?   $print [trying to delete
 #? ] #? 1
-  click-row:number <- get t:touch-event, row:offset
-  prev:address:address:sandbox-data <- get-address env:address:programming-environment-data/lookup, sandbox:offset
-#?   $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/lookup, 10/newline
-  curr:address:sandbox-data <- get env:address:programming-environment-data/lookup, sandbox:offset
+  click-row:number <- get t, row:offset
+  prev:address:address:sandbox-data <- get-address *env, sandbox:offset
+#?   $print [prev: ], prev, [ -> ], *prev, 10/newline
+  curr:address:sandbox-data <- get *env, sandbox:offset
   {
 #?     $print [next sandbox
 #? ] #? 1
-    break-unless curr:address:sandbox-data
+    break-unless curr
     # more sandboxes to check
     {
 #?       $print [checking
 #? ] #? 1
-      target-row:number <- get curr:address:sandbox-data/lookup, starting-row-on-screen:offset
-#?       $print [comparing row ], target-row:number, [ vs ], click-row:number, 10/newline
-      delete-curr?:boolean <- equal target-row:number, click-row:number
-      break-unless delete-curr?:boolean
+      target-row:number <- get *curr, starting-row-on-screen:offset
+#?       $print [comparing row ], target-row, [ vs ], click-row, 10/newline
+      delete-curr?:boolean <- equal target-row, click-row
+      break-unless delete-curr?
 #?       $print [found!
 #? ] #? 1
       # delete this sandbox, rerender and stop
-      prev:address:address:sandbox-data/lookup <- get curr:address:sandbox-data/lookup, next-sandbox:offset
-#?       $print [setting prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/lookup, 10/newline
+      *prev <- get *curr, next-sandbox:offset
+#?       $print [setting prev: ], prev, [ -> ], *prev, 10/newline
       reply 1/true
     }
-    prev:address:address:sandbox-data <- get-address curr:address:sandbox-data/lookup, next-sandbox:offset
-#?     $print [prev: ], prev:address:address:sandbox-data, [ -> ], prev:address:address:sandbox-data/lookup, 10/newline
-    curr:address:sandbox-data <- get curr:address:sandbox-data/lookup, next-sandbox:offset
+    prev <- get-address *curr, next-sandbox:offset
+#?     $print [prev: ], prev, [ -> ], *prev, 10/newline
+    curr <- get *curr, next-sandbox:offset
     loop
   }
   reply 0/false
@@ -3277,20 +3277,20 @@ recipe editor-contents [
   local-scope
   editor:address:editor-data <- next-ingredient
   buf:address:buffer <- new-buffer 80
-  curr:address:duplex-list <- get editor:address:editor-data/lookup, data:offset
+  curr:address:duplex-list <- get *editor, data:offset
   # skip § sentinel
-  assert curr:address:duplex-list, [editor without data is illegal; must have at least a sentinel]
-  curr:address:duplex-list <- next-duplex curr:address:duplex-list
-  reply-unless curr:address:duplex-list, 0
+  assert curr, [editor without data is illegal; must have at least a sentinel]
+  curr <- next-duplex curr
+  reply-unless curr, 0
   {
-    break-unless curr:address:duplex-list
-    c:character <- get curr:address:duplex-list/lookup, value:offset
-    buffer-append buf:address:buffer, c:character
-    curr:address:duplex-list <- next-duplex curr:address:duplex-list
+    break-unless curr
+    c:character <- get *curr, value:offset
+    buffer-append buf, c
+    curr <- next-duplex curr
     loop
   }
-  result:address:array:character <- buffer-to-array buf:address:buffer
-  reply result:address:array:character
+  result:address:array:character <- buffer-to-array buf
+  reply result
 ]
 
 scenario editor-provides-edited-contents [
@@ -3304,7 +3304,7 @@ scenario editor-provides-edited-contents [
   run [
     editor-event-loop screen:address, console:address, 2:address:editor-data
     3:address:array:character <- editor-contents 2:address:editor-data
-    4:array:character <- copy 3:address:array:character/lookup
+    4:array:character <- copy *3:address:array:character
   ]
   memory-should-contain [
     4:string <- [abdefc]
@@ -3358,8 +3358,7 @@ scenario run-shows-missing-type-warnings [
   run [
     x:address:array:character <- new [ 
 recipe foo [
-  x:number <- copy 0
-  copy x
+  x <- copy 0
 ]]
     y:address:array:character <- new [foo]
     env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
@@ -3369,10 +3368,9 @@ recipe foo [
     .                                                                                 run (F4)           .
     .                                                  ┊foo                                              .
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  x:number <- copy 0                              ┊                                                 .
-    .  copy x                                          ┊                                                 .
+    .  x <- copy 0                                     ┊                                                 .
     .]                                                 ┊                                                 .
-    .missing type in 'copy x'                          ┊                                                 .
+    .missing type in 'x <- copy 0'                     ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -3418,7 +3416,7 @@ scenario run-shows-non-literal-get-argument-warnings [
 recipe foo [
   x:number <- copy 0
   y:address:point <- new point:type
-  get y:address:point/lookup, x:number
+  get *y:address:point, x:number
 ]]
     y:address:array:character <- new [foo]
     env:address:programming-environment-data <- new-programming-environment screen:address, x:address:array:character, y:address:array:character
@@ -3430,7 +3428,7 @@ recipe foo [
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x:number <- copy 0                              ┊                                                 .
     .  y:address:point <- new point:type               ┊                                                 .
-    .  get y:address:point/lookup, x:number            ┊                                                 .
+    .  get *y:address:point, x:number                  ┊                                                 .
     .]                                                 ┊                                                 .
     .foo: expected ingredient 1 of 'get' to have type ↩┊                                                 .
     .'offset'; got x:number                            ┊                                                 .
@@ -3451,22 +3449,22 @@ recipe draw-box [
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
-    break-if color-found?:boolean
-    color:number <- copy 245/grey
+    break-if color-found?
+    color <- copy 245/grey
   }
   # top border
-  draw-horizontal screen:address, top:number, left:number, right:number, color:number
-  draw-horizontal screen:address, bottom:number, left:number, right:number, color:number
-  draw-vertical screen:address, left:number, top:number, bottom:number, color:number
-  draw-vertical screen:address, right:number, top:number, bottom:number, color:number
-  draw-top-left screen:address, top:number, left:number, color:number
-  draw-top-right screen:address, top:number, right:number, color:number
-  draw-bottom-left screen:address, bottom:number, left:number, color:number
-  draw-bottom-right screen:address, bottom:number, right:number, color:number
+  draw-horizontal screen, top, left, right, color
+  draw-horizontal screen, bottom, left, right, color
+  draw-vertical screen, left, top, bottom, color
+  draw-vertical screen, right, top, bottom, color
+  draw-top-left screen, top, left, color
+  draw-top-right screen, top, right, color
+  draw-bottom-left screen, bottom, left, color
+  draw-bottom-right screen, bottom, right, color
   # position cursor inside box
-  move-cursor screen:address, top:number, left:number
-  cursor-down screen:address
-  cursor-right screen:address
+  move-cursor screen, top, left
+  cursor-down screen
+  cursor-right screen
 ]
 
 recipe draw-horizontal [
@@ -3477,26 +3475,26 @@ recipe draw-horizontal [
   right:number <- next-ingredient
   style:character, style-found?:boolean <- next-ingredient
   {
-    break-if style-found?:boolean
-    style:character <- copy 9472/horizontal
+    break-if style-found?
+    style <- copy 9472/horizontal
   }
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
-    break-if color-found?:boolean
-    color:number <- copy 245/grey
+    break-if color-found?
+    color <- copy 245/grey
   }
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
     break-if bg-color-found?:boolean
-    bg-color:number <- copy 0/black
+    bg-color <- copy 0/black
   }
-  move-cursor screen:address, row:number, x:number
+  move-cursor screen, row, x
   {
-    continue?:boolean <- lesser-or-equal x:number, right:number  # right is inclusive, to match editor-data semantics
-    break-unless continue?:boolean
-    print-character screen:address, style:character, color:number, bg-color:number
-    x:number <- add x:number, 1
+    continue?:boolean <- lesser-or-equal x, right  # right is inclusive, to match editor-data semantics
+    break-unless continue?
+    print-character screen, style, color, bg-color
+    x <- add x, 1
     loop
   }
 ]
@@ -3505,25 +3503,25 @@ recipe draw-vertical [
   local-scope
   screen:address <- next-ingredient
   col:number <- next-ingredient
-  x:number <- next-ingredient
+  y:number <- next-ingredient
   bottom:number <- next-ingredient
   style:character, style-found?:boolean <- next-ingredient
   {
-    break-if style-found?:boolean
-    style:character <- copy 9474/vertical
+    break-if style-found?
+    style <- copy 9474/vertical
   }
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
-    break-if color-found?:boolean
-    color:number <- copy 245/grey
+    break-if color-found?
+    color <- copy 245/grey
   }
   {
-    continue?:boolean <- lesser-than x:number, bottom:number
-    break-unless continue?:boolean
-    move-cursor screen:address, x:number, col:number
-    print-character screen:address, style:character, color:number
-    x:number <- add x:number, 1
+    continue?:boolean <- lesser-than y, bottom
+    break-unless continue?
+    move-cursor screen, y, col
+    print-character screen, style, color
+    y <- add y, 1
     loop
   }
 ]
@@ -3536,11 +3534,11 @@ recipe draw-top-left [
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
-    break-if color-found?:boolean
-    color:number <- copy 245/grey
+    break-if color-found?
+    color <- copy 245/grey
   }
-  move-cursor screen:address, top:number, left:number
-  print-character screen:address, 9484/down-right, color:number
+  move-cursor screen, top, left
+  print-character screen, 9484/down-right, color
 ]
 
 recipe draw-top-right [
@@ -3551,11 +3549,11 @@ recipe draw-top-right [
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
-    break-if color-found?:boolean
-    color:number <- copy 245/grey
+    break-if color-found?
+    color <- copy 245/grey
   }
-  move-cursor screen:address, top:number, right:number
-  print-character screen:address, 9488/down-left, color:number
+  move-cursor screen, top, right
+  print-character screen, 9488/down-left, color
 ]
 
 recipe draw-bottom-left [
@@ -3566,11 +3564,11 @@ recipe draw-bottom-left [
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
-    break-if color-found?:boolean
-    color:number <- copy 245/grey
+    break-if color-found?
+    color <- copy 245/grey
   }
-  move-cursor screen:address, bottom:number, left:number
-  print-character screen:address, 9492/up-right, color:number
+  move-cursor screen, bottom, left
+  print-character screen, 9492/up-right, color
 ]
 
 recipe draw-bottom-right [
@@ -3581,11 +3579,11 @@ recipe draw-bottom-right [
   color:number, color-found?:boolean <- next-ingredient
   {
     # default color to white
-    break-if color-found?:boolean
-    color:number <- copy 245/grey
+    break-if color-found?
+    color <- copy 245/grey
   }
-  move-cursor screen:address, bottom:number, right:number
-  print-character screen:address, 9496/up-left, color:number
+  move-cursor screen, bottom, right
+  print-character screen, 9496/up-left, color
 ]
 
 recipe print-string-with-gradient-background [
@@ -3595,24 +3593,24 @@ recipe print-string-with-gradient-background [
   color:number <- next-ingredient
   bg-color1:number <- next-ingredient
   bg-color2:number <- next-ingredient
-  len:number <- length s:address:array:character/lookup
-  color-range:number <- subtract bg-color2:number, bg-color1:number
-  color-quantum:number <- divide color-range:number, len:number
+  len:number <- length *s
+  color-range:number <- subtract bg-color2, bg-color1
+  color-quantum:number <- divide color-range, len
 #?   close-console #? 2
-#?   $print len:number, [, ], color-range:number, [, ], color-quantum:number, 10/newline
+#?   $print len, [, ], color-range, [, ], color-quantum, 10/newline
 #? #?   $exit #? 3
-  bg-color:number <- copy bg-color1:number
+  bg-color:number <- copy bg-color1
   i:number <- copy 0
   {
-    done?:boolean <- greater-or-equal i:number, len:number
-    break-if done?:boolean
-    c:character <- index s:address:array:character/lookup, i:number
-    print-character x:address:screen, c:character, color:number, bg-color:number
-    i:number <- add i:number, 1
-    bg-color:number <- add bg-color:number, color-quantum:number
-#?     $print [=> ], bg-color:number, 10/newline
+    done?:boolean <- greater-or-equal i, len
+    break-if done?
+    c:character <- index *s, i
+    print-character x, c, color, bg-color
+    i <- add i, 1
+    bg-color <- add bg-color, color-quantum
+#?     $print [=> ], bg-color, 10/newline
     loop
   }
 #?   $exit #? 1
-  reply x:address:screen/same-as-ingredient:0
+  reply x/same-as-ingredient:0
 ]
