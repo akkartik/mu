@@ -35,14 +35,14 @@ recipe new-fake-screen [
 
 recipe clear-screen [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
 #?   $print [clearing screen
 #? ] #? 1
   # if x exists
   {
-    break-unless x:address:screen
+    break-unless sc:address:screen
     # clear fake screen
-    buf:address:array:screen-cell <- get x:address:screen/lookup, data:offset
+    buf:address:array:screen-cell <- get sc:address:screen/lookup, data:offset
     max:number <- length buf:address:array:screen-cell/lookup
     i:number <- copy 0
     {
@@ -57,22 +57,22 @@ recipe clear-screen [
       loop
     }
     # reset cursor
-    cur:address:number <- get-address x:address:screen/lookup, cursor-row:offset
+    cur:address:number <- get-address sc:address:screen/lookup, cursor-row:offset
     cur:address:number/lookup <- copy 0
-    cur:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+    cur:address:number <- get-address sc:address:screen/lookup, cursor-column:offset
     cur:address:number/lookup <- copy 0
-    reply x:address:screen/same-as-ingredient:0
+    reply sc:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
   clear-display
-  reply x:address:screen/same-as-ingredient:0
+  reply sc:address:screen/same-as-ingredient:0
 ]
 
 recipe fake-screen-is-clear? [
   local-scope
-  screen:address:screen <- next-ingredient
-  reply-unless screen:address:screen, 1/true
-  buf:address:array:screen-cell <- get screen:address:screen/lookup, data:offset
+  sc:address:screen <- next-ingredient
+  reply-unless sc:address:screen, 1/true
+  buf:address:array:screen-cell <- get sc:address:screen/lookup, data:offset
   i:number <- copy 0
   len:number <- length buf:address:array:screen-cell/lookup
   {
@@ -90,7 +90,7 @@ recipe fake-screen-is-clear? [
 
 recipe print-character [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
   c:character <- next-ingredient
   color:number, color-found?:boolean <- next-ingredient
   {
@@ -108,20 +108,20 @@ recipe print-character [
   {
     # if x exists
     # (handle special cases exactly like in the real screen)
-    break-unless x:address:screen
-    width:number <- get x:address:screen/lookup, num-columns:offset
-    height:number <- get x:address:screen/lookup, num-rows:offset
+    break-unless sc:address:screen
+    width:number <- get sc:address:screen/lookup, num-columns:offset
+    height:number <- get sc:address:screen/lookup, num-rows:offset
     # if cursor is out of bounds, silently exit
-    row:address:number <- get-address x:address:screen/lookup, cursor-row:offset
+    row:address:number <- get-address sc:address:screen/lookup, cursor-row:offset
     legal?:boolean <- greater-or-equal row:address:number/lookup, 0
-    reply-unless legal?:boolean, x:address:screen
+    reply-unless legal?:boolean, sc:address:screen
     legal?:boolean <- lesser-than row:address:number/lookup, height:number
-    reply-unless legal?:boolean, x:address:screen
-    column:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+    reply-unless legal?:boolean, sc:address:screen
+    column:address:number <- get-address sc:address:screen/lookup, cursor-column:offset
     legal?:boolean <- greater-or-equal column:address:number/lookup, 0
-    reply-unless legal?:boolean, x:address:screen
+    reply-unless legal?:boolean, sc:address:screen
     legal?:boolean <- lesser-than column:address:number/lookup, width:number
-    reply-unless legal?:boolean, x:address:screen
+    reply-unless legal?:boolean, sc:address:screen
     # special-case: newline
     {
       newline?:boolean <- equal c:character, 10/newline
@@ -136,12 +136,12 @@ recipe print-character [
         column:address:number/lookup <- copy 0
         row:address:number/lookup <- add row:address:number/lookup, 1
       }
-      reply x:address:screen/same-as-ingredient:0
+      reply sc:address:screen/same-as-ingredient:0
     }
     # save character in fake screen
     index:number <- multiply row:address:number/lookup, width:number
     index:number <- add index:number, column:address:number/lookup
-    buf:address:array:screen-cell <- get x:address:screen/lookup, data:offset
+    buf:address:array:screen-cell <- get sc:address:screen/lookup, data:offset
     len:number <- length buf:address:array:screen-cell/lookup
     # special-case: backspace
     {
@@ -160,7 +160,7 @@ recipe print-character [
         cursor-contents:address:character/lookup <- copy 32/space
         cursor-color:address:number/lookup <- copy 7/white
       }
-      reply x:address:screen/same-as-ingredient:0
+      reply sc:address:screen/same-as-ingredient:0
     }
 #?     $print [saving character ], c:character, [ to fake screen ], cursor:address/screen, 10/newline
     cursor:address:screen-cell <- index-address buf:address:array:screen-cell/lookup, index:number
@@ -175,11 +175,11 @@ recipe print-character [
       break-if at-right?:boolean
       column:address:number/lookup <- add column:address:number/lookup, 1
     }
-    reply x:address:screen/same-as-ingredient:0
+    reply sc:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
   print-character-to-display c:character, color:number, bg-color:number
-  reply x:address:screen/same-as-ingredient:0
+  reply sc:address:screen/same-as-ingredient:0
 ]
 
 scenario print-character-at-top-left [
@@ -340,12 +340,12 @@ scenario print-at-bottom-right [
 
 recipe clear-line [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
   # if x exists, clear line in fake screen
   {
-    break-unless x:address:screen
-    width:number <- get x:address:screen/lookup, num-columns:offset
-    column:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+    break-unless sc:address:screen
+    width:number <- get sc:address:screen/lookup, num-columns:offset
+    column:address:number <- get-address sc:address:screen/lookup, cursor-column:offset
     original-column:number <- copy column:address:number/lookup
     # space over the entire line
 #?     $start-tracing #? 1
@@ -354,49 +354,49 @@ recipe clear-line [
       right:number <- subtract width:number, 1
       done?:boolean <- greater-or-equal column:address:number/lookup, right:number
       break-if done?:boolean
-      print-character x:address:screen, [ ]  # implicitly updates 'column'
+      print-character sc:address:screen, [ ]  # implicitly updates 'column'
       loop
     }
     # now back to where the cursor was
     column:address:number/lookup <- copy original-column:number
-    reply x:address:screen/same-as-ingredient:0
+    reply sc:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
   clear-line-on-display
-  reply x:address:screen/same-as-ingredient:0
+  reply sc:address:screen/same-as-ingredient:0
 ]
 
 recipe cursor-position [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
   # if x exists, lookup cursor in fake screen
   {
-    break-unless x:address:screen
-    row:number <- get x:address:screen/lookup, cursor-row:offset
-    column:number <- get x:address:screen/lookup, cursor-column:offset
-    reply row:number, column:number, x:address:screen/same-as-ingredient:0
+    break-unless sc:address:screen
+    row:number <- get sc:address:screen/lookup, cursor-row:offset
+    column:number <- get sc:address:screen/lookup, cursor-column:offset
+    reply row:number, column:number, sc:address:screen/same-as-ingredient:0
   }
   row:number, column:number <- cursor-position-on-display
-  reply row:number, column:number, x:address:screen/same-as-ingredient:0
+  reply row:number, column:number, sc:address:screen/same-as-ingredient:0
 ]
 
 recipe move-cursor [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
   new-row:number <- next-ingredient
   new-column:number <- next-ingredient
   # if x exists, move cursor in fake screen
   {
-    break-unless x:address:screen
-    row:address:number <- get-address x:address:screen/lookup, cursor-row:offset
+    break-unless sc:address:screen
+    row:address:number <- get-address sc:address:screen/lookup, cursor-row:offset
     row:address:number/lookup <- copy new-row:number
-    column:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+    column:address:number <- get-address sc:address:screen/lookup, cursor-column:offset
     column:address:number/lookup <- copy new-column:number
-    reply x:address:screen/same-as-ingredient:0
+    reply sc:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
   move-cursor-on-display new-row:number, new-column:number
-  reply x:address:screen/same-as-ingredient:0
+  reply sc:address:screen/same-as-ingredient:0
 ]
 
 scenario clear-line-erases-printed-characters [
@@ -432,14 +432,14 @@ scenario clear-line-erases-printed-characters [
 
 recipe cursor-down [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
-    break-unless x:address:screen
+    break-unless sc:address:screen
     {
       # if row < height-1
-      height:number <- get x:address:screen/lookup, num-rows:offset
-      row:address:number <- get-address x:address:screen/lookup, cursor-row:offset
+      height:number <- get sc:address:screen/lookup, num-rows:offset
+      row:address:number <- get-address sc:address:screen/lookup, cursor-row:offset
       max:number <- subtract height:number, 1
       at-bottom?:boolean <- greater-or-equal row:address:number/lookup, max:number
       break-if at-bottom?:boolean
@@ -449,102 +449,102 @@ recipe cursor-down [
 #?       $print [BBB: ], row:address:number, [ -> ], row:address:number/lookup, 10/newline
 #?       $start-tracing #? 1
     }
-    reply x:address:screen/same-as-ingredient:0
+    reply sc:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
   move-cursor-down-on-display
-  reply x:address:screen/same-as-ingredient:0
+  reply sc:address:screen/same-as-ingredient:0
 ]
 
 recipe cursor-up [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
-    break-unless x:address:screen
+    break-unless sc:address:screen
     {
       # if row > 0
-      row:address:number <- get-address x:address:screen/lookup, cursor-row:offset
+      row:address:number <- get-address sc:address:screen/lookup, cursor-row:offset
       at-top?:boolean <- lesser-or-equal row:address:number/lookup, 0
       break-if at-top?:boolean
       # row = row-1
       row:address:number/lookup <- subtract row:address:number/lookup, 1
     }
-    reply x:address:screen/same-as-ingredient:0
+    reply sc:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
   move-cursor-up-on-display
-  reply x:address:screen/same-as-ingredient:0
+  reply sc:address:screen/same-as-ingredient:0
 ]
 
 recipe cursor-right [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
-    break-unless x:address:screen
+    break-unless sc:address:screen
     {
       # if column < width-1
-      width:number <- get x:address:screen/lookup, num-columns:offset
-      column:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+      width:number <- get sc:address:screen/lookup, num-columns:offset
+      column:address:number <- get-address sc:address:screen/lookup, cursor-column:offset
       max:number <- subtract width:number, 1
       at-bottom?:boolean <- greater-or-equal column:address:number/lookup, max:number
       break-if at-bottom?:boolean
       # column = column+1
       column:address:number/lookup <- add column:address:number/lookup, 1
     }
-    reply x:address:screen/same-as-ingredient:0
+    reply sc:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
   move-cursor-right-on-display
-  reply x:address:screen/same-as-ingredient:0
+  reply sc:address:screen/same-as-ingredient:0
 ]
 
 recipe cursor-left [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
-    break-unless x:address:screen
+    break-unless sc:address:screen
     {
       # if column > 0
-      column:address:number <- get-address x:address:screen/lookup, cursor-column:offset
+      column:address:number <- get-address sc:address:screen/lookup, cursor-column:offset
       at-top?:boolean <- lesser-or-equal column:address:number/lookup, 0
       break-if at-top?:boolean
       # column = column-1
       column:address:number/lookup <- subtract column:address:number/lookup, 1
     }
-    reply x:address:screen/same-as-ingredient:0
+    reply sc:address:screen/same-as-ingredient:0
   }
   # otherwise, real screen
   move-cursor-left-on-display
-  reply x:address:screen/same-as-ingredient:0
+  reply sc:address:screen/same-as-ingredient:0
 ]
 
 recipe cursor-to-start-of-line [
   local-scope
-  x:address:screen <- next-ingredient
-  row:number, _, x:address:screen <- cursor-position x:address:screen
+  sc:address:screen <- next-ingredient
+  row:number, _, sc:address:screen <- cursor-position sc:address:screen
   column:number <- copy 0
-  x:address:screen <- move-cursor x:address:screen, row:number, column:number
-  reply x:address:screen/same-as-ingredient:0
+  sc:address:screen <- move-cursor sc:address:screen, row:number, column:number
+  reply sc:address:screen/same-as-ingredient:0
 ]
 
 recipe cursor-to-next-line [
   local-scope
-  x:address:screen <- next-ingredient
-  x:address:screen <- cursor-down x:address:screen
-  x:address:screen <- cursor-to-start-of-line x:address:screen
-  reply x:address:screen/same-as-ingredient:0
+  screen:address <- next-ingredient
+  screen:address <- cursor-down screen:address
+  screen:address <- cursor-to-start-of-line screen:address
+  reply screen:address/same-as-ingredient:0
 ]
 
 recipe screen-width [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
-    break-unless x:address:screen
-    width:number <- get x:address:screen/lookup, num-columns:offset
+    break-unless sc:address:screen
+    width:number <- get sc:address:screen/lookup, num-columns:offset
     reply width:number
   }
   # otherwise, real screen
@@ -554,11 +554,11 @@ recipe screen-width [
 
 recipe screen-height [
   local-scope
-  x:address:screen <- next-ingredient
+  sc:address:screen <- next-ingredient
   # if x exists, move cursor in fake screen
   {
-    break-unless x:address:screen
-    height:number <- get x:address:screen/lookup, num-rows:offset
+    break-unless sc:address:screen
+    height:number <- get sc:address:screen/lookup, num-rows:offset
     reply height:number
   }
   # otherwise, real screen
@@ -568,59 +568,59 @@ recipe screen-height [
 
 recipe hide-cursor [
   local-scope
-  x:address:screen <- next-ingredient
+  screen:address <- next-ingredient
   # if x exists (not real display), do nothing
   {
-    break-unless x:address:screen
-    reply x:address:screen
+    break-unless screen:address
+    reply screen:address
   }
   # otherwise, real screen
   hide-cursor-on-display
-  reply x:address:screen
+  reply screen:address
 ]
 
 recipe show-cursor [
   local-scope
-  x:address:screen <- next-ingredient
+  screen:address <- next-ingredient
   # if x exists (not real display), do nothing
   {
-    break-unless x:address:screen
-    reply x:address:screen
+    break-unless screen:address
+    reply screen:address
   }
   # otherwise, real screen
   show-cursor-on-display
-  reply x:address:screen
+  reply screen:address
 ]
 
 recipe hide-screen [
   local-scope
-  x:address:screen <- next-ingredient
+  screen:address <- next-ingredient
   # if x exists (not real display), do nothing
   {
-    break-unless x:address:screen
-    reply x:address:screen
+    break-unless screen:address
+    reply screen:address
   }
   # otherwise, real screen
   hide-display
-  reply x:address:screen
+  reply screen:address
 ]
 
 recipe show-screen [
   local-scope
-  x:address:screen <- next-ingredient
+  screen:address <- next-ingredient
   # if x exists (not real display), do nothing
   {
-    break-unless x:address:screen
-    reply x:address:screen
+    break-unless screen:address
+    reply screen:address
   }
   # otherwise, real screen
   show-display
-  reply x:address:screen
+  reply screen:address
 ]
 
 recipe print-string [
   local-scope
-  x:address:screen <- next-ingredient
+  screen:address <- next-ingredient
   s:address:array:character <- next-ingredient
   color:number, color-found?:boolean <- next-ingredient
   {
@@ -640,11 +640,11 @@ recipe print-string [
     done?:boolean <- greater-or-equal i:number, len:number
     break-if done?:boolean
     c:character <- index s:address:array:character/lookup, i:number
-    print-character x:address:screen, c:character, color:number, bg-color:number
+    print-character screen:address, c:character, color:number, bg-color:number
     i:number <- add i:number, 1
     loop
   }
-  reply x:address:screen/same-as-ingredient:0
+  reply screen:address/same-as-ingredient:0
 ]
 
 scenario print-string-stops-at-right-margin [
@@ -669,7 +669,7 @@ scenario print-string-stops-at-right-margin [
 
 recipe print-integer [
   local-scope
-  x:address:screen <- next-ingredient
+  screen:address <- next-ingredient
   n:number <- next-ingredient
   color:number, color-found?:boolean <- next-ingredient
   {
@@ -685,6 +685,6 @@ recipe print-integer [
   }
   # todo: other bases besides decimal
   s:address:array:character <- integer-to-decimal-string n:number
-  print-string x:address:screen, s:address:array:character, color:number, bg-color:number
-  reply x:address:screen/same-as-ingredient:0
+  print-string screen:address, s:address:array:character, color:number, bg-color:number
+  reply screen:address/same-as-ingredient:0
 ]
